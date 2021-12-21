@@ -2,14 +2,15 @@ package ronykit
 
 import "sync"
 
-type EnvelopeFactory interface {
-	Get() Envelope
-	Put(envelope Envelope)
+type EnvelopePool interface {
+	Release(envelope Envelope)
 }
 
 type Envelope interface {
 	sync.Locker // To inform linter Envelope must not be copied.
 	Header() EnvelopeHeader
+	SetSubject(string)
+	GetSubject() string
 	SetBody([]byte)
 	GetBody() []byte
 }

@@ -6,7 +6,7 @@ import (
 
 type gatewayDelegate struct{}
 
-func (g gatewayDelegate) OnOpen(c ronykit.GatewayConn) {
+func (g gatewayDelegate) OnOpen(c ronykit.Conn) {
 
 	//TODO implement me
 	panic("implement me")
@@ -17,7 +17,7 @@ func (g gatewayDelegate) OnClose(connID uint64) {
 	panic("implement me")
 }
 
-func (g gatewayDelegate) OnMessage(c ronykit.GatewayConn, streamID int64, msg []byte) {
+func (g gatewayDelegate) OnMessage(c ronykit.Conn, streamID int64, msg []byte) {
 	//TODO implement me
 	panic("implement me")
 }

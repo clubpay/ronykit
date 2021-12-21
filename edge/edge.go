@@ -4,18 +4,26 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"os"
 	"os/signal"
+	"sync"
 )
 
-type Handler func(ctx RequestCtx, envelope ronykit.Envelope) Handler
+type Handler func(ctx *RequestCtx, envelope ronykit.Envelope) Handler
 
 type Server struct {
-	nb []northBridge
+	ep ronykit.EnvelopePool
+	r  Router
+	nb []*northBridge
 }
 
-func (s *Server) RegisterGateway(gw ronykit.Gateway, d ronykit.Dispatcher) {
-	nb := northBridge{
-		gw: gw,
-		d:  d,
+func (s *Server) RegisterGateway(
+	gw ronykit.Gateway, d ronykit.Dispatcher,
+) {
+	nb := &northBridge{
+		ctxPool: sync.Pool{},
+		r:       s.r,
+		ep:      s.ep,
+		gw:      gw,
+		d:       d,
 	}
 	s.nb = append(s.nb, nb)
 

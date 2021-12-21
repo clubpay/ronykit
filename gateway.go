@@ -16,19 +16,9 @@ type Gateway interface {
 
 type GatewayDelegate interface {
 	// OnOpen must be called whenever a new connection is established.
-	OnOpen(c GatewayConn)
+	OnOpen(c Conn)
 	// OnClose must be called whenever the connection is gone.
 	OnClose(connID uint64)
 	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c GatewayConn, streamID int64, msg []byte) error
-}
-
-type GatewayConn interface {
-	ConnID() uint64
-	ClientIP() string
-	Write(streamID int64, data []byte) error
-	Stream() bool
-	Walk(func(key string, val interface{}) bool)
-	Get(key string) interface{}
-	Set(key string, val interface{})
+	OnMessage(c Conn, streamID int64, msg []byte) error
 }
