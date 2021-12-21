@@ -49,3 +49,8 @@ func (ctx *RequestCtx) Push(e ronykit.Envelope) {
 func (ctx *RequestCtx) Write(e ronykit.Envelope) error {
 	return ctx.nb.d.Serialize(ctx.conn, ctx.streamID, e)
 }
+
+// StopExecution stops the execution of the next handlers.
+func (ctx *RequestCtx) StopExecution() {
+	ctx.stopped = true
+}
