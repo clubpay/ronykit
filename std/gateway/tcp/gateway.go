@@ -2,23 +2,21 @@ package tcpGateway
 
 import (
 	"fmt"
-	"github.com/ronaksoft/rony"
-	"github.com/ronaksoft/ronykit/log"
-	"github.com/ronaksoft/ronykit/utils"
-	"net"
-	"net/http"
-	"sync"
-	"sync/atomic"
-	"time"
-
 	"github.com/gobwas/ws"
 	"github.com/mailru/easygo/netpoll"
 	"github.com/panjf2000/ants/v2"
+	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/pools"
 	"github.com/ronaksoft/ronykit/std/gateway/tcp/cors"
 	wsutil "github.com/ronaksoft/ronykit/std/gateway/tcp/util"
+	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
+	"net"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 /*
@@ -29,6 +27,10 @@ import (
    Auditor: Ehsan N. Moosa (E2)
    Copyright Ronak Software Group 2020
 */
+
+var (
+	_ ronykit.Gateway = &Gateway{}
+)
 
 type UnsafeConn interface {
 	net.Conn
@@ -41,7 +43,6 @@ type Config struct {
 	ListenAddress string
 	MaxBodySize   int
 	MaxIdleTime   time.Duration
-	Protocol      rony.GatewayProtocol
 	ExternalAddrs []string
 	Logger        log.Logger
 	// TextDataFrame if is set to TRUE then websocket data frames use OpText otherwise use OpBinary
@@ -60,7 +61,6 @@ type Config struct {
 type Gateway struct {
 	// Internals
 	cfg                Config
-	transportMode      rony.GatewayProtocol
 	listener           *wrapListener
 	listenerAddressMtx sync.RWMutex
 	listenerAddresses  []string
@@ -72,7 +72,7 @@ type Gateway struct {
 	cntReads           uint64
 	cntWrites          uint64
 	cors               *cors.CORS
-	delegate           rony.GatewayDelegate
+	delegate           ronykit.GatewayDelegate
 
 	// Websocket Internals
 	upgradeHandler ws.Upgrader
@@ -98,7 +98,6 @@ func New(config Config) (*Gateway, error) {
 		waitGroupWriters:   &sync.WaitGroup{},
 		waitGroupAcceptors: &sync.WaitGroup{},
 		conns:              make(map[uint64]*websocketConn, 100000),
-		transportMode:      rony.TCP,
 		cors: cors.New(cors.Config{
 			AllowedHeaders: config.AllowedHeaders,
 			AllowedMethods: config.AllowedMethods,
@@ -113,15 +112,6 @@ func New(config Config) (*Gateway, error) {
 
 	if config.MaxIdleTime != 0 {
 		g.maxIdleTime = int64(config.MaxIdleTime)
-	}
-	if config.Protocol != rony.Undefined {
-		g.transportMode = config.Protocol
-	}
-
-	switch g.transportMode {
-	case rony.Websocket, rony.Http, rony.TCP:
-	default:
-		return nil, ErrUnsupportedProtocol
 	}
 
 	// initialize websocket upgrade handler
@@ -232,7 +222,7 @@ func (g *Gateway) detectListenerAddress() error {
 	return nil
 }
 
-func (g *Gateway) Subscribe(d rony.GatewayDelegate) {
+func (g *Gateway) Subscribe(d ronykit.GatewayDelegate) {
 	g.delegate = d
 }
 
@@ -310,7 +300,7 @@ func (g *Gateway) Addr() []string {
 }
 
 // GetConn returns the connection identified by connID
-func (g *Gateway) GetConn(connID uint64) rony.Conn {
+func (g *Gateway) GetConn(connID uint64) ronykit.Conn {
 	c := g.getConnection(connID)
 	if c == nil {
 		return nil
@@ -319,20 +309,12 @@ func (g *Gateway) GetConn(connID uint64) rony.Conn {
 	return c
 }
 
-func (g *Gateway) Support(p rony.GatewayProtocol) bool {
-	return g.transportMode&p == p
-}
-
 func (g *Gateway) TotalConnections() int {
 	g.connsMtx.RLock()
 	n := len(g.conns)
 	g.connsMtx.RUnlock()
 
 	return n
-}
-
-func (g *Gateway) Protocol() rony.GatewayProtocol {
-	return g.transportMode
 }
 
 func (g *Gateway) requestHandler(reqCtx *fasthttp.RequestCtx) {
@@ -345,12 +327,6 @@ func (g *Gateway) requestHandler(reqCtx *fasthttp.RequestCtx) {
 
 	// If this is a Http Upgrade then we Handle websocket
 	if connInfo.Upgrade() {
-		if !g.Support(rony.Websocket) {
-			reqCtx.SetConnectionClose()
-			reqCtx.SetStatusCode(http.StatusNotAcceptable)
-
-			return
-		}
 		reqCtx.HijackSetNoResponse(true)
 		reqCtx.Hijack(
 			func(c net.Conn) {
@@ -367,11 +343,6 @@ func (g *Gateway) requestHandler(reqCtx *fasthttp.RequestCtx) {
 
 	// This is going to be an HTTP request
 	reqCtx.SetConnectionClose()
-	if !g.Support(rony.Http) {
-		reqCtx.SetStatusCode(http.StatusNotAcceptable)
-
-		return
-	}
 
 	conn := acquireHttpConn(g, reqCtx)
 	conn.SetClientIP(connInfo.clientIP)
@@ -380,11 +351,11 @@ func (g *Gateway) requestHandler(reqCtx *fasthttp.RequestCtx) {
 		conn.Set(k, v)
 	}
 
-	g.delegate.OnConnect(conn)
+	g.delegate.OnOpen(conn)
 
-	g.delegate.OnMessage(conn, int64(reqCtx.ID()), reqCtx.PostBody())
+	_ = g.delegate.OnMessage(conn, int64(reqCtx.ID()), reqCtx.PostBody())
 
-	g.delegate.OnClose(conn)
+	g.delegate.OnClose(conn.ConnID())
 
 	releaseConnInfo(connInfo)
 	releaseHttpConn(conn)
@@ -425,7 +396,7 @@ func (g *Gateway) websocketHandler(c net.Conn, meta *connInfo) {
 		wsConn.Set(k, v)
 	}
 
-	g.delegate.OnConnect(wsConn)
+	g.delegate.OnOpen(wsConn)
 
 	err = wsConn.registerDesc()
 	if err != nil {

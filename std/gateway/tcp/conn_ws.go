@@ -5,6 +5,7 @@ package tcpGateway
 
 import (
 	"encoding/binary"
+	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/pools"
 	"github.com/ronaksoft/ronykit/utils"
 	"net"
@@ -27,6 +28,10 @@ import (
    Auditor: Ehsan N. Moosa (E2)
    Copyright Ronak Software Group 2020
 */
+
+var (
+	_ ronykit.Conn = &websocketConn{}
+)
 
 // websocketConn
 type websocketConn struct {
@@ -119,7 +124,7 @@ func (wc *websocketConn) release(_ int) {
 	_ = wc.conn.Close()
 
 	if !wc.closed {
-		g.delegate.OnClose(wc)
+		g.delegate.OnClose(wc.connID)
 		wc.closed = true
 		wc.conn = nil
 	}
@@ -215,10 +220,22 @@ func (wc *websocketConn) SetClientIP(ip []byte) {
 	wc.clientIP = append(wc.clientIP[:0], ip...)
 }
 
+func (wc *websocketConn) Stream() bool {
+	return true
+}
+
+func (wc *websocketConn) Walk(f func(key string, val interface{}) bool) {
+	for k, v := range wc.kv {
+		if !f(k, v) {
+			return
+		}
+	}
+}
+
 // WriteBinary
 // Make sure you don't use payload after calling this function, because its underlying
 // array will be put back into the pool to be reused.
-func (wc *websocketConn) WriteBinary(streamID int64, payload []byte) error {
+func (wc *websocketConn) Write(streamID int64, payload []byte) error {
 	if wc == nil || wc.closed {
 		return ErrWriteToClosedConn
 	}
@@ -241,10 +258,6 @@ func (wc *websocketConn) WriteBinary(streamID int64, payload []byte) error {
 
 func (wc *websocketConn) Disconnect() {
 	wc.release(5)
-}
-
-func (wc *websocketConn) Persistent() bool {
-	return true
 }
 
 // writeRequest

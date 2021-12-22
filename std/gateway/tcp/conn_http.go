@@ -1,6 +1,7 @@
 package tcpGateway
 
 import (
+	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 	"mime/multipart"
@@ -16,7 +17,8 @@ import (
 */
 
 var (
-	strLocation = []byte(fasthttp.HeaderLocation)
+	_           ronykit.Conn = &httpConn{}
+	strLocation              = []byte(fasthttp.HeaderLocation)
 )
 
 // httpConn
@@ -27,6 +29,14 @@ type httpConn struct {
 	clientType []byte
 	mtx        utils.SpinLock
 	kv         map[string]interface{}
+}
+
+func (c *httpConn) Walk(f func(key string, val interface{}) bool) {
+	for k, v := range c.kv {
+		if !f(k, v) {
+			return
+		}
+	}
 }
 
 func (c *httpConn) Get(key string) interface{} {
@@ -67,7 +77,7 @@ func (c *httpConn) ReadHeader(key string) string {
 	return string(c.ctx.Request.Header.Peek(key))
 }
 
-func (c *httpConn) WriteBinary(streamID int64, data []byte) (err error) {
+func (c *httpConn) Write(streamID int64, data []byte) (err error) {
 	_, err = c.ctx.Write(data)
 
 	return err
@@ -93,7 +103,7 @@ func (c *httpConn) Body() []byte {
 	return c.ctx.PostBody()
 }
 
-func (c *httpConn) Persistent() bool {
+func (c *httpConn) Stream() bool {
 	return false
 }
 
