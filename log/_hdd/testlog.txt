@@ -1,8 +1,0 @@
-21-11-17T12:30:19	WARN	log/log_test.go:62	Log1
-21-11-17T12:30:19	INFO	log/log_test.go:63	Log2
-21-11-17T12:39:53	WARN	log/log_test.go:65	File Log1
-21-11-17T12:39:53	INFO	log/log_test.go:66	File Log2
-
-
-
-
