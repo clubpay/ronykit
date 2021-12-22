@@ -111,7 +111,7 @@ func (t *testGateway) Send(connID uint64, streamID int64, data []byte) error {
 
 func (t *testGateway) CloseConn(connID uint64) {
 	t.Lock()
-	_, ok := t.conns[connID]
+	_, ok := t.conns[connID] // nolint:ifshort
 	delete(t.conns, connID)
 	t.Unlock()
 
@@ -200,8 +200,7 @@ func (t testDispatcher) Serialize(conn ronykit.Conn, streamID int64, envelopes .
 
 func (t testDispatcher) Deserialize(conn ronykit.Conn, data []byte, f func(envelope ronykit.Envelope) error) error {
 	e := newEnvelope()
-	err := json.Unmarshal(data, e)
-	if err != nil {
+	if err := json.Unmarshal(data, e); err != nil {
 		return err
 	}
 

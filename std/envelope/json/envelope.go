@@ -1,7 +1,7 @@
 package json
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"sync"
 )

@@ -1,0 +1,26 @@
+linters:
+  enable-all: true
+  disable:
+    - scopelint
+    - wsl
+    - tparallel
+    - gomnd
+    - godox
+    - forcetypeassert
+    - gochecknoglobals
+    - paralleltest
+    - gochecknoinits
+    - testpackage
+    - nestif
+    - nakedret
+    - gocognit
+    - funlen
+    - gofumpt
+    - goimports
+    - godot
+    - gci
+    - gocyclo
+    - forbidigo
+    - dupl
+  fast: true
+
