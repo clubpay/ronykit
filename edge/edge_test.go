@@ -123,7 +123,7 @@ func (t *testGateway) CloseConn(connID uint64) {
 type testEnvelope struct {
 	sync.Mutex
 	Subject string
-	Body    json.RawMessage
+	Body    []byte
 	HDR     map[string]string
 }
 
@@ -263,7 +263,58 @@ func TestServer_RegisterGateway(t *testing.T) {
 			c.So(err, ShouldBeNil)
 
 			wg.Wait()
+			c.So(res.Subject, ShouldEqual, req.Subject)
+			c.So(res.Body, ShouldResemble, req.Body)
+
 			es.Shutdown()
 		})
 	})
+}
+
+func BenchmarkServer(b *testing.B) {
+	gw := newGateway()
+	es := edge.New(testRouter{}, nil)
+	es.RegisterGateway(gw, testDispatcher{})
+	es.Start()
+
+	reqStreamID := gofakeit.Int64()
+	req := newEnvelope()
+	req.Subject = "echo"
+	req.Body = []byte("This is some random data")
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	wg := sync.WaitGroup{}
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.RunParallel(
+		func(pb *testing.PB) {
+			for pb.Next() {
+				res := newEnvelope()
+
+				wg.Add(1)
+				connID := gw.OpenConn(false,
+					func(streamID int64, data []byte) {
+						err := json.Unmarshal(data, res)
+						if err != nil {
+							b.Fatal(err)
+						}
+
+						wg.Done()
+					},
+				)
+				err = gw.Send(connID, reqStreamID, reqBytes)
+				if err != nil {
+					b.Fatal(err)
+				}
+				gw.CloseConn(connID)
+			}
+		},
+	)
+
+	wg.Wait()
+
+	es.Shutdown()
 }

@@ -60,6 +60,7 @@ func (n *northBridge) acquireCtx(c ronykit.Conn, streamID int64) *RequestCtx {
 		ctx = &RequestCtx{}
 	}
 
+	ctx.nb = n
 	ctx.streamID = streamID
 	ctx.conn = c
 
