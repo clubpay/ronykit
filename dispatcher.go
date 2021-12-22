@@ -10,6 +10,7 @@ type Dispatcher interface {
 	// call are returned.
 	// NOTE: Implementer can re-use the Envelope when the function 'f' is returned.
 	Deserialize(conn Conn, data []byte, f func(envelope Envelope) error) error
-	// OnOpen will be called when a new connection has been opened
+	// OnOpen will be called when a new connection has been opened. This can be used to set up some internal
+	// states for the connection, or sending a handshake message to client.
 	OnOpen(conn Conn)
 }
