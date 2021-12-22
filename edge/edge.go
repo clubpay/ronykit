@@ -15,6 +15,15 @@ type Server struct {
 	nb []*northBridge
 }
 
+func New(r Router, ep ronykit.EnvelopePool) *Server {
+	s := &Server{
+		r:  r,
+		ep: ep,
+	}
+
+	return s
+}
+
 func (s *Server) RegisterGateway(
 	gw ronykit.Gateway, d ronykit.Dispatcher,
 ) {

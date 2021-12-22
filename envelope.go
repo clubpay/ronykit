@@ -16,6 +16,6 @@ type Envelope interface {
 }
 
 type EnvelopeHeader interface {
-	Get(key string) string
+	Get(key string) (string, bool)
 	Set(key, val string)
 }

@@ -35,15 +35,19 @@ func (n *northBridge) OnMessage(c ronykit.Conn, streamID int64, msg []byte) erro
 }
 
 func (n *northBridge) execute(ctx *RequestCtx, envelope ronykit.Envelope) error {
-	h, err := n.r.Route(envelope)
+	handlers, err := n.r.Route(envelope)
 	if err != nil {
 		return err
 	}
 
-	for {
-		h := h(ctx, envelope)
-		if h == nil || ctx.stopped {
-			break
+Loop:
+	for idx := range handlers {
+		h := handlers[idx]
+		for h != nil {
+			h = h(ctx, envelope)
+			if ctx.stopped {
+				break Loop
+			}
 		}
 	}
 
