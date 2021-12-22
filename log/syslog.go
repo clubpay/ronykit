@@ -1,9 +1,9 @@
 package log
 
 import (
+	"fmt"
 	"log/syslog"
 
-	"github.com/pkg/errors"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -56,7 +56,7 @@ func (s *syslogCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	// Generate the message.
 	buffer, err := s.encoder.EncodeEntry(entry, fields)
 	if err != nil {
-		return errors.Wrap(err, "failed to encode log entry")
+		return err
 	}
 	defer buffer.Free()
 
@@ -86,7 +86,7 @@ func (s *syslogCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 		return s.w.Crit(message)
 
 	default:
-		return errors.Errorf("unknown log level: %v", entry.Level)
+		return fmt.Errorf("unknown log level: %v", entry.Level)
 	}
 }
 
