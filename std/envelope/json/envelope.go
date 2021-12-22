@@ -1,9 +1,10 @@
 package json
 
 import (
+	"sync"
+
 	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
-	"sync"
 )
 
 type Envelope struct {

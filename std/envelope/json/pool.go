@@ -1,8 +1,9 @@
 package json
 
 import (
-	"github.com/ronaksoft/ronykit"
 	"sync"
+
+	"github.com/ronaksoft/ronykit"
 )
 
 type Pool struct {

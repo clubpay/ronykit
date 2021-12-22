@@ -3,12 +3,13 @@ package edge_test
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/edge"
 	. "github.com/smartystreets/goconvey/convey"
-	"sync"
-	"testing"
 )
 
 type testConn struct {

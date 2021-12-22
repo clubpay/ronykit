@@ -2,8 +2,9 @@ package tcpGateway
 
 import (
 	"bytes"
-	"github.com/ronaksoft/ronykit/utils"
 	"sync"
+
+	"github.com/ronaksoft/ronykit/utils"
 
 	"github.com/valyala/fasthttp"
 )

@@ -5,13 +5,14 @@ package tcpGateway
 
 import (
 	"encoding/binary"
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/pools"
-	"github.com/ronaksoft/ronykit/utils"
 	"net"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/pools"
+	"github.com/ronaksoft/ronykit/utils"
 
 	"github.com/allegro/bigcache/v2"
 	"github.com/gobwas/ws"

@@ -2,6 +2,11 @@ package tcpGateway
 
 import (
 	"fmt"
+	"net"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/gobwas/ws"
 	"github.com/mailru/easygo/netpoll"
 	"github.com/panjf2000/ants/v2"
@@ -13,10 +18,6 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
-	"net"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 /*

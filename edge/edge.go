@@ -1,10 +1,11 @@
 package edge
 
 import (
-	"github.com/ronaksoft/ronykit"
 	"os"
 	"os/signal"
 	"sync"
+
+	"github.com/ronaksoft/ronykit"
 )
 
 type Handler func(ctx *RequestCtx, envelope ronykit.Envelope) Handler
