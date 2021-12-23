@@ -11,29 +11,24 @@ import (
 type Handler func(ctx *RequestCtx, envelope ronykit.Envelope) Handler
 
 type Server struct {
-	ep ronykit.EnvelopePool
-	r  Router
 	nb []*northBridge
 }
 
-func New(r Router, ep ronykit.EnvelopePool) *Server {
-	s := &Server{
-		r:  r,
-		ep: ep,
-	}
+func New() *Server {
+	s := &Server{}
 
 	return s
 }
 
 func (s *Server) RegisterGateway(
-	gw ronykit.Gateway, d ronykit.Dispatcher,
+	gw ronykit.Gateway, b Bundle,
 ) {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
-		r:       s.r,
-		ep:      s.ep,
+		r:       b.Router,
+		ep:      b.EnvelopePool,
 		gw:      gw,
-		d:       d,
+		d:       b.Dispatcher,
 	}
 	s.nb = append(s.nb, nb)
 

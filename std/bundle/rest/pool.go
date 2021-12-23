@@ -1,4 +1,4 @@
-package json
+package rest
 
 import (
 	"sync"
@@ -6,15 +6,13 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-type Pool struct {
+type pool struct {
 	p sync.Pool
 }
 
-func NewPool() *Pool {
-	return &Pool{}
-}
+var envelopePool = &pool{}
 
-func (p *Pool) Get() ronykit.Envelope {
+func (p *pool) Get() *Envelope {
 	e, ok := p.p.Get().(*Envelope)
 	if !ok {
 		e = NewEnvelope()
@@ -23,7 +21,7 @@ func (p *Pool) Get() ronykit.Envelope {
 	return e
 }
 
-func (p *Pool) Release(envelope ronykit.Envelope) {
+func (p *pool) Release(envelope ronykit.Envelope) {
 	e, ok := envelope.(*Envelope)
 	if !ok {
 		return

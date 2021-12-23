@@ -8,14 +8,16 @@ type EnvelopePool interface {
 
 type Envelope interface {
 	sync.Locker // To inform linter Envelope must not be copied.
-	Header() EnvelopeHeader
-	SetSubject(string)
-	GetSubject() string
-	SetBody([]byte)
-	GetBody() []byte
+	GetHeader() EnvelopeHeader
+	GetMessage() Message
 }
 
 type EnvelopeHeader interface {
-	Get(key string) (string, bool)
-	Set(key, val string)
+	Get(key string) (interface{}, bool)
+	Set(key string, val interface{})
+}
+
+type Message interface {
+	Marshal() ([]byte, error)
+	Unmarshal(data []byte) error
 }

@@ -123,18 +123,27 @@ func (t *testGateway) CloseConn(connID uint64) {
 
 type testEnvelope struct {
 	sync.Mutex
-	Subject string
-	Body    []byte
-	HDR     map[string]string
+	Body []byte
+	HDR  map[string]interface{}
+}
+
+func (t *testEnvelope) Marshal() ([]byte, error) {
+	return t.Body, nil
+}
+
+func (t *testEnvelope) Unmarshal(data []byte) error {
+	t.Body = data
+
+	return nil
 }
 
 func newEnvelope() *testEnvelope {
 	return &testEnvelope{
-		HDR: map[string]string{},
+		HDR: map[string]interface{}{},
 	}
 }
 
-func (t *testEnvelope) Get(key string) (string, bool) {
+func (t *testEnvelope) Get(key string) (interface{}, bool) {
 	t.Lock()
 	x, ok := t.HDR[key]
 	t.Unlock()
@@ -142,30 +151,18 @@ func (t *testEnvelope) Get(key string) (string, bool) {
 	return x, ok
 }
 
-func (t *testEnvelope) Set(key, val string) {
+func (t *testEnvelope) Set(key string, val interface{}) {
 	t.Lock()
 	t.HDR[key] = val
 	t.Unlock()
 }
 
-func (t *testEnvelope) Header() ronykit.EnvelopeHeader {
+func (t *testEnvelope) GetHeader() ronykit.EnvelopeHeader {
 	return t
 }
 
-func (t *testEnvelope) SetSubject(s string) {
-	t.Subject = s
-}
-
-func (t *testEnvelope) GetSubject() string {
-	return t.Subject
-}
-
-func (t *testEnvelope) SetBody(bytes []byte) {
-	t.Body = bytes
-}
-
-func (t *testEnvelope) GetBody() []byte {
-	return t.Body
+func (t *testEnvelope) GetMessage() ronykit.Message {
+	return t
 }
 
 type testEnvelopeContainer struct {
@@ -216,7 +213,11 @@ type testRouter struct{}
 
 func (t testRouter) Route(envelope ronykit.Envelope) ([]edge.Handler, error) {
 	var handlers []edge.Handler
-	switch envelope.GetSubject() {
+	cmd, ok := envelope.GetHeader().Get("cmd")
+	if !ok {
+		return nil, fmt.Errorf("cmd not found in the header")
+	}
+	switch cmd {
 	case "echo":
 		handlers = append(handlers, echoHandler)
 	default:
@@ -236,13 +237,19 @@ func TestServer_RegisterGateway(t *testing.T) {
 	Convey("Edge Server Tests", t, func(c C) {
 		Convey("RegisterGateway", func(c C) {
 			gw := newGateway()
-			es := edge.New(testRouter{}, nil)
-			es.RegisterGateway(gw, testDispatcher{})
+			es := edge.New()
+			es.RegisterGateway(
+				gw,
+				edge.Bundle{
+					Dispatcher: testDispatcher{},
+					Router:     testRouter{},
+				},
+			)
 			es.Start()
 
 			reqStreamID := gofakeit.Int64()
 			req := newEnvelope()
-			req.Subject = "echo"
+			req.HDR["cmd"] = "echo"
 			req.Body = []byte("This is some random data")
 			reqBytes, err := json.Marshal(req)
 			c.So(err, ShouldBeNil)
@@ -263,7 +270,7 @@ func TestServer_RegisterGateway(t *testing.T) {
 			c.So(err, ShouldBeNil)
 
 			wg.Wait()
-			c.So(res.Subject, ShouldEqual, req.Subject)
+			c.So(res.HDR["cmd"], ShouldEqual, req.HDR["cmd"])
 			c.So(res.Body, ShouldResemble, req.Body)
 
 			es.Shutdown()
@@ -273,13 +280,19 @@ func TestServer_RegisterGateway(t *testing.T) {
 
 func BenchmarkServer(b *testing.B) {
 	gw := newGateway()
-	es := edge.New(testRouter{}, nil)
-	es.RegisterGateway(gw, testDispatcher{})
+	es := edge.New()
+	es.RegisterGateway(
+		gw,
+		edge.Bundle{
+			Dispatcher: testDispatcher{},
+			Router:     testRouter{},
+		},
+	)
 	es.Start()
 
 	reqStreamID := gofakeit.Int64()
 	req := newEnvelope()
-	req.Subject = "echo"
+	req.HDR["cmd"] = "echo"
 	req.Body = []byte("This is some random data")
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
