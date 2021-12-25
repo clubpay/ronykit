@@ -1,10 +1,11 @@
 package ronykit
 
 import (
-	"github.com/ronaksoft/ronykit/log"
 	"os"
 	"os/signal"
 	"sync"
+
+	"github.com/ronaksoft/ronykit/log"
 )
 
 type (

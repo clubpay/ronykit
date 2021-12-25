@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"syscall"
+
 	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
-	"syscall"
 
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 	tcpGateway "github.com/ronaksoft/ronykit/std/gateway/tcp"

@@ -1,8 +1,9 @@
 package ronykit
 
 import (
-	"github.com/ronaksoft/ronykit/utils"
 	"sync"
+
+	"github.com/ronaksoft/ronykit/utils"
 )
 
 type Context struct {
