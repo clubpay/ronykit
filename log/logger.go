@@ -204,6 +204,9 @@ func (l *ronyLogger) Check(lvl Level, msg string) *CheckedEntry {
 }
 
 func (l *ronyLogger) Debug(msg string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	if !l.checkLevel(DebugLevel) {
 		return
 	}
@@ -213,6 +216,9 @@ func (l *ronyLogger) Debug(msg string, fields ...Field) {
 }
 
 func (l *ronyLogger) Info(msg string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	if !l.checkLevel(InfoLevel) {
 		return
 	}
@@ -222,6 +228,9 @@ func (l *ronyLogger) Info(msg string, fields ...Field) {
 }
 
 func (l *ronyLogger) Warn(msg string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	if !l.checkLevel(WarnLevel) {
 		return
 	}
@@ -231,6 +240,9 @@ func (l *ronyLogger) Warn(msg string, fields ...Field) {
 }
 
 func (l *ronyLogger) Error(msg string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	if !l.checkLevel(ErrorLevel) {
 		return
 	}
@@ -240,6 +252,9 @@ func (l *ronyLogger) Error(msg string, fields ...Field) {
 }
 
 func (l *ronyLogger) Fatal(msg string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	l.z.Fatal(l.addPrefix(msg), fields...)
 }
 

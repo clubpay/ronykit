@@ -22,7 +22,9 @@ type Server struct {
 }
 
 func NewServer(opts ...Option) *Server {
-	s := &Server{}
+	s := &Server{
+		l: log.NopLogger,
+	}
 	for _, opt := range opts {
 		opt(s)
 	}
