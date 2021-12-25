@@ -435,7 +435,7 @@ func (g *Gateway) websocketReadPump(wc *websocketConn, wg *sync.WaitGroup) (err 
 			_ = goPoolB.Submit(
 				func(idx int) func() {
 					return func() {
-						g.delegate.OnMessage(wc, 0, ms[idx].Payload)
+						_ = g.delegate.OnMessage(wc, 0, ms[idx].Payload)
 						pools.Bytes.Put(ms[idx].Payload)
 						wg.Done()
 					}

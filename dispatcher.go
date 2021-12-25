@@ -1,8 +1,8 @@
 package ronykit
 
 type (
-	FlushFunc    func(m Message) error
-	ExecuteFunc  func(m Message, flush FlushFunc, handlers ...Handler)
+	WriteFunc    func(m Message) error
+	ExecuteFunc  func(m Message, wf WriteFunc, handlers ...Handler)
 	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
 )
 

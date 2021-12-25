@@ -14,7 +14,7 @@ type Context struct {
 	nb       *northBridge
 	kv       map[string]interface{}
 	in       Message
-	flusher  FlushFunc
+	flusher  WriteFunc
 	stopped  bool
 }
 

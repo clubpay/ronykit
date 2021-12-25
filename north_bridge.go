@@ -37,7 +37,7 @@ func (n *northBridge) OnMessage(c Conn, streamID int64, msg []byte) error {
 	ctx := acquireCtx(c, streamID)
 	err := dispatchFunc(
 		ctx,
-		func(m Message, flusher FlushFunc, handlers ...Handler) {
+		func(m Message, flusher WriteFunc, handlers ...Handler) {
 			ctx.in = m
 			ctx.flusher = flusher
 		Loop:
