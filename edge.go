@@ -46,6 +46,7 @@ func (s *Server) Start() {
 	for idx := range s.nb {
 		s.nb[idx].gw.Start()
 	}
+	s.l.Debug("server started.")
 }
 
 func (s *Server) Shutdown(signals ...os.Signal) {

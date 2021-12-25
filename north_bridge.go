@@ -27,6 +27,7 @@ func (n *northBridge) OnMessage(c Conn, streamID int64, msg []byte) error {
 			zap.Uint64("ConnID", c.ConnID()),
 		)
 	}
+
 	dispatchFunc := n.d.Dispatch(c, streamID, msg)
 	if dispatchFunc == nil {
 		return nil

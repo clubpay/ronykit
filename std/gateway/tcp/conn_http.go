@@ -88,15 +88,15 @@ func (c *httpConn) WriteHeader(key, value string) {
 	c.ctx.Response.Header.Add(key, value)
 }
 
-func (c *httpConn) MultiPart() (*multipart.Form, error) {
+func (c *httpConn) Form() (*multipart.Form, error) {
 	return c.ctx.MultipartForm()
 }
 
-func (c *httpConn) Method() string {
+func (c *httpConn) GetMethod() string {
 	return utils.B2S(c.ctx.Method())
 }
 
-func (c *httpConn) Path() string {
+func (c *httpConn) GetPath() string {
 	return utils.B2S(c.ctx.Request.URI().PathOriginal())
 }
 

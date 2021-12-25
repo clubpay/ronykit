@@ -51,8 +51,8 @@ func main() {
 				RandomID: req.RandomID,
 			}
 
-			fmt.Println(req)
-			fmt.Println(res)
+			fmt.Println("Req:", req)
+			fmt.Println("Res:", res)
 			_ = ctx.Send(res)
 
 			return nil
