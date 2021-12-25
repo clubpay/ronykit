@@ -11,6 +11,5 @@ type Dispatcher interface {
 }
 
 type Message interface {
-	Unmarshal([]byte) error
 	Marshal() ([]byte, error)
 }

@@ -1,10 +1,11 @@
 package ronykit_test
 
 import (
+	"testing"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ronaksoft/ronykit"
 	. "github.com/smartystreets/goconvey/convey"
-	"testing"
 )
 
 type testConn struct {
