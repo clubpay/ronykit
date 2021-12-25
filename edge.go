@@ -32,6 +32,7 @@ func NewServer(opts ...Option) *Server {
 func (s *Server) Register(b Bundle) {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
+		l:       s.l,
 		gw:      b.Gateway(),
 		d:       b.Dispatcher(),
 	}
