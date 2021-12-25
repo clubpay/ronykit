@@ -1,32 +1,43 @@
 package ronykit
 
 import (
+	"github.com/ronaksoft/ronykit/log"
 	"os"
 	"os/signal"
 	"sync"
 )
 
-type Handler func(ctx *Context) Handler
+type (
+	Handler func(ctx *Context) Handler
+	Bundle  interface {
+		Gateway() Gateway
+		Dispatcher() Dispatcher
+	}
+)
 
 type Server struct {
 	nb []*northBridge
+	l  log.Logger
 }
 
-func NewServer() *Server {
+func NewServer(opts ...Option) *Server {
 	s := &Server{}
+	for _, opt := range opts {
+		opt(s)
+	}
 
 	return s
 }
 
-func (s *Server) RegisterGateway(gw Gateway, d Dispatcher) {
+func (s *Server) Register(b Bundle) {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
-		gw:      gw,
-		d:       d,
+		gw:      b.Gateway(),
+		d:       b.Dispatcher(),
 	}
 	s.nb = append(s.nb, nb)
 
-	gw.Subscribe(nb)
+	b.Gateway().Subscribe(nb)
 }
 
 func (s *Server) Start() {

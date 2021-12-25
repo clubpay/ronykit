@@ -9,3 +9,8 @@ type (
 type Dispatcher interface {
 	Dispatch(conn Conn, streamID int64, in []byte) DispatchFunc
 }
+
+type Message interface {
+	Unmarshal([]byte) error
+	Marshal() ([]byte, error)
+}

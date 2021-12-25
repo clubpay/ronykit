@@ -183,6 +183,9 @@ func (l *ronyLogger) ErrorOnErr(guideTxt string, err error, fields ...Field) {
 }
 
 func (l *ronyLogger) checkLevel(lvl Level) bool {
+	if l == nil {
+		return false
+	}
 	// Check the level first to reduce the cost of disabled log calls.
 	// Since Panic and higher may exit, we skip the optimization for those levels.
 	if lvl < zapcore.DPanicLevel && !l.z.Core().Enabled(lvl) {

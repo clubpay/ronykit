@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/ronaksoft/ronykit"
+	tcpGateway "github.com/ronaksoft/ronykit/std/gateway/tcp"
 )
 
 var (
@@ -10,16 +11,35 @@ var (
 	ErrRouteNotFound      = fmt.Errorf("route not found")
 )
 
+type (
+	ParamsGetter interface {
+		Get(key string) interface{}
+	}
+	DecoderFunc func(bag ParamsGetter, data []byte) ronykit.Message
+)
+
 type rest struct {
-	routes map[string]*trie
+	gw      *tcpGateway.Gateway
+	routes  map[string]*trie
+	decoder DecoderFunc
 }
 
-func New() *rest {
+func New(gatewayConfig tcpGateway.Config, opts ...Option) (*rest, error) {
 	r := &rest{
 		routes: map[string]*trie{},
 	}
 
-	return r
+	var err error
+	r.gw, err = tcpGateway.New(gatewayConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, opt := range opts {
+		opt(r)
+	}
+
+	return r, nil
 }
 
 func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
@@ -43,10 +63,17 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 			return err
 		}
 
-		// TODO:: we need to extract 'm' from 'in'. Or just pass byte slice ?!!
-		execFunc(nil, flushFunc, handlers...)
+		execFunc(r.decoder(conn, in), flushFunc, handlers...)
 
 		return nil
 	}
 
+}
+
+func (r rest) Gateway() ronykit.Gateway {
+	return r.gw
+}
+
+func (r *rest) Dispatcher() ronykit.Dispatcher {
+	return r
 }
