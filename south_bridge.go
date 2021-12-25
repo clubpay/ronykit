@@ -1,3 +1,3 @@
-package edge
+package ronykit
 
 type southBridge struct{}

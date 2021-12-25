@@ -1,34 +1,28 @@
-package edge
+package ronykit
 
 import (
 	"os"
 	"os/signal"
 	"sync"
-
-	"github.com/ronaksoft/ronykit"
 )
 
-type Handler func(ctx *RequestCtx, envelope ronykit.Envelope) Handler
+type Handler func(ctx *Context) Handler
 
 type Server struct {
 	nb []*northBridge
 }
 
-func New() *Server {
+func NewServer() *Server {
 	s := &Server{}
 
 	return s
 }
 
-func (s *Server) RegisterGateway(
-	gw ronykit.Gateway, b Bundle,
-) {
+func (s *Server) RegisterGateway(gw Gateway, d Dispatcher) {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
-		r:       b.Router,
-		ep:      b.EnvelopePool,
 		gw:      gw,
-		d:       b.Dispatcher,
+		d:       d,
 	}
 	s.nb = append(s.nb, nb)
 

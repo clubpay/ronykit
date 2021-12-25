@@ -18,5 +18,7 @@ type Conn interface {
 type REST interface {
 	GetMethod() string
 	GetPath() string
+	GetPathParam(key string) string
+	GetQueryParam(key string) string
 	Form() (*multipart.Form, error)
 }

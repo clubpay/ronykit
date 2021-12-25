@@ -2,43 +2,9 @@ package rest
 
 import (
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/edge"
 	"sort"
 	"strings"
 )
-
-type Router struct {
-	routes map[string]*trie
-}
-
-func (r *Router) Route(envelope ronykit.Envelope) ([]edge.Handler, error) {
-	e := envelope.(*Envelope)
-	route := r.routes[strings.ToUpper(e.Method())]
-	if route == nil {
-		return nil, ErrRouteNotFound
-	}
-
-	n := route.Search(e.Path(), envelope.GetHeader())
-	if n == nil {
-		return nil, ErrRouteNotFound
-	}
-
-	return n.Handlers, nil
-}
-
-func (r *Router) Set(method, path string, f []edge.Handler) {
-	method = strings.ToUpper(method)
-	if r.routes == nil {
-		r.routes = make(map[string]*trie)
-	}
-	if _, ok := r.routes[method]; !ok {
-		r.routes[method] = &trie{
-			root:            newTrieNode(),
-			hasRootWildcard: false,
-		}
-	}
-	r.routes[method].Insert(path, WithTag(method), WithHandler(f))
-}
 
 const (
 	// paramStart is the character, as a string, which a path pattern starts to define its named parameter.
@@ -50,6 +16,34 @@ const (
 	//find the closest wildcard path(super and unique).
 	wildcardParamStart = "*"
 )
+
+func (r *rest) route(method, path string, ps ParamsSetter) ([]ronykit.Handler, error) {
+	route := r.routes[method]
+	if route == nil {
+		return nil, ErrRouteNotFound
+	}
+
+	n := route.Search(path, ps)
+	if n == nil {
+		return nil, ErrRouteNotFound
+	}
+
+	return n.Handlers, nil
+}
+
+func (r *rest) Set(method, path string, handlers ...ronykit.Handler) {
+	method = strings.ToUpper(method)
+	if r.routes == nil {
+		r.routes = make(map[string]*trie)
+	}
+	if _, ok := r.routes[method]; !ok {
+		r.routes[method] = &trie{
+			root:            newTrieNode(),
+			hasRootWildcard: false,
+		}
+	}
+	r.routes[method].Insert(path, WithTag(method), WithHandler(handlers))
+}
 
 // trie contains the main logic for adding and searching nodes for path segments.
 // It supports wildcard and named path parameters.
@@ -73,7 +67,7 @@ type trie struct {
 type InsertOption func(*trieNode)
 
 // WithHandler sets the node's `Handler` field (useful for HTTP).
-func WithHandler(handlers []edge.Handler) InsertOption {
+func WithHandler(handlers []ronykit.Handler) InsertOption {
 	if handlers == nil {
 		panic("empty handler in ")
 	}
@@ -136,7 +130,7 @@ func resolveStaticPart(key string) string {
 	return key[:i]
 }
 
-func (t *trie) insert(key, tag string, optionalData interface{}, handlers []edge.Handler) *trieNode {
+func (t *trie) insert(key, tag string, optionalData interface{}, handlers []ronykit.Handler) *trieNode {
 	input := slowPathSplit(key)
 
 	n := t.root
@@ -336,7 +330,7 @@ type trieNode struct {
 	staticKey string
 
 	// insert main data relative to http and a tag for things like route names.
-	Handlers []edge.Handler
+	Handlers []ronykit.Handler
 	Tag      string
 
 	// other insert data.
