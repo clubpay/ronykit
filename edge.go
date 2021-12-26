@@ -44,15 +44,17 @@ func (s *Server) Register(b Bundle) {
 	b.Gateway().Subscribe(nb)
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() *Server {
 	// Start all the registered gateways
 	for idx := range s.nb {
 		s.nb[idx].gw.Start()
 	}
 	s.l.Debug("server started.")
+
+	return s
 }
 
-func (s *Server) Shutdown(signals ...os.Signal) {
+func (s *Server) Shutdown(signals ...os.Signal) *Server {
 	if len(signals) > 0 {
 		// Create a signal channel and bind it to all the os signals in the arg
 		shutdownChan := make(chan os.Signal, 1)
@@ -66,4 +68,6 @@ func (s *Server) Shutdown(signals ...os.Signal) {
 	for idx := range s.nb {
 		s.nb[idx].gw.Shutdown()
 	}
+
+	return s
 }

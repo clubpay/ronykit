@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"syscall"
 
 	"github.com/goccy/go-json"
@@ -15,7 +14,7 @@ import (
 )
 
 func main() {
-	bundle, err := rest.New(
+	restServer, err := rest.New(
 		tcpGateway.Config{
 			Concurrency:   100,
 			ListenAddress: "0.0.0.0:80",
@@ -25,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	bundle.Set(
+	restServer.Set(
 		fasthttp.MethodGet, "/echo/:randomID",
 		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
 			m := &echoRequest{}
@@ -50,24 +49,18 @@ func main() {
 				RandomID: req.RandomID,
 			}
 
-			fmt.Println("Req:", req)
-			fmt.Println("Res:", res)
 			_ = ctx.Send(res)
 
 			return nil
 		},
 	)
 
-	s := ronykit.NewServer(
+	ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
-		ronykit.RegisterBundle(bundle),
-	)
-
-	// Start the server
-	s.Start()
-
-	// Wait for signal to shut down
-	s.Shutdown(syscall.SIGHUP)
+		ronykit.RegisterBundle(restServer),
+	).
+		Start().
+		Shutdown(syscall.SIGHUP)
 }
 
 type errorMessage struct {
