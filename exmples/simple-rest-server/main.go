@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/goccy/go-json"
 	"syscall"
 
 	"github.com/ronaksoft/ronykit"
@@ -83,6 +84,38 @@ func main() {
 
 			res := &sumResponse{
 				Val: req.Val1 + req.Val2,
+			}
+
+			_ = ctx.Send(res)
+
+			return nil
+		},
+	)
+
+	restBundle.Set(
+		fasthttp.MethodPost, "/echo",
+		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
+			m := &echoRequest{}
+			err := json.Unmarshal(data, m)
+			if err != nil {
+				return nil
+			}
+
+			return m
+		},
+		func(ctx *ronykit.Context) ronykit.Handler {
+			req, ok := ctx.Receive().(*echoRequest)
+			if !ok {
+				_ = ctx.Send(
+					&errorMessage{
+						Code:    "E01",
+						Message: "Request was not echoRequest",
+					},
+				)
+			}
+
+			res := &echoResponse{
+				RandomID: req.RandomID,
 			}
 
 			_ = ctx.Send(res)
