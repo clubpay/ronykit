@@ -57,19 +57,29 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 		return nil
 	}
 
-	writeFunc := func(m ronykit.Message) error {
-		data, err := m.Marshal()
-		if err != nil {
-			return err
-		}
-
-		return conn.Write(streamID, data)
-	}
-
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		nodeData, err := r.route(rc.GetMethod(), rc.GetPath(), conn)
 		if err != nil {
 			return err
+		}
+
+		writeFunc := func(m ronykit.Message) error {
+			data, err := m.Marshal()
+			if err != nil {
+				return err
+			}
+
+			ctx.Walk(
+				func(key string, val interface{}) bool {
+					if v, ok := val.(string); ok {
+						rc.WriteHeader(key, v)
+					}
+					
+					return true
+				},
+			)
+
+			return conn.Write(streamID, data)
 		}
 
 		execFunc(nodeData.decoder(conn, in), writeFunc, nodeData.handlers...)

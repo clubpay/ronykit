@@ -92,6 +92,7 @@ func main() {
 		},
 	)
 
+	// Implement Echo with POST request
 	restBundle.Set(
 		fasthttp.MethodPost, "/echo",
 		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
@@ -114,6 +115,7 @@ func main() {
 				)
 			}
 
+			ctx.Set("Content-Type", "application/json")
 			res := &echoResponse{
 				RandomID: req.RandomID,
 			}

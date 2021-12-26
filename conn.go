@@ -19,4 +19,5 @@ type REST interface {
 	GetMethod() string
 	GetPath() string
 	Form() (*multipart.Form, error)
+	WriteHeader(key, val string)
 }
