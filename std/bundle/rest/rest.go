@@ -20,9 +20,8 @@ type (
 )
 
 type rest struct {
-	gw      *tcpGateway.Gateway
-	routes  map[string]*trie
-	decoder DecoderFunc
+	gw     *tcpGateway.Gateway
+	routes map[string]*trie
 }
 
 func New(gatewayConfig tcpGateway.Config, opts ...Option) (*rest, error) {
@@ -59,12 +58,12 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		handlers, err := r.route(rc.GetMethod(), rc.GetPath(), conn)
+		nodeData, err := r.route(rc.GetMethod(), rc.GetPath(), conn)
 		if err != nil {
 			return err
 		}
 
-		execFunc(r.decoder(conn, in), flushFunc, handlers...)
+		execFunc(nodeData.decoder(conn, in), flushFunc, nodeData.handlers...)
 
 		return nil
 	}

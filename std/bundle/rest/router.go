@@ -18,7 +18,12 @@ const (
 	wildcardParamStart = "*"
 )
 
-func (r *rest) route(method, path string, ps ParamsSetter) ([]ronykit.Handler, error) {
+type nodeData struct {
+	handlers []ronykit.Handler
+	decoder  DecoderFunc
+}
+
+func (r *rest) route(method, path string, ps ParamsSetter) (*nodeData, error) {
 	route := r.routes[method]
 	if route == nil {
 		return nil, ErrRouteNotFound
@@ -29,10 +34,10 @@ func (r *rest) route(method, path string, ps ParamsSetter) ([]ronykit.Handler, e
 		return nil, ErrRouteNotFound
 	}
 
-	return n.Handlers, nil
+	return n.Data, nil
 }
 
-func (r *rest) Set(method, path string, handlers ...ronykit.Handler) {
+func (r *rest) Set(method, path string, decoder DecoderFunc, handlers ...ronykit.Handler) {
 	method = strings.ToUpper(method)
 	if r.routes == nil {
 		r.routes = make(map[string]*trie)
@@ -43,7 +48,15 @@ func (r *rest) Set(method, path string, handlers ...ronykit.Handler) {
 			hasRootWildcard: false,
 		}
 	}
-	r.routes[method].Insert(path, WithTag(method), WithHandler(handlers))
+	r.routes[method].Insert(
+		path, WithTag(method),
+		WithHandler(
+			&nodeData{
+				handlers: handlers,
+				decoder:  decoder,
+			},
+		),
+	)
 }
 
 // trie contains the main logic for adding and searching nodes for path segments.
@@ -68,14 +81,14 @@ type trie struct {
 type InsertOption func(*trieNode)
 
 // WithHandler sets the node's `Handler` field (useful for HTTP).
-func WithHandler(handlers []ronykit.Handler) InsertOption {
-	if handlers == nil {
-		panic("empty handler in ")
+func WithHandler(data *nodeData) InsertOption {
+	if data == nil {
+		panic("data is empty")
 	}
 
 	return func(n *trieNode) {
-		if n.Handlers == nil {
-			n.Handlers = handlers
+		if n.Data == nil {
+			n.Data = data
 		}
 	}
 }
@@ -95,7 +108,7 @@ func (t *trie) Insert(pattern string, options ...InsertOption) {
 		panic("muxie/trie#Insert: empty pattern")
 	}
 
-	n := t.insert(pattern, "", nil, nil)
+	n := t.insert(pattern, "", nil)
 	for _, opt := range options {
 		opt(n)
 	}
@@ -131,7 +144,7 @@ func resolveStaticPart(key string) string {
 	return key[:i]
 }
 
-func (t *trie) insert(key, tag string, optionalData interface{}, handlers []ronykit.Handler) *trieNode {
+func (t *trie) insert(key, tag string, data *nodeData) *trieNode {
 	input := slowPathSplit(key)
 
 	n := t.root
@@ -172,8 +185,7 @@ func (t *trie) insert(key, tag string, optionalData interface{}, handlers []rony
 	}
 
 	n.Tag = tag
-	n.Handlers = handlers
-	n.Data = optionalData
+	n.Data = data
 
 	n.paramKeys = paramKeys
 	n.key = key
@@ -331,11 +343,8 @@ type trieNode struct {
 	staticKey string
 
 	// insert main data relative to http and a tag for things like route names.
-	Handlers []ronykit.Handler
-	Tag      string
-
-	// other insert data.
-	Data interface{}
+	Data *nodeData
+	Tag  string
 }
 
 // newTrieNode returns a new, empty, trieNode.

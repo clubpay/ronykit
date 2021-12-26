@@ -20,16 +20,6 @@ func main() {
 			Concurrency:   100,
 			ListenAddress: "0.0.0.0:80",
 		},
-		rest.WithDecoder(
-			func(bag rest.ParamsGetter, data []byte) ronykit.Message {
-				m := &echoRequest{}
-				if randomID, ok := bag.Get("randomID").(string); ok {
-					m.RandomID = utils.StrToInt64(randomID)
-				}
-
-				return m
-			},
-		),
 	)
 	if err != nil {
 		panic(err)
@@ -37,6 +27,14 @@ func main() {
 
 	bundle.Set(
 		fasthttp.MethodGet, "/echo/:randomID",
+		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
+			m := &echoRequest{}
+			if randomID, ok := bag.Get("randomID").(string); ok {
+				m.RandomID = utils.StrToInt64(randomID)
+			}
+
+			return m
+		},
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*echoRequest)
 			if !ok {
