@@ -39,7 +39,7 @@ func (n *northBridge) OnMessage(c Conn, streamID int64, msg []byte) error {
 		ctx,
 		func(m Message, flusher WriteFunc, handlers ...Handler) {
 			ctx.in = m
-			ctx.flusher = flusher
+			ctx.writeFunc = flusher
 		Loop:
 			for idx := range handlers {
 				h := handlers[idx]

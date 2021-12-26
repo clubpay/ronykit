@@ -9,13 +9,14 @@ import (
 type Context struct {
 	utils.SpinLock
 
-	streamID int64
-	conn     Conn
-	nb       *northBridge
-	kv       map[string]interface{}
-	in       Message
-	flusher  WriteFunc
-	stopped  bool
+	streamID  int64
+	conn      Conn
+	err       error
+	nb        *northBridge
+	kv        map[string]interface{}
+	in        Message
+	writeFunc WriteFunc
+	stopped   bool
 }
 
 func (ctx *Context) Set(key string, val interface{}) {
@@ -44,8 +45,20 @@ func (ctx *Context) Receive() Message {
 	return ctx.in
 }
 
-func (ctx *Context) Send(m Message) error {
-	return ctx.flusher(m)
+func (ctx *Context) Send(m Message) {
+	ctx.writeFunc(m)
+}
+
+func (ctx *Context) RestConn() (REST, bool) {
+	rc, ok := ctx.conn.(REST)
+
+	return rc, ok
+}
+
+func (ctx *Context) Error(err error) {
+	if err != nil {
+		ctx.err = err
+	}
 }
 
 // StopExecution stops the execution of the next handlers.
@@ -75,7 +88,7 @@ func releaseCtx(ctx *Context) {
 	}
 	ctx.streamID = 0
 	ctx.stopped = false
-
+	ctx.err = nil
 	ctxPool.Put(ctx)
 
 	return

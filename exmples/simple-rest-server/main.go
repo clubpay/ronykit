@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/goccy/go-json"
 	"syscall"
+
+	"github.com/goccy/go-json"
 
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/log"
@@ -39,19 +40,21 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*echoRequest)
 			if !ok {
-				_ = ctx.Send(
+				ctx.Send(
 					&errorMessage{
 						Code:    "E01",
 						Message: "Request was not echoRequest",
 					},
 				)
+
+				return nil
 			}
 
 			res := &echoResponse{
 				RandomID: req.RandomID,
 			}
 
-			_ = ctx.Send(res)
+			ctx.Send(res)
 
 			return nil
 		},
@@ -74,19 +77,21 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*sumRequest)
 			if !ok {
-				_ = ctx.Send(
+				ctx.Send(
 					&errorMessage{
 						Code:    "E01",
 						Message: "Request was not echoRequest",
 					},
 				)
+
+				return nil
 			}
 
 			res := &sumResponse{
 				Val: req.Val1 + req.Val2,
 			}
 
-			_ = ctx.Send(res)
+			ctx.Send(res)
 
 			return nil
 		},
@@ -107,12 +112,14 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*echoRequest)
 			if !ok {
-				_ = ctx.Send(
+				ctx.Send(
 					&errorMessage{
 						Code:    "E01",
 						Message: "Request was not echoRequest",
 					},
 				)
+
+				return nil
 			}
 
 			ctx.Set("Content-Type", "application/json")
@@ -120,7 +127,7 @@ func main() {
 				RandomID: req.RandomID,
 			}
 
-			_ = ctx.Send(res)
+			ctx.Send(res)
 
 			return nil
 		},

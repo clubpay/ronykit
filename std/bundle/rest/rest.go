@@ -17,7 +17,6 @@ type (
 	ParamsSetter interface {
 		Set(string, interface{})
 	}
-
 	// ParamsGetter is the interface which is used on the DecoderFunc to get the extracted data
 	// from path parameters.
 	ParamsGetter interface {
@@ -63,10 +62,10 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 			return err
 		}
 
-		writeFunc := func(m ronykit.Message) error {
+		writeFunc := func(m ronykit.Message) {
 			data, err := m.Marshal()
 			if err != nil {
-				return err
+				ctx.Error(err)
 			}
 
 			ctx.Walk(
@@ -74,12 +73,12 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 					if v, ok := val.(string); ok {
 						rc.WriteHeader(key, v)
 					}
-					
+
 					return true
 				},
 			)
 
-			return conn.Write(streamID, data)
+			ctx.Error(conn.Write(streamID, data))
 		}
 
 		execFunc(nodeData.decoder(conn, in), writeFunc, nodeData.handlers...)

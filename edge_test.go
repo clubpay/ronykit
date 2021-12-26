@@ -91,17 +91,19 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, streamID int64, in []byte) r
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		execFunc(
 			testMessage(in),
-			func(m ronykit.Message) error {
+			func(m ronykit.Message) {
 				b, err := m.Marshal()
 				if err != nil {
-					return err
+					ctx.Error(err)
+
+					return
 				}
-				return conn.Write(streamID, b)
+				ctx.Error(conn.Write(streamID, b))
 			},
 			func(ctx *ronykit.Context) ronykit.Handler {
 				return func(ctx *ronykit.Context) ronykit.Handler {
 					m := ctx.Receive()
-					_ = ctx.Send(m)
+					ctx.Send(m)
 					return nil
 				}
 			},
@@ -147,16 +149,16 @@ func BenchmarkServer(b *testing.B) {
 	}
 	s := ronykit.NewServer(
 		ronykit.RegisterBundle(bundle),
-	)
-	s.Start()
+	).Start()
 	defer s.Shutdown()
 
+	req := []byte(gofakeit.BitcoinAddress())
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				_ = bundle.gw.Send([]byte("123"))
+				_ = bundle.gw.Send(req)
 			}
 		},
 	)
