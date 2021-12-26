@@ -3,7 +3,6 @@ package main
 import (
 	"syscall"
 
-	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/utils"
@@ -14,7 +13,7 @@ import (
 )
 
 func main() {
-	restServer, err := rest.New(
+	restBundle, err := rest.New(
 		tcpGateway.Config{
 			Concurrency:   100,
 			ListenAddress: "0.0.0.0:80",
@@ -24,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	restServer.Set(
+	restBundle.Set(
 		fasthttp.MethodGet, "/echo/:randomID",
 		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
 			m := &echoRequest{}
@@ -55,49 +54,44 @@ func main() {
 		},
 	)
 
+	restBundle.Set(
+		fasthttp.MethodGet, "/sum/:val1/:val2",
+		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
+			m := &sumRequest{}
+			if val1, ok := bag.Get("val1").(string); ok {
+				m.Val1 = utils.StrToInt64(val1)
+			}
+			if val2, ok := bag.Get("val2").(string); ok {
+				m.Val2 = utils.StrToInt64(val2)
+			}
+
+			return m
+		},
+		func(ctx *ronykit.Context) ronykit.Handler {
+			req, ok := ctx.Receive().(*sumRequest)
+			if !ok {
+				_ = ctx.Send(
+					&errorMessage{
+						Code:    "E01",
+						Message: "Request was not echoRequest",
+					},
+				)
+			}
+
+			res := &sumResponse{
+				Val: req.Val1 + req.Val2,
+			}
+
+			_ = ctx.Send(res)
+
+			return nil
+		},
+	)
+
 	ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
-		ronykit.RegisterBundle(restServer),
+		ronykit.RegisterBundle(restBundle),
 	).
 		Start().
 		Shutdown(syscall.SIGHUP)
-}
-
-type errorMessage struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-func (e *errorMessage) Unmarshal(data []byte) error {
-	return json.Unmarshal(data, e)
-}
-
-func (e *errorMessage) Marshal() ([]byte, error) {
-	return json.Marshal(e)
-}
-
-type echoRequest struct {
-	RandomID int64 `json:"randomID"`
-}
-
-func (e *echoRequest) Unmarshal(bytes []byte) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (e *echoRequest) Marshal() ([]byte, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-type echoResponse struct {
-	RandomID int64 `json:"randomID"`
-}
-
-func (e *echoResponse) Unmarshal(data []byte) error {
-	return json.Unmarshal(data, e)
-}
-
-func (e *echoResponse) Marshal() ([]byte, error) {
-	return json.Marshal(e)
 }
