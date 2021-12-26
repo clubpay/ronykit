@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	// Create a REST bundle capable of handling REST requests.
 	restBundle, err := rest.New(
 		tcpGateway.Config{
 			Concurrency:   100,
@@ -23,6 +24,7 @@ func main() {
 		panic(err)
 	}
 
+	// Implement Echo API
 	restBundle.Set(
 		fasthttp.MethodGet, "/echo/:randomID",
 		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
@@ -54,6 +56,7 @@ func main() {
 		},
 	)
 
+	// Implement Sum API
 	restBundle.Set(
 		fasthttp.MethodGet, "/sum/:val1/:val2",
 		func(bag rest.ParamsGetter, data []byte) ronykit.Message {
@@ -88,6 +91,7 @@ func main() {
 		},
 	)
 
+	// Create, start and wait for shutdown signal of the server.
 	ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
 		ronykit.RegisterBundle(restBundle),

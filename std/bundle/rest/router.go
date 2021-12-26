@@ -195,12 +195,6 @@ func (t *trie) insert(key, tag string, data *nodeData) *trieNode {
 	return n
 }
 
-// ParamsSetter is the interface which should be implemented by the
-// params writer for `search` in order to store the found named path parameters, if any.
-type ParamsSetter interface {
-	Set(string, interface{})
-}
-
 // Search is the most important part of the trie.
 // It will try to find the responsible node for a specific query (or a request path for HTTP endpoints).
 //

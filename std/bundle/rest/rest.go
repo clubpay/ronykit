@@ -8,14 +8,23 @@ import (
 )
 
 var (
-	ErrConnectionIsNoREST = fmt.Errorf("connection is not REST")
-	ErrRouteNotFound      = fmt.Errorf("route not found")
+	ErrRouteNotFound = fmt.Errorf("route not found")
 )
 
 type (
+	// ParamsSetter is the interface which should be implemented by the
+	// params writer for `search` in order to store the found named path parameters, if any.
+	ParamsSetter interface {
+		Set(string, interface{})
+	}
+
+	// ParamsGetter is the interface which is used on the DecoderFunc to get the extracted data
+	// from path parameters.
 	ParamsGetter interface {
 		Get(key string) interface{}
 	}
+	// DecoderFunc is the function which gets the raw http's body and the extracted data from
+	// path and must return a ronykit.Message.
 	DecoderFunc func(bag ParamsGetter, data []byte) ronykit.Message
 )
 
@@ -48,7 +57,7 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 		return nil
 	}
 
-	flushFunc := func(m ronykit.Message) error {
+	writeFunc := func(m ronykit.Message) error {
 		data, err := m.Marshal()
 		if err != nil {
 			return err
@@ -63,7 +72,7 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 			return err
 		}
 
-		execFunc(nodeData.decoder(conn, in), flushFunc, nodeData.handlers...)
+		execFunc(nodeData.decoder(conn, in), writeFunc, nodeData.handlers...)
 
 		return nil
 	}
