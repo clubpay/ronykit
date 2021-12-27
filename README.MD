@@ -7,8 +7,6 @@ in the 'std' which make it easy to use RonyKit out of the box.
 ## Gateway
 ## Cluster
 ## Dispatcher
-## Envelope
-## Router
 
 # Benchmark 
 ## Simple Echo 

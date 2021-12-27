@@ -106,6 +106,8 @@ func main() {
 						Message: "Request was not echoRequest",
 					},
 				)
+
+				return nil
 			}
 
 			ctx.Set("Content-Type", "application/json")
