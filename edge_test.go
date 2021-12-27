@@ -118,6 +118,22 @@ type testBundle struct {
 	d  *testDispatcher
 }
 
+func (t testBundle) Start() {
+	t.gw.Start()
+}
+
+func (t testBundle) Shutdown() {
+	t.gw.Shutdown()
+}
+
+func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
+	t.gw.Subscribe(d)
+}
+
+func (t testBundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
+	return t.d.Dispatch(conn, streamID, in)
+}
+
 func (t testBundle) Gateway() ronykit.Gateway {
 	return t.gw
 }

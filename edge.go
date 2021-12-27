@@ -11,8 +11,8 @@ import (
 type (
 	Handler func(ctx *Context) Handler
 	Bundle  interface {
-		Gateway() Gateway
-		Dispatcher() Dispatcher
+		Gateway
+		Dispatcher
 	}
 )
 
@@ -36,12 +36,12 @@ func (s *Server) Register(b Bundle) {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
 		l:       s.l,
-		gw:      b.Gateway(),
-		d:       b.Dispatcher(),
+		gw:      b,
+		d:       b,
 	}
 	s.nb = append(s.nb, nb)
 
-	b.Gateway().Subscribe(nb)
+	b.Subscribe(nb)
 }
 
 func (s *Server) Start() *Server {

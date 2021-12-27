@@ -9,8 +9,16 @@ import (
 
 type conn struct {
 	utils.SpinLock
+
 	kv  map[string]string
 	ctx *fasthttp.RequestCtx
+}
+
+func (c *conn) reset() {
+	for k := range c.kv {
+		delete(c.kv, k)
+	}
+	c.ctx = nil
 }
 
 func (c *conn) Walk(f func(key string, val string) bool) {

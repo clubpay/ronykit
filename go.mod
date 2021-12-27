@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/getsentry/sentry-go v0.11.0
+	github.com/panjf2000/gnet v1.6.3
 	google.golang.org/protobuf v1.27.1
 )
 
@@ -24,7 +25,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	go.uber.org/atomic v1.8.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
+	golang.org/x/sys v0.0.0-20211204120058-94396e421777 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
