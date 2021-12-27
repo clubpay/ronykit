@@ -686,6 +686,6 @@ walk: // Outer loop for walking the tree
 			return append(ciPath, n.path...)
 		}
 	}
-	
+
 	return nil
 }

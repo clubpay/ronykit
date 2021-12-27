@@ -15,7 +15,9 @@ import (
 
 func main() {
 	// Create a REST bundle capable of handling REST requests.
-	restBundle, err := rest.New("0.0.0.0:80")
+	restBundle, err := rest.New(
+		rest.Listen(":80"),
+	)
 	if err != nil {
 		panic(err)
 	}

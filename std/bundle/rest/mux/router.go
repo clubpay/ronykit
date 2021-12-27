@@ -230,7 +230,7 @@ func (r *Router) Lookup(method, path string) (*Handle, Params, bool) {
 		handle, ps, tsr := root.getValue(path, r.getParams)
 		if handle == nil {
 			r.putParams(ps)
-			
+
 			return nil, nil, tsr
 		}
 		if ps == nil {

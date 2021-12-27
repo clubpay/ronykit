@@ -7,10 +7,6 @@ type errorMessage struct {
 	Message string `json:"message"`
 }
 
-func (e *errorMessage) Unmarshal(data []byte) error {
-	return json.Unmarshal(data, e)
-}
-
 func (e *errorMessage) Marshal() ([]byte, error) {
 	return json.Marshal(e)
 }

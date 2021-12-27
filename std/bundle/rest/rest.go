@@ -2,6 +2,9 @@ package rest
 
 import (
 	"fmt"
+	"net"
+
+	"github.com/valyala/fasthttp"
 
 	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
 
@@ -29,21 +32,23 @@ type (
 )
 
 type rest struct {
-	gw  *gateway
-	mux *mux.Router
+	srv    *fasthttp.Server
+	listen string
+	d      ronykit.GatewayDelegate
+	mux    *mux.Router
 }
 
-func New(listen string, opts ...Option) (*rest, error) {
+func New(opts ...Option) (*rest, error) {
 	r := &rest{
-		gw: newGateway(config{
-			listen: listen,
-		}),
 		mux: mux.New(),
+		srv: &fasthttp.Server{},
 	}
 
 	for _, opt := range opts {
 		opt(r)
 	}
+
+	r.srv.Handler = r.handler
 
 	return r, nil
 }
@@ -95,8 +100,36 @@ func (r *rest) Set(method, path string, decoder mux.DecoderFunc, handlers ...ron
 		},
 	)
 }
-func (r rest) Gateway() ronykit.Gateway {
-	return r.gw
+
+func (r *rest) handler(ctx *fasthttp.RequestCtx) {
+	conn := &conn{
+		ctx: ctx,
+	}
+	r.d.OnOpen(conn)
+	_ = r.d.OnMessage(conn, 0, ctx.PostBody())
+	r.d.OnClose(conn.ConnID())
+}
+
+func (r *rest) Start() {
+	ln, err := net.Listen("tcp4", r.listen)
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		_ = r.srv.Serve(ln)
+	}()
+}
+
+func (r *rest) Shutdown() {
+	_ = r.srv.Shutdown()
+}
+
+func (r *rest) Subscribe(d ronykit.GatewayDelegate) {
+	r.d = d
+}
+
+func (r *rest) Gateway() ronykit.Gateway {
+	return r
 }
 
 func (r *rest) Dispatcher() ronykit.Dispatcher {

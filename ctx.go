@@ -49,12 +49,6 @@ func (ctx *Context) Send(m Message) {
 	ctx.writeFunc(m)
 }
 
-func (ctx *Context) RestConn() (REST, bool) {
-	rc, ok := ctx.conn.(REST)
-
-	return rc, ok
-}
-
 func (ctx *Context) Error(err error) {
 	if err != nil {
 		ctx.err = err
