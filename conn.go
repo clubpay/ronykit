@@ -8,9 +8,9 @@ type Conn interface {
 	ClientIP() string
 	Write(streamID int64, data []byte) error
 	Stream() bool
-	Walk(func(key string, val interface{}) bool)
-	Get(key string) interface{}
-	Set(key string, val interface{})
+	Walk(func(key string, val string) bool)
+	Get(key string) string
+	Set(key string, val string)
 }
 
 // REST could be implemented by Gateway, so in Dispatcher user can check if Conn also implements

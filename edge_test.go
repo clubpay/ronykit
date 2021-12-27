@@ -9,14 +9,14 @@ import (
 )
 
 type testConn struct {
-	kv map[string]interface{}
+	kv map[string]string
 	id uint64
 	ip string
 }
 
 func newTestConn() *testConn {
 	return &testConn{
-		kv: map[string]interface{}{},
+		kv: map[string]string{},
 		id: gofakeit.Uint64(),
 		ip: gofakeit.IPv4Address(),
 	}
@@ -39,7 +39,7 @@ func (t testConn) Stream() bool {
 	return false
 }
 
-func (t testConn) Walk(f func(key string, val interface{}) bool) {
+func (t testConn) Walk(f func(key string, val string) bool) {
 	for k, v := range t.kv {
 		if !f(k, v) {
 			return
@@ -49,11 +49,11 @@ func (t testConn) Walk(f func(key string, val interface{}) bool) {
 	return
 }
 
-func (t testConn) Get(key string) interface{} {
+func (t testConn) Get(key string) string {
 	return t.kv[key]
 }
 
-func (t testConn) Set(key string, val interface{}) {
+func (t testConn) Set(key string, val string) {
 	t.kv[key] = val
 }
 
@@ -84,8 +84,7 @@ func (t testMessage) Marshal() ([]byte, error) {
 	return t, nil
 }
 
-type testDispatcher struct {
-}
+type testDispatcher struct{}
 
 func (t testDispatcher) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {

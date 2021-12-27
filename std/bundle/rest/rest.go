@@ -3,8 +3,9 @@ package rest
 import (
 	"fmt"
 
+	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
+
 	"github.com/ronaksoft/ronykit"
-	tcpGateway "github.com/ronaksoft/ronykit/std/gateway/tcp"
 )
 
 var (
@@ -28,19 +29,16 @@ type (
 )
 
 type rest struct {
-	gw     *tcpGateway.Gateway
-	routes map[string]*trie
+	gw  *gateway
+	mux *mux.Router
 }
 
-func New(gatewayConfig tcpGateway.Config, opts ...Option) (*rest, error) {
+func New(listen string, opts ...Option) (*rest, error) {
 	r := &rest{
-		routes: map[string]*trie{},
-	}
-
-	var err error
-	r.gw, err = tcpGateway.New(gatewayConfig)
-	if err != nil {
-		return nil, err
+		gw: newGateway(config{
+			listen: listen,
+		}),
+		mux: mux.New(),
 	}
 
 	for _, opt := range opts {
@@ -57,9 +55,9 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		nodeData, err := r.route(rc.GetMethod(), rc.GetPath(), conn)
-		if err != nil {
-			return err
+		h, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
+		if h == nil {
+			return ErrRouteNotFound
 		}
 
 		writeFunc := func(m ronykit.Message) {
@@ -81,13 +79,23 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 			ctx.Error(conn.Write(streamID, data))
 		}
 
-		execFunc(nodeData.decoder(conn, in), writeFunc, nodeData.handlers...)
+		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)
 
 		return nil
 	}
 
 }
 
+func (r *rest) Set(method, path string, decoder mux.DecoderFunc, handlers ...ronykit.Handler) {
+	r.mux.Handle(
+		method,
+		path,
+		&mux.Handle{
+			Decoder:  decoder,
+			Handlers: handlers,
+		},
+	)
+}
 func (r rest) Gateway() ronykit.Gateway {
 	return r.gw
 }
