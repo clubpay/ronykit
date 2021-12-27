@@ -3,6 +3,8 @@ package main
 import (
 	"syscall"
 
+	"github.com/goccy/go-json"
+
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
@@ -39,6 +41,74 @@ func main() {
 				return nil
 			}
 
+			res := &echoResponse{
+				RandomID: req.RandomID,
+			}
+
+			ctx.Send(res)
+
+			return nil
+		},
+	)
+
+	// Implement Sum API
+	restBundle.Set(
+		fasthttp.MethodGet, "/sum/:val1/:val2",
+		func(bag mux.Params, data []byte) ronykit.Message {
+			m := &sumRequest{
+				Val1: utils.StrToInt64(bag.ByName("val1")),
+				Val2: utils.StrToInt64(bag.ByName("val2")),
+			}
+
+			return m
+		},
+		func(ctx *ronykit.Context) ronykit.Handler {
+			req, ok := ctx.Receive().(*sumRequest)
+			if !ok {
+				ctx.Send(
+					&errorMessage{
+						Code:    "E01",
+						Message: "Request was not echoRequest",
+					},
+				)
+
+				return nil
+			}
+
+			res := &sumResponse{
+				Val: req.Val1 + req.Val2,
+			}
+
+			ctx.Send(res)
+
+			return nil
+		},
+	)
+
+	// Implement Echo with POST request
+	restBundle.Set(
+		fasthttp.MethodPost, "/echo",
+		func(bag mux.Params, data []byte) ronykit.Message {
+			m := &echoRequest{}
+			err := json.Unmarshal(data, m)
+			if err != nil {
+				return nil
+			}
+
+			return m
+		},
+		func(ctx *ronykit.Context) ronykit.Handler {
+			req, ok := ctx.Receive().(*echoRequest)
+			if !ok {
+				ctx.Send(
+					&errorMessage{
+						Code:    "E01",
+						Message: "Request was not echoRequest",
+					},
+				)
+			}
+
+			ctx.Set("Content-Type", "application/json")
 			res := &echoResponse{
 				RandomID: req.RandomID,
 			}

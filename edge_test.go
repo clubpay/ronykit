@@ -103,6 +103,7 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, streamID int64, in []byte) r
 				return func(ctx *ronykit.Context) ronykit.Handler {
 					m := ctx.Receive()
 					ctx.Send(m)
+
 					return nil
 				}
 			},

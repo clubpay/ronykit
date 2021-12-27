@@ -39,6 +39,7 @@ func (ps Params) ByName(name string) string {
 			return p.Value
 		}
 	}
+
 	return ""
 }
 
@@ -127,6 +128,7 @@ func New() *Router {
 func (r *Router) getParams() *Params {
 	ps, _ := r.paramsPool.Get().(*Params)
 	*ps = (*ps)[0:0] // reset slice
+
 	return ps
 }
 
@@ -212,6 +214,7 @@ func (r *Router) Handle(method, path string, handle *Handle) {
 	if r.paramsPool.New == nil && r.maxParams > 0 {
 		r.paramsPool.New = func() interface{} {
 			ps := make(Params, 0, r.maxParams)
+
 			return &ps
 		}
 	}
@@ -227,13 +230,16 @@ func (r *Router) Lookup(method, path string) (*Handle, Params, bool) {
 		handle, ps, tsr := root.getValue(path, r.getParams)
 		if handle == nil {
 			r.putParams(ps)
+			
 			return nil, nil, tsr
 		}
 		if ps == nil {
 			return handle, nil, tsr
 		}
+
 		return handle, *ps, tsr
 	}
+
 	return nil, nil, false
 }
 

@@ -116,10 +116,11 @@ func CleanPath(p string) string {
 
 	// If the original string was not modified (or only shortened at the end),
 	// return the respective substring of the original string.
-	// Otherwise return a new string from the buffer.
+	// Otherwise, return a new string from the buffer.
 	if len(buf) == 0 {
 		return p[:w]
 	}
+
 	return string(buf[:w])
 }
 

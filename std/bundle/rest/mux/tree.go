@@ -176,6 +176,7 @@ walk:
 			if n.nType == param && idxc == '/' && len(n.children) == 1 {
 				n = n.children[0]
 				n.priority++
+
 				continue walk
 			}
 
@@ -184,6 +185,7 @@ walk:
 				if c == idxc {
 					i = n.incrementChildPrio(i)
 					n = n.children[i]
+
 					continue walk
 				}
 			}
@@ -262,6 +264,7 @@ func (n *node) insertChild(path, fullPath string, handle *Handle) {
 				}
 				n.children = []*node{child}
 				n = child
+
 				continue
 			}
 
@@ -335,14 +338,16 @@ walk: // Outer loop for walking the tree
 					for i, c := range []byte(n.indices) {
 						if c == idxc {
 							n = n.children[i]
+
 							continue walk
 						}
 					}
 
 					// Nothing found.
-					// We can recommend to redirect to the same URL without a
+					// We can recommend redirecting to the same URL without a
 					// trailing slash if a leaf exists for that path.
-					tsr = (path == "/" && n.handle != nil)
+					tsr = path == "/" && n.handle != nil
+
 					return
 				}
 
@@ -361,7 +366,7 @@ walk: // Outer loop for walking the tree
 						if ps == nil {
 							ps = params()
 						}
-						// Expand slice within preallocated capacity
+						// Expand slice within reallocated capacity
 						i := len(*ps)
 						*ps = (*ps)[:i+1]
 						(*ps)[i] = Param{
@@ -375,11 +380,13 @@ walk: // Outer loop for walking the tree
 						if len(n.children) > 0 {
 							path = path[end:]
 							n = n.children[0]
+
 							continue walk
 						}
 
 						// ... but we can't
-						tsr = (len(path) == end+1)
+						tsr = len(path) == end+1
+
 						return
 					}
 
@@ -444,7 +451,7 @@ walk: // Outer loop for walking the tree
 			return
 		}
 
-		// Nothing found. We can recommend to redirect to the same URL with an
+		// Nothing found. We can recommend redirecting to the same URL with an
 		// extra trailing slash if a leaf exists for that path
 		tsr = (path == "/") ||
 			(len(prefix) == len(path)+1 && prefix[len(path)] == '/' &&
@@ -535,6 +542,7 @@ walk: // Outer loop for walking the tree
 						if i := npLen - off; utf8.RuneStart(oldPath[i]) {
 							// read rune from cached path
 							rv, _ = utf8.DecodeRuneInString(oldPath[i:])
+
 							break
 						}
 					}
@@ -608,6 +616,7 @@ walk: // Outer loop for walking the tree
 						n = n.children[0]
 						npLen = len(n.path)
 						path = path[end:]
+
 						continue
 					}
 
@@ -615,6 +624,7 @@ walk: // Outer loop for walking the tree
 					if fixTrailingSlash && len(path) == end+1 {
 						return ciPath
 					}
+
 					return nil
 				}
 
@@ -651,12 +661,15 @@ walk: // Outer loop for walking the tree
 						n = n.children[i]
 						if (len(n.path) == 1 && n.handle != nil) ||
 							(n.nType == catchAll && n.children[0].handle != nil) {
+
 							return append(ciPath, '/')
 						}
+
 						return nil
 					}
 				}
 			}
+
 			return nil
 		}
 	}
@@ -669,8 +682,10 @@ walk: // Outer loop for walking the tree
 		}
 		if len(path)+1 == npLen && n.path[len(path)] == '/' &&
 			strings.EqualFold(path[1:], n.path[1:len(path)]) && n.handle != nil {
+
 			return append(ciPath, n.path...)
 		}
 	}
+	
 	return nil
 }

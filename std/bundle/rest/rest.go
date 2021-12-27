@@ -83,7 +83,6 @@ func (r rest) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.Dis
 
 		return nil
 	}
-
 }
 
 func (r *rest) Set(method, path string, decoder mux.DecoderFunc, handlers ...ronykit.Handler) {

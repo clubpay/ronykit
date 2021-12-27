@@ -57,7 +57,6 @@ func (c *conn) Stream() bool {
 
 func (c *conn) GetMethod() string {
 	return utils.B2S(c.ctx.Method())
-
 }
 
 func (c *conn) GetPath() string {
