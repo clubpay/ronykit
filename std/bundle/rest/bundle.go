@@ -7,6 +7,7 @@ import (
 
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
+	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -61,10 +62,10 @@ func (r *bundle) SetHandler(
 	)
 }
 
-func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	rc, ok := conn.(ronykit.REST)
+func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
+	rc, ok := c.(*conn)
 	if !ok {
-		return nil, errNoHandler
+		panic("BUG!! incorrect connection")
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
@@ -73,11 +74,15 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 			return errNonRestConnection
 		}
 
-		rc.Walk(
-			func(key string, val string) bool {
-				ctx.Set(key, val)
-
-				return true
+		rc.ctx.QueryArgs().VisitAll(
+			func(key, value []byte) {
+				params = append(
+					params,
+					mux.Param{
+						Key:   utils.B2S(key),
+						Value: utils.B2S(value),
+					},
+				)
 			},
 		)
 
@@ -89,12 +94,11 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 
 			for idx := range ctxKeys {
 				if v, ok := ctx.Get(ctxKeys[idx]).(string); ok {
-					rc.Set(ctxKeys[idx], v)
+					rc.ctx.Response.Header.Set(ctxKeys[idx], v)
 				}
 			}
 
-			_, err = conn.Write(data)
-			ctx.Error(err)
+			rc.ctx.SetBody(data)
 		}
 
 		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)
@@ -126,5 +130,4 @@ func (r *bundle) Subscribe(d ronykit.GatewayDelegate) {
 
 var (
 	errNonRestConnection = fmt.Errorf("incompatible connection, expected REST conn")
-	errNoHandler         = fmt.Errorf("no handler")
 )

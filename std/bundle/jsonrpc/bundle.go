@@ -58,7 +58,11 @@ func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
 
-func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
+	conn, ok := c.(*wsConn)
+	if !ok {
+		panic("BUG!! incorrect connection")
+	}
 	env := b.acquireEnvelope()
 	err := json.Unmarshal(in, env)
 	if err != nil {
