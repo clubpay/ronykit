@@ -61,7 +61,7 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 			ctx.Walk(
 				func(key string, val interface{}) bool {
 					if v, ok := val.(string); ok {
-						rc.WriteHeader(key, v)
+						rc.Set(key, v)
 					}
 
 					return true
@@ -92,9 +92,7 @@ func (r *bundle) Set(method, path string, decoder mux.DecoderFunc, handlers ...r
 func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 	c, ok := r.connPool.Get().(*conn)
 	if !ok {
-		c = &conn{
-			kv: map[string]string{},
-		}
+		c = &conn{}
 	}
 
 	c.ctx = ctx

@@ -10,39 +10,32 @@ import (
 type conn struct {
 	utils.SpinLock
 
-	kv  map[string]string
 	ctx *fasthttp.RequestCtx
 }
 
 func (c *conn) reset() {
-	for k := range c.kv {
-		delete(c.kv, k)
-	}
 	c.ctx = nil
 }
 
 func (c *conn) Walk(f func(key string, val string) bool) {
-	c.Lock()
-	defer c.Unlock()
-	for k, v := range c.kv {
-		if !f(k, v) {
-			return
-		}
-	}
+	stopCall := false
+	c.ctx.Request.Header.VisitAll(
+		func(key, value []byte) {
+			if !stopCall {
+				if !f(utils.B2S(key), utils.B2S(value)) {
+					stopCall = true
+				}
+			}
+		},
+	)
 }
 
 func (c *conn) Get(key string) string {
-	c.Lock()
-	v := c.kv[key]
-	c.Unlock()
-
-	return v
+	return utils.B2S(c.ctx.Request.Header.Peek(key))
 }
 
 func (c *conn) Set(key string, val string) {
-	c.Lock()
-	c.kv[key] = val
-	c.Unlock()
+	c.ctx.Response.Header.Set(key, val)
 }
 
 func (c *conn) ConnID() uint64 {
@@ -63,6 +56,10 @@ func (c *conn) Stream() bool {
 	return false
 }
 
+func (c *conn) GetRequestURI() string {
+	return utils.B2S(c.ctx.Request.RequestURI())
+}
+
 func (c *conn) GetMethod() string {
 	return utils.B2S(c.ctx.Method())
 }
@@ -73,8 +70,4 @@ func (c *conn) GetPath() string {
 
 func (c *conn) Form() (*multipart.Form, error) {
 	return c.ctx.MultipartForm()
-}
-
-func (c *conn) WriteHeader(key, val string) {
-	c.ctx.Response.Header.Set(key, val)
 }

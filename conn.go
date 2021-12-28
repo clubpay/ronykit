@@ -16,8 +16,9 @@ type Conn interface {
 // REST could be implemented by Gateway, so in Dispatcher user can check if Conn also implements
 // REST then it has more information about the REST request.
 type REST interface {
+	Conn
+	GetRequestURI() string
 	GetMethod() string
 	GetPath() string
 	Form() (*multipart.Form, error)
-	WriteHeader(key, val string)
 }
