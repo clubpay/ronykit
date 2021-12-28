@@ -28,6 +28,7 @@ func main() {
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &echoRequest{}
 			m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
+
 			return m
 		},
 		func(ctx *ronykit.Context) ronykit.Handler {

@@ -10,6 +10,7 @@ func min(a, b int) int {
 	if a <= b {
 		return a
 	}
+
 	return b
 }
 
@@ -19,6 +20,7 @@ func longestCommonPrefix(a, b string) int {
 	for i < max && a[i] == b[i] {
 		i++
 	}
+
 	return i
 }
 
@@ -42,8 +44,10 @@ func findWildcard(path string) (wilcard string, i int, valid bool) {
 				valid = false
 			}
 		}
+
 		return path[start:], start, valid
 	}
+
 	return "", -1, false
 }
 
@@ -55,6 +59,7 @@ func countParams(path string) uint16 {
 			n++
 		}
 	}
+
 	return uint16(n)
 }
 
@@ -110,6 +115,7 @@ func (n *node) addRoute(path string, handle *Handle) {
 	if n.path == "" && n.indices == "" {
 		n.insertChild(path, fullPath, handle)
 		n.nType = root
+
 		return
 	}
 
@@ -200,6 +206,7 @@ walk:
 				n = child
 			}
 			n.insertChild(path, fullPath, handle)
+
 			return
 		}
 
@@ -208,6 +215,7 @@ walk:
 			panic("a handle is already registered for path '" + fullPath + "'")
 		}
 		n.handle = handle
+
 		return
 	}
 }
@@ -268,8 +276,9 @@ func (n *node) insertChild(path, fullPath string, handle *Handle) {
 				continue
 			}
 
-			// Otherwise we're done. Insert the handle in the new leaf
+			// Otherwise, we're done. Insert the handle in the new leaf
 			n.handle = handle
+
 			return
 		}
 
@@ -282,7 +291,7 @@ func (n *node) insertChild(path, fullPath string, handle *Handle) {
 			panic("catch-all conflicts with existing handle for the path segment root in path '" + fullPath + "'")
 		}
 
-		// Currently fixed width 1 for '/'
+		// Currently, fixed width 1 for '/'
 		i--
 		if path[i] != '/' {
 			panic("no / before catch-all in path '" + fullPath + "'")
@@ -417,6 +426,7 @@ walk: // Outer loop for walking the tree
 					}
 
 					handle = n.handle
+
 					return
 
 				default:
@@ -435,6 +445,7 @@ walk: // Outer loop for walking the tree
 			// additional trailing slash
 			if path == "/" && n.wildChild && n.nType != root {
 				tsr = true
+
 				return
 			}
 
@@ -445,9 +456,11 @@ walk: // Outer loop for walking the tree
 					n = n.children[i]
 					tsr = (len(n.path) == 1 && n.handle != nil) ||
 						(n.nType == catchAll && n.children[0].handle != nil)
+
 					return
 				}
 			}
+
 			return
 		}
 
@@ -456,6 +469,7 @@ walk: // Outer loop for walking the tree
 		tsr = (path == "/") ||
 			(len(prefix) == len(path)+1 && prefix[len(path)] == '/' &&
 				path == prefix[:len(prefix)-1] && n.handle != nil)
+
 		return
 	}
 }
@@ -527,6 +541,7 @@ walk: // Outer loop for walking the tree
 							// continue with child node
 							n = n.children[i]
 							npLen = len(n.path)
+
 							continue walk
 						}
 					}
@@ -566,6 +581,7 @@ walk: // Outer loop for walking the tree
 							); out != nil {
 								return out
 							}
+
 							break
 						}
 					}
@@ -583,6 +599,7 @@ walk: // Outer loop for walking the tree
 								// Continue with child node
 								n = n.children[i]
 								npLen = len(n.path)
+
 								continue walk
 							}
 						}
@@ -594,6 +611,7 @@ walk: // Outer loop for walking the tree
 				if fixTrailingSlash && path == "/" && n.handle != nil {
 					return ciPath
 				}
+
 				return nil
 			}
 
@@ -638,6 +656,7 @@ walk: // Outer loop for walking the tree
 						return append(ciPath, '/')
 					}
 				}
+
 				return nil
 
 			case catchAll:
@@ -659,9 +678,7 @@ walk: // Outer loop for walking the tree
 				for i, c := range []byte(n.indices) {
 					if c == '/' {
 						n = n.children[i]
-						if (len(n.path) == 1 && n.handle != nil) ||
-							(n.nType == catchAll && n.children[0].handle != nil) {
-
+						if (len(n.path) == 1 && n.handle != nil) || (n.nType == catchAll && n.children[0].handle != nil) {
 							return append(ciPath, '/')
 						}
 
@@ -682,7 +699,6 @@ walk: // Outer loop for walking the tree
 		}
 		if len(path)+1 == npLen && n.path[len(path)] == '/' &&
 			strings.EqualFold(path[1:], n.path[1:len(path)]) && n.handle != nil {
-
 			return append(ciPath, n.path...)
 		}
 	}

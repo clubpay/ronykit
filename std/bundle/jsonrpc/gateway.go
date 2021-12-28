@@ -85,10 +85,10 @@ func (e *gateway) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
 			cw.reset()
 			e.connPool.Put(cw)
 		}
-
 	}
 
 	_ = c.Close()
+
 	return gnet.Close
 }
 

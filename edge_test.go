@@ -28,7 +28,6 @@ func (t testConn) ConnID() uint64 {
 
 func (t testConn) ClientIP() string {
 	return t.ip
-
 }
 
 func (t testConn) Write(data []byte) (int, error) {
@@ -71,6 +70,7 @@ func (t *testGateway) Subscribe(d ronykit.GatewayDelegate) {
 
 func (t *testGateway) Send(msg []byte) error {
 	c := newTestConn()
+
 	return t.d.OnMessage(c, msg)
 }
 
