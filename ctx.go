@@ -48,12 +48,16 @@ func (ctx *Context) Send(m Message) {
 	ctx.wf(m)
 }
 
-func (ctx *Context) Error(err error) {
+func (ctx *Context) Error(err error) bool {
 	if err != nil {
 		if h := ctx.nb.eh; h != nil {
 			h(err)
 		}
+
+		return true
 	}
+
+	return false
 }
 
 // StopExecution stops the execution of the next handlers.

@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// Implement Echo API
-	restBundle.Set(
+	restBundle.SetHandler(
 		fasthttp.MethodGet, "/echo/:randomID",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &echoRequest{}
@@ -54,7 +54,7 @@ func main() {
 	)
 
 	// Implement Sum API
-	restBundle.Set(
+	restBundle.SetHandler(
 		fasthttp.MethodGet, "/sum/:val1/:val2",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &sumRequest{
@@ -88,7 +88,7 @@ func main() {
 	)
 
 	// Implement Echo with POST request
-	restBundle.Set(
+	restBundle.SetHandler(
 		fasthttp.MethodPost, "/echo",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &echoRequest{}

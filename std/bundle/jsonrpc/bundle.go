@@ -69,11 +69,9 @@ func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		writeFunc := func(m ronykit.Message) {
+		writeFunc := func(m ronykit.Message, _ ...string) {
 			data, err := m.Marshal()
-			if err != nil {
-				ctx.Error(err)
-
+			if ctx.Error(err) {
 				return
 			}
 
