@@ -1,7 +1,7 @@
 package ronykit
 
 // Gateway defines the gateway interface where clients could connect
-// and communicate with the Edge servers
+// and communicate with the Edge servers.
 type Gateway interface {
 	// Start starts the gateway to accept connections.
 	Start()

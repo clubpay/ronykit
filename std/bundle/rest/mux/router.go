@@ -49,7 +49,7 @@ type paramsKey struct{}
 var ParamsKey = paramsKey{}
 
 // Router is a http.Handler which can be used to dispatch requests to different
-// handler functions via configurable routes
+// handler functions via configurable routes.
 type Router struct {
 	trees map[string]*node
 

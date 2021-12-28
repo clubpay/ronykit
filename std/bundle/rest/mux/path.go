@@ -17,7 +17,7 @@ package mux
 //	4. Eliminate .. elements that begin a rooted path:
 //	   that is, replace "/.." by "/" at the beginning of a path.
 //
-// If the result of this process is an empty string, "/" is returned
+// If the result of this process is an empty string, "/" is returned.
 func CleanPath(p string) string {
 	const stackBufSize = 128
 

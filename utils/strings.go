@@ -131,7 +131,7 @@ func ByteToStr(bts []byte) string {
 	return *(*string)(unsafe.Pointer(&bts))
 }
 
-// B2S is alias for ByteToStr
+// B2S is alias for ByteToStr.
 func B2S(bts []byte) string {
 	return ByteToStr(bts)
 }
@@ -151,7 +151,7 @@ func StrToByte(str string) (b []byte) {
 	return b
 }
 
-// S2B is alias for StrToByte
+// S2B is alias for StrToByte.
 func S2B(str string) []byte {
 	return StrToByte(str)
 }

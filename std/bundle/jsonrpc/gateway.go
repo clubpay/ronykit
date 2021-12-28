@@ -9,9 +9,8 @@ import (
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/ronaksoft/ronykit/pools"
-
 	"github.com/panjf2000/gnet"
+	"github.com/ronaksoft/ronykit/pools"
 	"github.com/ronaksoft/ronykit/utils"
 )
 

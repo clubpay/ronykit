@@ -5,11 +5,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/valyala/fasthttp"
-
-	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
-
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
+	"github.com/valyala/fasthttp"
 )
 
 type bundle struct {
