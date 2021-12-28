@@ -34,7 +34,14 @@ func (c *wsConn) ClientIP() string {
 }
 
 func (c *wsConn) Write(data []byte) (int, error) {
-	return c.w.Write(data)
+	n, err := c.w.Write(data)
+	if err != nil {
+		return n, err
+	}
+
+	err = c.w.Flush()
+
+	return n, err
 }
 
 func (c *wsConn) Stream() bool {
@@ -78,9 +85,9 @@ func (c *wrapConn) Read(data []byte) (n int, err error) {
 		return 0, nil
 	}
 
-	bn, err := c.buf.Read(data)
+	bn, _ := c.buf.Read(data)
 	if bn >= rem {
-		return bn, err
+		return bn, nil
 	}
 
 	rem -= bn
@@ -104,6 +111,6 @@ func (c *wrapConn) Close() error {
 func (c *wrapConn) reset() {
 	c.handshakeDone = false
 	c.buf.Reset()
-	c.c = nil
 	_ = c.c.Close()
+	c.c = nil
 }

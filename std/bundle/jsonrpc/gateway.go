@@ -2,6 +2,8 @@ package jsonrpc
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -37,12 +39,14 @@ func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 }
 
 func (e *gateway) OnInitComplete(server gnet.Server) (action gnet.Action) {
+	fmt.Println("Init Complete")
 	return gnet.None
 }
 
 func (e *gateway) OnShutdown(server gnet.Server) {}
 
 func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
+	fmt.Println("Opened")
 	wsc, ok := e.connPool.Get().(*wsConn)
 	if !ok {
 		wsc = &wsConn{
@@ -53,7 +57,7 @@ func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 			},
 		}
 		wsc.w = wsutil.NewWriter(wsc.c, ws.StateServerSide, ws.OpText)
-		wsc.r = wsutil.NewReader(wsc.r, ws.StateServerSide)
+		wsc.r = wsutil.NewReader(wsc.c, ws.StateServerSide)
 	}
 
 	wsc.id = atomic.AddUint64(&e.nextID, 1)
@@ -87,6 +91,7 @@ func (e *gateway) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
 
 	}
 
+	_ = c.Close()
 	return gnet.Close
 }
 
@@ -105,6 +110,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	}
 
 	wsc.c.buf.Write(packet)
+
 	if !wsc.c.handshakeDone {
 		_, err := e.upgrader.Upgrade(wsc.c)
 		if err != nil {
@@ -118,18 +124,14 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 
 	hdr, err := wsc.r.NextFrame()
 	if err != nil {
-		return nil, gnet.Close
+		return nil, gnet.None
 	}
 
 	payload := pools.Bytes.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(payload)
-	if err != nil {
-		return nil, gnet.Close
+	if err != nil && err != io.EOF {
+		return nil, gnet.None
 	}
-	if hdr.Masked {
-		ws.Cipher(payload[:n], hdr.Mask, 0)
-	}
-	hdr.Masked = false
 
 	switch hdr.OpCode {
 	case ws.OpClose:

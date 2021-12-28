@@ -36,9 +36,12 @@ func New(opts ...Option) *bundle {
 
 func (b *bundle) Start() {
 	go func() {
-		_ = gnet.Serve(b.eh, b.listen,
+		err := gnet.Serve(b.eh, b.listen,
 			gnet.WithMulticore(true),
 		)
+		if err != nil {
+			panic(err)
+		}
 	}()
 }
 
