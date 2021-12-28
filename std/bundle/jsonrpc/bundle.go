@@ -24,7 +24,7 @@ func New(opts ...Option) *bundle {
 	}
 	b.eh = &gateway{
 		b:     b,
-		conns: map[uint64]*connWrap{},
+		conns: map[uint64]*wsConn{},
 	}
 
 	for _, opt := range opts {

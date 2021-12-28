@@ -1,43 +1,47 @@
 package jsonrpc
 
 import (
+	"bytes"
+
+	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
 	"github.com/ronaksoft/ronykit/utils"
 )
 
-type connWrap struct {
+type wsConn struct {
 	utils.SpinLock
 	id uint64
+
 	kv map[string]string
-	c  gnet.Conn
+	c  *wrapConn
+	r  *wsutil.Reader
+	w  *wsutil.Writer
 }
 
-func (c *connWrap) reset() {
+func (c *wsConn) reset() {
 	for k := range c.kv {
 		delete(c.kv, k)
 	}
-	_ = c.c.Close()
+	c.c.reset()
 }
 
-func (c *connWrap) ConnID() uint64 {
+func (c *wsConn) ConnID() uint64 {
 	return c.id
 }
 
-func (c *connWrap) ClientIP() string {
-	return c.c.RemoteAddr().String()
+func (c *wsConn) ClientIP() string {
+	return c.c.c.RemoteAddr().String()
 }
 
-func (c *connWrap) Write(data []byte) (int, error) {
-	err := c.c.AsyncWrite(data)
-
-	return len(data), err
+func (c *wsConn) Write(data []byte) (int, error) {
+	return c.w.Write(data)
 }
 
-func (c *connWrap) Stream() bool {
+func (c *wsConn) Stream() bool {
 	return true
 }
 
-func (c *connWrap) Walk(f func(key string, val string) bool) {
+func (c *wsConn) Walk(f func(key string, val string) bool) {
 	c.Lock()
 	defer c.Unlock()
 
@@ -48,7 +52,7 @@ func (c *connWrap) Walk(f func(key string, val string) bool) {
 	}
 }
 
-func (c *connWrap) Get(key string) string {
+func (c *wsConn) Get(key string) string {
 	c.Lock()
 	v := c.kv[key]
 	c.Unlock()
@@ -56,8 +60,50 @@ func (c *connWrap) Get(key string) string {
 	return v
 }
 
-func (c *connWrap) Set(key string, val string) {
+func (c *wsConn) Set(key string, val string) {
 	c.Lock()
 	c.kv[key] = val
 	c.Unlock()
+}
+
+type wrapConn struct {
+	c             gnet.Conn
+	handshakeDone bool
+	buf           *bytes.Buffer
+}
+
+func (c *wrapConn) Read(data []byte) (n int, err error) {
+	rem := len(data)
+	if rem == 0 {
+		return 0, nil
+	}
+
+	bn, err := c.buf.Read(data)
+	if bn >= rem {
+		return bn, err
+	}
+
+	rem -= bn
+
+	n, buf := c.c.ReadN(rem)
+	copy(data[bn:], buf)
+
+	return bn + n, nil
+}
+
+func (c *wrapConn) Write(data []byte) (n int, err error) {
+	err = c.c.AsyncWrite(data)
+
+	return len(data), err
+}
+
+func (c *wrapConn) Close() error {
+	return c.c.Close()
+}
+
+func (c *wrapConn) reset() {
+	c.handshakeDone = false
+	c.buf.Reset()
+	c.c = nil
+	_ = c.c.Close()
 }
