@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -55,16 +56,16 @@ func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
 
-func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
+func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	env := &Envelope{}
 	err := json.Unmarshal(in, env)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	routeData := b.r.routes[env.Predicate]
 	if routeData.Handlers == nil {
-		return nil
+		return nil, errNoHandler
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
@@ -83,8 +84,7 @@ func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
 		execFunc(env, writeFunc, routeData.Handlers...)
 
 		return nil
-	}
-
+	}, nil
 }
 
 func (b *bundle) SetHandler(predicate string, handlers ...ronykit.Handler) {
@@ -92,3 +92,7 @@ func (b *bundle) SetHandler(predicate string, handlers ...ronykit.Handler) {
 		Handlers: handlers,
 	}
 }
+
+var (
+	errNoHandler = fmt.Errorf("no handler for request")
+)

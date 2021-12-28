@@ -14,6 +14,7 @@ import (
 
 var (
 	ErrRouteNotFound = fmt.Errorf("route not found")
+	errNoHandler     = fmt.Errorf("no handler")
 )
 
 type bundle struct {
@@ -39,10 +40,10 @@ func New(opts ...Option) (*bundle, error) {
 	return r, nil
 }
 
-func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
+func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	rc, ok := conn.(ronykit.REST)
 	if !ok {
-		return nil
+		return nil, errNoHandler
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
@@ -74,7 +75,7 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
 		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)
 
 		return nil
-	}
+	}, nil
 }
 
 func (r *bundle) Set(method, path string, decoder mux.DecoderFunc, handlers ...ronykit.Handler) {

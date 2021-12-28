@@ -7,7 +7,7 @@ type (
 )
 
 type Dispatcher interface {
-	Dispatch(conn Conn, in []byte) DispatchFunc
+	Dispatch(conn Conn, in []byte) (DispatchFunc, error)
 }
 
 type Message interface {

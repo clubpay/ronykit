@@ -1,6 +1,7 @@
 package ronykit
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/ronaksoft/ronykit/log"
@@ -29,13 +30,13 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 		)
 	}
 
-	dispatchFunc := n.d.Dispatch(c, msg)
-	if dispatchFunc == nil {
-		return nil
+	dispatchFunc, err := n.d.Dispatch(c, msg)
+	if err != nil {
+		return err
 	}
 
 	ctx := acquireCtx(c)
-	err := dispatchFunc(
+	err = dispatchFunc(
 		ctx,
 		func(m Message, flusher WriteFunc, handlers ...Handler) {
 			ctx.in = m
@@ -58,3 +59,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 
 	return err
 }
+
+var (
+	errNoDispatchFunc = fmt.Errorf("no dispatch function is set")
+)

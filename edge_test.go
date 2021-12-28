@@ -86,7 +86,7 @@ func (t testMessage) Marshal() ([]byte, error) {
 
 type testDispatcher struct{}
 
-func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
+func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		execFunc(
 			testMessage(in),
@@ -112,7 +112,7 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchF
 		)
 
 		return nil
-	}
+	}, nil
 }
 
 type testBundle struct {
@@ -132,7 +132,7 @@ func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
 	t.gw.Subscribe(d)
 }
 
-func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
+func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	return t.d.Dispatch(conn, in)
 }
 
