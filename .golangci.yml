@@ -14,9 +14,9 @@ linters:
     - nestif
     - nakedret
     - gocognit
-    - funlen
-    - gofumpt
-    - goimports
+#    - funlen
+#    - gofumpt
+#    - goimports
     - godot
     - gci
     - gocyclo
