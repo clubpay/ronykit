@@ -2,7 +2,6 @@ package jsonrpc
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -39,14 +38,12 @@ func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 }
 
 func (e *gateway) OnInitComplete(server gnet.Server) (action gnet.Action) {
-	fmt.Println("Init Complete")
 	return gnet.None
 }
 
 func (e *gateway) OnShutdown(server gnet.Server) {}
 
 func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
-	fmt.Println("Opened")
 	wsc, ok := e.connPool.Get().(*wsConn)
 	if !ok {
 		wsc = &wsConn{
