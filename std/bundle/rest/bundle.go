@@ -12,11 +12,6 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-var (
-	ErrRouteNotFound = fmt.Errorf("route not found")
-	errNoHandler     = fmt.Errorf("no handler")
-)
-
 type bundle struct {
 	srv      *fasthttp.Server
 	listen   string
@@ -49,7 +44,7 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		h, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
 		if h == nil {
-			return ErrRouteNotFound
+			return errRouteNotFound
 		}
 
 		writeFunc := func(m ronykit.Message) {
@@ -129,3 +124,8 @@ func (r *bundle) Gateway() ronykit.Gateway {
 func (r *bundle) Dispatcher() ronykit.Dispatcher {
 	return r
 }
+
+var (
+	errRouteNotFound = fmt.Errorf("route not found")
+	errNoHandler     = fmt.Errorf("no handler")
+)

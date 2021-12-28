@@ -1,7 +1,6 @@
 package ronykit
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/ronaksoft/ronykit/log"
@@ -13,6 +12,7 @@ type northBridge struct {
 	l       log.Logger
 	d       Dispatcher
 	gw      Gateway
+	eh      ErrHandler
 }
 
 func (n *northBridge) OnOpen(c Conn) {
@@ -38,9 +38,9 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 	ctx := acquireCtx(c)
 	err = dispatchFunc(
 		ctx,
-		func(m Message, flusher WriteFunc, handlers ...Handler) {
+		func(m Message, writeFunc WriteFunc, handlers ...Handler) {
 			ctx.in = m
-			ctx.writeFunc = flusher
+			ctx.wf = writeFunc
 		Loop:
 			for idx := range handlers {
 				h := handlers[idx]
@@ -59,7 +59,3 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 
 	return err
 }
-
-var (
-	errNoDispatchFunc = fmt.Errorf("no dispatch function is set")
-)

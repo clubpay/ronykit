@@ -15,3 +15,9 @@ func RegisterBundle(b Bundle) Option {
 		s.Register(b)
 	}
 }
+
+func WithErrorHandler(h ErrHandler) Option {
+	return func(s *Server) {
+		s.eh = h
+	}
+}

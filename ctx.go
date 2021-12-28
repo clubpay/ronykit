@@ -9,13 +9,13 @@ import (
 type Context struct {
 	utils.SpinLock
 
-	conn      Conn
-	err       error
-	nb        *northBridge
-	kv        map[string]interface{}
-	in        Message
-	writeFunc WriteFunc
-	stopped   bool
+	nb      *northBridge
+	kv      map[string]interface{}
+	conn    Conn
+	in      Message
+	wf      WriteFunc
+	eh      ErrHandler
+	stopped bool
 }
 
 func (ctx *Context) Set(key string, val interface{}) {
@@ -45,12 +45,14 @@ func (ctx *Context) Receive() Message {
 }
 
 func (ctx *Context) Send(m Message) {
-	ctx.writeFunc(m)
+	ctx.wf(m)
 }
 
 func (ctx *Context) Error(err error) {
 	if err != nil {
-		ctx.err = err
+		if h := ctx.nb.eh; h != nil {
+			h(err)
+		}
 	}
 }
 
@@ -80,7 +82,6 @@ func releaseCtx(ctx *Context) {
 	}
 
 	ctx.stopped = false
-	ctx.err = nil
 	ctxPool.Put(ctx)
 
 	return

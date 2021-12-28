@@ -9,8 +9,9 @@ import (
 )
 
 type (
-	Handler func(ctx *Context) Handler
-	Bundle  interface {
+	ErrHandler func(err error)
+	Handler    func(ctx *Context) Handler
+	Bundle     interface {
 		Gateway
 		Dispatcher
 	}
@@ -18,6 +19,7 @@ type (
 
 type Server struct {
 	nb []*northBridge
+	eh ErrHandler
 	l  log.Logger
 }
 
@@ -38,6 +40,7 @@ func (s *Server) Register(b Bundle) {
 		l:       s.l,
 		gw:      b,
 		d:       b,
+		eh:      s.eh,
 	}
 	s.nb = append(s.nb, nb)
 
