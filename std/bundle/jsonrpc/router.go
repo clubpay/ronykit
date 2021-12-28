@@ -3,8 +3,7 @@ package jsonrpc
 import "github.com/ronaksoft/ronykit"
 
 type routerData struct {
-	RequestFactory func() ronykit.Message
-	Handlers       []ronykit.Handler
+	Handlers []ronykit.Handler
 }
 
 type router struct {

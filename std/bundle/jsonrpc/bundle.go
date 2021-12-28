@@ -2,10 +2,11 @@ package jsonrpc
 
 import (
 	"context"
+	"time"
+
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
 	"github.com/ronaksoft/ronykit"
-	"time"
 )
 
 type MessageFactory func() ronykit.Message
@@ -73,19 +74,19 @@ func (b *bundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.
 
 				return
 			}
+
 			ctx.Error(conn.Write(streamID, data))
 		}
 
-		execFunc(routeData.RequestFactory(), writeFunc, routeData.Handlers...)
-		
+		execFunc(env, writeFunc, routeData.Handlers...)
+
 		return nil
 	}
 
 }
 
-func (b *bundle) SetHandler(predicate string, factory MessageFactory, handlers ...ronykit.Handler) {
+func (b *bundle) SetHandler(predicate string, handlers ...ronykit.Handler) {
 	b.r.routes[predicate] = routerData{
-		RequestFactory: factory,
-		Handlers:       handlers,
+		Handlers: handlers,
 	}
 }

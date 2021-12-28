@@ -1,11 +1,12 @@
 package jsonrpc
 
 import (
-	"github.com/panjf2000/gnet"
-	"github.com/ronaksoft/ronykit/utils"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/panjf2000/gnet"
+	"github.com/ronaksoft/ronykit/utils"
 )
 
 type gateway struct {

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"syscall"
+
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/exmples/simple-jsonrpc/msg"
 	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/std/bundle/jsonrpc"
-	"syscall"
 )
 
 func main() {
@@ -13,15 +15,12 @@ func main() {
 	)
 
 	bundle.SetHandler(
-		"echo",
-		func() ronykit.Message {
-			return &echoRequest{}
-		},
+		"echoRequest",
 		func(ctx *ronykit.Context) ronykit.Handler {
-			req, ok := ctx.Receive().(*echoRequest)
+			in, ok := ctx.Receive().(*jsonrpc.Envelope)
 			if !ok {
 				ctx.Send(
-					&errorMessage{
+					&msg.Error{
 						Code:    "E01",
 						Message: "Request was not echoRequest",
 					},
@@ -29,12 +28,28 @@ func main() {
 
 				return nil
 			}
+			req := &msg.EchoRequest{}
+			err := in.Unmarshal(req)
+			if err != nil {
+				ctx.Send(
+					&msg.Error{
+						Code:    "E01",
+						Message: err.Error(),
+					},
+				)
 
-			res := &echoResponse{
+				return nil
+			}
+			res := &msg.EchoResponse{
 				RandomID: req.RandomID,
 			}
 
-			ctx.Send(res)
+			out := &jsonrpc.Envelope{
+				Predicate: "echoResponse",
+				ID:        in.ID,
+			}
+			ctx.Error(out.SetPayload(res))
+			ctx.Send(out)
 
 			return nil
 		},
