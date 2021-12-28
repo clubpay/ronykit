@@ -34,7 +34,7 @@ func NewServer(opts ...Option) *Server {
 	return s
 }
 
-func (s *Server) Register(b Bundle) {
+func (s *Server) Register(b Bundle) *Server {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
 		l:       s.l,
@@ -45,6 +45,8 @@ func (s *Server) Register(b Bundle) {
 	s.nb = append(s.nb, nb)
 
 	b.Subscribe(nb)
+
+	return s
 }
 
 func (s *Server) Start() *Server {
@@ -57,7 +59,7 @@ func (s *Server) Start() *Server {
 	return s
 }
 
-func (s *Server) Shutdown(signals ...os.Signal) *Server {
+func (s *Server) Shutdown(signals ...os.Signal) {
 	if len(signals) > 0 {
 		// Create a signal channel and bind it to all the os signals in the arg
 		shutdownChan := make(chan os.Signal, 1)
@@ -72,5 +74,5 @@ func (s *Server) Shutdown(signals ...os.Signal) *Server {
 		s.nb[idx].gw.Shutdown()
 	}
 
-	return s
+	return
 }

@@ -1,8 +1,6 @@
 package ronykit
 
 import (
-	"sync"
-
 	"github.com/ronaksoft/ronykit/utils"
 )
 
@@ -63,30 +61,4 @@ func (ctx *Context) Error(err error) bool {
 // StopExecution stops the execution of the next handlers.
 func (ctx *Context) StopExecution() {
 	ctx.stopped = true
-}
-
-var ctxPool sync.Pool
-
-func acquireCtx(c Conn) *Context {
-	ctx, ok := ctxPool.Get().(*Context)
-	if !ok {
-		ctx = &Context{
-			kv: make(map[string]interface{}),
-		}
-	}
-
-	ctx.conn = c
-
-	return ctx
-}
-
-func releaseCtx(ctx *Context) {
-	for k := range ctx.kv {
-		delete(ctx.kv, k)
-	}
-
-	ctx.stopped = false
-	ctxPool.Put(ctx)
-
-	return
 }

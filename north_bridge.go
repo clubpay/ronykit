@@ -2,6 +2,7 @@ package ronykit
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"github.com/ronaksoft/ronykit/log"
 	"go.uber.org/zap"
@@ -13,14 +14,16 @@ type northBridge struct {
 	d       Dispatcher
 	gw      Gateway
 	eh      ErrHandler
+	opened  int64
+	closed  int64
 }
 
 func (n *northBridge) OnOpen(c Conn) {
-	// TODO: do we need to any thing
+	atomic.AddInt64(&n.opened, 1)
 }
 
 func (n *northBridge) OnClose(connID uint64) {
-	// TODO:: do we need to do anything ?
+	atomic.AddInt64(&n.closed, 1)
 }
 
 func (n *northBridge) OnMessage(c Conn, msg []byte) error {
@@ -35,7 +38,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 		return err
 	}
 
-	ctx := acquireCtx(c)
+	ctx := n.acquireCtx(c)
 	err = dispatchFunc(
 		ctx,
 		func(m Message, writeFunc WriteFunc, handlers ...Handler) {
@@ -55,7 +58,31 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 			return
 		},
 	)
-	releaseCtx(ctx)
+	n.releaseCtx(ctx)
 
 	return err
+}
+
+func (n *northBridge) acquireCtx(c Conn) *Context {
+	ctx, ok := n.ctxPool.Get().(*Context)
+	if !ok {
+		ctx = &Context{
+			kv: make(map[string]interface{}),
+		}
+	}
+
+	ctx.conn = c
+
+	return ctx
+}
+
+func (n *northBridge) releaseCtx(ctx *Context) {
+	for k := range ctx.kv {
+		delete(ctx.kv, k)
+	}
+
+	ctx.stopped = false
+	n.ctxPool.Put(ctx)
+
+	return
 }
