@@ -27,8 +27,10 @@ func (c *connWrap) ClientIP() string {
 	return c.c.RemoteAddr().String()
 }
 
-func (c *connWrap) Write(streamID int64, data []byte) error {
-	return c.c.AsyncWrite(data)
+func (c *connWrap) Write(data []byte) (int, error) {
+	err := c.c.AsyncWrite(data)
+
+	return len(data), err
 }
 
 func (c *connWrap) Stream() bool {

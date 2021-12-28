@@ -22,19 +22,19 @@ func (n *northBridge) OnClose(connID uint64) {
 	// TODO:: do we need to do anything ?
 }
 
-func (n *northBridge) OnMessage(c Conn, streamID int64, msg []byte) error {
+func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 	if ce := n.l.Check(log.DebugLevel, "received message"); ce != nil {
 		ce.Write(
 			zap.Uint64("ConnID", c.ConnID()),
 		)
 	}
 
-	dispatchFunc := n.d.Dispatch(c, streamID, msg)
+	dispatchFunc := n.d.Dispatch(c, msg)
 	if dispatchFunc == nil {
 		return nil
 	}
 
-	ctx := acquireCtx(c, streamID)
+	ctx := acquireCtx(c)
 	err := dispatchFunc(
 		ctx,
 		func(m Message, flusher WriteFunc, handlers ...Handler) {

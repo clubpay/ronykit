@@ -31,8 +31,8 @@ func (t testConn) ClientIP() string {
 
 }
 
-func (t testConn) Write(streamID int64, data []byte) error {
-	return nil
+func (t testConn) Write(data []byte) (int, error) {
+	return 0, nil
 }
 
 func (t testConn) Stream() bool {
@@ -71,7 +71,7 @@ func (t *testGateway) Subscribe(d ronykit.GatewayDelegate) {
 
 func (t *testGateway) Send(msg []byte) error {
 	c := newTestConn()
-	return t.d.OnMessage(c, 0, msg)
+	return t.d.OnMessage(c, msg)
 }
 
 type testMessage []byte
@@ -86,7 +86,7 @@ func (t testMessage) Marshal() ([]byte, error) {
 
 type testDispatcher struct{}
 
-func (t testDispatcher) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
+func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		execFunc(
 			testMessage(in),
@@ -97,7 +97,9 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, streamID int64, in []byte) r
 
 					return
 				}
-				ctx.Error(conn.Write(streamID, b))
+
+				_, err = conn.Write(b)
+				ctx.Error(err)
 			},
 			func(ctx *ronykit.Context) ronykit.Handler {
 				return func(ctx *ronykit.Context) ronykit.Handler {
@@ -130,8 +132,8 @@ func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
 	t.gw.Subscribe(d)
 }
 
-func (t testBundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
-	return t.d.Dispatch(conn, streamID, in)
+func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
+	return t.d.Dispatch(conn, in)
 }
 
 func (t testBundle) Gateway() ronykit.Gateway {

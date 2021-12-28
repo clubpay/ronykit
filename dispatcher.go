@@ -7,7 +7,7 @@ type (
 )
 
 type Dispatcher interface {
-	Dispatch(conn Conn, streamID int64, in []byte) DispatchFunc
+	Dispatch(conn Conn, in []byte) DispatchFunc
 }
 
 type Message interface {

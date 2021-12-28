@@ -9,8 +9,6 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-type MessageFactory func() ronykit.Message
-
 type bundle struct {
 	listen string
 	eh     gnet.EventHandler
@@ -54,7 +52,7 @@ func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
 
-func (b *bundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
+func (b *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
 	env := &Envelope{}
 	err := json.Unmarshal(in, env)
 	if err != nil {
@@ -75,7 +73,8 @@ func (b *bundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.
 				return
 			}
 
-			ctx.Error(conn.Write(streamID, data))
+			_, err = conn.Write(data)
+			ctx.Error(err)
 		}
 
 		execFunc(env, writeFunc, routeData.Handlers...)

@@ -53,10 +53,10 @@ func (c *conn) ClientIP() string {
 	return c.ctx.RemoteIP().To4().String()
 }
 
-func (c *conn) Write(_ int64, data []byte) error {
+func (c *conn) Write(data []byte) (int, error) {
 	c.ctx.SetBody(data)
 
-	return nil
+	return len(data), nil
 }
 
 func (c *conn) Stream() bool {

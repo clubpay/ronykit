@@ -46,6 +46,8 @@ func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	cw.id = atomic.AddUint64(&e.nextID, 1)
 	cw.c = c
 
+	//ws.Upgrader.Upgrade(c.SendTo())
+
 	c.SetContext(cw.id)
 
 	e.Lock()
@@ -84,7 +86,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 		return nil, gnet.Close
 	}
 
-	_ = e.b.d.OnMessage(cw, 0, packet)
+	_ = e.b.d.OnMessage(cw, packet)
 
 	return nil, gnet.None
 }

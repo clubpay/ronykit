@@ -20,5 +20,5 @@ type GatewayDelegate interface {
 	// OnClose must be called whenever the connection is gone.
 	OnClose(connID uint64)
 	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c Conn, streamID int64, msg []byte) error
+	OnMessage(c Conn, msg []byte) error
 }

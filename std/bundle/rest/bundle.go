@@ -39,7 +39,7 @@ func New(opts ...Option) (*bundle, error) {
 	return r, nil
 }
 
-func (r *bundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.DispatchFunc {
+func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) ronykit.DispatchFunc {
 	rc, ok := conn.(ronykit.REST)
 	if !ok {
 		return nil
@@ -67,7 +67,8 @@ func (r *bundle) Dispatch(conn ronykit.Conn, streamID int64, in []byte) ronykit.
 				},
 			)
 
-			ctx.Error(conn.Write(streamID, data))
+			_, err = conn.Write(data)
+			ctx.Error(err)
 		}
 
 		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)
@@ -97,7 +98,7 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 
 	c.ctx = ctx
 	r.d.OnOpen(c)
-	_ = r.d.OnMessage(c, 0, ctx.PostBody())
+	_ = r.d.OnMessage(c, ctx.PostBody())
 	r.d.OnClose(c.ConnID())
 
 	c.reset()

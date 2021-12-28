@@ -9,7 +9,6 @@ import (
 type Context struct {
 	utils.SpinLock
 
-	streamID  int64
 	conn      Conn
 	err       error
 	nb        *northBridge
@@ -62,7 +61,7 @@ func (ctx *Context) StopExecution() {
 
 var ctxPool sync.Pool
 
-func acquireCtx(c Conn, streamID int64) *Context {
+func acquireCtx(c Conn) *Context {
 	ctx, ok := ctxPool.Get().(*Context)
 	if !ok {
 		ctx = &Context{
@@ -71,7 +70,6 @@ func acquireCtx(c Conn, streamID int64) *Context {
 	}
 
 	ctx.conn = c
-	ctx.streamID = streamID
 
 	return ctx
 }
@@ -80,7 +78,7 @@ func releaseCtx(ctx *Context) {
 	for k := range ctx.kv {
 		delete(ctx.kv, k)
 	}
-	ctx.streamID = 0
+
 	ctx.stopped = false
 	ctx.err = nil
 	ctxPool.Put(ctx)

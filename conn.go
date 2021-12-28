@@ -6,7 +6,7 @@ import "mime/multipart"
 type Conn interface {
 	ConnID() uint64
 	ClientIP() string
-	Write(streamID int64, data []byte) error
+	Write(data []byte) (int, error)
 	Stream() bool
 	Walk(func(key string, val string) bool)
 	Get(key string) string
