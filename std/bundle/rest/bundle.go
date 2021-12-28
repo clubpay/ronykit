@@ -75,6 +75,14 @@ func (r *bundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, e
 			return errNonRestConnection
 		}
 
+		rc.Walk(
+			func(key string, val string) bool {
+				ctx.Set(key, val)
+
+				return true
+			},
+		)
+
 		writeFunc := func(m ronykit.Message, ctxKeys ...string) {
 			data, err := m.Marshal()
 			if ctx.Error(err) {
