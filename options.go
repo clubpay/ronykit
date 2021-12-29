@@ -1,6 +1,6 @@
 package ronykit
 
-import "github.com/ronaksoft/ronykit/log"
+import log "github.com/ronaksoft/golog"
 
 type Option func(s *Server)
 

@@ -3,9 +3,9 @@ package main
 import (
 	"syscall"
 
+	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/exmples/simple-jsonrpc/msg"
-	"github.com/ronaksoft/ronykit/log"
 	"github.com/ronaksoft/ronykit/std/bundle/jsonrpc"
 )
 

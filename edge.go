@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"sync"
 
-	"github.com/ronaksoft/ronykit/log"
+	log "github.com/ronaksoft/golog"
 )
 
 type (

@@ -4,7 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/ronaksoft/ronykit/log"
+	log "github.com/ronaksoft/golog"
 	"go.uber.org/zap"
 )
 

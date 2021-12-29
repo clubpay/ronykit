@@ -11,14 +11,15 @@ require (
 )
 
 require (
-	github.com/getsentry/sentry-go v0.11.0
 	github.com/gobwas/ws v1.0.2
 	github.com/panjf2000/gnet v1.6.3
+	github.com/ronaksoft/golog v0.1.0
 	google.golang.org/protobuf v1.27.1
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
+	github.com/getsentry/sentry-go v0.12.0 // indirect
 	github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee // indirect
 	github.com/gobwas/pool v0.2.0 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
