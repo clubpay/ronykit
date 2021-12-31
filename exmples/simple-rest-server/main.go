@@ -9,7 +9,6 @@ import (
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
 	"github.com/ronaksoft/ronykit/utils"
-	"github.com/valyala/fasthttp"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 
 	// Implement Echo API
 	restBundle.SetHandler(
-		fasthttp.MethodGet, "/echo/:randomID",
+		rest.MethodGet, "/echo/:randomID",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &echoRequest{}
 			m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
@@ -51,7 +50,7 @@ func main() {
 
 	// Implement Sum API
 	restBundle.SetHandler(
-		fasthttp.MethodGet, "/sum/:val1/:val2",
+		rest.MethodGet, "/sum/:val1/:val2",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &sumRequest{
 				Val1: utils.StrToInt64(bag.ByName("val1")),
@@ -80,7 +79,7 @@ func main() {
 
 	// Implement Echo with POST request
 	restBundle.SetHandler(
-		fasthttp.MethodPost, "/echo",
+		rest.MethodGet, "/echo",
 		func(bag mux.Params, data []byte) ronykit.Message {
 			m := &echoRequest{}
 			err := json.Unmarshal(data, m)
