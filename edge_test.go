@@ -90,16 +90,15 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.Dispatch
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		execFunc(
 			testMessage(in),
-			func(m ronykit.Message, _ ...string) {
+			func(m ronykit.Message, _ ...string) error {
 				b, err := m.Marshal()
 				if err != nil {
-					ctx.Error(err)
-
-					return
+					return err
 				}
 
 				_, err = conn.Write(b)
-				ctx.Error(err)
+
+				return err
 			},
 			func(ctx *ronykit.Context) ronykit.Handler {
 				return func(ctx *ronykit.Context) ronykit.Handler {

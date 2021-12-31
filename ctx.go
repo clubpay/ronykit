@@ -43,7 +43,7 @@ func (ctx *Context) Receive() Message {
 }
 
 func (ctx *Context) Send(m Message, ctxKeys ...string) {
-	ctx.wf(m, ctxKeys...)
+	ctx.Error(ctx.wf(m, ctxKeys...))
 }
 
 func (ctx *Context) Error(err error) bool {
