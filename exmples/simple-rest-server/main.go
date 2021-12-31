@@ -38,11 +38,12 @@ func main() {
 				return nil
 			}
 
+			ctx.Set("Content-Type", "application/json")
 			res := &echoResponse{
 				RandomID: req.RandomID,
 			}
 
-			ctx.Send(res)
+			ctx.Send(res, "Content-Type")
 
 			return nil
 		},
@@ -71,7 +72,7 @@ func main() {
 				Val: req.Val1 + req.Val2,
 			}
 
-			ctx.Send(res)
+			ctx.Send(res, "Content-Type")
 
 			return nil
 		},
@@ -102,7 +103,7 @@ func main() {
 				RandomID: req.RandomID,
 			}
 
-			ctx.Send(res)
+			ctx.Send(res, "Content-Type")
 
 			return nil
 		},

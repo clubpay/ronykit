@@ -42,8 +42,8 @@ func (ctx *Context) Receive() Message {
 	return ctx.in
 }
 
-func (ctx *Context) Send(m Message) {
-	ctx.wf(m)
+func (ctx *Context) Send(m Message, ctxKeys ...string) {
+	ctx.wf(m, ctxKeys...)
 }
 
 func (ctx *Context) Error(err error) bool {
