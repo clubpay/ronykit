@@ -2,15 +2,6 @@ package main
 
 import "github.com/goccy/go-json"
 
-type errorMessage struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-func (e *errorMessage) Marshal() ([]byte, error) {
-	return json.Marshal(e)
-}
-
 type echoRequest struct {
 	RandomID int64 `json:"randomId"`
 }
