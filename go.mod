@@ -8,9 +8,6 @@ require (
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/valyala/fasthttp v1.31.0
 	go.uber.org/zap v1.19.1
-)
-
-require (
 	github.com/gobwas/ws v1.0.2
 	github.com/panjf2000/gnet v1.6.3
 	github.com/ronaksoft/golog v0.1.0
