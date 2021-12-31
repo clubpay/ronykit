@@ -86,10 +86,10 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			},
 		)
 
-		writeFunc := func(m ronykit.Message, ctxKeys ...string) {
+		writeFunc := func(m ronykit.Message, ctxKeys ...string) error {
 			data, err := m.Marshal()
-			if ctx.Error(err) {
-				return
+			if err != nil {
+				return err
 			}
 
 			for idx := range ctxKeys {
@@ -99,6 +99,8 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			}
 
 			rc.ctx.SetBody(data)
+
+			return nil
 		}
 
 		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)

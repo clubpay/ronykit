@@ -2,6 +2,7 @@ package main
 
 import (
 	"syscall"
+	"time"
 
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
@@ -19,24 +20,14 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			in, ok := ctx.Receive().(*jsonrpc.Envelope)
 			if !ok {
-				ctx.Send(
-					&msg.Error{
-						Code:    "E01",
-						Message: "Request was not echoRequest",
-					},
-				)
+				ctx.Send(jsonrpc.Err("E01", "Request was not echoRequest"))
 
 				return nil
 			}
 			req := &msg.EchoRequest{}
 			err := in.Unmarshal(req)
 			if err != nil {
-				ctx.Send(
-					&msg.Error{
-						Code:    "E01",
-						Message: err.Error(),
-					},
-				)
+				ctx.Send(jsonrpc.Err("E02", err.Error()))
 
 				return nil
 			}
@@ -44,12 +35,10 @@ func main() {
 				RandomID: req.RandomID,
 			}
 
-			out := &jsonrpc.Envelope{
-				Predicate: "echoResponse",
-				ID:        in.ID,
-			}
-			ctx.Error(out.SetPayload(res))
-			ctx.Send(out)
+			jsonrpc.SendEnvelope(
+				ctx, in.ID, "echoResponse", res,
+				jsonrpc.WithHeader("ServerTime", time.Now().String()),
+			)
 
 			return nil
 		},

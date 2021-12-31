@@ -1,7 +1,7 @@
 package ronykit
 
 type (
-	WriteFunc    func(m Message, ctxKey ...string)
+	WriteFunc    func(m Message, ctxKey ...string) error
 	ExecuteFunc  func(m Message, wf WriteFunc, handlers ...Handler)
 	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
 )

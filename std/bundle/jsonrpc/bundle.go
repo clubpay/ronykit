@@ -3,7 +3,6 @@ package jsonrpc
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -16,7 +15,6 @@ type bundle struct {
 	eh     gnet.EventHandler
 	d      ronykit.GatewayDelegate
 	r      router
-	ep     sync.Pool
 }
 
 func New(opts ...Option) *bundle {
@@ -63,7 +61,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	if !ok {
 		panic("BUG!! incorrect connection")
 	}
-	env := b.acquireEnvelope()
+	env := acquireEnvelope()
 	err := json.Unmarshal(in, env)
 	if err != nil {
 		return nil, err
@@ -79,19 +77,20 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			ctx.Set(k, v)
 		}
 
-		writeFunc := func(m ronykit.Message, _ ...string) {
+		writeFunc := func(m ronykit.Message, _ ...string) error {
 			data, err := m.Marshal()
-			if ctx.Error(err) {
-				return
+			if err != nil {
+				return err
 			}
 
 			_, err = conn.Write(data)
-			ctx.Error(err)
+
+			return err
 		}
 
 		execFunc(env, writeFunc, routeData.Handlers...)
 
-		b.releaseEnvelope(env)
+		releaseEnvelope(env)
 
 		return nil
 	}, nil
@@ -101,23 +100,6 @@ func (b *bundle) SetHandler(predicate string, handlers ...ronykit.Handler) {
 	b.r.routes[predicate] = routerData{
 		Handlers: handlers,
 	}
-}
-
-func (b *bundle) acquireEnvelope() *Envelope {
-	e, ok := b.ep.Get().(*Envelope)
-	if !ok {
-		e = &Envelope{}
-	}
-
-	return e
-}
-
-func (b *bundle) releaseEnvelope(e *Envelope) {
-	for k := range e.Header {
-		delete(e.Header, k)
-	}
-	e.Predicate = e.Predicate[:0]
-	e.ID = 0
 }
 
 var (
