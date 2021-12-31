@@ -33,12 +33,7 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*echoRequest)
 			if !ok {
-				ctx.Send(
-					&errorMessage{
-						Code:    "E01",
-						Message: "Request was not echoRequest",
-					},
-				)
+				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
 
 				return nil
 			}
@@ -67,12 +62,7 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*sumRequest)
 			if !ok {
-				ctx.Send(
-					&errorMessage{
-						Code:    "E01",
-						Message: "Request was not echoRequest",
-					},
-				)
+				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
 
 				return nil
 			}
@@ -102,12 +92,7 @@ func main() {
 		func(ctx *ronykit.Context) ronykit.Handler {
 			req, ok := ctx.Receive().(*echoRequest)
 			if !ok {
-				ctx.Send(
-					&errorMessage{
-						Code:    "E01",
-						Message: "Request was not echoRequest",
-					},
-				)
+				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
 
 				return nil
 			}
