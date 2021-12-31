@@ -5,8 +5,14 @@ REST, GraphQL or even with your in-house defined protocol. However, some compone
 in the 'std' which make it easy to use RonyKit out of the box.
 
 ## Gateway
+Gateway defines the interface that Edge server communicate with clients.
+
 ## Cluster
+Cluster defines the interface that Edge server instances communicate with each other. 
+
 ## Dispatcher
+Dispatcher provides the interface to prepare incoming and outgoing messages from the RPC handlers 
+to the external world of the system. 
 
 # Benchmark 
 ## Simple Echo 
