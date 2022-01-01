@@ -1,6 +1,7 @@
 package ronykit
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,18 +15,21 @@ type (
 	Bundle     interface {
 		Gateway
 		Dispatcher
+		Register(srv IService)
 	}
 )
 
 type Server struct {
-	nb []*northBridge
-	eh ErrHandler
-	l  log.Logger
+	nb  []*northBridge
+	srv map[string]IService
+	eh  ErrHandler
+	l   log.Logger
 }
 
 func NewServer(opts ...Option) *Server {
 	s := &Server{
-		l: log.NopLogger,
+		l:   log.NopLogger,
+		srv: map[string]IService{},
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -34,12 +38,11 @@ func NewServer(opts ...Option) *Server {
 	return s
 }
 
-func (s *Server) Register(b Bundle) *Server {
+func (s *Server) RegisterBundle(b Bundle) *Server {
 	nb := &northBridge{
 		ctxPool: sync.Pool{},
 		l:       s.l,
-		gw:      b,
-		d:       b,
+		b:       b,
 		eh:      s.eh,
 	}
 	s.nb = append(s.nb, nb)
@@ -49,11 +52,26 @@ func (s *Server) Register(b Bundle) *Server {
 	return s
 }
 
-func (s *Server) Start() *Server {
-	// Start all the registered gateways
-	for idx := range s.nb {
-		s.nb[idx].gw.Start()
+func (s *Server) RegisterService(srv IService) *Server {
+	if _, ok := s.srv[srv.Name()]; ok {
+		panic(fmt.Sprintf("service %s already registered", srv.Name()))
 	}
+
+	s.srv[srv.Name()] = srv
+
+	return s
+}
+
+func (s *Server) Start() *Server {
+	// Register services into the bundles and start them.
+	for idx := range s.nb {
+		for _, srv := range s.srv {
+			s.nb[idx].b.Register(srv)
+		}
+
+		s.nb[idx].b.Start()
+	}
+
 	s.l.Debug("server started.")
 
 	return s
@@ -71,7 +89,7 @@ func (s *Server) Shutdown(signals ...os.Signal) {
 
 	// Start all the registered gateways
 	for idx := range s.nb {
-		s.nb[idx].gw.Shutdown()
+		s.nb[idx].b.Shutdown()
 	}
 
 	return

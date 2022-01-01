@@ -11,6 +11,12 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+const (
+	QueryMethod  = "method"
+	QueryPath    = "path"
+	QueryDecoder = "decoder"
+)
+
 type bundle struct {
 	srv      *fasthttp.Server
 	listen   string
@@ -49,17 +55,34 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 	r.connPool.Put(c)
 }
 
-func (r *bundle) SetHandler(
-	method, path string, decoder mux.DecoderFunc, handlers ...ronykit.Handler,
-) {
-	r.mux.Handle(
-		method,
-		path,
-		&mux.Handle{
-			Decoder:  decoder,
-			Handlers: handlers,
-		},
-	)
+func (r *bundle) Register(srv ronykit.IService) {
+	for _, rt := range srv.Routes() {
+		var h []ronykit.Handler
+		h = append(h, srv.PreHandlers()...)
+		h = append(h, rt.Handlers()...)
+		h = append(h, srv.PostHandlers()...)
+
+		method, ok := rt.Query(QueryMethod).(string)
+		if !ok {
+			panic("method is not set in Service's Route")
+		}
+		path, ok := rt.Query(QueryPath).(string)
+		if !ok {
+			panic("method is not set in Service's Route")
+		}
+		decoder, ok := rt.Query(QueryDecoder).(mux.DecoderFunc)
+		if !ok {
+			panic("decoder is not set in Service's Route")
+		}
+
+		r.mux.Handle(
+			method, path,
+			&mux.Handle{
+				Decoder:  decoder,
+				Handlers: h,
+			},
+		)
+	}
 }
 
 func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {

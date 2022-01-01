@@ -12,7 +12,13 @@ func WithLogger(l log.Logger) Option {
 
 func RegisterBundle(b Bundle) Option {
 	return func(s *Server) {
-		s.Register(b)
+		s.RegisterBundle(b)
+	}
+}
+
+func RegisterService(srv IService) Option {
+	return func(s *Server) {
+		s.RegisterService(srv)
 	}
 }
 

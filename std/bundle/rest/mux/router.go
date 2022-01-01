@@ -10,7 +10,7 @@ import (
 
 // DecoderFunc is the function which gets the raw http's body and the extracted data from
 // path and must return a ronykit.Message.
-type DecoderFunc func(bag Params, data []byte) ronykit.Message
+type DecoderFunc = func(bag Params, data []byte) ronykit.Message
 
 // Handle is a function that can be registered to a route to handle HTTP
 // requests. Like http.HandlerFunc, but has a third parameter for the values of
