@@ -55,7 +55,7 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 	r.connPool.Put(c)
 }
 
-func (r *bundle) Register(svc ronykit.IService) {
+func (r *bundle) Register(svc ronykit.Service) {
 	for _, rt := range svc.Routes() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
@@ -68,11 +68,11 @@ func (r *bundle) Register(svc ronykit.IService) {
 		}
 		path, ok := rt.Query(QueryPath).(string)
 		if !ok {
-			panic("method is not set in Service's Route")
+			panic("path is not set in Service's Route")
 		}
 		decoder, ok := rt.Query(QueryDecoder).(mux.DecoderFunc)
 		if !ok {
-			panic("decoder is not set in Service's Route")
+			panic("mux.DecoderFunc is not set in Service's Route")
 		}
 
 		r.mux.Handle(

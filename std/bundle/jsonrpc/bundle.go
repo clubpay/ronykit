@@ -102,7 +102,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}, nil
 }
 
-func (b *bundle) Register(svc ronykit.IService) {
+func (b *bundle) Register(svc ronykit.Service) {
 	for _, rt := range svc.Routes() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)

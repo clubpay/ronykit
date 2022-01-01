@@ -135,7 +135,7 @@ func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc
 	return t.d.Dispatch(conn, in)
 }
 
-func (t testBundle) Register(srv ronykit.IService) {}
+func (t testBundle) Register(srv ronykit.Service) {}
 
 func (t testBundle) Gateway() ronykit.Gateway {
 	return t.gw
