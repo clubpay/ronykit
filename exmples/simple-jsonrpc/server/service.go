@@ -9,34 +9,32 @@ import (
 
 var sampleService = ronykit.NewService("sample").
 	AddRoute(
-		ronykit.NewRoute(
-			map[string]interface{}{
-				jsonrpc.QueryPredicate: "echoRequest",
-			},
-			func(ctx *ronykit.Context) ronykit.Handler {
-				in, ok := ctx.Receive().(*jsonrpc.Envelope)
-				if !ok {
-					ctx.Send(jsonrpc.Err("E01", "Request was not echoRequest"))
-
-					return nil
-				}
-				req := &msg.EchoRequest{}
-				err := in.Unmarshal(req)
-				if err != nil {
-					ctx.Send(jsonrpc.Err("E02", err.Error()))
-
-					return nil
-				}
-				res := &msg.EchoResponse{
-					RandomID: req.RandomID,
-				}
-
-				jsonrpc.SendEnvelope(
-					ctx, in.ID, "echoResponse", res,
-					jsonrpc.WithHeader("ServerTime", time.Now().String()),
-				)
+		map[string]interface{}{
+			jsonrpc.QueryPredicate: "echoRequest",
+		},
+		func(ctx *ronykit.Context) ronykit.Handler {
+			in, ok := ctx.Receive().(*jsonrpc.Envelope)
+			if !ok {
+				ctx.Send(jsonrpc.Err("E01", "Request was not echoRequest"))
 
 				return nil
-			},
-		),
+			}
+			req := &msg.EchoRequest{}
+			err := in.Unmarshal(req)
+			if err != nil {
+				ctx.Send(jsonrpc.Err("E02", err.Error()))
+
+				return nil
+			}
+			res := &msg.EchoResponse{
+				RandomID: req.RandomID,
+			}
+
+			jsonrpc.SendEnvelope(
+				ctx, in.ID, "echoResponse", res,
+				jsonrpc.WithHeader("ServerTime", time.Now().String()),
+			)
+
+			return nil
+		},
 	)
