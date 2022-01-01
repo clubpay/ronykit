@@ -1,5 +1,15 @@
 package ronykit
 
+type ServiceWrapper func(service IService) IService
+
+func WrapService(srv IService, wrapFunc ...ServiceWrapper) IService {
+	for _, wf := range wrapFunc {
+		srv = wf(srv)
+	}
+
+	return srv
+}
+
 // IService defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Bundle.
 type IService interface {
