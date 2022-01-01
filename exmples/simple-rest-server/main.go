@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"syscall"
 
 	log "github.com/ronaksoft/golog"
@@ -10,24 +11,22 @@ import (
 )
 
 func main() {
-	// Create a REST bundle capable of handling REST requests.
-	restBundle, err := rest.New(
-		rest.Listen(":80"),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	// Create, start and wait for shutdown signal of the server.
-	ronykit.NewServer(
+	defer ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
-		ronykit.RegisterBundle(restBundle),
+		ronykit.RegisterBundle(
+			rest.MustNew(
+				rest.Listen(":80"),
+			),
+		),
 		ronykit.RegisterService(
 			ronykit.WrapService(sampleService,
-				mw.OpenTelemetry("sample-rest-server"),
+				mw.Trace("sample-rest-server"),
 			),
 		),
 	).
 		Start().
 		Shutdown(syscall.SIGHUP)
+
+	fmt.Println("Server started.")
 }

@@ -4,13 +4,30 @@ import (
 	"time"
 
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/exmples/simple-jsonrpc/msg"
+	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/jsonrpc"
+	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
+	"github.com/ronaksoft/ronykit/utils"
 )
 
 var sampleService = ronykit.NewService("sample").
 	AddRoute(
 		map[string]interface{}{
+			rest.QueryMethod: rest.MethodGet,
+			rest.QueryPath:   "/echo/:randomID",
+			rest.QueryDecoder: func(bag mux.Params, data []byte) ronykit.Message {
+				req := &msg.EchoRequest{
+					RandomID: utils.StrToInt64(bag.ByName("randomID")),
+				}
+
+				env, err := jsonrpc.NewEnvelope(0, "echoRequest", req)
+				if err != nil {
+					return nil
+				}
+
+				return env
+			},
 			jsonrpc.QueryPredicate: "echoRequest",
 		},
 		func(ctx *ronykit.Context) ronykit.Handler {
