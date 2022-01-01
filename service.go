@@ -5,12 +5,12 @@ type ServiceWrapper func(IService) IService
 // WrapService wraps a service, this is useful for adding middlewares to the service.
 // Some middlewares like OpenTelemetry, Logger, ... could be added to the service using
 // this function.
-func WrapService(srv IService, wrappers ...ServiceWrapper) IService {
+func WrapService(svc IService, wrappers ...ServiceWrapper) IService {
 	for _, w := range wrappers {
-		srv = w(srv)
+		svc = w(svc)
 	}
 
-	return srv
+	return svc
 }
 
 // IService defines a set of RPC handlers which usually they are related to one service.

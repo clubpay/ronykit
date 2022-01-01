@@ -102,12 +102,12 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}, nil
 }
 
-func (b *bundle) Register(srv ronykit.IService) {
-	for _, rt := range srv.Routes() {
+func (b *bundle) Register(svc ronykit.IService) {
+	for _, rt := range svc.Routes() {
 		var h []ronykit.Handler
-		h = append(h, srv.PreHandlers()...)
+		h = append(h, svc.PreHandlers()...)
 		h = append(h, rt.Handlers()...)
-		h = append(h, srv.PostHandlers()...)
+		h = append(h, svc.PostHandlers()...)
 
 		predicate, ok := rt.Query(QueryPredicate).(string)
 		if !ok {

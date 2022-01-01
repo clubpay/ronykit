@@ -15,13 +15,13 @@ type (
 	Bundle     interface {
 		Gateway
 		Dispatcher
-		Register(srv IService)
+		Register(svc IService)
 	}
 )
 
 type Server struct {
 	nb  []*northBridge
-	srv map[string]IService
+	svc map[string]IService
 	eh  ErrHandler
 	l   log.Logger
 }
@@ -29,7 +29,7 @@ type Server struct {
 func NewServer(opts ...Option) *Server {
 	s := &Server{
 		l:   log.NopLogger,
-		srv: map[string]IService{},
+		svc: map[string]IService{},
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -52,12 +52,12 @@ func (s *Server) RegisterBundle(b Bundle) *Server {
 	return s
 }
 
-func (s *Server) RegisterService(srv IService) *Server {
-	if _, ok := s.srv[srv.Name()]; ok {
-		panic(fmt.Sprintf("service %s already registered", srv.Name()))
+func (s *Server) RegisterService(svc IService) *Server {
+	if _, ok := s.svc[svc.Name()]; ok {
+		panic(fmt.Sprintf("service %s already registered", svc.Name()))
 	}
 
-	s.srv[srv.Name()] = srv
+	s.svc[svc.Name()] = svc
 
 	return s
 }
@@ -65,8 +65,8 @@ func (s *Server) RegisterService(srv IService) *Server {
 func (s *Server) Start() *Server {
 	// Register services into the bundles and start them.
 	for idx := range s.nb {
-		for _, srv := range s.srv {
-			s.nb[idx].b.Register(srv)
+		for _, svc := range s.svc {
+			s.nb[idx].b.Register(svc)
 		}
 
 		s.nb[idx].b.Start()

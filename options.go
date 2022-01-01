@@ -10,15 +10,19 @@ func WithLogger(l log.Logger) Option {
 	}
 }
 
-func RegisterBundle(b Bundle) Option {
+func RegisterBundle(bundles ...Bundle) Option {
 	return func(s *Server) {
-		s.RegisterBundle(b)
+		for _, b := range bundles {
+			s.RegisterBundle(b)
+		}
 	}
 }
 
-func RegisterService(srv IService) Option {
+func RegisterService(services ...IService) Option {
 	return func(s *Server) {
-		s.RegisterService(srv)
+		for _, svc := range services {
+			s.RegisterService(svc)
+		}
 	}
 }
 

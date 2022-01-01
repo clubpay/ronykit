@@ -55,12 +55,12 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 	r.connPool.Put(c)
 }
 
-func (r *bundle) Register(srv ronykit.IService) {
-	for _, rt := range srv.Routes() {
+func (r *bundle) Register(svc ronykit.IService) {
+	for _, rt := range svc.Routes() {
 		var h []ronykit.Handler
-		h = append(h, srv.PreHandlers()...)
+		h = append(h, svc.PreHandlers()...)
 		h = append(h, rt.Handlers()...)
-		h = append(h, srv.PostHandlers()...)
+		h = append(h, svc.PostHandlers()...)
 
 		method, ok := rt.Query(QueryMethod).(string)
 		if !ok {
