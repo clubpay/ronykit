@@ -1,6 +1,7 @@
 package ronykit
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 
@@ -71,6 +72,7 @@ func (n *northBridge) acquireCtx(c Conn) *Context {
 	}
 
 	ctx.conn = c
+	ctx.ctx = context.Background()
 
 	return ctx
 }
