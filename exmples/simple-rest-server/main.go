@@ -7,7 +7,7 @@ import (
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/mw"
+	"github.com/ronaksoft/ronykit/std/mw/tracekit"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		),
 		ronykit.RegisterService(
 			ronykit.WrapService(sampleService,
-				mw.Trace("sample-rest-server"),
+				tracekit.Trace("sample-rest-server"),
 			),
 		),
 	).

@@ -1,7 +1,8 @@
-package mw
+package tracekit
 
 import (
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/std/mw"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -25,11 +26,7 @@ func Trace(tracerName string) func(svc ronykit.Service) ronykit.Service {
 	}
 
 	return func(svc ronykit.Service) ronykit.Service {
-		return serviceWrap{
-			svc:  svc,
-			pre:  pre,
-			post: post,
-		}
+		return mw.Wrap(svc, pre, post)
 	}
 }
 
