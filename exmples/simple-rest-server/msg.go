@@ -7,8 +7,7 @@ type echoRequest struct {
 }
 
 func (e *echoRequest) Marshal() ([]byte, error) {
-	//TODO implement me
-	panic("implement me")
+	return json.Marshal(e)
 }
 
 type echoResponse struct {

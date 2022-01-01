@@ -6,6 +6,7 @@ import (
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/ronaksoft/ronykit/std/mw"
 )
 
 func main() {
@@ -21,7 +22,11 @@ func main() {
 	ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
 		ronykit.RegisterBundle(restBundle),
-		ronykit.RegisterService(sampleService),
+		ronykit.RegisterService(
+			ronykit.WrapService(sampleService,
+				mw.OpenTelemetry("sample-rest-server"),
+			),
+		),
 	).
 		Start().
 		Shutdown(syscall.SIGHUP)
