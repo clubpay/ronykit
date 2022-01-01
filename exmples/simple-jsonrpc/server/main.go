@@ -1,10 +1,11 @@
 package main
 
 import (
+	"syscall"
+
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/jsonrpc"
-	"syscall"
 )
 
 func main() {

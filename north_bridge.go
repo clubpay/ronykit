@@ -76,11 +76,7 @@ func (n *northBridge) acquireCtx(c Conn) *Context {
 }
 
 func (n *northBridge) releaseCtx(ctx *Context) {
-	for k := range ctx.kv {
-		delete(ctx.kv, k)
-	}
-
-	ctx.stopped = false
+	ctx.reset()
 	n.ctxPool.Put(ctx)
 
 	return
