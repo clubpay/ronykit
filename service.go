@@ -29,6 +29,7 @@ type Route interface {
 	Handlers() []Handler
 }
 
+// stdService is a simple implementation of Service interface.
 type stdService struct {
 	name   string
 	pre    []Handler

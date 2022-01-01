@@ -40,6 +40,15 @@ func New(opts ...Option) (*bundle, error) {
 	return r, nil
 }
 
+func MustNew(opts ...Option) *bundle {
+	b, err := New(opts...)
+	if err != nil {
+		panic(err)
+	}
+
+	return b
+}
+
 func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 	c, ok := r.connPool.Get().(*conn)
 	if !ok {
