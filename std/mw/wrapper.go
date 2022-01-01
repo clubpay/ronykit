@@ -8,6 +8,14 @@ type serviceWrap struct {
 	post ronykit.Handler
 }
 
+func Wrap(svc ronykit.Service, pre, post ronykit.Handler) *serviceWrap {
+	return &serviceWrap{
+		svc:  svc,
+		pre:  pre,
+		post: post,
+	}
+}
+
 func (s serviceWrap) Name() string {
 	return s.svc.Name()
 }
