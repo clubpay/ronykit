@@ -1,10 +1,13 @@
 package ronykit
 
-type ServiceWrapper func(service IService) IService
+type ServiceWrapper func(IService) IService
 
-func WrapService(srv IService, wrapFunc ...ServiceWrapper) IService {
-	for _, wf := range wrapFunc {
-		srv = wf(srv)
+// WrapService wraps a service, this is useful for adding middlewares to the service.
+// Some middlewares like OpenTelemetry, Logger, ... could be added to the service using
+// this function.
+func WrapService(srv IService, wrappers ...ServiceWrapper) IService {
+	for _, w := range wrappers {
+		srv = w(srv)
 	}
 
 	return srv
