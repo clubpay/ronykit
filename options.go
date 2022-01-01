@@ -18,7 +18,7 @@ func RegisterBundle(bundles ...Bundle) Option {
 	}
 }
 
-func RegisterService(services ...IService) Option {
+func RegisterService(services ...Service) Option {
 	return func(s *Server) {
 		for _, svc := range services {
 			s.RegisterService(svc)

@@ -3,7 +3,7 @@ package mw
 import "github.com/ronaksoft/ronykit"
 
 type serviceWrap struct {
-	svc  ronykit.IService
+	svc  ronykit.Service
 	pre  ronykit.Handler
 	post ronykit.Handler
 }
@@ -12,7 +12,7 @@ func (s serviceWrap) Name() string {
 	return s.svc.Name()
 }
 
-func (s serviceWrap) Routes() []ronykit.IRoute {
+func (s serviceWrap) Routes() []ronykit.Route {
 	return s.svc.Routes()
 }
 
