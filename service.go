@@ -59,26 +59,25 @@ func (s *Service) SetPostHandlers(h ...Handler) *Service {
 	return s
 }
 
-func (s *Service) AddRoute(r IRoute) *Service {
-	s.routes = append(s.routes, r)
+func (s *Service) AddRoute(routeParams map[string]interface{}, handlers ...Handler) *Service {
+	s.routes = append(
+		s.routes,
+		&Route{
+			routeParams: routeParams,
+			handlers:    handlers,
+		},
+	)
 
 	return s
 }
 
 type Route struct {
-	queries  map[string]interface{}
-	handlers []Handler
-}
-
-func NewRoute(queries map[string]interface{}, handlers ...Handler) *Route {
-	return &Route{
-		queries:  queries,
-		handlers: handlers,
-	}
+	routeParams map[string]interface{}
+	handlers    []Handler
 }
 
 func (r *Route) Query(q string) interface{} {
-	return r.queries[q]
+	return r.routeParams[q]
 }
 
 func (r *Route) Handlers() []Handler {
