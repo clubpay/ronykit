@@ -1,6 +1,8 @@
 package ronykit
 
 import (
+	"context"
+
 	"github.com/ronaksoft/ronykit/utils"
 )
 
@@ -12,8 +14,26 @@ type Context struct {
 	conn    Conn
 	in      Message
 	wf      WriteFunc
-	eh      ErrHandler
+	err     error
 	stopped bool
+	route   string
+	ctx     context.Context
+}
+
+func (ctx *Context) Context() context.Context {
+	return ctx.ctx
+}
+
+func (ctx *Context) SetUserContext(userCtx context.Context) {
+	ctx.ctx = userCtx
+}
+
+func (ctx *Context) SetRoute(route string) {
+	ctx.route = route
+}
+
+func (ctx *Context) Route() string {
+	return ctx.route
 }
 
 func (ctx *Context) Set(key string, val interface{}) {
@@ -48,6 +68,7 @@ func (ctx *Context) Send(m Message, ctxKeys ...string) {
 
 func (ctx *Context) Error(err error) bool {
 	if err != nil {
+		ctx.err = err
 		if h := ctx.nb.eh; h != nil {
 			h(err)
 		}
@@ -61,4 +82,14 @@ func (ctx *Context) Error(err error) bool {
 // StopExecution stops the execution of the next handlers.
 func (ctx *Context) StopExecution() {
 	ctx.stopped = true
+}
+
+func (ctx *Context) reset() {
+	for k := range ctx.kv {
+		delete(ctx.kv, k)
+	}
+
+	ctx.stopped = false
+	ctx.ctx = nil
+	ctx.route = ""
 }

@@ -81,6 +81,8 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			ctx.Set(k, v)
 		}
 
+		ctx.SetRoute(env.Predicate)
+
 		writeFunc := func(m ronykit.Message, _ ...string) error {
 			data, err := m.Marshal()
 			if err != nil {

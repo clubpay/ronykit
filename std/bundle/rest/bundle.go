@@ -97,6 +97,7 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			return errNonRestConnection
 		}
 
+		// Walk over all the query params
 		rc.ctx.QueryArgs().VisitAll(
 			func(key, value []byte) {
 				params = append(
@@ -109,6 +110,19 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			},
 		)
 
+		// Walk over all the connection headers
+		rc.Walk(
+			func(key string, val string) bool {
+				ctx.Set(key, val)
+
+				return true
+			},
+		)
+
+		// Set the route name
+		ctx.SetRoute(fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
+
+		// Set the write function which
 		writeFunc := func(m ronykit.Message, ctxKeys ...string) error {
 			data, err := m.Marshal()
 			if err != nil {

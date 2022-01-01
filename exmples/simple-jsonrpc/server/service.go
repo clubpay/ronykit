@@ -1,10 +1,11 @@
 package main
 
 import (
+	"time"
+
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/exmples/simple-jsonrpc/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/jsonrpc"
-	"time"
 )
 
 var sampleService = ronykit.NewService("sample").
