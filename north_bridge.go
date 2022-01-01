@@ -11,8 +11,7 @@ import (
 type northBridge struct {
 	ctxPool sync.Pool
 	l       log.Logger
-	d       Dispatcher
-	gw      Gateway
+	b       Bundle
 	eh      ErrHandler
 	opened  int64
 	closed  int64
@@ -33,7 +32,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 		)
 	}
 
-	dispatchFunc, err := n.d.Dispatch(c, msg)
+	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
 		return err
 	}

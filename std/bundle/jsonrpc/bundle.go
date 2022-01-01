@@ -10,6 +10,10 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
+const (
+	QueryPredicate = "predicate"
+)
+
 type bundle struct {
 	listen string
 	eh     gnet.EventHandler
@@ -96,9 +100,21 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}, nil
 }
 
-func (b *bundle) SetHandler(predicate string, handlers ...ronykit.Handler) {
-	b.r.routes[predicate] = routerData{
-		Handlers: handlers,
+func (b *bundle) Register(srv ronykit.IService) {
+	for _, rt := range srv.Routes() {
+		var h []ronykit.Handler
+		h = append(h, srv.PreHandlers()...)
+		h = append(h, rt.Handlers()...)
+		h = append(h, srv.PostHandlers()...)
+
+		predicate, ok := rt.Query(QueryPredicate).(string)
+		if !ok {
+			panic("predicate is not set in Service's Route")
+		}
+
+		b.r.routes[predicate] = routerData{
+			Handlers: h,
+		}
 	}
 }
 
