@@ -3,27 +3,27 @@ package mw
 import "github.com/ronaksoft/ronykit"
 
 type serviceWrap struct {
-	srv  ronykit.IService
+	svc  ronykit.IService
 	pre  ronykit.Handler
 	post ronykit.Handler
 }
 
 func (s serviceWrap) Name() string {
-	return s.srv.Name()
+	return s.svc.Name()
 }
 
 func (s serviceWrap) Routes() []ronykit.IRoute {
-	return s.srv.Routes()
+	return s.svc.Routes()
 }
 
 func (s serviceWrap) PreHandlers() []ronykit.Handler {
 	var handlers = []ronykit.Handler{s.pre}
 
-	return append(handlers, s.srv.PreHandlers()...)
+	return append(handlers, s.svc.PreHandlers()...)
 }
 
 func (s serviceWrap) PostHandlers() []ronykit.Handler {
 	var handlers = []ronykit.Handler{s.post}
 
-	return append(handlers, s.srv.PostHandlers()...)
+	return append(handlers, s.svc.PostHandlers()...)
 }

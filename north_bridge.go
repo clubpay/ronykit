@@ -6,7 +6,6 @@ import (
 	"sync/atomic"
 
 	log "github.com/ronaksoft/golog"
-	"go.uber.org/zap"
 )
 
 type northBridge struct {
@@ -27,12 +26,6 @@ func (n *northBridge) OnClose(connID uint64) {
 }
 
 func (n *northBridge) OnMessage(c Conn, msg []byte) error {
-	if ce := n.l.Check(log.DebugLevel, "received message"); ce != nil {
-		ce.Write(
-			zap.Uint64("ConnID", c.ConnID()),
-		)
-	}
-
 	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
 		return err

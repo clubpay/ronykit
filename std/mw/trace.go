@@ -7,7 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func OpenTelemetry(tracerName string) func(srv ronykit.IService) ronykit.IService {
+func OpenTelemetry(tracerName string) func(svc ronykit.IService) ronykit.IService {
 	traceCtx := propagation.TraceContext{}
 	tracer := otel.GetTracerProvider().Tracer(tracerName)
 	pre := func(ctx *ronykit.Context) ronykit.Handler {
@@ -24,9 +24,9 @@ func OpenTelemetry(tracerName string) func(srv ronykit.IService) ronykit.IServic
 		return nil
 	}
 
-	return func(srv ronykit.IService) ronykit.IService {
+	return func(svc ronykit.IService) ronykit.IService {
 		return serviceWrap{
-			srv:  srv,
+			svc:  svc,
 			pre:  pre,
 			post: post,
 		}
