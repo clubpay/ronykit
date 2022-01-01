@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	ErrHandler func(err error)
+	ErrHandler func(ctx *Context, err error)
 	Handler    func(ctx *Context) Handler
 	Bundle     interface {
 		Gateway

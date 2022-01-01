@@ -70,7 +70,7 @@ func (ctx *Context) Error(err error) bool {
 	if err != nil {
 		ctx.err = err
 		if h := ctx.nb.eh; h != nil {
-			h(err)
+			h(ctx, err)
 		}
 
 		return true
