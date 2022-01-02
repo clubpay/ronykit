@@ -8,67 +8,76 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 )
 
-var sampleService = ronykit.NewService("sample").
+var sampleService = ronykit.
+	NewService("sample").
 	AddRoute(
-		map[string]interface{}{
-			rest.QueryMethod: rest.MethodGet,
-			rest.QueryPath:   "/echo/:randomID",
-			rest.QueryDecoder: func(bag mux.Params, data []byte) ronykit.Message {
-				m := &echoRequest{}
-				m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
+		ronykit.NewRoute().
+			SetQuery(rest.QueryPath, rest.MethodGet).
+			SetQuery(rest.QueryPath, "/echo/:randomID").
+			SetQuery(
+				rest.QueryDecoder,
+				func(bag mux.Params, data []byte) ronykit.Message {
+					m := &echoRequest{}
+					m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
 
-				return m
-			},
-		},
-		func(ctx *ronykit.Context) ronykit.Handler {
-			req, ok := ctx.Receive().(*echoRequest)
-			if !ok {
-				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+					return m
+				},
+			).
+			SetHandler(
+				func(ctx *ronykit.Context) ronykit.Handler {
+					req, ok := ctx.Receive().(*echoRequest)
+					if !ok {
+						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
 
-				return nil
-			}
+						return nil
+					}
 
-			ctx.Set("Content-Type", "application/json")
-			res := &echoResponse{
-				RandomID: req.RandomID,
-			}
+					ctx.Set("Content-Type", "application/json")
+					res := &echoResponse{
+						RandomID: req.RandomID,
+					}
 
-			ctx.Send(res, "Content-Type")
+					ctx.Send(res, "Content-Type")
 
-			return nil
-		},
+					return nil
+				},
+			),
 	).
 	AddRoute(
-		map[string]interface{}{
-			rest.QueryMethod: rest.MethodGet,
-			rest.QueryPath:   "/sum/:val1/:val2",
-			rest.QueryDecoder: func(bag mux.Params, data []byte) ronykit.Message {
-				m := &sumRequest{
-					Val1: utils.StrToInt64(bag.ByName("val1")),
-					Val2: utils.StrToInt64(bag.ByName("val2")),
-				}
+		ronykit.NewRoute().
+			SetQuery(rest.QueryMethod, rest.MethodGet).
+			SetQuery(rest.QueryPath, "/sum/:val1/:val2").
+			SetQuery(
+				rest.QueryDecoder,
+				func(bag mux.Params, data []byte) ronykit.Message {
+					m := &sumRequest{
+						Val1: utils.StrToInt64(bag.ByName("val1")),
+						Val2: utils.StrToInt64(bag.ByName("val2")),
+					}
 
-				return m
-			},
-		},
-		func(ctx *ronykit.Context) ronykit.Handler {
-			req, ok := ctx.Receive().(*sumRequest)
-			if !ok {
-				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+					return m
+				},
+			).
+			SetHandler(
+				func(ctx *ronykit.Context) ronykit.Handler {
+					req, ok := ctx.Receive().(*sumRequest)
+					if !ok {
+						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
 
-				return nil
-			}
+						return nil
+					}
 
-			res := &sumResponse{
-				Val: req.Val1 + req.Val2,
-			}
+					res := &sumResponse{
+						Val: req.Val1 + req.Val2,
+					}
 
-			ctx.Send(res, "Content-Type")
+					ctx.Send(res, "Content-Type")
 
-			return nil
-		},
+					return nil
+				},
+			),
 	).
-	AddRoute(
+	AddRouteData(
 		map[string]interface{}{
 			rest.QueryMethod: rest.MethodPost,
 			rest.QueryPath:   "/echo",

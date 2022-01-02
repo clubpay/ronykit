@@ -6,6 +6,11 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 )
 
+const (
+	CtxServiceName = "__ServiceName__"
+	CtxRoute       = "__Route__"
+)
+
 type Context struct {
 	utils.SpinLock
 
@@ -16,7 +21,6 @@ type Context struct {
 	wf      WriteFunc
 	err     error
 	stopped bool
-	route   string
 	ctx     context.Context
 }
 
@@ -28,12 +32,12 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 	ctx.ctx = userCtx
 }
 
-func (ctx *Context) SetRoute(route string) {
-	ctx.route = route
+func (ctx *Context) Route() string {
+	return ctx.Get(CtxRoute).(string)
 }
 
-func (ctx *Context) Route() string {
-	return ctx.route
+func (ctx *Context) ServiceName() string {
+	return ctx.Get(CtxServiceName).(string)
 }
 
 func (ctx *Context) Set(key string, val interface{}) {
@@ -91,5 +95,4 @@ func (ctx *Context) reset() {
 
 	ctx.stopped = false
 	ctx.ctx = nil
-	ctx.route = ""
 }
