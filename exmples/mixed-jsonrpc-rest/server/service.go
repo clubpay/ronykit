@@ -12,7 +12,7 @@ import (
 )
 
 var sampleService = ronykit.NewService("sample").
-	AddRoute(
+	AddRouteData(
 		map[string]interface{}{
 			rest.QueryMethod: rest.MethodGet,
 			rest.QueryPath:   "/echo/:randomID",

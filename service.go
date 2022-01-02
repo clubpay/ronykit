@@ -23,7 +23,9 @@ type Service interface {
 }
 
 // Route defines the set of Handlers based on the Query. Query is different per bundles,
-// hence, this is the implementor's task to make sure return correct value based on 'q'
+// hence, this is the implementor's task to make sure return correct value based on 'q'.
+// In other words, Route 'r' must return valid response for 'q's required by Bundle 'b' in
+// order to be usable by Bundle 'b' otherwise it panics.
 type Route interface {
 	Query(q string) interface{}
 	Handlers() []Handler
@@ -73,10 +75,10 @@ func (s *stdService) SetPostHandlers(h ...Handler) *stdService {
 	return s
 }
 
-func (s *stdService) AddRoute(routeParams map[string]interface{}, handlers ...Handler) *stdService {
+func (s *stdService) AddRouteData(routeParams map[string]interface{}, handlers ...Handler) *stdService {
 	s.routes = append(
 		s.routes,
-		&route{
+		&stdRoute{
 			routeParams: routeParams,
 			handlers:    handlers,
 		},
@@ -85,15 +87,40 @@ func (s *stdService) AddRoute(routeParams map[string]interface{}, handlers ...Ha
 	return s
 }
 
-type route struct {
+func (s *stdService) AddRoute(r Route) *stdService {
+	s.routes = append(s.routes, r)
+
+	return s
+}
+
+// stdRoute is simple implementation of Route interface.
+type stdRoute struct {
 	routeParams map[string]interface{}
 	handlers    []Handler
 }
 
-func (r *route) Query(q string) interface{} {
+func NewRoute() *stdRoute {
+	return &stdRoute{
+		routeParams: map[string]interface{}{},
+	}
+}
+
+func (r *stdRoute) SetQuery(q string, a interface{}) *stdRoute {
+	r.routeParams[q] = a
+
+	return r
+}
+
+func (r *stdRoute) Query(q string) interface{} {
 	return r.routeParams[q]
 }
 
-func (r *route) Handlers() []Handler {
+func (r *stdRoute) SetHandler(handlers ...Handler) *stdRoute {
+	r.handlers = append(r.handlers[:0], handlers...)
+
+	return r
+}
+
+func (r *stdRoute) Handlers() []Handler {
 	return r.handlers
 }

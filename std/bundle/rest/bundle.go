@@ -86,9 +86,10 @@ func (r *bundle) Register(svc ronykit.Service) {
 
 		r.mux.Handle(
 			method, path,
-			&mux.Handle{
-				Decoder:  decoder,
-				Handlers: h,
+			&mux.RouteData{
+				ServiceName: svc.Name(),
+				Decoder:     decoder,
+				Handlers:    h,
 			},
 		)
 	}
@@ -101,8 +102,8 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		h, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
-		if h == nil {
+		routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
+		if routeData == nil {
 			return errNonRestConnection
 		}
 
@@ -128,8 +129,9 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			},
 		)
 
-		// Set the route name
-		ctx.SetRoute(fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
+		// Set the route and service name
+		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
+		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
 
 		// Set the write function which
 		writeFunc := func(m ronykit.Message, ctxKeys ...string) error {
@@ -149,7 +151,7 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			return nil
 		}
 
-		execFunc(h.Decoder(params, in), writeFunc, h.Handlers...)
+		execFunc(routeData.Decoder(params, in), writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
