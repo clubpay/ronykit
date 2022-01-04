@@ -31,7 +31,5 @@ func (s serviceWrap) PreHandlers() []ronykit.Handler {
 }
 
 func (s serviceWrap) PostHandlers() []ronykit.Handler {
-	var handlers = []ronykit.Handler{s.post}
-
-	return append(handlers, s.svc.PostHandlers()...)
+	return append(s.svc.PostHandlers(), s.post)
 }
