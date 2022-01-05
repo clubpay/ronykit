@@ -6,6 +6,12 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
+	"strings"
+)
+
+const (
+	traceparentHeader = "traceparent"
+	tracestateHeader  = "tracestate"
 )
 
 func Trace(tracerName string) func(svc ronykit.Service) ronykit.Service {
@@ -31,14 +37,36 @@ func Trace(tracerName string) func(svc ronykit.Service) ronykit.Service {
 }
 
 type ctxCarrier struct {
-	ctx *ronykit.Context
+	traceParent string
+	traceState  string
+	ctx         *ronykit.Context
 }
 
 func newCtxCarrier(ctx *ronykit.Context) ctxCarrier {
-	return ctxCarrier{ctx: ctx}
+	c := ctxCarrier{ctx: ctx}
+	c.ctx.Walk(
+		func(key string, v interface{}) bool {
+			if strings.EqualFold(traceparentHeader, key) {
+				c.traceParent, _ = v.(string)
+			} else if strings.EqualFold(tracestateHeader, key) {
+				c.traceState, _ = v.(string)
+			}
+
+			return true
+		},
+	)
+
+	return c
 }
 
 func (c ctxCarrier) Get(key string) string {
+	switch key {
+	case traceparentHeader:
+		return c.traceParent
+	case tracestateHeader:
+		return c.traceState
+	}
+	
 	v, ok := c.ctx.Get(key).(string)
 	if !ok {
 		return ""
