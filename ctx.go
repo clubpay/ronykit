@@ -62,6 +62,10 @@ func (ctx *Context) Walk(f func(key string, val interface{}) bool) {
 	}
 }
 
+func (ctx *Context) Conn() Conn {
+	return ctx.conn
+}
+
 func (ctx *Context) Receive() Message {
 	return ctx.in
 }

@@ -44,12 +44,12 @@ type ctxCarrier struct {
 
 func newCtxCarrier(ctx *ronykit.Context) ctxCarrier {
 	c := ctxCarrier{ctx: ctx}
-	c.ctx.Walk(
-		func(key string, v interface{}) bool {
+	c.ctx.Conn().Walk(
+		func(key string, v string) bool {
 			if strings.EqualFold(traceparentHeader, key) {
-				c.traceParent, _ = v.(string)
+				c.traceParent = v
 			} else if strings.EqualFold(tracestateHeader, key) {
-				c.traceState, _ = v.(string)
+				c.traceState = v
 			}
 
 			return true
@@ -66,7 +66,7 @@ func (c ctxCarrier) Get(key string) string {
 	case tracestateHeader:
 		return c.traceState
 	}
-	
+
 	v, ok := c.ctx.Get(key).(string)
 	if !ok {
 		return ""
