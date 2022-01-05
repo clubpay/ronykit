@@ -1,12 +1,13 @@
 package tracekit
 
 import (
+	"strings"
+
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/mw"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-	"strings"
 )
 
 const (
@@ -81,8 +82,8 @@ func (c ctxCarrier) Set(key string, value string) {
 
 func (c ctxCarrier) Keys() []string {
 	var keys []string
-	c.ctx.Walk(
-		func(key string, _ interface{}) bool {
+	c.ctx.Conn().Walk(
+		func(key string, _ string) bool {
 			keys = append(keys, key)
 
 			return true
