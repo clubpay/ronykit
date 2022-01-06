@@ -46,6 +46,13 @@ func (ctx *Context) Set(key string, val interface{}) {
 	ctx.Unlock()
 }
 
+func (ctx *Context) SetStatusCode(code int) {
+	rc, ok := ctx.Conn().(REST)
+	if ok {
+		rc.SetStatusCode(code)
+	}
+}
+
 func (ctx *Context) Get(key string) interface{} {
 	ctx.Lock()
 	v := ctx.kv[key]

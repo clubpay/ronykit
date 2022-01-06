@@ -38,6 +38,10 @@ func (c *conn) Set(key string, val string) {
 	c.ctx.Response.Header.Set(key, val)
 }
 
+func (c *conn) SetStatusCode(code int) {
+	c.ctx.Response.SetStatusCode(code)
+}
+
 func (c *conn) ConnID() uint64 {
 	return c.ctx.ConnID()
 }

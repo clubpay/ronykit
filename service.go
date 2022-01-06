@@ -27,8 +27,12 @@ type Service interface {
 // In other words, Route 'r' must return valid response for 'q's required by Bundle 'b' in
 // order to be usable by Bundle 'b' otherwise it panics.
 type Route interface {
-	Query(q string) interface{}
+	RouteData
 	Handlers() []Handler
+}
+
+type RouteData interface {
+	Query(q string) interface{}
 }
 
 // stdService is a simple implementation of Service interface.
@@ -75,18 +79,6 @@ func (s *stdService) SetPostHandlers(h ...Handler) *stdService {
 	return s
 }
 
-func (s *stdService) AddRouteData(routeParams map[string]interface{}, handlers ...Handler) *stdService {
-	s.routes = append(
-		s.routes,
-		&stdRoute{
-			routeParams: routeParams,
-			handlers:    handlers,
-		},
-	)
-
-	return s
-}
-
 func (s *stdService) AddRoute(r Route) *stdService {
 	s.routes = append(s.routes, r)
 
@@ -95,24 +87,29 @@ func (s *stdService) AddRoute(r Route) *stdService {
 
 // stdRoute is simple implementation of Route interface.
 type stdRoute struct {
-	routeParams map[string]interface{}
-	handlers    []Handler
+	routeData []RouteData
+	handlers  []Handler
 }
 
 func NewRoute() *stdRoute {
-	return &stdRoute{
-		routeParams: map[string]interface{}{},
-	}
+	return &stdRoute{}
 }
 
-func (r *stdRoute) SetQuery(q string, a interface{}) *stdRoute {
-	r.routeParams[q] = a
+func (r *stdRoute) SetData(rd RouteData) *stdRoute {
+	r.routeData = append(r.routeData, rd)
 
 	return r
 }
 
 func (r *stdRoute) Query(q string) interface{} {
-	return r.routeParams[q]
+	for _, rd := range r.routeData {
+		v := rd.Query(q)
+		if v != nil {
+			return v
+		}
+	}
+
+	return nil
 }
 
 func (r *stdRoute) SetHandler(handlers ...Handler) *stdRoute {
