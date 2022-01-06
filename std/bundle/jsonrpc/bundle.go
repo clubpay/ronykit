@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	QueryPredicate = "predicate"
+	queryPredicate = "predicate"
 )
 
 type bundle struct {
@@ -110,7 +110,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 		h = append(h, rt.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		predicate, ok := rt.Query(QueryPredicate).(string)
+		predicate, ok := rt.Query(queryPredicate).(string)
 		if !ok {
 			panic("predicate is not set in Service's Route")
 		}

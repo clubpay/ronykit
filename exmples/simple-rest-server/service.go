@@ -12,16 +12,16 @@ var sampleService = ronykit.
 	NewService("sample").
 	AddRoute(
 		ronykit.NewRoute().
-			SetQuery(rest.QueryPath, rest.MethodGet).
-			SetQuery(rest.QueryPath, "/echo/:randomID").
-			SetQuery(
-				rest.QueryDecoder,
-				func(bag mux.Params, data []byte) ronykit.Message {
-					m := &echoRequest{}
-					m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
+			SetData(
+				rest.NewRouteData(
+					rest.MethodGet, "/echo/:randomID",
+					func(bag mux.Params, data []byte) ronykit.Message {
+						m := &echoRequest{}
+						m.RandomID = utils.StrToInt64(bag.ByName("randomID"))
 
-					return m
-				},
+						return m
+					},
+				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
@@ -45,18 +45,18 @@ var sampleService = ronykit.
 	).
 	AddRoute(
 		ronykit.NewRoute().
-			SetQuery(rest.QueryMethod, rest.MethodGet).
-			SetQuery(rest.QueryPath, "/sum/:val1/:val2").
-			SetQuery(
-				rest.QueryDecoder,
-				func(bag mux.Params, data []byte) ronykit.Message {
-					m := &sumRequest{
-						Val1: utils.StrToInt64(bag.ByName("val1")),
-						Val2: utils.StrToInt64(bag.ByName("val2")),
-					}
+			SetData(
+				rest.NewRouteData(
+					rest.MethodGet, "/sum/:val1/:val2",
+					func(bag mux.Params, data []byte) ronykit.Message {
+						m := &sumRequest{
+							Val1: utils.StrToInt64(bag.ByName("val1")),
+							Val2: utils.StrToInt64(bag.ByName("val2")),
+						}
 
-					return m
-				},
+						return m
+					},
+				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
@@ -77,35 +77,39 @@ var sampleService = ronykit.
 				},
 			),
 	).
-	AddRouteData(
-		map[string]interface{}{
-			rest.QueryMethod: rest.MethodPost,
-			rest.QueryPath:   "/echo",
-			rest.QueryDecoder: func(bag mux.Params, data []byte) ronykit.Message {
-				m := &echoRequest{}
-				err := json.Unmarshal(data, m)
-				if err != nil {
+	AddRoute(
+		ronykit.NewRoute().
+			SetData(
+				rest.NewRouteData(
+					rest.MethodPost, "/echo",
+					func(bag mux.Params, data []byte) ronykit.Message {
+						m := &echoRequest{}
+						err := json.Unmarshal(data, m)
+						if err != nil {
+							return nil
+						}
+
+						return m
+					},
+				),
+			).
+			SetHandler(
+				func(ctx *ronykit.Context) ronykit.Handler {
+					req, ok := ctx.Receive().(*echoRequest)
+					if !ok {
+						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+
+						return nil
+					}
+
+					ctx.Set("Content-Type", "application/json")
+					res := &echoResponse{
+						RandomID: req.RandomID,
+					}
+
+					ctx.Send(res, "Content-Type")
+
 					return nil
-				}
-
-				return m
-			},
-		},
-		func(ctx *ronykit.Context) ronykit.Handler {
-			req, ok := ctx.Receive().(*echoRequest)
-			if !ok {
-				ctx.Send(rest.Err("E01", "Request was not echoRequest"))
-
-				return nil
-			}
-
-			ctx.Set("Content-Type", "application/json")
-			res := &echoResponse{
-				RandomID: req.RandomID,
-			}
-
-			ctx.Send(res, "Content-Type")
-
-			return nil
-		},
+				},
+			),
 	)

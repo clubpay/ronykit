@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	QueryMethod  = "method"
-	QueryPath    = "path"
-	QueryDecoder = "decoder"
+	queryMethod  = "method"
+	queryPath    = "path"
+	queryDecoder = "decoder"
 )
 
 type bundle struct {
@@ -71,15 +71,15 @@ func (r *bundle) Register(svc ronykit.Service) {
 		h = append(h, rt.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		method, ok := rt.Query(QueryMethod).(string)
+		method, ok := rt.Query(queryMethod).(string)
 		if !ok {
 			panic("method is not set in Service's Route")
 		}
-		path, ok := rt.Query(QueryPath).(string)
+		path, ok := rt.Query(queryPath).(string)
 		if !ok {
 			panic("path is not set in Service's Route")
 		}
-		decoder, ok := rt.Query(QueryDecoder).(mux.DecoderFunc)
+		decoder, ok := rt.Query(queryDecoder).(mux.DecoderFunc)
 		if !ok {
 			panic("mux.DecoderFunc is not set in Service's Route")
 		}
