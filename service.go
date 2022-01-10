@@ -16,22 +16,32 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Bundle.
 type Service interface {
+	// Name of the service which must be unique per Server.
 	Name() string
-	Routes() []Route
+	// Contracts returns a list of APIs which this service provides.
+	Contracts() []Contract
+	// PreHandlers returns a list of handlers which are executed in sequence BEFORE any
+	// call. If you need specific pre-handlers per Contract, then should be defined the
+	// Contract itself.
 	PreHandlers() []Handler
+	// PostHandlers returns a list of handlers which are executed in sequence AFTER any
+	// call. If you need specific pre-handlers per Contract, then should be defined the
+	// Contract itself.
 	PostHandlers() []Handler
 }
 
-// Route defines the set of Handlers based on the Query. Query is different per bundles,
+// Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.
-// In other words, Route 'r' must return valid response for 'q's required by Bundle 'b' in
+// In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
 // order to be usable by Bundle 'b' otherwise it panics.
-type Route interface {
-	RouteData
+type Contract interface {
+	RouteInfo
 	Handlers() []Handler
 }
 
-type RouteData interface {
+// RouteInfo holds information about how this Contract is going to be selected. Each
+// Bundle may need different information to route the request to the right Contract.
+type RouteInfo interface {
 	Query(q string) interface{}
 }
 
@@ -40,7 +50,7 @@ type stdService struct {
 	name   string
 	pre    []Handler
 	post   []Handler
-	routes []Route
+	routes []Contract
 }
 
 func NewService(name string) *stdService {
@@ -55,7 +65,7 @@ func (s *stdService) Name() string {
 	return s.name
 }
 
-func (s *stdService) Routes() []Route {
+func (s *stdService) Contracts() []Contract {
 	return s.routes
 }
 
@@ -79,15 +89,15 @@ func (s *stdService) SetPostHandlers(h ...Handler) *stdService {
 	return s
 }
 
-func (s *stdService) AddRoute(r Route) *stdService {
+func (s *stdService) AddContract(r Contract) *stdService {
 	s.routes = append(s.routes, r)
 
 	return s
 }
 
-// stdRoute is simple implementation of Route interface.
+// stdRoute is simple implementation of Contract interface.
 type stdRoute struct {
-	routeData []RouteData
+	routeData []RouteInfo
 	handlers  []Handler
 }
 
@@ -95,7 +105,7 @@ func NewRoute() *stdRoute {
 	return &stdRoute{}
 }
 
-func (r *stdRoute) SetData(rd RouteData) *stdRoute {
+func (r *stdRoute) SetData(rd RouteInfo) *stdRoute {
 	r.routeData = append(r.routeData, rd)
 
 	return r

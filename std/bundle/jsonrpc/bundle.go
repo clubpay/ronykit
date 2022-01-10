@@ -104,7 +104,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 }
 
 func (b *bundle) Register(svc ronykit.Service) {
-	for _, rt := range svc.Routes() {
+	for _, rt := range svc.Contracts() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
 		h = append(h, rt.Handlers()...)
@@ -112,7 +112,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 		predicate, ok := rt.Query(queryPredicate).(string)
 		if !ok {
-			panic("predicate is not set in Service's Route")
+			panic("predicate is not set in Service's Contract")
 		}
 
 		b.r.routes[predicate] = routerData{

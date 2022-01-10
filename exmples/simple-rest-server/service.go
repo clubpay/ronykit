@@ -10,7 +10,7 @@ import (
 
 var sampleService = ronykit.
 	NewService("sample").
-	AddRoute(
+	AddContract(
 		ronykit.NewRoute().
 			SetData(
 				rest.NewRouteData(
@@ -43,7 +43,7 @@ var sampleService = ronykit.
 				},
 			),
 	).
-	AddRoute(
+	AddContract(
 		ronykit.NewRoute().
 			SetData(
 				rest.NewRouteData(
@@ -77,7 +77,7 @@ var sampleService = ronykit.
 				},
 			),
 	).
-	AddRoute(
+	AddContract(
 		ronykit.NewRoute().
 			SetData(
 				rest.NewRouteData(
