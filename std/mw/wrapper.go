@@ -20,8 +20,8 @@ func (s serviceWrap) Name() string {
 	return s.svc.Name()
 }
 
-func (s serviceWrap) Routes() []ronykit.Route {
-	return s.svc.Routes()
+func (s serviceWrap) Contracts() []ronykit.Contract {
+	return s.svc.Contracts()
 }
 
 func (s serviceWrap) PreHandlers() []ronykit.Handler {

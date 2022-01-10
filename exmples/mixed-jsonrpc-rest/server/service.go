@@ -12,7 +12,7 @@ import (
 )
 
 var sampleService = ronykit.NewService("sample").
-	AddRoute(
+	AddContract(
 		ronykit.NewRoute().
 			SetData(
 				rest.NewRouteData(

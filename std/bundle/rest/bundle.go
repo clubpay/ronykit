@@ -65,7 +65,7 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 }
 
 func (r *bundle) Register(svc ronykit.Service) {
-	for _, rt := range svc.Routes() {
+	for _, rt := range svc.Contracts() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
 		h = append(h, rt.Handlers()...)
@@ -73,15 +73,15 @@ func (r *bundle) Register(svc ronykit.Service) {
 
 		method, ok := rt.Query(queryMethod).(string)
 		if !ok {
-			panic("method is not set in Service's Route")
+			panic("method is not set in Service's Contract")
 		}
 		path, ok := rt.Query(queryPath).(string)
 		if !ok {
-			panic("path is not set in Service's Route")
+			panic("path is not set in Service's Contract")
 		}
 		decoder, ok := rt.Query(queryDecoder).(mux.DecoderFunc)
 		if !ok {
-			panic("mux.DecoderFunc is not set in Service's Route")
+			panic("mux.DecoderFunc is not set in Service's Contract")
 		}
 
 		r.mux.Handle(
