@@ -95,23 +95,23 @@ func (s *stdService) AddContract(r Contract) *stdService {
 	return s
 }
 
-// stdRoute is simple implementation of Contract interface.
-type stdRoute struct {
+// simpleContract is simple implementation of Contract interface.
+type simpleContract struct {
 	routeData []RouteInfo
 	handlers  []Handler
 }
 
-func NewRoute() *stdRoute {
-	return &stdRoute{}
+func NewContract() *simpleContract {
+	return &simpleContract{}
 }
 
-func (r *stdRoute) SetData(rd RouteInfo) *stdRoute {
+func (r *simpleContract) SetRouteInfo(rd RouteInfo) *simpleContract {
 	r.routeData = append(r.routeData, rd)
 
 	return r
 }
 
-func (r *stdRoute) Query(q string) interface{} {
+func (r *simpleContract) Query(q string) interface{} {
 	for _, rd := range r.routeData {
 		v := rd.Query(q)
 		if v != nil {
@@ -122,12 +122,12 @@ func (r *stdRoute) Query(q string) interface{} {
 	return nil
 }
 
-func (r *stdRoute) SetHandler(handlers ...Handler) *stdRoute {
+func (r *simpleContract) SetHandler(handlers ...Handler) *simpleContract {
 	r.handlers = append(r.handlers[:0], handlers...)
 
 	return r
 }
 
-func (r *stdRoute) Handlers() []Handler {
+func (r *simpleContract) Handlers() []Handler {
 	return r.handlers
 }

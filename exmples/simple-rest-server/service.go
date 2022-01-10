@@ -11,8 +11,8 @@ import (
 var sampleService = ronykit.
 	NewService("sample").
 	AddContract(
-		ronykit.NewRoute().
-			SetData(
+		ronykit.NewContract().
+			SetRouteInfo(
 				rest.NewRouteData(
 					rest.MethodGet, "/echo/:randomID",
 					func(bag mux.Params, data []byte) ronykit.Message {
@@ -44,8 +44,8 @@ var sampleService = ronykit.
 			),
 	).
 	AddContract(
-		ronykit.NewRoute().
-			SetData(
+		ronykit.NewContract().
+			SetRouteInfo(
 				rest.NewRouteData(
 					rest.MethodGet, "/sum/:val1/:val2",
 					func(bag mux.Params, data []byte) ronykit.Message {
@@ -78,8 +78,8 @@ var sampleService = ronykit.
 			),
 	).
 	AddContract(
-		ronykit.NewRoute().
-			SetData(
+		ronykit.NewContract().
+			SetRouteInfo(
 				rest.NewRouteData(
 					rest.MethodPost, "/echo",
 					func(bag mux.Params, data []byte) ronykit.Message {

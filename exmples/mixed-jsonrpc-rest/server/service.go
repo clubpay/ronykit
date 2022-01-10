@@ -13,8 +13,8 @@ import (
 
 var sampleService = ronykit.NewService("sample").
 	AddContract(
-		ronykit.NewRoute().
-			SetData(
+		ronykit.NewContract().
+			SetRouteInfo(
 				rest.NewRouteData(
 					rest.MethodGet, "/echo/:randomID",
 					func(bag mux.Params, data []byte) ronykit.Message {
@@ -31,7 +31,7 @@ var sampleService = ronykit.NewService("sample").
 					},
 				),
 			).
-			SetData(jsonrpc.NewRouteData("echoRequest")).
+			SetRouteInfo(jsonrpc.NewRouteData("echoRequest")).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
 					in, ok := ctx.Receive().(*jsonrpc.Envelope)
