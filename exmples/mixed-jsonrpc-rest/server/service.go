@@ -31,7 +31,9 @@ var sampleService = ronykit.NewService("sample").
 					},
 				),
 			).
-			AddRouteInfo(jsonrpc.NewRouteData("echoRequest")).
+			AddRouteInfo(
+				jsonrpc.NewRouteData("echoRequest"),
+			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
 					in, ok := ctx.Receive().(*jsonrpc.Envelope)

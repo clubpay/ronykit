@@ -3,7 +3,7 @@ package main
 import "github.com/goccy/go-json"
 
 type echoRequest struct {
-	RandomID int64 `json:"randomId"`
+	RandomID int64 `json:"randomId" paramName:"randomID"`
 }
 
 func (e *echoRequest) Marshal() ([]byte, error) {
@@ -19,8 +19,8 @@ func (e *echoResponse) Marshal() ([]byte, error) {
 }
 
 type sumRequest struct {
-	Val1 int64
-	Val2 int64
+	Val1 int64 `paramName:"val1"`
+	Val2 int64 `paramName:"val2"`
 }
 
 func (s *sumRequest) Marshal() ([]byte, error) {
