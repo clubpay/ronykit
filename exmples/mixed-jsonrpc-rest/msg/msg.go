@@ -12,7 +12,7 @@ func (e *Error) Marshal() ([]byte, error) {
 }
 
 type EchoRequest struct {
-	RandomID int64 `json:"randomId"`
+	RandomID int64 `json:"randomId" paramName:"randomID"`
 }
 
 func (e *EchoRequest) Marshal() ([]byte, error) {

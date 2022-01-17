@@ -1,9 +1,10 @@
 package ronykit
 
 type (
-	WriteFunc    func(e *Envelope) error
-	ExecuteFunc  func(e *Envelope, wf WriteFunc, handlers ...Handler)
-	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
+	WriteFunc      func(e *Envelope) error
+	ExecuteFunc    func(e *Envelope, wf WriteFunc, handlers ...Handler)
+	DispatchFunc   func(ctx *Context, execFunc ExecuteFunc) error
+	MessageFactory func() Message
 )
 
 type Dispatcher interface {

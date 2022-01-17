@@ -18,7 +18,11 @@ var sampleService = ronykit.NewService("sample").
 						return &msg.EchoRequest{}
 					},
 				),
-				rpc.Route("echoRequest"),
+				rpc.Route("echoRequest",
+					func() ronykit.Message {
+						return &msg.EchoRequest{}
+					},
+				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
@@ -37,6 +41,7 @@ var sampleService = ronykit.NewService("sample").
 							RandomID: req.RandomID,
 						},
 					)
+					ctx.Send(res)
 
 					return nil
 				},

@@ -11,6 +11,7 @@ import (
 
 const (
 	queryPredicate = "__rpc__predicate"
+	queryFactory   = "__rpc__factory"
 )
 
 type bundle struct {
@@ -51,9 +52,15 @@ func (b *bundle) Register(svc ronykit.Service) {
 			panic("predicate is not set in Service's Contract")
 		}
 
+		factory, ok := rt.Query(queryFactory).(ronykit.MessageFactory)
+		if !ok {
+			panic("factory is not set in Service's Contract")
+		}
+
 		b.r.routes[predicate] = routerData{
 			ServiceName: svc.Name(),
 			Handlers:    h,
+			Factory:     factory,
 		}
 	}
 }
@@ -80,6 +87,8 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println(msg)
 
 	env := ronykit.NewEnvelope().SetMsg(msg)
 	for k, v := range rpcEnvelope.Header {
