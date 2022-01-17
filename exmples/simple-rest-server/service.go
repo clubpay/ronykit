@@ -20,27 +20,24 @@ var sampleService = service.New("sample").
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().GetMsg().(*echoRequest)
-					res := ronykit.NewEnvelope()
+					req, ok := ctx.In().GetMsg().(*echoRequest)
 
 					if !ok {
-						res.SetMsg(
-							rest.Err("E01", "Request was not echoRequest"),
-						)
-
-						ctx.Send(res)
+						ctx.Out().
+							SetMsg(
+								rest.Err("E01", "Request was not echoRequest"),
+							).Send()
 
 						return nil
 					}
 
-					res.SetHdr("Content-Type", "application/json")
-					res.SetMsg(
-						&echoResponse{
-							RandomID: req.RandomID,
-						},
-					)
-
-					ctx.Send(res)
+					ctx.Out().
+						SetHdr("Content-Type", "application/json").
+						SetMsg(
+							&echoResponse{
+								RandomID: req.RandomID,
+							},
+						).Send()
 
 					return nil
 				},
@@ -56,22 +53,22 @@ var sampleService = service.New("sample").
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().GetMsg().(*sumRequest)
-					res := ronykit.NewEnvelope()
+					req, ok := ctx.In().GetMsg().(*sumRequest)
 					if !ok {
-						res.SetMsg(rest.Err("E01", "Request was not echoRequest"))
-						ctx.Send(res)
+						ctx.Out().
+							SetMsg(rest.Err("E01", "Request was not echoRequest")).
+							Send()
 
 						return nil
 					}
 
-					res.SetHdr("Content-Type", "application/json")
-					res.SetMsg(
-						&sumResponse{
-							Val: req.Val1 + req.Val2,
-						},
-					)
-					ctx.Send(res)
+					ctx.Out().
+						SetHdr("Content-Type", "application/json").
+						SetMsg(
+							&sumResponse{
+								Val: req.Val1 + req.Val2,
+							},
+						).Send()
 
 					return nil
 				},
@@ -87,24 +84,23 @@ var sampleService = service.New("sample").
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().GetMsg().(*echoRequest)
-					res := ronykit.NewEnvelope()
-
+					req, ok := ctx.In().GetMsg().(*echoRequest)
 					if !ok {
-						res.SetMsg(rest.Err("E01", "Request was not echoRequest"))
-						ctx.Send(res)
+						ctx.Out().
+							SetMsg(rest.Err("E01", "Request was not echoRequest")).
+							Send()
 
 						return nil
 					}
 
-					res.SetHdr("Content-Type", "application/json")
-					res.SetMsg(
-						&echoResponse{
-							RandomID: req.RandomID,
-						},
-					)
-
-					ctx.Send(res)
+					ctx.Out().
+						SetHdr("Content-Type", "application/json").
+						SetMsg(
+							&echoResponse{
+								RandomID: req.RandomID,
+							},
+						).
+						Send()
 
 					return nil
 				},

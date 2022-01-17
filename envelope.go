@@ -6,11 +6,28 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 )
 
+var envelopePool = &sync.Pool{}
+
 type Envelope struct {
 	kvl utils.SpinLock
 	kv  map[string]string
 	m   Message
 	p   *sync.Pool
+	ctx *Context
+}
+
+func newEnvelope(ctx *Context) *Envelope {
+	e, ok := envelopePool.Get().(*Envelope)
+	if !ok {
+		e = &Envelope{
+			kv: map[string]string{},
+			p:  envelopePool,
+		}
+	}
+
+	e.ctx = ctx
+
+	return e
 }
 
 func (e *Envelope) SetHdr(key, value string) *Envelope {
@@ -72,16 +89,7 @@ func (e *Envelope) Release() {
 	e.p.Put(e)
 }
 
-var envelopePool = &sync.Pool{}
-
-func NewEnvelope() *Envelope {
-	e, ok := envelopePool.Get().(*Envelope)
-	if !ok {
-		e = &Envelope{
-			kv: map[string]string{},
-			p:  envelopePool,
-		}
-	}
-
-	return e
+func (e *Envelope) Send() {
+	e.ctx.Error(e.ctx.wf(e))
+	e.Release()
 }

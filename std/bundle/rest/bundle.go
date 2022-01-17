@@ -120,12 +120,10 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			},
 		)
 
-		env := ronykit.NewEnvelope()
-
 		// Walk over all the connection headers
 		rc.Walk(
 			func(key string, val string) bool {
-				env.SetHdr(key, val)
+				ctx.In().SetHdr(key, val)
 
 				return true
 			},
@@ -155,8 +153,8 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			return nil
 		}
 
-		env.SetMsg(routeData.Decoder(params, in))
-		execFunc(env, writeFunc, routeData.Handlers...)
+		ctx.In().SetMsg(routeData.Decoder(params, in))
+		execFunc(writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
