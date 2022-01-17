@@ -100,16 +100,14 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.Dispatch
 
 				return err
 			},
-			func(ctx *ronykit.Context) ronykit.Handler {
-				return func(ctx *ronykit.Context) ronykit.Handler {
-					m := ctx.In().GetMsg()
+			func(ctx *ronykit.Context) {
+				m := ctx.In().GetMsg()
 
-					ctx.Out().
-						SetMsg(m).
-						Send()
+				ctx.Out().
+					SetMsg(m).
+					Send()
 
-					return nil
-				}
+				return
 			},
 		)
 

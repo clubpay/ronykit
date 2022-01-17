@@ -43,9 +43,14 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 			for idx := range handlers {
 				h := handlers[idx]
 				for h != nil {
-					h = h(ctx)
+					h(ctx)
 					if ctx.stopped {
 						break Loop
+					}
+
+					if ctx.next != nil {
+						h = ctx.next
+						ctx.next = nil
 					}
 				}
 			}

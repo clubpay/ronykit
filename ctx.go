@@ -21,6 +21,7 @@ type Context struct {
 	wf      WriteFunc
 	err     error
 	stopped bool
+	next    Handler
 	ctx     context.Context
 }
 
@@ -34,6 +35,10 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 
 func (ctx *Context) Route() string {
 	return ctx.Get(CtxRoute).(string)
+}
+
+func (ctx *Context) Next(h Handler) {
+	ctx.next = h
 }
 
 func (ctx *Context) ServiceName() string {

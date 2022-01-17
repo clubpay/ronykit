@@ -29,7 +29,7 @@ var sampleService = service.New("sample").
 					),
 			).
 			SetHandler(
-				func(ctx *ronykit.Context) ronykit.Handler {
+				func(ctx *ronykit.Context) {
 					req, ok := ctx.In().GetMsg().(*msg.EchoRequest)
 					if !ok {
 						ctx.Out().
@@ -38,7 +38,7 @@ var sampleService = service.New("sample").
 							).
 							Send()
 
-						return nil
+						return
 					}
 
 					ctx.Out().
@@ -49,7 +49,7 @@ var sampleService = service.New("sample").
 							},
 						).Send()
 
-					return nil
+					return
 				},
 			),
 	)
