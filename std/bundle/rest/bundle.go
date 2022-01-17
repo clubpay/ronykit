@@ -57,7 +57,7 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 
 	c.ctx = ctx
 	r.d.OnOpen(c)
-	_ = r.d.OnMessage(c, ctx.PostBody())
+	r.d.OnMessage(c, ctx.PostBody())
 	r.d.OnClose(c.ConnID())
 
 	c.reset()

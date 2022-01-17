@@ -133,7 +133,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	case ws.OpClose:
 		return nil, gnet.Close
 	case ws.OpBinary, ws.OpText:
-		_ = e.b.d.OnMessage(wsc, payload[:n])
+		e.b.d.OnMessage(wsc, payload[:n])
 		pools.Bytes.Put(payload)
 	}
 

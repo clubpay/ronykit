@@ -25,13 +25,16 @@ func (n *northBridge) OnClose(connID uint64) {
 	atomic.AddInt64(&n.closed, 1)
 }
 
-func (n *northBridge) OnMessage(c Conn, msg []byte) error {
+func (n *northBridge) OnMessage(c Conn, msg []byte) {
+	ctx := n.acquireCtx(c)
 	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
-		return err
+		n.eh(ctx, err)
+		n.releaseCtx(ctx)
+
+		return
 	}
 
-	ctx := n.acquireCtx(c)
 	err = dispatchFunc(
 		ctx,
 		func(e *Envelope, writeFunc WriteFunc, handlers ...Handler) {
@@ -51,9 +54,13 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 			return
 		},
 	)
+	if err != nil {
+		n.eh(ctx, err)
+	}
+
 	n.releaseCtx(ctx)
 
-	return err
+	return
 }
 
 func (n *northBridge) acquireCtx(c Conn) *Context {
