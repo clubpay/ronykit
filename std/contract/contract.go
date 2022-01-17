@@ -4,7 +4,7 @@ import "github.com/ronaksoft/ronykit"
 
 // Contract is simple implementation of ronykit.Contract interface.
 type Contract struct {
-	selectors []ronykit.ContractSelector
+	selectors []ronykit.RouteSelector
 	handlers  []ronykit.Handler
 }
 
@@ -12,7 +12,7 @@ func New() *Contract {
 	return &Contract{}
 }
 
-func (r *Contract) SetSelector(selectors ...ronykit.ContractSelector) *Contract {
+func (r *Contract) SetSelector(selectors ...ronykit.RouteSelector) *Contract {
 	r.selectors = append(r.selectors, selectors...)
 
 	return r

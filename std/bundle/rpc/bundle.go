@@ -19,12 +19,12 @@ type bundle struct {
 	eh     gnet.EventHandler
 	d      ronykit.GatewayDelegate
 	df     DecoderFunc
-	r      router
+	mux    mux
 }
 
 func New(opts ...Option) *bundle {
 	b := &bundle{
-		r: router{
+		mux: mux{
 			routes: map[string]routerData{},
 		},
 	}
@@ -57,7 +57,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 			panic("factory is not set in Service's Contract")
 		}
 
-		b.r.routes[predicate] = routerData{
+		b.mux.routes[predicate] = routerData{
 			ServiceName: svc.Name(),
 			Handlers:    h,
 			Factory:     factory,
@@ -77,7 +77,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	routeData := b.r.routes[rpcEnvelope.Predicate]
+	routeData := b.mux.routes[rpcEnvelope.Predicate]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
@@ -88,14 +88,15 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	env := ronykit.NewEnvelope().SetMsg(msg)
-	for k, v := range rpcEnvelope.Header {
-		env.SetHdr(k, v)
-	}
+	env := ronykit.NewEnvelope().
+		SetHdrMap(rpcEnvelope.Header).
+		SetMsg(msg)
 
+	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
-		ctx.Set(ronykit.CtxRoute, rpcEnvelope.Predicate)
+		ctx.
+			Set(ronykit.CtxServiceName, routeData.ServiceName).
+			Set(ronykit.CtxRoute, rpcEnvelope.Predicate)
 
 		writeFunc := func(e *ronykit.Envelope) error {
 			data, err := e.GetMsg().Marshal()
@@ -108,8 +109,10 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			return err
 		}
 
+		// run the execFunc with generated params
 		execFunc(env, writeFunc, routeData.Handlers...)
 
+		// release the envelope to the pool
 		env.Release()
 
 		return nil

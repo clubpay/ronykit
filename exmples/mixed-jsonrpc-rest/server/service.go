@@ -15,12 +15,13 @@ var sampleService = service.New("sample").
 	AddContract(
 		contract.New().
 			SetSelector(
-				rest.GetWithFactory("/echo/:randomID",
-					func() interface{} {
-						return &msg.EchoRequest{}
-					},
-				),
-				rpc.Route("echoRequest",
+				rest.Get("/echo/:randomID").
+					WithFactory(
+						func() ronykit.Message {
+							return &msg.EchoRequest{}
+						},
+					),
+				rpc.Selector("echoRequest",
 					func() ronykit.Message {
 						return &msg.EchoRequest{}
 					},
@@ -31,19 +32,25 @@ var sampleService = service.New("sample").
 					req, ok := ctx.Receive().GetMsg().(*msg.EchoRequest)
 					res := ronykit.NewEnvelope()
 					if !ok {
-						res.SetMsg(rpc.Err("E01", "Request was not echoRequest"))
-						ctx.Send(res)
+
+						ctx.Send(
+							res.SetMsg(
+								rpc.Err("E01", "Request was not echoRequest"),
+							),
+						)
 
 						return nil
 					}
 
-					res.SetHdr("ServerTime", time.Now().String())
-					res.SetMsg(
-						&msg.EchoResponse{
-							RandomID: req.RandomID,
-						},
+					ctx.Send(
+						res.
+							SetHdr("ServerTime", time.Now().String()).
+							SetMsg(
+								&msg.EchoResponse{
+									RandomID: req.RandomID,
+								},
+							),
 					)
-					ctx.Send(res)
 
 					return nil
 				},

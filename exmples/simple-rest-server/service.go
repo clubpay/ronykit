@@ -11,11 +11,12 @@ var sampleService = service.New("sample").
 	AddContract(
 		contract.New().
 			SetSelector(
-				rest.GetWithFactory("/echo/:randomID",
-					func() interface{} {
-						return &echoRequest{}
-					},
-				),
+				rest.Get("/echo/:randomID").
+					WithFactory(
+						func() ronykit.Message {
+							return &echoRequest{}
+						},
+					),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
@@ -44,15 +45,14 @@ var sampleService = service.New("sample").
 					return nil
 				},
 			),
-	).
-	AddContract(
 		contract.New().
 			SetSelector(
-				rest.GetWithFactory("/sum/:val1/:val2",
-					func() interface{} {
-						return &sumRequest{}
-					},
-				),
+				rest.Get("/sum/:val1/:val2").
+					WithFactory(
+						func() ronykit.Message {
+							return &sumRequest{}
+						},
+					),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
@@ -76,15 +76,14 @@ var sampleService = service.New("sample").
 					return nil
 				},
 			),
-	).
-	AddContract(
 		contract.New().
 			SetSelector(
-				rest.PostWithFactory("/sum",
-					func() interface{} {
-						return &sumRequest{}
-					},
-				),
+				rest.Post("/sum").
+					WithFactory(
+						func() ronykit.Message {
+							return &sumRequest{}
+						},
+					),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {

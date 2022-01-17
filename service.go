@@ -35,12 +35,12 @@ type Service interface {
 // In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
 // order to be usable by Bundle 'b' otherwise it panics.
 type Contract interface {
-	ContractSelector
+	RouteSelector
 	Handlers() []Handler
 }
 
-// ContractSelector holds information about how this Contract is going to be selected. Each
+// RouteSelector holds information about how this Contract is going to be selected. Each
 // Bundle may need different information to route the request to the right Contract.
-type ContractSelector interface {
+type RouteSelector interface {
 	Query(q string) interface{}
 }

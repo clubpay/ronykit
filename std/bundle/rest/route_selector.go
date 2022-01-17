@@ -11,53 +11,28 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type routeData struct {
+type routeSelector struct {
 	method  string
 	path    string
 	decoder mux.DecoderFunc
 }
 
-func Route(method string, path string, decoder mux.DecoderFunc) *routeData {
-	return &routeData{
-		method:  method,
-		path:    path,
-		decoder: decoder,
+func Route(method string, path string) *routeSelector {
+	return &routeSelector{
+		method: method,
+		path:   path,
 	}
 }
 
-func GetWithFactory(path string, factory func() interface{}) *routeData {
-	return Route(fasthttp.MethodGet, path, ReflectDecoder(factory))
+func Get(path string) *routeSelector {
+	return Route(fasthttp.MethodGet, path)
 }
 
-func GetWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
-	return Route(fasthttp.MethodGet, path, decoder)
+func Post(path string) *routeSelector {
+	return Route(fasthttp.MethodPost, path)
 }
 
-func PostWithFactory(path string, factory func() interface{}) *routeData {
-	return Route(fasthttp.MethodPost, path, ReflectDecoder(factory))
-}
-
-func PostWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
-	return Route(fasthttp.MethodPost, path, decoder)
-}
-
-func PutWithFactory(path string, factory func() interface{}) *routeData {
-	return Route(fasthttp.MethodPut, path, ReflectDecoder(factory))
-}
-
-func PutWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
-	return Route(fasthttp.MethodPut, path, decoder)
-}
-
-func PatchWithFactory(path string, factory func() interface{}) *routeData {
-	return Route(fasthttp.MethodPatch, path, ReflectDecoder(factory))
-}
-
-func PatchWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
-	return Route(fasthttp.MethodPatch, path, decoder)
-}
-
-func (r routeData) Query(q string) interface{} {
+func (r routeSelector) Query(q string) interface{} {
 	switch q {
 	case queryDecoder:
 		return r.decoder
@@ -68,6 +43,18 @@ func (r routeData) Query(q string) interface{} {
 	}
 
 	return nil
+}
+
+func (r *routeSelector) WithFactory(f ronykit.MessageFactory) *routeSelector {
+	r.decoder = ReflectDecoder(f)
+
+	return r
+}
+
+func (r *routeSelector) WithDecoder(d mux.DecoderFunc) *routeSelector {
+	r.decoder = d
+
+	return r
 }
 
 // emptyInterface is the header for an interface{} value.
@@ -82,7 +69,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func ReflectDecoder(factory func() interface{}) mux.DecoderFunc {
+func ReflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
 	x := factory()
 	rVal := reflect.ValueOf(x)
 	rType := rVal.Type()
