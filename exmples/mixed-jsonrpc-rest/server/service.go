@@ -7,12 +7,14 @@ import (
 	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 	"github.com/ronaksoft/ronykit/std/bundle/rpc"
+	"github.com/ronaksoft/ronykit/std/contract"
+	"github.com/ronaksoft/ronykit/std/service"
 )
 
-var sampleService = ronykit.NewService("sample").
+var sampleService = service.New("sample").
 	AddContract(
-		ronykit.NewContract().
-			AddRoute(
+		contract.New().
+			SetSelector(
 				rest.GetWithFactory("/echo/:randomID",
 					func() interface{} {
 						return &msg.EchoRequest{}
