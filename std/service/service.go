@@ -46,8 +46,8 @@ func (s *Service) SetPostHandlers(h ...ronykit.Handler) *Service {
 	return s
 }
 
-func (s *Service) AddContract(r ronykit.Contract) *Service {
-	s.routes = append(s.routes, r)
+func (s *Service) AddContract(contracts ...ronykit.Contract) *Service {
+	s.routes = append(s.routes, contracts...)
 
 	return s
 }

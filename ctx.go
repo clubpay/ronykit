@@ -40,10 +40,12 @@ func (ctx *Context) ServiceName() string {
 	return ctx.Get(CtxServiceName).(string)
 }
 
-func (ctx *Context) Set(key string, val interface{}) {
+func (ctx *Context) Set(key string, val interface{}) *Context {
 	ctx.Lock()
 	ctx.kv[key] = val
 	ctx.Unlock()
+
+	return ctx
 }
 
 func (ctx *Context) SetStatusCode(code int) {

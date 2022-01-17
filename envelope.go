@@ -21,6 +21,16 @@ func (e *Envelope) SetHdr(key, value string) *Envelope {
 	return e
 }
 
+func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
+	e.kvl.Lock()
+	for k, v := range kv {
+		e.kv[k] = v
+	}
+	e.kvl.Unlock()
+
+	return e
+}
+
 func (e *Envelope) GetHdr(key string) string {
 	e.kvl.Lock()
 	v := e.kv[key]
