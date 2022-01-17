@@ -68,10 +68,10 @@ func (t *testGateway) Subscribe(d ronykit.GatewayDelegate) {
 	t.d = d
 }
 
-func (t *testGateway) Send(msg []byte) error {
+func (t *testGateway) Send(msg []byte) {
 	c := newTestConn()
 
-	return t.d.OnMessage(c, msg)
+	t.d.OnMessage(c, msg)
 }
 
 type testMessage []byte
@@ -156,8 +156,7 @@ func TestServer(t *testing.T) {
 			ronykit.RegisterBundle(b),
 		)
 		s.Start()
-		err := b.gw.Send([]byte("123"))
-		c.So(err, ShouldBeNil)
+		b.gw.Send([]byte("123"))
 		s.Shutdown()
 	})
 }
@@ -178,7 +177,7 @@ func BenchmarkServer(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				_ = bundle.gw.Send(req)
+				bundle.gw.Send(req)
 			}
 		},
 	)

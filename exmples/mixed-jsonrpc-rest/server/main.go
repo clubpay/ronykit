@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"syscall"
+	"os"
 
 	"github.com/goccy/go-json"
 	log "github.com/ronaksoft/golog"
@@ -15,6 +15,11 @@ func main() {
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
+		ronykit.WithErrorHandler(
+			func(ctx *ronykit.Context, err error) {
+				fmt.Println("got error: ", err)
+			},
+		),
 		ronykit.RegisterBundle(
 			rpc.New(
 				rpc.Listen("tcp4://0.0.0.0:80"),
@@ -31,7 +36,7 @@ func main() {
 		ronykit.RegisterService(sampleService),
 	).
 		Start().
-		Shutdown(syscall.SIGHUP)
+		Shutdown(os.Kill, os.Interrupt)
 
 	fmt.Println("Server started.")
 }

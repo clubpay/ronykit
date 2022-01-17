@@ -88,8 +88,6 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	fmt.Println(msg)
-
 	env := ronykit.NewEnvelope().SetMsg(msg)
 	for k, v := range rpcEnvelope.Header {
 		env.SetHdr(k, v)
@@ -132,7 +130,10 @@ func (b *bundle) Start() {
 func (b *bundle) Shutdown() {
 	ctx, cf := context.WithTimeout(context.Background(), time.Minute)
 	defer cf()
-	_ = gnet.Stop(ctx, b.listen)
+	err := gnet.Stop(ctx, b.listen)
+	if err != nil {
+		fmt.Println("got error on shutdown: ", err)
+	}
 }
 
 func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
