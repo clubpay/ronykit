@@ -18,11 +18,13 @@ type router struct {
 
 type routeData struct {
 	predicate string
+	factory   ronykit.MessageFactory
 }
 
-func Route(predicate string) *routeData {
+func Route(predicate string, factory func() ronykit.Message) *routeData {
 	return &routeData{
 		predicate: predicate,
+		factory:   factory,
 	}
 }
 
@@ -30,6 +32,8 @@ func (r routeData) Query(q string) interface{} {
 	switch q {
 	case queryPredicate:
 		return r.predicate
+	case queryFactory:
+		return r.factory
 	}
 
 	return nil
