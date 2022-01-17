@@ -105,8 +105,8 @@ func NewContract() *simpleContract {
 	return &simpleContract{}
 }
 
-func (r *simpleContract) AddRouteInfo(rd RouteInfo) *simpleContract {
-	r.routeData = append(r.routeData, rd)
+func (r *simpleContract) AddRoute(rd ...RouteInfo) *simpleContract {
+	r.routeData = append(r.routeData, rd...)
 
 	return r
 }

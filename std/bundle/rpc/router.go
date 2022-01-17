@@ -1,12 +1,15 @@
-package jsonrpc
+package rpc
 
 import (
 	"github.com/ronaksoft/ronykit"
 )
 
+type DecoderFunc func(data []byte, e *Envelope) error
+
 type routerData struct {
 	ServiceName string
 	Handlers    []ronykit.Handler
+	Factory     func() ronykit.Message
 }
 
 type router struct {
@@ -17,7 +20,7 @@ type routeData struct {
 	predicate string
 }
 
-func NewRouteData(predicate string) *routeData {
+func Route(predicate string) *routeData {
 	return &routeData{
 		predicate: predicate,
 	}

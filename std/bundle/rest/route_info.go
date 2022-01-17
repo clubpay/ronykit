@@ -8,6 +8,7 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
 	"github.com/ronaksoft/ronykit/utils"
+	"github.com/valyala/fasthttp"
 )
 
 type routeData struct {
@@ -16,12 +17,44 @@ type routeData struct {
 	decoder mux.DecoderFunc
 }
 
-func NewRouteData(method string, path string, decoder mux.DecoderFunc) *routeData {
+func Route(method string, path string, decoder mux.DecoderFunc) *routeData {
 	return &routeData{
 		method:  method,
 		path:    path,
 		decoder: decoder,
 	}
+}
+
+func GetWithFactory(path string, factory func() interface{}) *routeData {
+	return Route(fasthttp.MethodGet, path, ReflectDecoder(factory))
+}
+
+func GetWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
+	return Route(fasthttp.MethodGet, path, decoder)
+}
+
+func PostWithFactory(path string, factory func() interface{}) *routeData {
+	return Route(fasthttp.MethodPost, path, ReflectDecoder(factory))
+}
+
+func PostWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
+	return Route(fasthttp.MethodPost, path, decoder)
+}
+
+func PutWithFactory(path string, factory func() interface{}) *routeData {
+	return Route(fasthttp.MethodPut, path, ReflectDecoder(factory))
+}
+
+func PutWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
+	return Route(fasthttp.MethodPut, path, decoder)
+}
+
+func PatchWithFactory(path string, factory func() interface{}) *routeData {
+	return Route(fasthttp.MethodPatch, path, ReflectDecoder(factory))
+}
+
+func PatchWithDecoder(path string, decoder mux.DecoderFunc) *routeData {
+	return Route(fasthttp.MethodPatch, path, decoder)
 }
 
 func (r routeData) Query(q string) interface{} {
