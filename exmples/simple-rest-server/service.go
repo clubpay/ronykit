@@ -9,31 +9,36 @@ var sampleService = ronykit.
 	NewService("sample").
 	AddContract(
 		ronykit.NewContract().
-			AddRouteInfo(
-				rest.NewRouteData(
-					rest.MethodGet, "/echo/:randomID",
-					rest.ReflectDecoder(
-						func() interface{} {
-							return &echoRequest{}
-						},
-					),
+			AddRoute(
+				rest.GetWithFactory("/echo/:randomID",
+					func() interface{} {
+						return &echoRequest{}
+					},
 				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().(*echoRequest)
+					req, ok := ctx.Receive().GetMsg().(*echoRequest)
+					res := ronykit.NewEnvelope()
+
 					if !ok {
-						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+						res.SetMsg(
+							rest.Err("E01", "Request was not echoRequest"),
+						)
+
+						ctx.Send(res)
 
 						return nil
 					}
 
-					ctx.Set("Content-Type", "application/json")
-					res := &echoResponse{
-						RandomID: req.RandomID,
-					}
+					res.SetHdr("Content-Type", "application/json")
+					res.SetMsg(
+						&echoResponse{
+							RandomID: req.RandomID,
+						},
+					)
 
-					ctx.Send(res, "Content-Type")
+					ctx.Send(res)
 
 					return nil
 				},
@@ -41,30 +46,31 @@ var sampleService = ronykit.
 	).
 	AddContract(
 		ronykit.NewContract().
-			AddRouteInfo(
-				rest.NewRouteData(
-					rest.MethodGet, "/sum/:val1/:val2",
-					rest.ReflectDecoder(
-						func() interface{} {
-							return &sumRequest{}
-						},
-					),
+			AddRoute(
+				rest.GetWithFactory("/sum/:val1/:val2",
+					func() interface{} {
+						return &sumRequest{}
+					},
 				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().(*sumRequest)
+					req, ok := ctx.Receive().GetMsg().(*sumRequest)
+					res := ronykit.NewEnvelope()
 					if !ok {
-						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+						res.SetMsg(rest.Err("E01", "Request was not echoRequest"))
+						ctx.Send(res)
 
 						return nil
 					}
 
-					res := &sumResponse{
-						Val: req.Val1 + req.Val2,
-					}
-
-					ctx.Send(res, "Content-Type")
+					res.SetHdr("Content-Type", "application/json")
+					res.SetMsg(
+						&sumResponse{
+							Val: req.Val1 + req.Val2,
+						},
+					)
+					ctx.Send(res)
 
 					return nil
 				},
@@ -72,31 +78,33 @@ var sampleService = ronykit.
 	).
 	AddContract(
 		ronykit.NewContract().
-			AddRouteInfo(
-				rest.NewRouteData(
-					rest.MethodPost, "/echo",
-					rest.ReflectDecoder(
-						func() interface{} {
-							return &sumRequest{}
-						},
-					),
+			AddRoute(
+				rest.PostWithFactory("/sum",
+					func() interface{} {
+						return &sumRequest{}
+					},
 				),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().(*echoRequest)
+					req, ok := ctx.Receive().GetMsg().(*echoRequest)
+					res := ronykit.NewEnvelope()
+
 					if !ok {
-						ctx.Send(rest.Err("E01", "Request was not echoRequest"))
+						res.SetMsg(rest.Err("E01", "Request was not echoRequest"))
+						ctx.Send(res)
 
 						return nil
 					}
 
-					ctx.Set("Content-Type", "application/json")
-					res := &echoResponse{
-						RandomID: req.RandomID,
-					}
+					res.SetHdr("Content-Type", "application/json")
+					res.SetMsg(
+						&echoResponse{
+							RandomID: req.RandomID,
+						},
+					)
 
-					ctx.Send(res, "Content-Type")
+					ctx.Send(res)
 
 					return nil
 				},

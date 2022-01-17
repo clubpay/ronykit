@@ -34,8 +34,8 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) error {
 	ctx := n.acquireCtx(c)
 	err = dispatchFunc(
 		ctx,
-		func(m Message, writeFunc WriteFunc, handlers ...Handler) {
-			ctx.in = m
+		func(e *Envelope, writeFunc WriteFunc, handlers ...Handler) {
+			ctx.in = e
 			ctx.wf = writeFunc
 		Loop:
 			for idx := range handlers {

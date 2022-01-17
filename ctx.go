@@ -17,7 +17,7 @@ type Context struct {
 	nb      *northBridge
 	kv      map[string]interface{}
 	conn    Conn
-	in      Message
+	in      *Envelope
 	wf      WriteFunc
 	err     error
 	stopped bool
@@ -73,12 +73,12 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
-func (ctx *Context) Receive() Message {
+func (ctx *Context) Receive() *Envelope {
 	return ctx.in
 }
 
-func (ctx *Context) Send(m Message, ctxKeys ...string) {
-	ctx.Error(ctx.wf(m, ctxKeys...))
+func (ctx *Context) Send(e *Envelope) {
+	ctx.Error(ctx.wf(e))
 }
 
 func (ctx *Context) Error(err error) bool {

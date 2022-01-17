@@ -120,10 +120,12 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			},
 		)
 
+		env := ronykit.NewEnvelope()
+
 		// Walk over all the connection headers
 		rc.Walk(
 			func(key string, val string) bool {
-				ctx.Set(key, val)
+				env.SetHdr(key, val)
 
 				return true
 			},
@@ -134,24 +136,27 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
 
 		// Set the write function which
-		writeFunc := func(m ronykit.Message, ctxKeys ...string) error {
-			data, err := m.Marshal()
+		writeFunc := func(e *ronykit.Envelope) error {
+			data, err := e.GetMsg().Marshal()
 			if err != nil {
 				return err
 			}
 
-			for idx := range ctxKeys {
-				if v, ok := ctx.Get(ctxKeys[idx]).(string); ok {
-					rc.ctx.Response.Header.Set(ctxKeys[idx], v)
-				}
-			}
+			e.WalkHdr(
+				func(key string, val string) bool {
+					rc.ctx.Response.Header.Set(key, val)
+
+					return true
+				},
+			)
 
 			rc.ctx.SetBody(data)
 
 			return nil
 		}
 
-		execFunc(routeData.Decoder(params, in), writeFunc, routeData.Handlers...)
+		env.SetMsg(routeData.Decoder(params, in))
+		execFunc(env, writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
