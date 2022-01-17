@@ -10,6 +10,6 @@ func Listen(protoAddr string) Option {
 
 func Decoder(f DecoderFunc) Option {
 	return func(b *bundle) {
-		b.df = f
+		b.decoder = f
 	}
 }

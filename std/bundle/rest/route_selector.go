@@ -57,6 +57,14 @@ func (r *routeSelector) WithDecoder(d mux.DecoderFunc) *routeSelector {
 	return r
 }
 
+var tagName = "paramName"
+
+// SetTag set the tag name which ReflectDecoder looks to extract parameters from Path and Query params.
+// Default value: paramName
+func SetTag(tag string) {
+	tagName = tag
+}
+
 // emptyInterface is the header for an interface{} value.
 type emptyInterface struct {
 	typ  uint64
@@ -83,7 +91,7 @@ func ReflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
 	var pcs []paramCaster
 	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
 		f := reflect.Indirect(rVal).Type().Field(i)
-		if tagName := f.Tag.Get("paramName"); tagName != "" {
+		if tagName := f.Tag.Get(tagName); tagName != "" {
 			pcs = append(
 				pcs,
 				paramCaster{

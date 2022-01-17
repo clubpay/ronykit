@@ -11,7 +11,7 @@ import (
 
 type (
 	ErrHandler func(ctx *Context, err error)
-	Handler    func(ctx *Context) Handler
+	Handler    func(ctx *Context)
 	Bundle     interface {
 		Gateway
 		Dispatcher

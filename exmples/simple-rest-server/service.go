@@ -19,7 +19,7 @@ var sampleService = service.New("sample").
 					),
 			).
 			SetHandler(
-				func(ctx *ronykit.Context) ronykit.Handler {
+				func(ctx *ronykit.Context) {
 					req, ok := ctx.In().GetMsg().(*echoRequest)
 
 					if !ok {
@@ -28,7 +28,7 @@ var sampleService = service.New("sample").
 								rest.Err("E01", "Request was not echoRequest"),
 							).Send()
 
-						return nil
+						return
 					}
 
 					ctx.Out().
@@ -39,7 +39,7 @@ var sampleService = service.New("sample").
 							},
 						).Send()
 
-					return nil
+					return
 				},
 			),
 		contract.New().
@@ -52,14 +52,14 @@ var sampleService = service.New("sample").
 					),
 			).
 			SetHandler(
-				func(ctx *ronykit.Context) ronykit.Handler {
+				func(ctx *ronykit.Context) {
 					req, ok := ctx.In().GetMsg().(*sumRequest)
 					if !ok {
 						ctx.Out().
 							SetMsg(rest.Err("E01", "Request was not echoRequest")).
 							Send()
 
-						return nil
+						return
 					}
 
 					ctx.Out().
@@ -70,7 +70,7 @@ var sampleService = service.New("sample").
 							},
 						).Send()
 
-					return nil
+					return
 				},
 			),
 		contract.New().
@@ -83,14 +83,14 @@ var sampleService = service.New("sample").
 					),
 			).
 			SetHandler(
-				func(ctx *ronykit.Context) ronykit.Handler {
+				func(ctx *ronykit.Context) {
 					req, ok := ctx.In().GetMsg().(*echoRequest)
 					if !ok {
 						ctx.Out().
 							SetMsg(rest.Err("E01", "Request was not echoRequest")).
 							Send()
 
-						return nil
+						return
 					}
 
 					ctx.Out().
@@ -102,7 +102,7 @@ var sampleService = service.New("sample").
 						).
 						Send()
 
-					return nil
+					return
 				},
 			),
 	)

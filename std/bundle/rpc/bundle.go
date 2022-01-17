@@ -15,11 +15,11 @@ const (
 )
 
 type bundle struct {
-	listen string
-	eh     gnet.EventHandler
-	d      ronykit.GatewayDelegate
-	df     DecoderFunc
-	mux    mux
+	listen  string
+	eh      gnet.EventHandler
+	d       ronykit.GatewayDelegate
+	decoder DecoderFunc
+	mux     mux
 }
 
 func New(opts ...Option) *bundle {
@@ -72,7 +72,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}
 
 	rpcEnvelope := acquireEnvelope()
-	err := b.df(in, rpcEnvelope)
+	err := b.decoder(in, rpcEnvelope)
 	if err != nil {
 		return nil, err
 	}

@@ -18,18 +18,18 @@ const (
 func Trace(tracerName string) func(svc ronykit.Service) ronykit.Service {
 	traceCtx := propagation.TraceContext{}
 	tracer := otel.GetTracerProvider().Tracer(tracerName)
-	pre := func(ctx *ronykit.Context) ronykit.Handler {
+	pre := func(ctx *ronykit.Context) {
 		userCtx := traceCtx.Extract(ctx.Context(), newCtxCarrier(ctx))
 		userCtx, _ = tracer.Start(userCtx, ctx.Route())
 		ctx.SetUserContext(userCtx)
 
-		return nil
+		return
 	}
-	post := func(ctx *ronykit.Context) ronykit.Handler {
+	post := func(ctx *ronykit.Context) {
 		span := trace.SpanFromContext(ctx.Context())
 		span.End()
 
-		return nil
+		return
 	}
 
 	return func(svc ronykit.Service) ronykit.Service {
