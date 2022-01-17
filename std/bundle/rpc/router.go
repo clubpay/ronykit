@@ -21,11 +21,16 @@ type routeSelector struct {
 	factory   ronykit.MessageFactory
 }
 
-func Selector(predicate string, factory ronykit.MessageFactory) *routeSelector {
+func Route(predicate string) *routeSelector {
 	return &routeSelector{
 		predicate: predicate,
-		factory:   factory,
 	}
+}
+
+func (r *routeSelector) WithFactory(f ronykit.MessageFactory) *routeSelector {
+	r.factory = f
+
+	return r
 }
 
 func (r routeSelector) Query(q string) interface{} {

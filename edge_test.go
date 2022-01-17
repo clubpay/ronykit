@@ -88,8 +88,8 @@ type testDispatcher struct{}
 
 func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
+		ctx.In().SetMsg(testMessage(in))
 		execFunc(
-			ronykit.NewEnvelope().SetMsg(testMessage(in)),
 			func(e *ronykit.Envelope) error {
 				b, err := e.GetMsg().Marshal()
 				if err != nil {
@@ -102,9 +102,11 @@ func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.Dispatch
 			},
 			func(ctx *ronykit.Context) ronykit.Handler {
 				return func(ctx *ronykit.Context) ronykit.Handler {
-					m := ctx.Receive()
+					m := ctx.In().GetMsg()
 
-					ctx.Send(m)
+					ctx.Out().
+						SetMsg(m).
+						Send()
 
 					return nil
 				}

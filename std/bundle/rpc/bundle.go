@@ -88,12 +88,12 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	env := ronykit.NewEnvelope().
-		SetHdrMap(rpcEnvelope.Header).
-		SetMsg(msg)
-
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
+		ctx.In().
+			SetHdrMap(rpcEnvelope.Header).
+			SetMsg(msg)
+
 		ctx.
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
 			Set(ronykit.CtxRoute, rpcEnvelope.Predicate)
@@ -110,10 +110,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		}
 
 		// run the execFunc with generated params
-		execFunc(env, writeFunc, routeData.Handlers...)
-
-		// release the envelope to the pool
-		env.Release()
+		execFunc(writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil

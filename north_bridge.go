@@ -37,8 +37,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 
 	err = dispatchFunc(
 		ctx,
-		func(e *Envelope, writeFunc WriteFunc, handlers ...Handler) {
-			ctx.in = e
+		func(writeFunc WriteFunc, handlers ...Handler) {
 			ctx.wf = writeFunc
 		Loop:
 			for idx := range handlers {
@@ -72,6 +71,7 @@ func (n *northBridge) acquireCtx(c Conn) *Context {
 	}
 
 	ctx.conn = c
+	ctx.in = newEnvelope(ctx)
 	ctx.ctx = context.Background()
 
 	return ctx

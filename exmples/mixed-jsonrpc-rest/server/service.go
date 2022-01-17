@@ -21,36 +21,33 @@ var sampleService = service.New("sample").
 							return &msg.EchoRequest{}
 						},
 					),
-				rpc.Selector("echoRequest",
-					func() ronykit.Message {
-						return &msg.EchoRequest{}
-					},
-				),
+				rpc.Route("echoRequest").
+					WithFactory(
+						func() ronykit.Message {
+							return &msg.EchoRequest{}
+						},
+					),
 			).
 			SetHandler(
 				func(ctx *ronykit.Context) ronykit.Handler {
-					req, ok := ctx.Receive().GetMsg().(*msg.EchoRequest)
-					res := ronykit.NewEnvelope()
+					req, ok := ctx.In().GetMsg().(*msg.EchoRequest)
 					if !ok {
-
-						ctx.Send(
-							res.SetMsg(
+						ctx.Out().
+							SetMsg(
 								rpc.Err("E01", "Request was not echoRequest"),
-							),
-						)
+							).
+							Send()
 
 						return nil
 					}
 
-					ctx.Send(
-						res.
-							SetHdr("ServerTime", time.Now().String()).
-							SetMsg(
-								&msg.EchoResponse{
-									RandomID: req.RandomID,
-								},
-							),
-					)
+					ctx.Out().
+						SetHdr("ServerTime", time.Now().String()).
+						SetMsg(
+							&msg.EchoResponse{
+								RandomID: req.RandomID,
+							},
+						).Send()
 
 					return nil
 				},

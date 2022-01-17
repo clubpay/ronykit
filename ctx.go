@@ -75,12 +75,12 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
-func (ctx *Context) Receive() *Envelope {
+func (ctx *Context) In() *Envelope {
 	return ctx.in
 }
 
-func (ctx *Context) Send(e *Envelope) {
-	ctx.Error(ctx.wf(e))
+func (ctx *Context) Out() *Envelope {
+	return newEnvelope(ctx)
 }
 
 func (ctx *Context) Error(err error) bool {
@@ -106,6 +106,7 @@ func (ctx *Context) reset() {
 		delete(ctx.kv, k)
 	}
 
+	ctx.in.Release()
 	ctx.stopped = false
 	ctx.ctx = nil
 }

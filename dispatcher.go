@@ -2,7 +2,7 @@ package ronykit
 
 type (
 	WriteFunc      func(e *Envelope) error
-	ExecuteFunc    func(e *Envelope, wf WriteFunc, handlers ...Handler)
+	ExecuteFunc    func(wf WriteFunc, handlers ...Handler)
 	DispatchFunc   func(ctx *Context, execFunc ExecuteFunc) error
 	MessageFactory func() Message
 )
