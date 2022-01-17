@@ -48,10 +48,12 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 						break Loop
 					}
 
-					if ctx.next != nil {
-						h = ctx.next
-						ctx.next = nil
+					if ctx.next == nil {
+						break
 					}
+
+					h = ctx.next
+					ctx.next = nil
 				}
 			}
 

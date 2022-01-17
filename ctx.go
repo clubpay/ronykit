@@ -112,6 +112,7 @@ func (ctx *Context) reset() {
 	}
 
 	ctx.in.Release()
+	ctx.next = nil
 	ctx.stopped = false
 	ctx.ctx = nil
 }
