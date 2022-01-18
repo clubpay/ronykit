@@ -29,7 +29,10 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 	ctx := n.acquireCtx(c)
 	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
-		n.eh(ctx, err)
+		if n.eh != nil {
+			n.eh(ctx, err)
+		}
+		
 		n.releaseCtx(ctx)
 
 		return
