@@ -2,107 +2,86 @@ package main
 
 import (
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/desc"
+	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/contract"
-	"github.com/ronaksoft/ronykit/std/service"
 )
 
-var sampleService = service.New("sample").
-	AddContract(
-		contract.New().
-			SetSelector(
-				rest.Get("/echo/:randomID").
-					WithFactory(
-						func() ronykit.Message {
-							return &echoRequest{}
-						},
-					),
-			).
-			SetHandler(
-				func(ctx *ronykit.Context) {
-					req, ok := ctx.In().GetMsg().(*echoRequest)
+type Sample struct {
+	desc.Service
+}
 
-					if !ok {
-						ctx.Out().
-							SetMsg(
-								rest.Err("E01", "Request was not echoRequest"),
-							).Send()
-
-						return
-					}
-
-					ctx.Out().
-						SetHdr("Content-Type", "application/json").
-						SetMsg(
-							&echoResponse{
-								RandomID: req.RandomID,
-							},
-						).Send()
-
-					return
-				},
-			),
-		contract.New().
-			SetSelector(
-				rest.Get("/sum/:val1/:val2").
-					WithFactory(
-						func() ronykit.Message {
-							return &sumRequest{}
-						},
-					),
-			).
-			SetHandler(
-				func(ctx *ronykit.Context) {
-					req, ok := ctx.In().GetMsg().(*sumRequest)
-					if !ok {
-						ctx.Out().
-							SetMsg(rest.Err("E01", "Request was not echoRequest")).
-							Send()
-
-						return
-					}
-
-					ctx.Out().
-						SetHdr("Content-Type", "application/json").
-						SetMsg(
-							&sumResponse{
-								Val: req.Val1 + req.Val2,
-							},
-						).Send()
-
-					return
-				},
-			),
-		contract.New().
-			SetSelector(
-				rest.Post("/sum").
-					WithFactory(
-						func() ronykit.Message {
-							return &sumRequest{}
-						},
-					),
-			).
-			SetHandler(
-				func(ctx *ronykit.Context) {
-					req, ok := ctx.In().GetMsg().(*echoRequest)
-					if !ok {
-						ctx.Out().
-							SetMsg(rest.Err("E01", "Request was not echoRequest")).
-							Send()
-
-						return
-					}
-
-					ctx.Out().
-						SetHdr("Content-Type", "application/json").
-						SetMsg(
-							&echoResponse{
-								RandomID: req.RandomID,
-							},
-						).
-						Send()
-
-					return
-				},
-			),
+func NewSample() *Sample {
+	s := &Sample{}
+	s.Name = "SampleService"
+	s.Add(
+		*(&desc.Contract{}).
+			AddInput(&msg.EchoRequest{}).
+			AddREST(desc.REST{
+				Method: rest.MethodGet,
+				Path:   "/echo/:randomID",
+			}).
+			WithPredicate("echoRequest").
+			WithHandlers(echoHandler),
 	)
+
+	s.Add(
+		*(&desc.Contract{}).
+			AddInput(&msg.EchoRequest{}).
+			AddREST(desc.REST{
+				Method: rest.MethodGet,
+				Path:   "/sum/:val1/:val2",
+			}).
+			AddREST(desc.REST{
+				Method: rest.MethodPost,
+				Path:   "/sum",
+			}).
+			WithHandlers(sumHandler),
+	)
+
+	return s
+}
+
+func echoHandler(ctx *ronykit.Context) {
+	req, ok := ctx.In().GetMsg().(*echoRequest)
+
+	if !ok {
+		ctx.Out().
+			SetMsg(
+				rest.Err("E01", "Request was not echoRequest"),
+			).Send()
+
+		return
+	}
+
+	ctx.Out().
+		SetHdr("Content-Type", "application/json").
+		SetMsg(
+			&echoResponse{
+				RandomID: req.RandomID,
+			},
+		).Send()
+
+	return
+}
+
+func sumHandler(ctx *ronykit.Context) {
+	req, ok := ctx.In().GetMsg().(*sumRequest)
+	if !ok {
+		ctx.Out().
+			SetMsg(rest.Err("E01", "Request was not echoRequest")).
+			Send()
+
+		return
+	}
+
+	ctx.Out().
+		SetHdr("Content-Type", "application/json").
+		SetMsg(
+			&sumResponse{
+				Val: req.Val1 + req.Val2,
+			},
+		).Send()
+
+	return
+}
