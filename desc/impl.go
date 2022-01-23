@@ -26,19 +26,19 @@ func (s *serviceImpl) PostHandlers() []ronykit.Handler {
 	return s.post
 }
 
-func (s *serviceImpl) SetPreHandlers(h ...ronykit.Handler) *serviceImpl {
+func (s *serviceImpl) setPreHandlers(h ...ronykit.Handler) *serviceImpl {
 	s.pre = append(s.pre[:0], h...)
 
 	return s
 }
 
-func (s *serviceImpl) SetPostHandlers(h ...ronykit.Handler) *serviceImpl {
+func (s *serviceImpl) setPostHandlers(h ...ronykit.Handler) *serviceImpl {
 	s.post = append(s.post[:0], h...)
 
 	return s
 }
 
-func (s *serviceImpl) AddContract(contracts ...ronykit.Contract) *serviceImpl {
+func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 	s.routes = append(s.routes, contracts...)
 
 	return s
@@ -50,8 +50,14 @@ type contractImpl struct {
 	handlers  []ronykit.Handler
 }
 
-func (r *contractImpl) SetSelector(selectors ...ronykit.RouteSelector) *contractImpl {
+func (r *contractImpl) addSelector(selectors ...ronykit.RouteSelector) *contractImpl {
 	r.selectors = append(r.selectors, selectors...)
+
+	return r
+}
+
+func (r *contractImpl) setHandler(handlers ...ronykit.Handler) *contractImpl {
+	r.handlers = append(r.handlers[:0], handlers...)
 
 	return r
 }
@@ -65,12 +71,6 @@ func (r *contractImpl) Query(q string) interface{} {
 	}
 
 	return nil
-}
-
-func (r *contractImpl) SetHandler(handlers ...ronykit.Handler) *contractImpl {
-	r.handlers = append(r.handlers[:0], handlers...)
-
-	return r
 }
 
 func (r *contractImpl) Handlers() []ronykit.Handler {
