@@ -1,25 +1,17 @@
 package desc
 
-import "github.com/ronaksoft/ronykit"
+import (
+	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/ronaksoft/ronykit/std/bundle/rpc"
+)
 
-// Service is the description of the ronykit.Service you are going to create. It then
-// generates a ronykit.Service by calling Generate method.
-type Service struct {
-	Name      string
-	Contracts []Contract
+type REST struct {
+	Method string
+	Path   string
 }
 
-func (s *Service) Add(c Contract) *Service {
-	s.Contracts = append(s.Contracts, c)
-
-	return s
-}
-
-func (s Service) Generate() ronykit.Service {
-
-	return nil
-}
-
+// Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
 	Name      string
 	Handlers  []ronykit.Handler
@@ -54,11 +46,45 @@ func (c *Contract) WithHandlers(h ...ronykit.Handler) *Contract {
 
 func (c *Contract) WithPredicate(p string) *Contract {
 	c.Predicate = p
-	
+
 	return c
 }
 
-type REST struct {
-	Method string
-	Path   string
+// Service is the description of the ronykit.Service you are going to create. It then
+// generates a ronykit.Service by calling Generate method.
+type Service struct {
+	Name         string
+	Contracts    []Contract
+	PreHandlers  []ronykit.Handler
+	PostHandlers []ronykit.Handler
+}
+
+func (s *Service) Add(c Contract) *Service {
+	s.Contracts = append(s.Contracts, c)
+
+	return s
+}
+
+func (s Service) Generate() ronykit.Service {
+	svc := &serviceImpl{
+		name: s.Name,
+		pre:  s.PreHandlers,
+		post: s.PostHandlers,
+	}
+
+	for _, c := range s.Contracts {
+		ci := &contractImpl{}
+
+		ci.setHandler(c.Handlers...)
+
+		for _, r := range c.RESTs {
+			ci.addSelector(rest.Route(r.Method, r.Path))
+		}
+
+		if c.Predicate != "" {
+			ci.addSelector(rpc.Route(c.Predicate))
+		}
+	}
+
+	return svc
 }
