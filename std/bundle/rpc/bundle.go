@@ -66,7 +66,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 }
 
 func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	conn, ok := c.(*wsConn)
+	_, ok := c.(*wsConn)
 	if !ok {
 		panic("BUG!! incorrect connection")
 	}
@@ -98,7 +98,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
 			Set(ronykit.CtxRoute, rpcEnvelope.Predicate)
 
-		writeFunc := func(e *ronykit.Envelope) error {
+		writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
 			data, err := e.GetMsg().Marshal()
 			if err != nil {
 				return err

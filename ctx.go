@@ -6,11 +6,6 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 )
 
-const (
-	CtxServiceName = "__ServiceName__"
-	CtxRoute       = "__Route__"
-)
-
 type Context struct {
 	utils.SpinLock
 
@@ -33,46 +28,14 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 	ctx.ctx = userCtx
 }
 
-func (ctx *Context) Route() string {
-	return ctx.Get(CtxRoute).(string)
-}
-
 func (ctx *Context) Next(h Handler) {
 	ctx.next = h
-}
-
-func (ctx *Context) ServiceName() string {
-	return ctx.Get(CtxServiceName).(string)
-}
-
-func (ctx *Context) Set(key string, val interface{}) *Context {
-	ctx.Lock()
-	ctx.kv[key] = val
-	ctx.Unlock()
-
-	return ctx
 }
 
 func (ctx *Context) SetStatusCode(code int) {
 	rc, ok := ctx.Conn().(REST)
 	if ok {
 		rc.SetStatusCode(code)
-	}
-}
-
-func (ctx *Context) Get(key string) interface{} {
-	ctx.Lock()
-	v := ctx.kv[key]
-	ctx.Unlock()
-
-	return v
-}
-
-func (ctx *Context) Walk(f func(key string, val interface{}) bool) {
-	for k, v := range ctx.kv {
-		if !f(k, v) {
-			return
-		}
 	}
 }
 
@@ -85,7 +48,11 @@ func (ctx *Context) In() *Envelope {
 }
 
 func (ctx *Context) Out() *Envelope {
-	return newEnvelope(ctx)
+	return newEnvelope(ctx, ctx.conn)
+}
+
+func (ctx *Context) OutTo(c Conn) *Envelope {
+	return newEnvelope(ctx, c)
 }
 
 func (ctx *Context) Error(err error) bool {

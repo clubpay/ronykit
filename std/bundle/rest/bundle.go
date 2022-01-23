@@ -134,7 +134,12 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
 
 		// Set the write function which
-		writeFunc := func(e *ronykit.Envelope) error {
+		writeFunc := func(c ronykit.Conn, e *ronykit.Envelope) error {
+			rc, ok := c.(*conn)
+			if !ok {
+				panic("BUG!! incorrect connection")
+			}
+
 			data, err := e.GetMsg().Marshal()
 			if err != nil {
 				return err

@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/brianvoe/gofakeit/v6 v6.10.0
 	github.com/gobwas/ws v1.1.0
-	github.com/goccy/go-json v0.9.3
+	github.com/goccy/go-json v0.9.4
 	github.com/panjf2000/gnet v1.6.3
 	github.com/ronaksoft/golog v0.1.0
 	github.com/smartystreets/goconvey v1.7.2

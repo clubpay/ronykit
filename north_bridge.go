@@ -83,7 +83,7 @@ func (n *northBridge) acquireCtx(c Conn) *Context {
 	}
 
 	ctx.conn = c
-	ctx.in = newEnvelope(ctx)
+	ctx.in = newEnvelope(ctx, c)
 	ctx.ctx = context.Background()
 
 	return ctx
