@@ -26,7 +26,7 @@ func (c *Contract) SetName(name string) *Contract {
 	return c
 }
 
-func (c *Contract) AddInput(m ronykit.Message) *Contract {
+func (c *Contract) SetInput(m ronykit.Message) *Contract {
 	c.Input = m
 
 	return c

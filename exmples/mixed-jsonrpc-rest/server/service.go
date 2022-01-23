@@ -19,7 +19,7 @@ func NewSample() *Sample {
 	s.Name = "SampleService"
 	s.Add(
 		*(&desc.Contract{}).
-			AddInput(&msg.EchoRequest{}).
+			SetInput(&msg.EchoRequest{}).
 			AddREST(desc.REST{
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",
