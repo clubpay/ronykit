@@ -9,14 +9,15 @@ import (
 var envelopePool = &sync.Pool{}
 
 type Envelope struct {
-	kvl utils.SpinLock
-	kv  map[string]string
-	m   Message
-	p   *sync.Pool
-	ctx *Context
+	kvl  utils.SpinLock
+	kv   map[string]string
+	m    Message
+	p    *sync.Pool
+	conn Conn
+	ctx  *Context
 }
 
-func newEnvelope(ctx *Context) *Envelope {
+func newEnvelope(ctx *Context, conn Conn) *Envelope {
 	e, ok := envelopePool.Get().(*Envelope)
 	if !ok {
 		e = &Envelope{
@@ -26,6 +27,7 @@ func newEnvelope(ctx *Context) *Envelope {
 	}
 
 	e.ctx = ctx
+	e.conn = conn
 
 	return e
 }
@@ -85,11 +87,13 @@ func (e *Envelope) Release() {
 		delete(e.kv, k)
 	}
 	e.m = nil
+	e.ctx = nil
+	e.conn = nil
 
 	e.p.Put(e)
 }
 
 func (e *Envelope) Send() {
-	e.ctx.Error(e.ctx.wf(e))
+	e.ctx.Error(e.ctx.wf(e.conn, e))
 	e.Release()
 }

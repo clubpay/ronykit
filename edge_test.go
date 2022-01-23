@@ -76,21 +76,17 @@ func (t *testGateway) Send(msg []byte) {
 
 type testMessage []byte
 
-func (t testMessage) Unmarshal(bytes []byte) error {
-	return nil
-}
-
 func (t testMessage) Marshal() ([]byte, error) {
 	return t, nil
 }
 
 type testDispatcher struct{}
 
-func (t testDispatcher) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
+func (t testDispatcher) Dispatch(_ ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().SetMsg(testMessage(in))
 		execFunc(
-			func(e *ronykit.Envelope) error {
+			func(conn ronykit.Conn, e *ronykit.Envelope) error {
 				b, err := e.GetMsg().Marshal()
 				if err != nil {
 					return err

@@ -1,5 +1,46 @@
 package ronykit
 
+const (
+	CtxServiceName = "__ServiceName__"
+	CtxRoute       = "__Route__"
+)
+
+func (ctx *Context) Route() string {
+	return ctx.Get(CtxRoute).(string)
+}
+
+func (ctx *Context) ServiceName() string {
+	return ctx.Get(CtxServiceName).(string)
+}
+
+func (ctx *Context) Set(key string, val interface{}) *Context {
+	ctx.Lock()
+	ctx.kv[key] = val
+	ctx.Unlock()
+
+	return ctx
+}
+
+func (ctx *Context) Get(key string) interface{} {
+	ctx.Lock()
+	v := ctx.kv[key]
+	ctx.Unlock()
+
+	return v
+}
+
+func (ctx *Context) Walk(f func(key string, val interface{}) bool) {
+	for k, v := range ctx.kv {
+		if !f(k, v) {
+			return
+		}
+	}
+}
+
+func (ctx *Context) Exists(key string) bool {
+	return ctx.Get(key) != nil
+}
+
 func (ctx *Context) GetInt64(key string, defaultValue int64) int64 {
 	v, ok := ctx.Get(key).(int64)
 	if !ok {
