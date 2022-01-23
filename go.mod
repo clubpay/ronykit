@@ -7,7 +7,7 @@ require (
 	github.com/gobwas/ws v1.1.0
 	github.com/goccy/go-json v0.9.4
 	github.com/panjf2000/gnet v1.6.3
-	github.com/ronaksoft/golog v0.1.0
+	github.com/ronaksoft/golog v0.2.0
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/valyala/fasthttp v1.32.0
 	go.opentelemetry.io/otel v1.3.0
@@ -30,7 +30,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.1 // indirect
+	go.uber.org/zap v1.20.0 // indirect
 	golang.org/x/sys v0.0.0-20211204120058-94396e421777 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
