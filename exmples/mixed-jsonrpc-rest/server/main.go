@@ -33,7 +33,7 @@ func main() {
 				rest.Listen(":81"),
 			),
 		),
-		ronykit.RegisterService(sampleService),
+		ronykit.RegisterService(NewSample().Generate()),
 	).
 		Start().
 		Shutdown(os.Kill, os.Interrupt)

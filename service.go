@@ -20,11 +20,11 @@ type Service interface {
 	Name() string
 	// Contracts returns a list of APIs which this service provides.
 	Contracts() []Contract
-	// PreHandlers returns a list of handlers which are executed in sequence BEFORE any
+	// PreHandlers returns a list of handlers which are executed in sequence **BEFORE** any
 	// call. If you need specific pre-handlers per Contract, then should be defined the
 	// Contract itself.
 	PreHandlers() []Handler
-	// PostHandlers returns a list of handlers which are executed in sequence AFTER any
+	// PostHandlers returns a list of handlers which are executed in sequence **AFTER** any
 	// call. If you need specific pre-handlers per Contract, then should be defined the
 	// Contract itself.
 	PostHandlers() []Handler

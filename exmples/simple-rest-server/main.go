@@ -20,7 +20,7 @@ func main() {
 			),
 		),
 		ronykit.RegisterService(
-			ronykit.WrapService(sampleService,
+			ronykit.WrapService(NewSample().Generate(),
 				tracekit.Trace("sample-rest-server"),
 			),
 		),
