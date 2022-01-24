@@ -2,6 +2,8 @@ package ronykit
 
 import (
 	"context"
+	"go.uber.org/zap"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 
@@ -25,8 +27,25 @@ func (n *northBridge) OnClose(connID uint64) {
 	atomic.AddInt64(&n.closed, 1)
 }
 
+func (n *northBridge) recoverPanic(ctx *Context, c Conn) {
+	if r := recover(); r != nil {
+
+		n.l.Error("Panic Recovered",
+			zap.String("ClientIP", c.ClientIP()),
+			zap.String("Route", ctx.Route()),
+			zap.String("Service", ctx.ServiceName()),
+			zap.Uint64("ConnID", c.ConnID()),
+			zap.Any("Error", r),
+		)
+
+		n.l.Error("Panic Stack Trace", zap.ByteString("Stack", debug.Stack()))
+	}
+}
+
 func (n *northBridge) OnMessage(c Conn, msg []byte) {
 	ctx := n.acquireCtx(c)
+	defer n.recoverPanic(ctx, c)
+
 	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
 		if n.eh != nil {
