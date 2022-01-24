@@ -105,13 +105,15 @@ func ReflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
 
 	return func(bag mux.Params, data []byte) ronykit.Message {
 		v := factory()
-		_ = json.Unmarshal(data, v)
+
+		if len(data) > 0 {
+			_ = json.Unmarshal(data, v)
+		}
 
 		for idx := range pcs {
 			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pcs[idx].offset)
 			switch pcs[idx].typ.Kind() {
 			case reflect.Int64:
-
 				*(*int64)(ptr) = utils.StrToInt64(bag.ByName(pcs[idx].name))
 			case reflect.Int32:
 				*(*int32)(ptr) = int32(utils.StrToInt64(bag.ByName(pcs[idx].name)))

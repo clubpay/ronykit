@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/ronaksoft/ronykit/desc"
 	"time"
 
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/desc"
 	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 	"github.com/ronaksoft/ronykit/std/bundle/rpc"
