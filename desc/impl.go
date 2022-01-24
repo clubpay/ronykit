@@ -46,8 +46,9 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 
 // contractImpl is simple implementation of ronykit.Contract interface.
 type contractImpl struct {
-	selectors []ronykit.RouteSelector
-	handlers  []ronykit.Handler
+	selectors   []ronykit.RouteSelector
+	handlers    []ronykit.Handler
+	factoryFunc func() ronykit.Message
 }
 
 func (r *contractImpl) addSelector(selectors ...ronykit.RouteSelector) *contractImpl {
