@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
+
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
-	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 )
 
@@ -16,7 +18,7 @@ func NewSample() *Sample {
 	s.Name = "SampleService"
 	s.Add(
 		*(&desc.Contract{}).
-			SetInput(&msg.EchoRequest{}).
+			SetInput(&echoRequest{}).
 			AddREST(desc.REST{
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",
@@ -27,7 +29,7 @@ func NewSample() *Sample {
 
 	s.Add(
 		*(&desc.Contract{}).
-			SetInput(&msg.EchoRequest{}).
+			SetInput(&echoRequest{}).
 			AddREST(desc.REST{
 				Method: rest.MethodGet,
 				Path:   "/sum/:val1/:val2",
@@ -44,11 +46,10 @@ func NewSample() *Sample {
 
 func echoHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*echoRequest)
-
 	if !ok {
 		ctx.Out().
 			SetMsg(
-				rest.Err("E01", "Request was not echoRequest"),
+				rest.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
 			).Send()
 
 		return

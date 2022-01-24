@@ -4,10 +4,10 @@ import "github.com/ronaksoft/ronykit"
 
 // serviceImpl is a simple implementation of ronykit.Service interface.
 type serviceImpl struct {
-	name   string
-	pre    []ronykit.Handler
-	post   []ronykit.Handler
-	routes []ronykit.Contract
+	name      string
+	pre       []ronykit.Handler
+	post      []ronykit.Handler
+	contracts []ronykit.Contract
 }
 
 func (s *serviceImpl) Name() string {
@@ -15,7 +15,7 @@ func (s *serviceImpl) Name() string {
 }
 
 func (s *serviceImpl) Contracts() []ronykit.Contract {
-	return s.routes
+	return s.contracts
 }
 
 func (s *serviceImpl) PreHandlers() []ronykit.Handler {
@@ -39,7 +39,7 @@ func (s *serviceImpl) setPostHandlers(h ...ronykit.Handler) *serviceImpl {
 }
 
 func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
-	s.routes = append(s.routes, contracts...)
+	s.contracts = append(s.contracts, contracts...)
 
 	return s
 }

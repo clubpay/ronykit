@@ -1,6 +1,8 @@
 package desc
 
 import (
+	"reflect"
+
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
 	"github.com/ronaksoft/ronykit/std/bundle/rpc"
@@ -74,16 +76,30 @@ func (s Service) Generate() ronykit.Service {
 
 	for _, c := range s.Contracts {
 		ci := &contractImpl{}
-
 		ci.setHandler(c.Handlers...)
 
+		var factoryFunc func() ronykit.Message
+
+		reflect.ValueOf(&factoryFunc).Elem().Set(
+			reflect.MakeFunc(
+				reflect.TypeOf(factoryFunc),
+				func(args []reflect.Value) (results []reflect.Value) {
+					return []reflect.Value{reflect.New(reflect.TypeOf(c.Input).Elem())}
+				},
+			),
+		)
+
 		for _, r := range c.RESTs {
-			ci.addSelector(rest.Route(r.Method, r.Path))
+			ci.addSelector(rest.Route(r.Method, r.Path).WithFactory(factoryFunc))
 		}
 
 		if c.Predicate != "" {
-			ci.addSelector(rpc.Route(c.Predicate))
+			ci.addSelector(
+				rpc.Route(c.Predicate).WithFactory(factoryFunc),
+			)
 		}
+
+		svc.contracts = append(svc.contracts, ci)
 	}
 
 	return svc
