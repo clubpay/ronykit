@@ -78,24 +78,25 @@ func (s Service) Generate() ronykit.Service {
 		ci := &contractImpl{}
 		ci.setHandler(c.Handlers...)
 
-		var factoryFunc func() ronykit.Message
-
-		reflect.ValueOf(&factoryFunc).Elem().Set(
+		makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
+			return func(args []reflect.Value) (results []reflect.Value) {
+				return []reflect.Value{reflect.New(reflect.TypeOf(m).Elem())}
+			}
+		}
+		reflect.ValueOf(&ci.factoryFunc).Elem().Set(
 			reflect.MakeFunc(
-				reflect.TypeOf(factoryFunc),
-				func(args []reflect.Value) (results []reflect.Value) {
-					return []reflect.Value{reflect.New(reflect.TypeOf(c.Input).Elem())}
-				},
+				reflect.TypeOf(ci.factoryFunc),
+				makeFunc(c.Input),
 			),
 		)
 
 		for _, r := range c.RESTs {
-			ci.addSelector(rest.Route(r.Method, r.Path).WithFactory(factoryFunc))
+			ci.addSelector(rest.Route(r.Method, r.Path).WithFactory(ci.factoryFunc))
 		}
 
 		if c.Predicate != "" {
 			ci.addSelector(
-				rpc.Route(c.Predicate).WithFactory(factoryFunc),
+				rpc.Route(c.Predicate).WithFactory(ci.factoryFunc),
 			)
 		}
 

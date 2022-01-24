@@ -2,12 +2,12 @@ package ronykit
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
 
 	log "github.com/ronaksoft/golog"
+	"go.uber.org/zap"
 )
 
 type northBridge struct {
@@ -29,7 +29,6 @@ func (n *northBridge) OnClose(connID uint64) {
 
 func (n *northBridge) recoverPanic(ctx *Context, c Conn) {
 	if r := recover(); r != nil {
-
 		n.l.Error("Panic Recovered",
 			zap.String("ClientIP", c.ClientIP()),
 			zap.String("Route", ctx.Route()),

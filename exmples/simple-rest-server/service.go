@@ -16,6 +16,8 @@ type Sample struct {
 func NewSample() *Sample {
 	s := &Sample{}
 	s.Name = "SampleService"
+	s.PreHandlers = []ronykit.Handler{dumpRequest}
+
 	s.Add(
 		*(&desc.Contract{}).
 			SetInput(&echoRequest{}).
@@ -85,4 +87,8 @@ func sumHandler(ctx *ronykit.Context) {
 		).Send()
 
 	return
+}
+
+func dumpRequest(ctx *ronykit.Context) {
+	fmt.Println(fmt.Sprintf("received: %s", reflect.TypeOf(ctx.In().GetMsg())))
 }
