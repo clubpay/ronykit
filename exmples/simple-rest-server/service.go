@@ -29,7 +29,7 @@ func NewSample() *Sample {
 
 	s.Add(
 		*(&desc.Contract{}).
-			SetInput(&echoRequest{}).
+			SetInput(&sumRequest{}).
 			AddREST(desc.REST{
 				Method: rest.MethodGet,
 				Path:   "/sum/:val1/:val2",
