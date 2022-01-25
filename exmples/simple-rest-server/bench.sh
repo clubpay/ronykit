@@ -1,1 +1,1 @@
-wrk -t12 -c1000 -d10s --latency http://127.0.0.1/echo/1200
+wrk -t1 -c1000 -d10s --latency http://127.0.0.1/sum/1200/8933

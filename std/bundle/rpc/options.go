@@ -8,7 +8,7 @@ func Listen(protoAddr string) Option {
 	}
 }
 
-func Decoder(f DecoderFunc) Option {
+func Decoder(f func(data []byte, e *Envelope) error) Option {
 	return func(b *bundle) {
 		b.decoder = f
 	}

@@ -18,14 +18,16 @@ func NewSample() *Sample {
 	s := &Sample{}
 	s.Name = "SampleService"
 	s.Add(
-		*(&desc.Contract{}).
+		desc.NewContract().
 			SetInput(&msg.EchoRequest{}).
-			AddREST(desc.REST{
+			AddSelector(rest.Selector{
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",
 			}).
-			WithPredicate("echoRequest").
-			WithHandlers(echoHandler),
+			AddSelector(rpc.Selector{
+				Predicate: "echoRequest",
+			}).
+			SetHandler(echoHandler),
 	)
 
 	return s

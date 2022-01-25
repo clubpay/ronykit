@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"syscall"
 
 	log "github.com/ronaksoft/golog"
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(2)
+
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),

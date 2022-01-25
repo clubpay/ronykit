@@ -4,13 +4,10 @@ import (
 	"reflect"
 
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
-type REST struct {
-	Method string
-	Path   string
+type Selector interface {
+	Generate(f ronykit.MessageFactory) ronykit.RouteSelector
 }
 
 // Contract is the description of the ronykit.Contract you are going to create.
@@ -18,8 +15,12 @@ type Contract struct {
 	Name      string
 	Handlers  []ronykit.Handler
 	Input     ronykit.Message
-	RESTs     []REST
-	Predicate string
+	Output    ronykit.Message
+	Selectors []Selector
+}
+
+func NewContract() *Contract {
+	return &Contract{}
 }
 
 func (c *Contract) SetName(name string) *Contract {
@@ -34,22 +35,51 @@ func (c *Contract) SetInput(m ronykit.Message) *Contract {
 	return c
 }
 
-func (c *Contract) AddREST(r REST) *Contract {
-	c.RESTs = append(c.RESTs, r)
+func (c *Contract) SetOutput(m ronykit.Message) *Contract {
+	c.Output = m
 
 	return c
 }
 
-func (c *Contract) WithHandlers(h ...ronykit.Handler) *Contract {
+func (c *Contract) AddSelector(s Selector) *Contract {
+	c.Selectors = append(c.Selectors, s)
+
+	return c
+}
+
+func (c *Contract) AddHandler(h ...ronykit.Handler) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
 	return c
 }
 
-func (c *Contract) WithPredicate(p string) *Contract {
-	c.Predicate = p
+func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
+	c.Handlers = append(c.Handlers[:0], h...)
 
 	return c
+}
+
+func (c *Contract) Generate() ronykit.Contract {
+	ci := &contractImpl{}
+	ci.setHandler(c.Handlers...)
+
+	makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
+		return func(args []reflect.Value) (results []reflect.Value) {
+			return []reflect.Value{reflect.New(reflect.TypeOf(m).Elem())}
+		}
+	}
+	reflect.ValueOf(&ci.factoryFunc).Elem().Set(
+		reflect.MakeFunc(
+			reflect.TypeOf(ci.factoryFunc),
+			makeFunc(c.Input),
+		),
+	)
+
+	for _, s := range c.Selectors {
+		ci.addSelector(s.Generate(ci.factoryFunc))
+	}
+
+	return ci
 }
 
 // Service is the description of the ronykit.Service you are going to create. It then
@@ -61,8 +91,10 @@ type Service struct {
 	PostHandlers []ronykit.Handler
 }
 
-func (s *Service) Add(c Contract) *Service {
-	s.Contracts = append(s.Contracts, c)
+func (s *Service) Add(c *Contract) *Service {
+	if c != nil {
+		s.Contracts = append(s.Contracts, *c)
+	}
 
 	return s
 }
@@ -75,32 +107,7 @@ func (s Service) Generate() ronykit.Service {
 	}
 
 	for _, c := range s.Contracts {
-		ci := &contractImpl{}
-		ci.setHandler(c.Handlers...)
-
-		makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
-			return func(args []reflect.Value) (results []reflect.Value) {
-				return []reflect.Value{reflect.New(reflect.TypeOf(m).Elem())}
-			}
-		}
-		reflect.ValueOf(&ci.factoryFunc).Elem().Set(
-			reflect.MakeFunc(
-				reflect.TypeOf(ci.factoryFunc),
-				makeFunc(c.Input),
-			),
-		)
-
-		for _, r := range c.RESTs {
-			ci.addSelector(rest.Route(r.Method, r.Path).WithFactory(ci.factoryFunc))
-		}
-
-		if c.Predicate != "" {
-			ci.addSelector(
-				rpc.Route(c.Predicate).WithFactory(ci.factoryFunc),
-			)
-		}
-
-		svc.contracts = append(svc.contracts, ci)
+		svc.contracts = append(svc.contracts, c.Generate())
 	}
 
 	return svc

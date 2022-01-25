@@ -4,7 +4,16 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-type DecoderFunc func(data []byte, e *Envelope) error
+type Selector struct {
+	Predicate string
+}
+
+func (s Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
+	return &routeSelector{
+		predicate: s.Predicate,
+		factory:   f,
+	}
+}
 
 type routerData struct {
 	ServiceName string
@@ -19,18 +28,6 @@ type mux struct {
 type routeSelector struct {
 	predicate string
 	factory   ronykit.MessageFactory
-}
-
-func Route(predicate string) *routeSelector {
-	return &routeSelector{
-		predicate: predicate,
-	}
-}
-
-func (r *routeSelector) WithFactory(f ronykit.MessageFactory) *routeSelector {
-	r.factory = f
-
-	return r
 }
 
 func (r routeSelector) Query(q string) interface{} {
