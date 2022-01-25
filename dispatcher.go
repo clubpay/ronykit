@@ -15,3 +15,9 @@ type Dispatcher interface {
 type Message interface {
 	Marshal() ([]byte, error)
 }
+
+type RawMessage []byte
+
+func (rm RawMessage) Marshal() ([]byte, error) {
+	return rm, nil
+}
