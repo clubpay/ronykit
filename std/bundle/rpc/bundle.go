@@ -18,7 +18,7 @@ type bundle struct {
 	listen  string
 	eh      gnet.EventHandler
 	d       ronykit.GatewayDelegate
-	decoder DecoderFunc
+	decoder func(data []byte, e *Envelope) error
 	mux     mux
 }
 

@@ -8,28 +8,33 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
 	"github.com/ronaksoft/ronykit/utils"
-	"github.com/valyala/fasthttp"
 )
+
+type Selector struct {
+	Method        string
+	Path          string
+	CustomDecoder mux.DecoderFunc
+	Modifier      func(envelope *ronykit.Envelope)
+}
+
+func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
+	route := &routeSelector{
+		method: sd.Method,
+		path:   sd.Path,
+	}
+	if sd.CustomDecoder != nil {
+		route.decoder = sd.CustomDecoder
+	} else {
+		route.decoder = reflectDecoder(f)
+	}
+
+	return route
+}
 
 type routeSelector struct {
 	method  string
 	path    string
 	decoder mux.DecoderFunc
-}
-
-func Route(method string, path string) *routeSelector {
-	return &routeSelector{
-		method: method,
-		path:   path,
-	}
-}
-
-func Get(path string) *routeSelector {
-	return Route(fasthttp.MethodGet, path)
-}
-
-func Post(path string) *routeSelector {
-	return Route(fasthttp.MethodPost, path)
 }
 
 func (r routeSelector) Query(q string) interface{} {
@@ -43,18 +48,6 @@ func (r routeSelector) Query(q string) interface{} {
 	}
 
 	return nil
-}
-
-func (r *routeSelector) WithFactory(f ronykit.MessageFactory) *routeSelector {
-	r.decoder = ReflectDecoder(f)
-
-	return r
-}
-
-func (r *routeSelector) WithDecoder(d mux.DecoderFunc) *routeSelector {
-	r.decoder = d
-
-	return r
 }
 
 var tagName = "paramName"
@@ -77,7 +70,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func ReflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
+func reflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
 	x := factory()
 	rVal := reflect.ValueOf(x)
 	rType := rVal.Type()

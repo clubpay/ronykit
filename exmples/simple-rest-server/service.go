@@ -7,6 +7,7 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
 type Sample struct {
@@ -16,31 +17,32 @@ type Sample struct {
 func NewSample() *Sample {
 	s := &Sample{}
 	s.Name = "SampleService"
-	s.PreHandlers = []ronykit.Handler{dumpRequest}
 
 	s.Add(
-		*(&desc.Contract{}).
+		desc.NewContract().
 			SetInput(&echoRequest{}).
-			AddREST(desc.REST{
+			AddSelector(rest.Selector{
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",
 			}).
-			WithPredicate("echoRequest").
-			WithHandlers(echoHandler),
+			AddSelector(rpc.Selector{
+				Predicate: "echoRequest",
+			}).
+			SetHandler(echoHandler),
 	)
 
 	s.Add(
-		*(&desc.Contract{}).
+		desc.NewContract().
 			SetInput(&sumRequest{}).
-			AddREST(desc.REST{
+			AddSelector(rest.Selector{
 				Method: rest.MethodGet,
 				Path:   "/sum/:val1/:val2",
 			}).
-			AddREST(desc.REST{
+			AddSelector(rest.Selector{
 				Method: rest.MethodPost,
 				Path:   "/sum",
 			}).
-			WithHandlers(sumHandler),
+			SetHandler(sumHandler),
 	)
 
 	return s
@@ -87,8 +89,4 @@ func sumHandler(ctx *ronykit.Context) {
 		).Send()
 
 	return
-}
-
-func dumpRequest(ctx *ronykit.Context) {
-	fmt.Println(fmt.Sprintf("received: %s", reflect.TypeOf(ctx.In().GetMsg())))
 }
