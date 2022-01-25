@@ -6,6 +6,8 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
+// Selector is the interface which should be provided by the Bundle developer. That is we
+// make it as interface instead of concrete implementation.
 type Selector interface {
 	Generate(f ronykit.MessageFactory) ronykit.RouteSelector
 }
@@ -86,6 +88,8 @@ func (c *Contract) Generate() ronykit.Contract {
 // generates a ronykit.Service by calling Generate method.
 type Service struct {
 	Name         string
+	Version      string
+	Description  string
 	Contracts    []Contract
 	PreHandlers  []ronykit.Handler
 	PostHandlers []ronykit.Handler
