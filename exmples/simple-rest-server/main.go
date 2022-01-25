@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(2)
+	runtime.GOMAXPROCS(4)
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(

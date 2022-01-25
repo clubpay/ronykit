@@ -5,6 +5,7 @@ type (
 	ExecuteFunc    func(wf WriteFunc, handlers ...Handler)
 	DispatchFunc   func(ctx *Context, execFunc ExecuteFunc) error
 	MessageFactory func() Message
+	Modifier       func(envelope *Envelope)
 )
 
 type Dispatcher interface {

@@ -94,6 +94,9 @@ func (e *Envelope) Release() {
 }
 
 func (e *Envelope) Send() {
+	if e.ctx.mod != nil {
+		e.ctx.mod(e)
+	}
 	e.ctx.Error(e.ctx.wf(e.conn, e))
 	e.Release()
 }
