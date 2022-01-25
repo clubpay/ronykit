@@ -14,7 +14,7 @@ type Selector struct {
 	Method        string
 	Path          string
 	CustomDecoder mux.DecoderFunc
-	Modifier      func(envelope *ronykit.Envelope)
+	Modifier      ronykit.Modifier
 }
 
 func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
@@ -32,9 +32,10 @@ func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 }
 
 type routeSelector struct {
-	method  string
-	path    string
-	decoder mux.DecoderFunc
+	method   string
+	path     string
+	decoder  mux.DecoderFunc
+	modifier ronykit.Modifier
 }
 
 func (r routeSelector) Query(q string) interface{} {
@@ -45,6 +46,8 @@ func (r routeSelector) Query(q string) interface{} {
 		return r.method
 	case queryPath:
 		return r.path
+	case queryModifier:
+		return r.modifier
 	}
 
 	return nil
