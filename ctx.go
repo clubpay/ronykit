@@ -11,6 +11,7 @@ type Context struct {
 
 	nb      *northBridge
 	kv      map[string]interface{}
+	hdr     map[string]string
 	conn    Conn
 	in      *Envelope
 	wf      WriteFunc
@@ -28,14 +29,19 @@ func (ctx *Context) Context() context.Context {
 	return ctx.ctx
 }
 
-// SetUserContext replaces the default context with the provided context.
-func (ctx *Context) SetUserContext(userCtx context.Context) {
-	ctx.ctx = userCtx
-}
-
 // Next sets the next handler which will be called after the current handler.
 func (ctx *Context) Next(h Handler) {
 	ctx.next = h
+}
+
+// StopExecution stops the execution of the next handlers.
+func (ctx *Context) StopExecution() {
+	ctx.stopped = true
+}
+
+// SetUserContext replaces the default context with the provided context.
+func (ctx *Context) SetUserContext(userCtx context.Context) {
+	ctx.ctx = userCtx
 }
 
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
@@ -50,6 +56,14 @@ func (ctx *Context) SetStatusCode(code int) {
 // Conn returns the underlying connection
 func (ctx *Context) Conn() Conn {
 	return ctx.conn
+}
+
+// SetHdr sets the common header key-value pairs so in Out method we don't need to
+// repeatedly set those.
+func (ctx *Context) SetHdr(hdr map[string]string) {
+	for k, v := range hdr {
+		ctx.hdr[k] = v
+	}
 }
 
 // In returns the incoming Envelope which received from the connection.
@@ -85,14 +99,12 @@ func (ctx *Context) Error(err error) bool {
 	return false
 }
 
-// StopExecution stops the execution of the next handlers.
-func (ctx *Context) StopExecution() {
-	ctx.stopped = true
-}
-
 func (ctx *Context) reset() {
 	for k := range ctx.kv {
 		delete(ctx.kv, k)
+	}
+	for k := range ctx.hdr {
+		delete(ctx.hdr, k)
 	}
 
 	ctx.in.Release()

@@ -26,6 +26,10 @@ func newEnvelope(ctx *Context, conn Conn) *Envelope {
 		}
 	}
 
+	for k, v := range ctx.hdr {
+		e.kv[k] = v
+	}
+
 	e.ctx = ctx
 	e.conn = conn
 
