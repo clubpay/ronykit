@@ -96,7 +96,8 @@ func (n *northBridge) acquireCtx(c Conn) *Context {
 	ctx, ok := n.ctxPool.Get().(*Context)
 	if !ok {
 		ctx = &Context{
-			kv: make(map[string]interface{}),
+			kv:  make(map[string]interface{}),
+			hdr: make(map[string]string),
 		}
 	}
 
