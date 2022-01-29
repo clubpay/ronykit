@@ -51,7 +51,7 @@ func (c *conn) ClientIP() string {
 }
 
 func (c *conn) Write(data []byte) (int, error) {
-	c.ctx.SetBody(data)
+	c.ctx.Response.AppendBody(data)
 
 	return len(data), nil
 }

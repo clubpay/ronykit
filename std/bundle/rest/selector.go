@@ -122,7 +122,7 @@ func reflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
 			case reflect.Uint:
 				*(*uint)(ptr) = uint(utils.StrToInt64(bag.ByName(pcs[idx].name)))
 			case reflect.String:
-				*(*string)(ptr) = bag.ByName(pcs[idx].name)
+				*(*string)(ptr) = string(utils.S2B(bag.ByName(pcs[idx].name)))
 			}
 		}
 
