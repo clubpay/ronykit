@@ -17,6 +17,7 @@ type Conn interface {
 // REST then it has more information about the REST request.
 type REST interface {
 	Conn
+	GetHost() string
 	GetRequestURI() string
 	GetMethod() string
 	GetPath() string

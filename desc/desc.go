@@ -19,6 +19,7 @@ type Contract struct {
 	Input     ronykit.Message
 	Output    ronykit.Message
 	Selectors []Selector
+	Modifiers []ronykit.Modifier
 }
 
 func NewContract() *Contract {
@@ -49,6 +50,11 @@ func (c *Contract) AddSelector(s Selector) *Contract {
 	return c
 }
 
+func (c *Contract) AddModifier(m ronykit.Modifier) *Contract {
+	c.Modifiers = append(c.Modifiers, m)
+
+	return c
+}
 func (c *Contract) AddHandler(h ...ronykit.Handler) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
@@ -64,6 +70,7 @@ func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
 func (c *Contract) Generate() ronykit.Contract {
 	ci := &contractImpl{}
 	ci.setHandler(c.Handlers...)
+	ci.setModifier(c.Modifiers...)
 
 	makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
 		return func(args []reflect.Value) (results []reflect.Value) {

@@ -9,12 +9,12 @@ import (
 var envelopePool = &sync.Pool{}
 
 type Envelope struct {
+	ctx  *Context
+	conn Conn
 	kvl  utils.SpinLock
 	kv   map[string]string
 	m    Message
 	p    *sync.Pool
-	conn Conn
-	ctx  *Context
 }
 
 func newEnvelope(ctx *Context, conn Conn) *Envelope {
@@ -34,6 +34,17 @@ func newEnvelope(ctx *Context, conn Conn) *Envelope {
 	e.conn = conn
 
 	return e
+}
+
+func (e *Envelope) release() {
+	for k := range e.kv {
+		delete(e.kv, k)
+	}
+	e.m = nil
+	e.ctx = nil
+	e.conn = nil
+
+	e.p.Put(e)
 }
 
 func (e *Envelope) SetHdr(key, value string) *Envelope {
@@ -86,21 +97,17 @@ func (e *Envelope) GetMsg() Message {
 	return e.m
 }
 
-func (e *Envelope) Release() {
-	for k := range e.kv {
-		delete(e.kv, k)
-	}
-	e.m = nil
-	e.ctx = nil
-	e.conn = nil
-
-	e.p.Put(e)
-}
-
+// Send writes the envelope to the connection based on the Bundle specification.
+// You **MUST NOT** use the Envelope after calling this method.
 func (e *Envelope) Send() {
-	if e.ctx.mod != nil {
-		e.ctx.mod(e)
+	// Apply modifiers if there is any.
+	for idx := range e.ctx.mods {
+		e.ctx.mods[idx](e)
 	}
+
+	// Use WriteFunc to write the Envelope into the connection
 	e.ctx.Error(e.ctx.wf(e.conn, e))
-	e.Release()
+
+	// Release the envelope
+	e.release()
 }

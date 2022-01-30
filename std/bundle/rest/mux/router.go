@@ -19,7 +19,6 @@ type RouteData struct {
 	ServiceName string
 	Decoder     DecoderFunc
 	Handlers    []ronykit.Handler
-	Modifier    ronykit.Modifier
 }
 
 // Param is a single URL parameter, consisting of a key and a value.

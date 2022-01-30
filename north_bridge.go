@@ -73,8 +73,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 						break
 					}
 
-					h = ctx.next
-					ctx.next = nil
+					h, ctx.next = ctx.next, nil
 				}
 			}
 

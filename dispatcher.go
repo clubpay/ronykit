@@ -16,6 +16,8 @@ type Message interface {
 	Marshal() ([]byte, error)
 }
 
+// RawMessage is a bytes slice which could be used as Message. This is helpful for
+// raw data messages.
 type RawMessage []byte
 
 func (rm RawMessage) Marshal() ([]byte, error) {

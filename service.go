@@ -37,6 +37,7 @@ type Service interface {
 type Contract interface {
 	RouteSelector
 	Handlers() []Handler
+	Modifiers() []Modifier
 }
 
 // RouteSelector holds information about how this Contract is going to be selected. Each

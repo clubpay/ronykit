@@ -48,6 +48,7 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 type contractImpl struct {
 	selectors   []ronykit.RouteSelector
 	handlers    []ronykit.Handler
+	modifiers   []ronykit.Modifier
 	factoryFunc func() ronykit.Message
 }
 
@@ -59,6 +60,12 @@ func (r *contractImpl) addSelector(selectors ...ronykit.RouteSelector) *contract
 
 func (r *contractImpl) setHandler(handlers ...ronykit.Handler) *contractImpl {
 	r.handlers = append(r.handlers[:0], handlers...)
+
+	return r
+}
+
+func (r *contractImpl) setModifier(modifiers ...ronykit.Modifier) *contractImpl {
+	r.modifiers = append(r.modifiers[:0], modifiers...)
 
 	return r
 }
@@ -76,4 +83,8 @@ func (r *contractImpl) Query(q string) interface{} {
 
 func (r *contractImpl) Handlers() []ronykit.Handler {
 	return r.handlers
+}
+
+func (r *contractImpl) Modifiers() []ronykit.Modifier {
+	return r.modifiers
 }

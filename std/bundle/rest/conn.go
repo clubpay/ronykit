@@ -60,6 +60,10 @@ func (c *conn) Stream() bool {
 	return false
 }
 
+func (c *conn) GetHost() string {
+	return utils.B2S(c.ctx.Host())
+}
+
 func (c *conn) GetRequestURI() string {
 	return utils.B2S(c.ctx.Request.RequestURI())
 }
