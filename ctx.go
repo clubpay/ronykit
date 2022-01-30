@@ -19,7 +19,7 @@ type Context struct {
 	stopped bool
 	next    Handler
 	ctx     context.Context
-	mod     Modifier
+	mods    []Modifier
 }
 
 // Context returns a context.Background which can be used a reference context for
@@ -107,9 +107,9 @@ func (ctx *Context) reset() {
 		delete(ctx.hdr, k)
 	}
 
-	ctx.in.Release()
+	ctx.in.release()
 	ctx.next = nil
 	ctx.stopped = false
 	ctx.ctx = nil
-	ctx.mod = nil
+	ctx.mods = ctx.mods[:0]
 }

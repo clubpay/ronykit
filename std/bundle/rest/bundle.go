@@ -12,10 +12,9 @@ import (
 )
 
 const (
-	queryMethod   = "rest.method"
-	queryPath     = "rest.path"
-	queryDecoder  = "rest.decoder"
-	queryModifier = "rest.modifier"
+	queryMethod  = "rest.method"
+	queryPath    = "rest.path"
+	queryDecoder = "rest.decoder"
 )
 
 type bundle struct {
@@ -84,10 +83,6 @@ func (r *bundle) Register(svc ronykit.Service) {
 		if !ok {
 			panic("mux.DecoderFunc is not set in Service's Contract")
 		}
-		modifier, ok := rt.Query(queryModifier).(ronykit.Modifier)
-		if !ok {
-			modifier = nil
-		}
 
 		r.mux.Handle(
 			method, path,
@@ -95,7 +90,6 @@ func (r *bundle) Register(svc ronykit.Service) {
 				ServiceName: svc.Name(),
 				Decoder:     decoder,
 				Handlers:    h,
-				Modifier:    modifier,
 			},
 		)
 	}

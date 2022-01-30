@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 
 	log "github.com/ronaksoft/golog"
 )
@@ -40,10 +39,9 @@ func NewServer(opts ...Option) *Server {
 
 func (s *Server) RegisterBundle(b Bundle) *Server {
 	nb := &northBridge{
-		ctxPool: sync.Pool{},
-		l:       s.l,
-		b:       b,
-		eh:      s.eh,
+		l:  s.l,
+		b:  b,
+		eh: s.eh,
 	}
 	s.nb = append(s.nb, nb)
 
