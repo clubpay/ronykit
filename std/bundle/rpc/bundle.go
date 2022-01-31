@@ -60,6 +60,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 		b.mux.routes[predicate] = routerData{
 			ServiceName: svc.Name(),
 			Handlers:    h,
+			Modifiers:   rt.Modifiers(),
 			Factory:     factory,
 		}
 	}
@@ -88,9 +89,9 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope, modifiers ...ronykit.Modifier) error {
-		for idx := range modifiers {
-			modifiers[idx](e)
+	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
+		for idx := range routeData.Modifiers {
+			routeData.Modifiers[idx](e)
 		}
 
 		data, err := e.GetMsg().Marshal()
