@@ -28,6 +28,9 @@ func NewSample() *Sample {
 			AddSelector(rpc.Selector{
 				Predicate: "echoRequest",
 			}).
+			AddModifier(func(envelope *ronykit.Envelope) {
+				envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
+			}).
 			SetHandler(echoHandler),
 	)
 
