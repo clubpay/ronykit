@@ -24,7 +24,7 @@ func main() {
 			rpc.New(
 				rpc.Listen("tcp4://0.0.0.0:80"),
 				rpc.Decoder(
-					func(data []byte, e *rpc.Envelope) error {
+					func(data []byte, e *rpc.MessageContainer) error {
 						return json.Unmarshal(data, e)
 					},
 				),
