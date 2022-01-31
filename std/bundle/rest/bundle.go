@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/rest/internal/mux"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
@@ -21,13 +20,18 @@ type bundle struct {
 	srv      *fasthttp.Server
 	listen   string
 	d        ronykit.GatewayDelegate
-	mux      *mux.Router
+	mux      *router
 	connPool sync.Pool
 }
 
 func New(opts ...Option) (*bundle, error) {
 	r := &bundle{
-		mux: mux.New(),
+		mux: &router{
+			RedirectTrailingSlash:  true,
+			RedirectFixedPath:      true,
+			HandleMethodNotAllowed: true,
+			HandleOPTIONS:          true,
+		},
 		srv: &fasthttp.Server{},
 	}
 
@@ -79,14 +83,14 @@ func (r *bundle) Register(svc ronykit.Service) {
 		if !ok {
 			panic("path is not set in Service's Contract")
 		}
-		decoder, ok := rt.Query(queryDecoder).(mux.DecoderFunc)
+		decoder, ok := rt.Query(queryDecoder).(DecoderFunc)
 		if !ok {
 			panic("mux.DecoderFunc is not set in Service's Contract")
 		}
 
 		r.mux.Handle(
 			method, path,
-			&mux.RouteData{
+			&routeData{
 				ServiceName: svc.Name(),
 				Decoder:     decoder,
 				Handlers:    h,
@@ -112,7 +116,7 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		func(key, value []byte) {
 			params = append(
 				params,
-				mux.Param{
+				Param{
 					Key:   utils.B2S(key),
 					Value: utils.B2S(value),
 				},

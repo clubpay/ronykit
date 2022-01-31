@@ -1,4 +1,4 @@
-package mux
+package rest
 
 import (
 	"strings"
@@ -79,7 +79,7 @@ type node struct {
 	nType     nodeType
 	priority  uint32
 	children  []*node
-	handle    *RouteData
+	handle    *routeData
 }
 
 // Increments priority of the given child and reorders if necessary
@@ -107,7 +107,7 @@ func (n *node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
-func (n *node) addRoute(path string, handle *RouteData) {
+func (n *node) addRoute(path string, handle *routeData) {
 	fullPath := path
 	n.priority++
 
@@ -220,7 +220,7 @@ walk:
 	}
 }
 
-func (n *node) insertChild(path, fullPath string, handle *RouteData) {
+func (n *node) insertChild(path, fullPath string, handle *routeData) {
 	for {
 		// Find prefix until first wildcard
 		wildcard, i, valid := findWildcard(path)
@@ -332,7 +332,7 @@ func (n *node) insertChild(path, fullPath string, handle *RouteData) {
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
 // nolint: gocyclo
-func (n *node) getValue(path string, params func() *Params) (handle *RouteData, ps *Params, tsr bool) {
+func (n *node) getValue(path string, params func() *Params) (handle *routeData, ps *Params, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path

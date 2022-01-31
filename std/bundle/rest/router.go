@@ -1,4 +1,4 @@
-package mux
+package rest
 
 import (
 	"net/http"
@@ -8,46 +8,16 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-// DecoderFunc is the function which gets the raw http's body and the extracted data from
-// path and must return a ronykit.Message.
-type DecoderFunc = func(bag Params, data []byte) ronykit.Message
-
-// RouteData is a function that can be registered to a route to handle HTTP
-// requests. Like http.HandlerFunc, but has a third parameter for the values of
-// wildcards (path variables).
-type RouteData struct {
+type routeData struct {
 	ServiceName string
 	Decoder     DecoderFunc
 	Handlers    []ronykit.Handler
 	Modifiers   []ronykit.Modifier
 }
 
-// Param is a single URL parameter, consisting of a key and a value.
-type Param struct {
-	Key   string
-	Value string
-}
-
-// Params is a Param-slice, as returned by the router.
-// The slice is ordered, the first URL parameter is also the first slice value.
-// It is therefore safe to read values by the index.
-type Params []Param
-
-// ByName returns the value of the first Param which key matches the given name.
-// If no matching Param is found, an empty string is returned.
-func (ps Params) ByName(name string) string {
-	for _, p := range ps {
-		if p.Key == name {
-			return p.Value
-		}
-	}
-
-	return ""
-}
-
-// Router is a http.Handler which can be used to dispatch requests to different
+// router is a http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes.
-type Router struct {
+type router struct {
 	trees map[string]*node
 
 	paramsPool sync.Pool
@@ -111,62 +81,51 @@ type Router struct {
 	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 
-// New returns a new initialized Router.
-// Path auto-correction, including trailing slashes, is enabled by default.
-func New() *Router {
-	return &Router{
-		RedirectTrailingSlash:  true,
-		RedirectFixedPath:      true,
-		HandleMethodNotAllowed: true,
-		HandleOPTIONS:          true,
-	}
-}
-
-func (r *Router) getParams() *Params {
+func (r *router) getParams() *Params {
 	ps, _ := r.paramsPool.Get().(*Params)
 	*ps = (*ps)[0:0] // reset slice
 
 	return ps
 }
 
-func (r *Router) putParams(ps *Params) {
+func (r *router) putParams(ps *Params) {
 	if ps != nil {
 		r.paramsPool.Put(ps)
 	}
 }
 
 // GET is a shortcut for router.Handle(http.MethodGet, path, handle)
-func (r *Router) GET(path string, handle *RouteData) {
+func (r *router) GET(path string, handle *routeData) {
 	r.Handle(http.MethodGet, path, handle)
 }
 
 // HEAD is a shortcut for router.Handle(http.MethodHead, path, handle)
-func (r *Router) HEAD(path string, handle *RouteData) {
+func (r *router) HEAD(path string, handle *routeData) {
 	r.Handle(http.MethodHead, path, handle)
 }
 
 // OPTIONS is a shortcut for router.Handle(http.MethodOptions, path, handle)
-func (r *Router) OPTIONS(path string, handle *RouteData) {
+func (r *router) OPTIONS(path string, handle *routeData) {
 	r.Handle(http.MethodOptions, path, handle)
 }
 
 // POST is a shortcut for router.Handle(http.MethodPost, path, handle)
-func (r *Router) POST(path string, handle *RouteData) {
+func (r *router) POST(path string, handle *routeData) {
 	r.Handle(http.MethodPost, path, handle)
 }
 
 // PUT is a shortcut for router.Handle(http.MethodPut, path, handle)
-func (r *Router) PUT(path string, handle *RouteData) {
+func (r *router) PUT(path string, handle *routeData) {
 	r.Handle(http.MethodPut, path, handle)
 }
 
 // PATCH is a shortcut for router.Handle(http.MethodPatch, path, handle)
-func (r *Router) PATCH(path string, handle *RouteData) {
+func (r *router) PATCH(path string, handle *routeData) {
 	r.Handle(http.MethodPatch, path, handle)
 }
 
 // DELETE is a shortcut for router.Handle(http.MethodDelete, path, handle)
-func (r *Router) DELETE(path string, handle *RouteData) {
+func (r *router) DELETE(path string, handle *routeData) {
 	r.Handle(http.MethodDelete, path, handle)
 }
 
@@ -178,7 +137,7 @@ func (r *Router) DELETE(path string, handle *RouteData) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *Router) Handle(method, path string, handle *RouteData) {
+func (r *router) Handle(method, path string, handle *routeData) {
 	varsCount := uint16(0)
 
 	if method == "" {
@@ -222,7 +181,7 @@ func (r *Router) Handle(method, path string, handle *RouteData) {
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.
-func (r *Router) Lookup(method, path string) (*RouteData, Params, bool) {
+func (r *router) Lookup(method, path string) (*routeData, Params, bool) {
 	if root := r.trees[method]; root != nil {
 		handle, ps, tsr := root.getValue(path, r.getParams)
 		if handle == nil {
@@ -240,7 +199,7 @@ func (r *Router) Lookup(method, path string) (*RouteData, Params, bool) {
 	return nil, nil, false
 }
 
-func (r *Router) allowed(path, reqMethod string) (allow string) {
+func (r *router) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
 	if path == "*" { // server-wide
