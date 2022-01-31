@@ -90,6 +90,7 @@ func (r *bundle) Register(svc ronykit.Service) {
 				ServiceName: svc.Name(),
 				Decoder:     decoder,
 				Handlers:    h,
+				Modifiers:   rt.Modifiers(),
 			},
 		)
 	}
@@ -120,14 +121,14 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	)
 
 	// Set the write function which
-	writeFunc := func(c ronykit.Conn, e *ronykit.Envelope, modifiers ...ronykit.Modifier) error {
+	writeFunc := func(c ronykit.Conn, e *ronykit.Envelope) error {
 		rc, ok := c.(*conn)
 		if !ok {
 			panic("BUG!! incorrect connection")
 		}
 
-		for idx := range modifiers {
-			modifiers[idx](e)
+		for idx := range routeData.Modifiers {
+			routeData.Modifiers[idx](e)
 		}
 
 		data, err := e.GetMsg().Marshal()
