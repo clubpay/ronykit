@@ -6,15 +6,18 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/rest/mux"
+	"github.com/ronaksoft/ronykit/std/bundle/rest/internal/mux"
 	"github.com/ronaksoft/ronykit/utils"
 )
 
-type Selector struct {
-	Method        string
-	Path          string
-	CustomDecoder mux.DecoderFunc
-}
+type (
+	DecoderFunc = mux.DecoderFunc
+	Selector    struct {
+		Method        string
+		Path          string
+		CustomDecoder DecoderFunc
+	}
+)
 
 func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 	route := &routeSelector{
@@ -33,7 +36,7 @@ func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 type routeSelector struct {
 	method  string
 	path    string
-	decoder mux.DecoderFunc
+	decoder DecoderFunc
 }
 
 func (r routeSelector) Query(q string) interface{} {
@@ -69,7 +72,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(factory ronykit.MessageFactory) mux.DecoderFunc {
+func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 	x := factory()
 	rVal := reflect.ValueOf(x)
 	rType := rVal.Type()
