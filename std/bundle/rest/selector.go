@@ -6,12 +6,34 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/rest/internal/mux"
 	"github.com/ronaksoft/ronykit/utils"
 )
 
+// Param is a single URL parameter, consisting of a key and a value.
+type Param struct {
+	Key   string
+	Value string
+}
+
+// Params is a Param-slice, as returned by the router.
+// The slice is ordered, the first URL parameter is also the first slice value.
+// It is therefore safe to read values by the index.
+type Params []Param
+
+// ByName returns the value of the first Param which key matches the given name.
+// If no matching Param is found, an empty string is returned.
+func (ps Params) ByName(name string) string {
+	for _, p := range ps {
+		if p.Key == name {
+			return p.Value
+		}
+	}
+
+	return ""
+}
+
 type (
-	DecoderFunc = mux.DecoderFunc
+	DecoderFunc func(bag Params, data []byte) ronykit.Message
 	Selector    struct {
 		Method        string
 		Path          string
@@ -98,7 +120,7 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 		}
 	}
 
-	return func(bag mux.Params, data []byte) ronykit.Message {
+	return func(bag Params, data []byte) ronykit.Message {
 		v := factory()
 
 		if len(data) > 0 {
