@@ -18,7 +18,7 @@ type bundle struct {
 	listen  string
 	eh      gnet.EventHandler
 	d       ronykit.GatewayDelegate
-	decoder func(data []byte, e *Envelope) error
+	decoder func(data []byte, e *MessageContainer) error
 	mux     mux
 }
 
@@ -71,43 +71,47 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		panic("BUG!! incorrect connection")
 	}
 
-	rpcEnvelope := acquireEnvelope()
-	err := b.decoder(in, rpcEnvelope)
+	rpcMsgContainer := acquireMsgContainer()
+	err := b.decoder(in, rpcMsgContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	routeData := b.mux.routes[rpcEnvelope.Predicate]
+	routeData := b.mux.routes[rpcMsgContainer.Predicate]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
 
 	msg := routeData.Factory()
-	err = rpcEnvelope.Unmarshal(msg)
+	err = rpcMsgContainer.Unmarshal(msg)
 	if err != nil {
 		return nil, err
+	}
+
+	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope, modifiers ...ronykit.Modifier) error {
+		for idx := range modifiers {
+			modifiers[idx](e)
+		}
+
+		data, err := e.GetMsg().Marshal()
+		if err != nil {
+			return err
+		}
+
+		_, err = conn.Write(data)
+
+		return err
 	}
 
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().
-			SetHdrMap(rpcEnvelope.Header).
+			SetHdrMap(rpcMsgContainer.Header).
 			SetMsg(msg)
 
 		ctx.
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
-			Set(ronykit.CtxRoute, rpcEnvelope.Predicate)
-
-		writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-			data, err := e.GetMsg().Marshal()
-			if err != nil {
-				return err
-			}
-
-			_, err = conn.Write(data)
-
-			return err
-		}
+			Set(ronykit.CtxRoute, rpcMsgContainer.Predicate)
 
 		// run the execFunc with generated params
 		execFunc(writeFunc, routeData.Handlers...)

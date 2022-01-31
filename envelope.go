@@ -100,14 +100,23 @@ func (e *Envelope) GetMsg() Message {
 // Send writes the envelope to the connection based on the Bundle specification.
 // You **MUST NOT** use the Envelope after calling this method.
 func (e *Envelope) Send() {
-	// Apply modifiers if there is any.
-	for idx := range e.ctx.mods {
-		e.ctx.mods[idx](e)
-	}
-
 	// Use WriteFunc to write the Envelope into the connection
 	e.ctx.Error(e.ctx.wf(e.conn, e))
 
 	// Release the envelope
 	e.release()
+}
+
+type MessageFactory func() Message
+
+type Message interface {
+	Marshal() ([]byte, error)
+}
+
+// RawMessage is a bytes slice which could be used as Message. This is helpful for
+// raw data messages.
+type RawMessage []byte
+
+func (rm RawMessage) Marshal() ([]byte, error) {
+	return rm, nil
 }

@@ -101,25 +101,54 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		panic("BUG!! incorrect connection")
 	}
 
-	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
-		if routeData == nil {
-			return errNonRestConnection
+	routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
+	if routeData == nil {
+		return nil, errRouteNotFound
+	}
+
+	// Walk over all the query params
+	rc.ctx.QueryArgs().VisitAll(
+		func(key, value []byte) {
+			params = append(
+				params,
+				mux.Param{
+					Key:   utils.B2S(key),
+					Value: utils.B2S(value),
+				},
+			)
+		},
+	)
+
+	// Set the write function which
+	writeFunc := func(c ronykit.Conn, e *ronykit.Envelope, modifiers ...ronykit.Modifier) error {
+		rc, ok := c.(*conn)
+		if !ok {
+			panic("BUG!! incorrect connection")
 		}
 
-		// Walk over all the query params
-		rc.ctx.QueryArgs().VisitAll(
-			func(key, value []byte) {
-				params = append(
-					params,
-					mux.Param{
-						Key:   utils.B2S(key),
-						Value: utils.B2S(value),
-					},
-				)
+		for idx := range modifiers {
+			modifiers[idx](e)
+		}
+
+		data, err := e.GetMsg().Marshal()
+		if err != nil {
+			return err
+		}
+
+		e.WalkHdr(
+			func(key string, val string) bool {
+				rc.ctx.Response.Header.Set(key, val)
+
+				return true
 			},
 		)
 
+		rc.ctx.SetBody(data)
+
+		return nil
+	}
+
+	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		// Walk over all the connection headers
 		rc.Walk(
 			func(key string, val string) bool {
@@ -132,31 +161,6 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		// Set the route and service name
 		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
 		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
-
-		// Set the write function which
-		writeFunc := func(c ronykit.Conn, e *ronykit.Envelope) error {
-			rc, ok := c.(*conn)
-			if !ok {
-				panic("BUG!! incorrect connection")
-			}
-
-			data, err := e.GetMsg().Marshal()
-			if err != nil {
-				return err
-			}
-
-			e.WalkHdr(
-				func(key string, val string) bool {
-					rc.ctx.Response.Header.Set(key, val)
-
-					return true
-				},
-			)
-
-			rc.ctx.SetBody(data)
-
-			return nil
-		}
 
 		ctx.In().SetMsg(routeData.Decoder(params, in))
 		execFunc(writeFunc, routeData.Handlers...)
@@ -188,4 +192,5 @@ func (r *bundle) Subscribe(d ronykit.GatewayDelegate) {
 
 var (
 	errNonRestConnection = fmt.Errorf("incompatible connection, expected REST conn")
+	errRouteNotFound     = fmt.Errorf("route not found")
 )
