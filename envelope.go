@@ -99,7 +99,12 @@ func (e *Envelope) GetMsg() Message {
 
 // Send writes the envelope to the connection based on the Bundle specification.
 // You **MUST NOT** use the Envelope after calling this method.
+// You **MUST NOT** call this function more than once.
 func (e *Envelope) Send() {
+	if e.conn == nil {
+		panic("BUG!! do not call Send multiple times")
+	}
+
 	// Use WriteFunc to write the Envelope into the connection
 	e.ctx.Error(e.ctx.wf(e.conn, e))
 
