@@ -7,6 +7,10 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+var (
+	strLocation = []byte(fasthttp.HeaderLocation)
+)
+
 type conn struct {
 	utils.SpinLock
 
@@ -78,4 +82,12 @@ func (c *conn) GetPath() string {
 
 func (c *conn) Form() (*multipart.Form, error) {
 	return c.ctx.MultipartForm()
+}
+
+func (c *conn) Redirect(statusCode int, url string) {
+	u := fasthttp.AcquireURI()
+	_ = u.Parse(nil, utils.S2B(url))
+	c.ctx.Response.Header.SetCanonical(strLocation, u.FullURI())
+	c.ctx.Response.SetStatusCode(statusCode)
+	fasthttp.ReleaseURI(u)
 }

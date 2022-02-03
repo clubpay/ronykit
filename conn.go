@@ -23,4 +23,5 @@ type REST interface {
 	GetPath() string
 	Form() (*multipart.Form, error)
 	SetStatusCode(code int)
+	Redirect(code int, url string)
 }
