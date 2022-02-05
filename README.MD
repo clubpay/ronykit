@@ -4,15 +4,18 @@ components for each task, you are almost free to develop your API server using R
 REST, GraphQL or even with your in-house defined protocol. However, some components are implemented
 in the 'std' which make it easy to use RonyKit out of the box.
 
+RonyKIT is a successor of [Rony](https://github.com/ronaksoft/rony), with lessons from using it in multiple productions.
+In RonyKIT, I wanted to make it more flexible but still very performant. I will maintain two bundles for REST and RPC, 
+however you are not limited to use those, and can build your own Bundles. To have a better understanding of how it is 
+going to work please check examples folder. in [simple-rest-server](examples/simple-rest-server) it shows a very simple 
+hello world app. in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but 
+use them with multiple formats like REST or RPC. 
+
 ## Gateway
 Gateway defines the interface that Edge server communicate with clients.
 
-## Cluster
+## Cluster [Coming Soon]
 Cluster defines the interface that Edge server instances communicate with each other. 
-
-## Dispatcher
-Dispatcher provides the interface to prepare incoming and outgoing messages from the RPC handlers 
-to the external world of the system. 
 
 # Benchmark 
 ## Simple Echo 
