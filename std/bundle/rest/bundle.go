@@ -109,15 +109,27 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 	routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
 	if routeData == nil {
-		if r.cors != nil && rc.ctx.IsOptions() {
-			reqHeaders := rc.Get(headerAccessControlRequestHeaders)
-			if len(reqHeaders) > 0 {
-				rc.Set(headerAccessControlAllowHeaders, reqHeaders)
+		if r.cors != nil {
+			// ByPass cors (Cross Origin Resource Sharing) check
+			if r.cors.origins == "*" {
+				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
 			} else {
-				rc.Set(headerAccessControlAllowHeaders, r.cors.headers)
+				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
 			}
 
-			rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+			if rc.ctx.IsOptions() {
+				reqHeaders := rc.ctx.Request.Header.Peek(headerAccessControlRequestHeaders)
+				if len(reqHeaders) > 0 {
+					rc.ctx.Response.Header.SetBytesV(headerAccessControlAllowHeaders, reqHeaders)
+				} else {
+					rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, r.cors.headers)
+				}
+
+				rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, r.cors.methods)
+				rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+			} else {
+				rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
+			}
 		}
 
 		return nil, errRouteNotFound
@@ -126,12 +138,12 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	if r.cors != nil {
 		// ByPass cors (Cross Origin Resource Sharing) check
 		if r.cors.origins == "*" {
-			rc.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
+			rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
 		} else {
-			rc.Set(headerAccessControlAllowOrigin, r.cors.origins)
+			rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
 		}
 
-		rc.Set(headerAccessControlRequestMethod, r.cors.methods)
+		//rc.ctx.Response.Header.Set(headerAccessControlRequestMethod, r.cors.methods)
 	}
 
 	// Walk over all the query params
