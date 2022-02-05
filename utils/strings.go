@@ -103,6 +103,12 @@ func StrToInt(s string) int {
 	return int(v)
 }
 
+func StrToUInt(s string) uint {
+	v, _ := strconv.ParseInt(s, 10, 32)
+
+	return uint(v)
+}
+
 func Int64ToStr(x int64) string {
 	return strconv.FormatInt(x, 10)
 }

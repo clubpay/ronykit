@@ -55,6 +55,7 @@ func (c *Contract) AddModifier(m ronykit.Modifier) *Contract {
 
 	return c
 }
+
 func (c *Contract) AddHandler(h ...ronykit.Handler) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
@@ -67,28 +68,32 @@ func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
 	return c
 }
 
-func (c *Contract) Generate() ronykit.Contract {
-	ci := &contractImpl{}
-	ci.setHandler(c.Handlers...)
-	ci.setModifier(c.Modifiers...)
-
+func (c *Contract) Generate() []ronykit.Contract {
+	var contracts []ronykit.Contract
 	makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
 		return func(args []reflect.Value) (results []reflect.Value) {
 			return []reflect.Value{reflect.New(reflect.TypeOf(m).Elem())}
 		}
 	}
-	reflect.ValueOf(&ci.factoryFunc).Elem().Set(
-		reflect.MakeFunc(
-			reflect.TypeOf(ci.factoryFunc),
-			makeFunc(c.Input),
-		),
-	)
 
 	for _, s := range c.Selectors {
-		ci.addSelector(s.Generate(ci.factoryFunc))
+		ci := &contractImpl{}
+		ci.setHandler(c.Handlers...)
+		ci.setModifier(c.Modifiers...)
+
+		reflect.ValueOf(&ci.factoryFunc).Elem().Set(
+			reflect.MakeFunc(
+				reflect.TypeOf(ci.factoryFunc),
+				makeFunc(c.Input),
+			),
+		)
+
+		ci.setSelector(s.Generate(ci.factoryFunc))
+
+		contracts = append(contracts, ci)
 	}
 
-	return ci
+	return contracts
 }
 
 // Service is the description of the ronykit.Service you are going to create. It then
@@ -118,7 +123,7 @@ func (s Service) Generate() ronykit.Service {
 	}
 
 	for _, c := range s.Contracts {
-		svc.contracts = append(svc.contracts, c.Generate())
+		svc.contracts = append(svc.contracts, c.Generate()...)
 	}
 
 	return svc

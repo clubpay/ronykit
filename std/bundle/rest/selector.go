@@ -1,10 +1,10 @@
 package rest
 
 import (
+	"github.com/goccy/go-json"
 	"reflect"
 	"unsafe"
 
-	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 )
@@ -95,8 +95,7 @@ type paramCaster struct {
 }
 
 func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
-	x := factory()
-	rVal := reflect.ValueOf(x)
+	rVal := reflect.ValueOf(factory())
 	rType := rVal.Type()
 	if rType.Kind() != reflect.Ptr {
 		panic("x must be a pointer to struct")
@@ -123,28 +122,34 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 	return func(bag Params, data []byte) ronykit.Message {
 		v := factory()
 
-		if len(data) > 0 {
-			_ = json.Unmarshal(data, v)
-		}
-
 		for idx := range pcs {
+			x := bag.ByName(pcs[idx].name)
+			if x == "" {
+				continue
+			}
+
 			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pcs[idx].offset)
 			switch pcs[idx].typ.Kind() {
 			case reflect.Int64:
-				*(*int64)(ptr) = utils.StrToInt64(bag.ByName(pcs[idx].name))
+				*(*int64)(ptr) = utils.StrToInt64(x)
 			case reflect.Int32:
-				*(*int32)(ptr) = int32(utils.StrToInt64(bag.ByName(pcs[idx].name)))
+				*(*int32)(ptr) = utils.StrToInt32(x)
 			case reflect.Uint64:
-				*(*uint64)(ptr) = uint64(utils.StrToInt64(bag.ByName(pcs[idx].name)))
+				*(*uint64)(ptr) = utils.StrToUInt64(x)
 			case reflect.Uint32:
-				*(*uint32)(ptr) = uint32(utils.StrToInt64(bag.ByName(pcs[idx].name)))
+				*(*uint32)(ptr) = utils.StrToUInt32(x)
 			case reflect.Int:
-				*(*int)(ptr) = int(utils.StrToInt64(bag.ByName(pcs[idx].name)))
+				*(*int)(ptr) = utils.StrToInt(x)
 			case reflect.Uint:
-				*(*uint)(ptr) = uint(utils.StrToInt64(bag.ByName(pcs[idx].name)))
+				*(*uint)(ptr) = utils.StrToUInt(x)
 			case reflect.String:
-				*(*string)(ptr) = string(utils.S2B(bag.ByName(pcs[idx].name)))
+				// FixME: make this copy as an option
+				*(*string)(ptr) = string(utils.S2B(x))
 			}
+		}
+
+		if len(data) > 0 {
+			_ = json.Unmarshal(data, v)
 		}
 
 		return v.(ronykit.Message)

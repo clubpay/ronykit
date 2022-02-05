@@ -19,8 +19,8 @@ func (e *echoResponse) Marshal() ([]byte, error) {
 }
 
 type sumRequest struct {
-	Val1 int64 `paramName:"val1"`
-	Val2 int64 `paramName:"val2"`
+	Val1 int64 `paramName:"val1" json:"val1"`
+	Val2 int64 `paramName:"val2" json:"val2"`
 }
 
 func (s *sumRequest) Marshal() ([]byte, error) {

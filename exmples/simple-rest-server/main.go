@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/valyala/fasthttp"
 	"runtime"
 	"syscall"
 
@@ -19,6 +20,9 @@ func main() {
 		ronykit.RegisterBundle(
 			rest.MustNew(
 				rest.Listen(":80"),
+				rest.WithHttpServer(&fasthttp.Server{
+					Name: "RonyKIT Server",
+				}),
 			),
 		),
 		ronykit.RegisterService(

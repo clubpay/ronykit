@@ -77,15 +77,15 @@ func (r *bundle) Register(svc ronykit.Service) {
 
 		method, ok := rt.Query(queryMethod).(string)
 		if !ok {
-			panic("method is not set in Service's Contract")
+			continue
 		}
 		path, ok := rt.Query(queryPath).(string)
 		if !ok {
-			panic("path is not set in Service's Contract")
+			continue
 		}
 		decoder, ok := rt.Query(queryDecoder).(DecoderFunc)
 		if !ok {
-			panic("mux.DecoderFunc is not set in Service's Contract")
+			continue
 		}
 
 		r.mux.Handle(
