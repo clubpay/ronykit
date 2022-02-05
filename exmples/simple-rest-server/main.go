@@ -23,6 +23,7 @@ func main() {
 				rest.WithHttpServer(&fasthttp.Server{
 					Name: "RonyKIT Server",
 				}),
+				rest.WithCORS(rest.CORSConfig{}),
 			),
 		),
 		ronykit.RegisterService(
