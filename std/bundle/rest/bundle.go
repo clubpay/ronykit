@@ -22,6 +22,7 @@ type bundle struct {
 	d        ronykit.GatewayDelegate
 	mux      *router
 	connPool sync.Pool
+	cors     *cors
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -108,7 +109,29 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 	routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
 	if routeData == nil {
+		if r.cors != nil && rc.ctx.IsOptions() {
+			reqHeaders := rc.Get(headerAccessControlRequestHeaders)
+			if len(reqHeaders) > 0 {
+				rc.Set(headerAccessControlAllowHeaders, reqHeaders)
+			} else {
+				rc.Set(headerAccessControlAllowHeaders, r.cors.headers)
+			}
+
+			rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+		}
+
 		return nil, errRouteNotFound
+	}
+
+	if r.cors != nil {
+		// ByPass cors (Cross Origin Resource Sharing) check
+		if r.cors.origins == "*" {
+			rc.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
+		} else {
+			rc.Set(headerAccessControlAllowOrigin, r.cors.origins)
+		}
+
+		rc.Set(headerAccessControlRequestMethod, r.cors.methods)
 	}
 
 	// Walk over all the query params
