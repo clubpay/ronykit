@@ -10,6 +10,7 @@ const (
 	headerOrigin                      = "Origin"
 	headerAccessControlAllowOrigin    = "Access-Control-Allow-Origin"
 	headerAccessControlAllowHeaders   = "Access-Control-Allow-Headers"
+	headerAccessControlAllowMethods   = "Access-Control-Allow-Methods"
 	headerAccessControlRequestHeaders = "Access-Control-Request-Headers"
 	headerAccessControlRequestMethod  = "Access-Control-Request-Method"
 )
@@ -42,7 +43,7 @@ func newCORS(cfg CORSConfig) *cors {
 	c.headers = strings.Join(cfg.AllowedHeaders, ",")
 	if len(cfg.AllowedMethods) == 0 {
 		c.methods = strings.Join([]string{
-			fasthttp.MethodGet, fasthttp.MethodHead, fasthttp.MethodPost,
+			fasthttp.MethodGet, fasthttp.MethodHead, fasthttp.MethodPost, fasthttp.MethodPut,
 			fasthttp.MethodPatch, fasthttp.MethodConnect, fasthttp.MethodDelete,
 			fasthttp.MethodTrace, fasthttp.MethodOptions,
 		}, ", ")
