@@ -125,3 +125,9 @@ type RawMessage []byte
 func (rm RawMessage) Marshal() ([]byte, error) {
 	return rm, nil
 }
+
+// ErrorMessage is a special kind of Message which is also an error.
+type ErrorMessage interface {
+	Message
+	error
+}

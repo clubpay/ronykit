@@ -2,12 +2,10 @@ package ronykit
 
 import (
 	"context"
-	"runtime/debug"
-	"sync"
-	"sync/atomic"
-
 	log "github.com/ronaksoft/golog"
 	"go.uber.org/zap"
+	"runtime/debug"
+	"sync"
 )
 
 type northBridge struct {
@@ -15,16 +13,14 @@ type northBridge struct {
 	l       log.Logger
 	b       Bundle
 	eh      ErrHandler
-	opened  int64
-	closed  int64
 }
 
 func (n *northBridge) OnOpen(c Conn) {
-	atomic.AddInt64(&n.opened, 1)
+	// Maybe later we can do something
 }
 
 func (n *northBridge) OnClose(connID uint64) {
-	atomic.AddInt64(&n.closed, 1)
+	// Maybe later we can do something
 }
 
 func (n *northBridge) recoverPanic(ctx *Context, c Conn) {
