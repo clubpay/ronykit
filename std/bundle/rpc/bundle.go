@@ -49,12 +49,12 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 		predicate, ok := rt.Query(queryPredicate).(string)
 		if !ok {
-			panic("predicate is not set in Service's Contract")
+			return
 		}
 
 		factory, ok := rt.Query(queryFactory).(ronykit.MessageFactory)
 		if !ok {
-			panic("factory is not set in Service's Contract")
+			return
 		}
 
 		b.mux.routes[predicate] = routerData{
