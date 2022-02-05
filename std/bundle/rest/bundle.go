@@ -142,8 +142,6 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		} else {
 			rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
 		}
-
-		//rc.ctx.Response.Header.Set(headerAccessControlRequestMethod, r.cors.methods)
 	}
 
 	// Walk over all the query params
@@ -231,6 +229,5 @@ func (r *bundle) Subscribe(d ronykit.GatewayDelegate) {
 }
 
 var (
-	errNonRestConnection = fmt.Errorf("incompatible connection, expected REST conn")
-	errRouteNotFound     = fmt.Errorf("route not found")
+	errRouteNotFound = fmt.Errorf("route not found")
 )
