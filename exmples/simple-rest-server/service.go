@@ -11,59 +11,63 @@ import (
 	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
-type Sample struct {
-	desc.Service
-}
+type Sample struct{}
 
 func NewSample() *Sample {
 	s := &Sample{}
-	s.Name = "SampleService"
-
-	s.Add(
-		desc.NewContract().
-			SetInput(&echoRequest{}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodGet,
-				Path:   "/echo/:randomID",
-			}).
-			AddSelector(rpc.Selector{
-				Predicate: "echoRequest",
-			}).
-			AddModifier(func(envelope *ronykit.Envelope) {
-				envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
-			}).
-			SetHandler(echoHandler),
-	)
-
-	s.Add(
-		desc.NewContract().
-			SetInput(&sumRequest{}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodGet,
-				Path:   "/sum/:val1/:val2",
-			}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodPost,
-				Path:   "/sum",
-			}).
-			SetHandler(sumHandler),
-	)
-
-	s.Add(
-		desc.NewContract().
-			SetInput(&sumRequest{}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodGet,
-				Path:   "/sum-redirect/:val1/:val2",
-			}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodPost,
-				Path:   "/sum-redirect",
-			}).
-			SetHandler(sumRedirectHandler),
-	)
 
 	return s
+}
+
+func (x *Sample) Desc() desc.Service {
+	d := desc.Service{
+		Name: "SampleService",
+	}
+
+	d.
+		Add(
+			desc.NewContract().
+				SetInput(&echoRequest{}).
+				AddSelector(rest.Selector{
+					Method: rest.MethodGet,
+					Path:   "/echo/:randomID",
+				}).
+				AddSelector(rpc.Selector{
+					Predicate: "echoRequest",
+				}).
+				AddModifier(func(envelope *ronykit.Envelope) {
+					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
+				}).
+				SetHandler(echoHandler),
+		).
+		Add(
+			desc.NewContract().
+				SetInput(&sumRequest{}).
+				AddSelector(rest.Selector{
+					Method: rest.MethodGet,
+					Path:   "/sum/:val1/:val2",
+				}).
+				AddSelector(rest.Selector{
+					Method: rest.MethodPost,
+					Path:   "/sum",
+				}).
+				SetHandler(sumHandler),
+		).
+		Add(
+			desc.NewContract().
+				SetInput(&sumRequest{}).
+				AddSelector(rest.Selector{
+					Method: rest.MethodGet,
+					Path:   "/sum-redirect/:val1/:val2",
+				}).
+				AddSelector(rest.Selector{
+					Method: rest.MethodPost,
+					Path:   "/sum-redirect",
+				}).
+				SetHandler(sumRedirectHandler),
+		)
+
+	return d
 }
 
 func echoHandler(ctx *ronykit.Context) {

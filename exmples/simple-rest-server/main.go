@@ -27,9 +27,7 @@ func main() {
 			),
 		),
 		ronykit.RegisterService(
-			ronykit.WrapService(
-				NewSample().Generate(),
-			),
+			NewSample().Desc().Generate(),
 		),
 	).
 		Start().

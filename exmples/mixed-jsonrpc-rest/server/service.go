@@ -10,14 +10,18 @@ import (
 	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
-type Sample struct {
-	desc.Service
-}
+type Sample struct{}
 
 func NewSample() *Sample {
-	s := &Sample{}
-	s.Name = "SampleService"
-	s.Add(
+	return &Sample{}
+}
+
+func (s *Sample) Desc() desc.Service {
+	d := desc.Service{
+		Name: "SampleService",
+	}
+
+	d.Add(
 		desc.NewContract().
 			SetInput(&msg.EchoRequest{}).
 			AddSelector(rest.Selector{
@@ -30,7 +34,7 @@ func NewSample() *Sample {
 			SetHandler(echoHandler),
 	)
 
-	return s
+	return d
 }
 
 func echoHandler(ctx *ronykit.Context) {
