@@ -69,6 +69,7 @@ func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
 }
 
 func (c *Contract) Generate() []ronykit.Contract {
+	//nolint:prealloc
 	var contracts []ronykit.Contract
 	makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
 		return func(args []reflect.Value) (results []reflect.Value) {

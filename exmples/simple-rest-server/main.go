@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/valyala/fasthttp"
 	"runtime"
 	"syscall"
 
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/valyala/fasthttp"
 )
 
 func main() {

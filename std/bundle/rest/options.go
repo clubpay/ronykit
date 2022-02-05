@@ -15,3 +15,9 @@ func Listen(addr string) Option {
 		r.listen = addr
 	}
 }
+
+func WithCORS(cfg CORSConfig) Option {
+	return func(r *bundle) {
+		r.cors = newCORS(cfg)
+	}
+}
