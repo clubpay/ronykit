@@ -108,8 +108,10 @@ type Service struct {
 	PostHandlers []ronykit.Handler
 }
 
-func NewService() *Service {
-	return &Service{}
+func NewService(name string) *Service {
+	return &Service{
+		Name: name,
+	}
 }
 
 func (s *Service) Add(c *Contract) *Service {

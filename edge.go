@@ -11,7 +11,13 @@ import (
 type (
 	ErrHandler func(ctx *Context, err error)
 	Handler    func(ctx *Context)
-	Bundle     interface {
+	// Modifier is a function which can modify the outgoing Envelope before sending it to the
+	// client.
+	Modifier func(envelope *Envelope)
+	// Bundle is main component of the Server. Without Bundle, the Server is not functional. You can use
+	// some standard bundles in std/bundle path. However, if you need special handling of communication
+	// between your server and the clients you are free to implement your own Bundle.
+	Bundle interface {
 		Gateway
 		Dispatcher
 		Register(svc Service)

@@ -1,7 +1,6 @@
 package ronykit
 
 type (
-	Modifier     func(envelope *Envelope)
 	WriteFunc    func(conn Conn, e *Envelope) error
 	ExecuteFunc  func(wf WriteFunc, handlers ...Handler)
 	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
