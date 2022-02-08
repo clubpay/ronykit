@@ -17,6 +17,7 @@ func (s Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 
 type routerData struct {
 	ServiceName string
+	Predicate   string
 	Handlers    []ronykit.Handler
 	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactory

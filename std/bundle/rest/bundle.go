@@ -92,6 +92,8 @@ func (r *bundle) Register(svc ronykit.Service) {
 		r.mux.Handle(
 			method, path,
 			&routeData{
+				Method:      method,
+				Path:        path,
 				ServiceName: svc.Name(),
 				Decoder:     decoder,
 				Handlers:    h,
@@ -198,7 +200,7 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 		// Set the route and service name
 		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
-		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", rc.GetMethod(), rc.GetPath()))
+		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
 
 		ctx.In().SetMsg(routeData.Decoder(params, in))
 		execFunc(writeFunc, routeData.Handlers...)
