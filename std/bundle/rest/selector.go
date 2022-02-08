@@ -2,6 +2,7 @@ package rest
 
 import (
 	"reflect"
+	"strings"
 	"unsafe"
 
 	"github.com/goccy/go-json"
@@ -112,7 +113,7 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 				pcs,
 				paramCaster{
 					offset: f.Offset,
-					name:   tagName,
+					name:   strings.Split(tagName, ",")[0],
 					typ:    f.Type,
 				},
 			)
