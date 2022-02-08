@@ -49,12 +49,12 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 		predicate, ok := rt.Query(queryPredicate).(string)
 		if !ok {
-			return
+			continue
 		}
 
 		factory, ok := rt.Query(queryFactory).(ronykit.MessageFactory)
 		if !ok {
-			return
+			continue
 		}
 
 		b.mux.routes[predicate] = routerData{
