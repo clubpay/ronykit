@@ -59,6 +59,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 		b.mux.routes[predicate] = routerData{
 			ServiceName: svc.Name(),
+			Predicate:   predicate,
 			Handlers:    h,
 			Modifiers:   rt.Modifiers(),
 			Factory:     factory,
@@ -112,7 +113,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 		ctx.
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
-			Set(ronykit.CtxRoute, rpcMsgContainer.Predicate)
+			Set(ronykit.CtxRoute, routeData.Predicate)
 
 		// run the execFunc with generated params
 		execFunc(writeFunc, routeData.Handlers...)

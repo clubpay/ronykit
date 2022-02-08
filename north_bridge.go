@@ -2,10 +2,11 @@ package ronykit
 
 import (
 	"context"
-	log "github.com/ronaksoft/golog"
-	"go.uber.org/zap"
 	"runtime/debug"
 	"sync"
+
+	log "github.com/ronaksoft/golog"
+	"go.uber.org/zap"
 )
 
 type northBridge struct {

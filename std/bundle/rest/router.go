@@ -9,6 +9,8 @@ import (
 )
 
 type routeData struct {
+	Method      string
+	Path        string
 	ServiceName string
 	Decoder     DecoderFunc
 	Handlers    []ronykit.Handler
