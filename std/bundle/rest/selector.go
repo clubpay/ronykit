@@ -122,6 +122,10 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 	return func(bag Params, data []byte) ronykit.Message {
 		v := factory()
 
+		if len(data) > 0 {
+			_ = json.Unmarshal(data, v)
+		}
+
 		for idx := range pcs {
 			x := bag.ByName(pcs[idx].name)
 			if x == "" {
@@ -146,10 +150,6 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 				// FixME: make this copy as an option
 				*(*string)(ptr) = string(utils.S2B(x))
 			}
-		}
-
-		if len(data) > 0 {
-			_ = json.Unmarshal(data, v)
 		}
 
 		return v.(ronykit.Message)
