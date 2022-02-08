@@ -22,7 +22,7 @@ func main() {
 		),
 		ronykit.RegisterBundle(
 			rpc.New(
-				rpc.Listen("tcp4://0.0.0.0:80"),
+				rpc.Listen("tcp4://0.0.0.0:7080"),
 				rpc.Decoder(
 					func(data []byte, e *rpc.MessageContainer) error {
 						return json.Unmarshal(data, e)
@@ -30,7 +30,7 @@ func main() {
 				),
 			),
 			rest.MustNew(
-				rest.Listen(":81"),
+				rest.Listen(":7070"),
 			),
 		),
 		ronykit.RegisterService(NewSample().Desc().Generate()),
