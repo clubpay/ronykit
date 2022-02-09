@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/goccy/go-json"
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
@@ -23,11 +22,7 @@ func main() {
 		ronykit.RegisterBundle(
 			rpc.New(
 				rpc.Listen("tcp4://0.0.0.0:7080"),
-				rpc.Decoder(
-					func(data []byte, e *rpc.MessageContainer) error {
-						return json.Unmarshal(data, e)
-					},
-				),
+				//rpc.PredicateKey("predicate"),
 			),
 			rest.MustNew(
 				rest.Listen(":7070"),

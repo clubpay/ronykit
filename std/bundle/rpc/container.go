@@ -8,20 +8,8 @@ import (
 )
 
 type MessageContainer struct {
-	Header    map[string]string `json:"hdr"`
-	Predicate string            `json:"predicate"`
-	ID        int64             `json:"id"`
-	Payload   json.RawMessage   `json:"payload"`
-}
-
-func (e *MessageContainer) SetPayload(m ronykit.Message) (err error) {
-	e.Payload, err = m.Marshal()
-
-	return
-}
-
-func (e *MessageContainer) SetHeader(k, v string) {
-	e.Header[k] = v
+	Header  map[string]string `json:"hdr"`
+	Payload json.RawMessage   `json:"payload"`
 }
 
 func (e *MessageContainer) Marshal() ([]byte, error) {
@@ -49,8 +37,6 @@ func releaseEnvelope(e *MessageContainer) {
 	for k := range e.Header {
 		delete(e.Header, k)
 	}
-	e.Predicate = e.Predicate[:0]
-	e.ID = 0
 
 	containerPool.Put(e)
 }
