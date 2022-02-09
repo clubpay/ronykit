@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"fmt"
+	log "github.com/ronaksoft/golog"
 	"time"
 
 	"github.com/panjf2000/gnet"
@@ -16,6 +17,7 @@ const (
 
 type bundle struct {
 	listen  string
+	l       log.Logger
 	eh      gnet.EventHandler
 	d       ronykit.GatewayDelegate
 	decoder func(data []byte, e *MessageContainer) error
@@ -124,9 +126,13 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 func (b *bundle) Start() {
 	go func() {
-		err := gnet.Serve(b.eh, b.listen,
+		opts := []gnet.Option{
 			gnet.WithMulticore(true),
-		)
+		}
+		if b.l != nil {
+			opts = append(opts, gnet.WithLogger(b.l.Sugared()))
+		}
+		err := gnet.Serve(b.eh, b.listen, opts...)
 		if err != nil {
 			panic(err)
 		}
