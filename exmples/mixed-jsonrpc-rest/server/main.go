@@ -22,7 +22,7 @@ func main() {
 		ronykit.RegisterBundle(
 			rpc.New(
 				rpc.Listen("tcp4://0.0.0.0:7080"),
-				//rpc.PredicateKey("predicate"),
+				rpc.PredicateKey("cmd"),
 			),
 			rest.MustNew(
 				rest.Listen(":7070"),

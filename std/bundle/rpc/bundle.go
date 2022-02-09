@@ -77,19 +77,19 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		panic("BUG!! incorrect connection")
 	}
 
-	rpcMsgContainer := acquireMsgContainer()
-	err := json.Unmarshal(in, rpcMsgContainer)
+	inputMsgContainer := &incomingMessage{}
+	err := json.Unmarshal(in, inputMsgContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	routeData := b.mux.routes[rpcMsgContainer.Header[b.predicateKey]]
+	routeData := b.mux.routes[inputMsgContainer.Header[b.predicateKey]]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
 
 	msg := routeData.Factory()
-	err = rpcMsgContainer.Unmarshal(msg)
+	err = inputMsgContainer.Unmarshal(msg)
 	if err != nil {
 		return nil, err
 	}
@@ -99,23 +99,22 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			routeData.Modifiers[idx](e)
 		}
 
-		rpcMsgContainer := acquireMsgContainer()
+		outputMsgContainer := acquireOutgoingMessage()
+		outputMsgContainer.Payload = e.GetMsg()
 		e.WalkHdr(func(key string, val string) bool {
-			rpcMsgContainer.Header[key] = val
+			outputMsgContainer.Header[key] = val
 
 			return true
 		})
-		rpcMsgContainer.Payload, err = e.GetMsg().Marshal()
-		if err != nil {
-			return err
-		}
 
-		data, err := rpcMsgContainer.Marshal()
+		data, err := outputMsgContainer.Marshal()
 		if err != nil {
 			return err
 		}
 
 		_, err = conn.Write(data)
+
+		releaseOutgoingMessage(outputMsgContainer)
 
 		return err
 	}
@@ -123,7 +122,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().
-			SetHdrMap(rpcMsgContainer.Header).
+			SetHdrMap(inputMsgContainer.Header).
 			SetMsg(msg)
 
 		ctx.
