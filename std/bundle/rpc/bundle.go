@@ -3,10 +3,11 @@ package rpc
 import (
 	"context"
 	"fmt"
-	log "github.com/ronaksoft/golog"
 	"time"
 
+	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
+	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 )
 
@@ -16,12 +17,12 @@ const (
 )
 
 type bundle struct {
-	listen  string
-	l       log.Logger
-	eh      gnet.EventHandler
-	d       ronykit.GatewayDelegate
-	decoder func(data []byte, e *MessageContainer) error
-	mux     mux
+	listen       string
+	l            log.Logger
+	eh           gnet.EventHandler
+	d            ronykit.GatewayDelegate
+	predicateKey string
+	mux          mux
 }
 
 func New(opts ...Option) *bundle {
@@ -29,6 +30,7 @@ func New(opts ...Option) *bundle {
 		mux: mux{
 			routes: map[string]routerData{},
 		},
+		predicateKey: "predicate",
 	}
 	b.eh = &gateway{
 		b:     b,
@@ -76,12 +78,12 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}
 
 	rpcMsgContainer := acquireMsgContainer()
-	err := b.decoder(in, rpcMsgContainer)
+	err := json.Unmarshal(in, rpcMsgContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	routeData := b.mux.routes[rpcMsgContainer.Predicate]
+	routeData := b.mux.routes[rpcMsgContainer.Header[b.predicateKey]]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
@@ -97,7 +99,18 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 			routeData.Modifiers[idx](e)
 		}
 
-		data, err := e.GetMsg().Marshal()
+		rpcMsgContainer := acquireMsgContainer()
+		e.WalkHdr(func(key string, val string) bool {
+			rpcMsgContainer.Header[key] = val
+
+			return true
+		})
+		rpcMsgContainer.Payload, err = e.GetMsg().Marshal()
+		if err != nil {
+			return err
+		}
+
+		data, err := rpcMsgContainer.Marshal()
 		if err != nil {
 			return err
 		}
