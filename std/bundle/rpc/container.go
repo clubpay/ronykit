@@ -7,25 +7,30 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
-type MessageContainer struct {
+type incomingMessage struct {
 	Header  map[string]string `json:"hdr"`
 	Payload json.RawMessage   `json:"payload"`
 }
 
-func (e *MessageContainer) Marshal() ([]byte, error) {
-	return json.Marshal(e)
-}
-
-func (e *MessageContainer) Unmarshal(m ronykit.Message) (err error) {
+func (e *incomingMessage) Unmarshal(m ronykit.Message) (err error) {
 	return json.Unmarshal(e.Payload, m)
 }
 
-var containerPool sync.Pool
+type outgoingMessage struct {
+	Header  map[string]string `json:"hdr"`
+	Payload ronykit.Message   `json:"payload"`
+}
 
-func acquireMsgContainer() *MessageContainer {
-	e, ok := containerPool.Get().(*MessageContainer)
+func (e *outgoingMessage) Marshal() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+var outgoingMessagePool sync.Pool
+
+func acquireOutgoingMessage() *outgoingMessage {
+	e, ok := outgoingMessagePool.Get().(*outgoingMessage)
 	if !ok {
-		e = &MessageContainer{
+		e = &outgoingMessage{
 			Header: map[string]string{},
 		}
 	}
@@ -33,10 +38,10 @@ func acquireMsgContainer() *MessageContainer {
 	return e
 }
 
-func releaseEnvelope(e *MessageContainer) {
+func releaseOutgoingMessage(e *outgoingMessage) {
 	for k := range e.Header {
 		delete(e.Header, k)
 	}
 
-	containerPool.Put(e)
+	outgoingMessagePool.Put(e)
 }
