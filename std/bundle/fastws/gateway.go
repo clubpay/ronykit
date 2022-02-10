@@ -20,11 +20,10 @@ import (
 type gateway struct {
 	utils.SpinLock
 
-	b        *bundle
-	nextID   uint64
-	conns    map[uint64]*wsConn
-	connPool sync.Pool
-	goPool   *ants.PoolWithFunc
+	b      *bundle
+	nextID uint64
+	conns  map[uint64]*wsConn
+	goPool *ants.PoolWithFunc
 }
 
 func newGateway(b *bundle) (*gateway, error) {
@@ -107,19 +106,15 @@ func (e *gateway) OnInitComplete(server gnet.Server) (action gnet.Action) {
 func (e *gateway) OnShutdown(server gnet.Server) {}
 
 func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
-	wsc, ok := e.connPool.Get().(*wsConn)
-	if !ok {
-		wsc = &wsConn{
-			kv: map[string]string{},
-			c: &wrapConn{
-				handshakeDone: false,
-				buf:           &bytes.Buffer{},
-			},
-		}
-		wsc.w = wsutil.NewWriter(wsc.c, ws.StateServerSide, ws.OpText)
-		wsc.r = wsutil.NewReader(wsc.c, ws.StateServerSide)
+	wsc := &wsConn{
+		kv: map[string]string{},
+		c: &wrapConn{
+			handshakeDone: false,
+			buf:           &bytes.Buffer{},
+		},
 	}
-
+	wsc.w = wsutil.NewWriter(wsc.c, ws.StateServerSide, ws.OpText)
+	wsc.r = wsutil.NewReader(wsc.c, ws.StateServerSide)
 	wsc.id = atomic.AddUint64(&e.nextID, 1)
 	wsc.c.c = c
 
@@ -140,14 +135,8 @@ func (e *gateway) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
 		e.b.d.OnClose(connID)
 
 		e.Lock()
-		cw := e.conns[connID]
 		delete(e.conns, connID)
 		e.Unlock()
-
-		if cw != nil {
-			cw.reset()
-			e.connPool.Put(cw)
-		}
 	}
 
 	_ = c.Close()
