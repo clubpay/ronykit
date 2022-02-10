@@ -11,17 +11,17 @@ var (
 	strLocation = []byte(fasthttp.HeaderLocation)
 )
 
-type conn struct {
+type httpConn struct {
 	utils.SpinLock
 
 	ctx *fasthttp.RequestCtx
 }
 
-func (c *conn) reset() {
+func (c *httpConn) reset() {
 	c.ctx = nil
 }
 
-func (c *conn) Walk(f func(key string, val string) bool) {
+func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
 	c.ctx.Request.Header.VisitAll(
 		func(key, value []byte) {
@@ -34,57 +34,57 @@ func (c *conn) Walk(f func(key string, val string) bool) {
 	)
 }
 
-func (c *conn) Get(key string) string {
+func (c *httpConn) Get(key string) string {
 	return utils.B2S(c.ctx.Request.Header.Peek(key))
 }
 
-func (c *conn) Set(key string, val string) {
+func (c *httpConn) Set(key string, val string) {
 	c.ctx.Response.Header.Set(key, val)
 }
 
-func (c *conn) SetStatusCode(code int) {
+func (c *httpConn) SetStatusCode(code int) {
 	c.ctx.Response.SetStatusCode(code)
 }
 
-func (c *conn) ConnID() uint64 {
+func (c *httpConn) ConnID() uint64 {
 	return c.ctx.ConnID()
 }
 
-func (c *conn) ClientIP() string {
+func (c *httpConn) ClientIP() string {
 	return c.ctx.RemoteIP().To4().String()
 }
 
-func (c *conn) Write(data []byte) (int, error) {
+func (c *httpConn) Write(data []byte) (int, error) {
 	c.ctx.Response.AppendBody(data)
 
 	return len(data), nil
 }
 
-func (c *conn) Stream() bool {
+func (c *httpConn) Stream() bool {
 	return false
 }
 
-func (c *conn) GetHost() string {
+func (c *httpConn) GetHost() string {
 	return utils.B2S(c.ctx.Host())
 }
 
-func (c *conn) GetRequestURI() string {
+func (c *httpConn) GetRequestURI() string {
 	return utils.B2S(c.ctx.Request.RequestURI())
 }
 
-func (c *conn) GetMethod() string {
+func (c *httpConn) GetMethod() string {
 	return utils.B2S(c.ctx.Method())
 }
 
-func (c *conn) GetPath() string {
+func (c *httpConn) GetPath() string {
 	return utils.B2S(c.ctx.URI().Path())
 }
 
-func (c *conn) Form() (*multipart.Form, error) {
+func (c *httpConn) Form() (*multipart.Form, error) {
 	return c.ctx.MultipartForm()
 }
 
-func (c *conn) Redirect(statusCode int, url string) {
+func (c *httpConn) Redirect(statusCode int, url string) {
 	u := fasthttp.AcquireURI()
 	_ = u.Parse(nil, utils.S2B(url))
 	c.ctx.Response.Header.SetCanonical(strLocation, u.FullURI())
