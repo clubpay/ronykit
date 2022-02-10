@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/fasthttp/router"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
@@ -17,17 +18,18 @@ const (
 )
 
 type bundle struct {
-	srv      *fasthttp.Server
-	listen   string
-	d        ronykit.GatewayDelegate
-	mux      *router
-	connPool sync.Pool
-	cors     *cors
+	srv            *fasthttp.Server
+	listen         string
+	d              ronykit.GatewayDelegate
+	mux            *mux
+	connPool       sync.Pool
+	cors           *cors
+	websocketRoute string
 }
 
 func New(opts ...Option) (*bundle, error) {
 	r := &bundle{
-		mux: &router{
+		mux: &mux{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: true,
@@ -40,7 +42,14 @@ func New(opts ...Option) (*bundle, error) {
 		opt(r)
 	}
 
-	r.srv.Handler = r.handler
+	if r.websocketRoute != "" {
+		entryRouter := router.New()
+		entryRouter.GET(r.websocketRoute, r.wsHandler)
+		entryRouter.Handle(router.MethodWild, "/", r.httpHandler)
+		r.srv.Handler = entryRouter.Handler
+	} else {
+		r.srv.Handler = r.httpHandler
+	}
 
 	return r, nil
 }
@@ -54,10 +63,10 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
-	c, ok := r.connPool.Get().(*conn)
+func (r *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
+	c, ok := r.connPool.Get().(*httpConn)
 	if !ok {
-		c = &conn{}
+		c = &httpConn{}
 	}
 
 	c.ctx = ctx
@@ -67,6 +76,10 @@ func (r *bundle) handler(ctx *fasthttp.RequestCtx) {
 
 	c.reset()
 	r.connPool.Put(c)
+}
+
+func (r *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
+
 }
 
 func (r *bundle) Register(svc ronykit.Service) {
@@ -104,7 +117,7 @@ func (r *bundle) Register(svc ronykit.Service) {
 }
 
 func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	rc, ok := c.(*conn)
+	rc, ok := c.(*httpConn)
 	if !ok {
 		panic("BUG!! incorrect connection")
 	}
@@ -161,7 +174,7 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 	// Set the write function which
 	writeFunc := func(c ronykit.Conn, e *ronykit.Envelope) error {
-		rc, ok := c.(*conn)
+		rc, ok := c.(*httpConn)
 		if !ok {
 			panic("BUG!! incorrect connection")
 		}

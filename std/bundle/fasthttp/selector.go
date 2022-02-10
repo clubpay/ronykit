@@ -1,11 +1,11 @@
 package fasthttp
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 	"unsafe"
 
-	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 )
@@ -16,7 +16,7 @@ type Param struct {
 	Value string
 }
 
-// Params is a Param-slice, as returned by the router.
+// Params is a Param-slice, as returned by the mux.
 // The slice is ordered, the first URL parameter is also the first slice value.
 // It is therefore safe to read values by the index.
 type Params []Param
@@ -38,6 +38,7 @@ type (
 	Selector    struct {
 		Method        string
 		Path          string
+		Predicate     string
 		CustomDecoder DecoderFunc
 	}
 )
@@ -57,9 +58,10 @@ func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 }
 
 type routeSelector struct {
-	method  string
-	path    string
-	decoder DecoderFunc
+	method    string
+	path      string
+	predicate string
+	decoder   DecoderFunc
 }
 
 func (r routeSelector) Query(q string) interface{} {
