@@ -10,7 +10,7 @@
 
     <!-- Target servers -->
     <servers>
-        <server host="127.0.0.1" port="80" type="tcp"></server>
+        <server host="127.0.0.1" port="7080" type="tcp"></server>
     </servers>
 
     <!-- Connections -->
@@ -37,7 +37,7 @@
             <!-- stay connected -->
             <for var="reqid" from="1" to="99" incr="1">
                 <request>
-                    <websocket type="message">{"id":%%_reqid%%,"predicate":"echoRequest","payload":{"randomID": 1000}}</websocket>
+                    <websocket type="message">{"hdr": {"id":"%%_reqid%%","cmd":"echoRequest"},"payload":{"randomID": 1000}}</websocket>
                 </request>
             </for>
 

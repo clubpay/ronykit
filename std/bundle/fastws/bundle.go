@@ -25,20 +25,31 @@ type bundle struct {
 	mux          mux
 }
 
-func New(opts ...Option) *bundle {
+func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
 		mux: mux{
 			routes: map[string]routerData{},
 		},
 		predicateKey: "predicate",
 	}
-	b.eh = &gateway{
-		b:     b,
-		conns: map[uint64]*wsConn{},
+	gw, err := newGateway(b)
+	if err != nil {
+		return nil, err
 	}
+
+	b.eh = gw
 
 	for _, opt := range opts {
 		opt(b)
+	}
+
+	return b, nil
+}
+
+func MustNew(opts ...Option) *bundle {
+	b, err := New(opts...)
+	if err != nil {
+		panic(err)
 	}
 
 	return b
