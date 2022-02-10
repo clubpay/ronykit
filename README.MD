@@ -107,7 +107,7 @@ import (
 
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 )
 
 type echoRequest struct {
@@ -123,8 +123,8 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 		desc.NewContract().
 			// Add the selector which this contract will be selected based of. Every bundle have its own selector 
 			// and here we use our std/fasthttp package. 
-			AddSelector(rest.Selector{
-				Method: rest.MethodGet,
+			AddSelector(fasthttp.Selector{
+				Method: fasthttp.MethodGet,
 				Path:   "/echo/:randomID",
 			}).
 			// Define the input message, it defines the message your handler expects to receive.
