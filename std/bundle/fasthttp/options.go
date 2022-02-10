@@ -1,12 +1,10 @@
-package rest
-
-import "github.com/valyala/fasthttp"
+package fasthttp
 
 type Option func(r *bundle)
 
-func WithHttpServer(srv *fasthttp.Server) Option {
+func WithServerName(name string) Option {
 	return func(r *bundle) {
-		r.srv = srv
+		r.srv.Name = name
 	}
 }
 

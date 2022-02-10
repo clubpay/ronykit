@@ -4,7 +4,9 @@ RonyKit is a library written in Go (Golang), provides the abstraction layer for 
 components for each task, you are almost free to develop your API server using RPC (Proto/JSON/...), REST, GraphQL or even with your
 in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box. RonyKIT
 is a successor of [Rony](https://github.com/ronaksoft/rony), with lessons from using it in multiple productions. In RonyKIT, I wanted to
-make it more flexible but still very performant. I will maintain two bundles for REST and RPC, however you are not limited to use those, and
+make it more flexible but still very performant. I will maintain two bundles one based on [fasthttp](https://github.com/valyala/fasthttp)
+and the other provides only rpc over websocket based on two very fast library [gobwas](https://github.com/gobwas/ws) and
+[gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
 can build your own Bundles. To have a better understanding of how it is going to work please check examples folder.
 in [simple-rest-server](examples/simple-rest-server) it shows a very simple hello world app.
 in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but use them with multiple formats like
@@ -120,7 +122,7 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 	Add(
 		desc.NewContract().
 			// Add the selector which this contract will be selected based of. Every bundle have its own selector 
-			// and here we use our std/rest package. 
+			// and here we use our std/fasthttp package. 
 			AddSelector(rest.Selector{
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",

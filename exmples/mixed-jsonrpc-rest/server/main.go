@@ -6,8 +6,8 @@ import (
 
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 	"github.com/ronaksoft/ronykit/std/bundle/fastws"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
 )
 
 func main() {
@@ -24,8 +24,8 @@ func main() {
 				fastws.Listen("tcp4://0.0.0.0:7080"),
 				fastws.PredicateKey("cmd"),
 			),
-			rest.MustNew(
-				rest.Listen(":7070"),
+			fasthttp.MustNew(
+				fasthttp.Listen(":7070"),
 			),
 		),
 		ronykit.RegisterService(NewSample().Desc().Generate()),
