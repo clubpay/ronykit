@@ -18,13 +18,6 @@ type wsConn struct {
 	w  *wsutil.Writer
 }
 
-func (c *wsConn) reset() {
-	for k := range c.kv {
-		delete(c.kv, k)
-	}
-	c.c.reset()
-}
-
 func (c *wsConn) ConnID() uint64 {
 	return c.id
 }
@@ -106,11 +99,4 @@ func (c *wrapConn) Write(data []byte) (n int, err error) {
 
 func (c *wrapConn) Close() error {
 	return c.c.Close()
-}
-
-func (c *wrapConn) reset() {
-	c.handshakeDone = false
-	c.buf.Reset()
-	_ = c.c.Close()
-	c.c = nil
 }
