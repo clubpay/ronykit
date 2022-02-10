@@ -20,7 +20,7 @@ func main() {
 			},
 		),
 		ronykit.RegisterBundle(
-			fastws.New(
+			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:7080"),
 				fastws.PredicateKey("cmd"),
 			),
