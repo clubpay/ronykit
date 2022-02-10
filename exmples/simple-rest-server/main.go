@@ -7,8 +7,7 @@ import (
 
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/valyala/fasthttp"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 )
 
 func main() {
@@ -18,12 +17,10 @@ func main() {
 	defer ronykit.NewServer(
 		ronykit.WithLogger(log.DefaultLogger),
 		ronykit.RegisterBundle(
-			rest.MustNew(
-				rest.Listen(":80"),
-				rest.WithHttpServer(&fasthttp.Server{
-					Name: "RonyKIT Server",
-				}),
-				rest.WithCORS(rest.CORSConfig{}),
+			fasthttp.MustNew(
+				fasthttp.Listen(":80"),
+				fasthttp.WithServerName("RonyKIT Server"),
+				fasthttp.WithCORS(fasthttp.CORSConfig{}),
 			),
 		),
 		ronykit.RegisterService(

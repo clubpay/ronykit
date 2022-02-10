@@ -7,8 +7,8 @@ import (
 
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 	"github.com/ronaksoft/ronykit/std/bundle/fastws"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
 )
 
 type Sample struct{}
@@ -28,8 +28,8 @@ func (x *Sample) Desc() desc.Service {
 		Add(
 			desc.NewContract().
 				SetInput(&echoRequest{}).
-				AddSelector(rest.Selector{
-					Method: rest.MethodGet,
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodGet,
 					Path:   "/echo/:randomID",
 				}).
 				AddSelector(fastws.Selector{
@@ -43,12 +43,12 @@ func (x *Sample) Desc() desc.Service {
 		Add(
 			desc.NewContract().
 				SetInput(&sumRequest{}).
-				AddSelector(rest.Selector{
-					Method: rest.MethodGet,
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodGet,
 					Path:   "/sum/:val1/:val2",
 				}).
-				AddSelector(rest.Selector{
-					Method: rest.MethodPost,
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodPost,
 					Path:   "/sum",
 				}).
 				SetHandler(sumHandler),
@@ -56,12 +56,12 @@ func (x *Sample) Desc() desc.Service {
 		Add(
 			desc.NewContract().
 				SetInput(&sumRequest{}).
-				AddSelector(rest.Selector{
-					Method: rest.MethodGet,
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodGet,
 					Path:   "/sum-redirect/:val1/:val2",
 				}).
-				AddSelector(rest.Selector{
-					Method: rest.MethodPost,
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodPost,
 					Path:   "/sum-redirect",
 				}).
 				SetHandler(sumRedirectHandler),
@@ -75,7 +75,7 @@ func echoHandler(ctx *ronykit.Context) {
 	if !ok {
 		ctx.Out().
 			SetMsg(
-				rest.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
+				fasthttp.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
 			).Send()
 
 		return
@@ -96,7 +96,7 @@ func sumHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*sumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(rest.Err("E01", "Request was not echoRequest")).
+			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
 			Send()
 
 		return
@@ -117,7 +117,7 @@ func sumRedirectHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*sumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(rest.Err("E01", "Request was not echoRequest")).
+			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
 			Send()
 
 		return
@@ -126,26 +126,26 @@ func sumRedirectHandler(ctx *ronykit.Context) {
 	rc, ok := ctx.Conn().(ronykit.REST)
 	if !ok {
 		ctx.Out().
-			SetMsg(rest.Err("E01", "Only supports REST requests")).
+			SetMsg(fasthttp.Err("E01", "Only supports REST requests")).
 			Send()
 
 		return
 	}
 
 	switch rc.GetMethod() {
-	case rest.MethodGet:
+	case fasthttp.MethodGet:
 		rc.Redirect(
 			http.StatusTemporaryRedirect,
 			fmt.Sprintf("http://%s/sum/%d/%d", rc.GetHost(), req.Val1, req.Val2),
 		)
-	case rest.MethodPost:
+	case fasthttp.MethodPost:
 		rc.Redirect(
 			http.StatusTemporaryRedirect,
 			fmt.Sprintf("http://%s/sum", rc.GetHost()),
 		)
 	default:
 		ctx.Out().
-			SetMsg(rest.Err("E01", "Unsupported method")).
+			SetMsg(fasthttp.Err("E01", "Unsupported method")).
 			Send()
 
 		return

@@ -1,4 +1,4 @@
-package rest
+package fasthttp
 
 import (
 	"mime/multipart"

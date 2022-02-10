@@ -1,4 +1,4 @@
-package rest
+package fasthttp
 
 // HTTP methods were copied from net/http.
 const (

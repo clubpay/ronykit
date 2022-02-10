@@ -6,8 +6,8 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
 	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 	"github.com/ronaksoft/ronykit/std/bundle/fastws"
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
 )
 
 type Sample struct{}
@@ -24,8 +24,8 @@ func (s *Sample) Desc() desc.Service {
 	d.Add(
 		desc.NewContract().
 			SetInput(&msg.EchoRequest{}).
-			AddSelector(rest.Selector{
-				Method: rest.MethodGet,
+			AddSelector(fasthttp.Selector{
+				Method: fasthttp.MethodGet,
 				Path:   "/echo/:randomID",
 			}).
 			AddSelector(fastws.Selector{

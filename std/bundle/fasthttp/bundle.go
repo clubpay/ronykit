@@ -1,4 +1,4 @@
-package rest
+package fasthttp
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	queryMethod  = "rest.method"
-	queryPath    = "rest.path"
-	queryDecoder = "rest.decoder"
+	queryMethod  = "fasthttp.method"
+	queryPath    = "fasthttp.path"
+	queryDecoder = "fasthttp.decoder"
 )
 
 type bundle struct {
