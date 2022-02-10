@@ -1,8 +1,9 @@
-package rpc
+package fastws
 
 import (
 	"bytes"
 	"io"
+	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -21,7 +22,6 @@ type gateway struct {
 	nextID   uint64
 	conns    map[uint64]*wsConn
 	connPool sync.Pool
-	upgrader ws.Upgrader
 }
 
 func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
@@ -108,10 +108,12 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	wsc.c.buf.Write(packet)
 
 	if !wsc.c.handshakeDone {
-		_, err := e.upgrader.Upgrade(wsc.c)
+		sp := acquireSwitchProtocol()
+		_, err := sp.Upgrade(wsc.c)
 		if err != nil {
 			return nil, gnet.Close
 		}
+		releaseSwitchProtocol(sp)
 
 		wsc.c.handshakeDone = true
 
@@ -142,4 +144,58 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 
 func (e *gateway) Tick() (delay time.Duration, action gnet.Action) {
 	return 0, gnet.None
+}
+
+const (
+	headerOrigin                   = "Origin"
+	headerAccessControlAllowOrigin = "Access-Control-Allow-Origin"
+)
+
+type SwitchProtocol struct {
+	u   ws.Upgrader
+	hdr http.Header
+}
+
+func newSwitchProtocol() *SwitchProtocol {
+	sp := &SwitchProtocol{
+		hdr: http.Header{},
+		u:   ws.Upgrader{},
+	}
+
+	sp.u.OnHeader = func(key, value []byte) error {
+		switch {
+		case bytes.Equal(key, utils.S2B(headerOrigin)):
+			sp.hdr.Set(headerAccessControlAllowOrigin, string(value))
+		}
+
+		return nil
+	}
+	sp.u.OnBeforeUpgrade = func() (header ws.HandshakeHeader, err error) {
+		return ws.HandshakeHeaderHTTP(sp.hdr), nil
+	}
+
+	return sp
+}
+
+func (sp *SwitchProtocol) Upgrade(conn io.ReadWriter) (hs ws.Handshake, err error) {
+	return sp.u.Upgrade(conn)
+}
+
+var switchProtocolPool = sync.Pool{}
+
+func acquireSwitchProtocol() *SwitchProtocol {
+	sp, ok := switchProtocolPool.Get().(*SwitchProtocol)
+	if !ok {
+		sp = newSwitchProtocol()
+	}
+
+	return sp
+}
+
+func releaseSwitchProtocol(sp *SwitchProtocol) {
+	for k := range sp.hdr {
+		delete(sp.hdr, k)
+	}
+
+	switchProtocolPool.Put(sp)
 }

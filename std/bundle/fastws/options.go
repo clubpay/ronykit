@@ -1,4 +1,4 @@
-package rpc
+package fastws
 
 import (
 	log "github.com/ronaksoft/golog"
