@@ -1,4 +1,4 @@
-package rpc
+package fastws
 
 import (
 	"github.com/ronaksoft/ronykit"

@@ -6,8 +6,8 @@ import (
 
 	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
+	"github.com/ronaksoft/ronykit/std/bundle/fastws"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
 func main() {
@@ -20,9 +20,9 @@ func main() {
 			},
 		),
 		ronykit.RegisterBundle(
-			rpc.New(
-				rpc.Listen("tcp4://0.0.0.0:7080"),
-				rpc.PredicateKey("cmd"),
+			fastws.New(
+				fastws.Listen("tcp4://0.0.0.0:7080"),
+				fastws.PredicateKey("cmd"),
 			),
 			rest.MustNew(
 				rest.Listen(":7070"),

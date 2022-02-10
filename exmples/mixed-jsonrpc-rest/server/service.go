@@ -6,8 +6,8 @@ import (
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
 	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
+	"github.com/ronaksoft/ronykit/std/bundle/fastws"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
 type Sample struct{}
@@ -28,7 +28,7 @@ func (s *Sample) Desc() desc.Service {
 				Method: rest.MethodGet,
 				Path:   "/echo/:randomID",
 			}).
-			AddSelector(rpc.Selector{
+			AddSelector(fastws.Selector{
 				Predicate: "echoRequest",
 			}).
 			SetHandler(echoHandler),
@@ -42,7 +42,7 @@ func echoHandler(ctx *ronykit.Context) {
 	if !ok {
 		ctx.Out().
 			SetMsg(
-				rpc.Err("E01", "Request was not echoRequest"),
+				fastws.Err("E01", "Request was not echoRequest"),
 			).
 			Send()
 

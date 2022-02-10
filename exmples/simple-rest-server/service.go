@@ -7,8 +7,8 @@ import (
 
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
+	"github.com/ronaksoft/ronykit/std/bundle/fastws"
 	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/bundle/rpc"
 )
 
 type Sample struct{}
@@ -32,7 +32,7 @@ func (x *Sample) Desc() desc.Service {
 					Method: rest.MethodGet,
 					Path:   "/echo/:randomID",
 				}).
-				AddSelector(rpc.Selector{
+				AddSelector(fastws.Selector{
 					Predicate: "echoRequest",
 				}).
 				AddModifier(func(envelope *ronykit.Envelope) {
