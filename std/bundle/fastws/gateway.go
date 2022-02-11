@@ -4,14 +4,12 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/panjf2000/ants/v2"
 	"github.com/panjf2000/gnet"
 	"github.com/ronaksoft/ronykit/pools"
 	"github.com/ronaksoft/ronykit/utils"
@@ -23,7 +21,6 @@ type gateway struct {
 	b      *bundle
 	nextID uint64
 	conns  map[uint64]*wsConn
-	goPool *ants.PoolWithFunc
 }
 
 func newGateway(b *bundle) (*gateway, error) {
@@ -32,59 +29,12 @@ func newGateway(b *bundle) (*gateway, error) {
 		conns: map[uint64]*wsConn{},
 	}
 
-	goPool, err := ants.NewPoolWithFunc(
-		runtime.GOMAXPROCS(0)*1000,
-		func(v interface{}) {
-			gw.reactFunc(v.(*wsConn))
-		},
-		ants.WithExpiryDuration(time.Minute),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	gw.goPool = goPool
-
 	return gw, nil
 }
 
-func (e *gateway) reactFunc(wsc *wsConn) {
-	if !wsc.c.handshakeDone {
-		sp := acquireSwitchProtocol()
-		_, err := sp.Upgrade(wsc.c)
-		if err != nil {
-			_ = wsc.c.Close()
-
-			return
-		}
-		releaseSwitchProtocol(sp)
-
-		wsc.c.handshakeDone = true
-
-		return
-	}
-
-	hdr, err := wsc.r.NextFrame()
-	if err != nil {
-		_ = wsc.c.Close()
-
-		return
-	}
-
-	payload := pools.Bytes.GetLen(int(hdr.Length))
-	n, err := wsc.r.Read(payload)
-	if err != nil && err != io.EOF {
-		// FixME:: close connection ?!
-		return
-	}
-
-	switch hdr.OpCode {
-	case ws.OpClose:
-		_ = wsc.c.Close()
-	case ws.OpBinary, ws.OpText:
-		e.b.d.OnMessage(wsc, payload[:n])
-		pools.Bytes.Put(payload)
-	}
+func (e *gateway) reactFunc(wsc *wsConn, payload []byte) {
+	e.b.d.OnMessage(wsc, payload)
+	pools.Bytes.Put(payload)
 }
 
 func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
@@ -115,6 +65,7 @@ func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	}
 	wsc.w = wsutil.NewWriter(wsc.c, ws.StateServerSide, ws.OpText)
 	wsc.r = wsutil.NewReader(wsc.c, ws.StateServerSide)
+
 	wsc.id = atomic.AddUint64(&e.nextID, 1)
 	wsc.c.c = c
 
@@ -160,8 +111,69 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 
 	wsc.c.buf.Write(packet)
 
-	_ = e.goPool.Invoke(wsc)
-	//go e.reactFunc(wsc)
+	if !wsc.c.handshakeDone {
+		sp := acquireSwitchProtocol()
+		_, err := sp.Upgrade(wsc.c)
+		if err != nil {
+			_ = wsc.c.Close()
+
+			return nil, gnet.Close
+		}
+		releaseSwitchProtocol(sp)
+
+		wsc.c.handshakeDone = true
+
+		return nil, gnet.None
+	}
+
+	var (
+		err error
+		hdr ws.Header
+	)
+
+	for {
+		hdr, err = wsc.r.NextFrame()
+		if err != nil {
+			_ = wsc.c.Close()
+
+			return
+		}
+		if hdr.OpCode.IsControl() {
+			wsc.r.OnIntermediate = func(header ws.Header, reader io.Reader) error {
+				return wsutil.ControlHandler{
+					Src:                 wsc.r,
+					Dst:                 wsc.c,
+					State:               wsc.r.State,
+					DisableSrcCiphering: true,
+				}.Handle(header)
+			}
+			if err := wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
+				_ = wsc.c.Close()
+
+				return
+			}
+
+			continue
+		}
+		if hdr.OpCode&ws.OpText == 0 {
+			if err := wsc.r.Discard(); err != nil {
+				return
+			}
+
+			continue
+		}
+
+		break
+	}
+
+	payload := pools.Bytes.GetLen(int(hdr.Length))
+	n, err := wsc.r.Read(payload)
+	if err != nil && err != io.EOF {
+		// FixME:: close connection ?!
+		return
+	}
+
+	go e.reactFunc(wsc, payload[:n])
 
 	return nil, gnet.None
 }
