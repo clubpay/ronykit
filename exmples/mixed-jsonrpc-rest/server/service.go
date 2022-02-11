@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/desc"
 	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
@@ -50,7 +48,7 @@ func echoHandler(ctx *ronykit.Context) {
 	}
 
 	ctx.Out().
-		SetHdr("ServerTime", time.Now().String()).
+		//SetHdr("ServerTime", utils.Int64ToStr(utils.NanoTime())).
 		SetMsg(
 			&msg.EchoResponse{
 				RandomID: req.RandomID,

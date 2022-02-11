@@ -1,0 +1,1 @@
+tcpkali --ws --dump-one-in -c 100 -m '{"hdr": {"cmd": "echoRequest"}, "payload": {"randomID": 1234}}' -r 10k 127.0.0.1:7080
