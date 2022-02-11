@@ -23,7 +23,12 @@ func (c *wsConn) ConnID() uint64 {
 }
 
 func (c *wsConn) ClientIP() string {
-	return c.c.c.RemoteAddr().String()
+	addr := c.c.c.RemoteAddr()
+	if addr == nil {
+		return ""
+	}
+
+	return addr.String()
 }
 
 func (c *wsConn) Write(data []byte) (int, error) {
