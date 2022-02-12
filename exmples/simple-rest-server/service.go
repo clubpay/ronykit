@@ -123,7 +123,7 @@ func sumRedirectHandler(ctx *ronykit.Context) {
 		return
 	}
 
-	rc, ok := ctx.Conn().(ronykit.REST)
+	rc, ok := ctx.Conn().(ronykit.RESTConn)
 	if !ok {
 		ctx.Out().
 			SetMsg(fasthttp.Err("E01", "Only supports REST requests")).

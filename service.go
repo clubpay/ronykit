@@ -1,5 +1,7 @@
 package ronykit
 
+// ServiceWrapper is like an interceptor which can add Pre- and Post- handlers to the
+// Contract handlers.
 type ServiceWrapper func(Service) Service
 
 // WrapService wraps a service, this is useful for adding middlewares to the service.
@@ -44,4 +46,19 @@ type Contract interface {
 // Bundle may need different information to route the request to the right Contract.
 type RouteSelector interface {
 	Query(q string) interface{}
+}
+
+// RESTRouteSelector defines the RouteSelector which could be used in REST operations
+// Bundle implementation which handle REST requests could check the selector if it supports REST.
+type RESTRouteSelector interface {
+	RouteSelector
+	GetMethod() string
+	GetPath() string
+}
+
+// RPCRouteSelector defines the RouteSelector which could be used in RPC operations.
+// Bundle implementation which handle RPC requests could check the selector if it supports RPC
+type RPCRouteSelector interface {
+	RouteSelector
+	GetPredicate()
 }

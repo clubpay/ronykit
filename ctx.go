@@ -46,7 +46,7 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
 // is a REST connection.
 func (ctx *Context) SetStatusCode(code int) {
-	rc, ok := ctx.Conn().(REST)
+	rc, ok := ctx.Conn().(RESTConn)
 	if ok {
 		rc.SetStatusCode(code)
 	}
