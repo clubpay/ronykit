@@ -45,8 +45,9 @@ type (
 
 func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 	route := &routeSelector{
-		method: sd.Method,
-		path:   sd.Path,
+		method:    sd.Method,
+		path:      sd.Path,
+		predicate: sd.Predicate,
 	}
 	if sd.CustomDecoder != nil {
 		route.decoder = sd.CustomDecoder
@@ -57,11 +58,31 @@ func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 	return route
 }
 
+var (
+	_ ronykit.RouteSelector     = routeSelector{}
+	_ ronykit.RESTRouteSelector = routeSelector{}
+	_ ronykit.RPCRouteSelector  = routeSelector{}
+)
+
+// routeSelector selector implements ronykit.RouteSelector and
+// also ronykit.RPCRouteSelector and ronykit.RESTRouteSelector
 type routeSelector struct {
 	method    string
 	path      string
 	predicate string
 	decoder   DecoderFunc
+}
+
+func (r routeSelector) GetMethod() string {
+	return r.method
+}
+
+func (r routeSelector) GetPath() string {
+	return r.path
+}
+
+func (r routeSelector) GetPredicate() string {
+	return r.predicate
 }
 
 func (r routeSelector) Query(q string) interface{} {
@@ -77,12 +98,12 @@ func (r routeSelector) Query(q string) interface{} {
 	return nil
 }
 
-var tagName = "paramName"
+var tagKey = "paramName"
 
 // SetTag set the tag name which ReflectDecoder looks to extract parameters from Path and Query params.
 // Default value: paramName
 func SetTag(tag string) {
-	tagName = tag
+	tagKey = tag
 }
 
 // emptyInterface is the header for an interface{} value.
@@ -110,12 +131,12 @@ func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
 	var pcs []paramCaster
 	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
 		f := reflect.Indirect(rVal).Type().Field(i)
-		if tagName := f.Tag.Get(tagName); tagName != "" {
+		if tagValue := f.Tag.Get(tagKey); tagValue != "" {
 			pcs = append(
 				pcs,
 				paramCaster{
 					offset: f.Offset,
-					name:   strings.Split(tagName, ",")[0],
+					name:   strings.Split(tagValue, ",")[0],
 					typ:    f.Type,
 				},
 			)

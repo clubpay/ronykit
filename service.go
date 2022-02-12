@@ -60,5 +60,5 @@ type RESTRouteSelector interface {
 // Bundle implementation which handle RPC requests could check the selector if it supports RPC
 type RPCRouteSelector interface {
 	RouteSelector
-	GetPredicate()
+	GetPredicate() string
 }

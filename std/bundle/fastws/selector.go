@@ -15,9 +15,18 @@ func (s Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 	}
 }
 
+var (
+	_ ronykit.RouteSelector    = routeSelector{}
+	_ ronykit.RPCRouteSelector = routeSelector{}
+)
+
 type routeSelector struct {
 	predicate string
 	factory   ronykit.MessageFactory
+}
+
+func (r routeSelector) GetPredicate() string {
+	return r.predicate
 }
 
 func (r routeSelector) Query(q string) interface{} {
