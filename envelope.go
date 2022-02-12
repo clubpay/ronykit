@@ -15,9 +15,12 @@ type Envelope struct {
 	kv   map[string]string
 	m    Message
 	p    *sync.Pool
+
+	// outgoing identity the Envelope if it is able to send
+	outgoing bool
 }
 
-func newEnvelope(ctx *Context, conn Conn) *Envelope {
+func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 	e, ok := envelopePool.Get().(*Envelope)
 	if !ok {
 		e = &Envelope{
@@ -32,6 +35,7 @@ func newEnvelope(ctx *Context, conn Conn) *Envelope {
 
 	e.ctx = ctx
 	e.conn = conn
+	e.outgoing = outgoing
 
 	return e
 }
@@ -103,6 +107,10 @@ func (e *Envelope) GetMsg() Message {
 func (e *Envelope) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send multiple times")
+	}
+
+	if !e.outgoing {
+		panic("BUG!! do not call Send on incoming envelope")
 	}
 
 	// Use WriteFunc to write the Envelope into the connection

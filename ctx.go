@@ -74,12 +74,12 @@ func (ctx *Context) In() *Envelope {
 
 // Out generate a new Envelope which could be used to send data to the connection.
 func (ctx *Context) Out() *Envelope {
-	return newEnvelope(ctx, ctx.conn)
+	return ctx.OutTo(ctx.conn)
 }
 
 // OutTo is similar to Out except that it lets you send your envelope to other connection.
 func (ctx *Context) OutTo(c Conn) *Envelope {
-	return newEnvelope(ctx, c)
+	return newEnvelope(ctx, c, true)
 }
 
 // Error is useful for some kind of errors which you are not going to return it to the connection,
