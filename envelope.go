@@ -13,6 +13,10 @@ type Walker interface {
 	Walk(f func(k, v string) bool)
 }
 
+// Envelope is an envelope around the messages in RonyKIT. Envelopes are created internally
+// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
+// take advantage of. For example in std/fasthttp Envelope headers translate from/to http
+// request/response headers.
 type Envelope struct {
 	ctx  *Context
 	conn Conn

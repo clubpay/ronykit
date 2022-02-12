@@ -1,20 +1,5 @@
 package ronykit
 
-// ServiceWrapper is like an interceptor which can add Pre- and Post- handlers to the
-// Contract handlers.
-type ServiceWrapper func(Service) Service
-
-// WrapService wraps a service, this is useful for adding middlewares to the service.
-// Some middlewares like OpenTelemetry, Logger, ... could be added to the service using
-// this function.
-func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
-	for _, w := range wrappers {
-		svc = w(svc)
-	}
-
-	return svc
-}
-
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Bundle.
 type Service interface {
@@ -32,6 +17,29 @@ type Service interface {
 	PostHandlers() []Handler
 }
 
+// ServiceWrapper is like an interceptor which can add Pre- and Post- handlers to all
+// the Contracts of the Service.
+type ServiceWrapper interface {
+	Wrap(Service) Service
+}
+
+type ServiceWrapperFunc func(Service) Service
+
+func (sw ServiceWrapperFunc) Wrap(svc Service) Service {
+	return sw(svc)
+}
+
+// WrapService wraps a service, this is useful for adding middlewares to the service.
+// Some middlewares like OpenTelemetry, Logger, ... could be added to the service using
+// this function.
+func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
+	for _, w := range wrappers {
+		svc = w.Wrap(svc)
+	}
+
+	return svc
+}
+
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.
 // In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
@@ -41,6 +49,18 @@ type Contract interface {
 	Input() Message
 	Handlers() []Handler
 	Modifiers() []Modifier
+}
+
+// ContractWrapper is like an interceptor which can add Pre- and Post- handlers to all
+// the Contracts of the Contract.
+type ContractWrapper interface {
+	Wrap(Contract) Contract
+}
+
+type ContractWrapperFunc func(Contract) Contract
+
+func (sw ContractWrapperFunc) Wrap(svc Contract) Contract {
+	return sw(svc)
 }
 
 // RouteSelector holds information about how this Contract is going to be selected. Each
