@@ -143,7 +143,7 @@ func (t testBundle) Dispatcher() ronykit.Dispatcher {
 }
 
 func TestServer(t *testing.T) {
-	Convey("Test Server", t, func(c C) {
+	Convey("Test EdgeServer", t, func(c C) {
 		b := &testBundle{
 			gw: &testGateway{},
 			d:  &testDispatcher{},

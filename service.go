@@ -3,7 +3,7 @@ package ronykit
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Bundle.
 type Service interface {
-	// Name of the service which must be unique per Server.
+	// Name of the service which must be unique per EdgeServer.
 	Name() string
 	// Contracts returns a list of APIs which this service provides.
 	Contracts() []Contract
