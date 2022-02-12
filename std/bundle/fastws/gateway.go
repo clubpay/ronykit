@@ -2,6 +2,7 @@ package fastws
 
 import (
 	"bytes"
+	"github.com/ronaksoft/ronykit/pools/buf"
 	"io"
 	"net/http"
 	"sync"
@@ -32,9 +33,9 @@ func newGateway(b *bundle) (*gateway, error) {
 	return gw, nil
 }
 
-func (e *gateway) reactFunc(wsc *wsConn, payload []byte) {
-	e.b.d.OnMessage(wsc, payload)
-	pools.Bytes.Put(payload)
+func (e *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
+	e.b.d.OnMessage(wsc, (*payload.Bytes())[:n])
+	pools.Buffer.Put(payload)
 }
 
 func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
@@ -49,11 +50,11 @@ func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 	return cw
 }
 
-func (e *gateway) OnInitComplete(server gnet.Server) (action gnet.Action) {
+func (e *gateway) OnInitComplete(_ gnet.Server) (action gnet.Action) {
 	return gnet.None
 }
 
-func (e *gateway) OnShutdown(server gnet.Server) {}
+func (e *gateway) OnShutdown(_ gnet.Server) {}
 
 func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	wsc := &wsConn{
@@ -155,7 +156,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 
 			continue
 		}
-		if hdr.OpCode&ws.OpText == 0 {
+		if hdr.OpCode&(ws.OpText|ws.OpBinary) == 0 {
 			if err := wsc.r.Discard(); err != nil {
 				return
 			}
@@ -166,14 +167,14 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 		break
 	}
 
-	payload := pools.Bytes.GetLen(int(hdr.Length))
-	n, err := wsc.r.Read(payload)
+	payloadBuffer := pools.Buffer.GetLen(int(hdr.Length))
+	n, err := wsc.r.Read(*payloadBuffer.Bytes())
 	if err != nil && err != io.EOF {
 		// FixME:: close connection ?!
-		return
+		return nil, gnet.None
 	}
 
-	go e.reactFunc(wsc, payload[:n])
+	go e.reactFunc(wsc, payloadBuffer, n)
 
 	return nil, gnet.None
 }

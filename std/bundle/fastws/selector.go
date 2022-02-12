@@ -15,18 +15,6 @@ func (s Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
 	}
 }
 
-type routerData struct {
-	ServiceName string
-	Predicate   string
-	Handlers    []ronykit.Handler
-	Modifiers   []ronykit.Modifier
-	Factory     ronykit.MessageFactory
-}
-
-type mux struct {
-	routes map[string]routerData
-}
-
 type routeSelector struct {
 	predicate string
 	factory   ronykit.MessageFactory
@@ -41,4 +29,16 @@ func (r routeSelector) Query(q string) interface{} {
 	}
 
 	return nil
+}
+
+type routerData struct {
+	ServiceName string
+	Predicate   string
+	Handlers    []ronykit.Handler
+	Modifiers   []ronykit.Modifier
+	Factory     ronykit.MessageFactory
+}
+
+type mux struct {
+	routes map[string]routerData
 }
