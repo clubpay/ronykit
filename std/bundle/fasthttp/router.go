@@ -79,7 +79,7 @@ type mux struct {
 	// It should be used to generate a error page and return the http error code
 	// 500 (Internal Server Error).
 	// The handler can be used to keep your server from crashing because of
-	// unrecovered panics.
+	// un-recovered panics.
 	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 

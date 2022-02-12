@@ -1,5 +1,24 @@
 package ronykit
 
+// Bundle is main component of the EdgeServer. Without Bundle, the EdgeServer is not functional. You can use
+// some standard bundles in std/bundle path. However, if you need special handling of communication
+// between your server and the clients you are free to implement your own Bundle.
+type Bundle interface {
+	Gateway
+	Dispatcher
+	Register(svc Service)
+}
+
+type (
+	WriteFunc    func(conn Conn, e *Envelope) error
+	ExecuteFunc  func(wf WriteFunc, handlers ...Handler)
+	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
+)
+
+type Dispatcher interface {
+	Dispatch(conn Conn, in []byte) (DispatchFunc, error)
+}
+
 // Gateway defines the gateway interface where clients could connect
 // and communicate with the Edge servers.
 type Gateway interface {

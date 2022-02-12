@@ -8,31 +8,15 @@ import (
 	log "github.com/ronaksoft/golog"
 )
 
-type (
-	ErrHandler func(ctx *Context, err error)
-	Handler    func(ctx *Context)
-	// Modifier is a function which can modify the outgoing Envelope before sending it to the
-	// client.
-	Modifier func(envelope *Envelope)
-	// Bundle is main component of the Server. Without Bundle, the Server is not functional. You can use
-	// some standard bundles in std/bundle path. However, if you need special handling of communication
-	// between your server and the clients you are free to implement your own Bundle.
-	Bundle interface {
-		Gateway
-		Dispatcher
-		Register(svc Service)
-	}
-)
-
-type Server struct {
+type EdgeServer struct {
 	nb  []*northBridge
 	svc map[string]Service
 	eh  ErrHandler
 	l   log.Logger
 }
 
-func NewServer(opts ...Option) *Server {
-	s := &Server{
+func NewServer(opts ...Option) *EdgeServer {
+	s := &EdgeServer{
 		l:   log.NopLogger,
 		svc: map[string]Service{},
 	}
@@ -43,7 +27,7 @@ func NewServer(opts ...Option) *Server {
 	return s
 }
 
-func (s *Server) RegisterBundle(b Bundle) *Server {
+func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	nb := &northBridge{
 		l:  s.l,
 		b:  b,
@@ -56,7 +40,7 @@ func (s *Server) RegisterBundle(b Bundle) *Server {
 	return s
 }
 
-func (s *Server) RegisterService(svc Service) *Server {
+func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 	if _, ok := s.svc[svc.Name()]; ok {
 		panic(fmt.Sprintf("service %s already registered", svc.Name()))
 	}
@@ -66,7 +50,7 @@ func (s *Server) RegisterService(svc Service) *Server {
 	return s
 }
 
-func (s *Server) Start() *Server {
+func (s *EdgeServer) Start() *EdgeServer {
 	// Register services into the bundles and start them.
 	for idx := range s.nb {
 		for _, svc := range s.svc {
@@ -81,7 +65,7 @@ func (s *Server) Start() *Server {
 	return s
 }
 
-func (s *Server) Shutdown(signals ...os.Signal) {
+func (s *EdgeServer) Shutdown(signals ...os.Signal) {
 	if len(signals) > 0 {
 		// Create a signal channel and bind it to all the os signals in the arg
 		shutdownChan := make(chan os.Signal, 1)

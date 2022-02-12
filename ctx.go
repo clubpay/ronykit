@@ -6,6 +6,11 @@ import (
 	"github.com/ronaksoft/ronykit/utils"
 )
 
+type (
+	ErrHandler func(ctx *Context, err error)
+	Handler    func(ctx *Context)
+)
+
 type Context struct {
 	utils.SpinLock
 
