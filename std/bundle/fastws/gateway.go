@@ -2,7 +2,6 @@ package fastws
 
 import (
 	"bytes"
-	"github.com/ronaksoft/ronykit/pools/buf"
 	"io"
 	"net/http"
 	"sync"
@@ -13,6 +12,7 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
 	"github.com/ronaksoft/ronykit/pools"
+	"github.com/ronaksoft/ronykit/pools/buf"
 	"github.com/ronaksoft/ronykit/utils"
 )
 
