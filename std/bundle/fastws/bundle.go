@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	queryPredicate = "__rpc__predicate"
-	queryFactory   = "__rpc__factory"
+	queryPredicate = "fastws.predicate"
 )
 
 type bundle struct {
@@ -56,18 +55,13 @@ func MustNew(opts ...Option) *bundle {
 }
 
 func (b *bundle) Register(svc ronykit.Service) {
-	for _, rt := range svc.Contracts() {
+	for _, contract := range svc.Contracts() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
-		h = append(h, rt.Handlers()...)
+		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		predicate, ok := rt.Query(queryPredicate).(string)
-		if !ok {
-			continue
-		}
-
-		factory, ok := rt.Query(queryFactory).(ronykit.MessageFactory)
+		predicate, ok := contract.Query(queryPredicate).(string)
 		if !ok {
 			continue
 		}
@@ -76,8 +70,8 @@ func (b *bundle) Register(svc ronykit.Service) {
 			ServiceName: svc.Name(),
 			Predicate:   predicate,
 			Handlers:    h,
-			Modifiers:   rt.Modifiers(),
-			Factory:     factory,
+			Modifiers:   contract.Modifiers(),
+			Factory:     ronykit.CreateMessageFactory(contract.Input()),
 		}
 	}
 }

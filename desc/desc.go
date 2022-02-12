@@ -1,16 +1,8 @@
 package desc
 
 import (
-	"reflect"
-
 	"github.com/ronaksoft/ronykit"
 )
-
-// Selector is the interface which should be provided by the Bundle developer. That is we
-// make it as interface instead of concrete implementation.
-type Selector interface {
-	Generate(f ronykit.MessageFactory) ronykit.RouteSelector
-}
 
 // Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
@@ -18,7 +10,7 @@ type Contract struct {
 	Handlers  []ronykit.Handler
 	Input     ronykit.Message
 	Output    ronykit.Message
-	Selectors []Selector
+	Selectors []ronykit.RouteSelector
 	Modifiers []ronykit.Modifier
 }
 
@@ -44,7 +36,7 @@ func (c *Contract) SetOutput(m ronykit.Message) *Contract {
 	return c
 }
 
-func (c *Contract) AddSelector(s Selector) *Contract {
+func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	c.Selectors = append(c.Selectors, s)
 
 	return c
@@ -71,25 +63,13 @@ func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
 func (c *Contract) Generate() []ronykit.Contract {
 	//nolint:prealloc
 	var contracts []ronykit.Contract
-	makeFunc := func(m ronykit.Message) func(args []reflect.Value) (results []reflect.Value) {
-		return func(args []reflect.Value) (results []reflect.Value) {
-			return []reflect.Value{reflect.New(reflect.TypeOf(m).Elem())}
-		}
-	}
 
 	for _, s := range c.Selectors {
 		ci := &contractImpl{}
 		ci.setHandler(c.Handlers...)
 		ci.setModifier(c.Modifiers...)
-
-		reflect.ValueOf(&ci.factoryFunc).Elem().Set(
-			reflect.MakeFunc(
-				reflect.TypeOf(ci.factoryFunc),
-				makeFunc(c.Input),
-			),
-		)
-
-		ci.setSelector(s.Generate(ci.factoryFunc))
+		ci.setInput(c.Input)
+		ci.setSelector(s)
 
 		contracts = append(contracts, ci)
 	}

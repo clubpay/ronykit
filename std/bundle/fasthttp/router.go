@@ -43,7 +43,7 @@ type mux struct {
 	// RedirectTrailingSlash is independent of this option.
 	RedirectFixedPath bool
 
-	// If enabled, the mux checks if another method is allowed for the
+	// If enabled, the mux checks if another Method is allowed for the
 	// current route, if the current request can not be routed.
 	// If this is the case, the request is answered with 'Method Not Allowed'
 	// and HTTP status code 405.
@@ -131,7 +131,7 @@ func (r *mux) DELETE(path string, handle *routeData) {
 	r.Handle(http.MethodDelete, path, handle)
 }
 
-// Handle registers a new request handle with the given path and method.
+// Handle registers a new request handle with the given path and Method.
 //
 // For GET, POST, PUT, PATCH and DELETE requests the respective shortcut
 // functions can be used.
@@ -143,7 +143,7 @@ func (r *mux) Handle(method, path string, handle *routeData) {
 	varsCount := uint16(0)
 
 	if method == "" {
-		panic("method must not be empty")
+		panic("Method must not be empty")
 	}
 	if len(path) < 1 || path[0] != '/' {
 		panic("path must begin with '/' in path '" + path + "'")
@@ -178,7 +178,7 @@ func (r *mux) Handle(method, path string, handle *routeData) {
 	}
 }
 
-// Lookup allows the manual lookup of a method + path combo.
+// Lookup allows the manual lookup of a Method + path combo.
 // This is e.g. useful to build a framework around this mux.
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise the third return value indicates whether a redirection to
@@ -205,13 +205,13 @@ func (r *mux) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
 	if path == "*" { // server-wide
-		// empty method is used for internal calls to refresh the cache
+		// empty Method is used for internal calls to refresh the cache
 		if reqMethod == "" {
 			for method := range r.trees {
 				if method == http.MethodOptions {
 					continue
 				}
-				// Add request method to list of allowed methods
+				// Add request Method to list of allowed methods
 				allowed = append(allowed, method)
 			}
 		} else {
@@ -219,21 +219,21 @@ func (r *mux) allowed(path, reqMethod string) (allow string) {
 		}
 	} else { // specific path
 		for method := range r.trees {
-			// Skip the requested method - we already tried this one
+			// Skip the requested Method - we already tried this one
 			if method == reqMethod || method == http.MethodOptions {
 				continue
 			}
 
 			handle, _, _ := r.trees[method].getValue(path, nil)
 			if handle != nil {
-				// Add request method to list of allowed methods
+				// Add request Method to list of allowed methods
 				allowed = append(allowed, method)
 			}
 		}
 	}
 
 	if len(allowed) > 0 {
-		// Add request method to list of allowed methods
+		// Add request Method to list of allowed methods
 		allowed = append(allowed, http.MethodOptions)
 
 		// Sort allowed methods.

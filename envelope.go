@@ -1,12 +1,17 @@
 package ronykit
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/ronaksoft/ronykit/utils"
 )
 
 var envelopePool = &sync.Pool{}
+
+type Walker interface {
+	Walk(f func(k, v string) bool)
+}
 
 type Envelope struct {
 	ctx  *Context
@@ -54,6 +59,18 @@ func (e *Envelope) release() {
 func (e *Envelope) SetHdr(key, value string) *Envelope {
 	e.kvl.Lock()
 	e.kv[key] = value
+	e.kvl.Unlock()
+
+	return e
+}
+
+func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
+	e.kvl.Lock()
+	walker.Walk(func(k, v string) bool {
+		e.kv[k] = v
+
+		return true
+	})
 	e.kvl.Unlock()
 
 	return e
@@ -120,10 +137,24 @@ func (e *Envelope) Send() {
 	e.release()
 }
 
-type MessageFactory func() Message
+type MessageFactoryFunc func() Message
 
 type Message interface {
 	Marshal() ([]byte, error)
+}
+
+func CreateMessageFactory(in Message) MessageFactoryFunc {
+	var ff MessageFactoryFunc
+	reflect.ValueOf(&ff).Elem().Set(
+		reflect.MakeFunc(
+			reflect.TypeOf(ff),
+			func(args []reflect.Value) (results []reflect.Value) {
+				return []reflect.Value{reflect.New(reflect.TypeOf(in).Elem())}
+			},
+		),
+	)
+
+	return ff
 }
 
 // RawMessage is a bytes slice which could be used as Message. This is helpful for

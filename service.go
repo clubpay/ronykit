@@ -38,6 +38,7 @@ type Service interface {
 // order to be usable by Bundle 'b' otherwise it panics.
 type Contract interface {
 	RouteSelector
+	Input() Message
 	Handlers() []Handler
 	Modifiers() []Modifier
 }
