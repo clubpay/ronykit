@@ -98,7 +98,7 @@ func (r *bundle) Register(svc ronykit.Service) {
 			continue
 		}
 		decoder, ok := contract.Query(queryDecoder).(DecoderFunc)
-		if !ok {
+		if !ok || decoder == nil {
 			decoder = reflectDecoder(ronykit.CreateMessageFactory(contract.Input()))
 		}
 
