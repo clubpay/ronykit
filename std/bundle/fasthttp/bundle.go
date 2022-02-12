@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	queryMethod  = "fasthttp.method"
+	queryMethod  = "fasthttp.Method"
 	queryPath    = "fasthttp.path"
 	queryDecoder = "fasthttp.decoder"
 )
@@ -83,23 +83,23 @@ func (r *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (r *bundle) Register(svc ronykit.Service) {
-	for _, rt := range svc.Contracts() {
+	for _, contract := range svc.Contracts() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
-		h = append(h, rt.Handlers()...)
+		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		method, ok := rt.Query(queryMethod).(string)
+		method, ok := contract.Query(queryMethod).(string)
 		if !ok {
 			continue
 		}
-		path, ok := rt.Query(queryPath).(string)
+		path, ok := contract.Query(queryPath).(string)
 		if !ok {
 			continue
 		}
-		decoder, ok := rt.Query(queryDecoder).(DecoderFunc)
+		decoder, ok := contract.Query(queryDecoder).(DecoderFunc)
 		if !ok {
-			continue
+			decoder = reflectDecoder(ronykit.CreateMessageFactory(contract.Input()))
 		}
 
 		r.mux.Handle(
@@ -110,57 +110,29 @@ func (r *bundle) Register(svc ronykit.Service) {
 				ServiceName: svc.Name(),
 				Decoder:     decoder,
 				Handlers:    h,
-				Modifiers:   rt.Modifiers(),
+				Modifiers:   contract.Modifiers(),
 			},
 		)
 	}
 }
 
 func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	rc, ok := c.(*httpConn)
+	conn, ok := c.(*httpConn)
 	if !ok {
 		panic("BUG!! incorrect connection")
 	}
 
-	routeData, params, _ := r.mux.Lookup(rc.GetMethod(), rc.GetPath())
+	routeData, params, _ := r.mux.Lookup(conn.GetMethod(), conn.GetPath())
+
+	// check CORS rules
+	r.handleCORS(conn, routeData != nil)
+
 	if routeData == nil {
-		if r.cors != nil {
-			// ByPass cors (Cross Origin Resource Sharing) check
-			if r.cors.origins == "*" {
-				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
-			} else {
-				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
-			}
-
-			if rc.ctx.IsOptions() {
-				reqHeaders := rc.ctx.Request.Header.Peek(headerAccessControlRequestHeaders)
-				if len(reqHeaders) > 0 {
-					rc.ctx.Response.Header.SetBytesV(headerAccessControlAllowHeaders, reqHeaders)
-				} else {
-					rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, r.cors.headers)
-				}
-
-				rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, r.cors.methods)
-				rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
-			} else {
-				rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
-			}
-		}
-
 		return nil, errRouteNotFound
 	}
 
-	if r.cors != nil {
-		// ByPass cors (Cross Origin Resource Sharing) check
-		if r.cors.origins == "*" {
-			rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
-		} else {
-			rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
-		}
-	}
-
 	// Walk over all the query params
-	rc.ctx.QueryArgs().VisitAll(
+	conn.ctx.QueryArgs().VisitAll(
 		func(key, value []byte) {
 			params = append(
 				params,
@@ -202,24 +174,50 @@ func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}
 
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		// Walk over all the connection headers
-		rc.Walk(
-			func(key string, val string) bool {
-				ctx.In().SetHdr(key, val)
-
-				return true
-			},
-		)
-
 		// Set the route and service name
 		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
 		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
 
-		ctx.In().SetMsg(routeData.Decoder(params, in))
+		ctx.In().
+			SetHdrWalker(conn).
+			SetMsg(routeData.Decoder(params, in))
+
+		// execute handler functions
 		execFunc(writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
+}
+
+func (r *bundle) handleCORS(rc *httpConn, routeFound bool) {
+	if r.cors == nil {
+		return
+	}
+
+	// ByPass cors (Cross Origin Resource Sharing) check
+	if r.cors.origins == "*" {
+		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
+	} else {
+		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
+	}
+
+	if routeFound {
+		return
+	}
+
+	if rc.ctx.IsOptions() {
+		reqHeaders := rc.ctx.Request.Header.Peek(headerAccessControlRequestHeaders)
+		if len(reqHeaders) > 0 {
+			rc.ctx.Response.Header.SetBytesV(headerAccessControlAllowHeaders, reqHeaders)
+		} else {
+			rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, r.cors.headers)
+		}
+
+		rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, r.cors.methods)
+		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+	} else {
+		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
+	}
 }
 
 func (r *bundle) Start() {

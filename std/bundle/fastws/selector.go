@@ -4,37 +4,23 @@ import (
 	"github.com/ronaksoft/ronykit"
 )
 
+var (
+	_ ronykit.RouteSelector    = Selector{}
+	_ ronykit.RPCRouteSelector = Selector{}
+)
+
 type Selector struct {
 	Predicate string
 }
 
-func (s Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
-	return &routeSelector{
-		predicate: s.Predicate,
-		factory:   f,
-	}
+func (r Selector) GetPredicate() string {
+	return r.Predicate
 }
 
-var (
-	_ ronykit.RouteSelector    = routeSelector{}
-	_ ronykit.RPCRouteSelector = routeSelector{}
-)
-
-type routeSelector struct {
-	predicate string
-	factory   ronykit.MessageFactory
-}
-
-func (r routeSelector) GetPredicate() string {
-	return r.predicate
-}
-
-func (r routeSelector) Query(q string) interface{} {
+func (r Selector) Query(q string) interface{} {
 	switch q {
 	case queryPredicate:
-		return r.predicate
-	case queryFactory:
-		return r.factory
+		return r.Predicate
 	}
 
 	return nil
@@ -45,7 +31,7 @@ type routerData struct {
 	Predicate   string
 	Handlers    []ronykit.Handler
 	Modifiers   []ronykit.Modifier
-	Factory     ronykit.MessageFactory
+	Factory     ronykit.MessageFactoryFunc
 }
 
 type mux struct {

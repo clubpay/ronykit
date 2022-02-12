@@ -1,11 +1,11 @@
 package fasthttp
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 	"unsafe"
 
+	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 )
@@ -35,64 +35,43 @@ func (ps Params) ByName(name string) string {
 
 type (
 	DecoderFunc func(bag Params, data []byte) ronykit.Message
-	Selector    struct {
-		Method        string
-		Path          string
-		Predicate     string
-		CustomDecoder DecoderFunc
-	}
 )
-
-func (sd Selector) Generate(f ronykit.MessageFactory) ronykit.RouteSelector {
-	route := &routeSelector{
-		method:    sd.Method,
-		path:      sd.Path,
-		predicate: sd.Predicate,
-	}
-	if sd.CustomDecoder != nil {
-		route.decoder = sd.CustomDecoder
-	} else {
-		route.decoder = reflectDecoder(f)
-	}
-
-	return route
-}
 
 var (
-	_ ronykit.RouteSelector     = routeSelector{}
-	_ ronykit.RESTRouteSelector = routeSelector{}
-	_ ronykit.RPCRouteSelector  = routeSelector{}
+	_ ronykit.RouteSelector     = Selector{}
+	_ ronykit.RESTRouteSelector = Selector{}
+	_ ronykit.RPCRouteSelector  = Selector{}
 )
 
-// routeSelector selector implements ronykit.RouteSelector and
+// Selector implements ronykit.RouteSelector and
 // also ronykit.RPCRouteSelector and ronykit.RESTRouteSelector
-type routeSelector struct {
-	method    string
-	path      string
-	predicate string
-	decoder   DecoderFunc
+type Selector struct {
+	Method    string
+	Path      string
+	Predicate string
+	Decoder   DecoderFunc
 }
 
-func (r routeSelector) GetMethod() string {
-	return r.method
+func (r Selector) GetMethod() string {
+	return r.Method
 }
 
-func (r routeSelector) GetPath() string {
-	return r.path
+func (r Selector) GetPath() string {
+	return r.Path
 }
 
-func (r routeSelector) GetPredicate() string {
-	return r.predicate
+func (r Selector) GetPredicate() string {
+	return r.Predicate
 }
 
-func (r routeSelector) Query(q string) interface{} {
+func (r Selector) Query(q string) interface{} {
 	switch q {
 	case queryDecoder:
-		return r.decoder
+		return r.Decoder
 	case queryMethod:
-		return r.method
+		return r.Method
 	case queryPath:
-		return r.path
+		return r.Path
 	}
 
 	return nil
@@ -118,7 +97,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(factory ronykit.MessageFactory) DecoderFunc {
+func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 	rVal := reflect.ValueOf(factory())
 	rType := rVal.Type()
 	if rType.Kind() != reflect.Ptr {
