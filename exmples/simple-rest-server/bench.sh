@@ -1,1 +1,1 @@
-wrk -t4 -c500 -d10s --latency http://127.0.0.1/sum/1200/8933
+wrk -t4 -c500 -d10s --latency -s bench.lua http://127.0.0.1
