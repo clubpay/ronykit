@@ -13,9 +13,9 @@ type Conn interface {
 	Set(key string, val string)
 }
 
-// REST could be implemented by Gateway, so in Dispatcher user can check if Conn also implements
-// REST then it has more information about the REST request.
-type REST interface {
+// RESTConn could be implemented by Gateway, so in Dispatcher user can check if Conn also implements
+// RESTConn then it has more information about the RESTConn request.
+type RESTConn interface {
 	Conn
 	GetHost() string
 	GetRequestURI() string
