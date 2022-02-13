@@ -15,10 +15,6 @@ type httpConn struct {
 	ctx *fasthttp.RequestCtx
 }
 
-func (c *httpConn) reset() {
-	c.ctx = nil
-}
-
 func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
 	c.ctx.Request.Header.VisitAll(
