@@ -23,7 +23,7 @@ type Context struct {
 	err     error
 	stopped bool
 	next    Handler
-	ctx     context.Context
+	ctx     context.Context //nolint:containedctx
 }
 
 // Context returns a context.Background which can be used a reference context for

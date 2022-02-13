@@ -519,7 +519,7 @@ func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 }
 
 // Recursive case-insensitive lookup function used by n.findCaseInsensitivePath
-//nolint: gocyclo,gocognit
+//nolint: gocyclo,gocognit,maintidx
 func (n *node) findCaseInsensitivePathRec(
 	path string, ciPath []byte, rb [4]byte, fixTrailingSlash bool,
 ) []byte {

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/fasthttp/router"
+	"github.com/goccy/go-json"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
@@ -26,7 +27,9 @@ type bundle struct {
 
 	httpMux *mux
 
-	websocketRoute string
+	wsRoutes     map[string]*routeData
+	predicateKey string
+	wsEndpoint   string
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -37,16 +40,17 @@ func New(opts ...Option) (*bundle, error) {
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
 		},
-		srv: &fasthttp.Server{},
+		wsRoutes: map[string]*routeData{},
+		srv:      &fasthttp.Server{},
 	}
 
 	for _, opt := range opts {
 		opt(r)
 	}
 
-	if r.websocketRoute != "" {
+	if r.wsEndpoint != "" {
 		entryRouter := router.New()
-		entryRouter.GET(r.websocketRoute, r.wsHandler)
+		entryRouter.GET(r.wsEndpoint, r.wsHandler)
 		entryRouter.Handle(router.MethodWild, "/", r.httpHandler)
 		r.srv.Handler = entryRouter.Handler
 	} else {
@@ -65,77 +69,152 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (r *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
-	c, ok := r.connPool.Get().(*httpConn)
+func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
+	c, ok := b.connPool.Get().(*httpConn)
 	if !ok {
 		c = &httpConn{}
 	}
 
 	c.ctx = ctx
-	r.d.OnOpen(c)
-	r.d.OnMessage(c, ctx.PostBody())
-	r.d.OnClose(c.ConnID())
+	b.d.OnOpen(c)
+	b.d.OnMessage(c, ctx.PostBody())
+	b.d.OnClose(c.ConnID())
 
 	c.reset()
-	r.connPool.Put(c)
+	b.connPool.Put(c)
 }
 
-func (r *bundle) wsHandler(ctx *fasthttp.RequestCtx) {}
+func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {}
 
-func (r *bundle) Register(svc ronykit.Service) {
+func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
 		var h []ronykit.Handler
 		h = append(h, svc.PreHandlers()...)
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		method, ok := contract.Query(queryMethod).(string)
-		if !ok {
-			continue
-		}
-		path, ok := contract.Query(queryPath).(string)
-		if !ok {
-			continue
-		}
-		decoder, ok := contract.Query(queryDecoder).(DecoderFunc)
-		if !ok || decoder == nil {
-			decoder = reflectDecoder(ronykit.CreateMessageFactory(contract.Input()))
-		}
-
-		r.httpMux.Handle(
-			method, path,
-			&routeData{
-				Method:      method,
-				Path:        path,
-				ServiceName: svc.Name(),
-				Decoder:     decoder,
-				Handlers:    h,
-				Modifiers:   contract.Modifiers(),
-			},
-		)
+		b.registerRPC(svc.Name(), contract)
+		b.registerREST(svc.Name(), contract)
 	}
 }
 
-func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
+	rpcSelector, ok := c.(ronykit.RPCRouteSelector)
+	if !ok {
+		return
+	}
+
+	rd := &routeData{
+		ServiceName: svcName,
+		Predicate:   rpcSelector.GetPredicate(),
+		Handlers:    c.Handlers(),
+		Modifiers:   c.Modifiers(),
+		Factory:     ronykit.CreateMessageFactory(c.Input()),
+	}
+
+	b.wsRoutes[rd.Predicate] = rd
+}
+
+func (b *bundle) registerREST(svcName string, c ronykit.Contract) {
+	restSelector, ok := c.(ronykit.RESTRouteSelector)
+	if !ok {
+		return
+	}
+
+	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
+	if !ok || decoder == nil {
+		decoder = reflectDecoder(ronykit.CreateMessageFactory(c.Input()))
+	}
+
+	b.httpMux.Handle(
+		restSelector.GetMethod(), restSelector.GetPath(),
+		&routeData{
+			ServiceName: svcName,
+			Handlers:    c.Handlers(),
+			Modifiers:   c.Modifiers(),
+			Method:      restSelector.GetMethod(),
+			Path:        restSelector.GetPath(),
+			Decoder:     decoder,
+		},
+	)
+}
+
+func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	switch c := c.(type) {
 	case *httpConn:
-		return r.dispatchHTTP(c, in)
+		return b.dispatchHTTP(c, in)
 	case *wsConn:
-		return r.dispatchWS(c, in)
+		return b.dispatchWS(c, in)
 	default:
 		panic("BUG!! incorrect connection")
 	}
 }
 
-func (r *bundle) dispatchWS(c *wsConn, in []byte) (ronykit.DispatchFunc, error) {
-	panic("implement me")
+func (b *bundle) dispatchWS(c *wsConn, in []byte) (ronykit.DispatchFunc, error) {
+	inputMsgContainer := &incomingMessage{}
+	err := json.Unmarshal(in, inputMsgContainer)
+	if err != nil {
+		return nil, err
+	}
+
+	routeData := b.wsRoutes[inputMsgContainer.Header[b.predicateKey]]
+	if routeData.Handlers == nil {
+		return nil, errNoHandler
+	}
+
+	msg := routeData.Factory()
+	err = inputMsgContainer.Unmarshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
+		for idx := range routeData.Modifiers {
+			routeData.Modifiers[idx](e)
+		}
+
+		outputMsgContainer := acquireOutgoingMessage()
+		outputMsgContainer.Payload = e.GetMsg()
+		e.WalkHdr(func(key string, val string) bool {
+			outputMsgContainer.Header[key] = val
+
+			return true
+		})
+
+		data, err := outputMsgContainer.Marshal()
+		if err != nil {
+			return err
+		}
+
+		_, err = conn.Write(data)
+
+		releaseOutgoingMessage(outputMsgContainer)
+
+		return err
+	}
+
+	// return the DispatchFunc
+	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
+		ctx.In().
+			SetHdrMap(inputMsgContainer.Header).
+			SetMsg(msg)
+
+		ctx.
+			Set(ronykit.CtxServiceName, routeData.ServiceName).
+			Set(ronykit.CtxRoute, routeData.Predicate)
+
+		// run the execFunc with generated params
+		execFunc(writeFunc, routeData.Handlers...)
+
+		return nil
+	}, nil
 }
 
-func (r *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
-	routeData, params, _ := r.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
+func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
+	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// check CORS rules
-	r.handleCORS(conn, routeData != nil)
+	b.handleCORS(conn, routeData != nil)
 
 	if routeData == nil {
 		return nil, errRouteNotFound
@@ -199,16 +278,16 @@ func (r *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 	}, nil
 }
 
-func (r *bundle) handleCORS(rc *httpConn, routeFound bool) {
-	if r.cors == nil {
+func (b *bundle) handleCORS(rc *httpConn, routeFound bool) {
+	if b.cors == nil {
 		return
 	}
 
 	// ByPass cors (Cross Origin Resource Sharing) check
-	if r.cors.origins == "*" {
+	if b.cors.origins == "*" {
 		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
 	} else {
-		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, r.cors.origins)
+		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, b.cors.origins)
 	}
 
 	if routeFound {
@@ -220,35 +299,38 @@ func (r *bundle) handleCORS(rc *httpConn, routeFound bool) {
 		if len(reqHeaders) > 0 {
 			rc.ctx.Response.Header.SetBytesV(headerAccessControlAllowHeaders, reqHeaders)
 		} else {
-			rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, r.cors.headers)
+			rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, b.cors.headers)
 		}
 
-		rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, r.cors.methods)
+		rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, b.cors.methods)
 		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
 	} else {
 		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
 	}
 }
 
-func (r *bundle) Start() {
-	ln, err := net.Listen("tcp4", r.listen)
+func (b *bundle) Start() {
+	ln, err := net.Listen("tcp4", b.listen)
 	if err != nil {
 		panic(err)
 	}
 	go func() {
-		err := r.srv.Serve(ln)
+		err := b.srv.Serve(ln)
 		if err != nil {
 			panic(err)
 		}
 	}()
 }
 
-func (r *bundle) Shutdown() {
-	_ = r.srv.Shutdown()
+func (b *bundle) Shutdown() {
+	_ = b.srv.Shutdown()
 }
 
-func (r *bundle) Subscribe(d ronykit.GatewayDelegate) {
-	r.d = d
+func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
+	b.d = d
 }
 
-var errRouteNotFound = fmt.Errorf("route not found")
+var (
+	errRouteNotFound = fmt.Errorf("route not found")
+	errNoHandler     = fmt.Errorf("no handler for request")
+)
