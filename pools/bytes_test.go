@@ -20,7 +20,6 @@ import (
 */
 
 func TestByteSlicePoolGet(t *testing.T) {
-	//nolint:scopelint
 	for _, test := range []struct {
 		min      int
 		max      int
@@ -95,7 +94,6 @@ func data(p []byte) uintptr {
 }
 
 func BenchmarkPool(b *testing.B) {
-	//nolint:scopelint
 	for _, size := range []int{
 		1 << 4,
 		1 << 5,

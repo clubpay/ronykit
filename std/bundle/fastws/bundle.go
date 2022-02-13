@@ -74,8 +74,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 }
 
 func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	_, ok := c.(*wsConn)
-	if !ok {
+	if _, ok := c.(*wsConn); !ok {
 		panic("BUG!! incorrect connection")
 	}
 

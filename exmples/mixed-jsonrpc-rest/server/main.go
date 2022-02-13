@@ -20,7 +20,7 @@ func main() {
 		ronykit.RegisterBundle(
 			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:7080"),
-				fastws.PredicateKey("cmd"),
+				fastws.WithPredicateKey("cmd"),
 			),
 			fasthttp.MustNew(
 				fasthttp.Listen(":7070"),

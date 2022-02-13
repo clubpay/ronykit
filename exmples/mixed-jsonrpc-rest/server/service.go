@@ -39,9 +39,7 @@ func echoHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*msg.EchoRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(
-				fastws.Err("E01", "Request was not echoRequest"),
-			).
+			SetMsg(ronykit.RawMessage("Request was not echoRequest")).
 			Send()
 
 		return

@@ -19,3 +19,9 @@ func WithCORS(cfg CORSConfig) Option {
 		r.cors = newCORS(cfg)
 	}
 }
+
+func WithPredicateKey(key string) Option {
+	return func(b *bundle) {
+		b.predicateKey = key
+	}
+}

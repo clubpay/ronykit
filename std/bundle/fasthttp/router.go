@@ -11,10 +11,12 @@ import (
 type routeData struct {
 	Method      string
 	Path        string
+	Predicate   string
 	ServiceName string
 	Decoder     DecoderFunc
 	Handlers    []ronykit.Handler
 	Modifiers   []ronykit.Modifier
+	Factory     ronykit.MessageFactoryFunc
 }
 
 // mux is a http.Handler which can be used to dispatch requests to different

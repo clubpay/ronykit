@@ -6,7 +6,7 @@ import (
 
 type Option func(b *bundle)
 
-func Logger(l ronykit.Logger) Option {
+func WithLogger(l ronykit.Logger) Option {
 	return func(b *bundle) {
 		b.l = l
 	}
@@ -18,7 +18,7 @@ func Listen(protoAddr string) Option {
 	}
 }
 
-func PredicateKey(key string) Option {
+func WithPredicateKey(key string) Option {
 	return func(b *bundle) {
 		b.predicateKey = key
 	}
