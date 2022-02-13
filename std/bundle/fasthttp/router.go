@@ -204,6 +204,7 @@ func (r *mux) Lookup(method, path string) (*routeData, Params, bool) {
 func (r *mux) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
+	//nolint:nestif
 	if path == "*" { // server-wide
 		// empty Method is used for internal calls to refresh the cache
 		if reqMethod == "" {

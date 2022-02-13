@@ -107,6 +107,7 @@ func (n *node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
+//nolint:gocognit
 func (n *node) addRoute(path string, handle *routeData) {
 	fullPath := path
 	n.priority++
@@ -147,6 +148,7 @@ walk:
 		}
 
 		// Make new node a child of this node
+		//nolint:nestif
 		if i < len(path) {
 			path = path[i:]
 
@@ -331,11 +333,12 @@ func (n *node) insertChild(path, fullPath string, handle *routeData) {
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-// nolint: gocyclo
+//nolint: gocyclo,gocognit
 func (n *node) getValue(path string, params func() *Params) (handle *routeData, ps *Params, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path
+		//nolint:nestif
 		if len(path) > len(prefix) {
 			if path[:len(prefix)] == prefix {
 				path = path[len(prefix):]
@@ -516,7 +519,7 @@ func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 }
 
 // Recursive case-insensitive lookup function used by n.findCaseInsensitivePath
-// nolint: gocyclo
+//nolint: gocyclo,gocognit
 func (n *node) findCaseInsensitivePathRec(
 	path string, ciPath []byte, rb [4]byte, fixTrailingSlash bool,
 ) []byte {
@@ -529,6 +532,7 @@ walk: // Outer loop for walking the tree
 		path = path[npLen:]
 		ciPath = append(ciPath, n.path...)
 
+		//nolint:nestif
 		if len(path) > 0 {
 			// If this node does not have a wildcard (param or catchAll) child,
 			// we can just look up the next child node and continue to walk down

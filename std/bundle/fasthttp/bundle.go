@@ -80,9 +80,7 @@ func (r *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 	r.connPool.Put(c)
 }
 
-func (r *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
-
-}
+func (r *bundle) wsHandler(ctx *fasthttp.RequestCtx) {}
 
 func (r *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
@@ -253,6 +251,4 @@ func (r *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	r.d = d
 }
 
-var (
-	errRouteNotFound = fmt.Errorf("route not found")
-)
+var errRouteNotFound = fmt.Errorf("route not found")

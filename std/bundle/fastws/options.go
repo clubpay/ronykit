@@ -11,6 +11,7 @@ func Logger(l ronykit.Logger) Option {
 		b.l = l
 	}
 }
+
 func Listen(protoAddr string) Option {
 	return func(b *bundle) {
 		b.listen = protoAddr

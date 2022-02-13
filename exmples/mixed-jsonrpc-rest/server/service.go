@@ -48,7 +48,6 @@ func echoHandler(ctx *ronykit.Context) {
 	}
 
 	ctx.Out().
-		//SetHdr("ServerTime", utils.Int64ToStr(utils.NanoTime())).
 		SetMsg(
 			&msg.EchoResponse{
 				RandomID: req.RandomID,

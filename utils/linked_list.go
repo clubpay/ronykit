@@ -15,9 +15,7 @@ import (
    Copyright Ronak Software Group 2020
 */
 
-var (
-	nodePool sync.Pool
-)
+var nodePool sync.Pool
 
 func acquireNode() *Node {
 	n, ok := nodePool.Get().(*Node)

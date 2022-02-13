@@ -15,9 +15,7 @@ import (
    Copyright Ronak Software Group 2020
 */
 
-var (
-	timeInSec int64
-)
+var timeInSec int64
 
 func init() {
 	timeInSec = time.Now().Unix()
