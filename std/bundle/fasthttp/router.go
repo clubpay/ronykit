@@ -76,7 +76,7 @@ type mux struct {
 	MethodNotAllowed http.Handler
 
 	// Function to handle panics recovered from http handlers.
-	// It should be used to generate a error page and return the http error code
+	// It should be used to generate an error page and return the http error code
 	// 500 (Internal Server Error).
 	// The handler can be used to keep your server from crashing because of
 	// un-recovered panics.
@@ -96,37 +96,37 @@ func (r *mux) putParams(ps *Params) {
 	}
 }
 
-// GET is a shortcut for mux.Handle(http.MethodGet, path, handle)
+// GET is a shortcut for httpMux.Handle(http.MethodGet, path, handle)
 func (r *mux) GET(path string, handle *routeData) {
 	r.Handle(http.MethodGet, path, handle)
 }
 
-// HEAD is a shortcut for mux.Handle(http.MethodHead, path, handle)
+// HEAD is a shortcut for httpMux.Handle(http.MethodHead, path, handle)
 func (r *mux) HEAD(path string, handle *routeData) {
 	r.Handle(http.MethodHead, path, handle)
 }
 
-// OPTIONS is a shortcut for mux.Handle(http.MethodOptions, path, handle)
+// OPTIONS is a shortcut for httpMux.Handle(http.MethodOptions, path, handle)
 func (r *mux) OPTIONS(path string, handle *routeData) {
 	r.Handle(http.MethodOptions, path, handle)
 }
 
-// POST is a shortcut for mux.Handle(http.MethodPost, path, handle)
+// POST is a shortcut for httpMux.Handle(http.MethodPost, path, handle)
 func (r *mux) POST(path string, handle *routeData) {
 	r.Handle(http.MethodPost, path, handle)
 }
 
-// PUT is a shortcut for mux.Handle(http.MethodPut, path, handle)
+// PUT is a shortcut for httpMux.Handle(http.MethodPut, path, handle)
 func (r *mux) PUT(path string, handle *routeData) {
 	r.Handle(http.MethodPut, path, handle)
 }
 
-// PATCH is a shortcut for mux.Handle(http.MethodPatch, path, handle)
+// PATCH is a shortcut for httpMux.Handle(http.MethodPatch, path, handle)
 func (r *mux) PATCH(path string, handle *routeData) {
 	r.Handle(http.MethodPatch, path, handle)
 }
 
-// DELETE is a shortcut for mux.Handle(http.MethodDelete, path, handle)
+// DELETE is a shortcut for httpMux.Handle(http.MethodDelete, path, handle)
 func (r *mux) DELETE(path string, handle *routeData) {
 	r.Handle(http.MethodDelete, path, handle)
 }
@@ -179,7 +179,7 @@ func (r *mux) Handle(method, path string, handle *routeData) {
 }
 
 // Lookup allows the manual lookup of a Method + path combo.
-// This is e.g. useful to build a framework around this mux.
+// This is e.g. useful to build a framework around this httpMux.
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.

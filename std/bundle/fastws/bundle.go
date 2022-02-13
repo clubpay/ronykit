@@ -21,14 +21,12 @@ type bundle struct {
 	eh           gnet.EventHandler
 	d            ronykit.GatewayDelegate
 	predicateKey string
-	mux          mux
+	routes       map[string]routeData
 }
 
 func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
-		mux: mux{
-			routes: map[string]routerData{},
-		},
+		routes:       map[string]routeData{},
 		predicateKey: "predicate",
 	}
 	gw, err := newGateway(b)
@@ -66,7 +64,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 			continue
 		}
 
-		b.mux.routes[predicate] = routerData{
+		b.routes[predicate] = routeData{
 			ServiceName: svc.Name(),
 			Predicate:   predicate,
 			Handlers:    h,
@@ -88,7 +86,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		return nil, err
 	}
 
-	routeData := b.mux.routes[inputMsgContainer.Header[b.predicateKey]]
+	routeData := b.routes[inputMsgContainer.Header[b.predicateKey]]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}

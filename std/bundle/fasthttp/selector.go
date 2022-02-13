@@ -16,7 +16,7 @@ type Param struct {
 	Value string
 }
 
-// Params is a Param-slice, as returned by the mux.
+// Params is a Param-slice, as returned by the httpMux.
 // The slice is ordered, the first URL parameter is also the first slice value.
 // It is therefore safe to read values by the index.
 type Params []Param

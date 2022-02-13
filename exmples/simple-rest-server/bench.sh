@@ -1,1 +1,1 @@
-wrk -t4 -c500 -d10s --latency -s bench.lua http://127.0.0.1
+wrk -t12 -c1000 -d10s --latency -s bench.lua http://127.0.0.1
