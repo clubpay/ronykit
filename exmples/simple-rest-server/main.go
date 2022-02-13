@@ -19,6 +19,8 @@ func main() {
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),
 				fasthttp.WithCORS(fasthttp.CORSConfig{}),
+				fasthttp.WithWebsocketEndpoint("/ws"),
+				fasthttp.WithPredicateKey("cmd"),
 			),
 		),
 		ronykit.RegisterService(

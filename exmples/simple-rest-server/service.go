@@ -19,18 +19,15 @@ func NewSample() *Sample {
 	return s
 }
 
-func (x *Sample) Desc() desc.Service {
-	d := desc.Service{
-		Name: "SampleService",
-	}
-
-	d.
+func (x *Sample) Desc() *desc.Service {
+	return desc.NewService("SampleService").
 		Add(
 			desc.NewContract().
 				SetInput(&echoRequest{}).
 				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodGet,
-					Path:   "/echo/:randomID",
+					Method:    fasthttp.MethodGet,
+					Predicate: "echo",
+					Path:      "/echo/:randomID",
 				}).
 				AddSelector(fastws.Selector{
 					Predicate: "echoRequest",
@@ -66,8 +63,6 @@ func (x *Sample) Desc() desc.Service {
 				}).
 				SetHandler(sumRedirectHandler),
 		)
-
-	return d
 }
 
 func echoHandler(ctx *ronykit.Context) {

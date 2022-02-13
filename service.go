@@ -45,7 +45,7 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 // In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
 // order to be usable by Bundle 'b' otherwise it panics.
 type Contract interface {
-	RouteSelector
+	Selector() RouteSelector
 	Input() Message
 	Handlers() []Handler
 	Modifiers() []Modifier

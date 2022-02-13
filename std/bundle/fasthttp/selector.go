@@ -72,6 +72,8 @@ func (r Selector) Query(q string) interface{} {
 		return r.Method
 	case queryPath:
 		return r.Path
+	case queryPredicate:
+		return r.Predicate
 	}
 
 	return nil

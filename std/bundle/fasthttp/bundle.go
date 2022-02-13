@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	queryMethod  = "fasthttp.Method"
-	queryPath    = "fasthttp.path"
-	queryDecoder = "fasthttp.decoder"
+	queryMethod    = "fasthttp.Method"
+	queryPath      = "fasthttp.path"
+	queryDecoder   = "fasthttp.decoder"
+	queryPredicate = "fasthttp.predicate"
 )
 
 type bundle struct {
@@ -99,7 +100,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 }
 
 func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
-	rpcSelector, ok := c.(ronykit.RPCRouteSelector)
+	rpcSelector, ok := c.Selector().(ronykit.RPCRouteSelector)
 	if !ok {
 		return
 	}
@@ -116,7 +117,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
 }
 
 func (b *bundle) registerREST(svcName string, c ronykit.Contract) {
-	restSelector, ok := c.(ronykit.RESTRouteSelector)
+	restSelector, ok := c.Selector().(ronykit.RESTRouteSelector)
 	if !ok {
 		return
 	}
