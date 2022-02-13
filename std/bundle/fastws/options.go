@@ -1,12 +1,12 @@
 package fastws
 
 import (
-	log "github.com/ronaksoft/golog"
+	"github.com/ronaksoft/ronykit"
 )
 
 type Option func(b *bundle)
 
-func Logger(l log.Logger) Option {
+func Logger(l ronykit.Logger) Option {
 	return func(b *bundle) {
 		b.l = l
 	}
