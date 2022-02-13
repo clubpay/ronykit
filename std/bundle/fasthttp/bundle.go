@@ -29,10 +29,9 @@ type bundle struct {
 
 	httpMux *mux
 
-	wsRoutes         map[string]*routeData
-	wsSwitchProtocol websocket.FastHTTPUpgrader
-	wsEndpoint       string
-	predicateKey     string
+	wsRoutes     map[string]*routeData
+	wsEndpoint   string
+	predicateKey string
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -87,12 +86,11 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 	b.d.OnMessage(c, ctx.PostBody())
 	b.d.OnClose(c.ConnID())
 
-	c.reset()
 	b.connPool.Put(c)
 }
 
 func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
-	_ = b.wsSwitchProtocol.Upgrade(ctx,
+	_ = (&websocket.FastHTTPUpgrader{}).Upgrade(ctx,
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
 				kv:       map[string]string{},

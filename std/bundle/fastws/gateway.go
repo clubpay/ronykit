@@ -135,9 +135,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	for {
 		hdr, err = wsc.r.NextFrame()
 		if err != nil {
-			_ = wsc.c.Close()
-
-			return
+			return nil, gnet.Close
 		}
 		if hdr.OpCode.IsControl() {
 			wsc.r.OnIntermediate = func(header ws.Header, reader io.Reader) error {
@@ -149,16 +147,14 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 				}.Handle(header)
 			}
 			if err := wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
-				_ = wsc.c.Close()
-
-				return
+				return nil, gnet.Close
 			}
 
 			continue
 		}
 		if hdr.OpCode&(ws.OpText|ws.OpBinary) == 0 {
 			if err := wsc.r.Discard(); err != nil {
-				return
+				return nil, gnet.Close
 			}
 
 			continue
