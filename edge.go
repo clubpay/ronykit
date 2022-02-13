@@ -4,20 +4,18 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-
-	log "github.com/ronaksoft/golog"
 )
 
 type EdgeServer struct {
 	nb  []*northBridge
 	svc map[string]Service
 	eh  ErrHandler
-	l   log.Logger
+	l   Logger
 }
 
 func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
-		l:   log.NopLogger,
+		l:   nopLogger{},
 		svc: map[string]Service{},
 	}
 	for _, opt := range opts {

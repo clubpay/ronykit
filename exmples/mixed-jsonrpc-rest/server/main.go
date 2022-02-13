@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 	"github.com/ronaksoft/ronykit/std/bundle/fastws"
@@ -13,7 +12,6 @@ import (
 func main() {
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
-		ronykit.WithLogger(log.DefaultLogger),
 		ronykit.WithErrorHandler(
 			func(ctx *ronykit.Context, err error) {
 				fmt.Println("got error: ", err)

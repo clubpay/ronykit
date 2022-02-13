@@ -1,10 +1,8 @@
 package ronykit
 
-import log "github.com/ronaksoft/golog"
-
 type Option func(s *EdgeServer)
 
-func WithLogger(l log.Logger) Option {
+func WithLogger(l Logger) Option {
 	return func(s *EdgeServer) {
 		s.l = l
 	}

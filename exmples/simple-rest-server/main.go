@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"syscall"
 
-	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
 )
@@ -15,7 +14,6 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
-		ronykit.WithLogger(log.DefaultLogger),
 		ronykit.RegisterBundle(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),

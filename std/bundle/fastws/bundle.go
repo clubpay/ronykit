@@ -7,7 +7,6 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
-	log "github.com/ronaksoft/golog"
 	"github.com/ronaksoft/ronykit"
 )
 
@@ -17,7 +16,7 @@ const (
 
 type bundle struct {
 	listen       string
-	l            log.Logger
+	l            ronykit.Logger
 	eh           gnet.EventHandler
 	d            ronykit.GatewayDelegate
 	predicateKey string
@@ -144,9 +143,9 @@ func (b *bundle) Start() {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
 		}
-		if b.l != nil {
-			opts = append(opts, gnet.WithLogger(b.l.Sugared()))
-		}
+		//if b.l != nil {
+		//	opts = append(opts, gnet.WithLogger(b.l))
+		//}
 		err := gnet.Serve(b.eh, b.listen, opts...)
 		if err != nil {
 			panic(err)

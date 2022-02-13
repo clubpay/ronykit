@@ -4,14 +4,11 @@ import (
 	"context"
 	"runtime/debug"
 	"sync"
-
-	log "github.com/ronaksoft/golog"
-	"go.uber.org/zap"
 )
 
 type northBridge struct {
 	ctxPool sync.Pool
-	l       log.Logger
+	l       Logger
 	b       Bundle
 	eh      ErrHandler
 }
@@ -26,15 +23,8 @@ func (n *northBridge) OnClose(connID uint64) {
 
 func (n *northBridge) recoverPanic(ctx *Context, c Conn) {
 	if r := recover(); r != nil {
-		n.l.Error("Panic Recovered",
-			zap.String("ClientIP", c.ClientIP()),
-			zap.String("Route", ctx.Route()),
-			zap.String("Service", ctx.ServiceName()),
-			zap.Uint64("ConnID", c.ConnID()),
-			zap.Any("Error", r),
-		)
-
-		n.l.Error("Panic Stack Trace", zap.ByteString("Stack", debug.Stack()))
+		n.l.Errorf("Panic Recovered: [%s](%s) : %s\nError: ", ctx.ServiceName(), ctx.Route(), c.ClientIP(), r)
+		n.l.Errorf("Stack Trace: \n%s", debug.Stack())
 	}
 }
 
