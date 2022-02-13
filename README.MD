@@ -40,14 +40,14 @@ package main
 import "github.com/ronaksoft/ronykit"
 ```
 
-3. (Optional) You might also need to import some of the standard bundles provided in the main repo.
+3. (Optional) You might also need to import some standard bundles provided in the main repo.
 
 ```go
 package main
 
 import (
-	"github.com/ronaksoft/ronykit/std/bundle/rest"
-	"github.com/ronaksoft/ronykit/std/bundle/rpc"
+	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
+	"github.com/ronaksoft/ronykit/std/bundle/fastws"
 )
 ```
 
