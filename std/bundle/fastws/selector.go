@@ -26,14 +26,10 @@ func (r Selector) Query(q string) interface{} {
 	return nil
 }
 
-type routerData struct {
+type routeData struct {
 	ServiceName string
 	Predicate   string
 	Handlers    []ronykit.Handler
 	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactoryFunc
-}
-
-type mux struct {
-	routes map[string]routerData
 }

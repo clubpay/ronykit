@@ -18,18 +18,20 @@ const (
 )
 
 type bundle struct {
-	srv            *fasthttp.Server
-	listen         string
-	d              ronykit.GatewayDelegate
-	mux            *mux
-	connPool       sync.Pool
-	cors           *cors
+	d        ronykit.GatewayDelegate
+	srv      *fasthttp.Server
+	listen   string
+	connPool sync.Pool
+	cors     *cors
+
+	httpMux *mux
+
 	websocketRoute string
 }
 
 func New(opts ...Option) (*bundle, error) {
 	r := &bundle{
-		mux: &mux{
+		httpMux: &mux{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: true,
@@ -102,7 +104,7 @@ func (r *bundle) Register(svc ronykit.Service) {
 			decoder = reflectDecoder(ronykit.CreateMessageFactory(contract.Input()))
 		}
 
-		r.mux.Handle(
+		r.httpMux.Handle(
 			method, path,
 			&routeData{
 				Method:      method,
@@ -117,12 +119,22 @@ func (r *bundle) Register(svc ronykit.Service) {
 }
 
 func (r *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	conn, ok := c.(*httpConn)
-	if !ok {
+	switch c := c.(type) {
+	case *httpConn:
+		return r.dispatchHTTP(c, in)
+	case *wsConn:
+		return r.dispatchWS(c, in)
+	default:
 		panic("BUG!! incorrect connection")
 	}
+}
 
-	routeData, params, _ := r.mux.Lookup(conn.GetMethod(), conn.GetPath())
+func (r *bundle) dispatchWS(c *wsConn, in []byte) (ronykit.DispatchFunc, error) {
+	panic("implement me")
+}
+
+func (r *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
+	routeData, params, _ := r.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// check CORS rules
 	r.handleCORS(conn, routeData != nil)
