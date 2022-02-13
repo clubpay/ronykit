@@ -5,9 +5,9 @@ go 1.17
 require (
 	github.com/brianvoe/gofakeit/v6 v6.10.0
 	github.com/fasthttp/router v1.4.6
+	github.com/fasthttp/websocket v1.4.6
 	github.com/gobwas/ws v1.1.0
 	github.com/goccy/go-json v0.9.4
-	github.com/gorilla/websocket v1.4.1
 	github.com/panjf2000/gnet v1.6.4
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/valyala/fasthttp v1.33.0

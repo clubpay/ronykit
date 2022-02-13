@@ -19,11 +19,11 @@ func main() {
 		),
 		ronykit.RegisterBundle(
 			fastws.MustNew(
-				fastws.Listen("tcp4://0.0.0.0:7080"),
+				fastws.Listen("tcp4://0.0.0.0:80"),
 				fastws.WithPredicateKey("cmd"),
 			),
 			fasthttp.MustNew(
-				fasthttp.Listen(":7070"),
+				fasthttp.Listen(":81"),
 			),
 		),
 		ronykit.RegisterService(NewSample().Desc().Generate()),

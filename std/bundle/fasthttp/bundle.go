@@ -1,12 +1,13 @@
 package fasthttp
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
 
 	"github.com/fasthttp/router"
-	"github.com/goccy/go-json"
+	"github.com/fasthttp/websocket"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
@@ -28,9 +29,10 @@ type bundle struct {
 
 	httpMux *mux
 
-	wsRoutes     map[string]*routeData
-	predicateKey string
-	wsEndpoint   string
+	wsRoutes         map[string]*routeData
+	wsSwitchProtocol websocket.FastHTTPUpgrader
+	wsEndpoint       string
+	predicateKey     string
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -52,7 +54,7 @@ func New(opts ...Option) (*bundle, error) {
 	if r.wsEndpoint != "" {
 		entryRouter := router.New()
 		entryRouter.GET(r.wsEndpoint, r.wsHandler)
-		entryRouter.Handle(router.MethodWild, "/", r.httpHandler)
+		entryRouter.NotFound = r.httpHandler
 		r.srv.Handler = entryRouter.Handler
 	} else {
 		r.srv.Handler = r.httpHandler
@@ -85,7 +87,27 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 	b.connPool.Put(c)
 }
 
-func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {}
+func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
+	_ = b.wsSwitchProtocol.Upgrade(ctx,
+		func(conn *websocket.Conn) {
+			wsc := &wsConn{
+				kv:       map[string]string{},
+				id:       0,
+				clientIP: conn.RemoteAddr().String(),
+				c:        conn,
+			}
+			b.d.OnOpen(wsc)
+			for {
+				_, in, err := conn.ReadMessage()
+				if err != nil {
+					break
+				}
+				go b.d.OnMessage(wsc, in)
+			}
+			b.d.OnClose(wsc.id)
+		},
+	)
+}
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
@@ -145,13 +167,13 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	case *httpConn:
 		return b.dispatchHTTP(c, in)
 	case *wsConn:
-		return b.dispatchWS(c, in)
+		return b.dispatchWS(in)
 	default:
 		panic("BUG!! incorrect connection")
 	}
 }
 
-func (b *bundle) dispatchWS(c *wsConn, in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 	inputMsgContainer := &incomingMessage{}
 	err := json.Unmarshal(in, inputMsgContainer)
 	if err != nil {
