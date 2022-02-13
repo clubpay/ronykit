@@ -28,5 +28,6 @@ func main() {
 		Start().
 		Shutdown(syscall.SIGHUP)
 
+	//nolint:forbidigo
 	fmt.Println("Server started.")
 }

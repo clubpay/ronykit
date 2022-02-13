@@ -18,6 +18,7 @@ package fasthttp
 //	   that is, replace "/.." by "/" at the beginning of a path.
 //
 // If the result of this process is an empty string, "/" is returned.
+//nolint:gocognit
 func CleanPath(p string) string {
 	const stackBufSize = 128
 

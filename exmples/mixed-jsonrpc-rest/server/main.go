@@ -31,5 +31,6 @@ func main() {
 		Start().
 		Shutdown(os.Kill, os.Interrupt)
 
+	//nolint:forbidigo
 	fmt.Println("Server started.")
 }

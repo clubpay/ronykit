@@ -143,9 +143,6 @@ func (b *bundle) Start() {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
 		}
-		//if b.l != nil {
-		//	opts = append(opts, gnet.WithLogger(b.l))
-		//}
 		err := gnet.Serve(b.eh, b.listen, opts...)
 		if err != nil {
 			panic(err)
@@ -158,7 +155,7 @@ func (b *bundle) Shutdown() {
 	defer cf()
 	err := gnet.Stop(ctx, b.listen)
 	if err != nil {
-		fmt.Println("got error on shutdown: ", err)
+		b.l.Error("got error on shutdown: ", err)
 	}
 }
 
@@ -166,6 +163,4 @@ func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
 
-var (
-	errNoHandler = fmt.Errorf("no handler for request")
-)
+var errNoHandler = fmt.Errorf("no handler for request")

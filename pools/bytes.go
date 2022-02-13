@@ -15,8 +15,10 @@ import (
    Copyright Ronak Software Group 2020
 */
 
-var Bytes = NewByteSlice(32, 64<<10)
-var Buffer = buf.NewBytesPool(32, 64<<10)
+var (
+	Bytes  = NewByteSlice(32, 64<<10)
+	Buffer = buf.NewBytesPool(32, 64<<10)
+)
 
 const (
 	bitSize       = 32 << (^uint(0) >> 63)

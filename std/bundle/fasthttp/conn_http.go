@@ -7,9 +7,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-var (
-	strLocation = []byte(fasthttp.HeaderLocation)
-)
+var strLocation = []byte(fasthttp.HeaderLocation)
 
 type httpConn struct {
 	utils.SpinLock
