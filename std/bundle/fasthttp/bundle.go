@@ -1,12 +1,12 @@
 package fasthttp
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
 
-	"github.com/fasthttp/router"
 	"github.com/fasthttp/websocket"
 	"github.com/ronaksoft/ronykit"
 	"github.com/ronaksoft/ronykit/utils"
@@ -52,10 +52,14 @@ func New(opts ...Option) (*bundle, error) {
 	}
 
 	if r.wsEndpoint != "" {
-		entryRouter := router.New()
-		entryRouter.GET(r.wsEndpoint, r.wsHandler)
-		entryRouter.NotFound = r.httpHandler
-		r.srv.Handler = entryRouter.Handler
+		wsEndpoint := utils.S2B(r.wsEndpoint)
+		r.srv.Handler = func(ctx *fasthttp.RequestCtx) {
+			if ctx.IsGet() && bytes.EqualFold(ctx.Path(), wsEndpoint) {
+				r.wsHandler(ctx)
+			} else {
+				r.httpHandler(ctx)
+			}
+		}
 	} else {
 		r.srv.Handler = r.httpHandler
 	}
