@@ -76,8 +76,8 @@ func (r *contractImpl) setModifier(modifiers ...ronykit.Modifier) *contractImpl 
 	return r
 }
 
-func (r *contractImpl) Query(q string) interface{} {
-	return r.selector.Query(q)
+func (r *contractImpl) Selector() ronykit.RouteSelector {
+	return r.selector
 }
 
 func (r *contractImpl) Handlers() []ronykit.Handler {

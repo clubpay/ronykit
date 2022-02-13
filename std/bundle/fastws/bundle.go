@@ -58,14 +58,14 @@ func (b *bundle) Register(svc ronykit.Service) {
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		predicate, ok := contract.Query(queryPredicate).(string)
+		rpcSelector, ok := contract.Selector().(ronykit.RPCRouteSelector)
 		if !ok {
 			continue
 		}
 
-		b.routes[predicate] = routeData{
+		b.routes[rpcSelector.GetPredicate()] = routeData{
 			ServiceName: svc.Name(),
-			Predicate:   predicate,
+			Predicate:   rpcSelector.GetPredicate(),
 			Handlers:    h,
 			Modifiers:   contract.Modifiers(),
 			Factory:     ronykit.CreateMessageFactory(contract.Input()),

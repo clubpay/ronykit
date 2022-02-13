@@ -1,27 +1,33 @@
 package fasthttp
 
-type Option func(r *bundle)
+type Option func(b *bundle)
 
 func WithServerName(name string) Option {
-	return func(r *bundle) {
-		r.srv.Name = name
+	return func(b *bundle) {
+		b.srv.Name = name
 	}
 }
 
 func Listen(addr string) Option {
-	return func(r *bundle) {
-		r.listen = addr
+	return func(b *bundle) {
+		b.listen = addr
 	}
 }
 
 func WithCORS(cfg CORSConfig) Option {
-	return func(r *bundle) {
-		r.cors = newCORS(cfg)
+	return func(b *bundle) {
+		b.cors = newCORS(cfg)
 	}
 }
 
 func WithPredicateKey(key string) Option {
 	return func(b *bundle) {
 		b.predicateKey = key
+	}
+}
+
+func WithWebsocketEndpoint(endpoint string) Option {
+	return func(b *bundle) {
+		b.wsEndpoint = endpoint
 	}
 }
