@@ -239,7 +239,7 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// check CORS rules
-	b.handleCORS(conn, routeData != nil)
+	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
 		return nil, errRouteNotFound
@@ -301,42 +301,6 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 
 		return nil
 	}, nil
-}
-
-func (b *bundle) handleCORS(rc *httpConn, routeFound bool) {
-	if b.cors == nil {
-		return
-	}
-
-	// ByPass cors (Cross Origin Resource Sharing) check
-	origin := rc.Get(headerOrigin)
-	if b.cors.origins[0] == "*" {
-		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, origin)
-	} else {
-		for _, allowedOrigin := range b.cors.origins {
-			if origin == allowedOrigin {
-				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, origin)
-			}
-		}
-	}
-
-	if routeFound {
-		return
-	}
-
-	if rc.ctx.IsOptions() {
-		reqHeaders := rc.ctx.Request.Header.Peek(headerAccessControlRequestHeaders)
-		if len(reqHeaders) > 0 {
-			rc.ctx.Response.Header.SetBytesV(headerAccessControlAllowHeaders, reqHeaders)
-		} else {
-			rc.ctx.Response.Header.Set(headerAccessControlAllowHeaders, b.cors.headers)
-		}
-
-		rc.ctx.Response.Header.Set(headerAccessControlAllowMethods, b.cors.methods)
-		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
-	} else {
-		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
-	}
 }
 
 func (b *bundle) Start() {
