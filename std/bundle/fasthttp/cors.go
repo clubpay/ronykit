@@ -6,15 +6,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-const (
-	headerOrigin                      = "Origin"
-	headerAccessControlAllowOrigin    = "Access-Control-Allow-Origin"
-	headerAccessControlAllowHeaders   = "Access-Control-Allow-Headers"
-	headerAccessControlAllowMethods   = "Access-Control-Allow-Methods"
-	headerAccessControlRequestHeaders = "Access-Control-Request-Headers"
-	headerAccessControlRequestMethod  = "Access-Control-Request-Method"
-)
-
 type CORSConfig struct {
 	AllowedHeaders []string
 	AllowedMethods []string
@@ -52,4 +43,44 @@ func newCORS(cfg CORSConfig) *cors {
 	}
 
 	return c
+}
+
+func (cors *cors) handle(rc *httpConn, routeFound bool) {
+	if cors == nil {
+		return
+	}
+
+	// ByPass cors (Cross Origin Resource Sharing) check
+	rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
+	origin := rc.Get(fasthttp.HeaderOrigin)
+	if cors.origins[0] == "*" {
+		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
+	} else {
+		for _, allowedOrigin := range cors.origins {
+			if origin == allowedOrigin {
+				rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
+			}
+		}
+	}
+
+	if routeFound {
+		return
+	}
+
+	if rc.ctx.IsOptions() {
+		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestMethod)
+		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestHeaders)
+		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlRequestMethod, cors.methods)
+		reqHeaders := rc.ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestHeaders)
+		if len(reqHeaders) > 0 {
+			rc.ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowHeaders, reqHeaders)
+		} else {
+			rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowHeaders, cors.headers)
+		}
+
+		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowMethods, cors.methods)
+		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+	} else {
+		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
+	}
 }
