@@ -57,7 +57,7 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
 	} else {
 		for _, allowedOrigin := range cors.origins {
-			if origin == allowedOrigin {
+			if strings.EqualFold(origin, allowedOrigin) {
 				rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
 			}
 		}
