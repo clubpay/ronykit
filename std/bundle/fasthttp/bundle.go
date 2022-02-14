@@ -118,12 +118,12 @@ func (b *bundle) Register(svc ronykit.Service) {
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		b.registerRPC(svc.Name(), contract)
-		b.registerREST(svc.Name(), contract)
+		b.registerRPC(svc.Name(), contract, h...)
+		b.registerREST(svc.Name(), contract, h...)
 	}
 }
 
-func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
+func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ronykit.Handler) {
 	rpcSelector, ok := c.Selector().(ronykit.RPCRouteSelector)
 	if !ok {
 		return
@@ -132,7 +132,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
 	rd := &routeData{
 		ServiceName: svcName,
 		Predicate:   rpcSelector.GetPredicate(),
-		Handlers:    c.Handlers(),
+		Handlers:    handlers,
 		Modifiers:   c.Modifiers(),
 		Factory:     ronykit.CreateMessageFactory(c.Input()),
 	}
@@ -140,7 +140,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract) {
 	b.wsRoutes[rd.Predicate] = rd
 }
 
-func (b *bundle) registerREST(svcName string, c ronykit.Contract) {
+func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ronykit.Handler) {
 	restSelector, ok := c.Selector().(ronykit.RESTRouteSelector)
 	if !ok {
 		return
@@ -155,7 +155,7 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract) {
 		restSelector.GetMethod(), restSelector.GetPath(),
 		&routeData{
 			ServiceName: svcName,
-			Handlers:    c.Handlers(),
+			Handlers:    handlers,
 			Modifiers:   c.Modifiers(),
 			Method:      restSelector.GetMethod(),
 			Path:        restSelector.GetPath(),
