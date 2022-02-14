@@ -309,10 +309,15 @@ func (b *bundle) handleCORS(rc *httpConn, routeFound bool) {
 	}
 
 	// ByPass cors (Cross Origin Resource Sharing) check
-	if b.cors.origins == "*" {
-		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, rc.Get(headerOrigin))
+	origin := rc.Get(headerOrigin)
+	if b.cors.origins[0] == "*" {
+		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, origin)
 	} else {
-		rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, b.cors.origins)
+		for _, allowedOrigin := range b.cors.origins {
+			if origin == allowedOrigin {
+				rc.ctx.Response.Header.Set(headerAccessControlAllowOrigin, origin)
+			}
+		}
 	}
 
 	if routeFound {

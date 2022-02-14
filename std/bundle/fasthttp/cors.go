@@ -24,15 +24,15 @@ type CORSConfig struct {
 type cors struct {
 	headers string
 	methods string
-	origins string
+	origins []string
 }
 
 func newCORS(cfg CORSConfig) *cors {
 	c := &cors{}
 	if len(cfg.AllowedOrigins) == 0 {
-		c.origins = "*"
+		c.origins = []string{"*"}
 	} else {
-		c.origins = strings.Join(cfg.AllowedOrigins, ", ")
+		c.origins = cfg.AllowedOrigins
 	}
 	if len(cfg.AllowedHeaders) == 0 {
 		cfg.AllowedHeaders = []string{
