@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/clubpay/ronykit"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
-	"github.com/ronaksoft/ronykit"
 )
 
 const (

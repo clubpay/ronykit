@@ -1,7 +1,7 @@
 package desc
 
 import (
-	"github.com/ronaksoft/ronykit"
+	"github.com/clubpay/ronykit"
 )
 
 // Contract is the description of the ronykit.Contract you are going to create.

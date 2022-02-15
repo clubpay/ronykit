@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
-	"github.com/ronaksoft/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit/std/bundle/fastws"
 )
 
 func main() {

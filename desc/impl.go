@@ -1,6 +1,6 @@
 package desc
 
-import "github.com/ronaksoft/ronykit"
+import "github.com/clubpay/ronykit"
 
 // serviceImpl is a simple implementation of ronykit.Service interface.
 type serviceImpl struct {

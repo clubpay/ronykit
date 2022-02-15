@@ -6,11 +6,15 @@ const (
 )
 
 func (ctx *Context) Route() string {
-	return ctx.Get(CtxRoute).(string)
+	route, _ := ctx.Get(CtxRoute).(string)
+
+	return route
 }
 
 func (ctx *Context) ServiceName() string {
-	return ctx.Get(CtxServiceName).(string)
+	svcName, _ := ctx.Get(CtxServiceName).(string)
+
+	return svcName
 }
 
 func (ctx *Context) Set(key string, val interface{}) *Context {

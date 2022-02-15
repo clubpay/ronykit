@@ -3,7 +3,7 @@ package ronykit
 import (
 	"context"
 
-	"github.com/ronaksoft/ronykit/utils"
+	"github.com/clubpay/ronykit/utils"
 )
 
 type (

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/goccy/go-json"
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/utils"
 )
 
 // Param is a single URL parameter, consisting of a key and a value.

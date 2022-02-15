@@ -3,7 +3,7 @@ package fasthttp
 import (
 	"mime/multipart"
 
-	"github.com/ronaksoft/ronykit/utils"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
 

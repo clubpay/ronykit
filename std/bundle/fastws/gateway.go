@@ -8,12 +8,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/clubpay/ronykit/pools"
+	"github.com/clubpay/ronykit/pools/buf"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
-	"github.com/ronaksoft/ronykit/pools"
-	"github.com/ronaksoft/ronykit/pools/buf"
-	"github.com/ronaksoft/ronykit/utils"
 )
 
 type gateway struct {

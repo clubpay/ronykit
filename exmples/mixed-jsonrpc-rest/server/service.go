@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/desc"
-	"github.com/ronaksoft/ronykit/exmples/mixed-jsonrpc-rest/msg"
-	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
-	"github.com/ronaksoft/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/desc"
+	"github.com/clubpay/ronykit/exmples/mixed-jsonrpc-rest/msg"
+	"github.com/clubpay/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit/std/bundle/fastws"
 )
 
 type Sample struct{}

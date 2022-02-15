@@ -29,7 +29,7 @@ To install RonyKIT package, you need to install Go and set your Go workspace fir
    RonyKIT.
 
 ```sh
-$ go get -u github.com/ronaksoft/ronykit/...
+$ go get -u github.com/clubpay/ronykit/...
 ```
 
 2. Import it in your code:
@@ -37,7 +37,7 @@ $ go get -u github.com/ronaksoft/ronykit/...
 ```go
 package main
 
-import "github.com/ronaksoft/ronykit"
+import "github.com/clubpay/ronykit"
 ```
 
 3. (Optional) You might also need to import some standard bundles provided in the main repo.
@@ -46,8 +46,8 @@ import "github.com/ronaksoft/ronykit"
 package main
 
 import (
-	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
-	"github.com/ronaksoft/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit/std/bundle/fastws"
 )
 ```
 
@@ -105,9 +105,9 @@ import (
 	"encoding/json"
 	"syscall"
 
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/desc"
-	"github.com/ronaksoft/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/desc"
+	"github.com/clubpay/ronykit/std/bundle/fasthttp"
 )
 
 type echoRequest struct {

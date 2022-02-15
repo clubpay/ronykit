@@ -3,8 +3,8 @@ package fastws
 import (
 	"sync"
 
+	"github.com/clubpay/ronykit"
 	"github.com/goccy/go-json"
-	"github.com/ronaksoft/ronykit"
 )
 
 type incomingMessage struct {
