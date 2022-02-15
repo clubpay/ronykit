@@ -63,6 +63,17 @@ func (sw ContractWrapperFunc) Wrap(svc Contract) Contract {
 	return sw(svc)
 }
 
+// WrapContract wraps a contract, this is useful for adding middlewares to the contract.
+// Some middlewares like OpenTelemetry, Logger, ... could be added to the contract using
+// this function.
+func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
+	for _, w := range wrappers {
+		c = w.Wrap(c)
+	}
+
+	return c
+}
+
 // RouteSelector holds information about how this Contract is going to be selected. Each
 // Bundle may need different information to route the request to the right Contract.
 type RouteSelector interface {
