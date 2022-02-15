@@ -8,6 +8,7 @@ import (
 type Contract struct {
 	Name      string
 	Handlers  []ronykit.Handler
+	Wrappers  []ronykit.ContractWrapper
 	Input     ronykit.Message
 	Output    ronykit.Message
 	Selectors []ronykit.RouteSelector
@@ -59,6 +60,12 @@ func (c *Contract) AddModifier(m ronykit.Modifier) *Contract {
 	return c
 }
 
+func (c *Contract) AddWrapper(wrappers ...ronykit.ContractWrapper) *Contract {
+	c.Wrappers = append(c.Wrappers, wrappers...)
+	
+	return c
+}
+
 func (c *Contract) AddHandler(h ...ronykit.Handler) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
@@ -82,7 +89,7 @@ func (c *Contract) Generate() []ronykit.Contract {
 		ci.setInput(c.Input)
 		ci.setSelector(s)
 
-		contracts = append(contracts, ci)
+		contracts = append(contracts, ronykit.WrapContract(ci, c.Wrappers...))
 	}
 
 	return contracts
