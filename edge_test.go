@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ronaksoft/ronykit"
+	"github.com/clubpay/ronykit"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

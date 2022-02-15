@@ -7,9 +7,9 @@ import (
 	"net"
 	"sync"
 
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
-	"github.com/ronaksoft/ronykit"
-	"github.com/ronaksoft/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
 

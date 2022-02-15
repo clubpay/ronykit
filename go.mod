@@ -1,4 +1,4 @@
-module github.com/ronaksoft/ronykit
+module github.com/clubpay/ronykit
 
 go 1.17
 

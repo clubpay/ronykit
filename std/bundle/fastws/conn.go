@@ -3,9 +3,9 @@ package fastws
 import (
 	"bytes"
 
+	"github.com/clubpay/ronykit/utils"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
-	"github.com/ronaksoft/ronykit/utils"
 )
 
 type wsConn struct {

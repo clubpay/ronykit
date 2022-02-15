@@ -1,7 +1,7 @@
 package fastws
 
 import (
-	"github.com/ronaksoft/ronykit"
+	"github.com/clubpay/ronykit"
 )
 
 type Option func(b *bundle)
