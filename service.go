@@ -17,8 +17,8 @@ type Service interface {
 	PostHandlers() []Handler
 }
 
-// ServiceWrapper is like an interceptor which can add Pre- and Post- handlers to all
-// the Contracts of the Service.
+// ServiceWrapper lets you add customizations to your service. A specific case of it is serviceInterceptor
+// which can add Pre- and Post- handlers to all the Contracts of the Service.
 type ServiceWrapper interface {
 	Wrap(Service) Service
 }

@@ -62,12 +62,18 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
-// SetHdr sets the common header key-value pairs so in Out method we don't need to
+// SetHdrMap sets the common header key-value pairs so in Out method we don't need to
 // repeatedly set those.
-func (ctx *Context) SetHdr(hdr map[string]string) {
+func (ctx *Context) SetHdrMap(hdr map[string]string) {
 	for k, v := range hdr {
 		ctx.hdr[k] = v
 	}
+}
+
+// SetHdr sets the common header key-value pairs so in Out method we don't need to
+// repeatedly set those.
+func (ctx *Context) SetHdr(k, v string) {
+	ctx.hdr[k] = v
 }
 
 // In returns the incoming Envelope which received from the connection.
