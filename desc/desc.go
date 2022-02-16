@@ -52,7 +52,7 @@ func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	return c
 }
 
-// AddModifier ass a ronykit.Modifier for this contract. Modifiers are used to modify
+// AddModifier adds a ronykit.Modifier for this contract. Modifiers are used to modify
 // the outgoing ronykit.Envelope just before sending to the client.
 func (c *Contract) AddModifier(m ronykit.Modifier) *Contract {
 	c.Modifiers = append(c.Modifiers, m)
@@ -60,9 +60,10 @@ func (c *Contract) AddModifier(m ronykit.Modifier) *Contract {
 	return c
 }
 
+// AddWrapper adds a ronykit.ContractWrapper for this contract.
 func (c *Contract) AddWrapper(wrappers ...ronykit.ContractWrapper) *Contract {
 	c.Wrappers = append(c.Wrappers, wrappers...)
-	
+
 	return c
 }
 
@@ -113,10 +114,12 @@ func NewService(name string) *Service {
 	}
 }
 
+// AddWrapper adds service wrappers to the Service description.
 func (s *Service) AddWrapper(wrappers ...ronykit.ServiceWrapper) {
 	s.Wrappers = append(s.Wrappers, wrappers...)
 }
 
+// AddContract adds a contract to the service.
 func (s *Service) AddContract(contracts ...*Contract) {
 	for idx := range contracts {
 		if contracts[idx] == nil {

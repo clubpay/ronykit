@@ -10,12 +10,14 @@ type CORSConfig struct {
 	AllowedHeaders []string
 	AllowedMethods []string
 	AllowedOrigins []string
+	ExposedHeaders []string
 }
 
 type cors struct {
-	headers string
-	methods string
-	origins []string
+	headers        string
+	methods        string
+	origins        []string
+	exposedHeaders string
 }
 
 func newCORS(cfg CORSConfig) *cors {
@@ -30,6 +32,11 @@ func newCORS(cfg CORSConfig) *cors {
 			"Origin", "Accept", "Content-Type",
 			"X-Requested-With", "X-Auth-Tokens", "Authorization",
 		}
+	}
+	if len(cfg.ExposedHeaders) == 0 {
+		c.exposedHeaders = "*"
+	} else {
+		c.exposedHeaders = strings.Join(cfg.ExposedHeaders, ",")
 	}
 	c.headers = strings.Join(cfg.AllowedHeaders, ",")
 	if len(cfg.AllowedMethods) == 0 {
@@ -52,6 +59,8 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 
 	// ByPass cors (Cross Origin Resource Sharing) check
 	rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
+	rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlExposeHeaders, cors.exposedHeaders)
+
 	origin := rc.Get(fasthttp.HeaderOrigin)
 	if cors.origins[0] == "*" {
 		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
