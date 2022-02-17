@@ -1,24 +1,23 @@
 package reflector
 
 import (
-	"reflect"
-	"unsafe"
-
+	"fmt"
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
+	"reflect"
 )
-
-// emptyInterface is the header for an interface{} value.
-type emptyInterface struct {
-	typ  uint64
-	word unsafe.Pointer
-}
 
 type Reflector struct {
 	tagName string
 
 	cacheMtx utils.SpinLock
 	cache    map[string]map[string]fieldInfo
+}
+
+func New() *Reflector {
+	return &Reflector{
+		cache: map[string]map[string]fieldInfo{},
+	}
 }
 
 func (r *Reflector) extractInfo(m ronykit.Message) map[string]fieldInfo {
@@ -50,7 +49,17 @@ func (r *Reflector) extractInfo(m ronykit.Message) map[string]fieldInfo {
 }
 
 func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
-	f, ok := reflect.TypeOf(m).FieldByName(fieldName)
+	rVal := reflect.ValueOf(m)
+	rType := rVal.Type()
+	if rType.Kind() != reflect.Ptr {
+		panic("x must be a pointer to struct")
+	}
+	e := rVal.Elem()
+	if e.Kind() != reflect.Struct {
+		panic("x must be a pointer to struct")
+	}
+
+	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return nil
 	}
@@ -58,37 +67,54 @@ func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
 		return nil
 	}
 
-	return reflect.ValueOf(m).FieldByName(fieldName).Interface()
+	return e.FieldByName(fieldName).Interface()
 }
 
-//func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
-//	mt := reflect.TypeOf(m).Name()
-//	r.cacheMtx.Lock()
-//	obj := r.cache[mt]
-//	r.cacheMtx.Unlock()
-//	if obj == nil {
-//		obj = r.extractInfo(m)
-//	}
-//
-//	f := obj[fieldName]
-//	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, f.offset)
-//
-//	switch f.typ.Kind() {
-//	case reflect.Int64:
-//		*(*int64)(ptr)
-//	case reflect.Int32:
-//		*(*int32)(ptr) = utils.StrToInt32(x)
-//	case reflect.Uint64:
-//		*(*uint64)(ptr) = utils.StrToUInt64(x)
-//	case reflect.Uint32:
-//		*(*uint32)(ptr) = utils.StrToUInt32(x)
-//	case reflect.Int:
-//		return *(*int)(ptr)
-//	case reflect.Uint:
-//		return *(*uint)(ptr)
-//	case reflect.String:
-//		return *(*string)(ptr)
-//
-//	}
-//
-//}
+func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, error) {
+	rVal := reflect.ValueOf(m)
+	rType := rVal.Type()
+	if rType.Kind() != reflect.Ptr {
+		panic("x must be a pointer to struct")
+	}
+	e := rVal.Elem()
+	if e.Kind() != reflect.Struct {
+		panic("x must be a pointer to struct")
+	}
+
+	f, ok := e.Type().FieldByName(fieldName)
+	if !ok {
+		return "", ErrNoField
+	}
+	if !f.IsExported() {
+		return "", ErrNotExported
+	}
+
+	return e.FieldByName(fieldName).String(), nil
+}
+
+func (r *Reflector) GetInt(m ronykit.Message, fieldName string) (int64, error) {
+	rVal := reflect.ValueOf(m)
+	rType := rVal.Type()
+	if rType.Kind() != reflect.Ptr {
+		panic("x must be a pointer to struct")
+	}
+	e := rVal.Elem()
+	if e.Kind() != reflect.Struct {
+		panic("x must be a pointer to struct")
+	}
+
+	f, ok := e.Type().FieldByName(fieldName)
+	if !ok {
+		return 0, ErrNoField
+	}
+	if !f.IsExported() {
+		return 0, ErrNotExported
+	}
+
+	return e.FieldByName(fieldName).Int(), nil
+}
+
+var (
+	ErrNotExported = fmt.Errorf("not exported")
+	ErrNoField     = fmt.Errorf("field not exists")
+)
