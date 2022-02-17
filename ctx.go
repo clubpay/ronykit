@@ -17,13 +17,14 @@ type Context struct {
 	utils.SpinLock
 	ctx context.Context //nolint:containedctx
 
-	nb   *northBridge
-	kv   map[string]interface{}
-	hdr  map[string]string
-	conn Conn
-	in   *Envelope
-	wf   WriteFunc
-	err  error
+	nb        *northBridge
+	kv        map[string]interface{}
+	hdr       map[string]string
+	conn      Conn
+	in        *Envelope
+	wf        WriteFunc
+	modifiers []Modifier
+	err       error
 
 	handlers HandlerFuncChain
 	index    int
@@ -52,6 +53,12 @@ func (ctx *Context) Next() {
 // StopExecution stops the execution of the next handlers.
 func (ctx *Context) StopExecution() {
 	ctx.index = abortIndex
+}
+
+// AddModifier adds one or more modifiers to the context which will be executed on each outgoing
+// Envelope before writing it to the wire.
+func (ctx *Context) AddModifier(modifiers ...Modifier) {
+	ctx.modifiers = append(ctx.modifiers, modifiers...)
 }
 
 // SetUserContext replaces the default context with the provided context.
@@ -131,5 +138,6 @@ func (ctx *Context) reset() {
 	ctx.in.release()
 	ctx.index = 0
 	ctx.handlers = ctx.handlers[:0]
+	ctx.modifiers = ctx.modifiers[:0]
 	ctx.ctx = nil
 }

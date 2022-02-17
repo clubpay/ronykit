@@ -194,10 +194,6 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 	}
 
 	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		for idx := range routeData.Modifiers {
-			routeData.Modifiers[idx](e)
-		}
-
 		outputMsgContainer := acquireOutgoingMessage()
 		outputMsgContainer.Payload = e.GetMsg()
 		e.WalkHdr(func(key string, val string) bool {
@@ -227,6 +223,8 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 		ctx.
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
 			Set(ronykit.CtxRoute, routeData.Predicate)
+
+		ctx.AddModifier(routeData.Modifiers...)
 
 		// run the execFunc with generated params
 		execFunc(writeFunc, routeData.Handlers...)
@@ -265,10 +263,6 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 			panic("BUG!! incorrect connection")
 		}
 
-		for idx := range routeData.Modifiers {
-			routeData.Modifiers[idx](e)
-		}
-
 		data, err := e.GetMsg().Marshal()
 		if err != nil {
 			return err
@@ -295,6 +289,8 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		ctx.In().
 			SetHdrWalker(conn).
 			SetMsg(routeData.Decoder(params, in))
+
+		ctx.AddModifier(routeData.Modifiers...)
 
 		// execute handler functions
 		execFunc(writeFunc, routeData.Handlers...)

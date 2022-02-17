@@ -134,6 +134,12 @@ func (e *Envelope) Send() {
 		panic("BUG!! do not call Send on incoming envelope")
 	}
 
+	// run the modifiers in LIFO order
+	modifiersCount := len(e.ctx.modifiers) - 1
+	for idx := range e.ctx.modifiers {
+		e.ctx.modifiers[modifiersCount-idx](e)
+	}
+
 	// Use WriteFunc to write the Envelope into the connection
 	e.ctx.Error(e.ctx.wf(e.conn, e))
 
