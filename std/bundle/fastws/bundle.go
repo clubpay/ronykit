@@ -96,10 +96,6 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 	}
 
 	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		for idx := range routeData.Modifiers {
-			routeData.Modifiers[idx](e)
-		}
-
 		outputMsgContainer := acquireOutgoingMessage()
 		outputMsgContainer.Payload = e.GetMsg()
 		e.WalkHdr(func(key string, val string) bool {
@@ -129,6 +125,8 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		ctx.
 			Set(ronykit.CtxServiceName, routeData.ServiceName).
 			Set(ronykit.CtxRoute, routeData.Predicate)
+
+		ctx.AddModifier(routeData.Modifiers...)
 
 		// run the execFunc with generated params
 		execFunc(writeFunc, routeData.Handlers...)

@@ -4,15 +4,22 @@ import (
 	"github.com/clubpay/ronykit"
 )
 
+type Error struct {
+	Code    int
+	Item    string
+	Message ronykit.Message
+}
+
 // Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
-	Name      string
-	Handlers  []ronykit.HandlerFunc
-	Wrappers  []ronykit.ContractWrapper
-	Input     ronykit.Message
-	Output    ronykit.Message
-	Selectors []ronykit.RouteSelector
-	Modifiers []ronykit.Modifier
+	Name           string
+	Handlers       []ronykit.HandlerFunc
+	Wrappers       []ronykit.ContractWrapper
+	Input          ronykit.Message
+	Output         ronykit.Message
+	PossibleErrors []Error
+	Selectors      []ronykit.RouteSelector
+	Modifiers      []ronykit.Modifier
 }
 
 func NewContract() *Contract {
@@ -37,10 +44,22 @@ func (c *Contract) SetInput(m ronykit.Message) *Contract {
 	return c
 }
 
-// SetOutput sets the outgoing message for this Contract. This is an optional parameter, which
-// mostly could be used by external tools such as Swagger generator etc.
+// SetOutput sets the outgoing message for this Contract. This is an OPTIONAL parameter, which
+// mostly could be used by external tools such as Swagger or any other doc generator tools.
 func (c *Contract) SetOutput(m ronykit.Message) *Contract {
 	c.Output = m
+
+	return c
+}
+
+// AddPossibleError sets the possible errors for this Contract. This is OPTIONAL parameter, which
+// mostly could be used by external tools such as Swagger or any other doc generator tools.
+func (c *Contract) AddPossibleError(code int, item string, m ronykit.Message) *Contract {
+	c.PossibleErrors = append(c.PossibleErrors, Error{
+		Code:    code,
+		Item:    item,
+		Message: m,
+	})
 
 	return c
 }
