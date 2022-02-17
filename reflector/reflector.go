@@ -2,9 +2,10 @@ package reflector
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
-	"reflect"
 )
 
 type Reflector struct {

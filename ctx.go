@@ -2,29 +2,36 @@ package ronykit
 
 import (
 	"context"
+	"math"
 
 	"github.com/clubpay/ronykit/utils"
 )
 
 type (
-	ErrHandler func(ctx *Context, err error)
-	Handler    func(ctx *Context)
+	ErrHandler       func(ctx *Context, err error)
+	HandlerFunc      func(ctx *Context)
+	HandlerFuncChain []HandlerFunc
 )
 
 type Context struct {
 	utils.SpinLock
+	ctx context.Context //nolint:containedctx
 
-	nb      *northBridge
-	kv      map[string]interface{}
-	hdr     map[string]string
-	conn    Conn
-	in      *Envelope
-	wf      WriteFunc
-	err     error
-	stopped bool
-	next    Handler
-	ctx     context.Context //nolint:containedctx
+	nb   *northBridge
+	kv   map[string]interface{}
+	hdr  map[string]string
+	conn Conn
+	in   *Envelope
+	wf   WriteFunc
+	err  error
+
+	handlers HandlerFuncChain
+	index    int
 }
+
+const (
+	abortIndex = math.MaxInt >> 1
+)
 
 // Context returns a context.Background which can be used a reference context for
 // other context aware function calls. You can also replace it with your own context
@@ -34,13 +41,17 @@ func (ctx *Context) Context() context.Context {
 }
 
 // Next sets the next handler which will be called after the current handler.
-func (ctx *Context) Next(h Handler) {
-	ctx.next = h
+func (ctx *Context) Next() {
+	ctx.index++
+	for ctx.index <= len(ctx.handlers) {
+		ctx.handlers[ctx.index-1](ctx)
+		ctx.index++
+	}
 }
 
 // StopExecution stops the execution of the next handlers.
 func (ctx *Context) StopExecution() {
-	ctx.stopped = true
+	ctx.index = abortIndex
 }
 
 // SetUserContext replaces the default context with the provided context.
@@ -118,7 +129,7 @@ func (ctx *Context) reset() {
 	}
 
 	ctx.in.release()
-	ctx.next = nil
-	ctx.stopped = false
+	ctx.index = 0
+	ctx.handlers = ctx.handlers[:0]
 	ctx.ctx = nil
 }

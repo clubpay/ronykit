@@ -1,8 +1,9 @@
 package reflector_test
 
 import (
-	"github.com/clubpay/ronykit/reflector"
 	"testing"
+
+	"github.com/clubpay/ronykit/reflector"
 )
 
 type testMessage struct {

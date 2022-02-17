@@ -53,7 +53,7 @@ func MustNew(opts ...Option) *bundle {
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
-		var h []ronykit.Handler
+		var h []ronykit.HandlerFunc
 		h = append(h, svc.PreHandlers()...)
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
