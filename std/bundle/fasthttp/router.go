@@ -14,7 +14,7 @@ type routeData struct {
 	Predicate   string
 	ServiceName string
 	Decoder     DecoderFunc
-	Handlers    []ronykit.Handler
+	Handlers    []ronykit.HandlerFunc
 	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactoryFunc
 }

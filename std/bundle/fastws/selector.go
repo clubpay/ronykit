@@ -29,7 +29,7 @@ func (r Selector) Query(q string) interface{} {
 type routeData struct {
 	ServiceName string
 	Predicate   string
-	Handlers    []ronykit.Handler
+	Handlers    []ronykit.HandlerFunc
 	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactoryFunc
 }

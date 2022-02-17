@@ -5,8 +5,8 @@ import "github.com/clubpay/ronykit"
 // serviceImpl is a simple implementation of ronykit.Service interface.
 type serviceImpl struct {
 	name      string
-	pre       []ronykit.Handler
-	post      []ronykit.Handler
+	pre       []ronykit.HandlerFunc
+	post      []ronykit.HandlerFunc
 	contracts []ronykit.Contract
 }
 
@@ -18,21 +18,21 @@ func (s *serviceImpl) Contracts() []ronykit.Contract {
 	return s.contracts
 }
 
-func (s *serviceImpl) PreHandlers() []ronykit.Handler {
+func (s *serviceImpl) PreHandlers() []ronykit.HandlerFunc {
 	return s.pre
 }
 
-func (s *serviceImpl) PostHandlers() []ronykit.Handler {
+func (s *serviceImpl) PostHandlers() []ronykit.HandlerFunc {
 	return s.post
 }
 
-func (s *serviceImpl) setPreHandlers(h ...ronykit.Handler) *serviceImpl {
+func (s *serviceImpl) setPreHandlers(h ...ronykit.HandlerFunc) *serviceImpl {
 	s.pre = append(s.pre[:0], h...)
 
 	return s
 }
 
-func (s *serviceImpl) setPostHandlers(h ...ronykit.Handler) *serviceImpl {
+func (s *serviceImpl) setPostHandlers(h ...ronykit.HandlerFunc) *serviceImpl {
 	s.post = append(s.post[:0], h...)
 
 	return s
@@ -47,7 +47,7 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 // contractImpl is simple implementation of ronykit.Contract interface.
 type contractImpl struct {
 	selector  ronykit.RouteSelector
-	handlers  []ronykit.Handler
+	handlers  []ronykit.HandlerFunc
 	modifiers []ronykit.Modifier
 	input     ronykit.Message
 }
@@ -64,7 +64,7 @@ func (r *contractImpl) setSelector(selector ronykit.RouteSelector) *contractImpl
 	return r
 }
 
-func (r *contractImpl) setHandler(handlers ...ronykit.Handler) *contractImpl {
+func (r *contractImpl) setHandler(handlers ...ronykit.HandlerFunc) *contractImpl {
 	r.handlers = append(r.handlers[:0], handlers...)
 
 	return r
@@ -80,7 +80,7 @@ func (r *contractImpl) Selector() ronykit.RouteSelector {
 	return r.selector
 }
 
-func (r *contractImpl) Handlers() []ronykit.Handler {
+func (r *contractImpl) Handlers() []ronykit.HandlerFunc {
 	return r.handlers
 }
 

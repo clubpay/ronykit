@@ -7,7 +7,7 @@ import (
 // Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
 	Name      string
-	Handlers  []ronykit.Handler
+	Handlers  []ronykit.HandlerFunc
 	Wrappers  []ronykit.ContractWrapper
 	Input     ronykit.Message
 	Output    ronykit.Message
@@ -67,13 +67,13 @@ func (c *Contract) AddWrapper(wrappers ...ronykit.ContractWrapper) *Contract {
 	return c
 }
 
-func (c *Contract) AddHandler(h ...ronykit.Handler) *Contract {
+func (c *Contract) AddHandler(h ...ronykit.HandlerFunc) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
 	return c
 }
 
-func (c *Contract) SetHandler(h ...ronykit.Handler) *Contract {
+func (c *Contract) SetHandler(h ...ronykit.HandlerFunc) *Contract {
 	c.Handlers = append(c.Handlers[:0], h...)
 
 	return c
@@ -104,8 +104,8 @@ type Service struct {
 	Description  string
 	Wrappers     []ronykit.ServiceWrapper
 	Contracts    []Contract
-	PreHandlers  []ronykit.Handler
-	PostHandlers []ronykit.Handler
+	PreHandlers  []ronykit.HandlerFunc
+	PostHandlers []ronykit.HandlerFunc
 }
 
 func NewService(name string) *Service {

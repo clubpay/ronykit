@@ -113,7 +113,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
-		var h []ronykit.Handler
+		var h []ronykit.HandlerFunc
 		h = append(h, svc.PreHandlers()...)
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
@@ -123,7 +123,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 	}
 }
 
-func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ronykit.Handler) {
+func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ronykit.HandlerFunc) {
 	rpcSelector, ok := c.Selector().(ronykit.RPCRouteSelector)
 	if !ok {
 		return
@@ -140,7 +140,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 	b.wsRoutes[rd.Predicate] = rd
 }
 
-func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ronykit.Handler) {
+func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ronykit.HandlerFunc) {
 	restSelector, ok := c.Selector().(ronykit.RESTRouteSelector)
 	if !ok {
 		return

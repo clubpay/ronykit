@@ -45,24 +45,10 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 
 	err = dispatchFunc(
 		ctx,
-		func(writeFunc WriteFunc, handlers ...Handler) {
+		func(writeFunc WriteFunc, handlers ...HandlerFunc) {
 			ctx.wf = writeFunc
-		Loop:
-			for idx := range handlers {
-				h := handlers[idx]
-				for h != nil {
-					h(ctx)
-					if ctx.stopped {
-						break Loop
-					}
-
-					if ctx.next == nil {
-						break
-					}
-
-					h, ctx.next = ctx.next, nil
-				}
-			}
+			ctx.handlers = append(ctx.handlers, handlers...)
+			ctx.Next()
 
 			return
 		},

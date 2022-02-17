@@ -10,11 +10,11 @@ type Service interface {
 	// PreHandlers returns a list of handlers which are executed in sequence **BEFORE** any
 	// call. If you need specific pre-handlers per Contract, then should be defined the
 	// Contract itself.
-	PreHandlers() []Handler
+	PreHandlers() []HandlerFunc
 	// PostHandlers returns a list of handlers which are executed in sequence **AFTER** any
 	// call. If you need specific pre-handlers per Contract, then should be defined the
 	// Contract itself.
-	PostHandlers() []Handler
+	PostHandlers() []HandlerFunc
 }
 
 // ServiceWrapper lets you add customizations to your service. A specific case of it is serviceInterceptor
@@ -47,7 +47,7 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 type Contract interface {
 	Selector() RouteSelector
 	Input() Message
-	Handlers() []Handler
+	Handlers() []HandlerFunc
 	Modifiers() []Modifier
 }
 
