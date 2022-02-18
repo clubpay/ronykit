@@ -3,50 +3,96 @@ package reflector
 import (
 	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/utils"
 )
+
+var (
+	ErrNotExported = fmt.Errorf("not exported")
+	ErrNoField     = fmt.Errorf("field not exists")
+)
+
+var registered = map[reflect.Type]map[string]fieldInfo{}
 
 type Reflector struct {
 	tagName string
 
-	cacheMtx utils.SpinLock
-	cache    map[string]map[string]fieldInfo
+	cacheMtx sync.RWMutex
+	cache    map[reflect.Type]map[string]fieldInfo
 }
 
 func New() *Reflector {
 	return &Reflector{
-		cache: map[string]map[string]fieldInfo{},
+		cache: map[reflect.Type]map[string]fieldInfo{},
 	}
 }
 
-func (r *Reflector) extractInfo(m ronykit.Message) map[string]fieldInfo {
-	rVal := reflect.ValueOf(m)
-	rType := rVal.Type()
-	if rType.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
+// Register registers the message then reflector will be much faster. You should call
+// it concurrently.
+func Register(m ronykit.Message) {
+	if reflect.TypeOf(m).Kind() != reflect.Ptr {
+		panic("must be a pointer to struct")
 	}
-	if rVal.Elem().Kind() != reflect.Struct {
-		panic("x must be a pointer to struct")
+	mVal := reflect.Indirect(reflect.ValueOf(m))
+	if mVal.Kind() != reflect.Struct {
+		panic("must be a pointer to struct")
+	}
+	mType := mVal.Type()
+	registered[mType] = destruct(mVal)
+}
+
+func destruct(mVal reflect.Value) map[string]fieldInfo {
+	mType := mVal.Type()
+	data := map[string]fieldInfo{}
+	for i := 0; i < mType.NumField(); i++ {
+		ft := mType.Field(i)
+		if !ft.IsExported() {
+			continue
+		}
+		fi := fieldInfo{
+			name:   ft.Name,
+			offset: ft.Offset,
+			typ:    ft.Type,
+		}
+		switch ft.Type.Kind() {
+		case reflect.Map, reflect.Slice, reflect.Ptr, reflect.Interface,
+			reflect.Array, reflect.Chan, reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
+		default:
+			fi.unsafe = true
+		}
+		data[ft.Name] = fi
 	}
 
-	cachedObj := map[string]fieldInfo{}
-	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
-		f := reflect.Indirect(rVal).Type().Field(i)
-		if f.IsExported() {
-			cachedObj[f.Name] = fieldInfo{
-				offset: f.Offset,
-				typ:    f.Type,
-			}
+	return data
+}
+
+func (r *Reflector) Load(m ronykit.Message) Object {
+	if reflect.TypeOf(m).Kind() != reflect.Ptr {
+		panic("must be a pointer to struct")
+	}
+	mVal := reflect.Indirect(reflect.ValueOf(m))
+	if mVal.Kind() != reflect.Struct {
+		panic("must be a pointer to struct")
+	}
+	mType := mVal.Type()
+	cachedData := registered[mType]
+	if cachedData == nil {
+		r.cacheMtx.RLock()
+		cachedData = r.cache[mType]
+		r.cacheMtx.RUnlock()
+		if cachedData == nil {
+			cachedData = destruct(mVal)
+			r.cacheMtx.Lock()
+			r.cache[mType] = cachedData
+			r.cacheMtx.Unlock()
 		}
 	}
 
-	r.cacheMtx.Lock()
-	r.cache[rType.Name()] = cachedObj
-	r.cacheMtx.Unlock()
-
-	return cachedObj
+	return Object{
+		m:    m,
+		data: cachedData,
+	}
 }
 
 func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
@@ -114,8 +160,3 @@ func (r *Reflector) GetInt(m ronykit.Message, fieldName string) (int64, error) {
 
 	return e.FieldByName(fieldName).Int(), nil
 }
-
-var (
-	ErrNotExported = fmt.Errorf("not exported")
-	ErrNoField     = fmt.Errorf("field not exists")
-)
