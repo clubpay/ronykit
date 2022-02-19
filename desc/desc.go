@@ -2,6 +2,7 @@ package desc
 
 import (
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/reflector"
 )
 
 type Error struct {
@@ -86,18 +87,21 @@ func (c *Contract) AddWrapper(wrappers ...ronykit.ContractWrapper) *Contract {
 	return c
 }
 
+// AddHandler add handler for this contract.
 func (c *Contract) AddHandler(h ...ronykit.HandlerFunc) *Contract {
 	c.Handlers = append(c.Handlers, h...)
 
 	return c
 }
 
+// SetHandler set the handler by replacing the already existing ones.
 func (c *Contract) SetHandler(h ...ronykit.HandlerFunc) *Contract {
 	c.Handlers = append(c.Handlers[:0], h...)
 
 	return c
 }
 
+// Generate generates the ronykit.Contract
 func (c *Contract) Generate() []ronykit.Contract {
 	//nolint:prealloc
 	var contracts []ronykit.Contract
@@ -133,19 +137,47 @@ func NewService(name string) *Service {
 	}
 }
 
+func (s *Service) SetVersion(v string) *Service {
+	s.Version = v
+
+	return s
+}
+
+func (s *Service) SetDescription(d string) *Service {
+	s.Description = d
+
+	return s
+}
+
+func (s *Service) AddPreHandler(h ...ronykit.HandlerFunc) *Service {
+	s.PreHandlers = append(s.PreHandlers, h...)
+
+	return s
+}
+
+func (s *Service) AddPostHandler(h ...ronykit.HandlerFunc) *Service {
+	s.PostHandlers = append(s.PostHandlers, h...)
+
+	return s
+}
+
 // AddWrapper adds service wrappers to the Service description.
-func (s *Service) AddWrapper(wrappers ...ronykit.ServiceWrapper) {
+func (s *Service) AddWrapper(wrappers ...ronykit.ServiceWrapper) *Service {
 	s.Wrappers = append(s.Wrappers, wrappers...)
+
+	return s
 }
 
 // AddContract adds a contract to the service.
-func (s *Service) AddContract(contracts ...*Contract) {
+func (s *Service) AddContract(contracts ...*Contract) *Service {
 	for idx := range contracts {
 		if contracts[idx] == nil {
 			continue
 		}
 		s.Contracts = append(s.Contracts, *contracts[idx])
 	}
+
+	return s
 }
 
 // Add adds a contract to the service.
@@ -156,6 +188,7 @@ func (s *Service) Add(c *Contract) *Service {
 	return s
 }
 
+// Generate generates the ronykit.Service
 func (s Service) Generate() ronykit.Service {
 	svc := &serviceImpl{
 		name: s.Name,
@@ -164,6 +197,8 @@ func (s Service) Generate() ronykit.Service {
 	}
 
 	for _, c := range s.Contracts {
+		reflector.Register(c.Input)
+		reflector.Register(c.Output)
 		svc.contracts = append(svc.contracts, c.Generate()...)
 	}
 
