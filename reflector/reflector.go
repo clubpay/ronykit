@@ -31,6 +31,16 @@ func New() *Reflector {
 // Register registers the message then reflector will be much faster. You should call
 // it concurrently.
 func Register(m ronykit.Message) {
+	if m == nil {
+		return
+	}
+
+	mVal := getValue(m)
+	mType := mVal.Type()
+	registered[mType] = destruct(mVal)
+}
+
+func getValue(m ronykit.Message) reflect.Value {
 	if reflect.TypeOf(m).Kind() != reflect.Ptr {
 		panic("must be a pointer to struct")
 	}
@@ -38,8 +48,8 @@ func Register(m ronykit.Message) {
 	if mVal.Kind() != reflect.Struct {
 		panic("must be a pointer to struct")
 	}
-	mType := mVal.Type()
-	registered[mType] = destruct(mVal)
+
+	return mVal
 }
 
 func destruct(mVal reflect.Value) map[string]fieldInfo {
@@ -68,13 +78,7 @@ func destruct(mVal reflect.Value) map[string]fieldInfo {
 }
 
 func (r *Reflector) Load(m ronykit.Message) Object {
-	if reflect.TypeOf(m).Kind() != reflect.Ptr {
-		panic("must be a pointer to struct")
-	}
-	mVal := reflect.Indirect(reflect.ValueOf(m))
-	if mVal.Kind() != reflect.Struct {
-		panic("must be a pointer to struct")
-	}
+	mVal := getValue(m)
 	mType := mVal.Type()
 	cachedData := registered[mType]
 	if cachedData == nil {
