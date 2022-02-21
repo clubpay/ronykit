@@ -150,10 +150,11 @@ func (e *Envelope) Send() {
 type (
 	// Modifier is a function which can modify the outgoing Envelope before sending it to the
 	// client.
-	Modifier func(envelope *Envelope)
-	Message  interface {
+	Modifier   func(envelope *Envelope)
+	Marshaller interface {
 		Marshal() ([]byte, error)
 	}
+	Message            interface{}
 	MessageFactoryFunc func() Message
 )
 

@@ -17,6 +17,7 @@ type routeData struct {
 	Handlers    []ronykit.HandlerFunc
 	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactoryFunc
+	Encoding    ronykit.Encoding
 }
 
 // mux is a http.Handler which can be used to dispatch requests to different

@@ -50,10 +50,17 @@ type contractImpl struct {
 	handlers  []ronykit.HandlerFunc
 	modifiers []ronykit.Modifier
 	input     ronykit.Message
+	enc       ronykit.Encoding
 }
 
 func (r *contractImpl) setInput(input ronykit.Message) *contractImpl {
 	r.input = input
+
+	return r
+}
+
+func (r *contractImpl) setEncoding(enc ronykit.Encoding) *contractImpl {
+	r.enc = enc
 
 	return r
 }
@@ -90,4 +97,8 @@ func (r *contractImpl) Modifiers() []ronykit.Modifier {
 
 func (r *contractImpl) Input() ronykit.Message {
 	return r.input
+}
+
+func (r *contractImpl) Encoding() ronykit.Encoding {
+	return r.enc
 }

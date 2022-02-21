@@ -26,12 +26,15 @@ type bundle struct {
 	listen   string
 	connPool sync.Pool
 	cors     *cors
+	enc      ronykit.Encoding
 
 	httpMux *mux
 
-	wsRoutes     map[string]*routeData
-	wsEndpoint   string
-	predicateKey string
+	wsRoutes      map[string]*routeData
+	wsEndpoint    string
+	predicateKey  string
+	rpcInFactory  IncomingRPCFactory
+	rpcOutFactory OutgoingRPCFactory
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -44,6 +47,13 @@ func New(opts ...Option) (*bundle, error) {
 		},
 		wsRoutes: map[string]*routeData{},
 		srv:      &fasthttp.Server{},
+		enc:      ronykit.JSON,
+		rpcInFactory: func() IncomingRPC {
+			return &jsonIncomingRPC{}
+		},
+		rpcOutFactory: func() OutgoingRPC {
+			return &jsonOutgoingRPC{}
+		},
 	}
 
 	for _, opt := range opts {
@@ -135,6 +145,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 		Handlers:    handlers,
 		Modifiers:   c.Modifiers(),
 		Factory:     ronykit.CreateMessageFactory(c.Input()),
+		Encoding:    c.Encoding(),
 	}
 
 	b.wsRoutes[rd.Predicate] = rd
@@ -160,6 +171,7 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 			Method:      restSelector.GetMethod(),
 			Path:        restSelector.GetPath(),
 			Decoder:     decoder,
+			Encoding:    c.Encoding(),
 		},
 	)
 }
@@ -176,32 +188,33 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 }
 
 func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
-	inputMsgContainer := &incomingMessage{}
-	err := json.Unmarshal(in, inputMsgContainer)
+	inputMsgContainer := b.rpcInFactory()
+	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
 		return nil, err
 	}
 
-	routeData := b.wsRoutes[inputMsgContainer.Header[b.predicateKey]]
+	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.Unmarshal(msg)
+	err = inputMsgContainer.Fill(msg)
 	if err != nil {
 		return nil, err
 	}
 
 	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		outputMsgContainer := acquireOutgoingMessage()
-		outputMsgContainer.Payload = e.GetMsg()
+		outputMsgContainer := b.rpcOutFactory()
+		outputMsgContainer.SetPayload(e.GetMsg())
 		e.WalkHdr(func(key string, val string) bool {
-			outputMsgContainer.Header[key] = val
+			outputMsgContainer.SetHdr(key, val)
 
 			return true
 		})
 
+		// FixMe:: support multiple envelope encodings
 		data, err := outputMsgContainer.Marshal()
 		if err != nil {
 			return err
@@ -209,15 +222,13 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 
 		_, err = conn.Write(data)
 
-		releaseOutgoingMessage(outputMsgContainer)
-
 		return err
 	}
 
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().
-			SetHdrMap(inputMsgContainer.Header).
+			SetHdrMap(inputMsgContainer.GetHdrMap()).
 			SetMsg(msg)
 
 		ctx.
@@ -263,7 +274,17 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 			panic("BUG!! incorrect connection")
 		}
 
-		data, err := e.GetMsg().Marshal()
+		// FixME:: add support for multiple encodings
+		var (
+			data []byte
+			err  error
+		)
+		if m, ok := e.GetMsg().(ronykit.Marshaller); ok {
+			data, err = m.Marshal()
+		} else {
+			data, err = json.Marshal(e.GetMsg())
+		}
+
 		if err != nil {
 			return err
 		}
