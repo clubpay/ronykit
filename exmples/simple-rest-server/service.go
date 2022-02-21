@@ -21,7 +21,7 @@ func NewSample() *Sample {
 
 func (x *Sample) Desc() *desc.Service {
 	return desc.NewService("SampleService").
-		Add(
+		AddContract(
 			desc.NewContract().
 				SetInput(&echoRequest{}).
 				AddSelector(fasthttp.Selector{
@@ -37,7 +37,7 @@ func (x *Sample) Desc() *desc.Service {
 				}).
 				SetHandler(echoHandler),
 		).
-		Add(
+		AddContract(
 			desc.NewContract().
 				SetInput(&sumRequest{}).
 				AddSelector(fasthttp.Selector{
@@ -50,7 +50,7 @@ func (x *Sample) Desc() *desc.Service {
 				}).
 				SetHandler(sumHandler),
 		).
-		Add(
+		AddContract(
 			desc.NewContract().
 				SetInput(&sumRequest{}).
 				AddSelector(fasthttp.Selector{
