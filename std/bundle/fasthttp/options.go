@@ -10,6 +10,13 @@ func WithServerName(name string) Option {
 	}
 }
 
+func WithBufferSize(read, write int) Option {
+	return func(b *bundle) {
+		b.srv.ReadBufferSize = read
+		b.srv.WriteBufferSize = write
+	}
+}
+
 func Listen(addr string) Option {
 	return func(b *bundle) {
 		b.listen = addr
