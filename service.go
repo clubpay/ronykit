@@ -46,6 +46,7 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 // order to be usable by Bundle 'b' otherwise it panics.
 type Contract interface {
 	Selector() RouteSelector
+	Encoding() Encoding
 	Input() Message
 	Handlers() []HandlerFunc
 	Modifiers() []Modifier

@@ -1,6 +1,7 @@
 package ronykit_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -87,7 +88,7 @@ func (t testDispatcher) Dispatch(_ ronykit.Conn, in []byte) (ronykit.DispatchFun
 		ctx.In().SetMsg(testMessage(in))
 		execFunc(
 			func(conn ronykit.Conn, e *ronykit.Envelope) error {
-				b, err := e.GetMsg().Marshal()
+				b, err := json.Marshal(e.GetMsg())
 				if err != nil {
 					return err
 				}

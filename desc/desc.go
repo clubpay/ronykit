@@ -14,6 +14,7 @@ type Error struct {
 // Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
 	Name           string
+	Encoding       ronykit.Encoding
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
 	Input          ronykit.Message
@@ -32,6 +33,13 @@ func NewContract() *Contract {
 // logging or tracing tools to identity it.
 func (c *Contract) SetName(name string) *Contract {
 	c.Name = name
+
+	return c
+}
+
+// SetEncoding sets the supported encoding for this contract.
+func (c *Contract) SetEncoding(enc ronykit.Encoding) *Contract {
+	c.Encoding = enc
 
 	return c
 }
@@ -112,6 +120,7 @@ func (c *Contract) Generate() []ronykit.Contract {
 		ci.setModifier(c.Modifiers...)
 		ci.setInput(c.Input)
 		ci.setSelector(s)
+		ci.setEncoding(c.Encoding)
 
 		contracts = append(contracts, ronykit.WrapContract(ci, c.Wrappers...))
 	}
@@ -125,6 +134,7 @@ type Service struct {
 	Name         string
 	Version      string
 	Description  string
+	Encoding     ronykit.Encoding
 	Wrappers     []ronykit.ServiceWrapper
 	Contracts    []Contract
 	PreHandlers  []ronykit.HandlerFunc
@@ -135,6 +145,12 @@ func NewService(name string) *Service {
 	return &Service{
 		Name: name,
 	}
+}
+
+func (s *Service) SetEncoding(enc ronykit.Encoding) *Service {
+	s.Encoding = enc
+
+	return s
 }
 
 func (s *Service) SetVersion(v string) *Service {
@@ -174,6 +190,12 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 		if contracts[idx] == nil {
 			continue
 		}
+
+		// If the encoding is not set for contract, it takes the Service encoding as its encoding.
+		if contracts[idx].Encoding == ronykit.Undefined {
+			contracts[idx].Encoding = s.Encoding
+		}
+
 		s.Contracts = append(s.Contracts, *contracts[idx])
 	}
 

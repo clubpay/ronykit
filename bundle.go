@@ -15,6 +15,11 @@ type (
 	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
 )
 
+// Dispatcher is the interface which MUST be implemented by Bundle which acts like a
+// middleware between the received messages from the Gateway and sending back the messages
+// from EdgeServer to Gateway connections.
+// The user of the Bundle does not need to implement this. If you are using some standard bundles
+// like std/bundle/fasthttp or std/bundle/fastws then all the implementation is taken care of.
 type Dispatcher interface {
 	Dispatch(conn Conn, in []byte) (DispatchFunc, error)
 }
@@ -33,6 +38,7 @@ type Gateway interface {
 	Subscribe(d GatewayDelegate)
 }
 
+// GatewayDelegate is the delegate that connects the Gateway to the rest of the system.
 type GatewayDelegate interface {
 	// OnOpen must be called whenever a new connection is established.
 	OnOpen(c Conn)
@@ -41,3 +47,15 @@ type GatewayDelegate interface {
 	// OnMessage must be called whenever a new message arrives.
 	OnMessage(c Conn, msg []byte)
 }
+
+type Encoding int32
+
+const (
+	Undefined Encoding = iota
+	JSON
+	Proto
+	Msgpack
+	Thrift
+	GOB
+	CustomDefined
+)
