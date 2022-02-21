@@ -202,14 +202,6 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 	return s
 }
 
-// Add adds a contract to the service.
-// Deprecated use AddContract instead.
-func (s *Service) Add(c *Contract) *Service {
-	s.AddContract(c)
-
-	return s
-}
-
 // Generate generates the ronykit.Service
 func (s Service) Generate() ronykit.Service {
 	svc := &serviceImpl{
