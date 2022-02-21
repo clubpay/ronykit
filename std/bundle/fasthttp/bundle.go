@@ -274,7 +274,6 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 			panic("BUG!! incorrect connection")
 		}
 
-		// FixME:: add support for multiple encodings
 		var (
 			data []byte
 			err  error
@@ -282,7 +281,13 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		if m, ok := e.GetMsg().(ronykit.Marshaller); ok {
 			data, err = m.Marshal()
 		} else {
-			data, err = json.Marshal(e.GetMsg())
+			switch routeData.Encoding {
+			case ronykit.JSON:
+				data, err = json.Marshal(e.GetMsg())
+			default:
+				// FixME:: add support for non-json encodings
+				data, err = json.Marshal(e.GetMsg())
+			}
 		}
 
 		if err != nil {
