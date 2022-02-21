@@ -19,7 +19,7 @@ func (s *Sample) Desc() desc.Service {
 		Name: "SampleService",
 	}
 
-	d.Add(
+	d.AddContract(
 		desc.NewContract().
 			SetInput(&msg.EchoRequest{}).
 			AddSelector(fasthttp.Selector{
