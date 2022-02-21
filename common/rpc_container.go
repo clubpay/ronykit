@@ -5,49 +5,61 @@ import (
 	"github.com/goccy/go-json"
 )
 
-// SimpleIncomingJSONRPC implements ronykit.IncomingRPCContainer
-type SimpleIncomingJSONRPC struct {
+// simpleIncomingJSONRPC implements ronykit.IncomingRPCContainer
+type simpleIncomingJSONRPC struct {
 	Header  map[string]string `json:"hdr"`
 	Payload json.RawMessage   `json:"payload"`
 }
 
-func (e *SimpleIncomingJSONRPC) Unmarshal(data []byte) error {
+var SimpleIncomingJSONRPC = func() ronykit.IncomingRPCContainer {
+	return &simpleIncomingJSONRPC{
+		Header: map[string]string{},
+	}
+}
+
+func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, e)
 }
 
-func (e *SimpleIncomingJSONRPC) Fill(m ronykit.Message) (err error) {
+func (e *simpleIncomingJSONRPC) Fill(m ronykit.Message) (err error) {
 	return json.Unmarshal(e.Payload, m)
 }
 
-func (e *SimpleIncomingJSONRPC) GetHdr(key string) string {
+func (e *simpleIncomingJSONRPC) GetHdr(key string) string {
 	return e.Header[key]
 }
 
-func (e *SimpleIncomingJSONRPC) GetHdrMap() map[string]string {
+func (e *simpleIncomingJSONRPC) GetHdrMap() map[string]string {
 	return e.Header
 }
 
-// SimpleOutgoingJSONRPC implements ronykit.OutgoingRPCContainer
-type SimpleOutgoingJSONRPC struct {
+// simpleOutgoingJSONRPC implements ronykit.OutgoingRPCContainer
+type simpleOutgoingJSONRPC struct {
 	Header  map[string]string `json:"hdr"`
 	Payload ronykit.Message   `json:"payload"`
 }
 
-func (e *SimpleOutgoingJSONRPC) SetHdr(k, v string) {
+var SimpleOutgoingJSONRPC = func() ronykit.OutgoingRPCContainer {
+	return &simpleOutgoingJSONRPC{
+		Header: map[string]string{},
+	}
+}
+
+func (e *simpleOutgoingJSONRPC) SetHdr(k, v string) {
 	e.Header[k] = v
 }
 
-func (e *SimpleOutgoingJSONRPC) SetPayload(m ronykit.Message) {
+func (e *simpleOutgoingJSONRPC) SetPayload(m ronykit.Message) {
 	e.Payload = m
 }
 
-func (e *SimpleOutgoingJSONRPC) Reset() {
+func (e *simpleOutgoingJSONRPC) Reset() {
 	for k := range e.Header {
 		delete(e.Header, k)
 	}
 	e.Payload = nil
 }
 
-func (e *SimpleOutgoingJSONRPC) Marshal() ([]byte, error) {
+func (e *simpleOutgoingJSONRPC) Marshal() ([]byte, error) {
 	return json.Marshal(e)
 }

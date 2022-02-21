@@ -30,14 +30,10 @@ type bundle struct {
 
 func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
-		routes:       map[string]routeData{},
-		predicateKey: "predicate",
-		rpcInFactory: func() ronykit.IncomingRPCContainer {
-			return &common.SimpleIncomingJSONRPC{}
-		},
-		rpcOutFactory: func() ronykit.OutgoingRPCContainer {
-			return &common.SimpleOutgoingJSONRPC{}
-		},
+		routes:        map[string]routeData{},
+		predicateKey:  "predicate",
+		rpcInFactory:  common.SimpleIncomingJSONRPC,
+		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 	}
 	gw, err := newGateway(b)
 	if err != nil {
