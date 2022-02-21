@@ -46,15 +46,11 @@ func New(opts ...Option) (*bundle, error) {
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
 		},
-		wsRoutes: map[string]*routeData{},
-		srv:      &fasthttp.Server{},
-		enc:      ronykit.JSON,
-		rpcInFactory: func() ronykit.IncomingRPCContainer {
-			return &common.SimpleIncomingJSONRPC{}
-		},
-		rpcOutFactory: func() ronykit.OutgoingRPCContainer {
-			return &common.SimpleOutgoingJSONRPC{}
-		},
+		wsRoutes:      map[string]*routeData{},
+		srv:           &fasthttp.Server{},
+		enc:           ronykit.JSON,
+		rpcInFactory:  common.SimpleIncomingJSONRPC,
+		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 	}
 
 	for _, opt := range opts {
