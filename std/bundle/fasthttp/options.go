@@ -40,8 +40,7 @@ func WithEncoding(enc ronykit.Encoding) Option {
 	}
 }
 
-func WithCustomRPC(in IncomingRPCFactory, out OutgoingRPCFactory) Option {
-	// FixME: provide predefined factories
+func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory) Option {
 	return func(b *bundle) {
 		b.rpcInFactory = in
 		b.rpcOutFactory = out

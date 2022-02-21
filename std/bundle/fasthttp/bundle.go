@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/common"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
@@ -33,8 +34,8 @@ type bundle struct {
 	wsRoutes      map[string]*routeData
 	wsEndpoint    string
 	predicateKey  string
-	rpcInFactory  IncomingRPCFactory
-	rpcOutFactory OutgoingRPCFactory
+	rpcInFactory  ronykit.IncomingRPCFactory
+	rpcOutFactory ronykit.OutgoingRPCFactory
 }
 
 func New(opts ...Option) (*bundle, error) {
@@ -48,11 +49,11 @@ func New(opts ...Option) (*bundle, error) {
 		wsRoutes: map[string]*routeData{},
 		srv:      &fasthttp.Server{},
 		enc:      ronykit.JSON,
-		rpcInFactory: func() IncomingRPC {
-			return &jsonIncomingRPC{}
+		rpcInFactory: func() ronykit.IncomingRPCContainer {
+			return &common.SimpleIncomingJSONRPC{}
 		},
-		rpcOutFactory: func() OutgoingRPC {
-			return &jsonOutgoingRPC{}
+		rpcOutFactory: func() ronykit.OutgoingRPCContainer {
+			return &common.SimpleOutgoingJSONRPC{}
 		},
 	}
 
@@ -214,7 +215,6 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 			return true
 		})
 
-		// FixMe:: support multiple envelope encodings
 		data, err := outputMsgContainer.Marshal()
 		if err != nil {
 			return err

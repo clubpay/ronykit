@@ -23,3 +23,16 @@ func WithPredicateKey(key string) Option {
 		b.predicateKey = key
 	}
 }
+
+func WithEncoding(enc ronykit.Encoding) Option {
+	return func(b *bundle) {
+		b.enc = enc
+	}
+}
+
+func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory) Option {
+	return func(b *bundle) {
+		b.rpcInFactory = in
+		b.rpcOutFactory = out
+	}
+}
