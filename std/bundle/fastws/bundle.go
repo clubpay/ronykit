@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/common"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
 )
@@ -15,18 +16,28 @@ const (
 )
 
 type bundle struct {
-	listen       string
-	l            ronykit.Logger
-	eh           gnet.EventHandler
-	d            ronykit.GatewayDelegate
-	predicateKey string
-	routes       map[string]routeData
+	listen string
+	l      ronykit.Logger
+	eh     gnet.EventHandler
+	d      ronykit.GatewayDelegate
+	enc    ronykit.Encoding
+
+	predicateKey  string
+	routes        map[string]routeData
+	rpcInFactory  ronykit.IncomingRPCFactory
+	rpcOutFactory ronykit.OutgoingRPCFactory
 }
 
 func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
 		routes:       map[string]routeData{},
 		predicateKey: "predicate",
+		rpcInFactory: func() ronykit.IncomingRPCContainer {
+			return &common.SimpleIncomingJSONRPC{}
+		},
+		rpcOutFactory: func() ronykit.OutgoingRPCContainer {
+			return &common.SimpleOutgoingJSONRPC{}
+		},
 	}
 	gw, err := newGateway(b)
 	if err != nil {
@@ -78,28 +89,28 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		panic("BUG!! incorrect connection")
 	}
 
-	inputMsgContainer := &incomingMessage{}
+	inputMsgContainer := b.rpcInFactory()
 	err := json.Unmarshal(in, inputMsgContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	routeData := b.routes[inputMsgContainer.Header[b.predicateKey]]
+	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData.Handlers == nil {
 		return nil, errNoHandler
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.Unmarshal(msg)
+	err = inputMsgContainer.Fill(msg)
 	if err != nil {
 		return nil, err
 	}
 
 	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		outputMsgContainer := acquireOutgoingMessage()
-		outputMsgContainer.Payload = e.GetMsg()
+		outputMsgContainer := b.rpcOutFactory()
+		outputMsgContainer.SetPayload(e.GetMsg())
 		e.WalkHdr(func(key string, val string) bool {
-			outputMsgContainer.Header[key] = val
+			outputMsgContainer.SetHdr(key, val)
 
 			return true
 		})
@@ -111,15 +122,13 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 
 		_, err = conn.Write(data)
 
-		releaseOutgoingMessage(outputMsgContainer)
-
 		return err
 	}
 
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().
-			SetHdrMap(inputMsgContainer.Header).
+			SetHdrMap(inputMsgContainer.GetHdrMap()).
 			SetMsg(msg)
 
 		ctx.
