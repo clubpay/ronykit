@@ -96,6 +96,7 @@ type emptyInterface struct {
 type paramCaster struct {
 	offset uintptr
 	name   string
+	opt    string
 	typ    reflect.Type
 }
 
@@ -113,11 +114,16 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
 		f := reflect.Indirect(rVal).Type().Field(i)
 		if tagValue := f.Tag.Get(tagKey); tagValue != "" {
+			valueParts := strings.Split(tagValue, ",")
+			if len(valueParts) == 1 {
+				valueParts = append(valueParts, "")
+			}
 			pcs = append(
 				pcs,
 				paramCaster{
 					offset: f.Offset,
-					name:   strings.Split(tagValue, ",")[0],
+					name:   valueParts[0],
+					opt:    valueParts[1],
 					typ:    f.Type,
 				},
 			)
@@ -154,6 +160,10 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			case reflect.String:
 				// FixME: make this copy as an option
 				*(*string)(ptr) = string(utils.S2B(x))
+			case reflect.Bool:
+				if strings.ToLower(x) == "true" {
+					*(*bool)(ptr) = true
+				}
 			}
 		}
 

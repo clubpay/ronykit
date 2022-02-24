@@ -1,21 +1,13 @@
 package main
 
-import "github.com/goccy/go-json"
-
 type echoRequest struct {
 	RandomID int64 `json:"randomId" paramName:"randomID"`
-}
-
-func (e *echoRequest) Marshal() ([]byte, error) {
-	return json.Marshal(e)
+	Ok       bool  `json:"ok" paramName:"ok"`
 }
 
 type echoResponse struct {
 	RandomID int64 `json:"randomId"`
-}
-
-func (e *echoResponse) Marshal() ([]byte, error) {
-	return json.Marshal(e)
+	Ok       bool  `json:"ok"`
 }
 
 type sumRequest struct {
@@ -23,14 +15,6 @@ type sumRequest struct {
 	Val2 int64 `paramName:"val2" json:"val2"`
 }
 
-func (s *sumRequest) Marshal() ([]byte, error) {
-	return json.Marshal(s)
-}
-
 type sumResponse struct {
 	Val int64
-}
-
-func (s *sumResponse) Marshal() ([]byte, error) {
-	return json.Marshal(s)
 }
