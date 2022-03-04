@@ -60,13 +60,13 @@ func init() {
 	}
 }
 
-// isLocalAddress works by checking if the address is under private CIDR blocks.
+// IsPrivateAddress works by checking if the address is under private CIDR blocks.
 // List of private CIDR blocks can be seen on :
 //
 // https://en.wikipedia.org/wiki/Private_network
 //
 // https://en.wikipedia.org/wiki/Link-local_address
-func isPrivateAddress(address string) (bool, error) {
+func IsPrivateAddress(address string) (bool, error) {
 	ipAddress := net.ParseIP(address)
 	if ipAddress == nil {
 		return false, errors.New("address is not valid")
@@ -152,7 +152,7 @@ func retrieveForwardedIP(forwardedHeader string) (string, error) {
 	for _, address := range strings.Split(forwardedHeader, ",") {
 		if len(address) > 0 {
 			address = strings.TrimSpace(address)
-			isPrivate, err := isPrivateAddress(address)
+			isPrivate, err := IsPrivateAddress(address)
 			switch {
 			case !isPrivate && err == nil:
 				return address, nil
