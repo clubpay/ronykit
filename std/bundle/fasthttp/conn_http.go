@@ -3,6 +3,7 @@ package fasthttp
 import (
 	"mime/multipart"
 
+	"github.com/clubpay/ronykit/std/bundle/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
@@ -45,7 +46,7 @@ func (c *httpConn) ConnID() uint64 {
 }
 
 func (c *httpConn) ClientIP() string {
-	return c.ctx.RemoteIP().To4().String()
+	return realip.FromRequest(c.ctx)
 }
 
 func (c *httpConn) Write(data []byte) (int, error) {
