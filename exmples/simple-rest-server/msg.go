@@ -18,3 +18,7 @@ type sumRequest struct {
 type sumResponse struct {
 	Val int64
 }
+
+type redirectRequest struct {
+	URL string `json:"url" paramName:"url"`
+}

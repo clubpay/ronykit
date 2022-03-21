@@ -166,7 +166,6 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	payloadBuffer := pools.Buffer.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(*payloadBuffer.Bytes())
 	if err != nil && err != io.EOF {
-		// FixME:: close connection ?!
 		return nil, gnet.None
 	}
 

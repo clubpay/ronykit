@@ -62,6 +62,14 @@ func (x *Sample) Desc() *desc.Service {
 					Path:   "/sum-redirect",
 				}).
 				SetHandler(sumRedirectHandler),
+		).
+		AddContract(
+			desc.NewContract().
+				SetInput(&redirectRequest{}).
+				AddSelector(fasthttp.Selector{
+					Method: fasthttp.MethodGet,
+					Path:   "/redirect",
+				}).SetHandler(redirect),
 		)
 }
 
@@ -148,4 +156,11 @@ func sumRedirectHandler(ctx *ronykit.Context) {
 	}
 
 	return
+}
+
+func redirect(ctx *ronykit.Context) {
+	req := ctx.In().GetMsg().(*redirectRequest)
+
+	rc := ctx.Conn().(ronykit.RESTConn)
+	rc.Redirect(http.StatusTemporaryRedirect, req.URL)
 }
