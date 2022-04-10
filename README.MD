@@ -64,15 +64,21 @@ We used wrk to benchmark Ronykit standard REST implementation vs Fiber which is 
 RonyKit:
 
 ```shell
-Running 10s test @ http://127.0.0.1/echo/1200
+Running 10s test @ http://127.0.0.1
   12 threads and 1000 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     8.22ms    3.15ms  60.00ms   90.54%
-    Req/Sec    10.09k     2.04k   18.19k    82.92%
-  1208482 requests in 10.05s, 175.18MB read
-  Socket errors: connect 0, read 3228, write 0, timeout 0
-Requests/sec: 120283.71
-Transfer/sec:     17.44MB
+    Latency     9.07ms    4.14ms  73.49ms   93.18%
+    Req/Sec     9.23k     2.24k   11.02k    86.16%
+  Latency Distribution
+     50%    7.96ms
+     75%    9.03ms
+     90%   11.69ms
+     99%   22.74ms
+  1101026 requests in 10.01s, 294.94MB read
+  Socket errors: connect 0, read 3221, write 0, timeout 0
+Requests/sec: 109976.50
+Transfer/sec:     29.46MB
+
 
 ```
 
