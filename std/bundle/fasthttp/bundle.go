@@ -243,7 +243,8 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
-	// check CORS rules
+	// check CORS rules before even returning errRouteNotFound. This makes sure that
+	// we handle any CORS even for non-routable requests.
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {

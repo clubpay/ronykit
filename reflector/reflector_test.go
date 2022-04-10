@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/reflector"
 	"github.com/clubpay/ronykit/utils"
+	goreflect "github.com/goccy/go-reflect"
 )
 
 type testMessage struct {
@@ -62,6 +63,7 @@ func BenchmarkReflector(b *testing.B) {
 		{"unsafe", benchUnsafe},
 		{"unsafeRegistered", benchUnsafeRegistered},
 		{"reflect", benchReflect},
+		{"goReflect", benchGoReflect},
 	}
 
 	for idx := range benchs {
@@ -119,6 +121,20 @@ func benchReflect(b *testing.B) {
 			if err != nil {
 				b.Fatal(err)
 			}
+			if xR != t.X {
+				b.Fatal(xR, t.X)
+			}
+		}
+	})
+}
+
+func benchGoReflect(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		t := &testMessage{}
+		for pb.Next() {
+			t.X = utils.RandomID(5)
+
+			xR := goreflect.Indirect(goreflect.ValueOf(t)).FieldByName("X").String()
 			if xR != t.X {
 				b.Fatal(xR, t.X)
 			}
