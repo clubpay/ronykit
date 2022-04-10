@@ -149,7 +149,7 @@ func (e *Envelope) Send() {
 
 type (
 	// Modifier is a function which can modify the outgoing Envelope before sending it to the
-	// client.
+	// client. Modifier only applies to outgoing envelopes.
 	Modifier   func(envelope *Envelope)
 	Marshaller interface {
 		Marshal() ([]byte, error)

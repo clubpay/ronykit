@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/clubpay/ronykit/pools"
+	"github.com/clubpay/ronykit/pools/buf"
 	"net"
 	"sync"
 
@@ -31,6 +33,7 @@ type bundle struct {
 
 	httpMux *mux
 
+	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*routeData
 	wsEndpoint    string
 	predicateKey  string
@@ -97,7 +100,7 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
-	_ = (&websocket.FastHTTPUpgrader{}).Upgrade(ctx,
+	_ = b.wsUpgrade.Upgrade(ctx,
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
 				kv:       map[string]string{},
@@ -111,7 +114,12 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 				if err != nil {
 					break
 				}
-				go b.d.OnMessage(wsc, in)
+
+				inBuf := pools.Buffer.FromBytes(in)
+				go func(buf *buf.Bytes) {
+					b.d.OnMessage(wsc, *buf.Bytes())
+					pools.Buffer.Put(buf)
+				}(inBuf)
 			}
 			b.d.OnClose(wsc.id)
 		},

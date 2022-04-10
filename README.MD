@@ -66,17 +66,17 @@ RonyKit:
 Running 10s test @ http://127.0.0.1
   12 threads and 1000 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     9.07ms    4.14ms  73.49ms   93.18%
-    Req/Sec     9.23k     2.24k   11.02k    86.16%
+    Latency     7.29ms    3.14ms  59.07ms   90.42%
+    Req/Sec    11.43k     3.24k   84.19k    86.51%
   Latency Distribution
-     50%    7.96ms
-     75%    9.03ms
-     90%   11.69ms
-     99%   22.74ms
-  1101026 requests in 10.01s, 294.94MB read
-  Socket errors: connect 0, read 3221, write 0, timeout 0
-Requests/sec: 109976.50
-Transfer/sec:     29.46MB
+     50%    6.38ms
+     75%    7.92ms
+     90%   10.15ms
+     99%   16.60ms
+  1366429 requests in 10.10s, 366.22MB read
+  Socket errors: connect 0, read 3181, write 0, timeout 0
+Requests/sec: 135231.58
+Transfer/sec:     36.24MB
 ```
 
 Fiber:

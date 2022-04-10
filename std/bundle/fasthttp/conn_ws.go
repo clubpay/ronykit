@@ -1,13 +1,12 @@
 package fasthttp
 
 import (
-	"sync"
-
+	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 )
 
 type wsConn struct {
-	kvm      sync.Mutex
+	kvm      utils.SpinLock
 	kv       map[string]string
 	id       uint64
 	clientIP string

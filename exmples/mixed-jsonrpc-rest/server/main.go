@@ -23,6 +23,8 @@ func main() {
 				fastws.WithPredicateKey("cmd"),
 			),
 			fasthttp.MustNew(
+				fasthttp.WithWebsocketEndpoint("/ws"),
+				fasthttp.WithPredicateKey("cmd"),
 				fasthttp.Listen(":81"),
 			),
 		),

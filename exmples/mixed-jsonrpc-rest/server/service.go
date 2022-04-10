@@ -23,8 +23,9 @@ func (s *Sample) Desc() desc.Service {
 		desc.NewContract().
 			SetInput(&msg.EchoRequest{}).
 			AddSelector(fasthttp.Selector{
-				Method: fasthttp.MethodGet,
-				Path:   "/echo/:randomID",
+				Method:    fasthttp.MethodGet,
+				Path:      "/echo/:randomID",
+				Predicate: "echoRequest",
 			}).
 			AddSelector(fastws.Selector{
 				Predicate: "echoRequest",
