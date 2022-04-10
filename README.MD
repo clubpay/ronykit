@@ -1,12 +1,11 @@
 # RonyKit
 
-RonyKit is a library written in Go (Golang), provides the abstraction layer for creating a cluster aware API server. By defining separate
+RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate
 components for each task, you are almost free to develop your API server using RPC (Proto/JSON/...), REST, GraphQL or even with your
-in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box. RonyKIT
-is a successor of [Rony](https://github.com/ronaksoft/rony), with lessons from using it in multiple productions. In RonyKIT, I wanted to
-make it more flexible but still very performant. I will maintain two bundles one based on [fasthttp](https://github.com/valyala/fasthttp)
-and the other provides only rpc over websocket based on two very fast library [gobwas](https://github.com/gobwas/ws) and
-[gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
+in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box.  
+In RonyKIT, I wanted to make it more flexible but still very performant. I will maintain two bundles one based on 
+[fasthttp](https://github.com/valyala/fasthttp)and the other provides only rpc over websocket based on two very fast 
+library [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
 can build your own Bundles. To have a better understanding of how it is going to work please check examples folder.
 in [simple-rest-server](examples/simple-rest-server) it shows a very simple hello world app.
 in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but use them with multiple formats like
@@ -78,8 +77,6 @@ Running 10s test @ http://127.0.0.1
   Socket errors: connect 0, read 3221, write 0, timeout 0
 Requests/sec: 109976.50
 Transfer/sec:     29.46MB
-
-
 ```
 
 Fiber:
@@ -129,12 +126,15 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 		desc.NewContract().
 			// Add the selector which this contract will be selected based of. Every bundle have its own selector 
 			// and here we use our std/fasthttp package. 
-			AddSelector(fasthttp.Selector{
-				Method: fasthttp.MethodGet,
-				Path:   "/echo/:randomID",
-			}).
+			AddSelector(
+				fasthttp.Selector{
+                  Method: fasthttp.MethodGet,
+                  Path:   "/echo/:randomID",
+			    },
+			).
 			// Define the input message, it defines the message your handler expects to receive.
 			SetInput(&echoRequest{}).
+			SetOutput(&echoResponse{}).
 			// Set the handler which is going to handle this request.
 			SetHandler(echoHandler),
 	)
