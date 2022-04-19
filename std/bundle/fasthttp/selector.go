@@ -158,7 +158,7 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			case reflect.Uint:
 				*(*uint)(ptr) = utils.StrToUInt(x)
 			case reflect.String:
-				// FixME: make this copy as an option
+				// FixME:: make this copy as an option
 				*(*string)(ptr) = string(utils.S2B(x))
 			case reflect.Bool:
 				if strings.ToLower(x) == "true" {

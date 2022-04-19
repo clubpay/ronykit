@@ -131,14 +131,15 @@ func (c *Contract) Generate() []ronykit.Contract {
 // Service is the description of the ronykit.Service you are going to create. It then
 // generates a ronykit.Service by calling Generate method.
 type Service struct {
-	Name         string
-	Version      string
-	Description  string
-	Encoding     ronykit.Encoding
-	Wrappers     []ronykit.ServiceWrapper
-	Contracts    []Contract
-	PreHandlers  []ronykit.HandlerFunc
-	PostHandlers []ronykit.HandlerFunc
+	Name           string
+	Version        string
+	Description    string
+	Encoding       ronykit.Encoding
+	PossibleErrors []Error
+	Wrappers       []ronykit.ServiceWrapper
+	Contracts      []Contract
+	PreHandlers    []ronykit.HandlerFunc
+	PostHandlers   []ronykit.HandlerFunc
 }
 
 func NewService(name string) *Service {
@@ -198,6 +199,18 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 
 		s.Contracts = append(s.Contracts, *contracts[idx])
 	}
+
+	return s
+}
+
+// AddPossibleError sets the possible errors for this Contract. This is OPTIONAL parameter, which
+// mostly could be used by external tools such as Swagger or any other doc generator tools.
+func (s *Service) AddPossibleError(code int, item string, m ronykit.Message) *Service {
+	s.PossibleErrors = append(s.PossibleErrors, Error{
+		Code:    code,
+		Item:    item,
+		Message: m,
+	})
 
 	return s
 }
