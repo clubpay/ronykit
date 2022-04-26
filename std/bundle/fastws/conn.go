@@ -32,6 +32,9 @@ func (c *wsConn) ClientIP() string {
 }
 
 func (c *wsConn) Write(data []byte) (int, error) {
+	c.Lock()
+	defer c.Unlock()
+
 	n, err := c.w.Write(data)
 	if err != nil {
 		return n, err
