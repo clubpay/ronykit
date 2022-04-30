@@ -6,6 +6,8 @@ import (
 	"os/signal"
 )
 
+// EdgeServer is the main component of the ronykit. It glues all other components of the
+// app to each other.
 type EdgeServer struct {
 	nb  []*northBridge
 	svc map[string]Service
@@ -25,6 +27,8 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
+// RegisterBundle registers a Bundle to our server. We need to define the appropriate
+// RouteSelector in each desc.Contract.
 func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	nb := &northBridge{
 		l:  s.l,

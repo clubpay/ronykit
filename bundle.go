@@ -48,6 +48,8 @@ type GatewayDelegate interface {
 	OnMessage(c Conn, msg []byte)
 }
 
+// Encoding defines the encoding of the messages which will be sent/received. Bundle implementor needs
+// to call correct method based on the encoding value.
 type Encoding int32
 
 const (

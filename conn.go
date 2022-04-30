@@ -2,7 +2,7 @@ package ronykit
 
 import "mime/multipart"
 
-// Conn represents a connection.
+// Conn represents a connection between EdgeServer and client.
 type Conn interface {
 	ConnID() uint64
 	ClientIP() string

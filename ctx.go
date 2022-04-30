@@ -50,7 +50,9 @@ func (ctx *Context) Next() {
 	}
 }
 
-// StopExecution stops the execution of the next handlers.
+// StopExecution stops the execution of the next handlers, in other words, when you
+// call this in your handler, any other middleware that are not executed will yet will
+// be skipped over.
 func (ctx *Context) StopExecution() {
 	ctx.index = abortIndex
 }
@@ -80,18 +82,19 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
+// SetHdr sets the common header key-value pairs so in Out method we don't need to
+// repeatedly set those. If you only want to set the header for an envelope, you can
+// use Envelope.SetHdr method instead.
+func (ctx *Context) SetHdr(k, v string) {
+	ctx.hdr[k] = v
+}
+
 // SetHdrMap sets the common header key-value pairs so in Out method we don't need to
 // repeatedly set those.
 func (ctx *Context) SetHdrMap(hdr map[string]string) {
 	for k, v := range hdr {
 		ctx.hdr[k] = v
 	}
-}
-
-// SetHdr sets the common header key-value pairs so in Out method we don't need to
-// repeatedly set those.
-func (ctx *Context) SetHdr(k, v string) {
-	ctx.hdr[k] = v
 }
 
 // In returns the incoming Envelope which received from the connection.
@@ -107,6 +110,8 @@ func (ctx *Context) Out() *Envelope {
 }
 
 // OutTo is similar to Out except that it lets you send your envelope to other connection.
+// This is useful for scenarios where you want to send cross-client message. For example,
+// in a fictional chat server, you want to pass a message from client A to client B.
 func (ctx *Context) OutTo(c Conn) *Envelope {
 	return newEnvelope(ctx, c, true)
 }

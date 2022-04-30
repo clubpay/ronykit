@@ -58,6 +58,7 @@ type ContractWrapper interface {
 	Wrap(Contract) Contract
 }
 
+// ContractWrapperFunc implements ContractWrapper interface.
 type ContractWrapperFunc func(Contract) Contract
 
 func (sw ContractWrapperFunc) Wrap(svc Contract) Contract {
