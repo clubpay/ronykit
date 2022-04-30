@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/common"
+	"github.com/clubpay/ronykit/internal/common"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/pools"
 	"github.com/clubpay/ronykit/utils/pools/buf"
@@ -24,12 +24,12 @@ const (
 )
 
 type bundle struct {
+	l        ronykit.Logger
 	d        ronykit.GatewayDelegate
 	srv      *fasthttp.Server
 	listen   string
 	connPool sync.Pool
 	cors     *cors
-	enc      ronykit.Encoding
 
 	httpMux *mux
 
@@ -51,9 +51,9 @@ func New(opts ...Option) (*bundle, error) {
 		},
 		wsRoutes:      map[string]*routeData{},
 		srv:           &fasthttp.Server{},
-		enc:           ronykit.JSON,
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
+		l:             common.NewNopLogger(),
 	}
 
 	for _, opt := range opts {
@@ -286,13 +286,7 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		if m, ok := e.GetMsg().(ronykit.Marshaller); ok {
 			data, err = m.Marshal()
 		} else {
-			switch routeData.Encoding {
-			case ronykit.JSON:
-				data, err = json.Marshal(e.GetMsg())
-			default:
-				// FixME:: add support for non-json encodings
-				data, err = json.Marshal(e.GetMsg())
-			}
+			data, err = json.Marshal(e.GetMsg())
 		}
 
 		if err != nil {

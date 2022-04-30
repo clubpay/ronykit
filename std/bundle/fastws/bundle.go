@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/common"
+	"github.com/clubpay/ronykit/internal/common"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
 )
@@ -20,7 +20,6 @@ type bundle struct {
 	l      ronykit.Logger
 	eh     gnet.EventHandler
 	d      ronykit.GatewayDelegate
-	enc    ronykit.Encoding
 
 	predicateKey  string
 	routes        map[string]routeData
@@ -34,6 +33,7 @@ func New(opts ...Option) (*bundle, error) {
 		predicateKey:  "predicate",
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
+		l:             common.NewNopLogger(),
 	}
 	gw, err := newGateway(b)
 	if err != nil {

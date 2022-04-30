@@ -2,8 +2,15 @@ package ronykit
 
 import (
 	"fmt"
+	"github.com/clubpay/ronykit/internal/common"
 	"os"
 	"os/signal"
+)
+
+var (
+	errServiceAlreadyRegistered common.ErrFunc = func(v ...interface{}) error {
+		return fmt.Errorf("service %s already registered", v...)
+	}
 )
 
 // EdgeServer is the main component of the ronykit. It glues all other components of the
@@ -27,8 +34,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
-// RegisterBundle registers a Bundle to our server. We need to define the appropriate
-// RouteSelector in each desc.Contract.
+// RegisterBundle registers a Bundle to our server.
 func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	nb := &northBridge{
 		l:  s.l,
@@ -42,9 +48,11 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	return s
 }
 
+// RegisterService registers a Service to our server. We need to define the appropriate
+// RouteSelector in each desc.Contract.
 func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 	if _, ok := s.svc[svc.Name()]; ok {
-		panic(fmt.Sprintf("service %s already registered", svc.Name()))
+		panic(errServiceAlreadyRegistered(svc.Name()))
 	}
 
 	s.svc[svc.Name()] = svc

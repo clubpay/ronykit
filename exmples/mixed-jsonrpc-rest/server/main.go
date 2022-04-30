@@ -28,7 +28,7 @@ func main() {
 				fasthttp.Listen(":81"),
 			),
 		),
-		ronykit.RegisterService(NewSample().Desc().Generate()),
+		ronykit.RegisterServiceDesc(NewSample().Desc()),
 	).
 		Start().
 		Shutdown(os.Kill, os.Interrupt)

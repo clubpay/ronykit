@@ -24,12 +24,9 @@ func WithPredicateKey(key string) Option {
 	}
 }
 
-func WithEncoding(enc ronykit.Encoding) Option {
-	return func(b *bundle) {
-		b.enc = enc
-	}
-}
-
+// WithCustomRPC lets you define your RPC message container. RPC message container will be
+// represented as Envelope in your application. RPCContainer only defines the behavior of
+// serialization and deserialization of the Envelope.
 func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory) Option {
 	return func(b *bundle) {
 		b.rpcInFactory = in

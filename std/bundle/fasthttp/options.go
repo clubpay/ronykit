@@ -17,6 +17,12 @@ func WithBufferSize(read, write int) Option {
 	}
 }
 
+func WithLogger(l ronykit.Logger) Option {
+	return func(b *bundle) {
+		b.l = l
+	}
+}
+
 func Listen(addr string) Option {
 	return func(b *bundle) {
 		b.listen = addr
@@ -38,12 +44,6 @@ func WithPredicateKey(key string) Option {
 func WithWebsocketEndpoint(endpoint string) Option {
 	return func(b *bundle) {
 		b.wsEndpoint = endpoint
-	}
-}
-
-func WithEncoding(enc ronykit.Encoding) Option {
-	return func(b *bundle) {
-		b.enc = enc
 	}
 }
 

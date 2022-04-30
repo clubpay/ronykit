@@ -40,6 +40,11 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 	return svc
 }
 
+// ServiceGenerator generates a service. desc.Service is the implementor of this.
+type ServiceGenerator interface {
+	Generate() Service
+}
+
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.
 // In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in

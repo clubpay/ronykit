@@ -23,8 +23,8 @@ func main() {
 				fasthttp.WithPredicateKey("cmd"),
 			),
 		),
-		ronykit.RegisterService(
-			NewSample().Desc().Generate(),
+		ronykit.RegisterServiceDesc(
+			NewSample().Desc(),
 		),
 	).
 		Start().
