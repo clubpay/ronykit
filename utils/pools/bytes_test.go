@@ -7,7 +7,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/clubpay/ronykit/pools"
+	"github.com/clubpay/ronykit/utils/pools"
 )
 
 /*

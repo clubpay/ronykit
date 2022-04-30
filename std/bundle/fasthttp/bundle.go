@@ -9,9 +9,9 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/common"
-	"github.com/clubpay/ronykit/pools"
-	"github.com/clubpay/ronykit/pools/buf"
 	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/utils/pools"
+	"github.com/clubpay/ronykit/utils/pools/buf"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )

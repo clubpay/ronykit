@@ -2,7 +2,7 @@ package desc
 
 import (
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/reflector"
+	"github.com/clubpay/ronykit/utils/reflector"
 )
 
 type Error struct {

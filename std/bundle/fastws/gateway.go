@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/clubpay/ronykit/pools"
-	"github.com/clubpay/ronykit/pools/buf"
 	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/utils/pools"
+	"github.com/clubpay/ronykit/utils/pools/buf"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"

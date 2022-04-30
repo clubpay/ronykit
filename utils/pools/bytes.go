@@ -3,7 +3,7 @@ package pools
 import (
 	"sync"
 
-	"github.com/clubpay/ronykit/pools/buf"
+	"github.com/clubpay/ronykit/utils/pools/buf"
 )
 
 /*

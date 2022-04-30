@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/clubpay/ronykit/reflector"
 	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/utils/reflector"
 	goreflect "github.com/goccy/go-reflect"
 )
 
@@ -63,7 +63,7 @@ func BenchmarkReflector(b *testing.B) {
 		{"unsafe", benchUnsafe},
 		{"unsafeRegistered", benchUnsafeRegistered},
 		{"reflect", benchReflect},
-		{"goReflect", benchGoReflect},
+		{"ccyReflect", benchGoReflect},
 	}
 
 	for idx := range benchs {
