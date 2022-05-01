@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
 	"github.com/clubpay/ronykit/std/bundle/fasthttp"
 )
 
@@ -24,7 +25,7 @@ func main() {
 			),
 		),
 		ronykit.RegisterServiceDesc(
-			NewSample().Desc(),
+			api.NewSample().Desc(),
 		),
 	).
 		Start().

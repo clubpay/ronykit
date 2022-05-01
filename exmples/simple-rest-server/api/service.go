@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
+	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/bundle/fasthttp"
 	"github.com/clubpay/ronykit/std/bundle/fastws"
 )
@@ -23,7 +24,7 @@ func (x *Sample) Desc() *desc.Service {
 	return desc.NewService("SampleService").
 		AddContract(
 			desc.NewContract().
-				SetInput(&echoRequest{}).
+				SetInput(&dto.EchoRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method:    fasthttp.MethodGet,
 					Predicate: "echo",
@@ -35,11 +36,11 @@ func (x *Sample) Desc() *desc.Service {
 				AddModifier(func(envelope *ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
-				SetHandler(echoHandler),
+				SetHandler(EchoHandler),
 		).
 		AddContract(
 			desc.NewContract().
-				SetInput(&sumRequest{}).
+				SetInput(&dto.SumRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
 					Path:   "/sum/:val1/:val2",
@@ -48,11 +49,11 @@ func (x *Sample) Desc() *desc.Service {
 					Method: fasthttp.MethodPost,
 					Path:   "/sum",
 				}).
-				SetHandler(sumHandler),
+				SetHandler(SumHandler),
 		).
 		AddContract(
 			desc.NewContract().
-				SetInput(&sumRequest{}).
+				SetInput(&dto.SumRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
 					Path:   "/sum-redirect/:val1/:val2",
@@ -61,20 +62,20 @@ func (x *Sample) Desc() *desc.Service {
 					Method: fasthttp.MethodPost,
 					Path:   "/sum-redirect",
 				}).
-				SetHandler(sumRedirectHandler),
+				SetHandler(SumRedirectHandler),
 		).
 		AddContract(
 			desc.NewContract().
-				SetInput(&redirectRequest{}).
+				SetInput(&dto.RedirectRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
 					Path:   "/redirect",
-				}).SetHandler(redirect),
+				}).SetHandler(Redirect),
 		)
 }
 
-func echoHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*echoRequest)
+func EchoHandler(ctx *ronykit.Context) {
+	req, ok := ctx.In().GetMsg().(*dto.EchoRequest)
 	if !ok {
 		ctx.Out().
 			SetMsg(
@@ -87,7 +88,7 @@ func echoHandler(ctx *ronykit.Context) {
 	ctx.Out().
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
-			&echoResponse{
+			&dto.EchoResponse{
 				RandomID: req.RandomID,
 				Ok:       req.Ok,
 			},
@@ -96,8 +97,8 @@ func echoHandler(ctx *ronykit.Context) {
 	return
 }
 
-func sumHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*sumRequest)
+func SumHandler(ctx *ronykit.Context) {
+	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
 			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
@@ -109,7 +110,7 @@ func sumHandler(ctx *ronykit.Context) {
 	ctx.Out().
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
-			&sumResponse{
+			&dto.SumResponse{
 				Val: req.Val1 + req.Val2,
 			},
 		).Send()
@@ -117,8 +118,8 @@ func sumHandler(ctx *ronykit.Context) {
 	return
 }
 
-func sumRedirectHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*sumRequest)
+func SumRedirectHandler(ctx *ronykit.Context) {
+	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
 			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
@@ -158,8 +159,8 @@ func sumRedirectHandler(ctx *ronykit.Context) {
 	return
 }
 
-func redirect(ctx *ronykit.Context) {
-	req := ctx.In().GetMsg().(*redirectRequest)
+func Redirect(ctx *ronykit.Context) {
+	req := ctx.In().GetMsg().(*dto.RedirectRequest)
 
 	rc := ctx.Conn().(ronykit.RESTConn)
 	rc.Redirect(http.StatusTemporaryRedirect, req.URL)

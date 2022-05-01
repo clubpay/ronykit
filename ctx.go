@@ -20,6 +20,7 @@ type (
 type Context struct {
 	utils.SpinLock
 	ctx context.Context //nolint:containedctx
+	cf  func()
 
 	nb        *northBridge
 	kv        map[string]interface{}
@@ -39,13 +40,6 @@ func newContext() *Context {
 		kv:  make(map[string]interface{}),
 		hdr: make(map[string]string),
 	}
-}
-
-// Context returns a context.Background which can be used a reference context for
-// other context aware function calls. You can also replace it with your own context
-// using SetUserContext function.
-func (ctx *Context) Context() context.Context {
-	return ctx.ctx
 }
 
 // Next sets the next handler which will be called after the current handler.
@@ -75,13 +69,26 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 	ctx.ctx = userCtx
 }
 
+// Context returns a context.Background which can be used a reference context for
+// other context aware function calls. You can also replace it with your own context
+// using SetUserContext function.
+func (ctx *Context) Context() context.Context {
+	if ctx.ctx == nil {
+		ctx.ctx, ctx.cf = context.WithCancel(context.Background())
+	}
+
+	return ctx.ctx
+}
+
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
 // is a REST connection.
 func (ctx *Context) SetStatusCode(code int) {
 	rc, ok := ctx.Conn().(RESTConn)
-	if ok {
-		rc.SetStatusCode(code)
+	if !ok {
+		return
 	}
+
+	rc.SetStatusCode(code)
 }
 
 // Conn returns the underlying connection
@@ -151,5 +158,7 @@ func (ctx *Context) reset() {
 	ctx.index = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
-	ctx.ctx = nil
+	if ctx.cf != nil {
+		ctx.cf()
+	}
 }

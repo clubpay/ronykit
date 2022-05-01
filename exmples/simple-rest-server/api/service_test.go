@@ -1,17 +1,19 @@
-package main
+package api_test
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
+	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
 )
 
 func TestSampleService(t *testing.T) {
 	err := ronykit.NewTestContext().
-		SetHandler(echoHandler).
+		SetHandler(api.EchoHandler).
 		Input(
-			&echoRequest{
+			&dto.EchoRequest{
 				RandomID: 2374,
 				Ok:       false,
 			},
@@ -23,7 +25,7 @@ func TestSampleService(t *testing.T) {
 					t.Fatalf("expected 1 envelope, got %d", len(out))
 				}
 				out1 := out[0]
-				res1, ok := out1.GetMsg().(*echoResponse)
+				res1, ok := out1.GetMsg().(*dto.EchoResponse)
 				if !ok {
 					t.Fatalf("expected echoResponse, got %v", reflect.TypeOf(out1.GetMsg()))
 				}
