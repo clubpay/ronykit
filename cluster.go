@@ -6,8 +6,8 @@ import (
 )
 
 type Cluster interface {
-	Start()
-	Shutdown()
+	Start() error
+	Shutdown() error
 	Members() []ClusterMember
 	MemberByID(string) ClusterMember
 	Me() ClusterMember
@@ -17,11 +17,10 @@ type Cluster interface {
 type ClusterMember interface {
 	ServerID() string
 	GatewayAddr() []net.Addr
-	TunnelAddr() []net.Addr
 	Dial(ctx context.Context) (net.Conn, error)
 }
 
 type ClusterDelegate interface {
-	OnJoin(hash uint64)
-	OnLeave(hash uint64)
+	OnJoin(members ...ClusterMember)
+	OnLeave(memberIDs ...string)
 }
