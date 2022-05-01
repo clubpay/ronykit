@@ -7,6 +7,10 @@ import (
 	"github.com/clubpay/ronykit/utils"
 )
 
+const (
+	abortIndex = math.MaxInt >> 1
+)
+
 type (
 	ErrHandler       func(ctx *Context, err error)
 	HandlerFunc      func(ctx *Context)
@@ -30,9 +34,12 @@ type Context struct {
 	index    int
 }
 
-const (
-	abortIndex = math.MaxInt >> 1
-)
+func newContext() *Context {
+	return &Context{
+		kv:  make(map[string]interface{}),
+		hdr: make(map[string]string),
+	}
+}
 
 // Context returns a context.Background which can be used a reference context for
 // other context aware function calls. You can also replace it with your own context

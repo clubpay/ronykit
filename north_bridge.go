@@ -67,10 +67,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 func (n *northBridge) acquireCtx(c Conn) *Context {
 	ctx, ok := n.ctxPool.Get().(*Context)
 	if !ok {
-		ctx = &Context{
-			kv:  make(map[string]interface{}),
-			hdr: make(map[string]string),
-		}
+		ctx = newContext()
 	}
 
 	ctx.conn = c

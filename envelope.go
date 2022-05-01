@@ -13,6 +13,8 @@ type Walker interface {
 	Walk(f func(k, v string) bool)
 }
 
+type EnvelopeHdr map[string]string
+
 // Envelope is an envelope around the messages in RonyKIT. Envelopes are created internally
 // by the RonyKIT framework, and provide the abstraction which Bundle implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
@@ -21,20 +23,22 @@ type Envelope struct {
 	ctx  *Context
 	conn Conn
 	kvl  utils.SpinLock
-	kv   map[string]string
+	kv   EnvelopeHdr
 	m    Message
 	p    *sync.Pool
 
 	// outgoing identity the Envelope if it is able to send
-	outgoing bool
+	outgoing      bool
+	shouldRelease bool
 }
 
 func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 	e, ok := envelopePool.Get().(*Envelope)
 	if !ok {
 		e = &Envelope{
-			kv: map[string]string{},
-			p:  envelopePool,
+			kv:            EnvelopeHdr{},
+			p:             envelopePool,
+			shouldRelease: true,
 		}
 	}
 
@@ -50,6 +54,10 @@ func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 }
 
 func (e *Envelope) release() {
+	if !e.shouldRelease {
+		return
+	}
+
 	for k := range e.kv {
 		delete(e.kv, k)
 	}
@@ -127,7 +135,7 @@ func (e *Envelope) GetMsg() Message {
 // You **MUST NOT** call this function more than once.
 func (e *Envelope) Send() {
 	if e.conn == nil {
-		panic("BUG!! do not call Send multiple times")
+		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")
 	}
 
 	if !e.outgoing {
@@ -145,6 +153,12 @@ func (e *Envelope) Send() {
 
 	// Release the envelope
 	e.release()
+}
+
+// DontRelease is used by testkit, you should not use it in your code.
+// Caution: internal usage only, DO NOT use in your code.
+func (e *Envelope) DontRelease() {
+	e.shouldRelease = false
 }
 
 type (

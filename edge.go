@@ -2,16 +2,15 @@ package ronykit
 
 import (
 	"fmt"
-	"github.com/clubpay/ronykit/internal/common"
 	"os"
 	"os/signal"
+
+	"github.com/clubpay/ronykit/internal/errors"
 )
 
-var (
-	errServiceAlreadyRegistered common.ErrFunc = func(v ...interface{}) error {
-		return fmt.Errorf("service %s already registered", v...)
-	}
-)
+var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
+	return fmt.Errorf("service %s already registered", v...)
+}
 
 // EdgeServer is the main component of the ronykit. It glues all other components of the
 // app to each other.
