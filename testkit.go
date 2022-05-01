@@ -2,6 +2,7 @@ package ronykit
 
 import (
 	"context"
+	"mime/multipart"
 	"sync"
 
 	"github.com/clubpay/ronykit/utils"
@@ -13,6 +14,8 @@ type TestContext struct {
 	handlers   HandlerFuncChain
 	inMsg      Message
 	inHdr      EnvelopeHdr
+	clientIP   string
+	stream     bool
 	expectFunc func(...*Envelope) error
 }
 
@@ -22,6 +25,18 @@ func NewTestContext() *TestContext {
 
 func (testCtx *TestContext) SetHandler(h ...HandlerFunc) *TestContext {
 	testCtx.handlers = h
+
+	return testCtx
+}
+
+func (testCtx *TestContext) SetStream() *TestContext {
+	testCtx.stream = true
+
+	return testCtx
+}
+
+func (testCtx *TestContext) SetClientIP(ip string) *TestContext {
+	testCtx.clientIP = ip
 
 	return testCtx
 }
@@ -42,6 +57,8 @@ func (testCtx *TestContext) Expectation(f func(out ...*Envelope) error) *TestCon
 func (testCtx *TestContext) Run() error {
 	ctx := newContext()
 	conn := newTestConn()
+	conn.clientIP = testCtx.clientIP
+	conn.stream = testCtx.stream
 	ctx.conn = conn
 	ctx.in = newEnvelope(ctx, conn, false).
 		SetMsg(testCtx.inMsg).
@@ -49,6 +66,32 @@ func (testCtx *TestContext) Run() error {
 	ctx.ctx = context.Background()
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.DontRelease()
+		tc := conn.(*testConn)
+		tc.Lock()
+		tc.out = append(tc.out, e)
+		tc.Unlock()
+
+		return nil
+	}
+	ctx.handlers = append(ctx.handlers, testCtx.handlers...)
+	ctx.Next()
+
+	return testCtx.expectFunc(conn.out...)
+}
+
+func (testCtx *TestContext) RunREST() error {
+	ctx := newContext()
+	conn := newTestRESTConn()
+	conn.clientIP = testCtx.clientIP
+	conn.stream = testCtx.stream
+	ctx.conn = conn
+	ctx.in = newEnvelope(ctx, conn, false).
+		SetMsg(testCtx.inMsg).
+		SetHdrMap(testCtx.inHdr)
+	ctx.ctx = context.Background()
+	ctx.wf = func(conn Conn, e *Envelope) error {
+		e.DontRelease()
+
 		tc := conn.(*testConn)
 		tc.Lock()
 		tc.out = append(tc.out, e)
@@ -119,3 +162,49 @@ func (t *testConn) Set(key string, val string) {
 	t.kv[key] = val
 	t.Unlock()
 }
+
+type testRESTConn struct {
+	testConn
+	method     string
+	path       string
+	host       string
+	requestURI string
+
+	statusCode int
+}
+
+var _ RESTConn = (*testRESTConn)(nil)
+
+func newTestRESTConn() *testRESTConn {
+	return &testRESTConn{
+		testConn: testConn{
+			id: utils.RandomUint64(0),
+		},
+	}
+}
+
+func (t *testRESTConn) GetHost() string {
+	return t.host
+}
+
+func (t *testRESTConn) GetRequestURI() string {
+	return t.requestURI
+}
+
+func (t *testRESTConn) GetMethod() string {
+	return t.method
+}
+
+func (t *testRESTConn) GetPath() string {
+	return t.path
+}
+
+func (t *testRESTConn) Form() (*multipart.Form, error) {
+	return nil, nil
+}
+
+func (t *testRESTConn) SetStatusCode(code int) {
+	t.statusCode = code
+}
+
+func (t *testRESTConn) Redirect(code int, url string) {}

@@ -64,6 +64,7 @@ func (c *httpConn) GetHost() string {
 }
 
 func (c *httpConn) GetRequestURI() string {
+	c.ctx.URI().RequestURI()
 	return utils.B2S(c.ctx.Request.RequestURI())
 }
 

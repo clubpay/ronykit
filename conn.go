@@ -17,9 +17,11 @@ type Conn interface {
 // RESTConn then it has more information about the RESTConn request.
 type RESTConn interface {
 	Conn
-	GetHost() string
-	GetRequestURI() string
 	GetMethod() string
+	GetHost() string
+	// GetRequestURI returns uri without Method and Host
+	GetRequestURI() string
+	// GetPath returns uri without Method, Host and Query parameters.
 	GetPath() string
 	Form() (*multipart.Form, error)
 	SetStatusCode(code int)
