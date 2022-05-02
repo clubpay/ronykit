@@ -2,9 +2,10 @@ package rediscluster
 
 import (
 	"context"
+	"time"
+
 	"github.com/clubpay/ronykit"
 	"github.com/go-redis/redis/v8"
-	"time"
 )
 
 const (
