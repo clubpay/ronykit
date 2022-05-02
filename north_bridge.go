@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+var _ GatewayDelegate = (*northBridge)(nil)
+
 type northBridge struct {
 	ctxPool sync.Pool
 	l       Logger

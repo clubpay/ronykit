@@ -12,6 +12,8 @@ const (
 )
 
 type (
+	// ErrHandler is called when an error happens in internal layers.
+	// NOTICE: ctx could be nil, make sure you do nil-check before calling its methods.
 	ErrHandler       func(ctx *Context, err error)
 	HandlerFunc      func(ctx *Context)
 	HandlerFuncChain []HandlerFunc
@@ -22,7 +24,6 @@ type Context struct {
 	ctx context.Context //nolint:containedctx
 	cf  func()
 
-	nb        *northBridge
 	kv        map[string]interface{}
 	hdr       map[string]string
 	conn      Conn
@@ -136,14 +137,16 @@ func (ctx *Context) OutTo(c Conn) *Envelope {
 func (ctx *Context) Error(err error) bool {
 	if err != nil {
 		ctx.err = err
-		if h := ctx.nb.eh; h != nil {
-			h(ctx, err)
-		}
 
 		return true
 	}
 
 	return false
+}
+
+// HasError returns true if there is an error set by calling Error method.
+func (ctx *Context) HasError() bool {
+	return ctx.err != nil
 }
 
 func (ctx *Context) reset() {

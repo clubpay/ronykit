@@ -2,10 +2,9 @@ package ronykit
 
 import (
 	"fmt"
+	"github.com/clubpay/ronykit/internal/errors"
 	"os"
 	"os/signal"
-
-	"github.com/clubpay/ronykit/internal/errors"
 )
 
 var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
@@ -16,6 +15,7 @@ var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
 // app to each other.
 type EdgeServer struct {
 	nb  []*northBridge
+	sb  []*southBridge
 	svc map[string]Service
 	eh  ErrHandler
 	l   Logger
@@ -33,7 +33,8 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
-// RegisterBundle registers a Bundle to our server.
+// RegisterBundle registers a Bundle to our server. EdgeServer needs at least one Bundle
+// to be registered.
 func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	nb := &northBridge{
 		l:  s.l,
@@ -43,6 +44,22 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	s.nb = append(s.nb, nb)
 
 	b.Subscribe(nb)
+
+	return s
+}
+
+// RegisterCluster register a Cluster to our server. Registering Cluster is an optional
+// feature, but setting up cluster for our EdgeServer opens a lot of opportunities to write
+// cluster-aware software.
+func (s *EdgeServer) RegisterCluster(c Cluster) *EdgeServer {
+	sb := &southBridge{
+		l:  s.l,
+		c:  c,
+		eh: s.eh,
+	}
+	s.sb = append(s.sb, sb)
+
+	c.Subscribe(sb)
 
 	return s
 }
