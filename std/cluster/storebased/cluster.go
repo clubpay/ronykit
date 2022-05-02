@@ -12,10 +12,7 @@ import (
 )
 
 const (
-	idEmpty     = ""
-	storageKey  = "r-kit"
-	pathMembers = "all-m"
-	pathActives = "all-act"
+	defaultHeartbeat = time.Second * 30
 )
 
 type config struct {
@@ -46,7 +43,7 @@ func (m member) AdvertisedURL() []string {
 }
 
 func (m member) Dial(ctx context.Context) (net.Conn, error) {
-	panic("implement me")
+	return net.Dial("tcp4", m.Endpoint)
 }
 
 func (m *member) UnmarshalBinary(data []byte) error {
@@ -58,33 +55,47 @@ func (m member) MarshalBinary() (data []byte, err error) {
 }
 
 type cluster struct {
-	cfg          config
 	shutdownChan chan struct{}
 	d            ronykit.ClusterDelegate
 	s            ronykit.ClusterStore
 	me           member
+	hb           time.Duration
 }
 
 var _ ronykit.Cluster = (*cluster)(nil)
 
 func New(opts ...Option) (ronykit.Cluster, error) {
-	cfg := config{}
+	cfg := config{
+		id:                utils.RandomID(24),
+		urls:              nil,
+		endpoint:          "",
+		heartbeatInterval: defaultHeartbeat,
+	}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
 
 	c := &cluster{
-		cfg: cfg,
 		me: member{
 			ID:       cfg.id,
 			URLs:     cfg.urls,
 			Endpoint: cfg.endpoint,
 		},
 		s:            cfg.store,
+		hb:           cfg.heartbeatInterval,
 		shutdownChan: make(chan struct{}),
 	}
 
 	return c, nil
+}
+
+func MustNew(opts ...Option) ronykit.Cluster {
+	c, err := New(opts...)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
 }
 
 func (c cluster) Start(ctx context.Context) error {
@@ -104,7 +115,7 @@ func (c cluster) Start(ctx context.Context) error {
 }
 
 func (c cluster) heartbeat() {
-	timer := time.NewTimer(c.cfg.heartbeatInterval)
+	timer := time.NewTimer(c.hb)
 
 	err := c.s.SetMember(context.Background(), c.me)
 	if err != nil {
@@ -137,7 +148,7 @@ func (c cluster) Shutdown(ctx context.Context) error {
 }
 
 func (c cluster) Members(ctx context.Context) ([]ronykit.ClusterMember, error) {
-	return c.s.GetActiveMembers(ctx, utils.TimeUnixSubtract(utils.TimeUnix(), c.cfg.heartbeatInterval*3))
+	return c.s.GetActiveMembers(ctx, utils.TimeUnixSubtract(utils.TimeUnix(), c.hb*3))
 }
 
 func (c cluster) MemberByID(ctx context.Context, id string) (ronykit.ClusterMember, error) {
