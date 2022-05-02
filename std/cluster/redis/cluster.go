@@ -2,6 +2,7 @@ package rediscluster
 
 import (
 	"context"
+	"github.com/clubpay/ronykit/utils/srl"
 	"time"
 
 	"github.com/clubpay/ronykit"
@@ -9,8 +10,8 @@ import (
 )
 
 const (
-	storageKey = "redis-c"
-	keyMembers = "mem"
+	storageKey  = "redis-c"
+	pathMembers = "mem"
 )
 
 type config struct {
@@ -58,6 +59,7 @@ func (c cluster) Start() error {
 
 func (c cluster) heartbeat() {
 	timer := time.NewTimer(c.cfg.heartbeatInterval)
+	key := srl.New(storageKey, pathMembers, "").String()
 	for {
 		select {
 		case <-c.shutdownChan:
@@ -65,7 +67,6 @@ func (c cluster) heartbeat() {
 		case <-timer.C:
 		}
 
-		key := "" // active status key
 		_ = c.redisC.Set(context.Background(), key, true, c.cfg.heartbeatInterval*3).Err()
 	}
 }

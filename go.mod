@@ -6,11 +6,11 @@ require (
 	github.com/fasthttp/websocket v1.5.1-rc.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gobwas/ws v1.1.0
-	github.com/goccy/go-json v0.9.6
+	github.com/goccy/go-json v0.9.7
 	github.com/goccy/go-reflect v1.1.1-0.20210520085854-e1eb8c5193d0
 	github.com/panjf2000/gnet v1.6.4
 	github.com/smartystreets/goconvey v1.7.2
-	github.com/valyala/fasthttp v1.35.0
+	github.com/valyala/fasthttp v1.36.0
 	google.golang.org/protobuf v1.28.0
 )
 
