@@ -3,7 +3,6 @@ module github.com/clubpay/ronykit
 go 1.17
 
 require (
-	github.com/brianvoe/gofakeit/v6 v6.10.0
 	github.com/fasthttp/websocket v1.5.1-rc.2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gobwas/ws v1.1.0

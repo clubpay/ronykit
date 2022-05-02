@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -18,8 +18,8 @@ type testConn struct {
 func newTestConn() *testConn {
 	return &testConn{
 		kv: map[string]string{},
-		id: gofakeit.Uint64(),
-		ip: gofakeit.IPv4Address(),
+		id: utils.RandomUint64(0),
+		ip: "127.0.0.1",
 	}
 }
 
@@ -168,7 +168,7 @@ func BenchmarkServer(b *testing.B) {
 	).Start()
 	defer s.Shutdown()
 
-	req := []byte(gofakeit.BitcoinAddress())
+	req := []byte(utils.RandomID(24))
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.RunParallel(
