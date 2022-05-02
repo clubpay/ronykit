@@ -160,8 +160,8 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 }
 
 func Redirect(ctx *ronykit.Context) {
-	req := ctx.In().GetMsg().(*dto.RedirectRequest)
+	req := ctx.In().GetMsg().(*dto.RedirectRequest) //nolint:forcetypeassert
 
-	rc := ctx.Conn().(ronykit.RESTConn)
+	rc := ctx.Conn().(ronykit.RESTConn) //nolint:forcetypeassert
 	rc.Redirect(http.StatusTemporaryRedirect, req.URL)
 }

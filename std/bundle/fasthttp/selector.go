@@ -111,6 +111,7 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 	}
 
 	var pcs []paramCaster
+
 	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
 		f := reflect.Indirect(rVal).Type().Field(i)
 		if tagValue := f.Tag.Get(tagKey); tagValue != "" {
@@ -118,6 +119,7 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			if len(valueParts) == 1 {
 				valueParts = append(valueParts, "")
 			}
+
 			pcs = append(
 				pcs,
 				paramCaster{
@@ -144,6 +146,7 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			}
 
 			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pcs[idx].offset)
+
 			switch pcs[idx].typ.Kind() {
 			case reflect.Int64:
 				*(*int64)(ptr) = utils.StrToInt64(x)
@@ -166,6 +169,6 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			}
 		}
 
-		return v.(ronykit.Message)
+		return v.(ronykit.Message) //nolint:forcetypeassert
 	}
 }

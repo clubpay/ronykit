@@ -153,6 +153,7 @@ func retrieveForwardedIP(forwardedHeader string) (string, error) {
 		if len(address) > 0 {
 			address = strings.TrimSpace(address)
 			isPrivate, err := IsPrivateAddress(address)
+
 			switch {
 			case !isPrivate && err == nil:
 				return address, nil

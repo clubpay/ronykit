@@ -24,7 +24,7 @@ var poolSha512 = sync.Pool{
 
 // Sha512 appends a 64bytes array which is sha512(in) to out
 func Sha512(in, out []byte) error {
-	h := poolSha512.Get().(hash.Hash)
+	h := poolSha512.Get().(hash.Hash) //nolint:forcetypeassert
 	if _, err := h.Write(in); err != nil {
 		h.Reset()
 		poolSha512.Put(h)
@@ -52,7 +52,7 @@ var poolSha256 = sync.Pool{
 
 // Sha256 appends a 32bytes array which is sha256(in) to out
 func Sha256(in, out []byte) error {
-	h := poolSha256.Get().(hash.Hash)
+	h := poolSha256.Get().(hash.Hash) //nolint:forcetypeassert
 	if _, err := h.Write(in); err != nil {
 		h.Reset()
 		poolSha256.Put(h)

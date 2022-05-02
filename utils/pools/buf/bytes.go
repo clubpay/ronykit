@@ -126,7 +126,7 @@ func (p *bytesPool) Get(n, c int) *Bytes {
 	if pool := p.pool[size]; pool != nil {
 		v := pool.Get()
 		if v != nil {
-			bb := v.(*Bytes)
+			bb := v.(*Bytes) //nolint:forcetypeassert
 			bb.b = bb.b[:n]
 
 			return bb

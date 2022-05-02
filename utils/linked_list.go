@@ -187,6 +187,7 @@ func (ll *LinkedList) String() string {
 	sb := strings.Builder{}
 	n := ll.head
 	idx := 0
+
 	for n != nil {
 		sb.WriteString(fmt.Sprintf("%d. %v\n", idx, n.data))
 		n = n.next

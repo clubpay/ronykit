@@ -21,7 +21,7 @@ func AcquireWaitGroup() *sync.WaitGroup {
 		return &sync.WaitGroup{}
 	}
 
-	return wgv.(*sync.WaitGroup)
+	return wgv.(*sync.WaitGroup) //nolint:forcetypeassert
 }
 
 func ReleaseWaitGroup(wg *sync.WaitGroup) {

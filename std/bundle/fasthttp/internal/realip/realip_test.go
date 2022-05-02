@@ -53,6 +53,7 @@ type testIP struct {
 func TestRealIP(t *testing.T) {
 	newRequest := func(remoteAddr string, headers map[string]string) *fasthttp.RequestCtx {
 		var ctx fasthttp.RequestCtx
+
 		addr := &net.TCPAddr{
 			IP: net.ParseIP(remoteAddr),
 		}

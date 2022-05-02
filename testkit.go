@@ -66,7 +66,7 @@ func (testCtx *TestContext) Run() error {
 	ctx.ctx = context.Background()
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.DontRelease()
-		tc := conn.(*testConn)
+		tc := conn.(*testConn) //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
 		tc.Unlock()
@@ -92,7 +92,7 @@ func (testCtx *TestContext) RunREST() error {
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.DontRelease()
 
-		tc := conn.(*testConn)
+		tc := conn.(*testConn) //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
 		tc.Unlock()

@@ -61,7 +61,7 @@ func (p *byteSlicePool) Get(n, c int) []byte {
 	if pool := p.pool[size]; pool != nil {
 		v := pool.Get()
 		if v != nil {
-			bts := v.([]byte)
+			bts := v.([]byte) //nolint:forcetypeassert
 			bts = bts[:n]
 
 			return bts

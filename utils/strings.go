@@ -23,24 +23,28 @@ import (
 
 func AppendStrInt(sb *strings.Builder, x int) {
 	var b [8]byte
+
 	binary.BigEndian.PutUint64(b[:], uint64(x))
 	sb.Write(b[:])
 }
 
 func AppendStrUInt(sb *strings.Builder, x uint) {
 	var b [8]byte
+
 	binary.BigEndian.PutUint64(b[:], uint64(x))
 	sb.Write(b[:])
 }
 
 func AppendStrInt64(sb *strings.Builder, x int64) {
 	var b [8]byte
+
 	binary.BigEndian.PutUint64(b[:], uint64(x))
 	sb.Write(b[:])
 }
 
 func AppendStrUInt64(sb *strings.Builder, x uint64) {
 	var b [8]byte
+
 	binary.BigEndian.PutUint64(b[:], x)
 	sb.Write(b[:])
 }

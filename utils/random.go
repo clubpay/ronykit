@@ -33,7 +33,7 @@ type randomGenerator struct {
 }
 
 func (rg *randomGenerator) GetRand() *mathRand.Rand {
-	return rg.Get().(*mathRand.Rand)
+	return rg.Get().(*mathRand.Rand) //nolint:forcetypeassert
 }
 
 func (rg *randomGenerator) PutRand(r *mathRand.Rand) {
@@ -54,6 +54,7 @@ func init() {
 func RandomID(n int) string {
 	rnd := rndGen.GetRand()
 	b := make([]byte, n)
+
 	for i := range b {
 		b[i] = alphaNumerics[FastRand()%alphaNumericsLength]
 	}

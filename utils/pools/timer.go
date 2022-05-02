@@ -22,7 +22,7 @@ func AcquireTimer(timeout time.Duration) *time.Timer {
 		return time.NewTimer(timeout)
 	}
 
-	t := tv.(*time.Timer)
+	t := tv.(*time.Timer) //nolint:forcetypeassert
 	if t.Reset(timeout) {
 		panic("BUG: Active timer trapped into acquireTimer()")
 	}

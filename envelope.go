@@ -174,6 +174,7 @@ type (
 
 func CreateMessageFactory(in Message) MessageFactoryFunc {
 	var ff MessageFactoryFunc
+
 	reflect.ValueOf(&ff).Elem().Set(
 		reflect.MakeFunc(
 			reflect.TypeOf(ff),

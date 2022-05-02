@@ -335,6 +335,7 @@ func (b *bundle) Start() {
 	if err != nil {
 		panic(err)
 	}
+
 	go func() {
 		err := b.srv.Serve(ln)
 		if err != nil {

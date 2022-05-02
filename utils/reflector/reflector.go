@@ -55,6 +55,7 @@ func getValue(m ronykit.Message) reflect.Value {
 func destruct(mVal reflect.Value) map[string]fieldInfo {
 	mType := mVal.Type()
 	data := map[string]fieldInfo{}
+
 	for i := 0; i < mType.NumField(); i++ {
 		ft := mType.Field(i)
 		if !ft.IsExported() {
@@ -65,6 +66,7 @@ func destruct(mVal reflect.Value) map[string]fieldInfo {
 			offset: ft.Offset,
 			typ:    ft.Type,
 		}
+
 		switch ft.Type.Kind() {
 		case reflect.Map, reflect.Slice, reflect.Ptr, reflect.Interface,
 			reflect.Array, reflect.Chan, reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:

@@ -5,11 +5,9 @@ linters:
     - scopelint
     - tparallel
     - gomnd
-    - forcetypeassert
     - gochecknoglobals
     - paralleltest
     - gochecknoinits
     - funlen
     - godot
-    - dupl
   fast: true

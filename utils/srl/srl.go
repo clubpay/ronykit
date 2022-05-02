@@ -23,17 +23,17 @@ const (
 // SRL stands for Simple Resource Locator, A 3 part address.
 type SRL [srlLength]string
 
-// New creates a SRL of path & id on a specific storage
+// New creates a SRL of path & id on a specific storage.
 func New(storage, path, id string) SRL {
 	return SRL{storage, path, id}
 }
 
-// Portable creates a SRL of path & id on unspecific storage
+// Portable creates a SRL of path & id on unspecific storage.
 func Portable(path, id string) SRL {
 	return New("", path, id)
 }
 
-// Storage creates a SRL without any path & id on a specific storage
+// Storage creates a SRL without any path & id on a specific storage.
 func Storage(storage string) SRL {
 	return New(storage, "", "")
 }
@@ -109,8 +109,10 @@ func (q SRL) mix(src SRL, fn func(qi, si string, i int) string) SRL {
 
 func (q SRL) String() string {
 	var sb strings.Builder
+
 	for i := 0; i < srlLength; i++ {
 		pglue, sglue := "", ""
+
 		switch i {
 		case srliStorage:
 			sglue = pathGlue

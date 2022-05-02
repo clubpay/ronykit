@@ -99,37 +99,37 @@ func (r *mux) putParams(ps *Params) {
 	}
 }
 
-// GET is a shortcut for httpMux.Handle(http.MethodGet, path, handle)
+// GET is a shortcut for httpMux.Handle(http.MethodGet, path, handle).
 func (r *mux) GET(path string, handle *routeData) {
 	r.Handle(http.MethodGet, path, handle)
 }
 
-// HEAD is a shortcut for httpMux.Handle(http.MethodHead, path, handle)
+// HEAD is a shortcut for httpMux.Handle(http.MethodHead, path, handle).
 func (r *mux) HEAD(path string, handle *routeData) {
 	r.Handle(http.MethodHead, path, handle)
 }
 
-// OPTIONS is a shortcut for httpMux.Handle(http.MethodOptions, path, handle)
+// OPTIONS is a shortcut for httpMux.Handle(http.MethodOptions, path, handle).
 func (r *mux) OPTIONS(path string, handle *routeData) {
 	r.Handle(http.MethodOptions, path, handle)
 }
 
-// POST is a shortcut for httpMux.Handle(http.MethodPost, path, handle)
+// POST is a shortcut for httpMux.Handle(http.MethodPost, path, handle).
 func (r *mux) POST(path string, handle *routeData) {
 	r.Handle(http.MethodPost, path, handle)
 }
 
-// PUT is a shortcut for httpMux.Handle(http.MethodPut, path, handle)
+// PUT is a shortcut for httpMux.Handle(http.MethodPut, path, handle).
 func (r *mux) PUT(path string, handle *routeData) {
 	r.Handle(http.MethodPut, path, handle)
 }
 
-// PATCH is a shortcut for httpMux.Handle(http.MethodPatch, path, handle)
+// PATCH is a shortcut for httpMux.Handle(http.MethodPatch, path, handle).
 func (r *mux) PATCH(path string, handle *routeData) {
 	r.Handle(http.MethodPatch, path, handle)
 }
 
-// DELETE is a shortcut for httpMux.Handle(http.MethodDelete, path, handle)
+// DELETE is a shortcut for httpMux.Handle(http.MethodDelete, path, handle).
 func (r *mux) DELETE(path string, handle *routeData) {
 	r.Handle(http.MethodDelete, path, handle)
 }

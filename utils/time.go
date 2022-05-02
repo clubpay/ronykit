@@ -19,6 +19,7 @@ var timeInSec int64
 
 func init() {
 	timeInSec = time.Now().Unix()
+
 	go func() {
 		for {
 			time.Sleep(time.Second)
