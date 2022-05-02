@@ -2,6 +2,7 @@ package fasthttp
 
 import (
 	"bytes"
+	"encoding"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -283,12 +284,17 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 			data []byte
 			err  error
 		)
-		if m, ok := e.GetMsg().(ronykit.Marshaller); ok {
+
+		switch m := e.GetMsg().(type) {
+		case ronykit.Marshaller:
 			data, err = m.Marshal()
-		} else {
+		case encoding.BinaryMarshaler:
+			data, err = m.MarshalBinary()
+		case encoding.TextMarshaler:
+			data, err = m.MarshalText()
+		default:
 			data, err = json.Marshal(e.GetMsg())
 		}
-
 		if err != nil {
 			return err
 		}

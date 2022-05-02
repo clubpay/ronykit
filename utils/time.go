@@ -31,8 +31,8 @@ func TimeUnix() int64 {
 	return atomic.LoadInt64(&timeInSec)
 }
 
-func Duration(t int64) time.Duration {
-	return time.Duration(CPUTicks() - t)
+func TimeUnixSubtract(unixTime int64, d time.Duration) int64 {
+	return int64(time.Duration(unixTime)*time.Second - d)
 }
 
 // NanoTime returns the current time in nanoseconds from a monotonic clock.
