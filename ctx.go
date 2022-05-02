@@ -67,16 +67,20 @@ func (ctx *Context) AddModifier(modifiers ...Modifier) {
 
 // SetUserContext replaces the default context with the provided context.
 func (ctx *Context) SetUserContext(userCtx context.Context) {
+	ctx.Lock()
 	ctx.ctx = userCtx
+	ctx.Unlock()
 }
 
 // Context returns a context.Background which can be used a reference context for
 // other context aware function calls. You can also replace it with your own context
 // using SetUserContext function.
 func (ctx *Context) Context() context.Context {
+	ctx.Lock()
 	if ctx.ctx == nil {
 		ctx.ctx, ctx.cf = context.WithCancel(context.Background())
 	}
+	ctx.Unlock()
 
 	return ctx.ctx
 }

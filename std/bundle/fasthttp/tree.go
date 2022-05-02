@@ -6,6 +6,13 @@ import (
 	"unicode/utf8"
 )
 
+const (
+	static nodeType = iota // default
+	root
+	param
+	catchAll
+)
+
 func min(a, b int) int {
 	if a <= b {
 		return a
@@ -64,13 +71,6 @@ func countParams(path string) uint16 {
 }
 
 type nodeType uint8
-
-const (
-	static nodeType = iota // default
-	root
-	param
-	catchAll
-)
 
 type node struct {
 	path      string

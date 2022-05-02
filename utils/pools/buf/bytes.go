@@ -7,6 +7,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	bitSize       = 32 << (^uint(0) >> 63)
+	maxintHeadBit = 1 << (bitSize - 2)
+)
+
 type Bytes struct {
 	ri int
 	b  []byte
@@ -168,11 +173,6 @@ func (p *bytesPool) FromBytes(b []byte) *Bytes {
 
 	return buf
 }
-
-const (
-	bitSize       = 32 << (^uint(0) >> 63)
-	maxintHeadBit = 1 << (bitSize - 2)
-)
 
 // logarithmicRange iterates from ceil to power of two min to max,
 // calling cb on each iteration.

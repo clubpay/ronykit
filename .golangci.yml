@@ -13,4 +13,3 @@ linters:
     - godot
     - dupl
   fast: true
-

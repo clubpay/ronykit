@@ -2,9 +2,10 @@ package ronykit
 
 import (
 	"fmt"
-	"github.com/clubpay/ronykit/internal/errors"
 	"os"
 	"os/signal"
+
+	"github.com/clubpay/ronykit/internal/errors"
 )
 
 var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
