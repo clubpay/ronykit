@@ -11,7 +11,7 @@ type Bundle interface {
 
 type (
 	WriteFunc    func(conn Conn, e *Envelope) error
-	ExecuteFunc  func(wf WriteFunc, handlers ...HandlerFunc)
+	ExecuteFunc  func(ctx *Context, wf WriteFunc, handlers ...HandlerFunc)
 	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
 )
 

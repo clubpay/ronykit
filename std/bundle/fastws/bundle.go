@@ -134,7 +134,7 @@ func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, erro
 		ctx.AddModifier(routeData.Modifiers...)
 
 		// run the execFunc with generated params
-		execFunc(writeFunc, routeData.Handlers...)
+		execFunc(ctx, writeFunc, routeData.Handlers...)
 
 		return nil
 	}, nil

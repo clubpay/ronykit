@@ -42,21 +42,20 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 		return
 	}
 
-	err = dispatchFunc(
-		ctx,
-		func(writeFunc WriteFunc, handlers ...HandlerFunc) {
-			ctx.wf = writeFunc
-			ctx.handlers = append(ctx.handlers, handlers...)
-			ctx.Next()
-
-			return
-		},
-	)
+	err = dispatchFunc(ctx, n.execFunc)
 	if err != nil {
 		n.eh(ctx, err)
 	}
 
 	n.releaseCtx(ctx)
+
+	return
+}
+
+func (n *northBridge) execFunc(ctx *Context, writeFunc WriteFunc, handlers ...HandlerFunc) {
+	ctx.wf = writeFunc
+	ctx.handlers = append(ctx.handlers, handlers...)
+	ctx.Next()
 
 	return
 }

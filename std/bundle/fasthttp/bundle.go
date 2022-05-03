@@ -224,7 +224,7 @@ func (b *bundle) wsDispatch(in []byte) (ronykit.DispatchFunc, error) {
 		ctx.AddModifier(routeData.Modifiers...)
 
 		// run the execFunc with generated params
-		execFunc(b.wsWriteFunc, routeData.Handlers...)
+		execFunc(ctx, b.wsWriteFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
@@ -285,7 +285,7 @@ func (b *bundle) httpDispatch(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		ctx.AddModifier(routeData.Modifiers...)
 
 		// execute handler functions
-		execFunc(b.httpWriteFunc, routeData.Handlers...)
+		execFunc(ctx, b.httpWriteFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
