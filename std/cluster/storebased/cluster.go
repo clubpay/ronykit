@@ -2,13 +2,11 @@ package storebased
 
 import (
 	"context"
-	"encoding"
 	"net"
 	"time"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
-	"github.com/goccy/go-json"
 )
 
 const (
@@ -29,10 +27,7 @@ type member struct {
 	Endpoint string   `json:"endpoint"`
 }
 
-var (
-	_ ronykit.ClusterMember    = (*member)(nil)
-	_ encoding.BinaryMarshaler = (*member)(nil)
-)
+var _ ronykit.ClusterMember = (*member)(nil)
 
 func (m member) ServerID() string {
 	return m.ID
@@ -44,14 +39,6 @@ func (m member) AdvertisedURL() []string {
 
 func (m member) Dial(ctx context.Context) (net.Conn, error) {
 	return net.Dial("tcp4", m.Endpoint)
-}
-
-func (m *member) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, m)
-}
-
-func (m member) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(m)
 }
 
 type cluster struct {

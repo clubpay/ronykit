@@ -26,6 +26,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
 		l:   nopLogger{},
 		svc: map[string]Service{},
+		eh:  func(ctx *Context, err error) {},
 	}
 	for _, opt := range opts {
 		opt(s)

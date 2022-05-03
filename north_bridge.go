@@ -36,10 +36,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 
 	dispatchFunc, err := n.b.Dispatch(c, msg)
 	if err != nil {
-		if n.eh != nil {
-			n.eh(ctx, err)
-		}
-
+		n.eh(ctx, err)
 		n.releaseCtx(ctx)
 
 		return
@@ -56,9 +53,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 		},
 	)
 	if err != nil {
-		if n.eh != nil {
-			n.eh(ctx, err)
-		}
+		n.eh(ctx, err)
 	}
 
 	n.releaseCtx(ctx)

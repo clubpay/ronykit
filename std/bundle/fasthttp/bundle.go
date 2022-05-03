@@ -185,15 +185,15 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
 	switch c := c.(type) {
 	case *httpConn:
-		return b.dispatchHTTP(c, in)
+		return b.httpDispatch(c, in)
 	case *wsConn:
-		return b.dispatchWS(in)
+		return b.wsDispatch(in)
 	default:
 		panic("BUG!! incorrect connection")
 	}
 }
 
-func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) wsDispatch(in []byte) (ronykit.DispatchFunc, error) {
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
@@ -211,25 +211,6 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 		return nil, err
 	}
 
-	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		outputMsgContainer := b.rpcOutFactory()
-		outputMsgContainer.SetPayload(e.GetMsg())
-		e.WalkHdr(func(key string, val string) bool {
-			outputMsgContainer.SetHdr(key, val)
-
-			return true
-		})
-
-		data, err := outputMsgContainer.Marshal()
-		if err != nil {
-			return err
-		}
-
-		_, err = conn.Write(data)
-
-		return err
-	}
-
 	// return the DispatchFunc
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		ctx.In().
@@ -243,13 +224,32 @@ func (b *bundle) dispatchWS(in []byte) (ronykit.DispatchFunc, error) {
 		ctx.AddModifier(routeData.Modifiers...)
 
 		// run the execFunc with generated params
-		execFunc(writeFunc, routeData.Handlers...)
+		execFunc(b.wsWriteFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
 }
 
-func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+	outputMsgContainer := b.rpcOutFactory()
+	outputMsgContainer.SetPayload(e.GetMsg())
+	e.WalkHdr(func(key string, val string) bool {
+		outputMsgContainer.SetHdr(key, val)
+
+		return true
+	})
+
+	data, err := outputMsgContainer.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Write(data)
+
+	return err
+}
+
+func (b *bundle) httpDispatch(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// check CORS rules before even returning errRouteNotFound. This makes sure that
@@ -273,45 +273,6 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		},
 	)
 
-	// Set the write function which
-	writeFunc := func(c ronykit.Conn, e *ronykit.Envelope) error {
-		rc, ok := c.(*httpConn)
-		if !ok {
-			panic("BUG!! incorrect connection")
-		}
-
-		var (
-			data []byte
-			err  error
-		)
-
-		switch m := e.GetMsg().(type) {
-		case ronykit.Marshaller:
-			data, err = m.Marshal()
-		case encoding.BinaryMarshaler:
-			data, err = m.MarshalBinary()
-		case encoding.TextMarshaler:
-			data, err = m.MarshalText()
-		default:
-			data, err = json.Marshal(e.GetMsg())
-		}
-		if err != nil {
-			return err
-		}
-
-		e.WalkHdr(
-			func(key string, val string) bool {
-				rc.ctx.Response.Header.Set(key, val)
-
-				return true
-			},
-		)
-
-		rc.ctx.SetBody(data)
-
-		return nil
-	}
-
 	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
 		// Set the route and service name
 		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
@@ -324,10 +285,48 @@ func (b *bundle) dispatchHTTP(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		ctx.AddModifier(routeData.Modifiers...)
 
 		// execute handler functions
-		execFunc(writeFunc, routeData.Handlers...)
+		execFunc(b.httpWriteFunc, routeData.Handlers...)
 
 		return nil
 	}, nil
+}
+
+func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
+	rc, ok := c.(*httpConn)
+	if !ok {
+		panic("BUG!! incorrect connection")
+	}
+
+	var (
+		data []byte
+		err  error
+	)
+
+	switch m := e.GetMsg().(type) {
+	case ronykit.Marshaller:
+		data, err = m.Marshal()
+	case encoding.BinaryMarshaler:
+		data, err = m.MarshalBinary()
+	case encoding.TextMarshaler:
+		data, err = m.MarshalText()
+	default:
+		data, err = json.Marshal(e.GetMsg())
+	}
+	if err != nil {
+		return err
+	}
+
+	e.WalkHdr(
+		func(key string, val string) bool {
+			rc.ctx.Response.Header.Set(key, val)
+
+			return true
+		},
+	)
+
+	rc.ctx.SetBody(data)
+
+	return nil
 }
 
 func (b *bundle) Start() {
