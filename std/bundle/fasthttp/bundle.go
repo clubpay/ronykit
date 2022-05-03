@@ -305,13 +305,17 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
 	switch m := e.GetMsg().(type) {
 	case ronykit.Marshaller:
 		data, err = m.Marshal()
+	case json.Marshaler:
+		data, err = m.MarshalJSON()
 	case encoding.BinaryMarshaler:
 		data, err = m.MarshalBinary()
 	case encoding.TextMarshaler:
 		data, err = m.MarshalText()
+
 	default:
-		data, err = json.Marshal(e.GetMsg())
+		data, err = json.Marshal(m)
 	}
+
 	if err != nil {
 		return err
 	}

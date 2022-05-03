@@ -53,11 +53,9 @@ type GatewayDelegate interface {
 type Encoding int32
 
 const (
-	Undefined Encoding = iota
-	JSON
+	Undefined Encoding = 0
+	JSON               = 1 << iota
 	Proto
-	Msgpack
-	Thrift
-	GOB
-	CustomDefined
+	Binary
+	Text
 )

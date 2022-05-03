@@ -79,8 +79,8 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 	return s
 }
 
+// Start registers services in the registered bundles and start the bundles.
 func (s *EdgeServer) Start() *EdgeServer {
-	// Register services into the bundles and start them.
 	for idx := range s.nb {
 		for _, svc := range s.svc {
 			s.nb[idx].b.Register(svc)
