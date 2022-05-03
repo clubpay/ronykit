@@ -1,7 +1,6 @@
 package ronykit
 
 import (
-	"context"
 	"mime/multipart"
 	"sync"
 
@@ -63,7 +62,6 @@ func (testCtx *TestContext) Run() error {
 	ctx.in = newEnvelope(ctx, conn, false).
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.ctx = context.Background()
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.DontRelease()
 		tc := conn.(*testConn) //nolint:forcetypeassert
@@ -88,7 +86,6 @@ func (testCtx *TestContext) RunREST() error {
 	ctx.in = newEnvelope(ctx, conn, false).
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.ctx = context.Background()
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.DontRelease()
 

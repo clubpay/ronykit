@@ -50,10 +50,11 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	return s
 }
 
-// RegisterCluster register a Cluster to our server. Registering Cluster is an optional
-// feature, but setting up cluster for our EdgeServer opens a lot of opportunities to write
-// cluster-aware software.
-func (s *EdgeServer) RegisterCluster(c Cluster) *EdgeServer {
+// registerCluster register a Cluster to our server. Registering Cluster is an optional
+// feature, but setting up cluster for our EdgeServer it provides capabilities to let
+// communication between different instances of the same EdgeServer.
+// TODO:: work in progress
+func (s *EdgeServer) registerCluster(c Cluster) *EdgeServer {
 	sb := &southBridge{
 		l:  s.l,
 		c:  c,
