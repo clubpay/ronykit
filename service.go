@@ -50,7 +50,8 @@ type ServiceGenerator interface {
 // In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
 // order to be usable by Bundle 'b' otherwise it panics.
 type Contract interface {
-	Selector() RouteSelector
+	RouteSelector() RouteSelector
+	MemberSelector() MemberSelector
 	Encoding() Encoding
 	Input() Message
 	Handlers() []HandlerFunc

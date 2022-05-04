@@ -140,7 +140,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 }
 
 func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ronykit.HandlerFunc) {
-	rpcSelector, ok := c.Selector().(ronykit.RPCRouteSelector)
+	rpcSelector, ok := c.RouteSelector().(ronykit.RPCRouteSelector)
 	if !ok {
 		return
 	}
@@ -158,7 +158,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 }
 
 func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ronykit.HandlerFunc) {
-	restSelector, ok := c.Selector().(ronykit.RESTRouteSelector)
+	restSelector, ok := c.RouteSelector().(ronykit.RESTRouteSelector)
 	if !ok {
 		return
 	}

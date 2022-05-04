@@ -17,11 +17,12 @@ type Contract struct {
 	Encoding       ronykit.Encoding
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
+	RouteSelectors []ronykit.RouteSelector
+	MemberSelector ronykit.MemberSelector
+	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
 	Output         ronykit.Message
 	PossibleErrors []Error
-	Selectors      []ronykit.RouteSelector
-	Modifiers      []ronykit.Modifier
 }
 
 func NewContract() *Contract {
@@ -75,7 +76,14 @@ func (c *Contract) AddPossibleError(code int, item string, m ronykit.Message) *C
 
 // AddSelector adds a ronykit.RouteSelector for this contract. Selectors are bundle specific.
 func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
-	c.Selectors = append(c.Selectors, s)
+	c.RouteSelectors = append(c.RouteSelectors, s)
+
+	return c
+}
+
+// SetMemberSelector sets a ronykit.MemberSelector for this contract.
+func (c *Contract) SetMemberSelector(f ronykit.MemberSelector) *Contract {
+	c.MemberSelector = f
 
 	return c
 }
@@ -111,10 +119,8 @@ func (c *Contract) SetHandler(h ...ronykit.HandlerFunc) *Contract {
 
 // Generate generates the ronykit.Contract
 func (c *Contract) Generate() []ronykit.Contract {
-	//nolint:prealloc
-	var contracts []ronykit.Contract
-
-	for _, s := range c.Selectors {
+	contracts := make([]ronykit.Contract, len(c.RouteSelectors))
+	for idx, s := range c.RouteSelectors {
 		ci := &contractImpl{}
 		ci.setHandler(c.Handlers...)
 		ci.setModifier(c.Modifiers...)
@@ -122,7 +128,7 @@ func (c *Contract) Generate() []ronykit.Contract {
 		ci.setSelector(s)
 		ci.setEncoding(c.Encoding)
 
-		contracts = append(contracts, ronykit.WrapContract(ci, c.Wrappers...))
+		contracts[idx] = ronykit.WrapContract(ci, c.Wrappers...)
 	}
 
 	return contracts

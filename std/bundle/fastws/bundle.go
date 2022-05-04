@@ -65,7 +65,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 		h = append(h, contract.Handlers()...)
 		h = append(h, svc.PostHandlers()...)
 
-		rpcSelector, ok := contract.Selector().(ronykit.RPCRouteSelector)
+		rpcSelector, ok := contract.RouteSelector().(ronykit.RPCRouteSelector)
 		if !ok {
 			continue
 		}

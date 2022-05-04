@@ -10,6 +10,8 @@ type serviceImpl struct {
 	contracts []ronykit.Contract
 }
 
+var _ ronykit.Service = (*serviceImpl)(nil)
+
 func (s *serviceImpl) Name() string {
 	return s.name
 }
@@ -46,12 +48,15 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 
 // contractImpl is simple implementation of ronykit.Contract interface.
 type contractImpl struct {
-	selector  ronykit.RouteSelector
-	handlers  []ronykit.HandlerFunc
-	modifiers []ronykit.Modifier
-	input     ronykit.Message
-	enc       ronykit.Encoding
+	routeSelector  ronykit.RouteSelector
+	memberSelector ronykit.MemberSelector
+	handlers       []ronykit.HandlerFunc
+	modifiers      []ronykit.Modifier
+	input          ronykit.Message
+	enc            ronykit.Encoding
 }
+
+var _ ronykit.Contract = (*contractImpl)(nil)
 
 func (r *contractImpl) setInput(input ronykit.Message) *contractImpl {
 	r.input = input
@@ -66,7 +71,7 @@ func (r *contractImpl) setEncoding(enc ronykit.Encoding) *contractImpl {
 }
 
 func (r *contractImpl) setSelector(selector ronykit.RouteSelector) *contractImpl {
-	r.selector = selector
+	r.routeSelector = selector
 
 	return r
 }
@@ -83,8 +88,12 @@ func (r *contractImpl) setModifier(modifiers ...ronykit.Modifier) *contractImpl 
 	return r
 }
 
-func (r *contractImpl) Selector() ronykit.RouteSelector {
-	return r.selector
+func (r *contractImpl) RouteSelector() ronykit.RouteSelector {
+	return r.routeSelector
+}
+
+func (r *contractImpl) MemberSelector() ronykit.MemberSelector {
+	return r.memberSelector
 }
 
 func (r *contractImpl) Handlers() []ronykit.HandlerFunc {
