@@ -2,14 +2,14 @@ package ronykit
 
 import "sync"
 
-var _ ClusterDelegate = (*southBridge)(nil)
-
 type southBridge struct {
 	ctxPool sync.Pool
 	l       Logger
 	c       Cluster
 	eh      ErrHandler
 }
+
+var _ ClusterDelegate = (*southBridge)(nil)
 
 func (s *southBridge) OnError(err error) {
 	s.eh(nil, err)

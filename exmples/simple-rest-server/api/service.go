@@ -3,13 +3,14 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
-	"github.com/clubpay/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fastws"
+	"github.com/clubpay/ronykit/utils"
+	"github.com/goccy/go-reflect"
 )
 
 type Sample struct{}
@@ -36,6 +37,7 @@ func (x *Sample) Desc() *desc.Service {
 				AddModifier(func(envelope *ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
+				SetForwarder(Forwarder).
 				SetHandler(EchoHandler),
 		).
 		AddContract(
@@ -70,8 +72,26 @@ func (x *Sample) Desc() *desc.Service {
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
 					Path:   "/redirect",
-				}).SetHandler(Redirect),
+				}).
+				SetHandler(Redirect),
 		)
+}
+
+func Forwarder(ctx *ronykit.LimitedContext) (ronykit.ClusterMember, error) {
+	c := ctx.Cluster()
+
+	switch m := ctx.In().GetMsg().(type) {
+	case *dto.EchoRequest:
+		id := utils.Int64ToStr(m.RandomID % utils.StrToInt64(c.Me().ServerID()))
+		member, err := c.MemberByID(ctx.Context(), id)
+		if err != nil {
+			return nil, err
+		}
+
+		return member, nil
+	}
+
+	return c.Me(), nil
 }
 
 func EchoHandler(ctx *ronykit.Context) {

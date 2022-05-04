@@ -81,8 +81,8 @@ func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	return c
 }
 
-// SetMemberSelector sets a ronykit.MemberSelector for this contract.
-func (c *Contract) SetMemberSelector(f ronykit.MemberSelector) *Contract {
+// SetForwarder sets a ronykit.MemberSelector for this contract.
+func (c *Contract) SetForwarder(f ronykit.MemberSelector) *Contract {
 	c.MemberSelector = f
 
 	return c

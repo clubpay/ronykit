@@ -16,7 +16,7 @@ type Walker interface {
 type EnvelopeHdr map[string]string
 
 // Envelope is an envelope around the messages in RonyKIT. Envelopes are created internally
-// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
+// by the RonyKIT framework, and provide the abstraction which Gateway implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope struct {
@@ -130,7 +130,7 @@ func (e *Envelope) GetMsg() Message {
 	return e.m
 }
 
-// Send writes the envelope to the connection based on the Bundle specification.
+// Send writes the envelope to the connection based on the Gateway specification.
 // You **MUST NOT** use the Envelope after calling this method.
 // You **MUST NOT** call this function more than once.
 func (e *Envelope) Send() {

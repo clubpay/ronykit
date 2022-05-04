@@ -35,9 +35,9 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
-// RegisterBundle registers a Bundle to our server. EdgeServer needs at least one Bundle
+// RegisterGateway registers a Gateway to our server. EdgeServer needs at least one Gateway
 // to be registered.
-func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
+func (s *EdgeServer) RegisterGateway(b Gateway) *EdgeServer {
 	nb := &northBridge{
 		l:  s.l,
 		b:  b,
@@ -50,11 +50,10 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	return s
 }
 
-// registerCluster register a Cluster to our server. Registering Cluster is an optional
+// RegisterCluster register a Cluster to our server. Registering Cluster is an optional
 // feature, but setting up cluster for our EdgeServer it provides capabilities to let
 // communication between different instances of the same EdgeServer.
-// TODO:: work in progress
-func (s *EdgeServer) registerCluster(c Cluster) *EdgeServer {
+func (s *EdgeServer) RegisterCluster(c Cluster) *EdgeServer {
 	sb := &southBridge{
 		l:  s.l,
 		c:  c,

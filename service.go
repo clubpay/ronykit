@@ -1,7 +1,7 @@
 package ronykit
 
 // Service defines a set of RPC handlers which usually they are related to one service.
-// Name must be unique per each Bundle.
+// Name must be unique per each Gateway.
 type Service interface {
 	// Name of the service which must be unique per EdgeServer.
 	Name() string
@@ -47,8 +47,8 @@ type ServiceGenerator interface {
 
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.
-// In other words, Contract 'r' must return valid response for 'q's required by Bundle 'b' in
-// order to be usable by Bundle 'b' otherwise it panics.
+// In other words, Contract 'r' must return valid response for 'q's required by Gateway 'b' in
+// order to be usable by Gateway 'b' otherwise it panics.
 type Contract interface {
 	RouteSelector() RouteSelector
 	MemberSelector() MemberSelector
@@ -83,13 +83,13 @@ func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 }
 
 // RouteSelector holds information about how this Contract is going to be selected. Each
-// Bundle may need different information to route the request to the right Contract.
+// Gateway may need different information to route the request to the right Contract.
 type RouteSelector interface {
 	Query(q string) interface{}
 }
 
 // RESTRouteSelector defines the RouteSelector which could be used in REST operations
-// Bundle implementation which handle REST requests could check the selector if it supports REST.
+// Gateway implementation which handle REST requests could check the selector if it supports REST.
 type RESTRouteSelector interface {
 	RouteSelector
 	GetMethod() string
@@ -97,7 +97,7 @@ type RESTRouteSelector interface {
 }
 
 // RPCRouteSelector defines the RouteSelector which could be used in RPC operations.
-// Bundle implementation which handle RPC requests could check the selector if it supports RPC
+// Gateway implementation which handle RPC requests could check the selector if it supports RPC
 type RPCRouteSelector interface {
 	RouteSelector
 	GetPredicate() string

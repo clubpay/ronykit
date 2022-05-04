@@ -7,7 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
-		ronykit.RegisterBundle(
+		ronykit.RegisterGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),

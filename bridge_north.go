@@ -5,14 +5,14 @@ import (
 	"sync"
 )
 
-var _ GatewayDelegate = (*northBridge)(nil)
-
 type northBridge struct {
 	ctxPool sync.Pool
 	l       Logger
-	b       Bundle
+	b       Gateway
 	eh      ErrHandler
 }
+
+var _ GatewayDelegate = (*northBridge)(nil)
 
 func (n *northBridge) OnOpen(c Conn) {
 	// Maybe later we can do something

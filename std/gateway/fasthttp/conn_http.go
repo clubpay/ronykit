@@ -3,7 +3,7 @@ package fasthttp
 import (
 	"mime/multipart"
 
-	"github.com/clubpay/ronykit/std/bundle/fasthttp/internal/realip"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )

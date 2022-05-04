@@ -11,7 +11,6 @@ import (
 
 // Should use canonical format of the header key s
 // https://golang.org/pkg/net/http/#CanonicalHeaderKey
-
 // Header may return multiple IP addresses in the format:
 // "client IP, proxy 1 IP, proxy 2 IP", so we take the the first one.
 var (

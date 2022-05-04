@@ -4,8 +4,8 @@ import (
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/exmples/mixed-jsonrpc-rest/msg"
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
-	"github.com/clubpay/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
 
 type Sample struct{}

@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
-	"github.com/clubpay/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 				fmt.Println("got error: ", err)
 			},
 		),
-		ronykit.RegisterBundle(
+		ronykit.RegisterGateway(
 			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:80"),
 				fastws.WithPredicateKey("cmd"),

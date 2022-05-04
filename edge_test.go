@@ -136,14 +136,6 @@ func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc
 
 func (t testBundle) Register(srv ronykit.Service) {}
 
-func (t testBundle) Gateway() ronykit.Gateway {
-	return t.gw
-}
-
-func (t testBundle) Dispatcher() ronykit.Dispatcher {
-	return t.d
-}
-
 func TestServer(t *testing.T) {
 	Convey("Test EdgeServer", t, func(c C) {
 		b := &testBundle{
@@ -151,7 +143,7 @@ func TestServer(t *testing.T) {
 			d:  &testDispatcher{},
 		}
 		s := ronykit.NewServer(
-			ronykit.RegisterBundle(b),
+			ronykit.RegisterGateway(b),
 		)
 		s.Start()
 		b.gw.Send([]byte("123"))
@@ -165,7 +157,7 @@ func BenchmarkServer(b *testing.B) {
 		d:  &testDispatcher{},
 	}
 	s := ronykit.NewServer(
-		ronykit.RegisterBundle(bundle),
+		ronykit.RegisterGateway(bundle),
 	).Start()
 	defer s.Shutdown()
 
