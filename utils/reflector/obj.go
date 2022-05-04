@@ -8,7 +8,10 @@ import (
 	"github.com/clubpay/ronykit"
 )
 
-var errInvalidFieldType = func(s string) error { return fmt.Errorf("the field type does not match: %s", s) }
+var (
+	registered          = map[reflect.Type]*reflected{}
+	errInvalidFieldType = func(s string) error { return fmt.Errorf("the field type does not match: %s", s) }
+)
 
 // emptyInterface is the header for an interface{} value.
 type emptyInterface struct {
@@ -31,9 +34,23 @@ func (f fieldInfo) Kind() reflect.Kind {
 	return f.typ.Kind()
 }
 
+type reflected struct {
+	obj map[string]fieldInfo
+	enc ronykit.Encoding
+}
+
 type Object struct {
 	m    ronykit.Message
 	data map[string]fieldInfo
+	enc  ronykit.Encoding
+}
+
+func (o Object) Encoding() ronykit.Encoding {
+	return o.enc
+}
+
+func (o Object) Message() ronykit.Message {
+	return o.m
 }
 
 func (o Object) GetInt(fieldName string) (int, error) {

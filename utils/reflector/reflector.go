@@ -1,6 +1,7 @@
 package reflector
 
 import (
+	"encoding"
 	"fmt"
 	"reflect"
 	"sync"
@@ -13,18 +14,16 @@ var (
 	ErrNoField     = fmt.Errorf("field not exists")
 )
 
-var registered = map[reflect.Type]map[string]fieldInfo{}
-
 type Reflector struct {
 	tagName string
 
 	cacheMtx sync.RWMutex
-	cache    map[reflect.Type]map[string]fieldInfo
+	cache    map[reflect.Type]*reflected
 }
 
 func New() *Reflector {
 	return &Reflector{
-		cache: map[reflect.Type]map[string]fieldInfo{},
+		cache: map[reflect.Type]*reflected{},
 	}
 }
 
@@ -37,7 +36,56 @@ func Register(m ronykit.Message) {
 
 	mVal := getValue(m)
 	mType := mVal.Type()
-	registered[mType] = destruct(mVal)
+	registered[mType] = &reflected{
+		obj: destruct(mVal),
+		enc: getEncoding(m),
+	}
+}
+
+func getEncoding(m ronykit.Message) ronykit.Encoding {
+	var e ronykit.Encoding
+
+	_, ok := m.(interface {
+		Marshal() ([]byte, error)
+		Unmarshal([]byte) error
+	})
+	if ok {
+		e |= ronykit.CustomDefined
+	}
+
+	_, ok = m.(interface {
+		MarshalJSON() ([]byte, error)
+		UnmarshalJSON([]byte) error
+	})
+	if ok {
+		e |= ronykit.JSON
+	}
+
+	_, ok = m.(interface {
+		MarshalProto() ([]byte, error)
+		UnmarshalProto([]byte) error
+	})
+	if ok {
+		e |= ronykit.Proto
+	}
+
+	_, ok = m.(interface {
+		encoding.BinaryMarshaler
+		encoding.BinaryUnmarshaler
+	})
+	if ok {
+		e |= ronykit.Binary
+	}
+
+	_, ok = m.(interface {
+		encoding.TextMarshaler
+		encoding.TextUnmarshaler
+	})
+	if ok {
+		e |= ronykit.Text
+	}
+
+	return e
 }
 
 func getValue(m ronykit.Message) reflect.Value {
@@ -88,7 +136,10 @@ func (r *Reflector) Load(m ronykit.Message) Object {
 		cachedData = r.cache[mType]
 		r.cacheMtx.RUnlock()
 		if cachedData == nil {
-			cachedData = destruct(mVal)
+			cachedData = &reflected{
+				obj: destruct(mVal),
+				enc: getEncoding(m),
+			}
 			r.cacheMtx.Lock()
 			r.cache[mType] = cachedData
 			r.cacheMtx.Unlock()
@@ -97,21 +148,13 @@ func (r *Reflector) Load(m ronykit.Message) Object {
 
 	return Object{
 		m:    m,
-		data: cachedData,
+		data: cachedData.obj,
+		enc:  cachedData.enc,
 	}
 }
 
 func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
-	rVal := reflect.ValueOf(m)
-	rType := rVal.Type()
-	if rType.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
-	}
-	e := rVal.Elem()
-	if e.Kind() != reflect.Struct {
-		panic("x must be a pointer to struct")
-	}
-
+	e := getValue(m)
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return nil
@@ -124,16 +167,7 @@ func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
 }
 
 func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, error) {
-	rVal := reflect.ValueOf(m)
-	rType := rVal.Type()
-	if rType.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
-	}
-	e := rVal.Elem()
-	if e.Kind() != reflect.Struct {
-		panic("x must be a pointer to struct")
-	}
-
+	e := getValue(m)
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return "", ErrNoField
@@ -146,16 +180,7 @@ func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, erro
 }
 
 func (r *Reflector) GetInt(m ronykit.Message, fieldName string) (int64, error) {
-	rVal := reflect.ValueOf(m)
-	rType := rVal.Type()
-	if rType.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
-	}
-	e := rVal.Elem()
-	if e.Kind() != reflect.Struct {
-		panic("x must be a pointer to struct")
-	}
-
+	e := getValue(m)
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return 0, ErrNoField

@@ -58,4 +58,9 @@ const (
 	Proto
 	Binary
 	Text
+	CustomDefined
 )
+
+func (e Encoding) Support(o Encoding) bool {
+	return e&o == o
+}

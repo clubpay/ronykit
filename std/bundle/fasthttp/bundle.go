@@ -311,11 +311,9 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
 		data, err = m.MarshalBinary()
 	case encoding.TextMarshaler:
 		data, err = m.MarshalText()
-
 	default:
 		data, err = json.Marshal(m)
 	}
-
 	if err != nil {
 		return err
 	}
