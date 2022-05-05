@@ -1,6 +1,8 @@
 package ronykit
 
-import "sync"
+import (
+	"sync"
+)
 
 type southBridge struct {
 	ctxPool sync.Pool
@@ -21,4 +23,31 @@ func (s *southBridge) OnJoin(members ...ClusterMember) {
 
 func (s *southBridge) OnLeave(memberIDs ...string) {
 	// Maybe later we can do something
+}
+
+func wrapWithForwarder(c Contract) Contract {
+	if c.EdgeSelector() == nil {
+		return c
+	}
+
+	memberSel := c.EdgeSelector()
+	cw := &contractWrap{
+		Contract: c,
+		preH: []HandlerFunc{
+			func(ctx *Context) {
+				_, err := memberSel(newLimitedContext(ctx))
+				if err != nil {
+					// TODO:: return error ?!
+					return
+				}
+
+				//fmt.Println("HERE")
+
+				// TODO:: implement it
+				ctx.StopExecution()
+			},
+		},
+	}
+
+	return cw
 }

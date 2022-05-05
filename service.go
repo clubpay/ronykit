@@ -1,5 +1,10 @@
 package ronykit
 
+// ServiceGenerator generates a service. desc.Service is the implementor of this.
+type ServiceGenerator interface {
+	Generate() Service
+}
+
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Gateway.
 type Service interface {
@@ -32,65 +37,31 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 	return svc
 }
 
-// ServiceGenerator generates a service. desc.Service is the implementor of this.
-type ServiceGenerator interface {
-	Generate() Service
-}
-
-// Contract defines the set of Handlers based on the Query. Query is different per bundles,
-// hence, this is the implementor's task to make sure return correct value based on 'q'.
-// In other words, Contract 'r' must return valid response for 'q's required by Gateway 'b' in
-// order to be usable by Gateway 'b' otherwise it panics.
-type Contract interface {
-	RouteSelector() RouteSelector
-	MemberSelector() MemberSelector
-	Encoding() Encoding
-	Input() Message
-	Handlers() []HandlerFunc
-	Modifiers() []Modifier
-}
-
-// ContractWrapper is like an interceptor which can add Pre- and Post- handlers to all
-// the Contracts of the Contract.
-type ContractWrapper interface {
-	Wrap(Contract) Contract
-}
-
-// ContractWrapperFunc implements ContractWrapper interface.
-type ContractWrapperFunc func(Contract) Contract
-
-func (sw ContractWrapperFunc) Wrap(svc Contract) Contract {
-	return sw(svc)
-}
-
-// WrapContract wraps a contract, this is useful for adding middlewares to the contract.
-// Some middlewares like OpenTelemetry, Logger, ... could be added to the contract using
-// this function.
-func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
-	for _, w := range wrappers {
-		c = w.Wrap(c)
+func WrapServiceContracts(svc Service, wrapper ContractWrapper) Service {
+	sw := &serviceWrap{
+		name: svc.Name(),
 	}
 
-	return c
+	for _, c := range svc.Contracts() {
+		sw.contracts = append(sw.contracts, wrapper.Wrap(c))
+	}
+
+	return sw
 }
 
-// RouteSelector holds information about how this Contract is going to be selected. Each
-// Gateway may need different information to route the request to the right Contract.
-type RouteSelector interface {
-	Query(q string) interface{}
+// serviceWrap implements Service interface and is useful when we need to wrap another
+// service.
+type serviceWrap struct {
+	name      string
+	contracts []Contract
 }
 
-// RESTRouteSelector defines the RouteSelector which could be used in REST operations
-// Gateway implementation which handle REST requests could check the selector if it supports REST.
-type RESTRouteSelector interface {
-	RouteSelector
-	GetMethod() string
-	GetPath() string
+var _ Service = (*serviceWrap)(nil)
+
+func (sw serviceWrap) Contracts() []Contract {
+	return sw.contracts
 }
 
-// RPCRouteSelector defines the RouteSelector which could be used in RPC operations.
-// Gateway implementation which handle RPC requests could check the selector if it supports RPC
-type RPCRouteSelector interface {
-	RouteSelector
-	GetPredicate() string
+func (sw serviceWrap) Name() string {
+	return sw.name
 }

@@ -45,6 +45,7 @@ func (s *EdgeServer) RegisterGateway(b Gateway) *EdgeServer {
 	}
 	s.nb = append(s.nb, nb)
 
+	// Subscribe the northBridge, which is a GatewayDelegate, to connect northBridge with the Gateway
 	b.Subscribe(nb)
 
 	return s
@@ -61,6 +62,7 @@ func (s *EdgeServer) RegisterCluster(c Cluster) *EdgeServer {
 	}
 	s.sb = append(s.sb, sb)
 
+	// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
 	c.Subscribe(sb)
 
 	return s
@@ -73,7 +75,7 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 		panic(errServiceAlreadyRegistered(svc.Name()))
 	}
 
-	s.svc[svc.Name()] = svc
+	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(wrapWithForwarder))
 
 	return s
 }

@@ -18,7 +18,7 @@ type Contract struct {
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
 	RouteSelectors []ronykit.RouteSelector
-	MemberSelector ronykit.MemberSelector
+	MemberSelector ronykit.EdgeSelector
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
 	Output         ronykit.Message
@@ -81,8 +81,8 @@ func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	return c
 }
 
-// SetForwarder sets a ronykit.MemberSelector for this contract.
-func (c *Contract) SetForwarder(f ronykit.MemberSelector) *Contract {
+// SetForwarder sets a ronykit.EdgeSelector for this contract.
+func (c *Contract) SetForwarder(f ronykit.EdgeSelector) *Contract {
 	c.MemberSelector = f
 
 	return c
@@ -224,7 +224,8 @@ func (s Service) Generate() ronykit.Service {
 				addHandler(svc.post...).
 				setModifier(c.Modifiers...).
 				setInput(c.Input).
-				setSelector(s).
+				setRouteSelector(s).
+				setMemberSelector(c.MemberSelector).
 				setEncoding(c.Encoding)
 
 			contracts[idx] = ronykit.WrapContract(ci, c.Wrappers...)

@@ -60,7 +60,6 @@ func MustNew(opts ...Option) *bundle {
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
-
 		rpcSelector, ok := contract.RouteSelector().(ronykit.RPCRouteSelector)
 		if !ok {
 			continue

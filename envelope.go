@@ -156,7 +156,7 @@ func (e *Envelope) Send() {
 }
 
 // DontRelease is used by testkit, you should not use it in your code.
-// Caution: internal usage only, DO NOT use in your code.
+// Caution: internal usage only, **DO NOT** use in your code.
 func (e *Envelope) DontRelease() {
 	e.shouldRelease = false
 }

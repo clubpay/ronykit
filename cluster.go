@@ -4,12 +4,12 @@ import (
 	"context"
 )
 
-// MemberSelector is a function that returns the target EdgeServer in the Cluster. If you have
+// EdgeSelector is a function that returns the target EdgeServer in the Cluster. If you have
 // multiple instances of the EdgeServer, and you want to forward some requests to a specific
 // instance, you can set up this function in desc.Contract, then, the receiving EdgeServer will
 // detect the target instance by calling this function and forwards the request to the returned
 // instance. From the external client point of view this forwarding request is not observable.
-type MemberSelector func(ctx *LimitedContext) (ClusterMember, error)
+type EdgeSelector func(ctx *LimitedContext) (ClusterMember, error)
 
 // Cluster identifies all instances of our EdgeServer. The implementation of the Cluster is not
 // forced by the architecture. However, we can break down Cluster implementations into two categories:
@@ -28,7 +28,6 @@ type Cluster interface {
 type ClusterMember interface {
 	ServerID() string
 	AdvertisedURL() []string
-	Execute(req ClusterMessage) (res ClusterMessage, err error)
 }
 
 // ClusterDelegate is the delegate that connects the Cluster to the rest of the system.
@@ -36,10 +35,6 @@ type ClusterDelegate interface {
 	OnError(err error)
 	OnJoin(members ...ClusterMember)
 	OnLeave(memberIDs ...string)
-}
-
-type ClusterMessage interface {
-	ContextData()
 }
 
 // ClusterStore is the abstraction of the store for store based cluster.
