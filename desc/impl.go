@@ -20,14 +20,6 @@ func (s *serviceImpl) Contracts() []ronykit.Contract {
 	return s.contracts
 }
 
-func (s *serviceImpl) PreHandlers() []ronykit.HandlerFunc {
-	return s.pre
-}
-
-func (s *serviceImpl) PostHandlers() []ronykit.HandlerFunc {
-	return s.post
-}
-
 func (s *serviceImpl) setPreHandlers(h ...ronykit.HandlerFunc) *serviceImpl {
 	s.pre = append(s.pre[:0], h...)
 
@@ -78,6 +70,12 @@ func (r *contractImpl) setSelector(selector ronykit.RouteSelector) *contractImpl
 
 func (r *contractImpl) setHandler(handlers ...ronykit.HandlerFunc) *contractImpl {
 	r.handlers = append(r.handlers[:0], handlers...)
+
+	return r
+}
+
+func (r *contractImpl) addHandler(handlers ...ronykit.HandlerFunc) *contractImpl {
+	r.handlers = append(r.handlers, handlers...)
 
 	return r
 }

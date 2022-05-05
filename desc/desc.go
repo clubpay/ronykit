@@ -117,23 +117,6 @@ func (c *Contract) SetHandler(h ...ronykit.HandlerFunc) *Contract {
 	return c
 }
 
-// Generate generates the ronykit.Contract
-func (c *Contract) Generate() []ronykit.Contract {
-	contracts := make([]ronykit.Contract, len(c.RouteSelectors))
-	for idx, s := range c.RouteSelectors {
-		ci := &contractImpl{}
-		ci.setHandler(c.Handlers...)
-		ci.setModifier(c.Modifiers...)
-		ci.setInput(c.Input)
-		ci.setSelector(s)
-		ci.setEncoding(c.Encoding)
-
-		contracts[idx] = ronykit.WrapContract(ci, c.Wrappers...)
-	}
-
-	return contracts
-}
-
 // Service is the description of the ronykit.Service you are going to create. It then
 // generates a ronykit.Service by calling Generate method.
 type Service struct {
@@ -232,7 +215,22 @@ func (s Service) Generate() ronykit.Service {
 	for _, c := range s.Contracts {
 		reflector.Register(c.Input)
 		reflector.Register(c.Output)
-		svc.contracts = append(svc.contracts, c.Generate()...)
+
+		contracts := make([]ronykit.Contract, len(c.RouteSelectors))
+		for idx, s := range c.RouteSelectors {
+			ci := (&contractImpl{}).
+				addHandler(svc.pre...).
+				addHandler(c.Handlers...).
+				addHandler(svc.post...).
+				setModifier(c.Modifiers...).
+				setInput(c.Input).
+				setSelector(s).
+				setEncoding(c.Encoding)
+
+			contracts[idx] = ronykit.WrapContract(ci, c.Wrappers...)
+		}
+
+		svc.contracts = append(svc.contracts, contracts...)
 	}
 
 	return ronykit.WrapService(svc, s.Wrappers...)

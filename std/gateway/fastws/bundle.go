@@ -60,10 +60,6 @@ func MustNew(opts ...Option) *bundle {
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
-		var h []ronykit.HandlerFunc
-		h = append(h, svc.PreHandlers()...)
-		h = append(h, contract.Handlers()...)
-		h = append(h, svc.PostHandlers()...)
 
 		rpcSelector, ok := contract.RouteSelector().(ronykit.RPCRouteSelector)
 		if !ok {
@@ -73,7 +69,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 		b.routes[rpcSelector.GetPredicate()] = routeData{
 			ServiceName: svc.Name(),
 			Predicate:   rpcSelector.GetPredicate(),
-			Handlers:    h,
+			Handlers:    contract.Handlers(),
 			Modifiers:   contract.Modifiers(),
 			Factory:     ronykit.CreateMessageFactory(contract.Input()),
 		}

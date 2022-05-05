@@ -129,13 +129,8 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
-		var h []ronykit.HandlerFunc
-		h = append(h, svc.PreHandlers()...)
-		h = append(h, contract.Handlers()...)
-		h = append(h, svc.PostHandlers()...)
-
-		b.registerRPC(svc.Name(), contract, h...)
-		b.registerREST(svc.Name(), contract, h...)
+		b.registerRPC(svc.Name(), contract, contract.Handlers()...)
+		b.registerREST(svc.Name(), contract, contract.Handlers()...)
 	}
 }
 
