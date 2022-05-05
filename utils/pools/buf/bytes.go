@@ -3,8 +3,6 @@ package buf
 import (
 	"io"
 	"sync"
-
-	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -156,15 +154,6 @@ func (p *bytesPool) GetCap(c int) *Bytes {
 // and exactly len of n.
 func (p *bytesPool) GetLen(n int) *Bytes {
 	return p.Get(n, n)
-}
-
-func (p *bytesPool) FromProto(m proto.Message) *Bytes {
-	mo := proto.MarshalOptions{UseCachedSize: true}
-	buf := p.GetCap(mo.Size(m))
-	bb, _ := mo.MarshalAppend(*buf.Bytes(), m)
-	buf.SetBytes(&bb)
-
-	return buf
 }
 
 func (p *bytesPool) FromBytes(b []byte) *Bytes {

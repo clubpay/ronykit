@@ -10,14 +10,12 @@ require (
 	github.com/panjf2000/gnet v1.6.4
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/valyala/fasthttp v1.36.0
-	google.golang.org/protobuf v1.28.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
