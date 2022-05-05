@@ -41,8 +41,6 @@ func wrapWithForwarder(c Contract) Contract {
 					return
 				}
 
-				//fmt.Println("HERE")
-
 				// TODO:: implement it
 				ctx.StopExecution()
 			},

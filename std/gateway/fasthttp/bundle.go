@@ -177,52 +177,49 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 	)
 }
 
-func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	switch c := c.(type) {
+func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	switch ctx.Conn().(type) {
 	case *httpConn:
-		return b.httpDispatch(c, in)
+		return b.httpDispatch(ctx, in, execFunc)
 	case *wsConn:
-		return b.wsDispatch(in)
+		return b.wsDispatch(ctx, in, execFunc)
 	default:
 		panic("BUG!! incorrect connection")
 	}
 }
 
-func (b *bundle) wsDispatch(in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData.Handlers == nil {
-		return nil, errNoHandler
+		return errNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.Fill(msg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// return the DispatchFunc
-	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		ctx.In().
-			SetHdrMap(inputMsgContainer.GetHdrMap()).
-			SetMsg(msg)
+	ctx.In().
+		SetHdrMap(inputMsgContainer.GetHdrMap()).
+		SetMsg(msg)
 
-		ctx.
-			Set(ronykit.CtxServiceName, routeData.ServiceName).
-			Set(ronykit.CtxRoute, routeData.Predicate)
+	ctx.
+		Set(ronykit.CtxServiceName, routeData.ServiceName).
+		Set(ronykit.CtxRoute, routeData.Predicate)
 
-		ctx.AddModifier(routeData.Modifiers...)
+	ctx.AddModifier(routeData.Modifiers...)
 
-		// run the execFunc with generated params
-		execFunc(ctx, b.wsWriteFunc, routeData.Handlers...)
+	// run the execFunc with generated params
+	execFunc(ctx, b.wsWriteFunc, routeData.Handlers...)
 
-		return nil
-	}, nil
+	return nil
 }
 
 func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
@@ -244,7 +241,9 @@ func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
 	return err
 }
 
-func (b *bundle) httpDispatch(conn *httpConn, in []byte) (ronykit.DispatchFunc, error) {
+func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	conn := ctx.Conn().(*httpConn)
+
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// check CORS rules before even returning errRouteNotFound. This makes sure that
@@ -252,7 +251,7 @@ func (b *bundle) httpDispatch(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
-		return nil, errRouteNotFound
+		return errRouteNotFound
 	}
 
 	// Walk over all the query params
@@ -268,22 +267,20 @@ func (b *bundle) httpDispatch(conn *httpConn, in []byte) (ronykit.DispatchFunc, 
 		},
 	)
 
-	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		// Set the route and service name
-		ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
-		ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
+	// Set the route and service name
+	ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
+	ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
 
-		ctx.In().
-			SetHdrWalker(conn).
-			SetMsg(routeData.Decoder(params, in))
+	ctx.In().
+		SetHdrWalker(conn).
+		SetMsg(routeData.Decoder(params, in))
 
-		ctx.AddModifier(routeData.Modifiers...)
+	ctx.AddModifier(routeData.Modifiers...)
 
-		// execute handler functions
-		execFunc(ctx, b.httpWriteFunc, routeData.Handlers...)
+	// execute handler functions
+	execFunc(ctx, b.httpWriteFunc, routeData.Handlers...)
 
-		return nil
-	}, nil
+	return nil
 }
 
 func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {

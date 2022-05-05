@@ -33,15 +33,7 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 	ctx := n.acquireCtx(c)
 	defer n.recoverPanic(ctx, c)
 
-	dispatchFunc, err := n.b.Dispatch(c, msg)
-	if err != nil {
-		n.eh(ctx, err)
-		n.releaseCtx(ctx)
-
-		return
-	}
-
-	err = dispatchFunc(ctx, n.execFunc)
+	err := n.b.Dispatch(ctx, msg, n.execFunc)
 	if err != nil {
 		n.eh(ctx, err)
 	}

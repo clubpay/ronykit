@@ -75,64 +75,57 @@ func (b *bundle) Register(svc ronykit.Service) {
 	}
 }
 
-func (b *bundle) Dispatch(c ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	if _, ok := c.(*wsConn); !ok {
-		panic("BUG!! incorrect connection")
-	}
-
+func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
 	inputMsgContainer := b.rpcInFactory()
 	err := json.Unmarshal(in, inputMsgContainer)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData.Handlers == nil {
-		return nil, errNoHandler
+		return errNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.Fill(msg)
 	if err != nil {
-		return nil, err
-	}
-
-	writeFunc := func(conn ronykit.Conn, e *ronykit.Envelope) error {
-		outputMsgContainer := b.rpcOutFactory()
-		outputMsgContainer.SetPayload(e.GetMsg())
-		e.WalkHdr(func(key string, val string) bool {
-			outputMsgContainer.SetHdr(key, val)
-
-			return true
-		})
-
-		data, err := outputMsgContainer.Marshal()
-		if err != nil {
-			return err
-		}
-
-		_, err = conn.Write(data)
-
 		return err
 	}
 
-	// return the DispatchFunc
-	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		ctx.In().
-			SetHdrMap(inputMsgContainer.GetHdrMap()).
-			SetMsg(msg)
+	ctx.In().
+		SetHdrMap(inputMsgContainer.GetHdrMap()).
+		SetMsg(msg)
 
-		ctx.
-			Set(ronykit.CtxServiceName, routeData.ServiceName).
-			Set(ronykit.CtxRoute, routeData.Predicate)
+	ctx.
+		Set(ronykit.CtxServiceName, routeData.ServiceName).
+		Set(ronykit.CtxRoute, routeData.Predicate)
 
-		ctx.AddModifier(routeData.Modifiers...)
+	ctx.AddModifier(routeData.Modifiers...)
 
-		// run the execFunc with generated params
-		execFunc(ctx, writeFunc, routeData.Handlers...)
+	// run the execFunc with generated params
+	execFunc(ctx, b.writeFunc, routeData.Handlers...)
 
-		return nil
-	}, nil
+	return nil
+}
+
+func (b *bundle) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+	outputMsgContainer := b.rpcOutFactory()
+	outputMsgContainer.SetPayload(e.GetMsg())
+	e.WalkHdr(func(key string, val string) bool {
+		outputMsgContainer.SetHdr(key, val)
+
+		return true
+	})
+
+	data, err := outputMsgContainer.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Write(data)
+
+	return err
 }
 
 func (b *bundle) Start() {

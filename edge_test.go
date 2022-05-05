@@ -83,34 +83,32 @@ func (t testMessage) Marshal() ([]byte, error) {
 
 type testDispatcher struct{}
 
-func (t testDispatcher) Dispatch(_ ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	return func(ctx *ronykit.Context, execFunc ronykit.ExecuteFunc) error {
-		ctx.In().SetMsg(testMessage(in))
-		execFunc(
-			ctx,
-			func(conn ronykit.Conn, e *ronykit.Envelope) error {
-				b, err := json.Marshal(e.GetMsg())
-				if err != nil {
-					return err
-				}
-
-				_, err = conn.Write(b)
-
+func (t testDispatcher) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	ctx.In().SetMsg(testMessage(in))
+	execFunc(
+		ctx,
+		func(conn ronykit.Conn, e *ronykit.Envelope) error {
+			b, err := json.Marshal(e.GetMsg())
+			if err != nil {
 				return err
-			},
-			func(ctx *ronykit.Context) {
-				m := ctx.In().GetMsg()
+			}
 
-				ctx.Out().
-					SetMsg(m).
-					Send()
+			_, err = conn.Write(b)
 
-				return
-			},
-		)
+			return err
+		},
+		func(ctx *ronykit.Context) {
+			m := ctx.In().GetMsg()
 
-		return nil
-	}, nil
+			ctx.Out().
+				SetMsg(m).
+				Send()
+
+			return
+		},
+	)
+
+	return nil
 }
 
 type testBundle struct {
@@ -130,8 +128,8 @@ func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
 	t.gw.Subscribe(d)
 }
 
-func (t testBundle) Dispatch(conn ronykit.Conn, in []byte) (ronykit.DispatchFunc, error) {
-	return t.d.Dispatch(conn, in)
+func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	return t.d.Dispatch(ctx, in, execFunc)
 }
 
 func (t testBundle) Register(srv ronykit.Service) {}

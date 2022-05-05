@@ -37,13 +37,16 @@ func WrapService(svc Service, wrappers ...ServiceWrapper) Service {
 	return svc
 }
 
-func WrapServiceContracts(svc Service, wrapper ContractWrapper) Service {
+func WrapServiceContracts(svc Service, wrapper ...ContractWrapper) Service {
 	sw := &serviceWrap{
 		name: svc.Name(),
 	}
 
 	for _, c := range svc.Contracts() {
-		sw.contracts = append(sw.contracts, wrapper.Wrap(c))
+		for _, w := range wrapper {
+			c = w.Wrap(c)
+		}
+		sw.contracts = append(sw.contracts, c)
 	}
 
 	return sw

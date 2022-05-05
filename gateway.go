@@ -16,14 +16,13 @@ type Gateway interface {
 	// Dispatch receives the messages from external clients and returns DispatchFunc
 	// The user of the Gateway does not need to implement this. If you are using some standard bundles
 	// like std/bundle/fasthttp or std/bundle/fastws then all the implementation is taken care of.
-	Dispatch(conn Conn, in []byte) (DispatchFunc, error)
+	Dispatch(ctx *Context, in []byte, execFunc ExecuteFunc) error
 	Register(svc Service)
 }
 
 type (
-	WriteFunc    func(conn Conn, e *Envelope) error
-	ExecuteFunc  func(ctx *Context, wf WriteFunc, handlers ...HandlerFunc)
-	DispatchFunc func(ctx *Context, execFunc ExecuteFunc) error
+	WriteFunc   func(conn Conn, e *Envelope) error
+	ExecuteFunc func(ctx *Context, wf WriteFunc, handlers ...HandlerFunc)
 )
 
 // GatewayDelegate is the delegate that connects the Gateway to the rest of the system.
