@@ -16,7 +16,9 @@ type EdgeSelector func(ctx *LimitedContext) (ClusterMember, error)
 // shared store, or gossip based clusters. In our std package, we provide a store based cluster, which
 // could be integrated with other services with the help of ClusterStore.
 type Cluster interface {
+	// Start starts the gateway to accept connections.
 	Start(ctx context.Context) error
+	// Shutdown shuts down the gateway gracefully.
 	Shutdown(ctx context.Context) error
 	Members(ctx context.Context) ([]ClusterMember, error)
 	MemberByID(ctx context.Context, id string) (ClusterMember, error)

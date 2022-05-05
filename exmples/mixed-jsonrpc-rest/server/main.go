@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
@@ -10,6 +11,8 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(4)
+
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
 		ronykit.WithErrorHandler(
@@ -30,8 +33,8 @@ func main() {
 		),
 		ronykit.RegisterServiceDesc(NewSample().Desc()),
 	).
-		Start().
-		Shutdown(os.Kill, os.Interrupt)
+		Start(nil).
+		Shutdown(nil, os.Kill, os.Interrupt)
 
 	//nolint:forbidigo
 	fmt.Println("Server started.")

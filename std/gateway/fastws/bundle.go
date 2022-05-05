@@ -128,7 +128,7 @@ func (b *bundle) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
 	return err
 }
 
-func (b *bundle) Start() {
+func (b *bundle) Start(_ context.Context) error {
 	go func() {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
@@ -138,15 +138,19 @@ func (b *bundle) Start() {
 			panic(err)
 		}
 	}()
+
+	return nil
 }
 
-func (b *bundle) Shutdown() {
-	ctx, cf := context.WithTimeout(context.Background(), time.Minute)
+func (b *bundle) Shutdown(ctx context.Context) error {
+	ctx, cf := context.WithTimeout(ctx, time.Minute)
 	defer cf()
 	err := gnet.Stop(ctx, b.listen)
 	if err != nil {
-		b.l.Error("got error on shutdown: ", err)
+		return err
 	}
+
+	return nil
 }
 
 func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {

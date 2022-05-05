@@ -1,6 +1,7 @@
 package ronykit_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -116,12 +117,16 @@ type testBundle struct {
 	d  *testDispatcher
 }
 
-func (t testBundle) Start() {
+func (t testBundle) Start(_ context.Context) error {
 	t.gw.Start()
+
+	return nil
 }
 
-func (t testBundle) Shutdown() {
+func (t testBundle) Shutdown(_ context.Context) error {
 	t.gw.Shutdown()
+
+	return nil
 }
 
 func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
@@ -143,9 +148,9 @@ func TestServer(t *testing.T) {
 		s := ronykit.NewServer(
 			ronykit.RegisterGateway(b),
 		)
-		s.Start()
+		s.Start(nil)
 		b.gw.Send([]byte("123"))
-		s.Shutdown()
+		s.Shutdown(nil)
 	})
 }
 
@@ -156,8 +161,8 @@ func BenchmarkServer(b *testing.B) {
 	}
 	s := ronykit.NewServer(
 		ronykit.RegisterGateway(bundle),
-	).Start()
-	defer s.Shutdown()
+	).Start(nil)
+	defer s.Shutdown(nil)
 
 	req := []byte(utils.RandomID(24))
 	b.ResetTimer()

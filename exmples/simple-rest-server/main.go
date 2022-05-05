@@ -28,8 +28,8 @@ func main() {
 			api.NewSample().Desc(),
 		),
 	).
-		Start().
-		Shutdown(syscall.SIGHUP)
+		Start(nil).
+		Shutdown(nil, syscall.SIGHUP)
 
 	//nolint:forbidigo
 	fmt.Println("Server started.")

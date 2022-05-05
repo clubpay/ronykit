@@ -1,6 +1,7 @@
 package ronykit
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -81,13 +82,21 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 }
 
 // Start registers services in the registered bundles and start the bundles.
-func (s *EdgeServer) Start() *EdgeServer {
+func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	for idx := range s.nb {
 		for _, svc := range s.svc {
 			s.nb[idx].b.Register(svc)
 		}
 
-		s.nb[idx].b.Start()
+		err := s.nb[idx].b.Start(ctx)
+		if err != nil {
+			s.l.Errorf("got error on starting gateway: %v", err)
+			panic(err)
+		}
 	}
 
 	s.l.Debug("server started.")
@@ -95,7 +104,11 @@ func (s *EdgeServer) Start() *EdgeServer {
 	return s
 }
 
-func (s *EdgeServer) Shutdown(signals ...os.Signal) {
+func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	if len(signals) > 0 {
 		// Create a signal channel and bind it to all the os signals in the arg
 		shutdownChan := make(chan os.Signal, 1)
@@ -107,7 +120,10 @@ func (s *EdgeServer) Shutdown(signals ...os.Signal) {
 
 	// Start all the registered gateways
 	for idx := range s.nb {
-		s.nb[idx].b.Shutdown()
+		err := s.nb[idx].b.Shutdown(ctx)
+		if err != nil {
+			s.l.Errorf("got error on shutdown: %v", err)
+		}
 	}
 
 	return

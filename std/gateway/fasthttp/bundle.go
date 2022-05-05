@@ -2,6 +2,7 @@ package fasthttp
 
 import (
 	"bytes"
+	"context"
 	"encoding"
 	"encoding/json"
 	"fmt"
@@ -323,22 +324,25 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
 	return nil
 }
 
-func (b *bundle) Start() {
+func (b *bundle) Start(_ context.Context) error {
 	ln, err := net.Listen("tcp4", b.listen)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	go func() {
-		err := b.srv.Serve(ln)
+		err = b.srv.Serve(ln)
 		if err != nil {
+			b.l.Errorf("got error on serving: %v", err)
 			panic(err)
 		}
 	}()
+
+	return nil
 }
 
-func (b *bundle) Shutdown() {
-	_ = b.srv.Shutdown()
+func (b *bundle) Shutdown(_ context.Context) error {
+	return b.srv.Shutdown()
 }
 
 func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
