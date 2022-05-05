@@ -38,7 +38,6 @@ func (m member) AdvertisedURL() []string {
 }
 
 func (m member) Dial(ctx context.Context) (net.Conn, error) {
-	//TODO implement me
 	panic("implement me")
 }
 

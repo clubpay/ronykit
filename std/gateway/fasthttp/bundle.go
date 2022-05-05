@@ -141,6 +141,10 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 		return
 	}
 
+	if rpcSelector.GetPredicate() == "" {
+		return
+	}
+
 	rd := &routeData{
 		ServiceName: svcName,
 		Predicate:   rpcSelector.GetPredicate(),
@@ -156,6 +160,10 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ronykit.HandlerFunc) {
 	restSelector, ok := c.RouteSelector().(ronykit.RESTRouteSelector)
 	if !ok {
+		return
+	}
+
+	if restSelector.GetMethod() == "" || restSelector.GetPath() == "" {
 		return
 	}
 
@@ -243,6 +251,7 @@ func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
 }
 
 func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	//nolint:forcetypeassert
 	conn := ctx.Conn().(*httpConn)
 
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())

@@ -37,11 +37,9 @@ func wrapWithForwarder(c Contract) Contract {
 			func(ctx *Context) {
 				_, err := memberSel(newLimitedContext(ctx))
 				if err != nil {
-					// TODO:: return error ?!
 					return
 				}
 
-				// TODO:: implement it
 				ctx.StopExecution()
 			},
 		},

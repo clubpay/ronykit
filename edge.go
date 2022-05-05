@@ -3,10 +3,18 @@ package ronykit
 import (
 	"context"
 	"fmt"
+	"hash/crc32"
+	"io"
 	"os"
 	"os/signal"
+	"reflect"
+	"runtime"
+	"strings"
 
 	"github.com/clubpay/ronykit/internal/errors"
+	"github.com/clubpay/ronykit/utils"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
 var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
@@ -127,4 +135,92 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 	}
 
 	return
+}
+
+func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
+	tw := table.NewWriter()
+	tw.SuppressEmptyColumns()
+	tw.AppendHeader(
+		table.Row{
+			text.Bold.Sprint("Service"),
+			text.Bold.Sprint("Proto"),
+			text.Bold.Sprint("Route"),
+			text.Bold.Sprint("Handlers"),
+		},
+		table.RowConfig{AutoMerge: true},
+	)
+
+	for _, svc := range s.svc {
+		tw.AppendRow(
+			table.Row{
+				text.Bold.Sprint(svc.Name()),
+				"", "", "",
+			},
+			table.RowConfig{AutoMerge: true},
+		)
+		colIdx := 0
+		for _, c := range svc.Contracts() {
+			sb := strings.Builder{}
+			for idx, h := range c.Handlers() {
+				if idx != 0 {
+					sb.WriteString(", ")
+				}
+				sb.WriteString(getFuncName(h))
+			}
+			if rs, ok := c.RouteSelector().(RPCRouteSelector); ok {
+				if rs.GetPredicate() != "" {
+					colIdx++
+					tw.AppendRow(
+						table.Row{
+							colIdx,
+							text.FgBlue.Sprint("RPC"),
+							text.Colors{
+								text.Bold, text.FgBlue,
+							}.Sprint(rs.GetPredicate()),
+							sb.String(),
+						},
+						table.RowConfig{AutoMerge: true},
+					)
+				}
+			}
+
+			if rs, ok := c.RouteSelector().(RESTRouteSelector); ok {
+				if rs.GetMethod() != "" && rs.GetPath() != "" {
+					colIdx++
+					tw.AppendRow(
+						table.Row{
+							colIdx,
+							text.FgGreen.Sprint("REST"),
+							fmt.Sprintf("%s %s",
+								text.Colors{
+									text.Bold, text.FgGreen,
+								}.Sprint(rs.GetMethod()),
+								text.Colors{
+									text.BgWhite, text.FgHiWhite,
+								}.Sprint(rs.GetPath()),
+							),
+							sb.String(),
+						},
+						table.RowConfig{AutoMerge: true},
+					)
+				}
+			}
+		}
+		tw.AppendSeparator()
+	}
+
+	_, _ = w.Write(utils.S2B(tw.Render()))
+	_, _ = w.Write(utils.S2B("\n"))
+
+	return s
+}
+
+func getFuncName(f HandlerFunc) string {
+	name := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	parts := strings.Split(name, "/")
+
+	c := text.Color(crc32.ChecksumIEEE(utils.S2B(parts[len(parts)-1])) % 7)
+	c += text.FgBlack + 1
+
+	return c.Sprint(parts[len(parts)-1])
 }

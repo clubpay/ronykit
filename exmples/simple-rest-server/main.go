@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"syscall"
 
@@ -29,6 +30,7 @@ func main() {
 		),
 	).
 		Start(nil).
+		PrintRoutes(os.Stdout).
 		Shutdown(nil, syscall.SIGHUP)
 
 	//nolint:forbidigo

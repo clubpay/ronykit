@@ -37,7 +37,7 @@ func (x *Sample) Desc() *desc.Service {
 				AddModifier(func(envelope *ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
-				//SetForwarder(Forwarder).
+				SetForwarder(Forwarder).
 				SetHandler(EchoHandler),
 		).
 		AddContract(

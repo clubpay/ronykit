@@ -7,6 +7,7 @@ require (
 	github.com/gobwas/ws v1.1.0
 	github.com/goccy/go-json v0.9.7
 	github.com/goccy/go-reflect v1.1.1-0.20210520085854-e1eb8c5193d0
+	github.com/jedib0t/go-pretty/v6 v6.3.1
 	github.com/panjf2000/gnet v1.6.4
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/valyala/fasthttp v1.36.0
@@ -19,7 +20,9 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20220401102855-e56b59f40436 // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

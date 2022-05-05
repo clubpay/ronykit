@@ -7,7 +7,7 @@ import (
 
 const (
 	bitSize       = 32 << (^uint(0) >> 63)
-	maxintHeadBit = 1 << (bitSize - 2)
+	maxIntHeadBit = 1 << (bitSize - 2)
 )
 
 type Bytes struct {
@@ -177,7 +177,7 @@ func logarithmicRange(min, max int, cb func(int)) {
 // ceilToPowerOfTwo returns the least power of two integer value greater than
 // or equal to n.
 func ceilToPowerOfTwo(n int) int {
-	if n&maxintHeadBit != 0 && n > maxintHeadBit {
+	if n&maxIntHeadBit != 0 && n > maxIntHeadBit {
 		panic("argument is too large")
 	}
 	if n <= 2 {
