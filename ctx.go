@@ -65,6 +65,10 @@ func (ctx *Context) AddModifier(modifiers ...Modifier) {
 	ctx.modifiers = append(ctx.modifiers, modifiers...)
 }
 
+func (ctx *Context) SetUserContext(userCtx context.Context) {
+	ctx.ctx = userCtx
+}
+
 // Context returns a context.WithCancel which can be used a reference context for
 // other context aware function calls. This context will be canceled at the end of
 // Context lifetime.

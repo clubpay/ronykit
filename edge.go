@@ -142,7 +142,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	tw.AppendHeader(
 		table.Row{
 			text.Bold.Sprint("Service"),
-			text.Bold.Sprint("Proto"),
+			text.Bold.Sprint("API"),
 			text.Bold.Sprint("Route"),
 			text.Bold.Sprint("Handlers"),
 		},
