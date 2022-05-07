@@ -44,7 +44,7 @@ func (x *Sample) Desc() *desc.Service {
 				SetInput(&dto.SumRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
-					Path:   "/sum/:val1/:val2",
+					Path:   "/sum/:val1/:val2/fwfwe/fwefwef/w/fw/fw/fw/fwe/f/we/f43r34t34t34/fwfwef",
 				}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodPost,

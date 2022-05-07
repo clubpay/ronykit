@@ -139,70 +139,64 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	tw := table.NewWriter()
 	tw.SuppressEmptyColumns()
+	tw.SetStyle(table.StyleRounded)
+	tw.Style().Format.Header = text.FormatTitle
+	tw.Style().Options.SeparateRows = true
+	tw.SetAutoIndex(true)
+	tw.SetColumnConfigs([]table.ColumnConfig{
+		{
+			Number:   1,
+			Align:    text.AlignLeft,
+			WidthMax: 6,
+		},
+		{
+			Number:           2,
+			Align:            text.AlignLeft,
+			WidthMax:         52,
+			WidthMaxEnforcer: text.WrapSoft,
+		},
+		{
+			Number:           3,
+			Align:            text.AlignLeft,
+			WidthMax:         42,
+			WidthMaxEnforcer: text.WrapSoft,
+		},
+	})
 	tw.AppendHeader(
 		table.Row{
-			text.Bold.Sprint("Service"),
 			text.Bold.Sprint("API"),
-			text.Bold.Sprint("Route"),
+			text.Bold.Sprint("Route / Predicate"),
 			text.Bold.Sprint("Handlers"),
 		},
-		table.RowConfig{AutoMerge: true},
 	)
 
 	for _, svc := range s.svc {
-		tw.AppendRow(
+		tw.AppendHeader(
 			table.Row{
+				"",
 				text.Bold.Sprint(svc.Name()),
-				"", "", "",
+				text.Bold.Sprint(svc.Name()),
 			},
 			table.RowConfig{AutoMerge: true},
 		)
-		colIdx := 0
 		for _, c := range svc.Contracts() {
-			sb := strings.Builder{}
-			for idx, h := range c.Handlers() {
-				if idx != 0 {
-					sb.WriteString(", ")
-				}
-				sb.WriteString(getFuncName(h))
+			if route := rpcRoute(c.RouteSelector()); route != "" {
+				tw.AppendRow(
+					table.Row{
+						text.FgBlue.Sprint("RPC"),
+						route,
+						getHandlers(c.Handlers()...),
+					},
+				)
 			}
-			if rs, ok := c.RouteSelector().(RPCRouteSelector); ok {
-				if rs.GetPredicate() != "" {
-					colIdx++
-					tw.AppendRow(
-						table.Row{
-							colIdx,
-							text.FgBlue.Sprint("RPC"),
-							text.Colors{
-								text.Bold, text.FgBlue,
-							}.Sprint(rs.GetPredicate()),
-							sb.String(),
-						},
-						table.RowConfig{AutoMerge: true},
-					)
-				}
-			}
-
-			if rs, ok := c.RouteSelector().(RESTRouteSelector); ok {
-				if rs.GetMethod() != "" && rs.GetPath() != "" {
-					colIdx++
-					tw.AppendRow(
-						table.Row{
-							colIdx,
-							text.FgGreen.Sprint("REST"),
-							fmt.Sprintf("%s %s",
-								text.Colors{
-									text.Bold, text.FgGreen,
-								}.Sprint(rs.GetMethod()),
-								text.Colors{
-									text.BgWhite, text.FgHiWhite,
-								}.Sprint(rs.GetPath()),
-							),
-							sb.String(),
-						},
-						table.RowConfig{AutoMerge: true},
-					)
-				}
+			if route := restRoute(c.RouteSelector()); route != "" {
+				tw.AppendRow(
+					table.Row{
+						text.FgGreen.Sprint("REST"),
+						route,
+						getHandlers(c.Handlers()...),
+					},
+				)
 			}
 		}
 		tw.AppendSeparator()
@@ -222,4 +216,43 @@ func getFuncName(f HandlerFunc) string {
 	c += text.FgBlack + 1
 
 	return c.Sprint(parts[len(parts)-1])
+}
+
+func getHandlers(handlers ...HandlerFunc) string {
+	sb := strings.Builder{}
+	for idx, h := range handlers {
+		if idx != 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(getFuncName(h))
+	}
+
+	return text.WrapSoft(sb.String(), 32)
+}
+
+func rpcRoute(rs RouteSelector) string {
+	rpc, ok := rs.(RPCRouteSelector)
+	if !ok || rpc.GetPredicate() == "" {
+		return ""
+	}
+
+	return text.Colors{
+		text.Bold, text.FgBlue,
+	}.Sprint(rpc.GetPredicate())
+}
+
+func restRoute(rs RouteSelector) string {
+	rest, ok := rs.(RESTRouteSelector)
+	if !ok || rest.GetMethod() == "" || rest.GetPath() == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("%s %s",
+		text.Colors{
+			text.Bold, text.FgGreen,
+		}.Sprint(rest.GetMethod()),
+		text.Colors{
+			text.BgWhite, text.FgHiWhite,
+		}.Sprint(rest.GetPath()),
+	)
 }
