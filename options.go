@@ -8,13 +8,13 @@ func WithLogger(l Logger) Option {
 	}
 }
 
-// RegisterGateway lets you register a bundle in constructor of the EdgeServer. However,
-// you still can EdgeServer.RegisterGateway method after the constructor. But you must
+// RegisterBundle lets you register a bundle in constructor of the EdgeServer. However,
+// you still can EdgeServer.RegisterBundle method after the constructor. But you must
 // be noticed that this is method is not concurrent safe.
-func RegisterGateway(gateways ...Gateway) Option {
+func RegisterBundle(bundles ...Bundle) Option {
 	return func(s *EdgeServer) {
-		for _, b := range gateways {
-			s.RegisterGateway(b)
+		for _, b := range bundles {
+			s.RegisterBundle(b)
 		}
 	}
 }

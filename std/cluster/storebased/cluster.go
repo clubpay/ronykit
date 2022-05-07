@@ -149,3 +149,15 @@ func (c cluster) Me() ronykit.ClusterMember {
 func (c *cluster) Subscribe(d ronykit.ClusterDelegate) {
 	c.d = d
 }
+
+func (c cluster) Register(svc ronykit.Service) {
+	//nolint:godox
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c cluster) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+	//nolint:godox
+	//TODO implement me
+	panic("implement me")
+}

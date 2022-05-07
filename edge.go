@@ -44,35 +44,34 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
-// RegisterGateway registers a Gateway to our server. EdgeServer needs at least one Gateway
-// to be registered.
-func (s *EdgeServer) RegisterGateway(b Gateway) *EdgeServer {
-	nb := &northBridge{
-		l:  s.l,
-		b:  b,
-		eh: s.eh,
+// RegisterBundle registers a Bundle to our server.
+// Currently, two types of Bundles are supported: Gateway and Cluster
+func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
+	gw, ok := b.(Gateway)
+	if ok {
+		nb := &northBridge{
+			l:  s.l,
+			b:  gw,
+			eh: s.eh,
+		}
+		s.nb = append(s.nb, nb)
+
+		// Subscribe the northBridge, which is a GatewayDelegate, to connect northBridge with the Gateway
+		gw.Subscribe(nb)
 	}
-	s.nb = append(s.nb, nb)
 
-	// Subscribe the northBridge, which is a GatewayDelegate, to connect northBridge with the Gateway
-	b.Subscribe(nb)
+	c, ok := b.(Cluster)
+	if ok {
+		sb := &southBridge{
+			l:  s.l,
+			c:  c,
+			eh: s.eh,
+		}
+		s.sb = append(s.sb, sb)
 
-	return s
-}
-
-// RegisterCluster register a Cluster to our server. Registering Cluster is an optional
-// feature, but setting up cluster for our EdgeServer it provides capabilities to let
-// communication between different instances of the same EdgeServer.
-func (s *EdgeServer) RegisterCluster(c Cluster) *EdgeServer {
-	sb := &southBridge{
-		l:  s.l,
-		c:  c,
-		eh: s.eh,
+		// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
+		c.Subscribe(sb)
 	}
-	s.sb = append(s.sb, sb)
-
-	// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
-	c.Subscribe(sb)
 
 	return s
 }

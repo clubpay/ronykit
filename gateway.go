@@ -1,36 +1,18 @@
 package ronykit
 
-import "context"
-
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
 type Gateway interface {
-	// Start starts the gateway to accept connections.
-	Start(ctx context.Context) error
-	// Shutdown shuts down the gateway gracefully.
-	Shutdown(ctx context.Context) error
+	Bundle
+	Dispatcher
 	// Subscribe will be called by the EdgeServer. These delegate functions
 	// must be called by the Gateway implementation. In other words, Gateway communicates
 	// with EdgeServer through the GatewayDelegate methods.
 	//
 	// NOTE: This func will be called only once and before calling Start function.
 	Subscribe(d GatewayDelegate)
-	// Dispatch receives the messages from external clients and returns DispatchFunc
-	// The user of the Gateway does not need to implement this. If you are using some standard bundles
-	// like std/gateway/fasthttp or std/gateway/fastws then all the implementation is taken care of.
-	Dispatch(ctx *Context, in []byte, execFunc ExecuteFunc) error
-	Register(svc Service)
 }
-
-type (
-	ExecuteArg struct {
-		WriteFunc
-		HandlerFuncChain
-	}
-	WriteFunc   func(conn Conn, e *Envelope) error
-	ExecuteFunc func(ctx *Context, arg ExecuteArg)
-)
 
 // GatewayDelegate is the delegate that connects the Gateway to the rest of the system.
 type GatewayDelegate interface {

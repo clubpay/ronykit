@@ -16,7 +16,7 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
-		ronykit.RegisterGateway(
+		ronykit.RegisterBundle(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),

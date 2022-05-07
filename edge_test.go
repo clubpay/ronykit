@@ -150,7 +150,7 @@ func TestServer(t *testing.T) {
 			d:  &testDispatcher{},
 		}
 		s := ronykit.NewServer(
-			ronykit.RegisterGateway(b),
+			ronykit.RegisterBundle(b),
 		)
 		s.Start(nil)
 		b.gw.Send([]byte("123"))
@@ -164,7 +164,7 @@ func BenchmarkServer(b *testing.B) {
 		d:  &testDispatcher{},
 	}
 	s := ronykit.NewServer(
-		ronykit.RegisterGateway(bundle),
+		ronykit.RegisterBundle(bundle),
 	).Start(nil)
 	defer s.Shutdown(nil)
 
