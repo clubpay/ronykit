@@ -24,8 +24,12 @@ type Gateway interface {
 }
 
 type (
+	ExecuteArg struct {
+		WriteFunc
+		HandlerFuncChain
+	}
 	WriteFunc   func(conn Conn, e *Envelope) error
-	ExecuteFunc func(ctx *Context, wf WriteFunc, handlers ...HandlerFunc)
+	ExecuteFunc func(ctx *Context, arg ExecuteArg)
 )
 
 // GatewayDelegate is the delegate that connects the Gateway to the rest of the system.

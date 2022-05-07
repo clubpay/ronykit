@@ -9,7 +9,6 @@ import (
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 	"github.com/clubpay/ronykit/std/gateway/fastws"
-	"github.com/clubpay/ronykit/utils"
 	"github.com/goccy/go-reflect"
 )
 
@@ -78,20 +77,22 @@ func (x *Sample) Desc() *desc.Service {
 }
 
 func Forwarder(ctx *ronykit.LimitedContext) (ronykit.ClusterMember, error) {
-	c := ctx.Cluster()
+	// c := ctx.Cluster()
 
-	switch m := ctx.In().GetMsg().(type) {
-	case *dto.EchoRequest:
-		id := utils.Int64ToStr(m.RandomID % utils.StrToInt64(c.Me().ServerID()))
-		member, err := c.MemberByID(ctx.Context(), id)
-		if err != nil {
-			return nil, err
-		}
+	// switch m := ctx.In().GetMsg().(type) {
+	// case *dto.EchoRequest:
+	// 	id := utils.Int64ToStr(m.RandomID % utils.StrToInt64(c.Me().ServerID()))
+	// 	member, err := c.MemberByID(ctx.Context(), id)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	return member, nil
+	// }
+	//
+	// return c.Me(), nil
 
-		return member, nil
-	}
-
-	return c.Me(), nil
+	return nil, nil
 }
 
 func EchoHandler(ctx *ronykit.Context) {

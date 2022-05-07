@@ -40,7 +40,10 @@ func wrapWithForwarder(c Contract) Contract {
 					return
 				}
 
-				ctx.StopExecution()
+				// 1. prepare a cluster message (contextData + input envelope)
+				// 2. receives an array of [](contextDataSnapshot + output envelope)
+				// 3. apply contextDataSnapshot and send the envelope.
+				// ctx.StopExecution()
 			},
 		},
 	}

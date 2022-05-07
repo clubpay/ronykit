@@ -43,9 +43,9 @@ func (n *northBridge) OnMessage(c Conn, msg []byte) {
 	return
 }
 
-func (n *northBridge) execFunc(ctx *Context, writeFunc WriteFunc, handlers ...HandlerFunc) {
-	ctx.wf = writeFunc
-	ctx.handlers = append(ctx.handlers, handlers...)
+func (n *northBridge) execFunc(ctx *Context, arg ExecuteArg) {
+	ctx.wf = arg.WriteFunc
+	ctx.handlers = append(ctx.handlers, arg.HandlerFuncChain...)
 	ctx.Next()
 
 	return

@@ -88,24 +88,28 @@ func (t testDispatcher) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronyk
 	ctx.In().SetMsg(testMessage(in))
 	execFunc(
 		ctx,
-		func(conn ronykit.Conn, e *ronykit.Envelope) error {
-			b, err := json.Marshal(e.GetMsg())
-			if err != nil {
+		ronykit.ExecuteArg{
+			WriteFunc: func(conn ronykit.Conn, e *ronykit.Envelope) error {
+				b, err := json.Marshal(e.GetMsg())
+				if err != nil {
+					return err
+				}
+
+				_, err = conn.Write(b)
+
 				return err
-			}
+			},
+			HandlerFuncChain: ronykit.HandlerFuncChain{
+				func(ctx *ronykit.Context) {
+					m := ctx.In().GetMsg()
 
-			_, err = conn.Write(b)
+					ctx.Out().
+						SetMsg(m).
+						Send()
 
-			return err
-		},
-		func(ctx *ronykit.Context) {
-			m := ctx.In().GetMsg()
-
-			ctx.Out().
-				SetMsg(m).
-				Send()
-
-			return
+					return
+				},
+			},
 		},
 	)
 
