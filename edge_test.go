@@ -87,7 +87,6 @@ type testDispatcher struct{}
 func (t testDispatcher) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
 	ctx.In().SetMsg(testMessage(in))
 	execFunc(
-		ctx,
 		ronykit.ExecuteArg{
 			WriteFunc: func(conn ronykit.Conn, e *ronykit.Envelope) error {
 				b, err := json.Marshal(e.GetMsg())

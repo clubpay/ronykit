@@ -44,6 +44,15 @@ func newContext() *Context {
 	}
 }
 
+// execute the Context with the provided ExecuteArg. It implements ExecuteFunc
+func (ctx *Context) execute(arg ExecuteArg) {
+	ctx.wf = arg.WriteFunc
+	ctx.handlers = append(ctx.handlers, arg.HandlerFuncChain...)
+	ctx.Next()
+
+	return
+}
+
 // Next sets the next handler which will be called after the current handler.
 func (ctx *Context) Next() {
 	ctx.index++

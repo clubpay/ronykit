@@ -83,7 +83,7 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 		panic(errServiceAlreadyRegistered(svc.Name()))
 	}
 
-	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(wrapWithForwarder))
+	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(requestForwarder))
 
 	return s
 }
