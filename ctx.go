@@ -3,6 +3,7 @@ package ronykit
 import (
 	"context"
 	"math"
+	"sync"
 
 	"github.com/clubpay/ronykit/utils"
 )
@@ -165,4 +166,27 @@ func (ctx *Context) reset() {
 	if ctx.cf != nil {
 		ctx.cf()
 	}
+}
+
+type ctxPool struct {
+	sync.Pool
+}
+
+func (p *ctxPool) acquireCtx(c Conn) *Context {
+	ctx, ok := p.Pool.Get().(*Context)
+	if !ok {
+		ctx = newContext()
+	}
+
+	ctx.conn = c
+	ctx.in = newEnvelope(ctx, c, false)
+
+	return ctx
+}
+
+func (p *ctxPool) releaseCtx(ctx *Context) {
+	ctx.reset()
+	p.Pool.Put(ctx)
+
+	return
 }
