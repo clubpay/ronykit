@@ -54,6 +54,7 @@ type ClusterStore interface {
 	GetActiveMembers(ctx context.Context, lastActive int64) ([]ClusterMember, error)
 }
 
+// southBridge is a container component that connects EdgeServer with a Cluster type Bundle.
 type southBridge struct {
 	ctxPool
 	l  Logger
@@ -77,16 +78,16 @@ func (s *southBridge) OnLeave(memberIDs ...string) {
 
 func (s *southBridge) OnMessage(conn Conn, data []byte) {
 	ctx := s.acquireCtx(conn)
-	err := s.c.Dispatch(ctx, data, s.execFunc)
+
+	err := s.c.Dispatch(ctx, data, ctx.execute)
 	if err != nil {
 		s.eh(ctx, err)
 	}
+
 	s.releaseCtx(ctx)
 
 	return
 }
-
-func (s *southBridge) execFunc(ctx *Context, arg ExecuteArg) {}
 
 func wrapWithForwarder(c Contract) Contract {
 	if c.EdgeSelector() == nil {

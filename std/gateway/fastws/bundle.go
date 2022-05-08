@@ -104,7 +104,7 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Exec
 	ctx.AddModifier(routeData.Modifiers...)
 
 	// run the execFunc with generated params
-	execFunc(ctx,
+	execFunc(
 		ronykit.ExecuteArg{
 			WriteFunc:        b.writeFunc,
 			HandlerFuncChain: routeData.Handlers,

@@ -24,6 +24,7 @@ type GatewayDelegate interface {
 	OnMessage(c Conn, msg []byte)
 }
 
+// northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
 type northBridge struct {
 	ctxPool
 	l  Logger
@@ -44,20 +45,12 @@ func (n *northBridge) OnClose(connID uint64) {
 func (n *northBridge) OnMessage(c Conn, msg []byte) {
 	ctx := n.acquireCtx(c)
 
-	err := n.b.Dispatch(ctx, msg, n.execFunc)
+	err := n.b.Dispatch(ctx, msg, ctx.execute)
 	if err != nil {
 		n.eh(ctx, err)
 	}
 
 	n.releaseCtx(ctx)
-
-	return
-}
-
-func (n *northBridge) execFunc(ctx *Context, arg ExecuteArg) {
-	ctx.wf = arg.WriteFunc
-	ctx.handlers = append(ctx.handlers, arg.HandlerFuncChain...)
-	ctx.Next()
 
 	return
 }
