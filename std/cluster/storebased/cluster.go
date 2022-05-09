@@ -2,7 +2,6 @@ package storebased
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/clubpay/ronykit"
@@ -37,8 +36,8 @@ func (m member) AdvertisedURL() []string {
 	return m.URLs
 }
 
-func (m member) Dial(ctx context.Context) (net.Conn, error) {
-	panic("implement me")
+func (m member) RemoteExecute(ctx *ronykit.Context) error {
+	return nil
 }
 
 type cluster struct {

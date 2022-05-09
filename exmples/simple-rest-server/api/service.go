@@ -36,7 +36,7 @@ func (x *Sample) Desc() *desc.Service {
 				AddModifier(func(envelope *ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
-				SetForwarder(Forwarder).
+				SetCoordinator(Forwarder).
 				SetHandler(EchoHandler),
 		).
 		AddContract(
@@ -44,7 +44,7 @@ func (x *Sample) Desc() *desc.Service {
 				SetInput(&dto.SumRequest{}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
-					Path:   "/sum/:val1/:val2/fwfwe/fwefwef/w/fw/fw/fw/fwe/f/we/f43r34t34t34/fwfwef",
+					Path:   "/sum/:val1/:val2",
 				}).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodPost,

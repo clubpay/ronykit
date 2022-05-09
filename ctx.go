@@ -33,8 +33,8 @@ type Context struct {
 	modifiers []Modifier
 	err       error
 
-	handlers HandlerFuncChain
-	index    int
+	handlers     HandlerFuncChain
+	handlerIndex int
 }
 
 func newContext() *Context {
@@ -55,10 +55,10 @@ func (ctx *Context) execute(arg ExecuteArg) {
 
 // Next sets the next handler which will be called after the current handler.
 func (ctx *Context) Next() {
-	ctx.index++
-	for ctx.index <= len(ctx.handlers) {
-		ctx.handlers[ctx.index-1](ctx)
-		ctx.index++
+	ctx.handlerIndex++
+	for ctx.handlerIndex <= len(ctx.handlers) {
+		ctx.handlers[ctx.handlerIndex-1](ctx)
+		ctx.handlerIndex++
 	}
 }
 
@@ -66,7 +66,7 @@ func (ctx *Context) Next() {
 // call this in your handler, any other middleware that are not executed will yet will
 // be skipped over.
 func (ctx *Context) StopExecution() {
-	ctx.index = abortIndex
+	ctx.handlerIndex = abortIndex
 }
 
 // AddModifier adds one or more modifiers to the context which will be executed on each outgoing
@@ -169,7 +169,7 @@ func (ctx *Context) reset() {
 	}
 
 	ctx.in.release()
-	ctx.index = 0
+	ctx.handlerIndex = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
 	if ctx.cf != nil {

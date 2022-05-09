@@ -14,9 +14,10 @@ type Bundle interface {
 }
 
 type Dispatcher interface {
-	// Dispatch receives the messages from external clients and returns DispatchFunc
-	// The user of the Gateway does not need to implement this. If you are using some standard bundles
-	// like std/gateway/fasthttp or std/gateway/fastws then all the implementation is taken care of.
+	// Dispatch receives the messages from external clients and runs the execFunc with appropriate
+	// arguments. The user of the Gateway does not need to implement this. If you are using some
+	// standard bundles like std/gateway/fasthttp or std/gateway/fastws then all the implementation
+	// is taken care of.
 	Dispatch(ctx *Context, in []byte, execFunc ExecuteFunc) error
 }
 

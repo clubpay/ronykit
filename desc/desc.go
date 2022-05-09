@@ -2,6 +2,7 @@ package desc
 
 import (
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
 )
 
@@ -18,7 +19,7 @@ type Contract struct {
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
 	RouteSelectors []ronykit.RouteSelector
-	MemberSelector ronykit.EdgeSelector
+	EdgeSelector   ronykit.EdgeSelector
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
 	Output         ronykit.Message
@@ -81,9 +82,10 @@ func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	return c
 }
 
-// SetForwarder sets a ronykit.EdgeSelector for this contract.
-func (c *Contract) SetForwarder(f ronykit.EdgeSelector) *Contract {
-	c.MemberSelector = f
+// SetCoordinator sets a ronykit.EdgeSelector for this contract, to coordinate requests to
+// right ronykit.EdgeServer instance.
+func (c *Contract) SetCoordinator(f ronykit.EdgeSelector) *Contract {
+	c.EdgeSelector = f
 
 	return c
 }
@@ -212,20 +214,22 @@ func (s Service) Generate() ronykit.Service {
 		post: s.PostHandlers,
 	}
 
+	var index int64 = 0
 	for _, c := range s.Contracts {
 		reflector.Register(c.Input)
 		reflector.Register(c.Output)
+		index++
 
 		contracts := make([]ronykit.Contract, len(c.RouteSelectors))
 		for idx, s := range c.RouteSelectors {
-			ci := (&contractImpl{}).
+			ci := (&contractImpl{id: utils.Int64ToStr(index)}).
 				addHandler(svc.pre...).
 				addHandler(c.Handlers...).
 				addHandler(svc.post...).
 				setModifier(c.Modifiers...).
 				setInput(c.Input).
 				setRouteSelector(s).
-				setMemberSelector(c.MemberSelector).
+				setMemberSelector(c.EdgeSelector).
 				setEncoding(c.Encoding)
 
 			contracts[idx] = ronykit.WrapContract(ci, c.Wrappers...)

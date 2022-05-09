@@ -13,6 +13,7 @@ type routeData struct {
 	Path        string
 	Predicate   string
 	ServiceName string
+	ContractID  string
 	Decoder     DecoderFunc
 	Handlers    []ronykit.HandlerFunc
 	Modifiers   []ronykit.Modifier

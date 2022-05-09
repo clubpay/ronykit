@@ -83,7 +83,7 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 		panic(errServiceAlreadyRegistered(svc.Name()))
 	}
 
-	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(requestForwarder))
+	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(wrapWithCoordinator))
 
 	return s
 }
@@ -142,21 +142,25 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	tw.SetStyle(table.StyleRounded)
 	tw.Style().Format.Header = text.FormatTitle
 	tw.Style().Options.SeparateRows = true
-	tw.SetAutoIndex(true)
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{
 			Number:   1,
 			Align:    text.AlignLeft,
+			WidthMax: 12,
+		},
+		{
+			Number:   2,
+			Align:    text.AlignLeft,
 			WidthMax: 6,
 		},
 		{
-			Number:           2,
+			Number:           3,
 			Align:            text.AlignLeft,
 			WidthMax:         52,
 			WidthMaxEnforcer: text.WrapSoft,
 		},
 		{
-			Number:           3,
+			Number:           4,
 			Align:            text.AlignLeft,
 			WidthMax:         42,
 			WidthMaxEnforcer: text.WrapSoft,
@@ -164,6 +168,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	})
 	tw.AppendHeader(
 		table.Row{
+			text.Bold.Sprint("ContractID"),
 			text.Bold.Sprint("API"),
 			text.Bold.Sprint("Route / Predicate"),
 			text.Bold.Sprint("Handlers"),
@@ -173,7 +178,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	for _, svc := range s.svc {
 		tw.AppendHeader(
 			table.Row{
-				"",
+				"", "",
 				text.Bold.Sprint(svc.Name()),
 				text.Bold.Sprint(svc.Name()),
 			},
@@ -183,6 +188,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			if route := rpcRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
 					table.Row{
+						c.ID(),
 						text.FgBlue.Sprint("RPC"),
 						route,
 						getHandlers(c.Handlers()...),
@@ -192,6 +198,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			if route := restRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
 					table.Row{
+						c.ID(),
 						text.FgGreen.Sprint("REST"),
 						route,
 						getHandlers(c.Handlers()...),

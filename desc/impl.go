@@ -40,6 +40,7 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 
 // contractImpl is simple implementation of ronykit.Contract interface.
 type contractImpl struct {
+	id             string
 	routeSelector  ronykit.RouteSelector
 	memberSelector ronykit.EdgeSelector
 	handlers       []ronykit.HandlerFunc
@@ -90,6 +91,10 @@ func (r *contractImpl) setModifier(modifiers ...ronykit.Modifier) *contractImpl 
 	r.modifiers = append(r.modifiers[:0], modifiers...)
 
 	return r
+}
+
+func (r *contractImpl) ID() string {
+	return r.id
 }
 
 func (r *contractImpl) RouteSelector() ronykit.RouteSelector {

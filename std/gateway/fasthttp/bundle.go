@@ -147,6 +147,7 @@ func (b *bundle) registerRPC(svcName string, c ronykit.Contract, handlers ...ron
 
 	rd := &routeData{
 		ServiceName: svcName,
+		ContractID:  c.ID(),
 		Predicate:   rpcSelector.GetPredicate(),
 		Handlers:    handlers,
 		Modifiers:   c.Modifiers(),
@@ -176,6 +177,7 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 		restSelector.GetMethod(), restSelector.GetPath(),
 		&routeData{
 			ServiceName: svcName,
+			ContractID:  c.ID(),
 			Handlers:    handlers,
 			Modifiers:   c.Modifiers(),
 			Method:      restSelector.GetMethod(),
@@ -221,6 +223,7 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Ex
 
 	ctx.
 		Set(ronykit.CtxServiceName, routeData.ServiceName).
+		Set(ronykit.CtxContractID, routeData.ContractID).
 		Set(ronykit.CtxRoute, routeData.Predicate)
 
 	ctx.AddModifier(routeData.Modifiers...)
@@ -283,8 +286,10 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.
 	)
 
 	// Set the route and service name
-	ctx.Set(ronykit.CtxServiceName, routeData.ServiceName)
-	ctx.Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
+	ctx.
+		Set(ronykit.CtxServiceName, routeData.ServiceName).
+		Set(ronykit.CtxContractID, routeData.ContractID).
+		Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
 
 	ctx.In().
 		SetHdrWalker(conn).

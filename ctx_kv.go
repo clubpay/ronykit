@@ -2,6 +2,7 @@ package ronykit
 
 const (
 	CtxServiceName = "__ServiceName__"
+	CtxContractID  = "__ContractID__"
 	CtxRoute       = "__Route__"
 )
 
@@ -15,6 +16,12 @@ func (ctx *Context) ServiceName() string {
 	svcName, _ := ctx.Get(CtxServiceName).(string)
 
 	return svcName
+}
+
+func (ctx *Context) ContractID() string {
+	contractID, _ := ctx.Get(CtxContractID).(string)
+
+	return contractID
 }
 
 func (ctx *Context) Set(key string, val interface{}) *Context {

@@ -25,7 +25,7 @@ type RPCRouteSelector interface {
 
 // EdgeSelector returns the target EdgeServer in the Cluster. If you have
 // multiple instances of the EdgeServer, and you want to forward some requests to a specific
-// instance, you can set up this function in desc.Contract's SetForwarder method, then, the
+// instance, you can set up this function in desc.Contract's SetCoordinator method, then, the
 // receiving EdgeServer will detect the target instance by calling this function and forwards
 // the request to the returned instance.
 // From the external client point of view this forwarding request is not observable.
@@ -36,6 +36,10 @@ type EdgeSelector func(ctx *LimitedContext) (ClusterMember, error)
 // In other words, Contract 'r' must return valid response for 'q's required by Gateway 'b' in
 // order to be usable by Gateway 'b' otherwise it panics.
 type Contract interface {
+	// ID identifies the contract. This MUST be unique per Service. This MUST NOT be a runtime
+	// random number. Since this is used in RemoteExecute method of ClusterMember to execute the
+	// right set of handlers on remote EdgeServer.
+	ID() string
 	// RouteSelector returns a RouteSelector function which selects this Contract based on the
 	// client requests.
 	RouteSelector() RouteSelector

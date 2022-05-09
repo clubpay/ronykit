@@ -21,6 +21,7 @@ type Cluster interface {
 type ClusterMember interface {
 	ServerID() string
 	AdvertisedURL() []string
+	RemoteExecute(ctx *Context) error
 }
 
 // ClusterDelegate is the delegate that connects the Cluster to the rest of the system.
@@ -81,22 +82,28 @@ func (s *southBridge) OnMessage(conn Conn, data []byte) {
 	return
 }
 
-func requestForwarder(c Contract) Contract {
+func wrapWithCoordinator(c Contract) Contract {
 	if c.EdgeSelector() == nil {
 		return c
 	}
 
 	memberSel := c.EdgeSelector()
 	mw := func(ctx *Context) {
-		_, err := memberSel(newLimitedContext(ctx))
+		target, err := memberSel(newLimitedContext(ctx))
 		if err != nil {
+			ctx.Error(err)
+
 			return
 		}
 
-		// 1. prepare a cluster message (contextData + input envelope)
-		// 2. receives an array of [](contextDataSnapshot + output envelope)
-		// 3. apply contextDataSnapshot and send the envelope.
-		// ctx.StopExecution()
+		err = target.RemoteExecute(ctx)
+		if err != nil {
+			ctx.Error(err)
+
+			return
+		}
+
+		ctx.StopExecution()
 	}
 
 	cw := &contractWrap{
