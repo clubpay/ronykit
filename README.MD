@@ -1,3 +1,19 @@
+[//]: # (<a href="https://github.com/clubpay/ronykit/actions/workflows/build-and-test.yml?query=branch%3Amain">)
+
+[//]: # (  <img alt="Build Status" src="https://img.shields.io/github/workflow/status/clubpay/ronykit/build-and-test/main?style=for-the-badge">)
+
+[//]: # (</a>)
+<a href="https://goreportcard.com/report/github.com/clubpay/ronykit">
+  <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/clubpay/ronykit?style=for-the-badge">
+</a>
+<a href="https://github.com/clubpay/ronykit/releases">
+  <img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/clubpay/ronykit?include_prereleases&style=for-the-badge">
+</a>
+<a href="https://codecov.io/gh/clubpay/ronykit/branch/main/">
+    <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/clubpay/ronykit?style=for-the-badge">
+</a>
+
+
 # RonyKit
 
 RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate

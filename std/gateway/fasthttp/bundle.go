@@ -43,6 +43,8 @@ type bundle struct {
 	rpcOutFactory ronykit.OutgoingRPCFactory
 }
 
+var _ ronykit.Gateway = (*bundle)(nil)
+
 func New(opts ...Option) (*bundle, error) {
 	r := &bundle{
 		httpMux: &mux{

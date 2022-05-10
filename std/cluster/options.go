@@ -1,4 +1,4 @@
-package storebased
+package cluster
 
 import (
 	"time"
@@ -16,7 +16,7 @@ func WithID(id string) Option {
 
 func WithHeartbeat(t time.Duration) Option {
 	return func(cfg *config) {
-		cfg.heartbeatInterval = t
+		cfg.hb = t
 	}
 }
 

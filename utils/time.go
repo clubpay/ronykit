@@ -33,7 +33,7 @@ func TimeUnix() int64 {
 }
 
 func TimeUnixSubtract(unixTime int64, d time.Duration) int64 {
-	return int64(time.Duration(unixTime)*time.Second - d)
+	return int64(time.Duration(unixTime) - d/time.Second)
 }
 
 // NanoTime returns the current time in nanoseconds from a monotonic clock.

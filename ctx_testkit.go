@@ -63,7 +63,7 @@ func (testCtx *TestContext) Run() error {
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
 	ctx.wf = func(conn Conn, e *Envelope) error {
-		e.DontRelease()
+		e.DontReuse()
 		tc := conn.(*testConn) //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
@@ -87,7 +87,7 @@ func (testCtx *TestContext) RunREST() error {
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
 	ctx.wf = func(conn Conn, e *Envelope) error {
-		e.DontRelease()
+		e.DontReuse()
 
 		tc := conn.(*testConn) //nolint:forcetypeassert
 		tc.Lock()

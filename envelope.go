@@ -15,8 +15,8 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
-// Envelope is an envelope around the messages in RonyKIT. Envelopes are created internally
-// by the RonyKIT framework, and provide the abstraction which Gateway implementations could
+// Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
+// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope struct {
@@ -25,20 +25,22 @@ type Envelope struct {
 	kvl  utils.SpinLock
 	kv   EnvelopeHdr
 	m    Message
-	p    *sync.Pool
 
 	// outgoing identity the Envelope if it is able to send
-	outgoing      bool
-	shouldRelease bool
+	outgoing bool
+
+	// reuse identifies if Envelope is going to be reused by pushing to the pool.
+	reuse bool
+	p     *sync.Pool
 }
 
 func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 	e, ok := envelopePool.Get().(*Envelope)
 	if !ok {
 		e = &Envelope{
-			kv:            EnvelopeHdr{},
-			p:             envelopePool,
-			shouldRelease: true,
+			kv:    EnvelopeHdr{},
+			p:     envelopePool,
+			reuse: true,
 		}
 	}
 
@@ -54,7 +56,7 @@ func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 }
 
 func (e *Envelope) release() {
-	if !e.shouldRelease {
+	if !e.reuse {
 		return
 	}
 
@@ -155,10 +157,10 @@ func (e *Envelope) Send() {
 	e.release()
 }
 
-// DontRelease is used by testkit, you should not use it in your code.
+// DontReuse is used by testkit, you should not use it in your code.
 // Caution: internal usage only, **DO NOT** use in your code.
-func (e *Envelope) DontRelease() {
-	e.shouldRelease = false
+func (e *Envelope) DontReuse() {
+	e.reuse = false
 }
 
 type (

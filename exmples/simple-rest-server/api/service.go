@@ -36,7 +36,6 @@ func (x *Sample) Desc() *desc.Service {
 				AddModifier(func(envelope *ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
-				SetCoordinator(Forwarder).
 				SetHandler(EchoHandler),
 		).
 		AddContract(
@@ -74,25 +73,6 @@ func (x *Sample) Desc() *desc.Service {
 				}).
 				SetHandler(Redirect),
 		)
-}
-
-func Forwarder(ctx *ronykit.LimitedContext) (ronykit.ClusterMember, error) {
-	// c := ctx.Cluster()
-
-	// switch m := ctx.In().GetMsg().(type) {
-	// case *dto.EchoRequest:
-	// 	id := utils.Int64ToStr(m.RandomID % utils.StrToInt64(c.Me().ServerID()))
-	// 	member, err := c.MemberByID(ctx.Context(), id)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	return member, nil
-	// }
-	//
-	// return c.Me(), nil
-
-	return nil, nil
 }
 
 func EchoHandler(ctx *ronykit.Context) {
