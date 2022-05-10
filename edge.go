@@ -137,53 +137,47 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 }
 
 func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
-	tw := table.NewWriter()
-	tw.SuppressEmptyColumns()
-	tw.SetStyle(table.StyleRounded)
-	tw.Style().Format.Header = text.FormatTitle
-	tw.Style().Options.SeparateRows = true
-	tw.SetColumnConfigs([]table.ColumnConfig{
-		{
-			Number:   1,
-			Align:    text.AlignLeft,
-			WidthMax: 12,
-		},
-		{
-			Number:   2,
-			Align:    text.AlignLeft,
-			WidthMax: 6,
-		},
-		{
-			Number:           3,
-			Align:            text.AlignLeft,
-			WidthMax:         52,
-			WidthMaxEnforcer: text.WrapSoft,
-		},
-		{
-			Number:           4,
-			Align:            text.AlignLeft,
-			WidthMax:         42,
-			WidthMaxEnforcer: text.WrapSoft,
-		},
-	})
-	tw.AppendHeader(
-		table.Row{
-			text.Bold.Sprint("ContractID"),
-			text.Bold.Sprint("API"),
-			text.Bold.Sprint("Route / Predicate"),
-			text.Bold.Sprint("Handlers"),
-		},
-	)
-
 	for _, svc := range s.svc {
+		tw := table.NewWriter()
+		tw.SuppressEmptyColumns()
+		tw.SetStyle(table.StyleRounded)
+		tw.Style().Title.Colors = text.Colors{text.FgBlack, text.BgWhite}
+		tw.Style().Format.Header = text.FormatTitle
+		tw.Style().Options.SeparateRows = true
+		tw.SetColumnConfigs([]table.ColumnConfig{
+			{
+				Number:   1,
+				Align:    text.AlignLeft,
+				WidthMax: 12,
+			},
+			{
+				Number:   2,
+				Align:    text.AlignLeft,
+				WidthMax: 6,
+			},
+			{
+				Number:           3,
+				Align:            text.AlignLeft,
+				WidthMax:         52,
+				WidthMaxEnforcer: text.WrapSoft,
+			},
+			{
+				Number:           4,
+				Align:            text.AlignLeft,
+				WidthMax:         42,
+				WidthMaxEnforcer: text.WrapSoft,
+			},
+		})
 		tw.AppendHeader(
 			table.Row{
-				"", "",
-				text.Bold.Sprint(svc.Name()),
-				text.Bold.Sprint(svc.Name()),
+				text.Bold.Sprint("ContractID"),
+				text.Bold.Sprint("API"),
+				text.Bold.Sprint("Route / Predicate"),
+				text.Bold.Sprint("Handlers"),
 			},
-			table.RowConfig{AutoMerge: true},
 		)
+		tw.SetTitle(text.Bold.Sprint(svc.Name()))
+
 		for _, c := range svc.Contracts() {
 			if route := rpcRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
@@ -207,10 +201,9 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			}
 		}
 		tw.AppendSeparator()
+		_, _ = w.Write(utils.S2B(tw.Render()))
+		_, _ = w.Write(utils.S2B("\n"))
 	}
-
-	_, _ = w.Write(utils.S2B(tw.Render()))
-	_, _ = w.Write(utils.S2B("\n"))
 
 	return s
 }
@@ -259,7 +252,7 @@ func restRoute(rs RouteSelector) string {
 			text.Bold, text.FgGreen,
 		}.Sprint(rest.GetMethod()),
 		text.Colors{
-			text.BgWhite, text.FgHiWhite,
+			text.BgWhite, text.FgBlack,
 		}.Sprint(rest.GetPath()),
 	)
 }
