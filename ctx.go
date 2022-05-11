@@ -41,8 +41,9 @@ type Context struct {
 
 func newContext() *Context {
 	return &Context{
-		kv:  make(map[string]interface{}),
-		hdr: make(map[string]string),
+		kv:         make(map[string]interface{}),
+		hdr:        make(map[string]string),
+		statusCode: http.StatusOK,
 	}
 }
 
