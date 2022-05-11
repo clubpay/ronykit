@@ -3,6 +3,7 @@ package ronykit
 import (
 	"context"
 	"math"
+	"net/http"
 	"sync"
 
 	"github.com/clubpay/ronykit/utils"
@@ -25,13 +26,14 @@ type Context struct {
 	ctx context.Context //nolint:containedctx
 	cf  func()
 
-	kv        map[string]interface{}
-	hdr       map[string]string
-	conn      Conn
-	in        *Envelope
-	wf        WriteFunc
-	modifiers []Modifier
-	err       error
+	kv         map[string]interface{}
+	hdr        map[string]string
+	conn       Conn
+	in         *Envelope
+	wf         WriteFunc
+	modifiers  []Modifier
+	err        error
+	statusCode int
 
 	handlers     HandlerFuncChain
 	handlerIndex int
@@ -95,12 +97,22 @@ func (ctx *Context) Context() context.Context {
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
 // is a REST connection.
 func (ctx *Context) SetStatusCode(code int) {
+	ctx.statusCode = code
+
 	rc, ok := ctx.Conn().(RESTConn)
 	if !ok {
 		return
 	}
 
 	rc.SetStatusCode(code)
+}
+
+func (ctx *Context) GetStatusCode() int {
+	return ctx.statusCode
+}
+
+func (ctx *Context) GetStatusText() string {
+	return http.StatusText(ctx.statusCode)
 }
 
 // Conn returns the underlying connection
@@ -169,6 +181,7 @@ func (ctx *Context) reset() {
 	}
 
 	ctx.in.release()
+	ctx.statusCode = http.StatusOK
 	ctx.handlerIndex = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
