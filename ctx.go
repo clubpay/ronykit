@@ -172,6 +172,12 @@ func (ctx *Context) HasError() bool {
 	return ctx.err != nil
 }
 
+// Limited returns a LimitedContext. This is useful when you don't want to give all
+// capabilities of the Context to some other function/method.
+func (ctx *Context) Limited() *LimitedContext {
+	return newLimitedContext(ctx)
+}
+
 func (ctx *Context) reset() {
 	for k := range ctx.kv {
 		delete(ctx.kv, k)

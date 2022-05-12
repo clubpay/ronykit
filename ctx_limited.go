@@ -54,7 +54,3 @@ func (ctx *LimitedContext) Route() string {
 func (ctx *LimitedContext) ServiceName() string {
 	return ctx.ctx.ServiceName()
 }
-
-func (ctx *LimitedContext) Cluster() Cluster {
-	panic("not implemented")
-}
