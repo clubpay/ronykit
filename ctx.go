@@ -24,6 +24,7 @@ type (
 type Context struct {
 	utils.SpinLock
 	ctx context.Context //nolint:containedctx
+	cf  func()
 
 	kv         map[string]interface{}
 	hdr        map[string]string
@@ -87,7 +88,7 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 func (ctx *Context) Context() context.Context {
 	ctx.Lock()
 	if ctx.ctx == nil {
-		ctx.ctx = context.Background()
+		ctx.ctx, ctx.cf = context.WithCancel(context.Background())
 	}
 	ctx.Unlock()
 
@@ -191,6 +192,11 @@ func (ctx *Context) reset() {
 	ctx.handlerIndex = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
+	if ctx.cf != nil {
+		ctx.cf()
+		ctx.cf = nil
+	}
+	ctx.ctx = nil
 }
 
 type ctxPool struct {
