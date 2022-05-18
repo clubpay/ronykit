@@ -88,7 +88,7 @@ func (t testDispatcher) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronyk
 	ctx.In().SetMsg(testMessage(in))
 	execFunc(
 		ronykit.ExecuteArg{
-			WriteFunc: func(conn ronykit.Conn, e *ronykit.Envelope) error {
+			WriteFunc: func(conn ronykit.Conn, e ronykit.Envelope) error {
 				b, err := json.Marshal(e.GetMsg())
 				if err != nil {
 					return err

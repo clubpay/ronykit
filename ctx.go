@@ -29,7 +29,7 @@ type Context struct {
 	kv         map[string]interface{}
 	hdr        map[string]string
 	conn       Conn
-	in         *Envelope
+	in         Envelope
 	wf         WriteFunc
 	modifiers  []Modifier
 	err        error
@@ -139,19 +139,19 @@ func (ctx *Context) SetHdrMap(hdr map[string]string) {
 // In returns the incoming Envelope which received from the connection.
 // You **SHOULD NOT** use this envelope to write data to the connection. If you want
 // to return a message/envelope to connection use Out or OutTo methods.
-func (ctx *Context) In() *Envelope {
+func (ctx *Context) In() Envelope {
 	return ctx.in
 }
 
 // Out generate a new Envelope which could be used to send data to the connection.
-func (ctx *Context) Out() *Envelope {
+func (ctx *Context) Out() Envelope {
 	return ctx.OutTo(ctx.conn)
 }
 
 // OutTo is similar to Out except that it lets you send your envelope to other connection.
 // This is useful for scenarios where you want to send cross-client message. For example,
 // in a fictional chat server, you want to pass a message from client A to client B.
-func (ctx *Context) OutTo(c Conn) *Envelope {
+func (ctx *Context) OutTo(c Conn) Envelope {
 	return newEnvelope(ctx, c, true)
 }
 

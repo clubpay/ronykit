@@ -240,7 +240,7 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Ex
 	return nil
 }
 
-func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+func (b *bundle) wsWriteFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	outputMsgContainer := b.rpcOutFactory()
 	outputMsgContainer.SetPayload(e.GetMsg())
 	e.WalkHdr(func(key string, val string) bool {
@@ -308,7 +308,7 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.
 	return nil
 }
 
-func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
+func (b *bundle) httpWriteFunc(c ronykit.Conn, e ronykit.Envelope) error {
 	rc, ok := c.(*httpConn)
 	if !ok {
 		panic("BUG!! incorrect connection")

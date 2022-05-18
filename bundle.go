@@ -26,6 +26,6 @@ type (
 		WriteFunc
 		HandlerFuncChain
 	}
-	WriteFunc   func(conn Conn, e *Envelope) error
+	WriteFunc   func(conn Conn, e Envelope) error
 	ExecuteFunc func(arg ExecuteArg)
 )

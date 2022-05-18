@@ -15,7 +15,7 @@ type TestContext struct {
 	inHdr      EnvelopeHdr
 	clientIP   string
 	stream     bool
-	expectFunc func(...*Envelope) error
+	expectFunc func(...Envelope) error
 }
 
 func NewTestContext() *TestContext {
@@ -47,7 +47,7 @@ func (testCtx *TestContext) Input(m Message, hdr EnvelopeHdr) *TestContext {
 	return testCtx
 }
 
-func (testCtx *TestContext) Expectation(f func(out ...*Envelope) error) *TestContext {
+func (testCtx *TestContext) Expectation(f func(out ...Envelope) error) *TestContext {
 	testCtx.expectFunc = f
 
 	return testCtx
@@ -62,7 +62,7 @@ func (testCtx *TestContext) Run() error {
 	ctx.in = newEnvelope(ctx, conn, false).
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.wf = func(conn Conn, e *Envelope) error {
+	ctx.wf = func(conn Conn, e Envelope) error {
 		e.DontReuse()
 		tc := conn.(*testConn) //nolint:forcetypeassert
 		tc.Lock()
@@ -86,7 +86,7 @@ func (testCtx *TestContext) RunREST() error {
 	ctx.in = newEnvelope(ctx, conn, false).
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.wf = func(conn Conn, e *Envelope) error {
+	ctx.wf = func(conn Conn, e Envelope) error {
 		e.DontReuse()
 
 		tc := conn.(*testConn) //nolint:forcetypeassert
@@ -109,7 +109,7 @@ type testConn struct {
 	clientIP string
 	stream   bool
 	kv       map[string]string
-	out      []*Envelope
+	out      []Envelope
 }
 
 var _ Conn = (*testConn)(nil)

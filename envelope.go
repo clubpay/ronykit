@@ -15,11 +15,24 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
+type Envelope interface {
+	release()
+	SetHdr(key, value string) Envelope
+	SetHdrWalker(walker Walker) Envelope
+	SetHdrMap(kv map[string]string) Envelope
+	GetHdr(key string) string
+	WalkHdr(f func(key, val string) bool) Envelope
+	SetMsg(msg Message) Envelope
+	GetMsg() Message
+	Send()
+	DontReuse()
+}
+
 // Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
 // by the RonyKIT framework, and provide the abstraction which Bundle implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
-type Envelope struct {
+type envelopeImpl struct {
 	ctx  *Context
 	conn Conn
 	kvl  utils.SpinLock
@@ -34,10 +47,12 @@ type Envelope struct {
 	p     *sync.Pool
 }
 
-func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
-	e, ok := envelopePool.Get().(*Envelope)
+var _ Envelope = (*envelopeImpl)(nil)
+
+func newEnvelope(ctx *Context, conn Conn, outgoing bool) Envelope {
+	e, ok := envelopePool.Get().(*envelopeImpl)
 	if !ok {
-		e = &Envelope{
+		e = &envelopeImpl{
 			kv:    EnvelopeHdr{},
 			p:     envelopePool,
 			reuse: true,
@@ -55,7 +70,7 @@ func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 	return e
 }
 
-func (e *Envelope) release() {
+func (e *envelopeImpl) release() {
 	if !e.reuse {
 		return
 	}
@@ -70,7 +85,7 @@ func (e *Envelope) release() {
 	e.p.Put(e)
 }
 
-func (e *Envelope) SetHdr(key, value string) *Envelope {
+func (e *envelopeImpl) SetHdr(key, value string) Envelope {
 	e.kvl.Lock()
 	e.kv[key] = value
 	e.kvl.Unlock()
@@ -78,7 +93,7 @@ func (e *Envelope) SetHdr(key, value string) *Envelope {
 	return e
 }
 
-func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
+func (e *envelopeImpl) SetHdrWalker(walker Walker) Envelope {
 	e.kvl.Lock()
 	walker.Walk(func(k, v string) bool {
 		e.kv[k] = v
@@ -90,7 +105,7 @@ func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
 	return e
 }
 
-func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
+func (e *envelopeImpl) SetHdrMap(kv map[string]string) Envelope {
 	e.kvl.Lock()
 	for k, v := range kv {
 		e.kv[k] = v
@@ -100,7 +115,7 @@ func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
 	return e
 }
 
-func (e *Envelope) GetHdr(key string) string {
+func (e *envelopeImpl) GetHdr(key string) string {
 	e.kvl.Lock()
 	v := e.kv[key]
 	e.kvl.Unlock()
@@ -108,7 +123,7 @@ func (e *Envelope) GetHdr(key string) string {
 	return v
 }
 
-func (e *Envelope) WalkHdr(f func(key string, val string) bool) {
+func (e *envelopeImpl) WalkHdr(f func(key string, val string) bool) Envelope {
 	e.kvl.Lock()
 	for k, v := range e.kv {
 		if !f(k, v) {
@@ -116,15 +131,17 @@ func (e *Envelope) WalkHdr(f func(key string, val string) bool) {
 		}
 	}
 	e.kvl.Unlock()
+
+	return e
 }
 
-func (e *Envelope) SetMsg(msg Message) *Envelope {
+func (e *envelopeImpl) SetMsg(msg Message) Envelope {
 	e.m = msg
 
 	return e
 }
 
-func (e *Envelope) GetMsg() Message {
+func (e *envelopeImpl) GetMsg() Message {
 	if e.m == nil {
 		return nil
 	}
@@ -135,7 +152,7 @@ func (e *Envelope) GetMsg() Message {
 // Send writes the envelope to the connection based on the Gateway specification.
 // You **MUST NOT** use the Envelope after calling this method.
 // You **MUST NOT** call this function more than once.
-func (e *Envelope) Send() {
+func (e *envelopeImpl) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")
 	}
@@ -159,14 +176,14 @@ func (e *Envelope) Send() {
 
 // DontReuse is used by testkit, you should not use it in your code.
 // Caution: internal usage only, **DO NOT** use in your code.
-func (e *Envelope) DontReuse() {
+func (e *envelopeImpl) DontReuse() {
 	e.reuse = false
 }
 
 type (
 	// Modifier is a function which can modify the outgoing Envelope before sending it to the
 	// client. Modifier only applies to outgoing envelopes.
-	Modifier  func(envelope *Envelope)
+	Modifier  func(envelope Envelope)
 	Marshaler interface {
 		Marshal() ([]byte, error)
 	}

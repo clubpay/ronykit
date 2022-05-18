@@ -116,7 +116,7 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Exec
 	return nil
 }
 
-func (b *bundle) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+func (b *bundle) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	outputMsgContainer := b.rpcOutFactory()
 	outputMsgContainer.SetPayload(e.GetMsg())
 	e.WalkHdr(func(key string, val string) bool {

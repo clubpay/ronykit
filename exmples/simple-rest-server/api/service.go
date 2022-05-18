@@ -33,7 +33,7 @@ func (x *Sample) Desc() *desc.Service {
 				AddSelector(fastws.Selector{
 					Predicate: "echoRequest",
 				}).
-				AddModifier(func(envelope *ronykit.Envelope) {
+				AddModifier(func(envelope ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
 				SetHandler(EchoHandler),
