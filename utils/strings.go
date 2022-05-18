@@ -137,8 +137,14 @@ func IntToStr(x int) string {
 // Note it may break if string and/or slice header will change
 // in the future go versions.
 func ByteToStr(bts []byte) string {
-	/* #nosec G103 */
-	return *(*string)(unsafe.Pointer(&bts))
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&bts))
+
+	var s string
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	sh.Data = bh.Data
+	sh.Len = bh.Len
+
+	return s
 }
 
 // B2S is alias for ByteToStr.
@@ -150,9 +156,7 @@ func B2S(bts []byte) string {
 // Note it may break if string and/or slice header will change
 // in the future go versions.
 func StrToByte(str string) (b []byte) {
-	/* #nosec G103 */
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	/* #nosec G103 */
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&str))
 	bh.Data = sh.Data
 	bh.Len = sh.Len

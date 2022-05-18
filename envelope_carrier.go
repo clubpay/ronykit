@@ -1,5 +1,7 @@
 package ronykit
 
+// envelopeCarrier is a serializable message which is used by Cluster component of the
+// EdgeServer to send information from one instance to another instance.
 type envelopeCarrier struct {
 	Hdr          map[string]string `json:"hdr"`
 	Msg          []byte            `json:"msg"`
