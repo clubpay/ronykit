@@ -101,9 +101,8 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Exec
 
 	ctx.
 		Set(ronykit.CtxServiceName, routeData.ServiceName).
-		Set(ronykit.CtxRoute, routeData.Predicate)
-
-	ctx.AddModifier(routeData.Modifiers...)
+		Set(ronykit.CtxRoute, routeData.Predicate).
+		AddModifier(routeData.Modifiers...)
 
 	// run the execFunc with generated params
 	execFunc(

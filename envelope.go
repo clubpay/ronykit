@@ -166,9 +166,24 @@ func (e *Envelope) DontReuse() {
 type (
 	// Modifier is a function which can modify the outgoing Envelope before sending it to the
 	// client. Modifier only applies to outgoing envelopes.
-	Modifier   func(envelope *Envelope)
-	Marshaller interface {
+	Modifier  func(envelope *Envelope)
+	Marshaler interface {
 		Marshal() ([]byte, error)
+	}
+	Unmarshaler interface {
+		Unmarshal([]byte) error
+	}
+	JSONMarshaler interface {
+		MarshalJSON() ([]byte, error)
+	}
+	JSONUnmarshaler interface {
+		UnmarshalJSON([]byte) error
+	}
+	ProtoMarshaler interface {
+		MarshalProto() ([]byte, error)
+	}
+	ProtoUnmarshaler interface {
+		UnmarshalProto([]byte) error
 	}
 	Message            interface{}
 	MessageFactoryFunc func() Message

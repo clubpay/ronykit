@@ -4,14 +4,11 @@ import (
 	"github.com/clubpay/ronykit"
 )
 
-var (
-	_ ronykit.RouteSelector    = Selector{}
-	_ ronykit.RPCRouteSelector = Selector{}
-)
-
 type Selector struct {
 	Predicate string
 }
+
+var _ ronykit.RPCRouteSelector = (*Selector)(nil)
 
 func (r Selector) GetPredicate() string {
 	return r.Predicate

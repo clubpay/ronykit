@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"encoding"
 	"strings"
 	"unsafe"
 
@@ -134,9 +135,25 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 
 	return func(bag Params, data []byte) ronykit.Message {
 		v := factory()
-
+		var err error
 		if len(data) > 0 {
-			_ = json.Unmarshal(data, v)
+			switch v := v.(type) {
+			case ronykit.Unmarshaler:
+				err = v.Unmarshal(data)
+			case ronykit.ProtoUnmarshaler:
+				err = v.UnmarshalProto(data)
+			case ronykit.JSONUnmarshaler:
+				err = v.UnmarshalJSON(data)
+			case encoding.BinaryUnmarshaler:
+				err = v.UnmarshalBinary(data)
+			case encoding.TextUnmarshaler:
+				err = v.UnmarshalText(data)
+			default:
+				err = json.Unmarshal(data, v)
+			}
+			if err != nil {
+				return err
+			}
 		}
 
 		for idx := range pcs {

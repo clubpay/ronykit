@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding"
-	"encoding/json"
 	"fmt"
 	"net"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/clubpay/ronykit/utils/pools"
 	"github.com/clubpay/ronykit/utils/pools/buf"
 	"github.com/fasthttp/websocket"
+	"github.com/goccy/go-json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -226,9 +226,8 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Ex
 	ctx.
 		Set(ronykit.CtxServiceName, routeData.ServiceName).
 		Set(ronykit.CtxContractID, routeData.ContractID).
-		Set(ronykit.CtxRoute, routeData.Predicate)
-
-	ctx.AddModifier(routeData.Modifiers...)
+		Set(ronykit.CtxRoute, routeData.Predicate).
+		AddModifier(routeData.Modifiers...)
 
 	// run the execFunc with generated params
 	execFunc(
@@ -322,9 +321,11 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
 	)
 
 	switch m := e.GetMsg().(type) {
-	case ronykit.Marshaller:
+	case ronykit.Marshaler:
 		data, err = m.Marshal()
-	case json.Marshaler:
+	case ronykit.ProtoMarshaler:
+		data, err = m.MarshalProto()
+	case ronykit.JSONMarshaler:
 		data, err = m.MarshalJSON()
 	case encoding.BinaryMarshaler:
 		data, err = m.MarshalBinary()
