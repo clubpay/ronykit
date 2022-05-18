@@ -7,7 +7,6 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
-	"github.com/goccy/go-json"
 	"github.com/panjf2000/gnet"
 )
 
@@ -80,7 +79,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
 	inputMsgContainer := b.rpcInFactory()
-	err := json.Unmarshal(in, inputMsgContainer)
+	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
 		return err
 	}

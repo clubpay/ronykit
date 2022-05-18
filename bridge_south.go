@@ -2,6 +2,8 @@ package ronykit
 
 import (
 	"context"
+
+	"github.com/goccy/go-json"
 )
 
 // Cluster identifies all instances of our EdgeServer. The implementation of the Cluster is not
@@ -103,16 +105,32 @@ func wrapWithCoordinator(c Contract) Contract {
 
 func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
-		target, err := sel(newLimitedContext(ctx))
+		target, err := sel(ctx.Limited())
 		if err != nil {
 			ctx.Error(err)
 
 			return
 		}
 
-		ec := envelopeCarrierFromContext(ctx)
-		_ = ec
+		out := envelopeCarrierFromContext(ctx)
+		outData, err := json.Marshal(out)
+		if err != nil {
+			ctx.Error(err)
 
-		_ = target
+			return
+		}
+
+		inData, err := target.RoundTrip(ctx.Context(), outData)
+		if err != nil {
+			ctx.Error(err)
+
+			return
+		}
+
+		in := envelopeCarrierFromData(inData)
+		ctx.Out().
+			SetHdrMap(in.Hdr).
+			SetMsg(RawMessage(in.Msg)).
+			Send()
 	}
 }

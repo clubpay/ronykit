@@ -1,5 +1,7 @@
 package ronykit
 
+import "github.com/goccy/go-json"
+
 // envelopeCarrier is a serializable message which is used by Cluster component of the
 // EdgeServer to send information from one instance to another instance.
 type envelopeCarrier struct {
@@ -26,6 +28,13 @@ func envelopeCarrierFromContext(ctx *Context) envelopeCarrier {
 
 			return true
 		})
+
+	return ec
+}
+
+func envelopeCarrierFromData(data []byte) envelopeCarrier {
+	ec := envelopeCarrier{}
+	_ = json.Unmarshal(data, &ec)
 
 	return ec
 }
