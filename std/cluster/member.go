@@ -1,6 +1,10 @@
 package cluster
 
-import "github.com/clubpay/ronykit"
+import (
+	"context"
+
+	"github.com/clubpay/ronykit"
+)
 
 type member struct {
 	ID       string   `json:"id"`
@@ -18,8 +22,6 @@ func (m member) AdvertisedURL() []string {
 	return m.URLs
 }
 
-func (m member) RemoteExecute(ctx *ronykit.Context) error {
-	ctx.In()
-
-	return nil
+func (m member) RoundTrip(ctx context.Context, sendData []byte) (receivedData []byte, err error) {
+	return nil, nil
 }

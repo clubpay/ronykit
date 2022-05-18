@@ -3,7 +3,6 @@ package fasthttp
 import (
 	"bytes"
 	"context"
-	"encoding"
 	"fmt"
 	"net"
 	"sync"
@@ -14,7 +13,6 @@ import (
 	"github.com/clubpay/ronykit/utils/pools"
 	"github.com/clubpay/ronykit/utils/pools/buf"
 	"github.com/fasthttp/websocket"
-	"github.com/goccy/go-json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -89,47 +87,6 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
-	c, ok := b.connPool.Get().(*httpConn)
-	if !ok {
-		c = &httpConn{}
-	}
-
-	c.ctx = ctx
-	b.d.OnOpen(c)
-	b.d.OnMessage(c, ctx.PostBody())
-	b.d.OnClose(c.ConnID())
-
-	b.connPool.Put(c)
-}
-
-func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
-	_ = b.wsUpgrade.Upgrade(ctx,
-		func(conn *websocket.Conn) {
-			wsc := &wsConn{
-				kv:       map[string]string{},
-				id:       0,
-				clientIP: conn.RemoteAddr().String(),
-				c:        conn,
-			}
-			b.d.OnOpen(wsc)
-			for {
-				_, in, err := conn.ReadMessage()
-				if err != nil {
-					break
-				}
-
-				inBuf := pools.Buffer.FromBytes(in)
-				go func(buf *buf.Bytes) {
-					b.d.OnMessage(wsc, *buf.Bytes())
-					pools.Buffer.Put(buf)
-				}(inBuf)
-			}
-			b.d.OnClose(wsc.id)
-		},
-	)
-}
-
 func (b *bundle) Register(svc ronykit.Service) {
 	for _, contract := range svc.Contracts() {
 		b.registerRPC(svc.Name(), contract, contract.Handlers()...)
@@ -172,7 +129,7 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
 	if !ok || decoder == nil {
-		decoder = reflectDecoder(ronykit.CreateMessageFactory(c.Input()))
+		decoder = reflectDecoder(c.Encoding(), ronykit.CreateMessageFactory(c.Input()))
 	}
 
 	b.httpMux.Handle(
@@ -199,6 +156,33 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.Exec
 	default:
 		panic("BUG!! incorrect connection")
 	}
+}
+
+func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
+	_ = b.wsUpgrade.Upgrade(ctx,
+		func(conn *websocket.Conn) {
+			wsc := &wsConn{
+				kv:       map[string]string{},
+				id:       0,
+				clientIP: conn.RemoteAddr().String(),
+				c:        conn,
+			}
+			b.d.OnOpen(wsc)
+			for {
+				_, in, err := conn.ReadMessage()
+				if err != nil {
+					break
+				}
+
+				inBuf := pools.Buffer.FromBytes(in)
+				go func(buf *buf.Bytes) {
+					b.d.OnMessage(wsc, *buf.Bytes())
+					pools.Buffer.Put(buf)
+				}(inBuf)
+			}
+			b.d.OnClose(wsc.id)
+		},
+	)
 }
 
 func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
@@ -257,6 +241,20 @@ func (b *bundle) wsWriteFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	_, err = conn.Write(data)
 
 	return err
+}
+
+func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
+	c, ok := b.connPool.Get().(*httpConn)
+	if !ok {
+		c = &httpConn{}
+	}
+
+	c.ctx = ctx
+	b.d.OnOpen(c)
+	b.d.OnMessage(c, ctx.PostBody())
+	b.d.OnClose(c.ConnID())
+
+	b.connPool.Put(c)
 }
 
 func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
@@ -319,20 +317,7 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e ronykit.Envelope) error {
 		err  error
 	)
 
-	switch m := e.GetMsg().(type) {
-	case ronykit.Marshaler:
-		data, err = m.Marshal()
-	case ronykit.ProtoMarshaler:
-		data, err = m.MarshalProto()
-	case ronykit.JSONMarshaler:
-		data, err = m.MarshalJSON()
-	case encoding.BinaryMarshaler:
-		data, err = m.MarshalBinary()
-	case encoding.TextMarshaler:
-		data, err = m.MarshalText()
-	default:
-		data, err = json.Marshal(m)
-	}
+	data, err = ronykit.MarshalMessage(e.GetMsg(), ronykit.Undefined)
 	if err != nil {
 		return err
 	}

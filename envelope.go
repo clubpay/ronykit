@@ -1,7 +1,6 @@
 package ronykit
 
 import (
-	"reflect"
 	"sync"
 
 	"github.com/clubpay/ronykit/utils"
@@ -15,7 +14,12 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
+// Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
+// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
+// take advantage of. For example in std/fasthttp Envelope headers translate from/to http
+// request/response headers.
 type Envelope interface {
+	Encoding() Encoding
 	SetHdr(key, value string) Envelope
 	SetHdrWalker(walker Walker) Envelope
 	SetHdrMap(kv map[string]string) Envelope
@@ -31,16 +35,18 @@ type Envelope interface {
 	Send()
 }
 
-// Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
-// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
-// take advantage of. For example in std/fasthttp Envelope headers translate from/to http
-// request/response headers.
+// Modifier is a function which can modify the outgoing Envelope before sending it to the
+// client. Modifier only applies to outgoing envelopes.
+type Modifier func(envelope Envelope)
+
+// envelopeImpl implements Envelope
 type envelopeImpl struct {
 	ctx  *Context
 	conn Conn
 	kvl  utils.SpinLock
 	kv   EnvelopeHdr
 	m    Message
+	enc  Encoding
 
 	// outgoing identity the Envelope if it is able to send
 	outgoing bool
@@ -156,6 +162,10 @@ func (e *envelopeImpl) GetMsg() Message {
 	return e.m
 }
 
+func (e *envelopeImpl) Encoding() Encoding {
+	return e.enc
+}
+
 func (e *envelopeImpl) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")
@@ -176,59 +186,4 @@ func (e *envelopeImpl) Send() {
 
 	// Release the envelope
 	e.release()
-}
-
-type (
-	// Modifier is a function which can modify the outgoing Envelope before sending it to the
-	// client. Modifier only applies to outgoing envelopes.
-	Modifier  func(envelope Envelope)
-	Marshaler interface {
-		Marshal() ([]byte, error)
-	}
-	Unmarshaler interface {
-		Unmarshal([]byte) error
-	}
-	JSONMarshaler interface {
-		MarshalJSON() ([]byte, error)
-	}
-	JSONUnmarshaler interface {
-		UnmarshalJSON([]byte) error
-	}
-	ProtoMarshaler interface {
-		MarshalProto() ([]byte, error)
-	}
-	ProtoUnmarshaler interface {
-		UnmarshalProto([]byte) error
-	}
-	Message            interface{}
-	MessageFactoryFunc func() Message
-)
-
-func CreateMessageFactory(in Message) MessageFactoryFunc {
-	var ff MessageFactoryFunc
-
-	reflect.ValueOf(&ff).Elem().Set(
-		reflect.MakeFunc(
-			reflect.TypeOf(ff),
-			func(args []reflect.Value) (results []reflect.Value) {
-				return []reflect.Value{reflect.New(reflect.TypeOf(in).Elem())}
-			},
-		),
-	)
-
-	return ff
-}
-
-// RawMessage is a bytes slice which could be used as Message. This is helpful for
-// raw data messages.
-type RawMessage []byte
-
-func (rm RawMessage) Marshal() ([]byte, error) {
-	return rm, nil
-}
-
-// ErrorMessage is a special kind of Message which is also an error.
-type ErrorMessage interface {
-	Message
-	error
 }

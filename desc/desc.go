@@ -19,7 +19,7 @@ type Contract struct {
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
 	RouteSelectors []ronykit.RouteSelector
-	EdgeSelector   ronykit.EdgeSelector
+	EdgeSelector   ronykit.EdgeSelectorFunc
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
 	Output         ronykit.Message
@@ -82,9 +82,9 @@ func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	return c
 }
 
-// SetCoordinator sets a ronykit.EdgeSelector for this contract, to coordinate requests to
+// SetCoordinator sets a ronykit.EdgeSelectorFunc for this contract, to coordinate requests to
 // right ronykit.EdgeServer instance.
-func (c *Contract) SetCoordinator(f ronykit.EdgeSelector) *Contract {
+func (c *Contract) SetCoordinator(f ronykit.EdgeSelectorFunc) *Contract {
 	c.EdgeSelector = f
 
 	return c

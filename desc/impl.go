@@ -42,7 +42,7 @@ func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
 type contractImpl struct {
 	id             string
 	routeSelector  ronykit.RouteSelector
-	memberSelector ronykit.EdgeSelector
+	memberSelector ronykit.EdgeSelectorFunc
 	handlers       []ronykit.HandlerFunc
 	modifiers      []ronykit.Modifier
 	input          ronykit.Message
@@ -69,7 +69,7 @@ func (r *contractImpl) setRouteSelector(selector ronykit.RouteSelector) *contrac
 	return r
 }
 
-func (r *contractImpl) setMemberSelector(selector ronykit.EdgeSelector) *contractImpl {
+func (r *contractImpl) setMemberSelector(selector ronykit.EdgeSelectorFunc) *contractImpl {
 	r.memberSelector = selector
 
 	return r
@@ -101,7 +101,7 @@ func (r *contractImpl) RouteSelector() ronykit.RouteSelector {
 	return r.routeSelector
 }
 
-func (r *contractImpl) EdgeSelector() ronykit.EdgeSelector {
+func (r *contractImpl) EdgeSelector() ronykit.EdgeSelectorFunc {
 	return r.memberSelector
 }
 

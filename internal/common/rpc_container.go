@@ -8,7 +8,7 @@ import (
 // simpleIncomingJSONRPC implements ronykit.IncomingRPCContainer
 type simpleIncomingJSONRPC struct {
 	Header  map[string]string `json:"hdr"`
-	Payload json.RawMessage   `json:"payload"`
+	Payload []byte            `json:"payload"`
 }
 
 var SimpleIncomingJSONRPC = func() ronykit.IncomingRPCContainer {
@@ -22,7 +22,7 @@ func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 }
 
 func (e *simpleIncomingJSONRPC) Fill(m ronykit.Message) (err error) {
-	return json.Unmarshal(e.Payload, m)
+	return ronykit.UnmarshalMessage(e.Payload, m, ronykit.Undefined)
 }
 
 func (e *simpleIncomingJSONRPC) GetHdr(key string) string {

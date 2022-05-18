@@ -1,13 +1,11 @@
 package fasthttp
 
 import (
-	"encoding"
 	"strings"
 	"unsafe"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
-	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
 
@@ -101,7 +99,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
+func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) DecoderFunc {
 	rVal := reflect.ValueOf(factory())
 	rType := rVal.Type()
 	if rType.Kind() != reflect.Ptr {
@@ -137,20 +135,7 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 		v := factory()
 		var err error
 		if len(data) > 0 {
-			switch v := v.(type) {
-			case ronykit.Unmarshaler:
-				err = v.Unmarshal(data)
-			case ronykit.ProtoUnmarshaler:
-				err = v.UnmarshalProto(data)
-			case ronykit.JSONUnmarshaler:
-				err = v.UnmarshalJSON(data)
-			case encoding.BinaryUnmarshaler:
-				err = v.UnmarshalBinary(data)
-			case encoding.TextUnmarshaler:
-				err = v.UnmarshalText(data)
-			default:
-				err = json.Unmarshal(data, v)
-			}
+			err = ronykit.UnmarshalMessage(data, v, enc)
 			if err != nil {
 				return err
 			}

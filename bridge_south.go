@@ -21,7 +21,7 @@ type Cluster interface {
 type ClusterMember interface {
 	ServerID() string
 	AdvertisedURL() []string
-	RemoteExecute(ctx *Context) error
+	RoundTrip(ctx context.Context, sendData []byte) (receivedData []byte, err error)
 }
 
 // ClusterDelegate is the delegate that connects the Cluster to the rest of the system.
@@ -45,6 +45,10 @@ type ClusterStore interface {
 	// GetActiveMembers must return a list of ClusterMembers that their last active is larger
 	// than the lastActive input.
 	GetActiveMembers(ctx context.Context, lastActive int64) ([]ClusterMember, error)
+}
+
+type ClusterChannel interface {
+	RoundTrip(ctx context.Context, targetID string, sendData []byte) (receivedData []byte, err error)
 }
 
 // southBridge is a container component that connects EdgeServer with a Cluster type Bundle.
@@ -87,31 +91,28 @@ func wrapWithCoordinator(c Contract) Contract {
 		return c
 	}
 
-	memberSel := c.EdgeSelector()
-	mw := func(ctx *Context) {
-		target, err := memberSel(newLimitedContext(ctx))
-		if err != nil {
-			ctx.Error(err)
-
-			return
-		}
-
-		err = target.RemoteExecute(ctx)
-		if err != nil {
-			ctx.Error(err)
-
-			return
-		}
-
-		ctx.StopExecution()
-	}
-
 	cw := &contractWrap{
 		Contract: c,
 		preH: []HandlerFunc{
-			mw,
+			genForwarderHandler(c.EdgeSelector()),
 		},
 	}
 
 	return cw
+}
+
+func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
+	return func(ctx *Context) {
+		target, err := sel(newLimitedContext(ctx))
+		if err != nil {
+			ctx.Error(err)
+
+			return
+		}
+
+		ec := envelopeCarrierFromContext(ctx)
+		_ = ec
+
+		_ = target
+	}
 }

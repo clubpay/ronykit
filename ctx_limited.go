@@ -4,7 +4,7 @@ import "context"
 
 // LimitedContext is a wrapper around Context, which limit the capabilities of the original Context.
 // This is useful in cases where we need to pass the Context, but we do not want to give access to all
-// the exposed methods. For example this is used in EdgeSelector.
+// the exposed methods. For example this is used in EdgeSelectorFunc.
 type LimitedContext struct {
 	ctx *Context
 }
