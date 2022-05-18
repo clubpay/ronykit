@@ -59,12 +59,13 @@ func (testCtx *TestContext) Run() error {
 	conn.clientIP = testCtx.clientIP
 	conn.stream = testCtx.stream
 	ctx.conn = conn
-	ctx.in = newEnvelope(ctx, conn, false).
+	ctx.in = newEnvelope(ctx, conn, false)
+	ctx.in.
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
 	ctx.wf = func(conn Conn, e Envelope) error {
-		e.DontReuse()
-		tc := conn.(*testConn) //nolint:forcetypeassert
+		e.(*envelopeImpl).dontReuse() //nolint:forcetypeassert
+		tc := conn.(*testConn)        //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
 		tc.Unlock()
@@ -83,13 +84,13 @@ func (testCtx *TestContext) RunREST() error {
 	conn.clientIP = testCtx.clientIP
 	conn.stream = testCtx.stream
 	ctx.conn = conn
-	ctx.in = newEnvelope(ctx, conn, false).
+	ctx.in = newEnvelope(ctx, conn, false)
+	ctx.in.
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
 	ctx.wf = func(conn Conn, e Envelope) error {
-		e.DontReuse()
-
-		tc := conn.(*testConn) //nolint:forcetypeassert
+		e.(*envelopeImpl).dontReuse() //nolint:forcetypeassert
+		tc := conn.(*testConn)        //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
 		tc.Unlock()

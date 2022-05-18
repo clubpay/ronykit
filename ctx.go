@@ -29,7 +29,7 @@ type Context struct {
 	kv         map[string]interface{}
 	hdr        map[string]string
 	conn       Conn
-	in         Envelope
+	in         *envelopeImpl
 	wf         WriteFunc
 	modifiers  []Modifier
 	err        error
@@ -137,8 +137,9 @@ func (ctx *Context) SetHdrMap(hdr map[string]string) {
 }
 
 // In returns the incoming Envelope which received from the connection.
-// You **SHOULD NOT** use this envelope to write data to the connection. If you want
-// to return a message/envelope to connection use Out or OutTo methods.
+// You **MUST NOT** call Send method of this Envelope.
+// If you want to return a message/envelope to connection use Out or OutTo methods
+// of the Context
 func (ctx *Context) In() Envelope {
 	return ctx.in
 }

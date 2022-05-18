@@ -16,7 +16,6 @@ type Walker interface {
 type EnvelopeHdr map[string]string
 
 type Envelope interface {
-	release()
 	SetHdr(key, value string) Envelope
 	SetHdrWalker(walker Walker) Envelope
 	SetHdrMap(kv map[string]string) Envelope
@@ -24,8 +23,12 @@ type Envelope interface {
 	WalkHdr(f func(key, val string) bool) Envelope
 	SetMsg(msg Message) Envelope
 	GetMsg() Message
+	// Send writes the envelope to the connection based on the Gateway specification.
+	// You **MUST NOT** use the Envelope after calling this method.
+	// You **MUST NOT** call this function more than once.
+	// You **MUST NOT** call this method on incoming envelopes. i.e. the Envelope that you
+	// get from Context.In
 	Send()
-	DontReuse()
 }
 
 // Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
@@ -49,7 +52,7 @@ type envelopeImpl struct {
 
 var _ Envelope = (*envelopeImpl)(nil)
 
-func newEnvelope(ctx *Context, conn Conn, outgoing bool) Envelope {
+func newEnvelope(ctx *Context, conn Conn, outgoing bool) *envelopeImpl {
 	e, ok := envelopePool.Get().(*envelopeImpl)
 	if !ok {
 		e = &envelopeImpl{
@@ -83,6 +86,10 @@ func (e *envelopeImpl) release() {
 	e.conn = nil
 
 	e.p.Put(e)
+}
+
+func (e *envelopeImpl) dontReuse() {
+	e.reuse = false
 }
 
 func (e *envelopeImpl) SetHdr(key, value string) Envelope {
@@ -149,9 +156,6 @@ func (e *envelopeImpl) GetMsg() Message {
 	return e.m
 }
 
-// Send writes the envelope to the connection based on the Gateway specification.
-// You **MUST NOT** use the Envelope after calling this method.
-// You **MUST NOT** call this function more than once.
 func (e *envelopeImpl) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")
@@ -172,12 +176,6 @@ func (e *envelopeImpl) Send() {
 
 	// Release the envelope
 	e.release()
-}
-
-// DontReuse is used by testkit, you should not use it in your code.
-// Caution: internal usage only, **DO NOT** use in your code.
-func (e *envelopeImpl) DontReuse() {
-	e.reuse = false
 }
 
 type (
