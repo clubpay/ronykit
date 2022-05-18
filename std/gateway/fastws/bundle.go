@@ -69,6 +69,7 @@ func (b *bundle) Register(svc ronykit.Service) {
 
 		b.routes[rpcSelector.GetPredicate()] = routeData{
 			ServiceName: svc.Name(),
+			ContractID:  contract.ID(),
 			Predicate:   rpcSelector.GetPredicate(),
 			Handlers:    contract.Handlers(),
 			Modifiers:   contract.Modifiers(),

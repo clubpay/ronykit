@@ -286,17 +286,16 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.
 		},
 	)
 
-	// Set the route and service name
-	ctx.
-		Set(ronykit.CtxServiceName, routeData.ServiceName).
-		Set(ronykit.CtxContractID, routeData.ContractID).
-		Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path))
-
 	ctx.In().
 		SetHdrWalker(conn).
 		SetMsg(routeData.Decoder(params, in))
 
-	ctx.AddModifier(routeData.Modifiers...)
+	// Set the route and service name
+	ctx.
+		Set(ronykit.CtxServiceName, routeData.ServiceName).
+		Set(ronykit.CtxContractID, routeData.ContractID).
+		Set(ronykit.CtxRoute, fmt.Sprintf("%s %s", routeData.Method, routeData.Path)).
+		AddModifier(routeData.Modifiers...)
 
 	// execute handler functions
 	execFunc(

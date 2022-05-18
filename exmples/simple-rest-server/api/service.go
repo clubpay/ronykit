@@ -80,7 +80,7 @@ func EchoHandler(ctx *ronykit.Context) {
 	if !ok {
 		ctx.Out().
 			SetMsg(
-				fasthttp.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
+				dto.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
 			).Send()
 
 		return
@@ -102,7 +102,7 @@ func SumHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
+			SetMsg(dto.Err("E01", "Request was not echoRequest")).
 			Send()
 
 		return
@@ -123,7 +123,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(fasthttp.Err("E01", "Request was not echoRequest")).
+			SetMsg(dto.Err("E01", "Request was not echoRequest")).
 			Send()
 
 		return
@@ -132,7 +132,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 	rc, ok := ctx.Conn().(ronykit.RESTConn)
 	if !ok {
 		ctx.Out().
-			SetMsg(fasthttp.Err("E01", "Only supports REST requests")).
+			SetMsg(dto.Err("E01", "Only supports REST requests")).
 			Send()
 
 		return
@@ -151,7 +151,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 		)
 	default:
 		ctx.Out().
-			SetMsg(fasthttp.Err("E01", "Unsupported method")).
+			SetMsg(dto.Err("E01", "Unsupported method")).
 			Send()
 
 		return

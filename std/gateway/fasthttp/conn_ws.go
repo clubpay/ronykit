@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 )
@@ -12,6 +13,8 @@ type wsConn struct {
 	clientIP string
 	c        *websocket.Conn
 }
+
+var _ ronykit.Conn = (*wsConn)(nil)
 
 func (w *wsConn) ConnID() uint64 {
 	return w.id

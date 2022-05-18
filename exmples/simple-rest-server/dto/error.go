@@ -1,8 +1,9 @@
-package fasthttp
+package dto
 
 import (
 	"fmt"
 
+	"github.com/clubpay/ronykit"
 	"github.com/goccy/go-json"
 )
 
@@ -10,6 +11,8 @@ type Error struct {
 	Code    string `json:"code"`
 	Message string `json:"msg"`
 }
+
+var _ ronykit.ErrorMessage = (*Error)(nil)
 
 func (e *Error) Error() string {
 	return fmt.Sprintf("%s:%s", e.Code, e.Message)
