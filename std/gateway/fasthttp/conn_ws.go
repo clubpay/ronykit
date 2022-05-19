@@ -1,7 +1,10 @@
 package fasthttp
 
 import (
+	"fmt"
+
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/internal/stacktrace"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 )
@@ -67,6 +70,7 @@ func (w *wsConn) Set(key string, val string) {
 
 func recoverPanic() {
 	if r := recover(); r != nil {
-		print(r)
+		fmt.Println(r)                            //nolint:forbidigo
+		fmt.Println(stacktrace.TakeStacktrace(1)) //nolint:forbidigo
 	}
 }
