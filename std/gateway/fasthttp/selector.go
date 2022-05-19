@@ -99,7 +99,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) DecoderFunc {
+func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 	rVal := reflect.ValueOf(factory())
 	rType := rVal.Type()
 	if rType.Kind() != reflect.Ptr {
@@ -135,7 +135,7 @@ func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) De
 		v := factory()
 		var err error
 		if len(data) > 0 {
-			err = ronykit.UnmarshalMessage(data, v, enc)
+			err = ronykit.UnmarshalMessage(data, v)
 			if err != nil {
 				return err
 			}

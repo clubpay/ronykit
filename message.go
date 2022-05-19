@@ -48,110 +48,40 @@ func CreateMessageFactory(in Message) MessageFactoryFunc {
 	return ff
 }
 
-func UnmarshalMessage(data []byte, m Message, enc Encoding) error {
+func UnmarshalMessage(data []byte, m Message) error {
 	var err error
-	switch enc {
-	case Undefined:
-		switch v := m.(type) {
-		case Unmarshaler:
-			err = v.Unmarshal(data)
-		case ProtoUnmarshaler:
-			err = v.UnmarshalProto(data)
-		case JSONUnmarshaler:
-			err = v.UnmarshalJSON(data)
-		case encoding.BinaryUnmarshaler:
-			err = v.UnmarshalBinary(data)
-		case encoding.TextUnmarshaler:
-			err = v.UnmarshalText(data)
-		default:
-			err = json.Unmarshal(data, m)
-		}
-	case JSON:
-		if v, ok := m.(JSONUnmarshaler); ok {
-			err = v.UnmarshalJSON(data)
-		} else {
-			err = json.Unmarshal(data, m)
-		}
-	case Proto:
-		if v, ok := m.(ProtoUnmarshaler); ok {
-			err = v.UnmarshalProto(data)
-		} else {
-			err = ErrUnsupportedEncoding
-		}
-	case Binary:
-		if v, ok := m.(encoding.BinaryUnmarshaler); ok {
-			err = v.UnmarshalBinary(data)
-		} else {
-			err = ErrUnsupportedEncoding
-		}
-	case Text:
-		if v, ok := m.(encoding.TextUnmarshaler); ok {
-			err = v.UnmarshalText(data)
-		} else {
-			err = ErrUnsupportedEncoding
-		}
-	case CustomDefined:
-		if v, ok := m.(Unmarshaler); ok {
-			err = v.Unmarshal(data)
-		} else {
-			err = ErrUnsupportedEncoding
-		}
+	switch v := m.(type) {
+	case Unmarshaler:
+		err = v.Unmarshal(data)
+	case ProtoUnmarshaler:
+		err = v.UnmarshalProto(data)
+	case JSONUnmarshaler:
+		err = v.UnmarshalJSON(data)
+	case encoding.BinaryUnmarshaler:
+		err = v.UnmarshalBinary(data)
+	case encoding.TextUnmarshaler:
+		err = v.UnmarshalText(data)
 	default:
-		panic("invalid encoding")
+		err = json.Unmarshal(data, m)
 	}
 
 	return err
 }
 
-func MarshalMessage(m Message, enc Encoding) ([]byte, error) {
-	switch enc {
-	case Undefined:
-		switch v := m.(type) {
-		case Marshaler:
-			return v.Marshal()
-		case ProtoMarshaler:
-			return v.MarshalProto()
-		case JSONMarshaler:
-			return v.MarshalJSON()
-		case encoding.BinaryMarshaler:
-			return v.MarshalBinary()
-		case encoding.TextMarshaler:
-			return v.MarshalText()
-		default:
-			return json.Marshal(m)
-		}
-	case JSON:
-		if v, ok := m.(JSONMarshaler); ok {
-			return v.MarshalJSON()
-		} else {
-			return json.Marshal(m)
-		}
-	case Proto:
-		if v, ok := m.(ProtoMarshaler); ok {
-			return v.MarshalProto()
-		} else {
-			return nil, ErrUnsupportedEncoding
-		}
-	case Binary:
-		if v, ok := m.(encoding.BinaryMarshaler); ok {
-			return v.MarshalBinary()
-		} else {
-			return nil, ErrUnsupportedEncoding
-		}
-	case Text:
-		if v, ok := m.(encoding.TextMarshaler); ok {
-			return v.MarshalText()
-		} else {
-			return nil, ErrUnsupportedEncoding
-		}
-	case CustomDefined:
-		if v, ok := m.(Marshaler); ok {
-			return v.Marshal()
-		} else {
-			return nil, ErrUnsupportedEncoding
-		}
+func MarshalMessage(m Message) ([]byte, error) {
+	switch v := m.(type) {
+	case Marshaler:
+		return v.Marshal()
+	case ProtoMarshaler:
+		return v.MarshalProto()
+	case JSONMarshaler:
+		return v.MarshalJSON()
+	case encoding.BinaryMarshaler:
+		return v.MarshalBinary()
+	case encoding.TextMarshaler:
+		return v.MarshalText()
 	default:
-		panic("invalid encoding")
+		return json.Marshal(m)
 	}
 }
 

@@ -129,7 +129,7 @@ func (b *bundle) registerREST(svcName string, c ronykit.Contract, handlers ...ro
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
 	if !ok || decoder == nil {
-		decoder = reflectDecoder(c.Encoding(), ronykit.CreateMessageFactory(c.Input()))
+		decoder = reflectDecoder(ronykit.CreateMessageFactory(c.Input()))
 	}
 
 	b.httpMux.Handle(
@@ -317,7 +317,7 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e ronykit.Envelope) error {
 		err  error
 	)
 
-	data, err = ronykit.MarshalMessage(e.GetMsg(), ronykit.Undefined)
+	data, err = ronykit.MarshalMessage(e.GetMsg())
 	if err != nil {
 		return err
 	}
