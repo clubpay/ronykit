@@ -7,7 +7,7 @@ import (
 )
 
 type wsConn struct {
-	kvm      utils.SpinLock
+	utils.SpinLock
 	kv       map[string]string
 	id       uint64
 	clientIP string
@@ -25,7 +25,11 @@ func (w *wsConn) ClientIP() string {
 }
 
 func (w *wsConn) Write(data []byte) (int, error) {
+	defer recoverPanic()
+
+	w.Lock()
 	err := w.c.WriteMessage(websocket.TextMessage, data)
+	w.Unlock()
 	if err != nil {
 		return 0, err
 	}
@@ -38,25 +42,31 @@ func (w *wsConn) Stream() bool {
 }
 
 func (w *wsConn) Walk(f func(key string, val string) bool) {
-	w.kvm.Lock()
+	w.Lock()
 	for k, v := range w.kv {
 		if !f(k, v) {
 			break
 		}
 	}
-	w.kvm.Unlock()
+	w.Unlock()
 }
 
 func (w *wsConn) Get(key string) string {
-	w.kvm.Lock()
+	w.Lock()
 	v := w.kv[key]
-	w.kvm.Unlock()
+	w.Unlock()
 
 	return v
 }
 
 func (w *wsConn) Set(key string, val string) {
-	w.kvm.Lock()
+	w.Lock()
 	w.kv[key] = val
-	w.kvm.Unlock()
+	w.Unlock()
+}
+
+func recoverPanic() {
+	if r := recover(); r != nil {
+		print(r)
+	}
 }

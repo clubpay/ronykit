@@ -3,14 +3,14 @@ module github.com/clubpay/ronykit
 go 1.17
 
 require (
-	github.com/fasthttp/websocket v1.5.1-rc.2
+	github.com/fasthttp/websocket v1.5.1-rc.3
 	github.com/gobwas/ws v1.1.0
 	github.com/goccy/go-json v0.9.7
 	github.com/goccy/go-reflect v1.1.1-0.20210520085854-e1eb8c5193d0
 	github.com/jedib0t/go-pretty/v6 v6.3.1
 	github.com/panjf2000/gnet v1.6.4
 	github.com/smartystreets/goconvey v1.7.2
-	github.com/valyala/fasthttp v1.36.0
+	github.com/valyala/fasthttp v1.37.0
 )
 
 require (

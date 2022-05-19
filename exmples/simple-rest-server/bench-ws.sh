@@ -1,0 +1,1 @@
+tcpkali --ws -c 100 -m '{"hdr":{"cmd":"echoRequest"},"payload":{"randomID": 1234}}' -r 1k 127.0.0.1:80/ws -T 30
