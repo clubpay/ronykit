@@ -57,8 +57,9 @@ type ClusterChannel interface {
 type southBridge struct {
 	ctxPool
 	l  Logger
-	c  Cluster
 	eh ErrHandler
+	cr contractResolver
+	c  Cluster
 }
 
 var _ ClusterDelegate = (*southBridge)(nil)
@@ -78,10 +79,12 @@ func (s *southBridge) OnLeave(memberIDs ...string) {
 func (s *southBridge) OnMessage(conn Conn, data []byte) {
 	ctx := s.acquireCtx(conn)
 
-	err := s.c.Dispatch(ctx, data, ctx.execute)
+	arg, err := s.c.Dispatch(ctx, data)
 	if err != nil {
 		s.eh(ctx, err)
 	}
+
+	ctx.execute(arg, s.cr(arg.ContractID))
 
 	s.releaseCtx(ctx)
 

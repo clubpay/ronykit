@@ -28,8 +28,9 @@ type GatewayDelegate interface {
 type northBridge struct {
 	ctxPool
 	l  Logger
-	b  Gateway
 	eh ErrHandler
+	cr contractResolver
+	gw Gateway
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
@@ -42,12 +43,14 @@ func (n *northBridge) OnClose(connID uint64) {
 	// Maybe later we can do something
 }
 
-func (n *northBridge) OnMessage(c Conn, msg []byte) {
-	ctx := n.acquireCtx(c)
+func (n *northBridge) OnMessage(conn Conn, msg []byte) {
+	ctx := n.acquireCtx(conn)
 
-	err := n.b.Dispatch(ctx, msg, ctx.execute)
+	arg, err := n.gw.Dispatch(ctx, msg)
 	if err != nil {
 		n.eh(ctx, err)
+	} else {
+		ctx.execute(arg, n.cr(arg.ContractID))
 	}
 
 	n.releaseCtx(ctx)

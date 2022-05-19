@@ -16,6 +16,9 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
+		ronykit.WithErrorHandler(func(ctx *ronykit.Context, err error) {
+			fmt.Println(ctx, err)
+		}),
 		ronykit.RegisterBundle(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),

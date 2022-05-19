@@ -21,7 +21,7 @@ type bundle struct {
 	d      ronykit.GatewayDelegate
 
 	predicateKey  string
-	routes        map[string]routeData
+	routes        map[string]*routeData
 	rpcInFactory  ronykit.IncomingRPCFactory
 	rpcOutFactory ronykit.OutgoingRPCFactory
 }
@@ -30,7 +30,7 @@ var _ ronykit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
-		routes:        map[string]routeData{},
+		routes:        map[string]*routeData{},
 		predicateKey:  "predicate",
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
@@ -59,60 +59,48 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (b *bundle) Register(svc ronykit.Service) {
-	for _, contract := range svc.Contracts() {
-		rpcSelector, ok := contract.RouteSelector().(ronykit.RPCRouteSelector)
-		if !ok {
-			continue
-		}
+func (b *bundle) Register(svcName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
+	if !ok {
+		return
+	}
 
-		b.routes[rpcSelector.GetPredicate()] = routeData{
-			ServiceName: svc.Name(),
-			ContractID:  contract.ID(),
-			Predicate:   rpcSelector.GetPredicate(),
-			Handlers:    contract.Handlers(),
-			Modifiers:   contract.Modifiers(),
-			Factory:     ronykit.CreateMessageFactory(contract.Input()),
-		}
+	b.routes[rpcSelector.GetPredicate()] = &routeData{
+		ServiceName: svcName,
+		ContractID:  contractID,
+		Predicate:   rpcSelector.GetPredicate(),
+		Factory:     ronykit.CreateMessageFactory(input),
 	}
 }
 
-func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
+func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return err
+		return ronykit.NoExecuteArg, err
 	}
 
 	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
-	if routeData.Handlers == nil {
-		return errNoHandler
+	if routeData == nil {
+		return ronykit.NoExecuteArg, errNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.Fill(msg)
 	if err != nil {
-		return err
+		return ronykit.NoExecuteArg, err
 	}
 
 	ctx.In().
 		SetHdrMap(inputMsgContainer.GetHdrMap()).
 		SetMsg(msg)
 
-	ctx.
-		Set(ronykit.CtxServiceName, routeData.ServiceName).
-		Set(ronykit.CtxRoute, routeData.Predicate).
-		AddModifier(routeData.Modifiers...)
-
-	// run the execFunc with generated params
-	execFunc(
-		ronykit.ExecuteArg{
-			WriteFunc:        b.writeFunc,
-			HandlerFuncChain: routeData.Handlers,
-		},
-	)
-
-	return nil
+	return ronykit.ExecuteArg{
+		WriteFunc:   b.writeFunc,
+		ServiceName: routeData.ServiceName,
+		ContractID:  routeData.ContractID,
+		Route:       routeData.Predicate,
+	}, nil
 }
 
 func (b *bundle) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {

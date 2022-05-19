@@ -33,8 +33,8 @@ type EdgeSelectorFunc func(ctx *LimitedContext) (ClusterMember, error)
 
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.
-// In other words, Contract 'r' must return valid response for 'q's required by Gateway 'b' in
-// order to be usable by Gateway 'b' otherwise it panics.
+// In other words, Contract 'r' must return valid response for 'q's required by Gateway 'gw' in
+// order to be usable by Gateway 'gw' otherwise it panics.
 type Contract interface {
 	// ID identifies the contract. This MUST be unique per Service. This MUST NOT be a runtime
 	// random number. Since this is used in RemoteExecute method of ClusterMember to execute the

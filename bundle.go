@@ -8,9 +8,9 @@ type Bundle interface {
 	Start(ctx context.Context) error
 	// Shutdown shuts down the gateway gracefully.
 	Shutdown(ctx context.Context) error
-	// Register registers the svc Service in the Bundle. This is how Bundle get information
+	// Register registers the route in the Bundle. This is how Bundle get information
 	// about the services and their contracts.
-	Register(svc Service)
+	Register(serviceName, contractID string, sel RouteSelector, input Message)
 }
 
 type Dispatcher interface {
@@ -18,14 +18,18 @@ type Dispatcher interface {
 	// arguments. The user of the Gateway does not need to implement this. If you are using some
 	// standard bundles like std/gateway/fasthttp or std/gateway/fastws then all the implementation
 	// is taken care of.
-	Dispatch(ctx *Context, in []byte, execFunc ExecuteFunc) error
+	Dispatch(ctx *Context, in []byte) (ExecuteArg, error)
 }
 
 type (
 	ExecuteArg struct {
 		WriteFunc
-		HandlerFuncChain
+		ServiceName string
+		ContractID  string
+		Route       string
 	}
 	WriteFunc   func(conn Conn, e Envelope) error
 	ExecuteFunc func(arg ExecuteArg)
 )
+
+var NoExecuteArg = ExecuteArg{}

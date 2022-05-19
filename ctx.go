@@ -48,9 +48,15 @@ func newContext() *Context {
 }
 
 // execute the Context with the provided ExecuteArg. It implements ExecuteFunc
-func (ctx *Context) execute(arg ExecuteArg) {
+func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.wf = arg.WriteFunc
-	ctx.handlers = append(ctx.handlers, arg.HandlerFuncChain...)
+	ctx.
+		Set(CtxServiceName, arg.ServiceName).
+		Set(CtxContractID, arg.ContractID).
+		Set(CtxRoute, arg.Route).
+		AddModifier(c.Modifiers()...)
+
+	ctx.handlers = append(ctx.handlers, c.Handlers()...)
 	ctx.Next()
 
 	return

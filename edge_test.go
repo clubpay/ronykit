@@ -5,10 +5,17 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/goccy/go-json"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+type testSelector struct{}
+
+func (t testSelector) Query(q string) interface{} {
+	return nil
+}
 
 type testConn struct {
 	kv map[string]string
@@ -82,42 +89,8 @@ func (t testMessage) Marshal() ([]byte, error) {
 	return t, nil
 }
 
-type testDispatcher struct{}
-
-func (t testDispatcher) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
-	ctx.In().SetMsg(testMessage(in))
-	execFunc(
-		ronykit.ExecuteArg{
-			WriteFunc: func(conn ronykit.Conn, e ronykit.Envelope) error {
-				b, err := json.Marshal(e.GetMsg())
-				if err != nil {
-					return err
-				}
-
-				_, err = conn.Write(b)
-
-				return err
-			},
-			HandlerFuncChain: ronykit.HandlerFuncChain{
-				func(ctx *ronykit.Context) {
-					m := ctx.In().GetMsg()
-
-					ctx.Out().
-						SetMsg(m).
-						Send()
-
-					return
-				},
-			},
-		},
-	)
-
-	return nil
-}
-
 type testBundle struct {
 	gw *testGateway
-	d  *testDispatcher
 }
 
 func (t testBundle) Start(_ context.Context) error {
@@ -136,20 +109,55 @@ func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
 	t.gw.Subscribe(d)
 }
 
-func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
-	return t.d.Dispatch(ctx, in, execFunc)
+func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+	ctx.In().SetMsg(testMessage(in))
+
+	return ronykit.ExecuteArg{
+		WriteFunc: func(conn ronykit.Conn, e ronykit.Envelope) error {
+			b, err := json.Marshal(e.GetMsg())
+			if err != nil {
+				return err
+			}
+
+			_, err = conn.Write(b)
+
+			return err
+		},
+		ServiceName: "testService",
+		ContractID:  "1",
+		Route:       "someRoute",
+	}, nil
 }
 
-func (t testBundle) Register(srv ronykit.Service) {}
+func (t testBundle) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+}
 
 func TestServer(t *testing.T) {
 	Convey("Test EdgeServer", t, func(c C) {
 		b := &testBundle{
 			gw: &testGateway{},
-			d:  &testDispatcher{},
 		}
 		s := ronykit.NewServer(
 			ronykit.RegisterBundle(b),
+			ronykit.RegisterService(
+				desc.NewService("testService").
+					AddContract(
+						desc.NewContract().
+							AddSelector(testSelector{}).
+							AddHandler(
+								func(ctx *ronykit.Context) {
+									m := ctx.In().GetMsg()
+
+									ctx.Out().
+										SetMsg(m).
+										Send()
+
+									return
+								},
+							),
+					).
+					Generate(),
+			),
 		)
 		s.Start(nil)
 		b.gw.Send([]byte("123"))
@@ -160,10 +168,28 @@ func TestServer(t *testing.T) {
 func BenchmarkServer(b *testing.B) {
 	bundle := &testBundle{
 		gw: &testGateway{},
-		d:  &testDispatcher{},
 	}
 	s := ronykit.NewServer(
 		ronykit.RegisterBundle(bundle),
+		ronykit.RegisterService(
+			desc.NewService("testService").
+				AddContract(
+					desc.NewContract().
+						AddSelector(testSelector{}).
+						AddHandler(
+							func(ctx *ronykit.Context) {
+								m := ctx.In().GetMsg()
+
+								ctx.Out().
+									SetMsg(m).
+									Send()
+
+								return
+							},
+						),
+				).
+				Generate(),
+		),
 	).Start(nil)
 	defer s.Shutdown(nil)
 

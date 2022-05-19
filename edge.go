@@ -21,27 +21,34 @@ var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
 	return fmt.Errorf("service %s already registered", v...)
 }
 
+type contractResolver func(contractID string) Contract
+
 // EdgeServer is the main component of the ronykit. It glues all other components of the
 // app to each other.
 type EdgeServer struct {
-	nb  []*northBridge
-	sb  []*southBridge
-	svc map[string]Service
-	eh  ErrHandler
-	l   Logger
+	nb        []*northBridge
+	sb        []*southBridge
+	svc       []Service
+	contracts map[string]Contract
+	eh        ErrHandler
+	l         Logger
 }
 
 func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
-		l:   nopLogger{},
-		svc: map[string]Service{},
-		eh:  func(ctx *Context, err error) {},
+		l:         nopLogger{},
+		contracts: map[string]Contract{},
+		eh:        func(ctx *Context, err error) {},
 	}
 	for _, opt := range opts {
 		opt(s)
 	}
 
 	return s
+}
+
+func (s *EdgeServer) getContract(contractID string) Contract {
+	return s.contracts[contractID]
 }
 
 // RegisterBundle registers a Bundle to our server.
@@ -51,8 +58,9 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	if ok {
 		nb := &northBridge{
 			l:  s.l,
-			b:  gw,
 			eh: s.eh,
+			cr: s.getContract,
+			gw: gw,
 		}
 		s.nb = append(s.nb, nb)
 
@@ -64,8 +72,9 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	if ok {
 		sb := &southBridge{
 			l:  s.l,
-			c:  c,
 			eh: s.eh,
+			cr: s.getContract,
+			c:  c,
 		}
 		s.sb = append(s.sb, sb)
 
@@ -79,11 +88,14 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 // RegisterService registers a Service to our server. We need to define the appropriate
 // RouteSelector in each desc.Contract.
 func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
-	if _, ok := s.svc[svc.Name()]; ok {
+	if _, ok := s.contracts[svc.Name()]; ok {
 		panic(errServiceAlreadyRegistered(svc.Name()))
 	}
 
-	s.svc[svc.Name()] = WrapServiceContracts(svc, ContractWrapperFunc(wrapWithCoordinator))
+	s.svc = append(s.svc, svc)
+	for _, c := range svc.Contracts() {
+		s.contracts[c.ID()] = WrapContract(c, ContractWrapperFunc(wrapWithCoordinator))
+	}
 
 	return s
 }
@@ -96,10 +108,12 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 
 	for idx := range s.nb {
 		for _, svc := range s.svc {
-			s.nb[idx].b.Register(svc)
+			for _, c := range svc.Contracts() {
+				s.nb[idx].gw.Register(svc.Name(), c.ID(), c.RouteSelector(), c.Input())
+			}
 		}
 
-		err := s.nb[idx].b.Start(ctx)
+		err := s.nb[idx].gw.Start(ctx)
 		if err != nil {
 			s.l.Errorf("got error on starting gateway: %v", err)
 			panic(err)
@@ -127,7 +141,7 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 
 	// Start all the registered gateways
 	for idx := range s.nb {
-		err := s.nb[idx].b.Shutdown(ctx)
+		err := s.nb[idx].gw.Shutdown(ctx)
 		if err != nil {
 			s.l.Errorf("got error on shutdown: %v", err)
 		}
@@ -200,6 +214,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 				)
 			}
 		}
+
 		tw.AppendSeparator()
 		_, _ = w.Write(utils.S2B(tw.Render()))
 		_, _ = w.Write(utils.S2B("\n"))

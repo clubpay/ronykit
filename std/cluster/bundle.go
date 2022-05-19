@@ -134,14 +134,10 @@ func (b *bundle) Subscribe(d ronykit.ClusterDelegate) {
 	b.d = d
 }
 
-func (b *bundle) Register(svc ronykit.Service) {
-	//nolint:godox
-	//TODO implement me
-	panic("implement me")
+func (b *bundle) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+	return
 }
 
-func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte, execFunc ronykit.ExecuteFunc) error {
-	//nolint:godox
-	//TODO implement me
-	panic("implement me")
+func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+	return ronykit.NoExecuteArg, nil
 }

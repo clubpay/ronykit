@@ -27,7 +27,5 @@ type routeData struct {
 	ServiceName string
 	Predicate   string
 	ContractID  string
-	Handlers    []ronykit.HandlerFunc
-	Modifiers   []ronykit.Modifier
 	Factory     ronykit.MessageFactoryFunc
 }
