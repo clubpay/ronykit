@@ -24,7 +24,9 @@ import (
 	"runtime"
 	"sync"
 
-	"go.uber.org/zap/buffer"
+	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/utils/pools"
+	"github.com/clubpay/ronykit/utils/pools/buf"
 )
 
 var _stacktracePool = sync.Pool{
@@ -34,8 +36,6 @@ var _stacktracePool = sync.Pool{
 		}
 	},
 }
-
-var _pool = buffer.NewPool()
 
 type stacktrace struct {
 	pcs    []uintptr // program counters; always a subslice of storage
@@ -133,23 +133,23 @@ func TakeStacktrace(skip int) string {
 	stack := captureStacktrace(skip+1, stacktraceFull)
 	defer stack.Free()
 
-	buffer := _pool.Get()
-	defer buffer.Free()
+	buffer := pools.Buffer.GetCap(1024)
+	defer pools.Buffer.Put(buffer)
 
 	stackfmt := newStackFormatter(buffer)
 	stackfmt.FormatStack(stack)
 
-	return buffer.String()
+	return string(*buffer.Bytes())
 }
 
 // stackFormatter formats a stack trace into a readable string representation.
 type stackFormatter struct {
-	b        *buffer.Buffer
+	b        *buf.Bytes
 	nonEmpty bool // whehther we've written at least one frame already
 }
 
 // newStackFormatter builds a new stackFormatter.
-func newStackFormatter(b *buffer.Buffer) stackFormatter {
+func newStackFormatter(b *buf.Bytes) stackFormatter {
 	return stackFormatter{b: b}
 }
 
@@ -175,5 +175,5 @@ func (sf *stackFormatter) FormatFrame(frame runtime.Frame) {
 	sf.b.AppendByte('\t')
 	sf.b.AppendString(frame.File)
 	sf.b.AppendByte(':')
-	sf.b.AppendInt(int64(frame.Line))
+	sf.b.AppendString(utils.IntToStr(frame.Line))
 }

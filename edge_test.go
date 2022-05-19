@@ -8,7 +8,6 @@ import (
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/goccy/go-json"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 type testSelector struct{}
@@ -133,36 +132,34 @@ func (t testBundle) Register(serviceName, contractID string, sel ronykit.RouteSe
 }
 
 func TestServer(t *testing.T) {
-	Convey("Test EdgeServer", t, func(c C) {
-		b := &testBundle{
-			gw: &testGateway{},
-		}
-		s := ronykit.NewServer(
-			ronykit.RegisterBundle(b),
-			ronykit.RegisterService(
-				desc.NewService("testService").
-					AddContract(
-						desc.NewContract().
-							AddSelector(testSelector{}).
-							AddHandler(
-								func(ctx *ronykit.Context) {
-									m := ctx.In().GetMsg()
+	b := &testBundle{
+		gw: &testGateway{},
+	}
+	s := ronykit.NewServer(
+		ronykit.RegisterBundle(b),
+		ronykit.RegisterService(
+			desc.NewService("testService").
+				AddContract(
+					desc.NewContract().
+						AddSelector(testSelector{}).
+						AddHandler(
+							func(ctx *ronykit.Context) {
+								m := ctx.In().GetMsg()
 
-									ctx.Out().
-										SetMsg(m).
-										Send()
+								ctx.Out().
+									SetMsg(m).
+									Send()
 
-									return
-								},
-							),
-					).
-					Generate(),
-			),
-		)
-		s.Start(nil)
-		b.gw.Send([]byte("123"))
-		s.Shutdown(nil)
-	})
+								return
+							},
+						),
+				).
+				Generate(),
+		),
+	)
+	s.Start(nil)
+	b.gw.Send([]byte("123"))
+	s.Shutdown(nil)
 }
 
 func BenchmarkServer(b *testing.B) {

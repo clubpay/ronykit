@@ -83,6 +83,14 @@ func (bb *Bytes) AppendTo(data []byte) []byte {
 	return data
 }
 
+func (bb *Bytes) AppendByte(b byte) {
+	bb.b = append(bb.b, b)
+}
+
+func (bb *Bytes) AppendString(s string) {
+	bb.b = append(bb.b, s...)
+}
+
 func (bb *Bytes) Len() int {
 	return len(bb.b)
 }

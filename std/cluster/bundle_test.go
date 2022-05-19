@@ -3,44 +3,49 @@ package cluster_test
 import (
 	"context"
 	"fmt"
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/std/cluster"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/std/cluster"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestCluster(t *testing.T) {
-	Convey("Cluster", t, func(c C) {
-		store := &testStore{}
-		clusters := make([]ronykit.Cluster, 0)
-		for i := 0; i < 10; i++ {
-			cl := cluster.MustNew(
-				cluster.WithHeartbeat(time.Millisecond),
-				cluster.WithID(fmt.Sprintf("Node%d", i)),
-				cluster.WithStore(store),
-			)
+	store := &testStore{}
+	clusters := make([]ronykit.Cluster, 0)
+	for i := 0; i < 10; i++ {
+		cl := cluster.MustNew(
+			cluster.WithHeartbeat(time.Millisecond),
+			cluster.WithID(fmt.Sprintf("Node%d", i)),
+			cluster.WithStore(store),
+		)
 
-			err := cl.Start(context.Background())
-			c.So(err, ShouldBeNil)
-
-			clusters = append(clusters, cl)
+		err := cl.Start(context.Background())
+		if err != nil {
+			t.Fatal(err)
 		}
 
-		time.Sleep(time.Second * 3)
-		for _, cl := range clusters {
-			members, err := cl.Members(context.Background())
-			c.So(err, ShouldBeNil)
-			c.So(members, ShouldHaveLength, 10)
-		}
+		clusters = append(clusters, cl)
+	}
 
-		for i := 0; i < 10; i++ {
-			err := clusters[i].Shutdown(context.Background())
-			c.So(err, ShouldBeNil)
+	time.Sleep(time.Second * 3)
+	for _, cl := range clusters {
+		members, err := cl.Members(context.Background())
+		if err != nil {
+			t.Fatal(err)
 		}
-	})
+		if len(members) != 10 {
+			t.Errorf("expected members be 10 but they are %d", len(members))
+			t.FailNow()
+		}
+	}
+
+	for i := 0; i < 10; i++ {
+		err := clusters[i].Shutdown(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 type testStore struct {
