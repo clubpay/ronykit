@@ -41,7 +41,7 @@ type simpleOutgoingJSONRPC struct {
 
 var SimpleOutgoingJSONRPC = func() ronykit.OutgoingRPCContainer {
 	return &simpleOutgoingJSONRPC{
-		Header: map[string]string{},
+		Header: make(map[string]string, 4),
 	}
 }
 

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"runtime"
 
@@ -12,6 +14,10 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(4)
+
+	go func() {
+		_ = http.ListenAndServe(":1234", nil)
+	}()
 
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
@@ -34,6 +40,7 @@ func main() {
 		ronykit.RegisterServiceDesc(NewSample().Desc()),
 	).
 		Start(nil).
+		PrintRoutes(os.Stdout).
 		Shutdown(nil, os.Kill, os.Interrupt)
 
 	//nolint:forbidigo

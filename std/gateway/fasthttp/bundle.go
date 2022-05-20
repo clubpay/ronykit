@@ -167,14 +167,16 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 				}
 
 				inBuf := pools.Buffer.FromBytes(in)
-				go func(buf *buf.Bytes) {
-					b.d.OnMessage(wsc, *buf.Bytes())
-					pools.Buffer.Put(buf)
-				}(inBuf)
+				go b.wsHandlerExec(inBuf, wsc)
 			}
 			b.d.OnClose(wsc.id)
 		},
 	)
+}
+
+func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
+	b.d.OnMessage(wsc, *buf.Bytes())
+	pools.Buffer.Put(buf)
 }
 
 func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
