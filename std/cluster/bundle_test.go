@@ -3,11 +3,12 @@ package cluster_test
 import (
 	"context"
 	"fmt"
-	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/std/cluster"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/std/cluster"
 )
 
 func TestCluster(t *testing.T) {

@@ -28,7 +28,9 @@ func (w *wsConn) ClientIP() string {
 }
 
 func (w *wsConn) Write(data []byte) (int, error) {
-	defer recoverPanic()
+	// FIXME: since fasthttp-websocket has a bug which panics in
+	// FIXME: high loads, we must recover from it
+	defer w.recoverPanic()
 
 	w.Lock()
 	err := w.c.WriteMessage(websocket.TextMessage, data)
@@ -68,8 +70,9 @@ func (w *wsConn) Set(key string, val string) {
 	w.Unlock()
 }
 
-func recoverPanic() {
+func (w *wsConn) recoverPanic() {
 	if r := recover(); r != nil {
+		w.Unlock()
 		fmt.Println(r)                            //nolint:forbidigo
 		fmt.Println(stacktrace.TakeStacktrace(1)) //nolint:forbidigo
 	}
