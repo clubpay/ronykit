@@ -169,6 +169,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 				inBuf := pools.Buffer.FromBytes(in)
 				go b.wsHandlerExec(inBuf, wsc)
 			}
+			wsc.Close()
 			b.d.OnClose(wsc.id)
 		},
 	)
@@ -336,6 +337,7 @@ func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 }
 
 var (
-	errRouteNotFound = fmt.Errorf("route not found")
-	errNoHandler     = fmt.Errorf("no handler for request")
+	errRouteNotFound    = fmt.Errorf("route not found")
+	errNoHandler        = fmt.Errorf("no handler for request")
+	errConnectionClosed = fmt.Errorf("connection closed")
 )

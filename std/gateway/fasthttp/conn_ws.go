@@ -1,10 +1,7 @@
 package fasthttp
 
 import (
-	"fmt"
-
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/internal/stacktrace"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 )
@@ -19,6 +16,12 @@ type wsConn struct {
 
 var _ ronykit.Conn = (*wsConn)(nil)
 
+func (w *wsConn) Close() {
+	w.Lock()
+	w.c = nil
+	w.Unlock()
+}
+
 func (w *wsConn) ConnID() uint64 {
 	return w.id
 }
@@ -28,12 +31,14 @@ func (w *wsConn) ClientIP() string {
 }
 
 func (w *wsConn) Write(data []byte) (int, error) {
-	// FIXME: since fasthttp-websocket has a bug which panics in
-	// FIXME: high loads, we must recover from it
-	defer w.recoverPanic()
+	var err error
 
 	w.Lock()
-	err := w.c.WriteMessage(websocket.TextMessage, data)
+	if w.c != nil {
+		err = w.c.WriteMessage(websocket.TextMessage, data)
+	} else {
+		err = errConnectionClosed
+	}
 	w.Unlock()
 	if err != nil {
 		return 0, err
@@ -68,12 +73,4 @@ func (w *wsConn) Set(key string, val string) {
 	w.Lock()
 	w.kv[key] = val
 	w.Unlock()
-}
-
-func (w *wsConn) recoverPanic() {
-	if r := recover(); r != nil {
-		w.Unlock()
-		fmt.Println(r)                            //nolint:forbidigo
-		fmt.Println(stacktrace.TakeStacktrace(1)) //nolint:forbidigo
-	}
 }
