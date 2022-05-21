@@ -1,8 +1,9 @@
 package desc
 
 import (
+	"fmt"
+
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
 )
 
@@ -222,7 +223,7 @@ func (s Service) Generate() ronykit.Service {
 
 		contracts := make([]ronykit.Contract, len(c.RouteSelectors))
 		for idx, s := range c.RouteSelectors {
-			ci := (&contractImpl{id: utils.Int64ToStr(index)}).
+			ci := (&contractImpl{id: fmt.Sprintf("%s.%d", svc.name, index)}).
 				addHandler(svc.pre...).
 				addHandler(c.Handlers...).
 				addHandler(svc.post...).

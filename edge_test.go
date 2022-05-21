@@ -123,7 +123,7 @@ func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteAr
 			return err
 		},
 		ServiceName: "testService",
-		ContractID:  "1",
+		ContractID:  "testService.1",
 		Route:       "someRoute",
 	}, nil
 }
@@ -144,10 +144,8 @@ func TestServer(t *testing.T) {
 						AddSelector(testSelector{}).
 						AddHandler(
 							func(ctx *ronykit.Context) {
-								m := ctx.In().GetMsg()
-
 								ctx.Out().
-									SetMsg(m).
+									SetMsg(ctx.In().GetMsg()).
 									Send()
 
 								return
