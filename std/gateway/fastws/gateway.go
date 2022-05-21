@@ -57,19 +57,7 @@ func (e *gateway) OnInitComplete(_ gnet.Server) (action gnet.Action) {
 func (e *gateway) OnShutdown(_ gnet.Server) {}
 
 func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
-	wsc := &wsConn{
-		kv: map[string]string{},
-		c: &wrapConn{
-			handshakeDone: false,
-			buf:           &bytes.Buffer{},
-		},
-	}
-	wsc.w = wsutil.NewWriter(wsc.c, ws.StateServerSide, ws.OpText)
-	wsc.r = wsutil.NewReader(wsc.c, ws.StateServerSide)
-
-	wsc.id = atomic.AddUint64(&e.nextID, 1)
-	wsc.c.c = c
-
+	wsc := newWebsocketConn(atomic.AddUint64(&e.nextID, 1), c)
 	c.SetContext(wsc.id)
 
 	e.Lock()
@@ -116,7 +104,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 		sp := acquireSwitchProtocol()
 		_, err := sp.Upgrade(wsc.c)
 		if err != nil {
-			_ = wsc.c.Close()
+			wsc.Close()
 
 			return nil, gnet.Close
 		}

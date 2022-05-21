@@ -4,18 +4,39 @@ import (
 	"bytes"
 
 	"github.com/clubpay/ronykit/utils"
+	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
 )
 
 type wsConn struct {
 	utils.SpinLock
-	id uint64
 
+	id uint64
 	kv map[string]string
 	c  *wrapConn
 	r  *wsutil.Reader
 	w  *wsutil.Writer
+}
+
+func newWebsocketConn(id uint64, c gnet.Conn) *wsConn {
+	wc := &wrapConn{
+		buf: &bytes.Buffer{},
+		c:   c,
+	}
+	wsc := &wsConn{
+		w:  wsutil.NewWriter(wc, ws.StateServerSide, ws.OpText),
+		r:  wsutil.NewReader(wc, ws.StateServerSide),
+		id: id,
+		kv: map[string]string{},
+		c:  wc,
+	}
+
+	return wsc
+}
+
+func (c *wsConn) Close() {
+	_ = c.c.c.Close()
 }
 
 func (c *wsConn) ConnID() uint64 {
@@ -75,36 +96,19 @@ func (c *wsConn) Set(key string, val string) {
 }
 
 type wrapConn struct {
-	c             gnet.Conn
 	handshakeDone bool
+	c             gnet.Conn
 	buf           *bytes.Buffer
 }
 
 func (c *wrapConn) Read(data []byte) (n int, err error) {
-	rem := len(data)
-	if rem == 0 {
-		return 0, nil
-	}
+	n, _ = c.buf.Read(data)
 
-	bn, _ := c.buf.Read(data)
-	if bn >= rem {
-		return bn, nil
-	}
-
-	rem -= bn
-
-	n, buf := c.c.ReadN(rem)
-	copy(data[bn:], buf)
-
-	return bn + n, nil
+	return
 }
 
 func (c *wrapConn) Write(data []byte) (n int, err error) {
 	err = c.c.AsyncWrite(data)
 
 	return len(data), err
-}
-
-func (c *wrapConn) Close() error {
-	return c.c.Close()
 }

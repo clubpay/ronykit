@@ -42,6 +42,7 @@ func echoHandler(ctx *ronykit.Context) {
 	}
 
 	ctx.Out().
+		SetHdr("cmd", ctx.In().GetHdr("cmd")).
 		SetMsg(
 			&msg.EchoResponse{
 				RandomID: req.RandomID,
