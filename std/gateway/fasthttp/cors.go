@@ -3,6 +3,7 @@ package fasthttp
 import (
 	"strings"
 
+	"github.com/clubpay/ronykit/utils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -92,4 +93,23 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 	} else {
 		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
 	}
+}
+
+func (cors *cors) handleWS(ctx *fasthttp.RequestCtx) bool {
+	if cors == nil {
+		return true
+	}
+
+	origin := utils.B2S(ctx.Request.Header.Peek(fasthttp.HeaderOrigin))
+	if cors.origins[0] == "*" {
+		return true
+	} else {
+		for _, allowedOrigin := range cors.origins {
+			if strings.EqualFold(origin, allowedOrigin) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

@@ -58,6 +58,9 @@ func New(opts ...Option) (*bundle, error) {
 		l:             common.NewNopLogger(),
 	}
 
+	r.wsUpgrade.CheckOrigin = func(ctx *fasthttp.RequestCtx) bool {
+		return true
+	}
 	for _, opt := range opts {
 		opt(r)
 	}

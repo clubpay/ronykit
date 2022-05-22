@@ -32,6 +32,7 @@ func Listen(addr string) Option {
 func WithCORS(cfg CORSConfig) Option {
 	return func(b *bundle) {
 		b.cors = newCORS(cfg)
+		b.wsUpgrade.CheckOrigin = b.cors.handleWS
 	}
 }
 
