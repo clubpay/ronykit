@@ -273,9 +273,14 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 		},
 	)
 
+	m, err := routeData.Decoder(params, in)
+	if err != nil {
+		return ronykit.NoExecuteArg, err
+	}
+
 	ctx.In().
 		SetHdrWalker(conn).
-		SetMsg(routeData.Decoder(params, in))
+		SetMsg(m)
 
 	return ronykit.ExecuteArg{
 		WriteFunc:   b.httpWriteFunc,

@@ -33,7 +33,7 @@ func (ps Params) ByName(name string) string {
 }
 
 type (
-	DecoderFunc func(bag Params, data []byte) ronykit.Message
+	DecoderFunc func(bag Params, data []byte) (ronykit.Message, error)
 )
 
 var (
@@ -131,13 +131,13 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 		}
 	}
 
-	return func(bag Params, data []byte) ronykit.Message {
+	return func(bag Params, data []byte) (ronykit.Message, error) {
 		v := factory()
 		var err error
 		if len(data) > 0 {
 			err = ronykit.UnmarshalMessage(data, v)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 
@@ -171,6 +171,6 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			}
 		}
 
-		return v.(ronykit.Message) //nolint:forcetypeassert
+		return v.(ronykit.Message), nil //nolint:forcetypeassert
 	}
 }
