@@ -19,7 +19,6 @@ type EnvelopeHdr map[string]string
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope interface {
-	Encoding() Encoding
 	SetHdr(key, value string) Envelope
 	SetHdrWalker(walker Walker) Envelope
 	SetHdrMap(kv map[string]string) Envelope
@@ -46,7 +45,6 @@ type envelopeImpl struct {
 	kvl  utils.SpinLock
 	kv   EnvelopeHdr
 	m    Message
-	enc  Encoding
 
 	// outgoing identity the Envelope if it is able to send
 	outgoing bool
@@ -160,10 +158,6 @@ func (e *envelopeImpl) GetMsg() Message {
 	}
 
 	return e.m
-}
-
-func (e *envelopeImpl) Encoding() Encoding {
-	return e.enc
 }
 
 func (e *envelopeImpl) Send() {

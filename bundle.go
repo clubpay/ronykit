@@ -13,14 +13,6 @@ type Bundle interface {
 	Register(serviceName, contractID string, sel RouteSelector, input Message)
 }
 
-type Dispatcher interface {
-	// Dispatch receives the messages from external clients and runs the execFunc with appropriate
-	// arguments. The user of the Gateway does not need to implement this. If you are using some
-	// standard bundles like std/gateway/fasthttp or std/gateway/fastws then all the implementation
-	// is taken care of.
-	Dispatch(ctx *Context, in []byte) (ExecuteArg, error)
-}
-
 type (
 	ExecuteArg struct {
 		WriteFunc

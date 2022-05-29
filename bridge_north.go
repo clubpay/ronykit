@@ -5,13 +5,17 @@ package ronykit
 // between your server and the clients you are free to implement your own Gateway.
 type Gateway interface {
 	Bundle
-	Dispatcher
 	// Subscribe will be called by the EdgeServer. These delegate functions
 	// must be called by the Gateway implementation. In other words, Gateway communicates
 	// with EdgeServer through the GatewayDelegate methods.
 	//
 	// NOTE: This func will be called only once and before calling Start function.
 	Subscribe(d GatewayDelegate)
+	// Dispatch receives the messages from external clients and runs the execFunc with appropriate
+	// arguments. The user of the Gateway does not need to implement this. If you are using some
+	// standard bundles like std/gateway/fasthttp or std/gateway/fastws then all the implementation
+	// is taken care of.
+	Dispatch(ctx *Context, in []byte) (ExecuteArg, error)
 }
 
 // GatewayDelegate is the delegate that connects the Gateway to the rest of the system.

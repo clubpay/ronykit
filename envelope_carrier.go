@@ -5,29 +5,36 @@ import "github.com/goccy/go-json"
 // envelopeCarrier is a serializable message which is used by Cluster component of the
 // EdgeServer to send information from one instance to another instance.
 type envelopeCarrier struct {
-	Hdr          map[string]string `json:"hdr"`
-	Msg          []byte            `json:"msg"`
-	ContractID   string            `json:"cid"`
-	ServiceName  string            `json:"svc"`
-	ContextIndex int               `json:"idx"`
-	IsREST       bool              `json:"isRest"`
+	ConnHdr     map[string]string `json:"connHdr"`
+	Hdr         map[string]string `json:"hdr"`
+	Msg         []byte            `json:"msg"`
+	ContractID  string            `json:"cid"`
+	ServiceName string            `json:"svc"`
+	ExecIndex   int               `json:"idx"`
+	IsREST      bool              `json:"isRest"`
 }
 
 func envelopeCarrierFromContext(ctx *Context) envelopeCarrier {
 	ec := envelopeCarrier{
-		Hdr:          map[string]string{},
-		Msg:          nil,
-		ContractID:   ctx.ContractID(),
-		ServiceName:  ctx.ServiceName(),
-		ContextIndex: ctx.handlerIndex,
+		Hdr:         map[string]string{},
+		Msg:         nil,
+		ContractID:  ctx.ContractID(),
+		ServiceName: ctx.ServiceName(),
+		ExecIndex:   ctx.handlerIndex,
 	}
 	_, ec.IsREST = ctx.Conn().(RESTConn)
+	ec.Msg, _ = MarshalMessage(ctx.In().GetMsg())
 	ctx.In().
 		WalkHdr(func(key, val string) bool {
 			ec.Hdr[key] = val
 
 			return true
 		})
+	ctx.Conn().Walk(func(key string, val string) bool {
+		ec.ConnHdr[key] = val
+
+		return true
+	})
 
 	return ec
 }

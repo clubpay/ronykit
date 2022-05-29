@@ -32,15 +32,7 @@ func (ps Params) ByName(name string) string {
 	return ""
 }
 
-type (
-	DecoderFunc func(bag Params, data []byte) (ronykit.Message, error)
-)
-
-var (
-	_ ronykit.RouteSelector     = Selector{}
-	_ ronykit.RESTRouteSelector = Selector{}
-	_ ronykit.RPCRouteSelector  = Selector{}
-)
+type DecoderFunc func(bag Params, data []byte) (ronykit.Message, error)
 
 // Selector implements ronykit.RouteSelector and
 // also ronykit.RPCRouteSelector and ronykit.RESTRouteSelector
@@ -50,6 +42,12 @@ type Selector struct {
 	Predicate string
 	Decoder   DecoderFunc
 }
+
+var (
+	_ ronykit.RouteSelector     = (*Selector)(nil)
+	_ ronykit.RESTRouteSelector = (*Selector)(nil)
+	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
+)
 
 func (r Selector) GetMethod() string {
 	return r.Method

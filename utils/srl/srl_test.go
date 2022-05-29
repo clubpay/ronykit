@@ -4,21 +4,20 @@ import (
 	"testing"
 
 	//nolint
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/clubpay/ronykit/utils/srl"
 )
 
-func TestPos(t *testing.T) {
+func TestSRL(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	RunSpecs(t, "Pos Suite")
+	RunSpecs(t, "SRL TestSuite")
 }
 
 var _ = Describe("Address stringer & formatter", func() {
-	entries := []TableEntry{
+	entries := []interface{}{
 		Entry("empty", srl.New("", "", ""), ""),
 		Entry("without group", srl.New("", "", "pos-vendor"), "@pos-vendor"),
 		Entry("without storage & id", srl.New("", "ir", ""), "ir"),
@@ -50,40 +49,48 @@ var _ = Describe("Address stringer & formatter", func() {
 
 	DescribeTable(
 		"address stringer",
-		func(addr srl.SRL, str string) {
-			Expect(addr.String()).To(BeIdenticalTo(str))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr srl.SRL, str string) {
+					Expect(addr.String()).To(BeIdenticalTo(str))
+				},
+			}, entries...)...,
 	)
 
 	DescribeTable(
 		"address parser",
-		func(addr srl.SRL, str string) {
-			Expect(srl.Parse(str)).To(BeIdenticalTo(addr))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr srl.SRL, str string) {
+					Expect(srl.Parse(str)).To(BeIdenticalTo(addr))
+				},
+			}, entries...)...,
 	)
 
 	DescribeTable(
 		"parse formatted address",
-		func(addr srl.SRL, _ string) {
-			Expect(srl.Parse(addr.String())).To(BeIdenticalTo(addr))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr srl.SRL, _ string) {
+					Expect(srl.Parse(addr.String())).To(BeIdenticalTo(addr))
+				},
+			}, entries...)...,
 	)
 
 	DescribeTable(
 		"format parsed address",
-		func(_ srl.SRL, str string) {
-			Expect(srl.Parse(str).String()).To(BeIdenticalTo(str))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(_ srl.SRL, str string) {
+					Expect(srl.Parse(str).String()).To(BeIdenticalTo(str))
+				},
+			}, entries...)...,
 	)
 })
 
 //nolint
 var _ = Describe("Address append", func() {
-	entries := []TableEntry{
+	entries := []interface{}{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -136,16 +143,18 @@ var _ = Describe("Address append", func() {
 
 	DescribeTable(
 		"append two addresses",
-		func(addr1, addr2, expected srl.SRL) {
-			Expect(addr1.Append(addr2)).To(BeIdenticalTo(expected))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr1, addr2, expected srl.SRL) {
+					Expect(addr1.Append(addr2)).To(BeIdenticalTo(expected))
+				},
+			}, entries...)...,
 	)
 })
 
 //nolint
 var _ = Describe("Address replace", func() {
-	entries := []TableEntry{
+	entries := []interface{}{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -198,16 +207,18 @@ var _ = Describe("Address replace", func() {
 
 	DescribeTable(
 		"replace two addresses",
-		func(addr1, addr2, expected srl.SRL) {
-			Expect(addr1.Replace(addr2)).To(BeIdenticalTo(expected))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr1, addr2, expected srl.SRL) {
+					Expect(addr1.Replace(addr2)).To(BeIdenticalTo(expected))
+				},
+			}, entries...)...,
 	)
 })
 
 //nolint
 var _ = Describe("Address merge", func() {
-	entries := []TableEntry{
+	entries := []interface{}{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -260,9 +271,11 @@ var _ = Describe("Address merge", func() {
 
 	DescribeTable(
 		"merge two addresses",
-		func(addr1, addr2, expected srl.SRL) {
-			Expect(addr1.Merge(addr2)).To(BeIdenticalTo(expected))
-		},
-		entries...,
+		append(
+			[]interface{}{
+				func(addr1, addr2, expected srl.SRL) {
+					Expect(addr1.Merge(addr2)).To(BeIdenticalTo(expected))
+				},
+			}, entries...)...,
 	)
 })

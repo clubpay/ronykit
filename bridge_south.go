@@ -12,7 +12,6 @@ import (
 // could be integrated with other services with the help of implementing ClusterStore.
 type Cluster interface {
 	Bundle
-	Dispatcher
 	Members(ctx context.Context) ([]ClusterMember, error)
 	MemberByID(ctx context.Context, id string) (ClusterMember, error)
 	Me() ClusterMember
@@ -79,12 +78,12 @@ func (s *southBridge) OnLeave(memberIDs ...string) {
 func (s *southBridge) OnMessage(conn Conn, data []byte) {
 	ctx := s.acquireCtx(conn)
 
-	arg, err := s.c.Dispatch(ctx, data)
-	if err != nil {
-		s.eh(ctx, err)
-	}
-
-	ctx.execute(arg, s.cr(arg.ContractID))
+	//arg, err := s.c.Dispatch(ctx, data)
+	//if err != nil {
+	//	s.eh(ctx, err)
+	//}
+	//
+	//ctx.execute(arg, s.cr(arg.ContractID))
 
 	s.releaseCtx(ctx)
 
