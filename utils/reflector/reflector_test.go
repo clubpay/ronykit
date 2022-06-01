@@ -39,7 +39,10 @@ func TestExtractInfo(t *testing.T) {
 		z: "zValue",
 		M: nil,
 	}
-	obj := r.Load(m)
+	obj, err := r.Load(m)
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Log(reflect.Indirect(reflect.ValueOf(m)).Type().String())
 	t.Log(obj.GetInt64("Y"))
 	t.Log(obj.GetString("X"))
@@ -80,7 +83,11 @@ func benchUnsafe(b *testing.B) {
 		for pb.Next() {
 			t.X = utils.RandomID(5)
 
-			xR, err := r.Load(t).GetString("X")
+			obj, err := r.Load(t)
+			if err != nil {
+				b.Fatal(err)
+			}
+			xR, err := obj.GetString("X")
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -99,7 +106,14 @@ func benchUnsafeRegistered(b *testing.B) {
 		for pb.Next() {
 			t.X = utils.RandomID(5)
 
-			xR, err := r.Load(t).GetString("X")
+			obj, err := r.Load(t)
+			if err != nil {
+				b.Fatal(err)
+			}
+			xR, err := obj.GetString("X")
+			if err != nil {
+				b.Fatal(err)
+			}
 			if err != nil {
 				b.Fatal(err)
 			}

@@ -34,7 +34,10 @@ func Register(m ronykit.Message) {
 		return
 	}
 
-	mVal := getValue(m)
+	mVal, err := getValue(m)
+	if err != nil {
+		return
+	}
 	mType := mVal.Type()
 	registered[mType] = &reflected{
 		obj: destruct(mVal),
@@ -88,16 +91,13 @@ func getEncoding(m ronykit.Message) ronykit.Encoding {
 	return e
 }
 
-func getValue(m ronykit.Message) reflect.Value {
-	if reflect.TypeOf(m).Kind() != reflect.Ptr {
-		panic("must be a pointer to struct")
-	}
+func getValue(m ronykit.Message) (reflect.Value, error) {
 	mVal := reflect.Indirect(reflect.ValueOf(m))
 	if mVal.Kind() != reflect.Struct {
-		panic("must be a pointer to struct")
+		return reflect.Value{}, fmt.Errorf("message is not a struct")
 	}
 
-	return mVal
+	return mVal, nil
 }
 
 func destruct(mVal reflect.Value) map[string]fieldInfo {
@@ -127,8 +127,11 @@ func destruct(mVal reflect.Value) map[string]fieldInfo {
 	return data
 }
 
-func (r *Reflector) Load(m ronykit.Message) Object {
-	mVal := getValue(m)
+func (r *Reflector) Load(m ronykit.Message) (Object, error) {
+	mVal, err := getValue(m)
+	if err != nil {
+		return Object{}, err
+	}
 	mType := mVal.Type()
 	cachedData := registered[mType]
 	if cachedData == nil {
@@ -150,24 +153,31 @@ func (r *Reflector) Load(m ronykit.Message) Object {
 		m:    m,
 		data: cachedData.obj,
 		enc:  cachedData.enc,
-	}
+	}, nil
 }
 
-func (r *Reflector) Get(m ronykit.Message, fieldName string) interface{} {
-	e := getValue(m)
-	f, ok := e.Type().FieldByName(fieldName)
-	if !ok {
-		return nil
-	}
-	if !f.IsExported() {
-		return nil
+func (r *Reflector) Get(m ronykit.Message, fieldName string) (interface{}, error) {
+	e, err := getValue(m)
+	if err != nil {
+		return nil, err
 	}
 
-	return e.FieldByName(fieldName).Interface()
+	f, ok := e.Type().FieldByName(fieldName)
+	if !ok {
+		return nil, ErrNoField
+	}
+	if !f.IsExported() {
+		return nil, ErrNotExported
+	}
+
+	return e.FieldByName(fieldName).Interface(), nil
 }
 
 func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, error) {
-	e := getValue(m)
+	e, err := getValue(m)
+	if err != nil {
+		return "", err
+	}
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return "", ErrNoField
@@ -180,7 +190,10 @@ func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, erro
 }
 
 func (r *Reflector) GetInt(m ronykit.Message, fieldName string) (int64, error) {
-	e := getValue(m)
+	e, err := getValue(m)
+	if err != nil {
+		return 0, err
+	}
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return 0, ErrNoField

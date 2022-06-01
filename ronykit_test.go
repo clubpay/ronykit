@@ -14,7 +14,7 @@ func TestRonykit(t *testing.T) {
 	RunSpecs(t, "Ronykit Suite")
 }
 
-type TestConn struct {
+type testConn struct {
 	id       uint64
 	clientIP string
 	stream   bool
@@ -22,8 +22,8 @@ type TestConn struct {
 	buf      *bytes.Buffer
 }
 
-func NewTestConn(id uint64, clientIP string, stream bool) TestConn {
-	return TestConn{
+func newTestConn(id uint64, clientIP string, stream bool) testConn {
+	return testConn{
 		id:       id,
 		clientIP: clientIP,
 		stream:   stream,
@@ -32,27 +32,27 @@ func NewTestConn(id uint64, clientIP string, stream bool) TestConn {
 	}
 }
 
-func (t TestConn) ConnID() uint64 {
+func (t testConn) ConnID() uint64 {
 	return t.id
 }
 
-func (t TestConn) ClientIP() string {
+func (t testConn) ClientIP() string {
 	return t.clientIP
 }
 
-func (t TestConn) Write(data []byte) (int, error) {
+func (t testConn) Write(data []byte) (int, error) {
 	return t.buf.Write(data)
 }
 
-func (t TestConn) Read() ([]byte, error) {
+func (t testConn) Read() ([]byte, error) {
 	return ioutil.ReadAll(t.buf)
 }
 
-func (t TestConn) Stream() bool {
+func (t testConn) Stream() bool {
 	return t.stream
 }
 
-func (t TestConn) Walk(f func(key string, val string) bool) {
+func (t testConn) Walk(f func(key string, val string) bool) {
 	for k, v := range t.kv {
 		if !f(k, v) {
 			return
@@ -60,10 +60,10 @@ func (t TestConn) Walk(f func(key string, val string) bool) {
 	}
 }
 
-func (t TestConn) Get(key string) string {
+func (t testConn) Get(key string) string {
 	return t.kv[key]
 }
 
-func (t TestConn) Set(key string, val string) {
+func (t testConn) Set(key string, val string) {
 	t.kv[key] = val
 }

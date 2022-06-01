@@ -162,12 +162,12 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			{
 				Number:   1,
 				Align:    text.AlignLeft,
-				WidthMax: 12,
+				WidthMax: 24,
 			},
 			{
 				Number:   2,
 				Align:    text.AlignLeft,
-				WidthMax: 6,
+				WidthMax: 12,
 			},
 			{
 				Number:           3,

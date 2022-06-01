@@ -98,19 +98,26 @@ type paramCaster struct {
 }
 
 func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
-	rVal := reflect.ValueOf(factory())
-	rType := rVal.Type()
-	if rType.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
+	m := factory()
+	switch m := m.(type) {
+	case ronykit.RawMessage:
+		return func(bag Params, data []byte) (ronykit.Message, error) {
+			m.Copy(data)
+
+			return m, nil
+		}
+	default:
 	}
-	if rVal.Elem().Kind() != reflect.Struct {
+
+	rVal := reflect.Indirect(reflect.ValueOf(factory()))
+	if rVal.Kind() != reflect.Struct {
 		panic("x must be a pointer to struct")
 	}
 
 	var pcs []paramCaster
 
-	for i := 0; i < reflect.Indirect(rVal).NumField(); i++ {
-		f := reflect.Indirect(rVal).Type().Field(i)
+	for i := 0; i < rVal.NumField(); i++ {
+		f := rVal.Type().Field(i)
 		if tagValue := f.Tag.Get(tagKey); tagValue != "" {
 			valueParts := strings.Split(tagValue, ",")
 			if len(valueParts) == 1 {

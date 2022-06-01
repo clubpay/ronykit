@@ -7,7 +7,8 @@ import (
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/utils"
-	"github.com/goccy/go-json"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 type testSelector struct{}
@@ -16,104 +17,39 @@ func (t testSelector) Query(q string) interface{} {
 	return nil
 }
 
-type testConn struct {
-	kv map[string]string
-	id uint64
-	ip string
-}
-
-func newTestConn() *testConn {
-	return &testConn{
-		kv: map[string]string{},
-		id: utils.RandomUint64(0),
-		ip: "127.0.0.1",
-	}
-}
-
-func (t testConn) ConnID() uint64 {
-	return t.id
-}
-
-func (t testConn) ClientIP() string {
-	return t.ip
-}
-
-func (t testConn) Write(data []byte) (int, error) {
-	return 0, nil
-}
-
-func (t testConn) Stream() bool {
-	return false
-}
-
-func (t testConn) Walk(f func(key string, val string) bool) {
-	for k, v := range t.kv {
-		if !f(k, v) {
-			return
-		}
-	}
-
-	return
-}
-
-func (t testConn) Get(key string) string {
-	return t.kv[key]
-}
-
-func (t testConn) Set(key string, val string) {
-	t.kv[key] = val
-}
-
 type testGateway struct {
 	d ronykit.GatewayDelegate
+	c testConn
 }
 
-func (t testGateway) Start() {}
+var _ ronykit.Gateway = (*testGateway)(nil)
 
-func (t testGateway) Shutdown() {}
+func (t *testGateway) Send(msg []byte) {
+	t.d.OnMessage(t.c, msg)
+}
+
+func (t *testGateway) Receive() ([]byte, error) {
+	return t.c.Read()
+}
+
+func (t testGateway) Start(_ context.Context) error {
+	return nil
+}
+
+func (t testGateway) Shutdown(_ context.Context) error {
+	return nil
+}
 
 func (t *testGateway) Subscribe(d ronykit.GatewayDelegate) {
 	t.d = d
 }
 
-func (t *testGateway) Send(msg []byte) {
-	c := newTestConn()
-
-	t.d.OnMessage(c, msg)
-}
-
-type testMessage []byte
-
-func (t testMessage) Marshal() ([]byte, error) {
-	return t, nil
-}
-
-type testBundle struct {
-	gw *testGateway
-}
-
-func (t testBundle) Start(_ context.Context) error {
-	t.gw.Start()
-
-	return nil
-}
-
-func (t testBundle) Shutdown(_ context.Context) error {
-	t.gw.Shutdown()
-
-	return nil
-}
-
-func (t testBundle) Subscribe(d ronykit.GatewayDelegate) {
-	t.gw.Subscribe(d)
-}
-
-func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
-	ctx.In().SetMsg(testMessage(in))
+func (t testGateway) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+	ctx.In().SetMsg(ronykit.RawMessage(in))
 
 	return ronykit.ExecuteArg{
 		WriteFunc: func(conn ronykit.Conn, e ronykit.Envelope) error {
-			b, err := json.Marshal(e.GetMsg())
+			b, err := ronykit.MarshalMessage(e.GetMsg())
 			if err != nil {
 				return err
 			}
@@ -128,42 +64,57 @@ func (t testBundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteAr
 	}, nil
 }
 
-func (t testBundle) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (t testGateway) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
 }
 
-func TestServer(t *testing.T) {
-	b := &testBundle{
-		gw: &testGateway{},
-	}
-	s := ronykit.NewServer(
-		ronykit.RegisterBundle(b),
-		ronykit.RegisterService(
-			desc.NewService("testService").
-				AddContract(
-					desc.NewContract().
-						AddSelector(testSelector{}).
-						AddHandler(
-							func(ctx *ronykit.Context) {
-								ctx.Out().
-									SetMsg(ctx.In().GetMsg()).
-									Send()
-
-								return
-							},
-						),
-				).
-				Generate(),
-		),
+var _ = Describe("EdgeServer", func() {
+	var (
+		b    *testGateway
+		edge *ronykit.EdgeServer
 	)
-	s.Start(nil)
-	b.gw.Send([]byte("123"))
-	s.Shutdown(nil)
-}
+	BeforeEach(func() {
+		b = &testGateway{
+			c: newTestConn(utils.RandomUint64(0), "", false),
+		}
+		edge = ronykit.NewServer(
+			ronykit.RegisterBundle(b),
+			ronykit.RegisterServiceDesc(
+				desc.NewService("testService").
+					AddContract(
+						desc.NewContract().
+							SetInput(&ronykit.RawMessage{}).
+							SetOutput(&ronykit.RawMessage{}).
+							AddSelector(testSelector{}).
+							AddHandler(
+								func(ctx *ronykit.Context) {
+									ctx.Out().
+										SetMsg(ctx.In().GetMsg()).
+										Send()
+
+									return
+								},
+							),
+					),
+			),
+		)
+		edge.Start(nil)
+	})
+	AfterEach(func() {
+		edge.Shutdown(nil)
+	})
+
+	DescribeTable("should echo back the message",
+		func(msg []byte) {
+			b.Send(msg)
+			Expect(b.Receive()).To(BeEquivalentTo(msg))
+		},
+		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
+		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
+	)
+})
 
 func BenchmarkServer(b *testing.B) {
-	bundle := &testBundle{
-		gw: &testGateway{},
-	}
+	bundle := &testGateway{}
 	s := ronykit.NewServer(
 		ronykit.RegisterBundle(bundle),
 		ronykit.RegisterService(
@@ -194,7 +145,7 @@ func BenchmarkServer(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				bundle.gw.Send(req)
+				bundle.Send(req)
 			}
 		},
 	)

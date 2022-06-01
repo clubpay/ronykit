@@ -2,13 +2,10 @@ package ronykit
 
 import (
 	"encoding"
-	"errors"
 
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
-
-var ErrUnsupportedEncoding = errors.New("unsupported encoding")
 
 type (
 	Marshaler interface {
@@ -34,6 +31,12 @@ type (
 )
 
 func CreateMessageFactory(in Message) MessageFactoryFunc {
+	if in == nil {
+		return func() Message {
+			return RawMessage{}
+		}
+	}
+
 	var ff MessageFactoryFunc
 
 	reflect.ValueOf(&ff).Elem().Set(
@@ -91,6 +94,10 @@ type RawMessage []byte
 
 func (rm RawMessage) Marshal() ([]byte, error) {
 	return rm, nil
+}
+
+func (rm *RawMessage) Copy(in []byte) {
+	*rm = append(*rm, in...)
 }
 
 // ErrorMessage is a special kind of Message which is also an error.

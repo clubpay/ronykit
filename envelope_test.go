@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("Envelope", func() {
-	tc := NewTestConn(1, "", false)
+	tc := newTestConn(1, "", false)
 	ctx := ronykit.NewContext()
 	e := ronykit.NewEnvelope(ctx, tc, true)
 	e.
