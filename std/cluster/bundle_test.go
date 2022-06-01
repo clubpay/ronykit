@@ -25,7 +25,7 @@ var _ = Describe("Bundle", func() {
 		}
 	})
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 3)
 	It("check members", func() {
 		for _, cl := range clusters {
 			members, err := cl.Members(context.Background())
