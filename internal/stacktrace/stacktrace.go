@@ -25,8 +25,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/utils"
-	"github.com/clubpay/ronykit/utils/pools"
-	"github.com/clubpay/ronykit/utils/pools/buf"
+	"github.com/clubpay/ronykit/utils/buf"
 )
 
 var _stacktracePool = sync.Pool{
@@ -133,8 +132,8 @@ func TakeStacktrace(skip int) string {
 	stack := captureStacktrace(skip+1, stacktraceFull)
 	defer stack.Free()
 
-	buffer := pools.Buffer.GetCap(1024)
-	defer pools.Buffer.Put(buffer)
+	buffer := buf.GetCap(1024)
+	defer buffer.Release()
 
 	stackfmt := newStackFormatter(buffer)
 	stackfmt.FormatStack(stack)

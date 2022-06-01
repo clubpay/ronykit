@@ -9,8 +9,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/utils"
-	"github.com/clubpay/ronykit/utils/pools"
-	"github.com/clubpay/ronykit/utils/pools/buf"
+	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet"
@@ -35,7 +34,7 @@ func newGateway(b *bundle) (*gateway, error) {
 
 func (e *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
 	e.b.d.OnMessage(wsc, (*payload.Bytes())[:n])
-	pools.Buffer.Put(payload)
+	payload.Release()
 }
 
 func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
@@ -151,7 +150,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 		break
 	}
 
-	payloadBuffer := pools.Buffer.GetLen(int(hdr.Length))
+	payloadBuffer := buf.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(*payloadBuffer.Bytes())
 	if err != nil && err != io.EOF {
 		return nil, gnet.None

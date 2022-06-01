@@ -11,6 +11,7 @@ const (
 )
 
 type Bytes struct {
+	p  *bytesPool
 	ri int
 	b  []byte
 }
@@ -31,12 +32,12 @@ func (bb *Bytes) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-func NewBytes(n, c int) *Bytes {
+func newBytes(p *bytesPool, n, c int) *Bytes {
 	if n > c {
 		panic("requested length is greater than capacity")
 	}
 
-	return &Bytes{b: make([]byte, n, c)}
+	return &Bytes{p: p, b: make([]byte, n, c)}
 }
 
 func (bb *Bytes) Reset() {
@@ -99,17 +100,20 @@ func (bb Bytes) Cap() int {
 	return cap(bb.b)
 }
 
+func (bb *Bytes) Release() {
+	bb.p.put(bb)
+}
+
 // bytesPool. contains logic of reusing objects distinguishable by size in generic
 // way.
 type bytesPool struct {
 	pool map[int]*sync.Pool
 }
 
+var defaultPool = NewBytesPool(32, 1<<20)
+
 // NewBytesPool creates new bytesPool that reuses objects which size is in logarithmic range
 // [min, max].
-//
-// Note that it is a shortcut for Custom() constructor with Options provided by
-// WithLogSizeMapping() and WithLogSizeRange(min, max) calls.
 func NewBytesPool(min, max int) *bytesPool {
 	p := &bytesPool{
 		pool: make(map[int]*sync.Pool),
@@ -137,25 +141,24 @@ func (p *bytesPool) Get(n, c int) *Bytes {
 
 			return bb
 		} else {
-			return NewBytes(n, size)
+			return newBytes(p, n, size)
 		}
 	}
 
-	return NewBytes(n, c)
+	return newBytes(p, n, c)
 }
 
-// Put returns given slice to reuse pool.
-// It does not reuse bytes whose size is not power of two or is out of pool
-// min/max range.
-func (p *bytesPool) Put(bb *Bytes) {
-	if pool := p.pool[cap(bb.b)]; pool != nil {
-		pool.Put(bb)
-	}
+func Get(n, c int) *Bytes {
+	return defaultPool.Get(n, c)
 }
 
 // GetCap returns probably reused slice of bytes with at least capacity of n.
 func (p *bytesPool) GetCap(c int) *Bytes {
 	return p.Get(0, c)
+}
+
+func GetCap(c int) *Bytes {
+	return defaultPool.Get(0, c)
 }
 
 // GetLen returns probably reused slice of bytes with at least capacity of n
@@ -164,11 +167,24 @@ func (p *bytesPool) GetLen(n int) *Bytes {
 	return p.Get(n, n)
 }
 
-func (p *bytesPool) FromBytes(b []byte) *Bytes {
-	buf := p.GetCap(len(b))
-	buf.AppendFrom(b)
+func GetLen(n int) *Bytes {
+	return defaultPool.Get(n, n)
+}
 
-	return buf
+func FromBytes(in []byte) *Bytes {
+	b := defaultPool.GetCap(len(in))
+	b.AppendFrom(in)
+
+	return b
+}
+
+// put returns given Bytes to reuse pool.
+// It does not reuse bytes whose size is not power of two or is out of pool
+// min/max range.
+func (p *bytesPool) put(bb *Bytes) {
+	if pool := p.pool[cap(bb.b)]; pool != nil {
+		pool.Put(bb)
+	}
 }
 
 // logarithmicRange iterates from ceil to power of two min to max,

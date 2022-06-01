@@ -10,8 +10,7 @@ import (
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
 	"github.com/clubpay/ronykit/utils"
-	"github.com/clubpay/ronykit/utils/pools"
-	"github.com/clubpay/ronykit/utils/pools/buf"
+	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )
@@ -169,7 +168,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 					break
 				}
 
-				inBuf := pools.Buffer.FromBytes(in)
+				inBuf := buf.FromBytes(in)
 				go b.wsHandlerExec(inBuf, wsc)
 			}
 			wsc.Close()
@@ -180,7 +179,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 
 func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
 	b.d.OnMessage(wsc, *buf.Bytes())
-	pools.Buffer.Put(buf)
+	buf.Release()
 }
 
 func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {

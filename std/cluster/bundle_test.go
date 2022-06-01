@@ -16,14 +16,15 @@ var _ = Describe("Bundle", func() {
 	store := &testStore{}
 	clusters := make([]ronykit.Cluster, 0)
 	for i := 0; i < 10; i++ {
-		clusters = append(clusters, cluster.MustNew(cluster.WithStore(store)))
+		cl := cluster.MustNew(
+			cluster.WithStore(store),
+			cluster.WithID(fmt.Sprintf("%d", i)),
+		)
+
+		Expect(cl.Start(nil)).Should(Succeed())
+		clusters = append(clusters, cl)
+
 	}
-	It("run clusters", func() {
-		for _, cl := range clusters {
-			err := cl.Start(nil)
-			Expect(err).To(BeNil())
-		}
-	})
 
 	time.Sleep(time.Second * 3)
 	It("check members", func() {
