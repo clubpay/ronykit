@@ -4,50 +4,43 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"testing"
 	"time"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/std/cluster"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestCluster(t *testing.T) {
+var _ = Describe("Bundle", func() {
 	store := &testStore{}
 	clusters := make([]ronykit.Cluster, 0)
 	for i := 0; i < 10; i++ {
-		cl := cluster.MustNew(
-			cluster.WithHeartbeat(time.Millisecond),
-			cluster.WithID(fmt.Sprintf("Node%d", i)),
-			cluster.WithStore(store),
-		)
-
-		err := cl.Start(context.Background())
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		clusters = append(clusters, cl)
+		clusters = append(clusters, cluster.MustNew(cluster.WithStore(store)))
 	}
+	It("run clusters", func() {
+		for _, cl := range clusters {
+			err := cl.Start(nil)
+			Expect(err).To(BeNil())
+		}
+	})
 
-	time.Sleep(time.Second * 3)
-	for _, cl := range clusters {
-		members, err := cl.Members(context.Background())
-		if err != nil {
-			t.Fatal(err)
+	time.Sleep(time.Second)
+	It("check members", func() {
+		for _, cl := range clusters {
+			members, err := cl.Members(context.Background())
+			Expect(err).To(BeNil())
+			Expect(members).To(HaveLen(10))
 		}
-		if len(members) != 10 {
-			t.Errorf("expected members be 10 but they are %d", len(members))
-			t.FailNow()
-		}
-	}
+	})
 
-	for i := 0; i < 10; i++ {
-		err := clusters[i].Shutdown(context.Background())
-		if err != nil {
-			t.Fatal(err)
+	It("shutdown clusters", func() {
+		for i := 0; i < 10; i++ {
+			err := clusters[i].Shutdown(context.Background())
+			Expect(err).To(BeNil())
 		}
-	}
-}
+	})
+})
 
 type testStore struct {
 	sync.Mutex
