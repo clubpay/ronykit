@@ -112,7 +112,8 @@ func SumHandler(ctx *ronykit.Context) {
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
 			&dto.SumResponse{
-				Val: req.Val1 + req.Val2,
+				EmbeddedHeader: req.EmbeddedHeader,
+				Val:            req.Val1 + req.Val2,
 			},
 		).Send()
 

@@ -11,14 +11,21 @@ type EchoResponse struct {
 }
 
 type SumRequest struct {
+	EmbeddedHeader
 	Val1 int64 `paramName:"val1" json:"val1"`
 	Val2 int64 `paramName:"val2" json:"val2"`
 }
 
 type SumResponse struct {
+	EmbeddedHeader
 	Val int64
 }
 
 type RedirectRequest struct {
 	URL string `json:"url" paramName:"url"`
+}
+
+type EmbeddedHeader struct {
+	SomeKey1 string `json:"someKey1"`
+	SomeInt1 int64  `json:"someInt1"`
 }

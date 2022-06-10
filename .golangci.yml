@@ -11,4 +11,5 @@ linters:
     - funlen
     - godot
     - godox
+    - nonamedreturns
   fast: true

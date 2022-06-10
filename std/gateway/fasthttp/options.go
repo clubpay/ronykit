@@ -54,3 +54,9 @@ func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory
 		b.rpcOutFactory = out
 	}
 }
+
+func WithReflectTag(tag string) Option {
+	return func(b *bundle) {
+		SetTag(tag)
+	}
+}

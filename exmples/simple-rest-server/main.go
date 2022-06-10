@@ -32,6 +32,7 @@ func main() {
 				fasthttp.WithCORS(fasthttp.CORSConfig{}),
 				fasthttp.WithWebsocketEndpoint("/ws"),
 				fasthttp.WithPredicateKey("cmd"),
+				fasthttp.WithReflectTag("json"),
 			),
 		),
 		ronykit.RegisterServiceDesc(
