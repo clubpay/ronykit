@@ -7,6 +7,10 @@ import (
 	"github.com/clubpay/ronykit/utils/reflector"
 )
 
+type Desc interface {
+	Desc() *Service
+}
+
 type Error struct {
 	Code    int
 	Item    string

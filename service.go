@@ -1,10 +1,5 @@
 package ronykit
 
-// ServiceGenerator generates a service. desc.Service is the implementor of this.
-type ServiceGenerator interface {
-	Generate() Service
-}
-
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Gateway.
 type Service interface {

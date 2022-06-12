@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
@@ -37,7 +38,7 @@ func main() {
 				fasthttp.Listen(":81"),
 			),
 		),
-		ronykit.RegisterServiceDesc(NewSample().Desc()),
+		desc.Register(NewSample()),
 	).
 		Start(nil).
 		PrintRoutes(os.Stdout).

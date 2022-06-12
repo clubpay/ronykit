@@ -27,16 +27,6 @@ func RegisterService(services ...Service) Option {
 	}
 }
 
-// RegisterServiceDesc registers a service by accepting the desc.Service as input.
-// **Note**: we are using ServiceGenerator interface instead of desc.Service to prevent cyclic dependencies.
-func RegisterServiceDesc(serviceGens ...ServiceGenerator) Option {
-	return func(s *EdgeServer) {
-		for _, svcGen := range serviceGens {
-			s.RegisterService(svcGen.Generate())
-		}
-	}
-}
-
 func WithErrorHandler(h ErrHandler) Option {
 	return func(s *EdgeServer) {
 		s.eh = h

@@ -78,7 +78,7 @@ var _ = Describe("EdgeServer", func() {
 		}
 		edge = ronykit.NewServer(
 			ronykit.RegisterBundle(b),
-			ronykit.RegisterServiceDesc(
+			ronykit.RegisterService(
 				desc.NewService("testService").
 					AddContract(
 						desc.NewContract().
@@ -94,7 +94,8 @@ var _ = Describe("EdgeServer", func() {
 									return
 								},
 							),
-					),
+					).
+					Generate(),
 			),
 		)
 		edge.Start(nil)

@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
@@ -35,9 +36,7 @@ func main() {
 				fasthttp.WithReflectTag("json"),
 			),
 		),
-		ronykit.RegisterServiceDesc(
-			api.NewSample().Desc(),
-		),
+		desc.Register(api.NewSample()),
 	).
 		Start(nil).
 		PrintRoutes(os.Stdout).
