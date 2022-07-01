@@ -1,0 +1,10 @@
+
+// {{.Name}}DTO represents the data transfer object for {{.Name}}
+{{ range .Comments -}}
+// {{.}}
+{{ end -}}
+type {{.Name}}DTO struct {
+    {{ range .Fields -}}
+        {{.Name}} {{.Type}} {{ if gt (len .Tags) 0 }}`{{ range .Tags -}}{{.Name}}:"{{.Value}}"{{- end }}`{{- end }}
+    {{ end -}}
+}

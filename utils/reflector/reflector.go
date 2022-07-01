@@ -100,24 +100,26 @@ func getValue(m ronykit.Message) (reflect.Value, error) {
 	return mVal, nil
 }
 
-func destruct(mVal reflect.Value) map[string]fieldInfo {
+func destruct(mVal reflect.Value) map[string]FieldInfo {
 	mType := mVal.Type()
-	data := map[string]fieldInfo{}
+	data := map[string]FieldInfo{}
 
 	for i := 0; i < mType.NumField(); i++ {
 		ft := mType.Field(i)
 		if !ft.IsExported() {
 			continue
 		}
-		fi := fieldInfo{
+		fi := FieldInfo{
+			f:      ft,
 			name:   ft.Name,
 			offset: ft.Offset,
 			typ:    ft.Type,
 		}
 
 		switch ft.Type.Kind() {
-		case reflect.Map, reflect.Slice, reflect.Ptr, reflect.Interface,
-			reflect.Array, reflect.Chan, reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
+		case reflect.Map, reflect.Slice, reflect.Ptr,
+			reflect.Interface, reflect.Array, reflect.Chan,
+			reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
 		default:
 			fi.unsafe = true
 		}
@@ -150,9 +152,10 @@ func (r *Reflector) Load(m ronykit.Message) (Object, error) {
 	}
 
 	return Object{
-		m:    m,
-		data: cachedData.obj,
-		enc:  cachedData.enc,
+		m:      m,
+		t:      mType,
+		fields: cachedData.obj,
+		enc:    cachedData.enc,
 	}, nil
 }
 

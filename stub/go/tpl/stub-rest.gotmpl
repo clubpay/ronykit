@@ -1,0 +1,21 @@
+package {{.Pkg}}
+
+import (
+
+)
+
+type {{.Name}}Stub struct {
+    hostPort string
+    secure bool
+    verifyTLS bool
+}
+
+func New{{.Name}}Stub() *{{.Name}}Stub {
+    s := &{{.Name}}Stub{}
+
+    return s
+}
+
+{{ range .RESTs }}
+func (s {{.Name}}Stub) {{.Name}}(req *{{.Request}})
+{{ end }}

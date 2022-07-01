@@ -12,4 +12,5 @@ linters:
     - godot
     - godox
     - nonamedreturns
+    - testpackage
   fast: true

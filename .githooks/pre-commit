@@ -2,7 +2,7 @@
 
 # Check dependencies
 GOPRIVATE="github.com/clubpay*" go mod tidy -v || exit
-GOPRIVATE="github.com/clubpay*" go mod verify || exit
+#GOPRIVATE="github.com/clubpay*" go mod verify || exit
 
 # Check for errors and warnings
 go vet ./... || exit

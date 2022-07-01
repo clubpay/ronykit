@@ -19,14 +19,15 @@ type emptyInterface struct {
 	word unsafe.Pointer
 }
 
-type fieldInfo struct {
+type FieldInfo struct {
+	f      reflect.StructField
 	name   string
 	offset uintptr
 	typ    reflect.Type
 	unsafe bool
 }
 
-func (f fieldInfo) Kind() reflect.Kind {
+func (f FieldInfo) Kind() reflect.Kind {
 	if f.typ == nil {
 		return reflect.Invalid
 	}
@@ -34,15 +35,20 @@ func (f fieldInfo) Kind() reflect.Kind {
 	return f.typ.Kind()
 }
 
+func (f FieldInfo) Type() reflect.StructField {
+	return f.f
+}
+
 type reflected struct {
-	obj map[string]fieldInfo
+	obj map[string]FieldInfo
 	enc ronykit.Encoding
 }
 
 type Object struct {
-	m    ronykit.Message
-	data map[string]fieldInfo
-	enc  ronykit.Encoding
+	m      ronykit.Message
+	fields map[string]FieldInfo
+	enc    ronykit.Encoding
+	t      reflect.Type
 }
 
 func (o Object) Encoding() ronykit.Encoding {
@@ -54,7 +60,7 @@ func (o Object) Message() ronykit.Message {
 }
 
 func (o Object) GetInt(fieldName string) (int, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -74,7 +80,7 @@ func (o Object) GetIntDefault(fieldName string, def int) int {
 }
 
 func (o Object) GetUInt(fieldName string) (uint, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -94,7 +100,7 @@ func (o Object) GetUIntDefault(fieldName string, def uint) uint {
 }
 
 func (o Object) GetInt64(fieldName string) (int64, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int64 {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -114,7 +120,7 @@ func (o Object) GetInt64Default(fieldName string, def int64) int64 {
 }
 
 func (o Object) GetUInt64(fieldName string) (uint64, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint64 {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -134,7 +140,7 @@ func (o Object) GetUInt64Default(fieldName string, def uint64) uint64 {
 }
 
 func (o Object) GetInt32(fieldName string) (int32, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int32 {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -154,7 +160,7 @@ func (o Object) GetInt32Default(fieldName string, def int32) int32 {
 }
 
 func (o Object) GetUInt32(fieldName string) (uint32, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint32 {
 		return 0, errInvalidFieldType(k.String())
 	}
@@ -174,7 +180,7 @@ func (o Object) GetUInt32Default(fieldName string, def uint32) uint32 {
 }
 
 func (o Object) GetString(fieldName string) (string, error) {
-	fi := o.data[fieldName]
+	fi := o.fields[fieldName]
 	if k := fi.Kind(); k != reflect.String {
 		return "", errInvalidFieldType(k.String())
 	}
@@ -191,4 +197,14 @@ func (o Object) GetStringDefault(fieldName string, def string) string {
 	}
 
 	return v
+}
+
+func (o Object) Type() reflect.Type {
+	return o.t
+}
+
+func (o Object) WalkFields(cb func(key string, f FieldInfo)) {
+	for k, f := range o.fields {
+		cb(k, f)
+	}
 }
