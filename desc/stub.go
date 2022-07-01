@@ -3,6 +3,8 @@ package desc
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/clubpay/ronykit"
 )
 
 type DTO struct {
@@ -36,6 +38,8 @@ type RPCMethod struct {
 	Predicate string
 	Request   DTO
 	Response  []DTO
+	ronykit.IncomingRPCContainer
+	ronykit.OutgoingRPCContainer
 }
 
 type Stub struct {
@@ -45,8 +49,8 @@ type Stub struct {
 	RPCs  []RPCMethod
 }
 
-func NewStub(tags ...string) Stub {
-	return Stub{
+func newStub(tags ...string) *Stub {
+	return &Stub{
 		tags: tags,
 		DTOs: map[string]DTO{},
 	}

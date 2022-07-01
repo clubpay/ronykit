@@ -14,6 +14,8 @@ var (
 	ErrNoField     = fmt.Errorf("field not exists")
 )
 
+var noObject = Object{}
+
 type Reflector struct {
 	tagName string
 
@@ -132,7 +134,7 @@ func destruct(mVal reflect.Value) map[string]FieldInfo {
 func (r *Reflector) Load(m ronykit.Message) (Object, error) {
 	mVal, err := getValue(m)
 	if err != nil {
-		return Object{}, err
+		return noObject, err
 	}
 	mType := mVal.Type()
 	cachedData := registered[mType]

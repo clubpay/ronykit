@@ -2,8 +2,6 @@ linters:
   enable-all: true
   disable:
     - wsl
-    - scopelint
-    - tparallel
     - gomnd
     - gochecknoglobals
     - paralleltest

@@ -33,7 +33,7 @@ func longestCommonPrefix(a, b string) int {
 
 // Search for a wildcard segment and check the name for invalid characters.
 // Returns -1 as index, if no wildcard was found.
-func findWildcard(path string) (wilcard string, i int, valid bool) {
+func findWildcard(path string) (wildcard string, i int, valid bool) {
 	// Find start
 	for start, c := range []byte(path) {
 		// A wildcard starts with ':' (param) or '*' (catch-all)

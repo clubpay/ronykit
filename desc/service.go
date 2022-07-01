@@ -134,17 +134,15 @@ func (s Service) Generate() ronykit.Service {
 }
 
 func (s Service) GenerateStub(tags ...string) (*Stub, error) {
-	d := &Stub{
-		tags: tags,
-		DTOs: map[string]DTO{},
-	}
+	stub := newStub(tags...)
+
 	for _, c := range s.Contracts {
-		err := d.addDTO(reflect.TypeOf(c.Input))
+		err := stub.addDTO(reflect.TypeOf(c.Input))
 		if err != nil {
 			return nil, err
 		}
 		for _, out := range c.Outputs {
-			err = d.addDTO(reflect.TypeOf(out))
+			err = stub.addDTO(reflect.TypeOf(out))
 			if err != nil {
 				return nil, err
 			}
@@ -157,20 +155,20 @@ func (s Service) GenerateStub(tags ...string) (*Stub, error) {
 					Method: rrs.GetMethod(),
 					Path:   rrs.GetPath(),
 				}
-				if dto, ok := d.getDTO(reflect.TypeOf(c.Input)); ok {
+				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 					m.Request = dto
 				}
 				for _, out := range c.Outputs {
-					if dto, ok := d.getDTO(reflect.TypeOf(out)); ok {
+					if dto, ok := stub.getDTO(reflect.TypeOf(out)); ok {
 						m.Response = append(m.Response, dto)
 					}
 				}
-				d.RESTs = append(d.RESTs, m)
+				stub.RESTs = append(stub.RESTs, m)
 			}
 		}
 	}
 
-	return d, nil
+	return stub, nil
 }
 
 // serviceImpl is a simple implementation of ronykit.Service interface.

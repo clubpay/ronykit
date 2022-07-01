@@ -4,18 +4,22 @@ import (
 
 )
 
-type {{.Name}}Stub struct {
+{{$serviceName := .Name}}
+type {{$serviceName}}Stub struct {
     hostPort string
     secure bool
     verifyTLS bool
 }
 
-func New{{.Name}}Stub() *{{.Name}}Stub {
-    s := &{{.Name}}Stub{}
+func New{{$serviceName}}Stub() *{{$serviceName}}Stub {
+    s := &{{$serviceName}}Stub{}
 
     return s
 }
 
 {{ range .RESTs }}
-func (s {{.Name}}Stub) {{.Name}}(req *{{.Request}})
+{{$methodName := .Name}}
+func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request}}) {
+
+}
 {{ end }}
