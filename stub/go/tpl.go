@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	//go:embed tpl/dto.gotmpl
-	tplFileDTO string
-	tplDTO     *template.Template
+	//go:embed tpl/stub.gotmpl
+	tplFileStub string
+	tplStub     *template.Template
 )
 
 func init() {
-	tplDTO = template.Must(template.New("dto").Parse(tplFileDTO))
+	tplStub = template.Must(template.New("stub").Parse(tplFileStub))
 }

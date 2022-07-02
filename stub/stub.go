@@ -171,4 +171,17 @@ func (hc *httpClientCtx) DumpRequest() string {
 	return hc.req.String()
 }
 
-func (hc *httpClientCtx) AutoRun(s ronykit.RESTRouteSelector, m ronykit.Message) {}
+// AutoRun is a helper method, which fills the request based on the input arguments.
+// It checks the route which is a path pattern, and fills the dynamic url params based on
+// the `m`'s `tag` keys.
+// Example:
+// type Request struct {
+//		ID int64 `json:"id"`
+//		Name string `json:"name"`
+// }
+// AutoRun(
+//	  "/something/:id/:name",
+//	  "json",
+//	  &Request{ID: 10, Name: "customName"},
+// )
+func (hc *httpClientCtx) AutoRun(route, tag string, m ronykit.Message) {}

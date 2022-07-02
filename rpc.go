@@ -38,17 +38,21 @@ type OutgoingRPCFactory func() OutgoingRPCContainer
 
 // Encoding defines the encoding of the messages which will be sent/received. Gateway implementor needs
 // to call correct method based on the encoding value.
-type Encoding int32
+type Encoding struct {
+	tag string
+}
 
-const (
-	Undefined Encoding = 0
-	JSON               = 1 << iota
-	Proto
-	Binary
-	Text
-	CustomDefined
+func (enc Encoding) Tag() string {
+	return enc.tag
+}
+
+var (
+	Undefined = Encoding{tag: ""}
+	JSON      = Encoding{tag: "json"}
+	Proto     = Encoding{tag: "proto"}
+	MSG       = Encoding{tag: "msg"}
 )
 
-func (e Encoding) Support(o Encoding) bool {
-	return e&o == o
+func CustomEncoding(tag string) Encoding {
+	return Encoding{tag: tag}
 }

@@ -24,15 +24,22 @@ func (x *Sample) Desc() *desc.Service {
 	return desc.NewService("SampleService").
 		AddContract(
 			desc.NewContract().
+				SetName("Echo").
 				SetInput(&dto.EchoRequest{}).
-				AddSelector(fasthttp.Selector{
-					Method:    fasthttp.MethodGet,
-					Predicate: "echo",
-					Path:      "/echo/:randomID",
-				}).
-				AddSelector(fastws.Selector{
-					Predicate: "echoRequest",
-				}).
+				AddNamedSelector(
+					"Echo",
+					fasthttp.Selector{
+						Method:    fasthttp.MethodGet,
+						Predicate: "echo",
+						Path:      "/echo/:randomID",
+					},
+				).
+				AddNamedSelector(
+					"Echo",
+					fastws.Selector{
+						Predicate: "echoRequest",
+					},
+				).
 				AddModifier(func(envelope ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
@@ -40,24 +47,34 @@ func (x *Sample) Desc() *desc.Service {
 		).
 		AddContract(
 			desc.NewContract().
+				SetName("Sum").
 				SetInput(&dto.SumRequest{}).
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodGet,
-					Path:   "/sum/:val1/:val2",
-				}).
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodPost,
-					Path:   "/sum",
-				}).
+				AddNamedSelector(
+					"Sum1",
+					fasthttp.Selector{
+						Method: fasthttp.MethodGet,
+						Path:   "/sum/:val1/:val2",
+					},
+				).
+				AddNamedSelector(
+					"Sum2",
+					fasthttp.Selector{
+						Method: fasthttp.MethodPost,
+						Path:   "/sum",
+					},
+				).
 				SetHandler(SumHandler),
 		).
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.SumRequest{}).
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodGet,
-					Path:   "/sum-redirect/:val1/:val2",
-				}).
+				AddNamedSelector(
+					"SumRedirect",
+					fasthttp.Selector{
+						Method: fasthttp.MethodGet,
+						Path:   "/sum-redirect/:val1/:val2",
+					},
+				).
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodPost,
 					Path:   "/sum-redirect",

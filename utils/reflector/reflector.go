@@ -1,7 +1,6 @@
 package reflector
 
 import (
-	"encoding"
 	"fmt"
 	"reflect"
 	"sync"
@@ -43,54 +42,7 @@ func Register(m ronykit.Message) {
 	mType := mVal.Type()
 	registered[mType] = &reflected{
 		obj: destruct(mVal),
-		enc: getEncoding(m),
 	}
-}
-
-func getEncoding(m ronykit.Message) ronykit.Encoding {
-	var e ronykit.Encoding
-
-	_, ok := m.(interface {
-		Marshal() ([]byte, error)
-		Unmarshal([]byte) error
-	})
-	if ok {
-		e |= ronykit.CustomDefined
-	}
-
-	_, ok = m.(interface {
-		MarshalJSON() ([]byte, error)
-		UnmarshalJSON([]byte) error
-	})
-	if ok {
-		e |= ronykit.JSON
-	}
-
-	_, ok = m.(interface {
-		MarshalProto() ([]byte, error)
-		UnmarshalProto([]byte) error
-	})
-	if ok {
-		e |= ronykit.Proto
-	}
-
-	_, ok = m.(interface {
-		encoding.BinaryMarshaler
-		encoding.BinaryUnmarshaler
-	})
-	if ok {
-		e |= ronykit.Binary
-	}
-
-	_, ok = m.(interface {
-		encoding.TextMarshaler
-		encoding.TextUnmarshaler
-	})
-	if ok {
-		e |= ronykit.Text
-	}
-
-	return e
 }
 
 func getValue(m ronykit.Message) (reflect.Value, error) {
@@ -145,7 +97,6 @@ func (r *Reflector) Load(m ronykit.Message) (Object, error) {
 		if cachedData == nil {
 			cachedData = &reflected{
 				obj: destruct(mVal),
-				enc: getEncoding(m),
 			}
 			r.cacheMtx.Lock()
 			r.cache[mType] = cachedData
@@ -157,7 +108,6 @@ func (r *Reflector) Load(m ronykit.Message) (Object, error) {
 		m:      m,
 		t:      mType,
 		fields: cachedData.obj,
-		enc:    cachedData.enc,
 	}, nil
 }
 

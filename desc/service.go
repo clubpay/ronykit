@@ -133,25 +133,83 @@ func (s Service) Generate() ronykit.Service {
 	return ronykit.WrapService(svc, s.Wrappers...)
 }
 
-func (s Service) GenerateStub(tags ...string) (*Stub, error) {
+// Stub returns the Stub, which describes the stub specification and
+// could be used to auto-generate stub for this service.
+func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	stub := newStub(tags...)
+	stub.Pkg = pkgName
+	stub.Name = s.Name
 
+	if err := s.restStub(stub); err != nil {
+		return nil, err
+	}
+
+	if err := s.rpcStub(stub); err != nil {
+		return nil, err
+	}
+
+	return stub, nil
+}
+
+func (s Service) rpcStub(stub *Stub) error {
 	for _, c := range s.Contracts {
 		err := stub.addDTO(reflect.TypeOf(c.Input))
 		if err != nil {
-			return nil, err
+			return err
 		}
 		for _, out := range c.Outputs {
 			err = stub.addDTO(reflect.TypeOf(out))
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 
-		for _, rs := range c.RouteSelectors {
+		for idx, rs := range c.RouteSelectors {
+			if c.routeNames[idx] == "" {
+				// We don't write description for no-named selectors.
+				continue
+			}
+			if rrs, ok := rs.(ronykit.RPCRouteSelector); ok {
+				m := RPCMethod{
+					Name:      c.routeNames[idx],
+					Predicate: rrs.GetPredicate(),
+				}
+				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
+					m.Request = dto
+				}
+				for _, out := range c.Outputs {
+					if dto, ok := stub.getDTO(reflect.TypeOf(out)); ok {
+						m.Response = append(m.Response, dto)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s Service) restStub(stub *Stub) error {
+	for _, c := range s.Contracts {
+		err := stub.addDTO(reflect.TypeOf(c.Input))
+		if err != nil {
+			return err
+		}
+		for _, out := range c.Outputs {
+			err = stub.addDTO(reflect.TypeOf(out))
+			if err != nil {
+				return err
+			}
+		}
+
+		for idx, rs := range c.RouteSelectors {
+			if c.routeNames[idx] == "" {
+				// We don't write description for no-named selectors.
+				continue
+			}
 			if rrs, ok := rs.(ronykit.RESTRouteSelector); ok {
 				m := RESTMethod{
-					Name:   c.Name,
+					Name:   c.routeNames[idx],
 					Method: rrs.GetMethod(),
 					Path:   rrs.GetPath(),
 				}
@@ -168,7 +226,7 @@ func (s Service) GenerateStub(tags ...string) (*Stub, error) {
 		}
 	}
 
-	return stub, nil
+	return nil
 }
 
 // serviceImpl is a simple implementation of ronykit.Service interface.

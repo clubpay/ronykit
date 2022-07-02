@@ -41,7 +41,6 @@ func (f FieldInfo) Type() reflect.StructField {
 
 type reflected struct {
 	obj map[string]FieldInfo
-	enc ronykit.Encoding
 }
 
 type Object struct {

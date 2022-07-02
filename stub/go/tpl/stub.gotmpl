@@ -1,0 +1,60 @@
+{{ define "dto" }}
+// {{.Name}} is a data transfer object
+{{ range .Comments -}}
+// {{.}}
+{{ end -}}
+type {{.Name}} struct {
+{{- range .Fields -}}
+{{- if .IsDTO }}
+	{{- if .Embedded }}
+		{{.Name}}
+	{{- else }}
+		{{.Name}} {{.Type}} {{ if gt (len .Tags) 0 }}`{{ range .Tags -}}{{.Name}}:"{{.Value}}"{{- end }}`{{- end }}
+	{{- end }}
+{{- else }}
+	{{.Name}} {{.Type}} {{ if gt (len .Tags) 0 }}`{{ range .Tags -}}{{.Name}}:"{{.Value}}"{{- end }}`{{- end }}
+{{- end }}
+{{- end }}
+}
+{{ end }}
+
+package {{.Pkg}}
+
+import (
+	"github.com/clubpay/ronykit/stub"
+)
+
+{{ range $dtoName, $dto := .DTOs }}
+{{ template "dto" $dto }}
+{{ end }}
+
+
+{{$serviceName := .Name}}
+// {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
+type {{$serviceName}}Stub struct {
+    hostPort string
+    secure bool
+    verifyTLS bool
+
+		s *stub.Stub
+}
+
+func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceName}}Stub {
+    s := &{{$serviceName}}Stub{
+			s: stub.New(hostPort, opts...),
+		}
+
+    return s
+}
+
+{{ range .RESTs }}
+{{$methodName := .Name}}
+{{- if ne $methodName "" }}
+func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) {
+	s.s.HTTP().
+		SetMethod("{{.Method}}").
+		SetCallback(nil).
+		AutoRun("{{.Path}}", "json", req)
+}
+{{ end }}
+{{- end }}

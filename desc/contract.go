@@ -9,6 +9,7 @@ type Contract struct {
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
 	RouteSelectors []ronykit.RouteSelector
+	routeNames     []string
 	EdgeSelector   ronykit.EdgeSelectorFunc
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
@@ -68,6 +69,17 @@ func (c *Contract) AddPossibleError(code int, item string, m ronykit.Message) *C
 // AddSelector adds a ronykit.RouteSelector for this contract. Selectors are bundle specific.
 func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
 	c.RouteSelectors = append(c.RouteSelectors, s)
+	c.routeNames = append(c.routeNames, "")
+
+	return c
+}
+
+// AddNamedSelector adds a ronykit.RouteSelector for this contract, and assign it a unique name.
+// In case of you need to use auto-generated stub.Stub for your service/contract this name will
+// be used in the generated code.
+func (c *Contract) AddNamedSelector(name string, s ronykit.RouteSelector) *Contract {
+	c.RouteSelectors = append(c.RouteSelectors, s)
+	c.routeNames = append(c.routeNames, name)
 
 	return c
 }

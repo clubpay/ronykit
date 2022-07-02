@@ -15,9 +15,11 @@ type DTO struct {
 }
 
 type DTOField struct {
-	Name string
-	Type string
-	Tags []DTOFieldTag
+	Name     string
+	Type     string
+	Embedded bool
+	IsDTO    bool
+	Tags     []DTOFieldTag
 }
 
 type DTOFieldTag struct {
@@ -44,6 +46,8 @@ type RPCMethod struct {
 
 type Stub struct {
 	tags  []string
+	Pkg   string
+	Name  string
 	DTOs  map[string]DTO
 	RESTs []RESTMethod
 	RPCs  []RPCMethod
@@ -88,9 +92,12 @@ func (d *Stub) addDTO(mTyp reflect.Type) error {
 
 			dto.Type = typ("", mTyp)
 			dtoF := DTOField{
-				Name: ft.Name,
-				Type: typ("", ft.Type),
+				Name:     ft.Name,
+				Type:     typ("", ft.Type),
+				Embedded: ft.Anonymous,
+				IsDTO:    k == reflect.Struct,
 			}
+
 			for _, t := range d.tags {
 				v, ok := ft.Tag.Lookup(t)
 				if ok {
@@ -120,6 +127,10 @@ func (d *Stub) addDTO(mTyp reflect.Type) error {
 }
 
 func (d *Stub) getDTO(mTyp reflect.Type) (DTO, bool) {
+	if mTyp.Kind() == reflect.Ptr {
+		mTyp = mTyp.Elem()
+	}
+
 	dto, ok := d.DTOs[mTyp.Name()]
 
 	return dto, ok
