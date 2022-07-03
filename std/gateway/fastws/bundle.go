@@ -7,7 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
-	"github.com/panjf2000/gnet"
+	"github.com/panjf2000/gnet/v2"
 )
 
 const (
@@ -127,7 +127,8 @@ func (b *bundle) Start(_ context.Context) error {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
 		}
-		err := gnet.Serve(b.eh, b.listen, opts...)
+
+		err := gnet.Run(b.eh, b.listen, opts...)
 		if err != nil {
 			panic(err)
 		}

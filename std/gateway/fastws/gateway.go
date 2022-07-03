@@ -12,7 +12,7 @@ import (
 	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/panjf2000/gnet"
+	"github.com/panjf2000/gnet/v2"
 )
 
 type gateway struct {
@@ -49,13 +49,13 @@ func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 	return cw
 }
 
-func (e *gateway) OnInitComplete(_ gnet.Server) (action gnet.Action) {
+func (e *gateway) OnBoot(_ gnet.Engine) (action gnet.Action) {
 	return gnet.None
 }
 
-func (e *gateway) OnShutdown(_ gnet.Server) {}
+func (e *gateway) OnShutdown(_ gnet.Engine) {}
 
-func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
+func (e *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 	wsc := newWebsocketConn(atomic.AddUint64(&e.nextID, 1), c)
 	c.SetContext(wsc.id)
 
@@ -68,7 +68,7 @@ func (e *gateway) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	return nil, gnet.None
 }
 
-func (e *gateway) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
+func (e *gateway) OnClose(c gnet.Conn, err error) (action gnet.Action) {
 	connID, ok := c.Context().(uint64)
 	if ok {
 		e.b.d.OnClose(connID)
@@ -78,40 +78,30 @@ func (e *gateway) OnClosed(c gnet.Conn, err error) (action gnet.Action) {
 		e.Unlock()
 	}
 
-	_ = c.Close()
+	_ = c.Close(nil)
 
 	return gnet.Close
 }
 
-func (e *gateway) PreWrite(c gnet.Conn) {
-	return
-}
-
-func (e *gateway) AfterWrite(c gnet.Conn, b []byte) {
-	return
-}
-
-func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Action) {
+func (e *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	wsc := e.getConnWrap(c)
 	if wsc == nil {
-		return nil, gnet.Close
+		return gnet.Close
 	}
 
-	wsc.c.buf.Write(packet)
-
-	if !wsc.c.handshakeDone {
+	if !wsc.handshakeDone {
 		sp := acquireSwitchProtocol()
 		_, err := sp.Upgrade(wsc.c)
 		if err != nil {
 			wsc.Close()
 
-			return nil, gnet.Close
+			return gnet.Close
 		}
 		releaseSwitchProtocol(sp)
 
-		wsc.c.handshakeDone = true
+		wsc.handshakeDone = true
 
-		return nil, gnet.None
+		return gnet.None
 	}
 
 	var (
@@ -122,7 +112,7 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	for {
 		hdr, err = wsc.r.NextFrame()
 		if err != nil {
-			return nil, gnet.Close
+			return gnet.Close
 		}
 		if hdr.OpCode.IsControl() {
 			wsc.r.OnIntermediate = func(header ws.Header, reader io.Reader) error {
@@ -134,14 +124,14 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 				}.Handle(header)
 			}
 			if err := wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
-				return nil, gnet.Close
+				return gnet.Close
 			}
 
 			continue
 		}
 		if hdr.OpCode&(ws.OpText|ws.OpBinary) == 0 {
 			if err := wsc.r.Discard(); err != nil {
-				return nil, gnet.Close
+				return gnet.Close
 			}
 
 			continue
@@ -153,15 +143,15 @@ func (e *gateway) React(packet []byte, c gnet.Conn) (out []byte, action gnet.Act
 	payloadBuffer := buf.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(*payloadBuffer.Bytes())
 	if err != nil && err != io.EOF {
-		return nil, gnet.None
+		return gnet.None
 	}
 
 	go e.reactFunc(wsc, payloadBuffer, n)
 
-	return nil, gnet.None
+	return gnet.None
 }
 
-func (e *gateway) Tick() (delay time.Duration, action gnet.Action) {
+func (e *gateway) OnTick() (delay time.Duration, action gnet.Action) {
 	return 0, gnet.None
 }
 

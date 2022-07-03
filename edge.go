@@ -167,24 +167,30 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			{
 				Number:   2,
 				Align:    text.AlignLeft,
+				WidthMax: 36,
+			},
+			{
+				Number:   3,
+				Align:    text.AlignLeft,
 				WidthMax: 12,
 			},
 			{
-				Number:           3,
+				Number:           4,
 				Align:            text.AlignLeft,
 				WidthMax:         52,
 				WidthMaxEnforcer: text.WrapSoft,
 			},
 			{
-				Number:           4,
+				Number:           5,
 				Align:            text.AlignLeft,
-				WidthMax:         42,
+				WidthMax:         84,
 				WidthMaxEnforcer: text.WrapSoft,
 			},
 		})
 		tw.AppendHeader(
 			table.Row{
 				text.Bold.Sprint("ContractID"),
+				text.Bold.Sprint("Bundle"),
 				text.Bold.Sprint("API"),
 				text.Bold.Sprint("Route / Predicate"),
 				text.Bold.Sprint("Handlers"),
@@ -197,6 +203,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 				tw.AppendRow(
 					table.Row{
 						c.ID(),
+						reflect.TypeOf(c.RouteSelector()).String(),
 						text.FgBlue.Sprint("RPC"),
 						route,
 						getHandlers(c.Handlers()...),
@@ -207,6 +214,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 				tw.AppendRow(
 					table.Row{
 						c.ID(),
+						reflect.TypeOf(c.RouteSelector()).String(),
 						text.FgGreen.Sprint("REST"),
 						route,
 						getHandlers(c.Handlers()...),

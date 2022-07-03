@@ -1,42 +1,37 @@
 package fastws
 
 import (
-	"bytes"
-
 	"github.com/clubpay/ronykit/utils"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/panjf2000/gnet"
+	"github.com/panjf2000/gnet/v2"
 )
 
 type wsConn struct {
 	utils.SpinLock
 
-	id uint64
-	kv map[string]string
-	c  *wrapConn
-	r  *wsutil.Reader
-	w  *wsutil.Writer
+	id            uint64
+	kv            map[string]string
+	c             gnet.Conn
+	r             *wsutil.Reader
+	w             *wsutil.Writer
+	handshakeDone bool
 }
 
 func newWebsocketConn(id uint64, c gnet.Conn) *wsConn {
-	wc := &wrapConn{
-		buf: &bytes.Buffer{},
-		c:   c,
-	}
 	wsc := &wsConn{
-		w:  wsutil.NewWriter(wc, ws.StateServerSide, ws.OpText),
-		r:  wsutil.NewReader(wc, ws.StateServerSide),
+		w:  wsutil.NewWriter(c, ws.StateServerSide, ws.OpText),
+		r:  wsutil.NewReader(c, ws.StateServerSide),
 		id: id,
 		kv: map[string]string{},
-		c:  wc,
+		c:  c,
 	}
 
 	return wsc
 }
 
 func (c *wsConn) Close() {
-	_ = c.c.c.Close()
+	_ = c.c.Close(nil)
 }
 
 func (c *wsConn) ConnID() uint64 {
@@ -44,7 +39,7 @@ func (c *wsConn) ConnID() uint64 {
 }
 
 func (c *wsConn) ClientIP() string {
-	addr := c.c.c.RemoteAddr()
+	addr := c.c.RemoteAddr()
 	if addr == nil {
 		return ""
 	}
@@ -93,22 +88,4 @@ func (c *wsConn) Set(key string, val string) {
 	c.Lock()
 	c.kv[key] = val
 	c.Unlock()
-}
-
-type wrapConn struct {
-	handshakeDone bool
-	c             gnet.Conn
-	buf           *bytes.Buffer
-}
-
-func (c *wrapConn) Read(data []byte) (n int, err error) {
-	n, _ = c.buf.Read(data)
-
-	return
-}
-
-func (c *wrapConn) Write(data []byte) (n int, err error) {
-	err = c.c.AsyncWrite(data)
-
-	return len(data), err
 }
