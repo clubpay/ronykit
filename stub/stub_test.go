@@ -46,16 +46,16 @@ var _ = Describe("Stub Basic Functionality", func() {
 			SetMethod(http.MethodGet).
 			SetPath("/json").
 			SetQuery("someKey", "someValue").
-			SetCallback(
-				func(_ context.Context, statusCode int, body []byte) {
-					switch statusCode {
+			DefaultResponseHandler(
+				func(_ context.Context, r stub.RESTResponse) {
+					switch r.StatusCode() {
 					case http.StatusOK:
 						v := &ipInfoResponse{}
-						Expect(json.Unmarshal(body, v)).To(Succeed())
+						Expect(json.Unmarshal(r.GetBody(), v)).To(Succeed())
 						Expect(v.Readme).To(Not(BeEmpty()))
 						Expect(v.IP).To(Not(BeEmpty()))
 					default:
-						Expect(statusCode).To(Equal(http.StatusOK))
+						Expect(r.StatusCode()).To(Equal(http.StatusOK))
 					}
 				},
 			).
