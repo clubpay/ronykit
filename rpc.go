@@ -47,7 +47,7 @@ func (enc Encoding) Tag() string {
 }
 
 var (
-	Undefined = Encoding{tag: ""}
+	Undefined = Encoding{}
 	JSON      = Encoding{tag: "json"}
 	Proto     = Encoding{tag: "proto"}
 	MSG       = Encoding{tag: "msg"}

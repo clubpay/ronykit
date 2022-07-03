@@ -17,6 +17,10 @@ func (t testSelector) Query(q string) interface{} {
 	return nil
 }
 
+func (t testSelector) GetEncoding() ronykit.Encoding {
+	return ronykit.JSON
+}
+
 type testGateway struct {
 	d ronykit.GatewayDelegate
 	c testConn

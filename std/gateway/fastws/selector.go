@@ -6,9 +6,14 @@ import (
 
 type Selector struct {
 	Predicate string
+	Encoding  ronykit.Encoding
 }
 
 var _ ronykit.RPCRouteSelector = (*Selector)(nil)
+
+func (r Selector) GetEncoding() ronykit.Encoding {
+	return r.Encoding
+}
 
 func (r Selector) GetPredicate() string {
 	return r.Predicate

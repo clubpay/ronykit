@@ -6,6 +6,7 @@ package ronykit
 // either RESTRouteSelector, RPCRouteSelector or both.
 type RouteSelector interface {
 	Query(q string) interface{}
+	GetEncoding() Encoding
 }
 
 // RESTRouteSelector defines the RouteSelector which could be used in REST operations

@@ -41,6 +41,7 @@ type Selector struct {
 	Path      string
 	Predicate string
 	Decoder   DecoderFunc
+	Encoding  ronykit.Encoding
 }
 
 var (
@@ -48,6 +49,10 @@ var (
 	_ ronykit.RESTRouteSelector = (*Selector)(nil)
 	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
 )
+
+func (r Selector) GetEncoding() ronykit.Encoding {
+	return r.Encoding
+}
 
 func (r Selector) GetMethod() string {
 	return r.Method
