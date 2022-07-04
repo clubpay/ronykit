@@ -182,7 +182,7 @@ func (r *mux) Handle(method, path string, handle *routeData) {
 // Lookup allows the manual lookup of a Method + path combo.
 // This is e.g. useful to build a framework around this httpMux.
 // If the path was found, it returns the handle function and the path parameter
-// values. Otherwise the third return value indicates whether a redirection to
+// values. Otherwise, the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.
 func (r *mux) Lookup(method, path string) (*routeData, Params, bool) {
 	if root := r.trees[method]; root != nil {

@@ -29,7 +29,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 
 	It("should return 200 status", func() {
 		s := stub.New("webhook.site", stub.Secure())
-		httpCtx := s.HTTP().
+		httpCtx := s.REST().
 			SetMethod(http.MethodGet).
 			SetPath("/22fda9e7-1660-406e-b11e-993e070f175e").
 			SetQuery("someKey", "someValue").
@@ -42,7 +42,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 
 	It("should unmarshal response from json", func() {
 		s := stub.New("ipinfo.io", stub.Secure())
-		httpCtx := s.HTTP().
+		httpCtx := s.REST().
 			SetMethod(http.MethodGet).
 			SetPath("/json").
 			SetQuery("someKey", "someValue").

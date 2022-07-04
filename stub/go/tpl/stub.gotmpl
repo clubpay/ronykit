@@ -51,7 +51,7 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 {{$methodName := .Name}}
 {{- if ne $methodName "" }}
 func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) {
-	s.s.HTTP().
+	s.s.REST().
 		SetMethod("{{.Method}}").
 		DefaultResponseHandler(nil).
 		AutoRun("{{.Path}}", req)

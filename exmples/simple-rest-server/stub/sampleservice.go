@@ -46,28 +46,28 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 }
 
 func (s SampleServiceStub) Echo(req *EchoRequest) {
-	s.s.HTTP().
+	s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/echo/:randomID", req)
 }
 
 func (s SampleServiceStub) Sum1(req *SumRequest) {
-	s.s.HTTP().
+	s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum/:val1/:val2", req)
 }
 
 func (s SampleServiceStub) Sum2(req *SumRequest) {
-	s.s.HTTP().
+	s.s.REST().
 		SetMethod("POST").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum", req)
 }
 
 func (s SampleServiceStub) SumRedirect(req *SumRequest) {
-	s.s.HTTP().
+	s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum-redirect/:val1/:val2", req)

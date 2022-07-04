@@ -1,6 +1,7 @@
 package stub
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/valyala/fasthttp"
@@ -27,11 +28,14 @@ func New(hostPort string, opts ...Option) *Stub {
 		httpC: fasthttp.Client{
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
+			TLSConfig: &tls.Config{
+				InsecureSkipVerify: cfg.skipVerifyTLS,
+			},
 		},
 	}
 }
 
-func (s *Stub) HTTP() *restClientCtx {
+func (s *Stub) REST() *restClientCtx {
 	hc := &restClientCtx{
 		c:        &s.httpC,
 		handlers: map[int]RESTResponseHandler{},
