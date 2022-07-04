@@ -134,7 +134,9 @@ func (b *bundle) Subscribe(d ronykit.ClusterDelegate) {
 	b.d = d
 }
 
-func (b *bundle) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (b *bundle) Register(
+	serviceName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
 	return
 }
 

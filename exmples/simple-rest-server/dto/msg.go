@@ -1,19 +1,19 @@
 package dto
 
 type EchoRequest struct {
-	RandomID int64 `json:"randomId" paramName:"randomID"`
-	Ok       bool  `json:"ok" paramName:"ok"`
+	RandomID int64 `json:"randomID"`
+	Ok       bool  `json:"ok"`
 }
 
 type EchoResponse struct {
-	RandomID int64 `json:"randomId"`
+	RandomID int64 `json:"randomID"`
 	Ok       bool  `json:"ok"`
 }
 
 type SumRequest struct {
 	EmbeddedHeader
-	Val1 int64 `paramName:"val1" json:"val1"`
-	Val2 int64 `paramName:"val2" json:"val2"`
+	Val1 int64 `json:"val1"`
+	Val2 int64 `json:"val2"`
 }
 
 type SumResponse struct {
@@ -22,7 +22,7 @@ type SumResponse struct {
 }
 
 type RedirectRequest struct {
-	URL string `json:"url" paramName:"url"`
+	URL string `json:"url"`
 }
 
 type EmbeddedHeader struct {

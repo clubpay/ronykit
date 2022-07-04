@@ -34,14 +34,6 @@ func (ps Params) ByName(name string) string {
 
 type DecoderFunc func(bag Params, data []byte) (ronykit.Message, error)
 
-var tagKey = "paramName"
-
-// SetTag set the tag name which ReflectDecoder looks to extract parameters from Path and Query params.
-// Default value: paramName
-func SetTag(tag string) {
-	tagKey = tag
-}
-
 // emptyInterface is the header for an interface{} value.
 type emptyInterface struct {
 	typ  uint64
@@ -55,7 +47,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
+func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) DecoderFunc {
 	m := factory()
 	switch m := m.(type) {
 	case ronykit.RawMessage:
@@ -65,6 +57,16 @@ func reflectDecoder(factory ronykit.MessageFactoryFunc) DecoderFunc {
 			return m, nil
 		}
 	default:
+	}
+
+	tagKey := "json"
+	switch enc {
+	case ronykit.JSON:
+	case ronykit.Proto:
+	default:
+		if enc.Tag() != "" {
+			tagKey = enc.Tag()
+		}
 	}
 
 	rVal := reflect.Indirect(reflect.ValueOf(factory()))

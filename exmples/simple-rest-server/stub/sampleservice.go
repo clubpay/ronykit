@@ -10,6 +10,12 @@ type EchoRequest struct {
 	Ok       bool  `json:"ok"`
 }
 
+// EchoResponse is a data transfer object
+type EchoResponse struct {
+	RandomID int64 `json:"randomId"`
+	Ok       bool  `json:"ok"`
+}
+
 // EmbeddedHeader is a data transfer object
 type EmbeddedHeader struct {
 	SomeKey1 string `json:"someKey1"`
@@ -26,6 +32,12 @@ type SumRequest struct {
 	EmbeddedHeader
 	Val1 int64 `json:"val1"`
 	Val2 int64 `json:"val2"`
+}
+
+// SumResponse is a data transfer object
+type SumResponse struct {
+	EmbeddedHeader
+	Val int64
 }
 
 // SampleServiceStub represents the client/stub for SampleService.

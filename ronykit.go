@@ -13,7 +13,9 @@ type Bundle interface {
 	Shutdown(ctx context.Context) error
 	// Register registers the route in the Bundle. This is how Bundle get information
 	// about the services and their contracts.
-	Register(serviceName, contractID string, sel RouteSelector, input Message)
+	Register(
+		serviceName, contractID string, enc Encoding, sel RouteSelector, input Message,
+	)
 }
 
 type (
