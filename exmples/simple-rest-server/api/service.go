@@ -9,7 +9,6 @@ import (
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 	"github.com/clubpay/ronykit/std/gateway/fastws"
-	"github.com/goccy/go-reflect"
 )
 
 type Sample struct{}
@@ -100,9 +99,8 @@ func EchoHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*dto.EchoRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(
-				dto.Err("E01", fmt.Sprintf("Request was not echoRequest: %s", reflect.TypeOf(ctx.In().GetMsg()))),
-			).Send()
+			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
+			Send()
 
 		return
 	}
@@ -123,7 +121,7 @@ func SumHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(dto.Err("E01", "Request was not echoRequest")).
+			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
 			Send()
 
 		return
@@ -145,7 +143,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
 	if !ok {
 		ctx.Out().
-			SetMsg(dto.Err("E01", "Request was not echoRequest")).
+			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
 			Send()
 
 		return
@@ -154,7 +152,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 	rc, ok := ctx.Conn().(ronykit.RESTConn)
 	if !ok {
 		ctx.Out().
-			SetMsg(dto.Err("E01", "Only supports REST requests")).
+			SetMsg(dto.Err(http.StatusBadRequest, "Only supports REST requests")).
 			Send()
 
 		return
@@ -173,7 +171,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 		)
 	default:
 		ctx.Out().
-			SetMsg(dto.Err("E01", "Unsupported method")).
+			SetMsg(dto.Err(http.StatusBadRequest, "Unsupported method")).
 			Send()
 
 		return

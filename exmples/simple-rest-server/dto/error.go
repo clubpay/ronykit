@@ -1,30 +1,27 @@
 package dto
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/clubpay/ronykit"
-	"github.com/goccy/go-json"
-)
-
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"msg"`
+type ErrorMessage struct {
+	Code int    `json:"code"`
+	Item string `json:"item"`
 }
 
-var _ ronykit.ErrorMessage = (*Error)(nil)
-
-func (e *Error) Error() string {
-	return fmt.Sprintf("%s:%s", e.Code, e.Message)
+func (e ErrorMessage) GetCode() int {
+	return e.Code
 }
 
-func (e *Error) Marshal() ([]byte, error) {
-	return json.Marshal(e)
+func (e ErrorMessage) GetItem() string {
+	return e.Item
 }
 
-func Err(code, msg string) *Error {
-	return &Error{
-		Code:    code,
-		Message: msg,
+func (e ErrorMessage) Error() string {
+	return fmt.Sprintf("%d:%s", e.Code, e.Item)
+}
+
+func Err(code int, item string) ErrorMessage {
+	return ErrorMessage{
+		Code: code,
+		Item: item,
 	}
 }

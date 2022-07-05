@@ -102,6 +102,8 @@ func (rm *RawMessage) Copy(in []byte) {
 
 // ErrorMessage is a special kind of Message which is also an error.
 type ErrorMessage interface {
+	GetCode() int
+	GetItem() string
 	Message
 	error
 }

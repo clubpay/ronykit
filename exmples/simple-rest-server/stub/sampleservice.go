@@ -1,6 +1,10 @@
 package sampleservicestub
 
 import (
+	"context"
+	"net/http"
+
+	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
 )
 
@@ -64,16 +68,39 @@ func (s SampleServiceStub) Echo(req *EchoRequest) {
 		AutoRun("/echo/:randomID", req)
 }
 
-func (s SampleServiceStub) Sum1(req *SumRequest) {
-	s.s.REST().
+func (s SampleServiceStub) Sum1(req *SumRequest) (*SumResponse, error) {
+	res := &SumResponse{}
+	err := s.s.REST().
 		SetMethod("GET").
-		DefaultResponseHandler(nil).
-		AutoRun("/sum/:val1/:val2", req)
+		SetResponseHandler(
+			http.StatusOK,
+			func(ctx context.Context, r stub.RESTResponse) error {
+				return ronykit.UnmarshalMessage(r.GetBody(), res)
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) error {
+				return nil
+			},
+		).
+		AutoRun("/sum/:val1/:val2", req).
+		Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s SampleServiceStub) Sum2(req *SumRequest) {
 	s.s.REST().
 		SetMethod("POST").
+		SetResponseHandler(
+			http.StatusOK,
+			func(ctx context.Context, r stub.RESTResponse) error {
+				return nil
+			},
+		).
 		DefaultResponseHandler(nil).
 		AutoRun("/sum", req)
 }

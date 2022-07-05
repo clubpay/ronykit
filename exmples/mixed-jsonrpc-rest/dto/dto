@@ -1,9 +1,4 @@
-package msg
-
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
+package dto
 
 type EchoRequest struct {
 	RandomID int64 `json:"randomId" paramName:"randomID"`

@@ -101,9 +101,12 @@ func (b *bundle) registerRPC(
 ) {
 	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
 	if !ok {
+		// this selector is not an RPCRouteSelector then we return with no
+		// extra action taken.
 		return
 	}
 
+	// We don't accept selector with empty Predicate for the obvious reason.
 	if rpcSelector.GetPredicate() == "" {
 		return
 	}

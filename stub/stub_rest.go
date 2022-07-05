@@ -158,4 +158,6 @@ func (hc *restClientCtx) DumpRequest() string {
 //	  "json",
 //	  &Request{ID: 10, Name: "customName"},
 // )
-func (hc *restClientCtx) AutoRun(route string, m ronykit.Message) {}
+func (hc *restClientCtx) AutoRun(route string, m ronykit.Message) *restClientCtx {
+	return hc
+}
