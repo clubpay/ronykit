@@ -22,10 +22,12 @@ func NewSample() *Sample {
 
 func (x *Sample) Desc() *desc.Service {
 	return desc.NewService("SampleService").
+		SetEncoding(ronykit.JSON).
 		AddContract(
 			desc.NewContract().
 				SetName("Echo").
 				SetInput(&dto.EchoRequest{}).
+				SetOutput(&dto.EchoResponse{}).
 				AddNamedSelector(
 					"Echo",
 					fasthttp.Selector{
@@ -49,6 +51,7 @@ func (x *Sample) Desc() *desc.Service {
 			desc.NewContract().
 				SetName("Sum").
 				SetInput(&dto.SumRequest{}).
+				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"Sum1",
 					fasthttp.Selector{
@@ -68,6 +71,7 @@ func (x *Sample) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.SumRequest{}).
+				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"SumRedirect",
 					fasthttp.Selector{

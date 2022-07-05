@@ -89,12 +89,16 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (b *bundle) Register(svcName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
-	b.registerRPC(svcName, contractID, sel, input)
-	b.registerREST(svcName, contractID, sel, input)
+func (b *bundle) Register(
+	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
+	b.registerRPC(svcName, contractID, enc, sel, input)
+	b.registerREST(svcName, contractID, enc, sel, input)
 }
 
-func (b *bundle) registerRPC(svcName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (b *bundle) registerRPC(
+	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
 	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
 	if !ok {
 		return
@@ -114,7 +118,9 @@ func (b *bundle) registerRPC(svcName, contractID string, sel ronykit.RouteSelect
 	b.wsRoutes[rd.Predicate] = rd
 }
 
-func (b *bundle) registerREST(svcName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (b *bundle) registerREST(
+	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
 	restSelector, ok := sel.(ronykit.RESTRouteSelector)
 	if !ok {
 		return
@@ -126,7 +132,7 @@ func (b *bundle) registerREST(svcName, contractID string, sel ronykit.RouteSelec
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
 	if !ok || decoder == nil {
-		decoder = reflectDecoder(ronykit.CreateMessageFactory(input))
+		decoder = reflectDecoder(enc, ronykit.CreateMessageFactory(input))
 	}
 
 	b.httpMux.Handle(

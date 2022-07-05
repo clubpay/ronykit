@@ -33,7 +33,6 @@ func main() {
 				fasthttp.WithCORS(fasthttp.CORSConfig{}),
 				fasthttp.WithWebsocketEndpoint("/ws"),
 				fasthttp.WithPredicateKey("cmd"),
-				fasthttp.WithReflectTag("json"),
 			),
 		),
 		desc.Register(api.NewSample()),

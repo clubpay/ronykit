@@ -47,7 +47,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 			SetPath("/json").
 			SetQuery("someKey", "someValue").
 			DefaultResponseHandler(
-				func(_ context.Context, r stub.RESTResponse) {
+				func(_ context.Context, r stub.RESTResponse) error {
 					switch r.StatusCode() {
 					case http.StatusOK:
 						v := &ipInfoResponse{}
@@ -57,6 +57,8 @@ var _ = Describe("Stub Basic Functionality", func() {
 					default:
 						Expect(r.StatusCode()).To(Equal(http.StatusOK))
 					}
+
+					return nil
 				},
 			).
 			Run(ctx)

@@ -11,4 +11,5 @@ linters:
     - godox
     - nonamedreturns
     - testpackage
+    - tagliatelle
   fast: true

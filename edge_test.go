@@ -68,7 +68,9 @@ func (t testGateway) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 	}, nil
 }
 
-func (t testGateway) Register(serviceName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (t testGateway) Register(
+	serviceName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
 }
 
 var _ = Describe("EdgeServer", func() {

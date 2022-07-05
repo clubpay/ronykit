@@ -7,7 +7,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type RESTResponseHandler func(ctx context.Context, r RESTResponse)
+type RESTResponseHandler func(ctx context.Context, r RESTResponse) error
 
 type RESTResponse interface {
 	StatusCode() int
@@ -68,9 +68,9 @@ func (hc *restClientCtx) Run(ctx context.Context) *restClientCtx {
 	statusCode := hc.res.StatusCode()
 	if hc.err == nil {
 		if h, ok := hc.handlers[statusCode]; ok {
-			h(ctx, hc)
+			hc.err = h(ctx, hc)
 		} else if hc.defaultHandler != nil {
-			hc.defaultHandler(ctx, hc)
+			hc.err = hc.defaultHandler(ctx, hc)
 		}
 	}
 

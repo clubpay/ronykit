@@ -59,7 +59,9 @@ func MustNew(opts ...Option) *bundle {
 	return b
 }
 
-func (b *bundle) Register(svcName, contractID string, sel ronykit.RouteSelector, input ronykit.Message) {
+func (b *bundle) Register(
+	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+) {
 	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
 	if !ok {
 		return
