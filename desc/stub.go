@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit"
 )
 
+// DTO represents the description of Data Object Transfer of the Stub
 type DTO struct {
 	Comments []string
 	Name     string
@@ -14,6 +15,15 @@ type DTO struct {
 	Fields   []DTOField
 }
 
+// ErrorDTO represents the description of a special DTO which represents error
+// response for the Stub
+type ErrorDTO struct {
+	Code  int
+	Item  string
+	Error string
+}
+
+// DTOField represents description of a field of the DTO
 type DTOField struct {
 	Name     string
 	Type     string
@@ -22,11 +32,13 @@ type DTOField struct {
 	Tags     []DTOFieldTag
 }
 
+// DTOFieldTag represents description of a tag of the DTOField
 type DTOFieldTag struct {
 	Name  string
 	Value string
 }
 
+// RESTMethod represents description of a Contract with ronykit.RESTRouteSelector.
 type RESTMethod struct {
 	Name     string
 	Method   string
@@ -35,6 +47,7 @@ type RESTMethod struct {
 	Response []DTO
 }
 
+// RPCMethod represents description of a Contract with ronykit.RPCRouteSelector
 type RPCMethod struct {
 	Name      string
 	Predicate string
@@ -44,13 +57,15 @@ type RPCMethod struct {
 	ronykit.OutgoingRPCContainer
 }
 
+// Stub represents description of a stub of the service described by Service descriptor.
 type Stub struct {
-	tags  []string
-	Pkg   string
-	Name  string
-	DTOs  map[string]DTO
-	RESTs []RESTMethod
-	RPCs  []RPCMethod
+	tags      []string
+	Pkg       string
+	Name      string
+	DTOs      map[string]DTO
+	ErrorDTOs map[string]ErrorDTO
+	RESTs     []RESTMethod
+	RPCs      []RPCMethod
 }
 
 func newStub(tags ...string) *Stub {

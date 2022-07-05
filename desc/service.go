@@ -85,20 +85,7 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 
 // AddPossibleError sets the possible errors for this Contract. This is OPTIONAL parameter, which
 // mostly could be used by external tools such as Swagger or any other doc generator tools.
-// @Deprecated please use AddError instead.
-func (s *Service) AddPossibleError(code int, item string, m ronykit.Message) *Service {
-	s.PossibleErrors = append(s.PossibleErrors, Error{
-		Code:    code,
-		Item:    item,
-		Message: m,
-	})
-
-	return s
-}
-
-// AddError sets the possible errors for this Contract. This is OPTIONAL parameter, which
-// mostly could be used by external tools such as Swagger or any other doc generator tools.
-func (s *Service) AddError(err ronykit.ErrorMessage) *Service {
+func (s *Service) AddPossibleError(err ronykit.ErrorMessage) *Service {
 	s.PossibleErrors = append(
 		s.PossibleErrors,
 		Error{
