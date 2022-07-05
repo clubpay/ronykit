@@ -26,4 +26,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if res.RandomID != 1230 {
+		panic("random is not correct")
+	}
+
+	s2 := sampleservicestub.NewSampleServiceStub("127.0.0.1")
+	s2.Echo(
+		&sampleservicestub.EchoRequest{
+			RandomID: 1450,
+			Ok:       false,
+		},
+	)
 }

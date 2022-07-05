@@ -6,13 +6,13 @@ import (
 
 // EchoRequest is a data transfer object
 type EchoRequest struct {
-	RandomID int64 `json:"randomId"`
+	RandomID int64 `json:"randomID"`
 	Ok       bool  `json:"ok"`
 }
 
 // EchoResponse is a data transfer object
 type EchoResponse struct {
-	RandomID int64 `json:"randomId"`
+	RandomID int64 `json:"randomID"`
 	Ok       bool  `json:"ok"`
 }
 

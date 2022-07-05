@@ -18,3 +18,7 @@ func Generate(desc *desc.Stub) (string, error) {
 
 	return sb.String(), nil
 }
+
+func GenerateBundledPackage(desc ...*desc.Stub) (string, error) {
+	panic("implement me")
+}

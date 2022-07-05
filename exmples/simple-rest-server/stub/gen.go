@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
-	stubgengo "github.com/clubpay/ronykit/stub/go"
+	stubgengo "github.com/clubpay/ronykit/stub/gen/go"
 	"github.com/clubpay/ronykit/utils"
 )
 
