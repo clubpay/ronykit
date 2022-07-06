@@ -177,9 +177,11 @@ func (s Service) dtoStub(stub *Stub) error {
 		if err != nil {
 			return err
 		}
-		err = stub.addDTO(reflect.TypeOf(c.Output))
-		if err != nil {
-			return err
+		if c.Output != nil {
+			err = stub.addDTO(reflect.TypeOf(c.Output))
+			if err != nil {
+				return err
+			}
 		}
 
 		for _, pe := range s.PossibleErrors {

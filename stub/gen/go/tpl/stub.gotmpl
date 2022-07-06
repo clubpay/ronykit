@@ -51,18 +51,8 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 {{ range .RESTs }}
 {{$methodName := .Name}}
 {{- if ne $methodName "" }}
-{{$cannedResponse := lowerCamelCase (print "canned" $methodName "Response")}}
-type {{$cannedResponse}} struct {
-	{{ range .Response -}}
-	{{.Name}} *{{.Name}}
-	{{- end }}
-}
-func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) (*{{$cannedResponse}}, error){
-	res := {{$cannedResponse}}{
-		{{ range .Response -}}
-		{{.Name}}: &{{.Name}}{},
-		{{- end }}
-	}
+func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) (*{{.Response.Name}}, error){
+	res := &{{.Response.Name}}{}
 	err := s.s.REST().
 		SetMethod("{{.Method}}").
 		DefaultResponseHandler(nil).

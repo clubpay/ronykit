@@ -58,70 +58,58 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 	return s
 }
 
-type cannedEchoResponse struct {
-	EchoResponse *EchoResponse
-}
-
-func (s SampleServiceStub) Echo(req *EchoRequest) (cannedEchoResponse, error) {
-	res := cannedEchoResponse{
-		EchoResponse: &EchoResponse{},
-	}
+func (s SampleServiceStub) Echo(req *EchoRequest) (*EchoResponse, error) {
+	res := &EchoResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/echo/:randomID", ronykit.JSON, req).
 		Err()
-
-	return res, err
-}
-
-type cannedSum1Response struct {
-	SumResponse *SumResponse
-}
-
-func (s SampleServiceStub) Sum1(req *SumRequest) (cannedSum1Response, error) {
-	res := cannedSum1Response{
-		SumResponse: &SumResponse{},
+	if err != nil {
+		return nil, err
 	}
+
+	return res, nil
+}
+
+func (s SampleServiceStub) Sum1(req *SumRequest) (*SumResponse, error) {
+	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum/:val1/:val2", ronykit.JSON, req).
 		Err()
-
-	return res, err
-}
-
-type cannedSum2Response struct {
-	SumResponse *SumResponse
-}
-
-func (s SampleServiceStub) Sum2(req *SumRequest) (cannedSum2Response, error) {
-	res := cannedSum2Response{
-		SumResponse: &SumResponse{},
+	if err != nil {
+		return nil, err
 	}
+
+	return res, nil
+}
+
+func (s SampleServiceStub) Sum2(req *SumRequest) (*SumResponse, error) {
+	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("POST").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum", ronykit.JSON, req).
 		Err()
-
-	return res, err
-}
-
-type cannedSumRedirectResponse struct {
-	SumResponse *SumResponse
-}
-
-func (s SampleServiceStub) SumRedirect(req *SumRequest) (cannedSumRedirectResponse, error) {
-	res := cannedSumRedirectResponse{
-		SumResponse: &SumResponse{},
+	if err != nil {
+		return nil, err
 	}
+
+	return res, nil
+}
+
+func (s SampleServiceStub) SumRedirect(req *SumRequest) (*SumResponse, error) {
+	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
 		AutoRun("/sum-redirect/:val1/:val2", ronykit.JSON, req).
 		Err()
+	if err != nil {
+		return nil, err
+	}
 
-	return res, err
+	return res, nil
 }
