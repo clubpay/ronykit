@@ -32,14 +32,8 @@ func (s *Sample) Desc() *desc.Service {
 }
 
 func echoHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*dto.EchoRequest)
-	if !ok {
-		ctx.Out().
-			SetMsg(ronykit.RawMessage("Request was not echoRequest")).
-			Send()
-
-		return
-	}
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
 	ctx.Out().
 		SetHdr("cmd", ctx.In().GetHdr("cmd")).

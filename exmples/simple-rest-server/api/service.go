@@ -96,14 +96,8 @@ func (x *Sample) Desc() *desc.Service {
 }
 
 func EchoHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*dto.EchoRequest)
-	if !ok {
-		ctx.Out().
-			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
-			Send()
-
-		return
-	}
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
 	ctx.Out().
 		SetHdr("Content-Type", "application/json").
@@ -118,14 +112,8 @@ func EchoHandler(ctx *ronykit.Context) {
 }
 
 func SumHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
-	if !ok {
-		ctx.Out().
-			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
-			Send()
-
-		return
-	}
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(*dto.SumRequest)
 
 	ctx.Out().
 		SetHdr("Content-Type", "application/json").
@@ -140,14 +128,8 @@ func SumHandler(ctx *ronykit.Context) {
 }
 
 func SumRedirectHandler(ctx *ronykit.Context) {
-	req, ok := ctx.In().GetMsg().(*dto.SumRequest)
-	if !ok {
-		ctx.Out().
-			SetMsg(dto.Err(http.StatusBadRequest, "Request was not echoRequest")).
-			Send()
-
-		return
-	}
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(*dto.SumRequest)
 
 	rc, ok := ctx.Conn().(ronykit.RESTConn)
 	if !ok {
