@@ -124,9 +124,7 @@ func (s Service) Generate() ronykit.Service {
 	var index int64 = 0
 	for _, c := range s.Contracts {
 		reflector.Register(c.Input)
-		for _, output := range c.Outputs {
-			reflector.Register(output)
-		}
+		reflector.Register(c.Output)
 
 		index++
 
@@ -179,12 +177,9 @@ func (s Service) dtoStub(stub *Stub) error {
 		if err != nil {
 			return err
 		}
-
-		for _, out := range c.Outputs {
-			err = stub.addDTO(reflect.TypeOf(out))
-			if err != nil {
-				return err
-			}
+		err = stub.addDTO(reflect.TypeOf(c.Output))
+		if err != nil {
+			return err
 		}
 
 		for _, pe := range s.PossibleErrors {
@@ -213,10 +208,8 @@ func (s Service) rpcStub(stub *Stub) error {
 				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 					m.Request = dto
 				}
-				for _, out := range c.Outputs {
-					if dto, ok := stub.getDTO(reflect.TypeOf(out)); ok {
-						m.Response = append(m.Response, dto)
-					}
+				if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+					m.Response = dto
 				}
 			}
 		}
@@ -241,11 +234,10 @@ func (s Service) restStub(stub *Stub) error {
 				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 					m.Request = dto
 				}
-				for _, out := range c.Outputs {
-					if dto, ok := stub.getDTO(reflect.TypeOf(out)); ok {
-						m.Response = append(m.Response, dto)
-					}
+				if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+					m.Response = dto
 				}
+
 				stub.RESTs = append(stub.RESTs, m)
 			}
 		}

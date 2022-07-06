@@ -51,11 +51,28 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 {{ range .RESTs }}
 {{$methodName := .Name}}
 {{- if ne $methodName "" }}
-func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) {
-	s.s.REST().
+{{$cannedResponse := lowerCamelCase (print "canned" $methodName "Response")}}
+type {{$cannedResponse}} struct {
+	{{ range .Response -}}
+	{{.Name}} *{{.Name}}
+	{{- end }}
+}
+func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) (*{{$cannedResponse}}, error){
+	res := {{$cannedResponse}}{
+		{{ range .Response -}}
+		{{.Name}}: &{{.Name}}{},
+		{{- end }}
+	}
+	err := s.s.REST().
 		SetMethod("{{.Method}}").
 		DefaultResponseHandler(nil).
-		AutoRun("{{.Path}}", ronykit.JSON, req)
+		AutoRun("{{.Path}}", ronykit.JSON, req).
+		Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 {{ end }}
 {{- end }}

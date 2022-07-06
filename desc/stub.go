@@ -36,7 +36,7 @@ type RESTMethod struct {
 	Method   string
 	Path     string
 	Request  DTO
-	Response []DTO
+	Response DTO
 }
 
 // RPCMethod represents description of a Contract with ronykit.RPCRouteSelector
@@ -44,7 +44,7 @@ type RPCMethod struct {
 	Name      string
 	Predicate string
 	Request   DTO
-	Response  []DTO
+	Response  DTO
 	ronykit.IncomingRPCContainer
 	ronykit.OutgoingRPCContainer
 }

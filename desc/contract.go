@@ -13,7 +13,7 @@ type Contract struct {
 	EdgeSelector   ronykit.EdgeSelectorFunc
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
-	Outputs        []ronykit.Message
+	Output         ronykit.Message
 	PossibleErrors []Error
 }
 
@@ -48,8 +48,8 @@ func (c *Contract) SetInput(m ronykit.Message) *Contract {
 
 // SetOutput sets the outgoing message for this Contract. This is an OPTIONAL parameter, which
 // mostly could be used by external tools such as Swagger or any other doc generator tools.
-func (c *Contract) SetOutput(m ...ronykit.Message) *Contract {
-	c.Outputs = m
+func (c *Contract) SetOutput(m ronykit.Message) *Contract {
+	c.Output = m
 
 	return c
 }

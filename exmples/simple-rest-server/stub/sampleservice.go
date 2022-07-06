@@ -58,30 +58,70 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 	return s
 }
 
-func (s SampleServiceStub) Echo(req *EchoRequest) {
-	s.s.REST().
-		SetMethod("GET").
-		DefaultResponseHandler(nil).
-		AutoRun("/echo/:randomID", ronykit.JSON, req)
+type cannedEchoResponse struct {
+	EchoResponse *EchoResponse
 }
 
-func (s SampleServiceStub) Sum1(req *SumRequest) {
-	s.s.REST().
+func (s SampleServiceStub) Echo(req *EchoRequest) (cannedEchoResponse, error) {
+	res := cannedEchoResponse{
+		EchoResponse: &EchoResponse{},
+	}
+	err := s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
-		AutoRun("/sum/:val1/:val2", ronykit.JSON, req)
+		AutoRun("/echo/:randomID", ronykit.JSON, req).
+		Err()
+
+	return res, err
 }
 
-func (s SampleServiceStub) Sum2(req *SumRequest) {
-	s.s.REST().
+type cannedSum1Response struct {
+	SumResponse *SumResponse
+}
+
+func (s SampleServiceStub) Sum1(req *SumRequest) (cannedSum1Response, error) {
+	res := cannedSum1Response{
+		SumResponse: &SumResponse{},
+	}
+	err := s.s.REST().
+		SetMethod("GET").
+		DefaultResponseHandler(nil).
+		AutoRun("/sum/:val1/:val2", ronykit.JSON, req).
+		Err()
+
+	return res, err
+}
+
+type cannedSum2Response struct {
+	SumResponse *SumResponse
+}
+
+func (s SampleServiceStub) Sum2(req *SumRequest) (cannedSum2Response, error) {
+	res := cannedSum2Response{
+		SumResponse: &SumResponse{},
+	}
+	err := s.s.REST().
 		SetMethod("POST").
 		DefaultResponseHandler(nil).
-		AutoRun("/sum", ronykit.JSON, req)
+		AutoRun("/sum", ronykit.JSON, req).
+		Err()
+
+	return res, err
 }
 
-func (s SampleServiceStub) SumRedirect(req *SumRequest) {
-	s.s.REST().
+type cannedSumRedirectResponse struct {
+	SumResponse *SumResponse
+}
+
+func (s SampleServiceStub) SumRedirect(req *SumRequest) (cannedSumRedirectResponse, error) {
+	res := cannedSumRedirectResponse{
+		SumResponse: &SumResponse{},
+	}
+	err := s.s.REST().
 		SetMethod("GET").
 		DefaultResponseHandler(nil).
-		AutoRun("/sum-redirect/:val1/:val2", ronykit.JSON, req)
+		AutoRun("/sum-redirect/:val1/:val2", ronykit.JSON, req).
+		Err()
+
+	return res, err
 }
