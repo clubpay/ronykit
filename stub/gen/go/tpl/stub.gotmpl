@@ -21,6 +21,7 @@ type {{.Name}} struct {
 package {{.Pkg}}
 
 import (
+	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
 )
 
@@ -54,7 +55,7 @@ func (s {{$serviceName}}Stub) {{$methodName}}(req *{{.Request.Name}}) {
 	s.s.REST().
 		SetMethod("{{.Method}}").
 		DefaultResponseHandler(nil).
-		AutoRun("{{.Path}}", req)
+		AutoRun("{{.Path}}", ronykit.JSON, req)
 }
 {{ end }}
 {{- end }}

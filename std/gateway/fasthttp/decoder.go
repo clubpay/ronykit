@@ -59,17 +59,16 @@ func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) De
 	default:
 	}
 
-	tagKey := "json"
-	switch enc {
-	case ronykit.JSON:
-	case ronykit.Proto:
-	default:
-		if enc.Tag() != "" {
-			tagKey = enc.Tag()
-		}
+	tagKey := enc.Tag()
+	if tagKey == "" {
+		tagKey = ronykit.JSON.Tag()
 	}
 
-	rVal := reflect.Indirect(reflect.ValueOf(factory()))
+	rVal := reflect.ValueOf(factory())
+	if rVal.Kind() != reflect.Ptr {
+		panic("x must be a pointer to struct")
+	}
+	rVal = rVal.Elem()
 	if rVal.Kind() != reflect.Struct {
 		panic("x must be a pointer to struct")
 	}

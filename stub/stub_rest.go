@@ -3,6 +3,7 @@ package stub
 import (
 	"context"
 	"io"
+	"net/http"
 
 	"github.com/clubpay/ronykit"
 	"github.com/valyala/fasthttp"
@@ -35,6 +36,41 @@ func (hc *restClientCtx) SetMethod(method string) *restClientCtx {
 
 func (hc *restClientCtx) SetPath(path string) *restClientCtx {
 	hc.uri.SetPath(path)
+
+	return hc
+}
+
+func (hc *restClientCtx) GET(path string) *restClientCtx {
+	hc.SetMethod(http.MethodGet)
+	hc.SetPath(path)
+
+	return hc
+}
+
+func (hc *restClientCtx) POST(path string) *restClientCtx {
+	hc.SetMethod(http.MethodPost)
+	hc.SetPath(path)
+
+	return hc
+}
+
+func (hc *restClientCtx) PUT(path string) *restClientCtx {
+	hc.SetMethod(http.MethodPut)
+	hc.SetPath(path)
+
+	return hc
+}
+
+func (hc *restClientCtx) PATCH(path string) *restClientCtx {
+	hc.SetMethod(http.MethodPatch)
+	hc.SetPath(path)
+
+	return hc
+}
+
+func (hc *restClientCtx) OPTIONS(path string) *restClientCtx {
+	hc.SetMethod(http.MethodOptions)
+	hc.SetPath(path)
 
 	return hc
 }
@@ -167,6 +203,6 @@ func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 //	  "json",
 //	  &Request{ID: 10, Name: "customName"},
 // )
-func (hc *restClientCtx) AutoRun(route string, m ronykit.Message) *restClientCtx {
+func (hc *restClientCtx) AutoRun(route string, enc ronykit.Encoding, m ronykit.Message) *restClientCtx {
 	return hc
 }
