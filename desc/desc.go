@@ -12,5 +12,4 @@ type Error struct {
 	Code    int
 	Item    string
 	Message ronykit.Message
-	Desc    string
 }

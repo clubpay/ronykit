@@ -2,6 +2,7 @@ package stub
 
 import (
 	"context"
+	"io"
 
 	"github.com/clubpay/ronykit"
 	"github.com/valyala/fasthttp"
@@ -130,11 +131,13 @@ func (hc *restClientCtx) DefaultResponseHandler(h RESTResponseHandler) *restClie
 }
 
 func (hc *restClientCtx) DumpResponse() string {
-	if hc.err != nil {
-		return hc.err.Error()
-	}
-
 	return hc.res.String()
+}
+
+func (hc *restClientCtx) DumpResponseTo(w io.Writer) *restClientCtx {
+	_, _ = hc.res.WriteTo(w)
+
+	return hc
 }
 
 func (hc *restClientCtx) DumpRequest() string {
@@ -143,6 +146,12 @@ func (hc *restClientCtx) DumpRequest() string {
 	}
 
 	return hc.req.String()
+}
+
+func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
+	_, _ = hc.req.WriteTo(w)
+
+	return hc
 }
 
 // AutoRun is a helper method, which fills the request based on the input arguments.

@@ -97,7 +97,7 @@ func (b *bundle) Register(
 }
 
 func (b *bundle) registerRPC(
-	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+	svcName, contractID string, _ ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
 ) {
 	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
 	if !ok {

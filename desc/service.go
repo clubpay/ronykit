@@ -83,16 +83,30 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 	return s
 }
 
-// AddPossibleError sets the possible errors for this Contract. This is OPTIONAL parameter, which
-// mostly could be used by external tools such as Swagger or any other doc generator tools.
-func (s *Service) AddPossibleError(err ronykit.ErrorMessage) *Service {
+// AddPossibleError sets the possible errors for all the Contracts of this Service.
+// Using this method is OPTIONAL, which mostly could be used by external tools such as
+// Swagger or any other doc generator tools.
+// @Deprecated use AddError instead.
+func (s *Service) AddPossibleError(code int, item string, m ronykit.Message) *Service {
+	s.PossibleErrors = append(s.PossibleErrors, Error{
+		Code:    code,
+		Item:    item,
+		Message: m,
+	})
+
+	return s
+}
+
+// AddError sets the possible errors for all the Contracts of this Service.
+// Using this method is OPTIONAL, which mostly could be used by external tools such as
+// Swagger or any other doc generator tools.
+func (s *Service) AddError(err ronykit.ErrorMessage) *Service {
 	s.PossibleErrors = append(
 		s.PossibleErrors,
 		Error{
 			Code:    err.GetCode(),
 			Item:    err.GetItem(),
 			Message: err,
-			Desc:    err.Error(),
 		},
 	)
 
@@ -144,6 +158,10 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	stub.Pkg = pkgName
 	stub.Name = s.Name
 
+	if err := s.dtoStub(stub); err != nil {
+		return nil, err
+	}
+
 	if err := s.restStub(stub); err != nil {
 		return nil, err
 	}
@@ -155,12 +173,13 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	return stub, nil
 }
 
-func (s Service) rpcStub(stub *Stub) error {
+func (s Service) dtoStub(stub *Stub) error {
 	for _, c := range s.Contracts {
 		err := stub.addDTO(reflect.TypeOf(c.Input))
 		if err != nil {
 			return err
 		}
+
 		for _, out := range c.Outputs {
 			err = stub.addDTO(reflect.TypeOf(out))
 			if err != nil {
@@ -168,6 +187,19 @@ func (s Service) rpcStub(stub *Stub) error {
 			}
 		}
 
+		for _, pe := range s.PossibleErrors {
+			err = stub.addDTO(reflect.TypeOf(pe.Message))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s Service) rpcStub(stub *Stub) error {
+	for _, c := range s.Contracts {
 		for idx, rs := range c.RouteSelectors {
 			if c.routeNames[idx] == "" {
 				// We don't write description for no-named selectors.
@@ -195,17 +227,6 @@ func (s Service) rpcStub(stub *Stub) error {
 
 func (s Service) restStub(stub *Stub) error {
 	for _, c := range s.Contracts {
-		err := stub.addDTO(reflect.TypeOf(c.Input))
-		if err != nil {
-			return err
-		}
-		for _, out := range c.Outputs {
-			err = stub.addDTO(reflect.TypeOf(out))
-			if err != nil {
-				return err
-			}
-		}
-
 		for idx, rs := range c.RouteSelectors {
 			if c.routeNames[idx] == "" {
 				// We don't write description for no-named selectors.

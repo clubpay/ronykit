@@ -15,14 +15,6 @@ type DTO struct {
 	Fields   []DTOField
 }
 
-// ErrorDTO represents the description of a special DTO which represents error
-// response for the Stub
-type ErrorDTO struct {
-	Code  int
-	Item  string
-	Error string
-}
-
 // DTOField represents description of a field of the DTO
 type DTOField struct {
 	Name     string
@@ -59,13 +51,12 @@ type RPCMethod struct {
 
 // Stub represents description of a stub of the service described by Service descriptor.
 type Stub struct {
-	tags      []string
-	Pkg       string
-	Name      string
-	DTOs      map[string]DTO
-	ErrorDTOs map[string]ErrorDTO
-	RESTs     []RESTMethod
-	RPCs      []RPCMethod
+	tags  []string
+	Pkg   string
+	Name  string
+	DTOs  map[string]DTO
+	RESTs []RESTMethod
+	RPCs  []RPCMethod
 }
 
 func newStub(tags ...string) *Stub {
