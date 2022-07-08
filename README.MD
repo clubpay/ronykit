@@ -18,10 +18,10 @@
 
 RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate
 components for each task, you are almost free to develop your API server using RPC (Proto/JSON/...), REST, GraphQL or even with your
-in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box.  
-In RonyKIT, I wanted to make it more flexible but still very performant. I will maintain two bundles one based on 
-[fasthttp](https://github.com/valyala/fasthttp)and the other provides only rpc over websocket based on two very fast 
-library [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
+in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box.
+In RonyKIT, I wanted to make it more flexible but still very performant. I will maintain two bundles one based on
+[fasthttp](https://github.com/valyala/fasthttp) and the other provides only rpc over websocket based on two very fast
+libraries [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
 can build your own Bundles. To have a better understanding of how it is going to work please check examples folder.
 in [simple-rest-server](examples/simple-rest-server) it shows a very simple hello world app.
 in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but use them with multiple formats like
@@ -61,8 +61,8 @@ import "github.com/clubpay/ronykit"
 package main
 
 import (
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
-	"github.com/clubpay/ronykit/std/bundle/fastws"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
 ```
 
@@ -70,48 +70,11 @@ import (
 
 You can find some sample codes in the [Examples](examples) folder.
 
-## Benchmark
-
-### Simple Echo
-
-We used wrk to benchmark Ronykit standard REST implementation vs Fiber which is fully optimized for REST
-
-RonyKit:
-
-```shell
-Running 10s test @ http://127.0.0.1
-  12 threads and 1000 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     7.29ms    3.14ms  59.07ms   90.42%
-    Req/Sec    11.43k     3.24k   84.19k    86.51%
-  Latency Distribution
-     50%    6.38ms
-     75%    7.92ms
-     90%   10.15ms
-     99%   16.60ms
-  1366429 requests in 10.10s, 366.22MB read
-  Socket errors: connect 0, read 3181, write 0, timeout 0
-Requests/sec: 135231.58
-Transfer/sec:     36.24MB
-```
-
-Fiber:
-
-```shell
-  12 threads and 1000 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    15.84ms    2.58ms  62.44ms   96.64%
-    Req/Sec     5.19k   787.51     5.85k    96.00%
-  619345 requests in 10.01s, 73.83MB read
-  Socket errors: connect 0, read 3235, write 0, timeout 0
-Requests/sec:  61844.21
-Transfer/sec:      7.37MB
-```
-
 ## Define Services and Contracts
 
-In RonyKIT you separate the description of your services and their contracts from the implementation code. For this we have a dedicated
-package [desc](desc) which you are encouraged to use it to describe your services.
+In RonyKIT you better to define the description of your services and their contracts using `desc` package,
+and it provides you many helper methods. Although you can create your concrete implementations of ronykit.Service
+and ronykit.Contract, but we strongly recommend you to use `desc` package.
 
 ### Define Service Descriptor
 
@@ -121,35 +84,33 @@ The following code demonstrates the steps you need to take to register your serv
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"syscall"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
-	"github.com/clubpay/ronykit/std/bundle/fasthttp"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
 
 type echoRequest struct {
-	RandomID int64 `json:"randomId" paramName:"randomID"`
-}
-
-func (e *echoRequest) Marshal() ([]byte, error) {
-	return json.Marshal(e)
+	RandomID int64 `json:"randomId"`
 }
 
 var serviceDesc = desc.NewService("yourServiceUniqueName").
-	Add(
+	AddContract(
 		desc.NewContract().
-			// Add the selector which this contract will be selected based of. Every bundle have its own selector 
-			// and here we use our std/fasthttp package. 
+			// Add the selector which this contract will be selected based of. Every bundle have its own selector
+			// and here we use our std/fasthttp package.
 			AddSelector(
 				fasthttp.Selector{
-                  Method: fasthttp.MethodGet,
-                  Path:   "/echo/:randomID",
-			    },
+					Method: fasthttp.MethodGet,
+					Path:   "/echo/:randomID",
+				},
 			).
 			// Define the input message, it defines the message your handler expects to receive.
 			SetInput(&echoRequest{}).
+			// Define the output message, it defines the message your handler expects to return.
 			SetOutput(&echoResponse{}).
 			// Set the handler which is going to handle this request.
 			SetHandler(echoHandler),
@@ -157,15 +118,13 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 
 func main() {
 	app := ronykit.NewServer(
-		ronykit.RegisterService(
-			serviceDesc.Generate(),
-		),
+		desc.Register(serviceDesc),
 	)
 
-	// Start the server 
-	app.Start()
-	
-	// Wait for signal to shutdown
-	app.Shutdown(syscall.SIGHUP)
+	// Start the server
+	app.Start(context.Background())
+
+	// Wait for signal to shut down
+	app.Shutdown(context.Background(), syscall.SIGHUP)
 }
 ```
