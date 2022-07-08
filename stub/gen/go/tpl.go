@@ -2,6 +2,7 @@ package stubgengo
 
 import (
 	_ "embed"
+	"strings"
 	"text/template"
 
 	"github.com/clubpay/ronykit/utils"
@@ -18,6 +19,10 @@ func init() {
 }
 
 var funcMaps = map[string]interface{}{
+	"toUpper":         strings.ToUpper,
+	"toLower":         strings.ToLower,
+	"toTitle":         strings.ToTitle,
+	"toUTF8":          strings.ToValidUTF8,
 	"lowerCamelCase":  utils.ToLowerCamel,
 	"camelCase":       utils.ToCamel,
 	"kebabCase":       utils.ToKebab,

@@ -239,6 +239,18 @@ func (s Service) restStub(stub *Stub) error {
 				if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
 					m.Response = dto
 				}
+				switch rrs.GetEncoding().Tag() {
+				case ronykit.JSON.Tag():
+					m.Encoding = "ronykit.JSON"
+				case ronykit.Proto.Tag():
+					m.Encoding = "ronykit.Proto"
+				case ronykit.MSG.Tag():
+					m.Encoding = "ronykit.MSG"
+				case "":
+					m.Encoding = "ronykit.JSON"
+				default:
+					m.Encoding = fmt.Sprintf("ronykit.CustomEncoding(%q)", rrs.GetEncoding().Tag())
+				}
 
 				stub.RESTs = append(stub.RESTs, m)
 			}

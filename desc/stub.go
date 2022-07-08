@@ -35,6 +35,7 @@ type RESTMethod struct {
 	Name     string
 	Method   string
 	Path     string
+	Encoding string
 	Request  DTO
 	Response DTO
 }
