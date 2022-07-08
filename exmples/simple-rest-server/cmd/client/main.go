@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	sampleservicestub "github.com/clubpay/ronykit/exmples/simple-rest-server/stub"
 	"github.com/clubpay/ronykit/stub"
@@ -30,7 +31,10 @@ func main() {
 	//nolint:forbidigo
 	fmt.Println("RESPONSE1: ", res1.Ok, res1.RandomID)
 
-	s2 := sampleservicestub.NewSampleServiceStub("127.0.0.1")
+	s2 := sampleservicestub.NewSampleServiceStub(
+		"127.0.0.1",
+		stub.DumpTo(os.Stdout),
+	)
 	res2, err := s2.Echo(
 		context.Background(),
 		&sampleservicestub.EchoRequest{

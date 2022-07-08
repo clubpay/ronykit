@@ -2,10 +2,12 @@ package reflector
 
 import (
 	"fmt"
-	"reflect"
+	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/clubpay/ronykit"
+	"github.com/goccy/go-reflect"
 )
 
 var (
@@ -13,24 +15,22 @@ var (
 	ErrNoField     = fmt.Errorf("field not exists")
 )
 
-var noObject = Object{}
-
 type Reflector struct {
 	tagName string
 
 	cacheMtx sync.RWMutex
-	cache    map[reflect.Type]*reflected
+	cache    map[reflect.Type]*Reflected
 }
 
 func New() *Reflector {
 	return &Reflector{
-		cache: map[reflect.Type]*reflected{},
+		cache: map[reflect.Type]*Reflected{},
 	}
 }
 
 // Register registers the message then reflector will be much faster. You should call
 // it concurrently.
-func Register(m ronykit.Message) {
+func Register(m ronykit.Message, tags ...string) {
 	if m == nil {
 		return
 	}
@@ -40,9 +40,7 @@ func Register(m ronykit.Message) {
 		return
 	}
 	mType := mVal.Type()
-	registered[mType] = &reflected{
-		obj: destruct(mVal),
-	}
+	registered[mType] = destruct(mType, tags...)
 }
 
 func getValue(m ronykit.Message) (reflect.Value, error) {
@@ -54,16 +52,20 @@ func getValue(m ronykit.Message) (reflect.Value, error) {
 	return mVal, nil
 }
 
-func destruct(mVal reflect.Value) map[string]FieldInfo {
-	mType := mVal.Type()
-	data := map[string]FieldInfo{}
+func destruct(mType reflect.Type, tags ...string) *Reflected {
+	r := &Reflected{
+		obj:   Fields{},
+		byTag: map[string]Fields{},
+		typ:   mType,
+	}
 
 	for i := 0; i < mType.NumField(); i++ {
 		ft := mType.Field(i)
-		if !ft.IsExported() {
+		if ft.PkgPath != "" {
 			continue
 		}
 		fi := FieldInfo{
+			idx:    i,
 			f:      ft,
 			name:   ft.Name,
 			offset: ft.Offset,
@@ -77,38 +79,43 @@ func destruct(mVal reflect.Value) map[string]FieldInfo {
 		default:
 			fi.unsafe = true
 		}
-		data[ft.Name] = fi
+
+		r.obj[fi.name] = fi
+		for _, t := range tags {
+			v, ok := ft.Tag.Lookup(t)
+			if !ok {
+				continue
+			}
+			i := strings.IndexFunc(v, unicode.IsPunct)
+			if i != -1 {
+				v = v[:i]
+			}
+			if r.byTag[t] == nil {
+				r.byTag[t] = Fields{}
+			}
+			r.byTag[t][v] = fi
+		}
 	}
 
-	return data
+	return r
 }
 
-func (r *Reflector) Load(m ronykit.Message) (Object, error) {
-	mVal, err := getValue(m)
-	if err != nil {
-		return noObject, err
-	}
-	mType := mVal.Type()
+func (r *Reflector) Load(m ronykit.Message, tags ...string) *Reflected {
+	mType := reflect.Indirect(reflect.ValueOf(m)).Type()
 	cachedData := registered[mType]
 	if cachedData == nil {
 		r.cacheMtx.RLock()
 		cachedData = r.cache[mType]
 		r.cacheMtx.RUnlock()
 		if cachedData == nil {
-			cachedData = &reflected{
-				obj: destruct(mVal),
-			}
+			cachedData = destruct(mType, tags...)
 			r.cacheMtx.Lock()
 			r.cache[mType] = cachedData
 			r.cacheMtx.Unlock()
 		}
 	}
 
-	return Object{
-		m:      m,
-		t:      mType,
-		fields: cachedData.obj,
-	}, nil
+	return cachedData
 }
 
 func (r *Reflector) Get(m ronykit.Message, fieldName string) (interface{}, error) {
@@ -121,7 +128,7 @@ func (r *Reflector) Get(m ronykit.Message, fieldName string) (interface{}, error
 	if !ok {
 		return nil, ErrNoField
 	}
-	if !f.IsExported() {
+	if f.PkgPath != "" {
 		return nil, ErrNotExported
 	}
 
@@ -137,7 +144,7 @@ func (r *Reflector) GetString(m ronykit.Message, fieldName string) (string, erro
 	if !ok {
 		return "", ErrNoField
 	}
-	if !f.IsExported() {
+	if f.PkgPath != "" {
 		return "", ErrNotExported
 	}
 
@@ -153,7 +160,7 @@ func (r *Reflector) GetInt(m ronykit.Message, fieldName string) (int64, error) {
 	if !ok {
 		return 0, ErrNoField
 	}
-	if !f.IsExported() {
+	if f.PkgPath != "" {
 		return 0, ErrNotExported
 	}
 

@@ -2,14 +2,14 @@ package reflector
 
 import (
 	"fmt"
-	"reflect"
 	"unsafe"
 
 	"github.com/clubpay/ronykit"
+	"github.com/goccy/go-reflect"
 )
 
 var (
-	registered          = map[reflect.Type]*reflected{}
+	registered          = map[reflect.Type]*Reflected{}
 	errInvalidFieldType = func(s string) error { return fmt.Errorf("the field type does not match: %s", s) }
 )
 
@@ -20,6 +20,7 @@ type emptyInterface struct {
 }
 
 type FieldInfo struct {
+	idx    int
 	f      reflect.StructField
 	name   string
 	offset uintptr
@@ -39,38 +40,40 @@ func (f FieldInfo) Type() reflect.StructField {
 	return f.f
 }
 
-type reflected struct {
-	obj map[string]FieldInfo
+type Fields map[string]FieldInfo
+
+func (fields Fields) Get(m ronykit.Message, fieldName string) interface{} {
+	fi := fields[fieldName]
+	mVal := reflect.Indirect(reflect.ValueOf(m)).Field(fi.idx)
+	switch fi.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return mVal.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return mVal.Int()
+	case reflect.String:
+		return mVal.String()
+	}
+
+	if !mVal.CanInterface() {
+		return nil
+	}
+
+	return mVal
 }
 
-type Object struct {
-	m      ronykit.Message
-	fields map[string]FieldInfo
-	enc    ronykit.Encoding
-	t      reflect.Type
-}
-
-func (o Object) Encoding() ronykit.Encoding {
-	return o.enc
-}
-
-func (o Object) Message() ronykit.Message {
-	return o.m
-}
-
-func (o Object) GetInt(fieldName string) (int, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetInt(m ronykit.Message, fieldName string) (int, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*int)(ptr), nil
 }
 
-func (o Object) GetIntDefault(fieldName string, def int) int {
-	v, err := o.GetInt(fieldName)
+func (fields Fields) GetIntDefault(m ronykit.Message, fieldName string, def int) int {
+	v, err := fields.GetInt(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -78,19 +81,19 @@ func (o Object) GetIntDefault(fieldName string, def int) int {
 	return v
 }
 
-func (o Object) GetUInt(fieldName string) (uint, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetUInt(m ronykit.Message, fieldName string) (uint, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*uint)(ptr), nil
 }
 
-func (o Object) GetUIntDefault(fieldName string, def uint) uint {
-	v, err := o.GetUInt(fieldName)
+func (fields Fields) GetUIntDefault(m ronykit.Message, fieldName string, def uint) uint {
+	v, err := fields.GetUInt(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -98,19 +101,19 @@ func (o Object) GetUIntDefault(fieldName string, def uint) uint {
 	return v
 }
 
-func (o Object) GetInt64(fieldName string) (int64, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetInt64(m ronykit.Message, fieldName string) (int64, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int64 {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*int64)(ptr), nil
 }
 
-func (o Object) GetInt64Default(fieldName string, def int64) int64 {
-	v, err := o.GetInt64(fieldName)
+func (fields Fields) GetInt64Default(m ronykit.Message, fieldName string, def int64) int64 {
+	v, err := fields.GetInt64(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -118,19 +121,19 @@ func (o Object) GetInt64Default(fieldName string, def int64) int64 {
 	return v
 }
 
-func (o Object) GetUInt64(fieldName string) (uint64, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetUInt64(m ronykit.Message, fieldName string) (uint64, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint64 {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*uint64)(ptr), nil
 }
 
-func (o Object) GetUInt64Default(fieldName string, def uint64) uint64 {
-	v, err := o.GetUInt64(fieldName)
+func (fields Fields) GetUInt64Default(m ronykit.Message, fieldName string, def uint64) uint64 {
+	v, err := fields.GetUInt64(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -138,19 +141,19 @@ func (o Object) GetUInt64Default(fieldName string, def uint64) uint64 {
 	return v
 }
 
-func (o Object) GetInt32(fieldName string) (int32, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetInt32(m ronykit.Message, fieldName string) (int32, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int32 {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*int32)(ptr), nil
 }
 
-func (o Object) GetInt32Default(fieldName string, def int32) int32 {
-	v, err := o.GetInt32(fieldName)
+func (fields Fields) GetInt32Default(m ronykit.Message, fieldName string, def int32) int32 {
+	v, err := fields.GetInt32(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -158,19 +161,19 @@ func (o Object) GetInt32Default(fieldName string, def int32) int32 {
 	return v
 }
 
-func (o Object) GetUInt32(fieldName string) (uint32, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetUInt32(m ronykit.Message, fieldName string) (uint32, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint32 {
 		return 0, errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*uint32)(ptr), nil
 }
 
-func (o Object) GetUInt32Default(fieldName string, def uint32) uint32 {
-	v, err := o.GetUInt32(fieldName)
+func (fields Fields) GetUInt32Default(m ronykit.Message, fieldName string, def uint32) uint32 {
+	v, err := fields.GetUInt32(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -178,19 +181,19 @@ func (o Object) GetUInt32Default(fieldName string, def uint32) uint32 {
 	return v
 }
 
-func (o Object) GetString(fieldName string) (string, error) {
-	fi := o.fields[fieldName]
+func (fields Fields) GetString(m ronykit.Message, fieldName string) (string, error) {
+	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.String {
 		return "", errInvalidFieldType(k.String())
 	}
 
-	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&o.m)).word, fi.offset)
+	ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&m)).word, fi.offset)
 
 	return *(*string)(ptr), nil
 }
 
-func (o Object) GetStringDefault(fieldName string, def string) string {
-	v, err := o.GetString(fieldName)
+func (fields Fields) GetStringDefault(m ronykit.Message, fieldName string, def string) string {
+	v, err := fields.GetString(m, fieldName)
 	if err != nil {
 		return def
 	}
@@ -198,12 +201,28 @@ func (o Object) GetStringDefault(fieldName string, def string) string {
 	return v
 }
 
-func (o Object) Type() reflect.Type {
-	return o.t
-}
-
-func (o Object) WalkFields(cb func(key string, f FieldInfo)) {
-	for k, f := range o.fields {
+func (fields Fields) WalkFields(cb func(key string, f FieldInfo)) {
+	for k, f := range fields {
 		cb(k, f)
 	}
+}
+
+type Reflected struct {
+	obj   Fields
+	byTag map[string]Fields
+	typ   reflect.Type
+}
+
+func (r Reflected) ByTag(t string) (Fields, bool) {
+	f, ok := r.byTag[t]
+
+	return f, ok
+}
+
+func (r Reflected) Obj() Fields {
+	return r.obj
+}
+
+func (r Reflected) Type() reflect.Type {
+	return r.typ
 }

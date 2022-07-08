@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"time"
 
+	"github.com/clubpay/ronykit/utils/reflector"
 	"github.com/valyala/fasthttp"
 )
 
@@ -11,6 +12,7 @@ type Stub struct {
 	cfg config
 
 	httpC fasthttp.Client
+	r     *reflector.Reflector
 }
 
 func New(hostPort string, opts ...Option) *Stub {
@@ -25,6 +27,7 @@ func New(hostPort string, opts ...Option) *Stub {
 
 	return &Stub{
 		cfg: cfg,
+		r:   reflector.New(),
 		httpC: fasthttp.Client{
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
@@ -38,6 +41,7 @@ func New(hostPort string, opts ...Option) *Stub {
 func (s *Stub) REST() *restClientCtx {
 	hc := &restClientCtx{
 		c:        &s.httpC,
+		r:        s.r,
 		handlers: map[int]RESTResponseHandler{},
 		uri:      fasthttp.AcquireURI(),
 		args:     fasthttp.AcquireArgs(),
@@ -52,6 +56,8 @@ func (s *Stub) REST() *restClientCtx {
 	}
 
 	hc.uri.SetHost(s.cfg.hostPort)
+	hc.DumpRequestTo(s.cfg.dumpReq)
+	hc.DumpResponseTo(s.cfg.dumpRes)
 
 	return hc
 }

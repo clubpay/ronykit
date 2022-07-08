@@ -1,6 +1,9 @@
 package stub
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 type Option func(cfg *config)
 
@@ -8,6 +11,8 @@ type config struct {
 	hostPort      string
 	secure        bool
 	skipVerifyTLS bool
+	dumpReq       io.Writer
+	dumpRes       io.Writer
 
 	readTimeout, writeTimeout time.Duration
 }
@@ -33,5 +38,12 @@ func WithReadTimeout(timeout time.Duration) Option {
 func WithWriteTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.writeTimeout = timeout
+	}
+}
+
+func DumpTo(w io.Writer) Option {
+	return func(cfg *config) {
+		cfg.dumpReq = w
+		cfg.dumpRes = w
 	}
 }

@@ -1,26 +1,28 @@
 package reflector_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
 	goreflect "github.com/goccy/go-reflect"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
+func TestReflector(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Reflector Suite")
+}
+
 type testMessage struct {
-	X string
-	Y int64
+	X string `json:"xTag"`
+	Y int64  `json:"yTag"`
 	z string
 	M map[string]string
 }
 
-func (t testMessage) Marshal() ([]byte, error) {
-	return nil, nil
-}
-
-func TestReflector(t *testing.T) {
+var _ = Describe("Reflector", func() {
 	r := reflector.New()
 	m := &testMessage{
 		X: "xValue",
@@ -28,26 +30,22 @@ func TestReflector(t *testing.T) {
 		z: "zValue",
 		M: nil,
 	}
-	t.Log(r.Get(m, "X"))
-}
+	rObj := r.Load(m, "json")
+	It("Load by Struct Fields", func() {
+		obj := rObj.Obj()
+		Expect(obj.GetStringDefault(m, "X", "")).To(Equal(m.X))
+		Expect(obj.GetInt64Default(m, "Y", 0)).To(Equal(m.Y))
+		Expect(obj.GetStringDefault(m, "z", "")).To(BeEmpty())
+	})
 
-func TestExtractInfo(t *testing.T) {
-	r := reflector.New()
-	m := &testMessage{
-		X: "xValue",
-		Y: 10,
-		z: "zValue",
-		M: nil,
-	}
-	obj, err := r.Load(m)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(reflect.Indirect(reflect.ValueOf(m)).Type().String())
-	t.Log(obj.GetInt64("Y"))
-	t.Log(obj.GetString("X"))
-	t.Log(obj.GetString("Z"))
-}
+	It("Load by JSON tag", func() {
+		byTag, ok := rObj.ByTag("json")
+		Expect(ok).To(BeTrue())
+		Expect(byTag.GetStringDefault(m, "xTag", "")).To(Equal(m.X))
+		Expect(byTag.GetInt64Default(m, "yTag", 0)).To(Equal(m.Y))
+		Expect(byTag.GetStringDefault(m, "z", "def")).To(Equal("def"))
+	})
+})
 
 /*
 
@@ -83,11 +81,8 @@ func benchUnsafe(b *testing.B) {
 		for pb.Next() {
 			t.X = utils.RandomID(5)
 
-			obj, err := r.Load(t)
-			if err != nil {
-				b.Fatal(err)
-			}
-			xR, err := obj.GetString("X")
+			obj := r.Load(t).Obj()
+			xR, err := obj.GetString(t, "X")
 			if err != nil {
 				b.Fatal(err)
 			}
@@ -106,11 +101,8 @@ func benchUnsafeRegistered(b *testing.B) {
 		for pb.Next() {
 			t.X = utils.RandomID(5)
 
-			obj, err := r.Load(t)
-			if err != nil {
-				b.Fatal(err)
-			}
-			xR, err := obj.GetString("X")
+			obj := r.Load(t).Obj()
+			xR, err := obj.GetString(t, "X")
 			if err != nil {
 				b.Fatal(err)
 			}

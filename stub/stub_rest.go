@@ -2,10 +2,12 @@ package stub
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils/reflector"
 	"github.com/valyala/fasthttp"
 )
 
@@ -19,13 +21,18 @@ type RESTResponse interface {
 
 type restClientCtx struct {
 	err            *Error
-	c              *fasthttp.Client
 	handlers       map[int]RESTResponseHandler
 	defaultHandler RESTResponseHandler
-	uri            *fasthttp.URI
-	args           *fasthttp.Args
-	req            *fasthttp.Request
-	res            *fasthttp.Response
+	r              *reflector.Reflector
+	dumpReq        io.Writer
+	dumpRes        io.Writer
+
+	// fasthttp entities
+	c    *fasthttp.Client
+	uri  *fasthttp.URI
+	args *fasthttp.Args
+	req  *fasthttp.Request
+	res  *fasthttp.Response
 }
 
 func (hc *restClientCtx) SetMethod(method string) *restClientCtx {
@@ -101,6 +108,13 @@ func (hc *restClientCtx) Run(ctx context.Context) *restClientCtx {
 	// execute the request
 	hc.err = WrapError(hc.c.Do(hc.req, hc.res))
 
+	if hc.dumpReq != nil {
+		_, _ = hc.req.WriteTo(hc.dumpReq)
+	}
+	if hc.dumpRes != nil {
+		_, _ = hc.res.WriteTo(hc.dumpRes)
+	}
+
 	// run the response handler if is set
 	statusCode := hc.res.StatusCode()
 	if hc.err == nil {
@@ -171,7 +185,7 @@ func (hc *restClientCtx) DumpResponse() string {
 }
 
 func (hc *restClientCtx) DumpResponseTo(w io.Writer) *restClientCtx {
-	_, _ = hc.res.WriteTo(w)
+	hc.dumpRes = w
 
 	return hc
 }
@@ -185,7 +199,7 @@ func (hc *restClientCtx) DumpRequest() string {
 }
 
 func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
-	_, _ = hc.req.WriteTo(w)
+	hc.dumpReq = w
 
 	return hc
 }
@@ -212,5 +226,22 @@ func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 func (hc *restClientCtx) AutoRun(
 	ctx context.Context, route string, enc ronykit.Encoding, m ronykit.Message,
 ) *restClientCtx {
-	return hc
+	ref := hc.r.Load(m, enc.Tag())
+	fields, ok := ref.ByTag(enc.Tag())
+	if !ok {
+		fields = ref.Obj()
+	}
+	path := fillParams(
+		route,
+		func(key string) string {
+			v := fields.Get(m, key)
+			if v == nil {
+				return ""
+			}
+
+			return fmt.Sprintf("%v", v)
+		},
+	)
+
+	return hc.SetPath(path).Run(ctx)
 }
