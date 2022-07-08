@@ -1,4 +1,4 @@
-package fasthttp
+package httpmux
 
 import (
 	"strings"
@@ -79,7 +79,7 @@ type node struct {
 	nType     nodeType
 	priority  uint32
 	children  []*node
-	handle    *routeData
+	handle    *RouteData
 }
 
 // Increments priority of the given child and reorders if necessary
@@ -108,7 +108,7 @@ func (n *node) incrementChildPrio(pos int) int {
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
 //nolint:gocognit
-func (n *node) addRoute(path string, handle *routeData) {
+func (n *node) addRoute(path string, handle *RouteData) {
 	fullPath := path
 	n.priority++
 
@@ -222,7 +222,7 @@ walk:
 	}
 }
 
-func (n *node) insertChild(path, fullPath string, handle *routeData) {
+func (n *node) insertChild(path, fullPath string, handle *RouteData) {
 	for {
 		// Find prefix until first wildcard
 		wildcard, i, valid := findWildcard(path)
@@ -334,7 +334,7 @@ func (n *node) insertChild(path, fullPath string, handle *routeData) {
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
 //nolint: gocyclo,gocognit
-func (n *node) getValue(path string, params func() *Params) (handle *routeData, ps *Params, tsr bool) {
+func (n *node) getValue(path string, params func() *Params) (handle *RouteData, ps *Params, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
 		prefix := n.path

@@ -199,10 +199,18 @@ func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 //		Name string `json:"name"`
 // }
 // AutoRun(
+//		context.Background(),
 //	  "/something/:id/:name",
-//	  "json",
+//	  ronykit.JSON,
 //	  &Request{ID: 10, Name: "customName"},
 // )
-func (hc *restClientCtx) AutoRun(route string, enc ronykit.Encoding, m ronykit.Message) *restClientCtx {
+//
+// Is equivalent to:
+//
+// SetPath("/something/10/customName").
+// Run(context.Background())
+func (hc *restClientCtx) AutoRun(
+	ctx context.Context, route string, enc ronykit.Encoding, m ronykit.Message,
+) *restClientCtx {
 	return hc
 }

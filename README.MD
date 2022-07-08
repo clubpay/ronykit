@@ -105,7 +105,7 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 			AddSelector(
 				fasthttp.Selector{
 					Method: fasthttp.MethodGet,
-					Path:   "/echo/:randomID",
+					Path:   "/echo/:randomId",
 				},
 			).
 			// Define the input message, it defines the message your handler expects to receive.

@@ -62,7 +62,7 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 	return s
 }
 
-func (s SampleServiceStub) Echo(req *EchoRequest) (*EchoResponse, *stub.Error) {
+func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoResponse, *stub.Error) {
 	res := &EchoResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
@@ -71,7 +71,7 @@ func (s SampleServiceStub) Echo(req *EchoRequest) (*EchoResponse, *stub.Error) {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun("/echo/:randomID", ronykit.JSON, req).
+		AutoRun(ctx, "/echo/:randomID", ronykit.JSON, req).
 		Err()
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (s SampleServiceStub) Echo(req *EchoRequest) (*EchoResponse, *stub.Error) {
 	return res, nil
 }
 
-func (s SampleServiceStub) Sum1(req *SumRequest) (*SumResponse, *stub.Error) {
+func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
@@ -89,7 +89,7 @@ func (s SampleServiceStub) Sum1(req *SumRequest) (*SumResponse, *stub.Error) {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun("/sum/:val1/:val2", ronykit.JSON, req).
+		AutoRun(ctx, "/sum/:val1/:val2", ronykit.JSON, req).
 		Err()
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (s SampleServiceStub) Sum1(req *SumRequest) (*SumResponse, *stub.Error) {
 	return res, nil
 }
 
-func (s SampleServiceStub) Sum2(req *SumRequest) (*SumResponse, *stub.Error) {
+func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("POST").
@@ -107,7 +107,7 @@ func (s SampleServiceStub) Sum2(req *SumRequest) (*SumResponse, *stub.Error) {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun("/sum", ronykit.JSON, req).
+		AutoRun(ctx, "/sum", ronykit.JSON, req).
 		Err()
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (s SampleServiceStub) Sum2(req *SumRequest) (*SumResponse, *stub.Error) {
 	return res, nil
 }
 
-func (s SampleServiceStub) SumRedirect(req *SumRequest) (*SumResponse, *stub.Error) {
+func (s SampleServiceStub) SumRedirect(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
@@ -125,7 +125,7 @@ func (s SampleServiceStub) SumRedirect(req *SumRequest) (*SumResponse, *stub.Err
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun("/sum-redirect/:val1/:val2", ronykit.JSON, req).
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", ronykit.JSON, req).
 		Err()
 	if err != nil {
 		return nil, err

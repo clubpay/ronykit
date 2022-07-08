@@ -9,6 +9,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
+	"github.com/clubpay/ronykit/internal/httpmux"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/fasthttp/websocket"
@@ -30,10 +31,10 @@ type bundle struct {
 	connPool sync.Pool
 	cors     *cors
 
-	httpMux *mux
+	httpMux *httpmux.Mux
 
 	wsUpgrade     websocket.FastHTTPUpgrader
-	wsRoutes      map[string]*routeData
+	wsRoutes      map[string]*httpmux.RouteData
 	wsEndpoint    string
 	predicateKey  string
 	rpcInFactory  ronykit.IncomingRPCFactory
@@ -44,13 +45,13 @@ var _ ronykit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (*bundle, error) {
 	r := &bundle{
-		httpMux: &mux{
+		httpMux: &httpmux.Mux{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
 		},
-		wsRoutes:      map[string]*routeData{},
+		wsRoutes:      map[string]*httpmux.RouteData{},
 		srv:           &fasthttp.Server{},
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
@@ -111,7 +112,7 @@ func (b *bundle) registerRPC(
 		return
 	}
 
-	rd := &routeData{
+	rd := &httpmux.RouteData{
 		ServiceName: svcName,
 		ContractID:  contractID,
 		Predicate:   rpcSelector.GetPredicate(),
@@ -140,7 +141,7 @@ func (b *bundle) registerREST(
 
 	b.httpMux.Handle(
 		restSelector.GetMethod(), restSelector.GetPath(),
-		&routeData{
+		&httpmux.RouteData{
 			ServiceName: svcName,
 			ContractID:  contractID,
 			Method:      restSelector.GetMethod(),
@@ -273,7 +274,7 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 		func(key, value []byte) {
 			params = append(
 				params,
-				Param{
+				httpmux.Param{
 					Key:   utils.B2S(key),
 					Value: utils.B2S(value),
 				},

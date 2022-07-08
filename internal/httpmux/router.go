@@ -1,4 +1,4 @@
-package fasthttp
+package httpmux
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/clubpay/ronykit"
 )
 
-type routeData struct {
+type RouteData struct {
 	Method      string
 	Path        string
 	Predicate   string
@@ -18,9 +18,9 @@ type routeData struct {
 	Factory     ronykit.MessageFactoryFunc
 }
 
-// mux is a http.Handler which can be used to dispatch requests to different
+// Mux is a http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes.
-type mux struct {
+type Mux struct {
 	trees map[string]*node
 
 	paramsPool sync.Pool
@@ -33,18 +33,18 @@ type mux struct {
 	// and 308 for all other request methods.
 	RedirectTrailingSlash bool
 
-	// If enabled, the mux tries to fix the current request path, if no
+	// If enabled, the Mux tries to fix the current request path, if no
 	// handle is registered for it.
 	// First superfluous path elements like ../ or // are removed.
-	// Afterwards the mux does a case-insensitive lookup of the cleaned path.
-	// If a handle can be found for this route, the mux makes a redirection
+	// Afterwards the Mux does a case-insensitive lookup of the cleaned path.
+	// If a handle can be found for this route, the Mux makes a redirection
 	// to the corrected path with status code 301 for GET requests and 308 for
 	// all other request methods.
 	// For example /FOO and /..//Foo could be redirected to /foo.
 	// RedirectTrailingSlash is independent of this option.
 	RedirectFixedPath bool
 
-	// If enabled, the mux checks if another Method is allowed for the
+	// If enabled, the Mux checks if another Method is allowed for the
 	// current route, if the current request can not be routed.
 	// If this is the case, the request is answered with 'Method Not Allowed'
 	// and HTTP status code 405.
@@ -52,7 +52,7 @@ type mux struct {
 	// handler.
 	HandleMethodNotAllowed bool
 
-	// If enabled, the mux automatically replies to OPTIONS requests.
+	// If enabled, the Mux automatically replies to OPTIONS requests.
 	// Custom OPTIONS handlers take priority over automatic replies.
 	HandleOPTIONS bool
 
@@ -84,51 +84,51 @@ type mux struct {
 	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 
-func (r *mux) getParams() *Params {
+func (r *Mux) getParams() *Params {
 	ps, _ := r.paramsPool.Get().(*Params)
 	*ps = (*ps)[0:0] // reset slice
 
 	return ps
 }
 
-func (r *mux) putParams(ps *Params) {
+func (r *Mux) putParams(ps *Params) {
 	if ps != nil {
 		r.paramsPool.Put(ps)
 	}
 }
 
 // GET is a shortcut for httpMux.Handle(http.MethodGet, path, handle).
-func (r *mux) GET(path string, handle *routeData) {
+func (r *Mux) GET(path string, handle *RouteData) {
 	r.Handle(http.MethodGet, path, handle)
 }
 
 // HEAD is a shortcut for httpMux.Handle(http.MethodHead, path, handle).
-func (r *mux) HEAD(path string, handle *routeData) {
+func (r *Mux) HEAD(path string, handle *RouteData) {
 	r.Handle(http.MethodHead, path, handle)
 }
 
 // OPTIONS is a shortcut for httpMux.Handle(http.MethodOptions, path, handle).
-func (r *mux) OPTIONS(path string, handle *routeData) {
+func (r *Mux) OPTIONS(path string, handle *RouteData) {
 	r.Handle(http.MethodOptions, path, handle)
 }
 
 // POST is a shortcut for httpMux.Handle(http.MethodPost, path, handle).
-func (r *mux) POST(path string, handle *routeData) {
+func (r *Mux) POST(path string, handle *RouteData) {
 	r.Handle(http.MethodPost, path, handle)
 }
 
 // PUT is a shortcut for httpMux.Handle(http.MethodPut, path, handle).
-func (r *mux) PUT(path string, handle *routeData) {
+func (r *Mux) PUT(path string, handle *RouteData) {
 	r.Handle(http.MethodPut, path, handle)
 }
 
 // PATCH is a shortcut for httpMux.Handle(http.MethodPatch, path, handle).
-func (r *mux) PATCH(path string, handle *routeData) {
+func (r *Mux) PATCH(path string, handle *RouteData) {
 	r.Handle(http.MethodPatch, path, handle)
 }
 
 // DELETE is a shortcut for httpMux.Handle(http.MethodDelete, path, handle).
-func (r *mux) DELETE(path string, handle *routeData) {
+func (r *Mux) DELETE(path string, handle *RouteData) {
 	r.Handle(http.MethodDelete, path, handle)
 }
 
@@ -140,7 +140,7 @@ func (r *mux) DELETE(path string, handle *routeData) {
 // This function is intended for bulk loading and to allow the usage of less
 // frequently used, non-standardized or custom methods (e.g. for internal
 // communication with a proxy).
-func (r *mux) Handle(method, path string, handle *routeData) {
+func (r *Mux) Handle(method, path string, handle *RouteData) {
 	varsCount := uint16(0)
 
 	if method == "" {
@@ -184,7 +184,7 @@ func (r *mux) Handle(method, path string, handle *routeData) {
 // If the path was found, it returns the handle function and the path parameter
 // values. Otherwise, the third return value indicates whether a redirection to
 // the same path with an extra / without the trailing slash should be performed.
-func (r *mux) Lookup(method, path string) (*routeData, Params, bool) {
+func (r *Mux) Lookup(method, path string) (*RouteData, Params, bool) {
 	if root := r.trees[method]; root != nil {
 		handle, ps, tsr := root.getValue(path, r.getParams)
 		if handle == nil {
@@ -202,7 +202,7 @@ func (r *mux) Lookup(method, path string) (*routeData, Params, bool) {
 	return nil, nil, false
 }
 
-func (r *mux) allowed(path, reqMethod string) (allow string) {
+func (r *Mux) allowed(path, reqMethod string) (allow string) {
 	allowed := make([]string, 0, 9)
 
 	//nolint:nestif
