@@ -54,19 +54,6 @@ func (c *Contract) SetOutput(m ronykit.Message) *Contract {
 	return c
 }
 
-// AddPossibleError sets the possible errors for this Contract. Using this method is OPTIONAL, which
-// mostly could be used by external tools such as Swagger or any other doc generator tools.
-// @Deprecated use AddError instead.
-func (c *Contract) AddPossibleError(code int, item string, m ronykit.Message) *Contract {
-	c.PossibleErrors = append(c.PossibleErrors, Error{
-		Code:    code,
-		Item:    item,
-		Message: m,
-	})
-
-	return c
-}
-
 // AddError sets the possible errors for this Contract. Using this method is OPTIONAL, which
 // mostly could be used by external tools such as Swagger or any other doc generator tools.
 func (c *Contract) AddError(err ronykit.ErrorMessage) *Contract {

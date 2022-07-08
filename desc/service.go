@@ -83,20 +83,6 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 	return s
 }
 
-// AddPossibleError sets the possible errors for all the Contracts of this Service.
-// Using this method is OPTIONAL, which mostly could be used by external tools such as
-// Swagger or any other doc generator tools.
-// @Deprecated use AddError instead.
-func (s *Service) AddPossibleError(code int, item string, m ronykit.Message) *Service {
-	s.PossibleErrors = append(s.PossibleErrors, Error{
-		Code:    code,
-		Item:    item,
-		Message: m,
-	})
-
-	return s
-}
-
 // AddError sets the possible errors for all the Contracts of this Service.
 // Using this method is OPTIONAL, which mostly could be used by external tools such as
 // Swagger or any other doc generator tools.
@@ -202,16 +188,33 @@ func (s Service) rpcStub(stub *Stub) error {
 				// We don't write description for no-named selectors.
 				continue
 			}
-			if rrs, ok := rs.(ronykit.RPCRouteSelector); ok {
-				m := RPCMethod{
-					Name:      c.routeNames[idx],
-					Predicate: rrs.GetPredicate(),
-				}
-				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
-					m.Request = dto
-				}
-				if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-					m.Response = dto
+
+			rrs, ok := rs.(ronykit.RPCRouteSelector)
+			if !ok {
+				continue
+			}
+
+			m := RPCMethod{
+				Name:      c.routeNames[idx],
+				Predicate: rrs.GetPredicate(),
+				Encoding:  getEncoding(rrs),
+			}
+			if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
+				m.Request = dto
+			}
+			if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+				m.Response = dto
+			}
+			for _, e := range c.PossibleErrors {
+				if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
+					m.PossibleErrors = append(
+						m.PossibleErrors,
+						ErrorDTO{
+							Code: e.Code,
+							Item: e.Item,
+							DTO:  dto,
+						},
+					)
 				}
 			}
 		}
@@ -227,37 +230,55 @@ func (s Service) restStub(stub *Stub) error {
 				// We don't write description for no-named selectors.
 				continue
 			}
-			if rrs, ok := rs.(ronykit.RESTRouteSelector); ok {
-				m := RESTMethod{
-					Name:   c.routeNames[idx],
-					Method: rrs.GetMethod(),
-					Path:   rrs.GetPath(),
-				}
-				if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
-					m.Request = dto
-				}
-				if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-					m.Response = dto
-				}
-				switch rrs.GetEncoding().Tag() {
-				case ronykit.JSON.Tag():
-					m.Encoding = "ronykit.JSON"
-				case ronykit.Proto.Tag():
-					m.Encoding = "ronykit.Proto"
-				case ronykit.MSG.Tag():
-					m.Encoding = "ronykit.MSG"
-				case "":
-					m.Encoding = "ronykit.JSON"
-				default:
-					m.Encoding = fmt.Sprintf("ronykit.CustomEncoding(%q)", rrs.GetEncoding().Tag())
-				}
-
-				stub.RESTs = append(stub.RESTs, m)
+			rrs, ok := rs.(ronykit.RESTRouteSelector)
+			if !ok {
+				continue
 			}
+			m := RESTMethod{
+				Name:     c.routeNames[idx],
+				Method:   rrs.GetMethod(),
+				Path:     rrs.GetPath(),
+				Encoding: getEncoding(rrs),
+			}
+			if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
+				m.Request = dto
+			}
+			if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+				m.Response = dto
+			}
+			for _, e := range c.PossibleErrors {
+				if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
+					m.PossibleErrors = append(
+						m.PossibleErrors,
+						ErrorDTO{
+							Code: e.Code,
+							Item: e.Item,
+							DTO:  dto,
+						},
+					)
+				}
+			}
+
+			stub.RESTs = append(stub.RESTs, m)
 		}
 	}
 
 	return nil
+}
+
+func getEncoding(rrs ronykit.RouteSelector) string {
+	switch rrs.GetEncoding().Tag() {
+	case ronykit.JSON.Tag():
+		return "ronykit.JSON"
+	case ronykit.Proto.Tag():
+		return "ronykit.Proto"
+	case ronykit.MSG.Tag():
+		return "ronykit.MSG"
+	case "":
+		return "ronykit.JSON"
+	default:
+		return fmt.Sprintf("ronykit.CustomEncoding(%q)", rrs.GetEncoding().Tag())
+	}
 }
 
 // serviceImpl is a simple implementation of ronykit.Service interface.

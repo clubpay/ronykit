@@ -30,22 +30,33 @@ type DTOFieldTag struct {
 	Value string
 }
 
+// ErrorDTO represents description of a Data Object Transfer which is used to
+// show an error case.
+type ErrorDTO struct {
+	Code int
+	Item string
+	DTO  DTO
+}
+
 // RESTMethod represents description of a Contract with ronykit.RESTRouteSelector.
 type RESTMethod struct {
-	Name     string
-	Method   string
-	Path     string
-	Encoding string
-	Request  DTO
-	Response DTO
+	Name           string
+	Method         string
+	Path           string
+	Encoding       string
+	Request        DTO
+	Response       DTO
+	PossibleErrors []ErrorDTO
 }
 
 // RPCMethod represents description of a Contract with ronykit.RPCRouteSelector
 type RPCMethod struct {
-	Name      string
-	Predicate string
-	Request   DTO
-	Response  DTO
+	Name           string
+	Predicate      string
+	Request        DTO
+	Response       DTO
+	PossibleErrors []ErrorDTO
+	Encoding       string
 	ronykit.IncomingRPCContainer
 	ronykit.OutgoingRPCContainer
 }
