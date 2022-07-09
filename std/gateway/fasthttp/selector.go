@@ -20,8 +20,27 @@ var (
 	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
 )
 
+func RESTSelector(method, path string) Selector {
+	return Selector{
+		Method: method,
+		Path:   path,
+	}
+}
+
+func WSSelector(predicate string) Selector {
+	return Selector{
+		Predicate: predicate,
+	}
+}
+
 func (r Selector) GetEncoding() ronykit.Encoding {
 	return r.Encoding
+}
+
+func (r *Selector) SetEncoding(enc ronykit.Encoding) *Selector {
+	r.Encoding = enc
+
+	return r
 }
 
 func (r Selector) GetMethod() string {

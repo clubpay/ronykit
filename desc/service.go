@@ -155,6 +155,9 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 			}
 
 			if rrs, ok := rs.(ronykit.RESTRouteSelector); ok {
+				if rrs.GetMethod() == "" || rrs.GetPath() == "" {
+					continue
+				}
 				if err := s.restStub(stub, c, routeName, rrs); err != nil {
 					return nil, err
 				}

@@ -129,6 +129,7 @@ func (hc *restClientCtx) Run(ctx context.Context) *restClientCtx {
 	return hc
 }
 
+// Err returns the error if any occurred during the execution.
 func (hc *restClientCtx) Err() *Error {
 	return hc.err
 }
@@ -152,6 +153,7 @@ func (hc *restClientCtx) GetBody() []byte {
 	return hc.res.Body()
 }
 
+// CopyBody copies the body to `dst`. It creates a new slice and returns it if dst is nil.
 func (hc *restClientCtx) CopyBody(dst []byte) []byte {
 	if hc.err != nil {
 		return nil
@@ -162,6 +164,9 @@ func (hc *restClientCtx) CopyBody(dst []byte) []byte {
 	return dst
 }
 
+// Release frees the allocates internal resources to be re-used.
+// You MUST NOT refer to any method of this object after calling this method, if
+// you call any method after Release has been called, the result is unpredictable.
 func (hc *restClientCtx) Release() {
 	fasthttp.ReleaseArgs(hc.args)
 	fasthttp.ReleaseURI(hc.uri)
@@ -185,6 +190,18 @@ func (hc *restClientCtx) DumpResponse() string {
 	return hc.res.String()
 }
 
+// DumpResponseTo accepts a writer and will write the response dump to it when Run is
+// executed.
+// Example:
+// 	httpCtx := s.REST().
+//								DumpRequestTo(os.Stdout).
+//								DumpResponseTo(os.Stdout).
+//								GET("https//google.com").
+//								Run(ctx)
+//	defer httpCtx.Release()
+//
+// **YOU MUST NOT USE httpCtx after httpCtx.Release() is called.**
+//
 func (hc *restClientCtx) DumpResponseTo(w io.Writer) *restClientCtx {
 	hc.dumpRes = w
 
@@ -199,6 +216,10 @@ func (hc *restClientCtx) DumpRequest() string {
 	return hc.req.String()
 }
 
+// DumpRequestTo accepts a writer and will write the request dump to it when Run is
+// executed.
+//
+// Please refer to DumpResponseTo
 func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 	hc.dumpReq = w
 

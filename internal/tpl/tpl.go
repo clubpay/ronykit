@@ -1,4 +1,4 @@
-package stubgengo
+package tpl
 
 import (
 	_ "embed"
@@ -10,13 +10,13 @@ import (
 )
 
 var (
-	//go:embed tpl/stub.gotmpl
-	tplFileStub string
-	tplStub     *template.Template
+	//go:embed go/stub.gotmpl
+	goFileStub string
+	GoStub     *template.Template
 )
 
 func init() {
-	tplStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(tplFileStub))
+	GoStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(goFileStub))
 }
 
 var funcMaps = map[string]interface{}{

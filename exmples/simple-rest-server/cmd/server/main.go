@@ -35,7 +35,7 @@ func main() {
 				fasthttp.WithPredicateKey("cmd"),
 			),
 		),
-		desc.Register(api.NewSample()),
+		desc.Register(api.SampleDesc),
 	).
 		Start(nil).
 		PrintRoutes(os.Stdout).

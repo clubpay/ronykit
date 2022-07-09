@@ -1,4 +1,4 @@
-package stubgengo
+package stubgen
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ func TestStubCodeGenerator(t *testing.T) {
 
 var _ = Describe("GolangGenerator", func() {
 	It("generate dto code in golang (no comment)", func() {
-		_, err := Generate(
+		_, err := GolangStub(
 			&desc.Stub{
 				DTOs: map[string]desc.DTO{
 					"Struct1": {
@@ -52,7 +52,7 @@ var _ = Describe("GolangGenerator", func() {
 		Expect(err).To(BeNil())
 	})
 	It("generate dto code in golang (with comment)", func() {
-		_, err := Generate(
+		_, err := GolangStub(
 			&desc.Stub{
 				DTOs: map[string]desc.DTO{
 					"Struct1": {

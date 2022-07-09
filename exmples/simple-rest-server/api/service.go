@@ -8,39 +8,23 @@ import (
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
-	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
 
-type Sample struct{}
-
-func NewSample() *Sample {
-	s := &Sample{}
-
-	return s
-}
-
-func (x *Sample) Desc() *desc.Service {
+var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 	return desc.NewService("SampleService").
 		SetEncoding(ronykit.JSON).
 		AddError(dto.Err(http.StatusBadRequest, "INPUT")).
 		AddContract(
 			desc.NewContract().
-				SetName("Echo").
 				SetInput(&dto.EchoRequest{}).
 				SetOutput(&dto.EchoResponse{}).
 				AddNamedSelector(
 					"Echo",
-					fasthttp.Selector{
-						Method:    fasthttp.MethodGet,
-						Predicate: "echo",
-						Path:      "/echo/:randomID",
-					},
+					fasthttp.RESTSelector(http.MethodGet, "/echo/:randomID"),
 				).
 				AddNamedSelector(
 					"Echo",
-					fastws.Selector{
-						Predicate: "echoRequest",
-					},
+					fasthttp.WSSelector("echoRequest"),
 				).
 				AddModifier(func(envelope ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
@@ -54,17 +38,11 @@ func (x *Sample) Desc() *desc.Service {
 				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"Sum1",
-					fasthttp.Selector{
-						Method: fasthttp.MethodGet,
-						Path:   "/sum/:val1/:val2",
-					},
+					fasthttp.RESTSelector(http.MethodGet, "/sum/:val1/:val2"),
 				).
 				AddNamedSelector(
 					"Sum2",
-					fasthttp.Selector{
-						Method: fasthttp.MethodPost,
-						Path:   "/sum",
-					},
+					fasthttp.RESTSelector(http.MethodPost, "/sum"),
 				).
 				SetHandler(SumHandler),
 		).
@@ -74,15 +52,11 @@ func (x *Sample) Desc() *desc.Service {
 				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"SumRedirect",
-					fasthttp.Selector{
-						Method: fasthttp.MethodGet,
-						Path:   "/sum-redirect/:val1/:val2",
-					},
+					fasthttp.RESTSelector(http.MethodGet, "/sum-redirect/:val1/:val2"),
 				).
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodPost,
-					Path:   "/sum-redirect",
-				}).
+				AddSelector(
+					fasthttp.RESTSelector(http.MethodPost, "/sum-redirect"),
+				).
 				SetHandler(SumRedirectHandler),
 		).
 		AddContract(

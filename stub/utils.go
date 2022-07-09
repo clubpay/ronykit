@@ -5,6 +5,8 @@ import (
 	"unicode"
 )
 
+// fillParams traverse the `pathPattern` and detect params with format `:name` and
+// replace them using the function `f` provides in arguments.
 func fillParams(pathPattern string, f func(key string) string) string {
 	out := strings.Builder{}
 	param := strings.Builder{}
