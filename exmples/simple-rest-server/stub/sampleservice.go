@@ -11,13 +11,13 @@ import (
 )
 
 func init() {
-	reflector.Register(&EchoRequest{})
-	reflector.Register(&EchoResponse{})
-	reflector.Register(&EmbeddedHeader{})
-	reflector.Register(&ErrorMessage{})
-	reflector.Register(&RedirectRequest{})
-	reflector.Register(&SumRequest{})
-	reflector.Register(&SumResponse{})
+	reflector.Register(&EchoRequest{}, "json")
+	reflector.Register(&EchoResponse{}, "json")
+	reflector.Register(&EmbeddedHeader{}, "json")
+	reflector.Register(&ErrorMessage{}, "json")
+	reflector.Register(&RedirectRequest{}, "json")
+	reflector.Register(&SumRequest{}, "json")
+	reflector.Register(&SumResponse{}, "json")
 }
 
 // EchoRequest is a data transfer object
@@ -81,7 +81,7 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 
 func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoResponse, *stub.Error) {
 	res := &EchoResponse{}
-	err := s.s.REST().
+	httpCtx := s.s.REST().
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -100,9 +100,10 @@ func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoRes
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", ronykit.JSON, req).
-		Err()
-	if err != nil {
+		AutoRun(ctx, "/echo/:randomID", ronykit.JSON, req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -111,7 +112,7 @@ func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoRes
 
 func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	err := s.s.REST().
+	httpCtx := s.s.REST().
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -130,9 +131,10 @@ func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumRespo
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", ronykit.JSON, req).
-		Err()
-	if err != nil {
+		AutoRun(ctx, "/sum/:val1/:val2", ronykit.JSON, req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +143,7 @@ func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumRespo
 
 func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	err := s.s.REST().
+	httpCtx := s.s.REST().
 		SetMethod("POST").
 		SetResponseHandler(
 			400,
@@ -160,9 +162,10 @@ func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumRespo
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum", ronykit.JSON, req).
-		Err()
-	if err != nil {
+		AutoRun(ctx, "/sum", ronykit.JSON, req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
 		return nil, err
 	}
 
@@ -171,7 +174,7 @@ func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumRespo
 
 func (s SampleServiceStub) SumRedirect(ctx context.Context, req *SumRequest) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	err := s.s.REST().
+	httpCtx := s.s.REST().
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -190,9 +193,10 @@ func (s SampleServiceStub) SumRedirect(ctx context.Context, req *SumRequest) (*S
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", ronykit.JSON, req).
-		Err()
-	if err != nil {
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", ronykit.JSON, req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
 		return nil, err
 	}
 

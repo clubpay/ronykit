@@ -49,9 +49,13 @@ func (fields Fields) Get(m ronykit.Message, fieldName string) interface{} {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return mVal.Int()
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return mVal.Int()
+		return mVal.Uint()
 	case reflect.String:
 		return mVal.String()
+	case reflect.Float64, reflect.Float32:
+		return mVal.Float()
+	case reflect.Bool:
+		return mVal.Bool()
 	}
 
 	if !mVal.CanInterface() {

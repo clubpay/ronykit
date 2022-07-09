@@ -210,6 +210,7 @@ func (s Service) rpcStub(
 		Predicate: rrs.GetPredicate(),
 		Encoding:  getEncoding(rrs),
 	}
+
 	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 		m.Request = dto
 	}
@@ -245,6 +246,7 @@ func (s Service) restStub(
 		Path:     rrs.GetPath(),
 		Encoding: getEncoding(rrs),
 	}
+
 	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 		m.Request = dto
 	}

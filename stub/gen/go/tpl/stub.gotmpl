@@ -29,9 +29,10 @@ import (
 	"github.com/clubpay/ronykit/utils/reflector"
 )
 
+{{$tags := strQuote .Tags}}
 func init() {
 {{- range $dtoName, $dto := .DTOs }}
-reflector.Register(&{{$dtoName}}{})
+reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
 {{- end }}
 }
 
@@ -62,7 +63,7 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 {{- if ne $methodName "" }}
 func (s {{$serviceName}}Stub) {{$methodName}}(ctx context.Context, req *{{.Request.Name}}) (*{{.Response.Name}}, *stub.Error){
 	res := &{{.Response.Name}}{}
-	err := s.s.REST().
+	httpCtx := s.s.REST().
 		SetMethod("{{.Method}}").
 		{{ range $idx, $errDto := .PossibleErrors }}
 		SetResponseHandler(
@@ -83,9 +84,10 @@ func (s {{$serviceName}}Stub) {{$methodName}}(ctx context.Context, req *{{.Reque
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req).
-		Err()
-	if err != nil {
+		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
 		return nil, err
 	}
 

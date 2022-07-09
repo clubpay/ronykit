@@ -2,6 +2,7 @@ package stubgengo
 
 import (
 	_ "embed"
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -19,6 +20,16 @@ func init() {
 }
 
 var funcMaps = map[string]interface{}{
+	"strQuote": func(elems []string) []string {
+		out := make([]string, len(elems))
+		for i, e := range elems {
+			out[i] = fmt.Sprintf("%q", e)
+		}
+
+		return out
+	},
+	"strJoin":         strings.Join,
+	"strSplit":        strings.Split,
 	"toUpper":         strings.ToUpper,
 	"toLower":         strings.ToLower,
 	"toTitle":         strings.ToTitle,

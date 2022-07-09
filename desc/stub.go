@@ -153,3 +153,7 @@ func (d *Stub) getDTO(mTyp reflect.Type) (DTO, bool) {
 
 	return dto, ok
 }
+
+func (d *Stub) Tags() []string {
+	return d.tags
+}
