@@ -21,4 +21,5 @@ done
 
 golangci-lint run || exit
 
-GOPRIVATE="github.com/clubpay*" go test -cover -count=1 ./... || exit
+
+GOPRIVATE="github.com/clubpay*" go test -v -race -cover -covermode=atomic -count=1 ./... || exit
