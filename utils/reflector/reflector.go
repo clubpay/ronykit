@@ -86,9 +86,9 @@ func destruct(mType reflect.Type, tags ...string) *Reflected {
 			if !ok {
 				continue
 			}
-			i := strings.IndexFunc(v, unicode.IsPunct)
-			if i != -1 {
-				v = v[:i]
+			idx := strings.IndexFunc(v, unicode.IsPunct)
+			if idx != -1 {
+				v = v[:idx]
 			}
 			if r.byTag[t] == nil {
 				r.byTag[t] = Fields{}

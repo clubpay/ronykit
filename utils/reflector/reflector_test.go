@@ -78,9 +78,8 @@ func benchUnsafe(b *testing.B) {
 	r := reflector.New()
 	b.RunParallel(func(pb *testing.PB) {
 		t := &testMessage{}
+		t.X = utils.RandomID(5)
 		for pb.Next() {
-			t.X = utils.RandomID(5)
-
 			obj := r.Load(t).Obj()
 			xR, err := obj.GetString(t, "X")
 			if err != nil {
@@ -98,9 +97,8 @@ func benchUnsafeRegistered(b *testing.B) {
 	reflector.Register(&testMessage{})
 	b.RunParallel(func(pb *testing.PB) {
 		t := &testMessage{}
+		t.X = utils.RandomID(5)
 		for pb.Next() {
-			t.X = utils.RandomID(5)
-
 			obj := r.Load(t).Obj()
 			xR, err := obj.GetString(t, "X")
 			if err != nil {
@@ -120,9 +118,8 @@ func benchReflect(b *testing.B) {
 	r := reflector.New()
 	b.RunParallel(func(pb *testing.PB) {
 		t := &testMessage{}
+		t.X = utils.RandomID(5)
 		for pb.Next() {
-			t.X = utils.RandomID(5)
-
 			xR, err := r.GetString(t, "X")
 			if err != nil {
 				b.Fatal(err)
@@ -137,9 +134,8 @@ func benchReflect(b *testing.B) {
 func benchGoReflect(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		t := &testMessage{}
+		t.X = utils.RandomID(5)
 		for pb.Next() {
-			t.X = utils.RandomID(5)
-
 			xR := goreflect.Indirect(goreflect.ValueOf(t)).FieldByName("X").String()
 			if xR != t.X {
 				b.Fatal(xR, t.X)

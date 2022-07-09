@@ -18,7 +18,7 @@ type SumRequest struct {
 
 type SumResponse struct {
 	EmbeddedHeader
-	Val int64
+	Val int64 `json:"val"`
 }
 
 type RedirectRequest struct {

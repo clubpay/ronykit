@@ -22,6 +22,7 @@ func NewSample() *Sample {
 func (x *Sample) Desc() *desc.Service {
 	return desc.NewService("SampleService").
 		SetEncoding(ronykit.JSON).
+		AddError(dto.Err(http.StatusBadRequest, "INPUT")).
 		AddContract(
 			desc.NewContract().
 				SetName("Echo").

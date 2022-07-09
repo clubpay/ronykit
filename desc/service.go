@@ -146,12 +146,26 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 		return nil, err
 	}
 
-	if err := s.restStub(stub); err != nil {
-		return nil, err
-	}
+	for _, c := range s.Contracts {
+		for idx, rs := range c.RouteSelectors {
+			routeName := c.routeNames[idx]
+			if routeName == "" {
+				// We don't write description for no-named selectors.
+				continue
+			}
 
-	if err := s.rpcStub(stub); err != nil {
-		return nil, err
+			if rrs, ok := rs.(ronykit.RESTRouteSelector); ok {
+				if err := s.restStub(stub, c, routeName, rrs); err != nil {
+					return nil, err
+				}
+			}
+
+			if rrs, ok := rs.(ronykit.RPCRouteSelector); ok {
+				if err := s.rpcStub(stub, c, routeName, rrs); err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 
 	return stub, nil
@@ -176,46 +190,11 @@ func (s Service) dtoStub(stub *Stub) error {
 				return err
 			}
 		}
-	}
 
-	return nil
-}
-
-func (s Service) rpcStub(stub *Stub) error {
-	for _, c := range s.Contracts {
-		for idx, rs := range c.RouteSelectors {
-			if c.routeNames[idx] == "" {
-				// We don't write description for no-named selectors.
-				continue
-			}
-
-			rrs, ok := rs.(ronykit.RPCRouteSelector)
-			if !ok {
-				continue
-			}
-
-			m := RPCMethod{
-				Name:      c.routeNames[idx],
-				Predicate: rrs.GetPredicate(),
-				Encoding:  getEncoding(rrs),
-			}
-			if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
-				m.Request = dto
-			}
-			if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-				m.Response = dto
-			}
-			for _, e := range c.PossibleErrors {
-				if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
-					m.PossibleErrors = append(
-						m.PossibleErrors,
-						ErrorDTO{
-							Code: e.Code,
-							Item: e.Item,
-							DTO:  dto,
-						},
-					)
-				}
+		for _, pe := range c.PossibleErrors {
+			err = stub.addDTO(reflect.TypeOf(pe.Message))
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -223,45 +202,73 @@ func (s Service) rpcStub(stub *Stub) error {
 	return nil
 }
 
-func (s Service) restStub(stub *Stub) error {
-	for _, c := range s.Contracts {
-		for idx, rs := range c.RouteSelectors {
-			if c.routeNames[idx] == "" {
-				// We don't write description for no-named selectors.
-				continue
-			}
-			rrs, ok := rs.(ronykit.RESTRouteSelector)
-			if !ok {
-				continue
-			}
-			m := RESTMethod{
-				Name:     c.routeNames[idx],
-				Method:   rrs.GetMethod(),
-				Path:     rrs.GetPath(),
-				Encoding: getEncoding(rrs),
-			}
-			if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
-				m.Request = dto
-			}
-			if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-				m.Response = dto
-			}
-			for _, e := range c.PossibleErrors {
-				if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
-					m.PossibleErrors = append(
-						m.PossibleErrors,
-						ErrorDTO{
-							Code: e.Code,
-							Item: e.Item,
-							DTO:  dto,
-						},
-					)
-				}
-			}
+func (s Service) rpcStub(
+	stub *Stub, c Contract, routeName string, rrs ronykit.RPCRouteSelector,
+) error {
+	m := RPCMethod{
+		Name:      routeName,
+		Predicate: rrs.GetPredicate(),
+		Encoding:  getEncoding(rrs),
+	}
+	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
+		m.Request = dto
+	}
+	if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+		m.Response = dto
+	}
 
-			stub.RESTs = append(stub.RESTs, m)
+	var possibleErrors []Error
+	possibleErrors = append(possibleErrors, s.PossibleErrors...)
+	possibleErrors = append(possibleErrors, c.PossibleErrors...)
+	for _, e := range possibleErrors {
+		if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
+			m.PossibleErrors = append(
+				m.PossibleErrors,
+				ErrorDTO{
+					Code: e.Code,
+					Item: e.Item,
+					DTO:  dto,
+				},
+			)
 		}
 	}
+
+	return nil
+}
+
+func (s Service) restStub(
+	stub *Stub, c Contract, routeName string, rrs ronykit.RESTRouteSelector,
+) error {
+	m := RESTMethod{
+		Name:     routeName,
+		Method:   rrs.GetMethod(),
+		Path:     rrs.GetPath(),
+		Encoding: getEncoding(rrs),
+	}
+	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
+		m.Request = dto
+	}
+	if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+		m.Response = dto
+	}
+
+	var possibleErrors []Error
+	possibleErrors = append(possibleErrors, s.PossibleErrors...)
+	possibleErrors = append(possibleErrors, c.PossibleErrors...)
+	for _, e := range possibleErrors {
+		if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
+			m.PossibleErrors = append(
+				m.PossibleErrors,
+				ErrorDTO{
+					Code: e.Code,
+					Item: e.Item,
+					DTO:  dto,
+				},
+			)
+		}
+	}
+
+	stub.RESTs = append(stub.RESTs, m)
 
 	return nil
 }

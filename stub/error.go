@@ -1,10 +1,15 @@
 package stub
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/clubpay/ronykit"
+)
 
 type Error struct {
 	code int
 	item string
+	msg  ronykit.Message
 	err  error
 }
 
@@ -12,6 +17,14 @@ func NewError(code int, item string) *Error {
 	return &Error{
 		code: code,
 		item: item,
+	}
+}
+
+func NewErrorWithMsg(code int, item string, msg ronykit.Message) *Error {
+	return &Error{
+		code: code,
+		item: item,
+		msg:  msg,
 	}
 }
 
@@ -29,4 +42,8 @@ func (err Error) Error() string {
 	}
 
 	return fmt.Sprintf("ERR(%d): %s", err.code, err.item)
+}
+
+func (err Error) Msg() ronykit.Message {
+	return err.msg
 }

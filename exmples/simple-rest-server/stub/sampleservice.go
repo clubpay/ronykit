@@ -7,7 +7,18 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/utils/reflector"
 )
+
+func init() {
+	reflector.Register(&EchoRequest{})
+	reflector.Register(&EchoResponse{})
+	reflector.Register(&EmbeddedHeader{})
+	reflector.Register(&ErrorMessage{})
+	reflector.Register(&RedirectRequest{})
+	reflector.Register(&SumRequest{})
+	reflector.Register(&SumResponse{})
+}
 
 // EchoRequest is a data transfer object
 type EchoRequest struct {
@@ -27,6 +38,12 @@ type EmbeddedHeader struct {
 	SomeInt1 int64  `json:"someInt1"`
 }
 
+// ErrorMessage is a data transfer object
+type ErrorMessage struct {
+	Code int    `json:"code"`
+	Item string `json:"item"`
+}
+
 // RedirectRequest is a data transfer object
 type RedirectRequest struct {
 	URL string `json:"url"`
@@ -42,7 +59,7 @@ type SumRequest struct {
 // SumResponse is a data transfer object
 type SumResponse struct {
 	EmbeddedHeader
-	Val int64
+	Val int64 `json:"val"`
 }
 
 // SampleServiceStub represents the client/stub for SampleService.
@@ -66,6 +83,18 @@ func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoRes
 	res := &EchoResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(400, "INPUT", res)
+			},
+		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
@@ -84,6 +113,18 @@ func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumRespo
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(400, "INPUT", res)
+			},
+		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
@@ -102,6 +143,18 @@ func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumRespo
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("POST").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(400, "INPUT", res)
+			},
+		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
@@ -120,6 +173,18 @@ func (s SampleServiceStub) SumRedirect(ctx context.Context, req *SumRequest) (*S
 	res := &SumResponse{}
 	err := s.s.REST().
 		SetMethod("GET").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(400, "INPUT", res)
+			},
+		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))

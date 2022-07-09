@@ -26,12 +26,18 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/utils/reflector"
 )
+
+func init() {
+{{- range $dtoName, $dto := .DTOs }}
+reflector.Register(&{{$dtoName}}{})
+{{- end }}
+}
 
 {{ range $dtoName, $dto := .DTOs }}
 {{ template "dto" $dto }}
 {{ end }}
-
 
 {{$serviceName := .Name}}
 // {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
@@ -67,7 +73,8 @@ func (s {{$serviceName}}Stub) {{$methodName}}(ctx context.Context, req *{{.Reque
 				if err != nil {
 					return err
 				}
-				return stub.NewError(res.GetCode(), res.GetItem())
+
+				return stub.NewErrorWithMsg({{$errDto.Code}}, "{{$errDto.Item}}", res)
 			},
 		).
 		{{- end }}
