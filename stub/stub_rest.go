@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
 	"github.com/valyala/fasthttp"
 )
@@ -231,17 +232,39 @@ func (hc *restClientCtx) AutoRun(
 	if !ok {
 		fields = ref.Obj()
 	}
+
+	usedParams := map[string]struct{}{}
 	path := fillParams(
 		route,
 		func(key string) string {
+			usedParams[key] = struct{}{}
+
 			v := fields.Get(m, key)
 			if v == nil {
-				return ""
+				return "_"
 			}
 
 			return fmt.Sprintf("%v", v)
 		},
 	)
+
+	if utils.B2S(hc.req.Header.Method()) == http.MethodGet {
+		fields.WalkFields(
+			func(key string, f reflector.FieldInfo) {
+				_, ok := usedParams[key]
+				if ok {
+					return
+				}
+
+				v := fields.Get(m, key)
+				if v == nil {
+					return
+				}
+
+				hc.SetQuery(key, fmt.Sprintf("%v", v))
+			},
+		)
+	}
 
 	return hc.SetPath(path).Run(ctx)
 }
