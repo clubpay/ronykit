@@ -20,11 +20,11 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetOutput(&dto.EchoResponse{}).
 				AddNamedSelector(
 					"Echo",
-					fasthttp.RESTSelector(http.MethodGet, "/echo/:randomID"),
+					fasthttp.REST(http.MethodGet, "/echo/:randomID"),
 				).
 				AddNamedSelector(
 					"Echo",
-					fasthttp.WSSelector("echoRequest"),
+					fasthttp.RPC("echoRequest"),
 				).
 				AddModifier(func(envelope ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
@@ -38,11 +38,11 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"Sum1",
-					fasthttp.RESTSelector(http.MethodGet, "/sum/:val1/:val2"),
+					fasthttp.REST(http.MethodGet, "/sum/:val1/:val2"),
 				).
 				AddNamedSelector(
 					"Sum2",
-					fasthttp.RESTSelector(http.MethodPost, "/sum"),
+					fasthttp.REST(http.MethodPost, "/sum"),
 				).
 				SetHandler(SumHandler),
 		).
@@ -52,10 +52,10 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetOutput(&dto.SumResponse{}).
 				AddNamedSelector(
 					"SumRedirect",
-					fasthttp.RESTSelector(http.MethodGet, "/sum-redirect/:val1/:val2"),
+					fasthttp.REST(http.MethodGet, "/sum-redirect/:val1/:val2"),
 				).
 				AddSelector(
-					fasthttp.RESTSelector(http.MethodPost, "/sum-redirect"),
+					fasthttp.REST(http.MethodPost, "/sum-redirect"),
 				).
 				SetHandler(SumRedirectHandler),
 		).

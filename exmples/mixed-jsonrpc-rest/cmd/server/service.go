@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
@@ -8,25 +10,14 @@ import (
 	"github.com/clubpay/ronykit/std/gateway/fastws"
 )
 
-type Sample struct{}
-
-func NewSample() *Sample {
-	return &Sample{}
-}
-
-func (s *Sample) Desc() *desc.Service {
+var sample desc.ServiceDescFunc = func() *desc.Service {
 	return desc.NewService("SampleService").
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.EchoRequest{}).
-				AddSelector(fasthttp.Selector{
-					Method:    fasthttp.MethodGet,
-					Path:      "/echo/:randomID",
-					Predicate: "echoRequest",
-				}).
-				AddSelector(fastws.Selector{
-					Predicate: "echoRequest",
-				}).
+				AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
+				AddSelector(fasthttp.RPC("echoRequest")).
+				AddSelector(fastws.RPC("echoRequest")).
 				SetHandler(echoHandler),
 		)
 }

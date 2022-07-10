@@ -38,7 +38,7 @@ func main() {
 				fasthttp.Listen(":81"),
 			),
 		),
-		desc.Register(NewSample()),
+		desc.Register(sample),
 	).
 		Start(nil).
 		PrintRoutes(os.Stdout).

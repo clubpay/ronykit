@@ -20,14 +20,14 @@ var (
 	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
 )
 
-func RESTSelector(method, path string) Selector {
+func REST(method, path string) Selector {
 	return Selector{
 		Method: method,
 		Path:   path,
 	}
 }
 
-func WSSelector(predicate string) Selector {
+func RPC(predicate string) Selector {
 	return Selector{
 		Predicate: predicate,
 	}
