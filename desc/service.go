@@ -122,7 +122,7 @@ func (s Service) Generate() ronykit.Service {
 				addHandler(svc.post...).
 				setModifier(c.Modifiers...).
 				setInput(c.Input).
-				setRouteSelector(s).
+				setRouteSelector(s.Selector).
 				setMemberSelector(c.EdgeSelector).
 				setEncoding(c.Encoding)
 
@@ -147,24 +147,18 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	}
 
 	for _, c := range s.Contracts {
-		for idx, rs := range c.RouteSelectors {
-			routeName := c.routeNames[idx]
-			if routeName == "" {
-				// We don't write description for no-named selectors.
-				continue
-			}
-
-			if rrs, ok := rs.(ronykit.RESTRouteSelector); ok {
+		for _, rs := range c.RouteSelectors {
+			if rrs, ok := rs.Selector.(ronykit.RESTRouteSelector); ok {
 				if rrs.GetMethod() == "" || rrs.GetPath() == "" {
 					continue
 				}
-				if err := s.restStub(stub, c, routeName, rrs); err != nil {
+				if err := s.restStub(stub, c, rs.Name, rrs); err != nil {
 					return nil, err
 				}
 			}
 
-			if rrs, ok := rs.(ronykit.RPCRouteSelector); ok {
-				if err := s.rpcStub(stub, c, routeName, rrs); err != nil {
+			if rrs, ok := rs.Selector.(ronykit.RPCRouteSelector); ok {
+				if err := s.rpcStub(stub, c, rs.Name, rrs); err != nil {
 					return nil, err
 				}
 			}

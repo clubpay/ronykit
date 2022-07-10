@@ -2,14 +2,18 @@ package desc
 
 import "github.com/clubpay/ronykit"
 
+type RouteSelector struct {
+	Name     string
+	Selector ronykit.RouteSelector
+}
+
 // Contract is the description of the ronykit.Contract you are going to create.
 type Contract struct {
 	Name           string
 	Encoding       ronykit.Encoding
 	Handlers       []ronykit.HandlerFunc
 	Wrappers       []ronykit.ContractWrapper
-	RouteSelectors []ronykit.RouteSelector
-	routeNames     []string
+	RouteSelectors []RouteSelector
 	EdgeSelector   ronykit.EdgeSelectorFunc
 	Modifiers      []ronykit.Modifier
 	Input          ronykit.Message
@@ -46,12 +50,22 @@ func (c *Contract) SetInput(m ronykit.Message) *Contract {
 	return c
 }
 
+// In is an alias for SetInput
+func (c *Contract) In(m ronykit.Message) *Contract {
+	return c.SetInput(m)
+}
+
 // SetOutput sets the outgoing message for this Contract. This is an OPTIONAL parameter, which
 // mostly could be used by external tools such as Swagger or any other doc generator tools.
 func (c *Contract) SetOutput(m ronykit.Message) *Contract {
 	c.Output = m
 
 	return c
+}
+
+// Out is an alias for SetOutput
+func (c *Contract) Out(m ronykit.Message) *Contract {
+	return c.SetOutput(m)
 }
 
 // AddError sets the possible errors for this Contract. Using this method is OPTIONAL, which
@@ -71,20 +85,34 @@ func (c *Contract) AddError(err ronykit.ErrorMessage) *Contract {
 
 // AddSelector adds a ronykit.RouteSelector for this contract. Selectors are bundle specific.
 func (c *Contract) AddSelector(s ronykit.RouteSelector) *Contract {
-	c.RouteSelectors = append(c.RouteSelectors, s)
-	c.routeNames = append(c.routeNames, "")
+	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
+		Name:     "",
+		Selector: s,
+	})
 
 	return c
+}
+
+// Selector is an alias for AddSelector
+func (c *Contract) Selector(s ronykit.RouteSelector) *Contract {
+	return c.AddSelector(s)
 }
 
 // AddNamedSelector adds a ronykit.RouteSelector for this contract, and assign it a unique name.
 // In case of you need to use auto-generated stub.Stub for your service/contract this name will
 // be used in the generated code.
 func (c *Contract) AddNamedSelector(name string, s ronykit.RouteSelector) *Contract {
-	c.RouteSelectors = append(c.RouteSelectors, s)
-	c.routeNames = append(c.routeNames, name)
+	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
+		Name:     name,
+		Selector: s,
+	})
 
 	return c
+}
+
+// NamedSelector is an alias for AddNamedSelector
+func (c *Contract) NamedSelector(name string, s ronykit.RouteSelector) *Contract {
+	return c.AddNamedSelector(name, s)
 }
 
 // SetCoordinator sets a ronykit.EdgeSelectorFunc for this contract, to coordinate requests to
