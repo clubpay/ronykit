@@ -14,7 +14,6 @@ type TestContext struct {
 	inMsg      Message
 	inHdr      EnvelopeHdr
 	clientIP   string
-	stream     bool
 	expectFunc func(...Envelope) error
 }
 
@@ -24,12 +23,6 @@ func NewTestContext() *TestContext {
 
 func (testCtx *TestContext) SetHandler(h ...HandlerFunc) *TestContext {
 	testCtx.handlers = h
-
-	return testCtx
-}
-
-func (testCtx *TestContext) SetStream() *TestContext {
-	testCtx.stream = true
 
 	return testCtx
 }
@@ -47,17 +40,17 @@ func (testCtx *TestContext) Input(m Message, hdr EnvelopeHdr) *TestContext {
 	return testCtx
 }
 
-func (testCtx *TestContext) Expectation(f func(out ...Envelope) error) *TestContext {
+func (testCtx *TestContext) Receiver(f func(out ...Envelope) error) *TestContext {
 	testCtx.expectFunc = f
 
 	return testCtx
 }
 
-func (testCtx *TestContext) Run() error {
+func (testCtx *TestContext) Run(stream bool) error {
 	ctx := newContext()
 	conn := newTestConn()
 	conn.clientIP = testCtx.clientIP
-	conn.stream = testCtx.stream
+	conn.stream = stream
 	ctx.conn = conn
 	ctx.in = newEnvelope(ctx, conn, false)
 	ctx.in.
@@ -82,7 +75,7 @@ func (testCtx *TestContext) RunREST() error {
 	ctx := newContext()
 	conn := newTestRESTConn()
 	conn.clientIP = testCtx.clientIP
-	conn.stream = testCtx.stream
+	conn.stream = false
 	ctx.conn = conn
 	ctx.in = newEnvelope(ctx, conn, false)
 	ctx.in.

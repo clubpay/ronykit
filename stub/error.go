@@ -47,3 +47,28 @@ func (err Error) Error() string {
 func (err Error) Msg() ronykit.Message {
 	return err.msg
 }
+
+func (err Error) Code() int {
+	return err.code
+}
+
+func (err Error) Item() string {
+	return err.item
+}
+
+func (err Error) Is(target error) bool {
+	var cond bool
+	switch e := target.(type) {
+	case Error:
+		cond = e.err == nil && e.code == err.code && e.item == err.item
+
+	case *Error:
+		cond = e.err == nil && e.code == err.code && e.item == err.item
+	}
+
+	return cond
+}
+
+func (err Error) Unwrap() error {
+	return err.err
+}

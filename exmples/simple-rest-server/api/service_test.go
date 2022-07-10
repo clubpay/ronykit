@@ -19,7 +19,7 @@ func TestSampleService(t *testing.T) {
 			},
 			nil,
 		).
-		Expectation(
+		Receiver(
 			func(out ...ronykit.Envelope) error {
 				if len(out) != 1 {
 					t.Fatalf("expected 1 envelope, got %d", len(out))
@@ -35,7 +35,7 @@ func TestSampleService(t *testing.T) {
 
 				return nil
 			},
-		).Run()
+		).Run(false)
 	if err != nil {
 		t.Fatal(err)
 	}

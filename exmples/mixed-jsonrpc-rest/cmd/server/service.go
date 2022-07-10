@@ -12,9 +12,11 @@ import (
 
 var sample desc.ServiceDescFunc = func() *desc.Service {
 	return desc.NewService("SampleService").
+		SetEncoding(ronykit.JSON).
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.EchoRequest{}).
+				SetOutput(&dto.EchoResponse{}).
 				AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
 				AddSelector(fasthttp.RPC("echoRequest")).
 				AddSelector(fastws.RPC("echoRequest")).
