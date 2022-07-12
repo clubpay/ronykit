@@ -75,20 +75,7 @@ func (s *southBridge) OnLeave(memberIDs ...string) {
 	// Maybe later we can do something
 }
 
-func (s *southBridge) OnMessage(conn Conn, data []byte) {
-	ctx := s.acquireCtx(conn)
-
-	//arg, err := s.c.Dispatch(ctx, data)
-	//if err != nil {
-	//	s.eh(ctx, err)
-	//}
-	//
-	//ctx.execute(arg, s.cr(arg.ContractID))
-
-	s.releaseCtx(ctx)
-
-	return
-}
+func (s *southBridge) OnMessage(conn Conn, data []byte) {}
 
 func wrapWithCoordinator(c Contract) Contract {
 	if c.EdgeSelector() == nil {

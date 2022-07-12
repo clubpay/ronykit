@@ -2,6 +2,7 @@ package fastws
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"sync"
@@ -142,7 +143,7 @@ func (e *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 
 	payloadBuffer := buf.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(*payloadBuffer.Bytes())
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return gnet.None
 	}
 

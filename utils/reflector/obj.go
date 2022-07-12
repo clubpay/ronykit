@@ -15,7 +15,7 @@ var (
 
 // emptyInterface is the header for an interface{} value.
 type emptyInterface struct {
-	typ  uint64
+	_    uint64
 	word unsafe.Pointer
 }
 

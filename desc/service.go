@@ -152,15 +152,11 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 				if rrs.GetMethod() == "" || rrs.GetPath() == "" {
 					continue
 				}
-				if err := s.restStub(stub, c, rs.Name, rrs); err != nil {
-					return nil, err
-				}
+				s.restStub(stub, c, rs.Name, rrs)
 			}
 
 			if rrs, ok := rs.Selector.(ronykit.RPCRouteSelector); ok {
-				if err := s.rpcStub(stub, c, rs.Name, rrs); err != nil {
-					return nil, err
-				}
+				s.rpcStub(stub, c, rs.Name, rrs)
 			}
 		}
 	}
@@ -201,7 +197,7 @@ func (s Service) dtoStub(stub *Stub) error {
 
 func (s Service) rpcStub(
 	stub *Stub, c Contract, routeName string, rrs ronykit.RPCRouteSelector,
-) error {
+) {
 	m := RPCMethod{
 		Name:      routeName,
 		Predicate: rrs.GetPredicate(),
@@ -230,13 +226,11 @@ func (s Service) rpcStub(
 			)
 		}
 	}
-
-	return nil
 }
 
 func (s Service) restStub(
 	stub *Stub, c Contract, routeName string, rrs ronykit.RESTRouteSelector,
-) error {
+) {
 	m := RESTMethod{
 		Name:     routeName,
 		Method:   rrs.GetMethod(),
@@ -268,8 +262,6 @@ func (s Service) restStub(
 	}
 
 	stub.RESTs = append(stub.RESTs, m)
-
-	return nil
 }
 
 func getEncoding(rrs ronykit.RouteSelector) string {

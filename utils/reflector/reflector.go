@@ -16,8 +16,6 @@ var (
 )
 
 type Reflector struct {
-	tagName string
-
 	cacheMtx sync.RWMutex
 	cache    map[reflect.Type]*Reflected
 }

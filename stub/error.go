@@ -58,6 +58,7 @@ func (err Error) Item() string {
 
 func (err Error) Is(target error) bool {
 	var cond bool
+	//nolint:errorlint
 	switch e := target.(type) {
 	case Error:
 		cond = e.err == nil && e.code == err.code && e.item == err.item

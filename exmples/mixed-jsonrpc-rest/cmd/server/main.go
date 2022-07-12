@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -40,9 +41,9 @@ func main() {
 		),
 		desc.Register(sample),
 	).
-		Start(nil).
+		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
-		Shutdown(nil, os.Kill, os.Interrupt)
+		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 
 	//nolint:forbidigo
 	fmt.Println("Server started.")

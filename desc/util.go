@@ -6,6 +6,7 @@ import (
 )
 
 func typ(prefix string, t reflect.Type) string {
+	//nolint:exhaustive
 	switch t.Kind() {
 	case reflect.Slice:
 		prefix += "[]"

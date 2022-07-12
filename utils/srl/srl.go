@@ -42,7 +42,7 @@ func Parse(str string) SRL {
 	q := SRL{}
 
 	mm := pattern.FindAllStringSubmatch(str, -1)
-	if 0 == len(mm) {
+	if len(mm) == 0 {
 		return q
 	}
 
@@ -62,7 +62,7 @@ func (q SRL) Append(src SRL) SRL {
 	return q.mix(
 		src,
 		func(qi, si string, i int) string {
-			if 0 == len(si) {
+			if len(si) == 0 {
 				return qi
 			}
 
@@ -80,7 +80,7 @@ func (q SRL) Merge(src SRL) SRL {
 	return q.mix(
 		src,
 		func(qi, si string, i int) string {
-			if 0 == len(si) {
+			if len(si) == 0 {
 				return qi
 			}
 

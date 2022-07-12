@@ -9,7 +9,6 @@ import (
 
 // TestContext is useful for writing end-to-end tests for your Contract handlers.
 type TestContext struct {
-	ctx        *Context
 	handlers   HandlerFuncChain
 	inMsg      Message
 	inHdr      EnvelopeHdr
