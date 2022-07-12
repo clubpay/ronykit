@@ -17,6 +17,7 @@ type envelopeCarrier struct {
 func envelopeCarrierFromContext(ctx *Context) envelopeCarrier {
 	ec := envelopeCarrier{
 		Hdr:         map[string]string{},
+		ConnHdr:     map[string]string{},
 		Msg:         nil,
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),

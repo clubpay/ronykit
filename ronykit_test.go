@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/clubpay/ronykit"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -21,6 +22,8 @@ type testConn struct {
 	kv       map[string]string
 	buf      *bytes.Buffer
 }
+
+var _ ronykit.Conn = (*testConn)(nil)
 
 func newTestConn(id uint64, clientIP string, stream bool) testConn {
 	return testConn{
@@ -66,4 +69,45 @@ func (t testConn) Get(key string) string {
 
 func (t testConn) Set(key string, val string) {
 	t.kv[key] = val
+}
+
+// testRESTSelector implements ronykit.RESTRouteSelector for testing purposes.
+type testRESTSelector struct {
+	enc    ronykit.Encoding
+	method string
+	path   string
+}
+
+func (t testRESTSelector) Query(q string) interface{} {
+	return nil
+}
+
+func (t testRESTSelector) GetEncoding() ronykit.Encoding {
+	return t.enc
+}
+
+func (t testRESTSelector) GetMethod() string {
+	return t.method
+}
+
+func (t testRESTSelector) GetPath() string {
+	return t.path
+}
+
+// testRPCSelector implements ronykit.RPCSelector for testing purposes.
+type testRPCSelector struct {
+	enc       ronykit.Encoding
+	predicate string
+}
+
+func (t testRPCSelector) Query(q string) interface{} {
+	return nil
+}
+
+func (t testRPCSelector) GetEncoding() ronykit.Encoding {
+	return t.enc
+}
+
+func (t testRPCSelector) GetPredicate() string {
+	return t.predicate
 }

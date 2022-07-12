@@ -15,6 +15,7 @@ import (
 var uppercaseAcronym = map[string]string{
 	"ID":   "id",
 	"HTML": "html",
+	"RPC":  "rpc",
 }
 
 // Converts a string to CamelCase

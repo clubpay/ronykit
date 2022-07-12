@@ -127,16 +127,17 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
-// SetHdr sets the common header key-value pairs so in Out method we don't need to
-// repeatedly set those. If you only want to set the header for an envelope, you can
-// use Envelope.SetHdr method instead.
-func (ctx *Context) SetHdr(k, v string) {
+// PresetHdr sets the common header key-value pairs so in Out method we don't need to
+// repeatedly set those. This method is useful for some cases if we need to update the
+// header in some middleware before the actual response is prepared.
+// If you only want to set the header for an envelope, you can use Envelope.SetHdr method instead.
+func (ctx *Context) PresetHdr(k, v string) {
 	ctx.hdr[k] = v
 }
 
-// SetHdrMap sets the common header key-value pairs so in Out method we don't need to
-// repeatedly set those.
-func (ctx *Context) SetHdrMap(hdr map[string]string) {
+// PresetHdrMap sets the common header key-value pairs so in Out method we don't need to
+// repeatedly set those. Please refer to PresetHdr for more details
+func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 	for k, v := range hdr {
 		ctx.hdr[k] = v
 	}
