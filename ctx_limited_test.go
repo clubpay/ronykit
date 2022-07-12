@@ -11,9 +11,11 @@ var _ = Describe("CtxLimited", func() {
 	conn := newTestConn(100, "", true)
 	ctx.SetConn(conn)
 
-	limitCtx := ctx.Limited()
-	Expect(limitCtx.Conn().ConnID()).To(Equal(conn.ConnID()))
-	Expect(limitCtx.ServiceName()).To(Equal(ctx.ServiceName()))
-	limitCtx.In().SetHdr("k1", "v1")
-	Expect(ctx.In().GetHdr("k1")).To(Equal("v1"))
+	It("Should be synced with the main context", func() {
+		limitCtx := ctx.Limited()
+		Expect(limitCtx.Conn().ConnID()).To(Equal(conn.ConnID()))
+		Expect(limitCtx.ServiceName()).To(Equal(ctx.ServiceName()))
+		limitCtx.In().SetHdr("k1", "v1")
+		Expect(ctx.In().GetHdr("k1")).To(Equal("v1"))
+	})
 })

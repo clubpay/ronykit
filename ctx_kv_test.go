@@ -56,3 +56,36 @@ var _ = DescribeTable(
 	Entry("", "key2", uint64(50), uint64(0)),
 	Entry("", "key1", uint64(0), uint64(0)),
 )
+
+var _ = DescribeTable(
+	"GetUInt32",
+	func(key string, val, def uint32) {
+		ctx := ronykit.NewContext()
+		Expect(ctx.GetUint32(key, def)).To(Equal(def))
+		Expect(ctx.Set(key, val).GetUint32(key, def)).To(Equal(val))
+	},
+	Entry("", "key1", uint32(100), uint32(200)),
+	Entry("", "key2", uint32(50), uint32(0)),
+	Entry("", "key1", uint32(0), uint32(0)),
+)
+
+var _ = Describe(
+	"Walk",
+	func() {
+		ctx := ronykit.NewContext()
+		ctx.Set("k1", "v1")
+		ctx.Set("k2", "v2")
+
+		hdr := map[string]interface{}{}
+		ctx.Walk(func(key string, val interface{}) bool {
+			hdr[key] = val
+
+			return true
+		})
+
+		It("Should load all the header keys", func() {
+			Expect(hdr).To(HaveKeyWithValue("k1", "v1"))
+			Expect(hdr).To(HaveKeyWithValue("k2", "v2"))
+		})
+	},
+)
