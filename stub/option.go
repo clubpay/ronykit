@@ -8,6 +8,7 @@ import (
 type Option func(cfg *config)
 
 type config struct {
+	name          string
 	hostPort      string
 	secure        bool
 	skipVerifyTLS bool
@@ -26,6 +27,12 @@ func Secure() Option {
 func SkipTLSVerify() Option {
 	return func(s *config) {
 		s.skipVerifyTLS = true
+	}
+}
+
+func Name(name string) Option {
+	return func(cfg *config) {
+		cfg.name = name
 	}
 }
 

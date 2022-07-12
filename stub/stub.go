@@ -17,6 +17,7 @@ type Stub struct {
 
 func New(hostPort string, opts ...Option) *Stub {
 	cfg := config{
+		name:         "RonyKIT StubClient",
 		hostPort:     hostPort,
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
@@ -29,6 +30,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		cfg: cfg,
 		r:   reflector.New(),
 		httpC: fasthttp.Client{
+			Name:         cfg.name,
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
 			TLSConfig: &tls.Config{
