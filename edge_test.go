@@ -82,27 +82,27 @@ var _ = Describe("EdgeServer", func() {
 		b = &testGateway{
 			c: newTestConn(utils.RandomUint64(0), "", false),
 		}
+		var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
+			return desc.NewService("testService").
+				AddContract(
+					desc.NewContract().
+						SetInput(&ronykit.RawMessage{}).
+						SetOutput(&ronykit.RawMessage{}).
+						AddSelector(testSelector{}).
+						AddHandler(
+							func(ctx *ronykit.Context) {
+								ctx.Out().
+									SetMsg(ctx.In().GetMsg()).
+									Send()
+
+								return
+							},
+						),
+				)
+		}
 		edge = ronykit.NewServer(
 			ronykit.RegisterBundle(b),
-			ronykit.RegisterService(
-				desc.NewService("testService").
-					AddContract(
-						desc.NewContract().
-							SetInput(&ronykit.RawMessage{}).
-							SetOutput(&ronykit.RawMessage{}).
-							AddSelector(testSelector{}).
-							AddHandler(
-								func(ctx *ronykit.Context) {
-									ctx.Out().
-										SetMsg(ctx.In().GetMsg()).
-										Send()
-
-									return
-								},
-							),
-					).
-					Generate(),
-			),
+			desc.Register(serviceDesc),
 		)
 		edge.Start(nil)
 	})
