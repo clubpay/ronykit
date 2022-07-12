@@ -58,6 +58,4 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 	}
 
 	n.releaseCtx(ctx)
-
-	return
 }

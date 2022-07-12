@@ -16,6 +16,14 @@ import (
    Auditor: Ehsan N. Moosa (E2)
 */
 
+func init() {
+	rndGen.New = func() interface{} {
+		x := mathRand.New(mathRand.NewSource(CPUTicks()))
+
+		return x
+	}
+}
+
 const (
 	digits              = "0123456789"
 	digitsLength        = uint32(len(digits))
@@ -40,14 +48,6 @@ func (rg *randomGenerator) PutRand(r *mathRand.Rand) {
 }
 
 var rndGen randomGenerator
-
-func init() {
-	rndGen.New = func() interface{} {
-		x := mathRand.New(mathRand.NewSource(CPUTicks()))
-
-		return x
-	}
-}
 
 // RandomID generates a pseudo-random string with length 'n' which characters are alphanumerics.
 func RandomID(n int) string {

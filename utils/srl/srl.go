@@ -8,17 +8,14 @@ import (
 const (
 	pathGlue = ":"
 	glue     = "@"
-)
 
-var pattern = regexp.MustCompile(`(?:([^:\s]*)(?::))?([^@\s]*)@?(.*)`)
-
-const (
 	srliStorage = iota
 	srliPath
 	srliID
-
 	srlLength
 )
+
+var pattern = regexp.MustCompile(`(?:([^:\s]*)(?::))?([^@\s]*)@?(.*)`)
 
 // SRL stands for Simple Resource Locator, A 3 part address.
 type SRL [srlLength]string

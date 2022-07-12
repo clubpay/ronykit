@@ -189,12 +189,6 @@ func (r *contractImpl) setMemberSelector(selector ronykit.EdgeSelectorFunc) *con
 	return r
 }
 
-func (r *contractImpl) setHandler(handlers ...ronykit.HandlerFunc) *contractImpl {
-	r.handlers = append(r.handlers[:0], handlers...)
-
-	return r
-}
-
 func (r *contractImpl) addHandler(handlers ...ronykit.HandlerFunc) *contractImpl {
 	r.handlers = append(r.handlers, handlers...)
 

@@ -28,6 +28,15 @@ import (
 	"github.com/clubpay/ronykit/utils/buf"
 )
 
+const (
+	// stacktraceFirst captures only the first frame.
+	stacktraceFirst stacktraceDepth = iota
+
+	// stacktraceFull captures the entire call stack, allocating more
+	// storage for it if needed.
+	stacktraceFull
+)
+
 var _stacktracePool = sync.Pool{
 	New: func() interface{} {
 		return &stacktrace{
@@ -52,15 +61,6 @@ type stacktrace struct {
 
 // stacktraceDepth specifies how deep of a stack trace should be captured.
 type stacktraceDepth int
-
-const (
-	// stacktraceFirst captures only the first frame.
-	stacktraceFirst stacktraceDepth = iota
-
-	// stacktraceFull captures the entire call stack, allocating more
-	// storage for it if needed.
-	stacktraceFull
-)
 
 // captureStacktrace captures a stack trace of the specified depth, skipping
 // the provided number of frames. skip=0 identifies the caller of

@@ -107,7 +107,7 @@ func (s Service) Generate() ronykit.Service {
 		post: s.PostHandlers,
 	}
 
-	var index int64 = 0
+	var index int64
 	for _, c := range s.Contracts {
 		reflector.Register(c.Input)
 		reflector.Register(c.Output)
@@ -295,22 +295,4 @@ func (s *serviceImpl) Name() string {
 
 func (s *serviceImpl) Contracts() []ronykit.Contract {
 	return s.contracts
-}
-
-func (s *serviceImpl) setPreHandlers(h ...ronykit.HandlerFunc) *serviceImpl {
-	s.pre = append(s.pre[:0], h...)
-
-	return s
-}
-
-func (s *serviceImpl) setPostHandlers(h ...ronykit.HandlerFunc) *serviceImpl {
-	s.post = append(s.post[:0], h...)
-
-	return s
-}
-
-func (s *serviceImpl) addContract(contracts ...ronykit.Contract) *serviceImpl {
-	s.contracts = append(s.contracts, contracts...)
-
-	return s
 }

@@ -58,8 +58,6 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 
 	ctx.handlers = append(ctx.handlers, c.Handlers()...)
 	ctx.Next()
-
-	return
 }
 
 // Next sets the next handler which will be called after the current handler.
@@ -226,6 +224,4 @@ func (p *ctxPool) acquireCtx(c Conn) *Context {
 func (p *ctxPool) releaseCtx(ctx *Context) {
 	ctx.reset()
 	p.Pool.Put(ctx)
-
-	return
 }

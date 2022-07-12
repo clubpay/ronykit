@@ -478,30 +478,6 @@ walk: // Outer loop for walking the tree
 	}
 }
 
-// Makes a case-insensitive lookup of the given path and tries to find a handler.
-// It can optionally also fix trailing slashes.
-// It returns the case-corrected path and a bool indicating whether the lookup
-// was successful.
-func (n *node) findCaseInsensitivePath(path string, fixTrailingSlash bool) (fixedPath string, found bool) {
-	const stackBufSize = 128
-
-	// Use a static sized buffer on the stack in the common case.
-	// If the path is too long, allocate a buffer on the heap instead.
-	buf := make([]byte, 0, stackBufSize)
-	if l := len(path) + 1; l > stackBufSize {
-		buf = make([]byte, 0, l)
-	}
-
-	ciPath := n.findCaseInsensitivePathRec(
-		path,
-		buf,       // Preallocate enough memory for new path
-		[4]byte{}, // Empty rune buffer
-		fixTrailingSlash,
-	)
-
-	return string(ciPath), ciPath != nil
-}
-
 // Shift bytes in array by n bytes left
 func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 	switch n {

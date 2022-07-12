@@ -190,7 +190,7 @@ func (t *testRESTConn) GetPath() string {
 }
 
 func (t *testRESTConn) Form() (*multipart.Form, error) {
-	return nil, nil
+	panic("not implemented")
 }
 
 func (t *testRESTConn) SetStatusCode(code int) {

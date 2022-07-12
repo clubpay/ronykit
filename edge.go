@@ -146,8 +146,6 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 			s.l.Errorf("got error on shutdown: %v", err)
 		}
 	}
-
-	return
 }
 
 func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
