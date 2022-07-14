@@ -8,10 +8,13 @@ import (
 const (
 	pathGlue = ":"
 	glue     = "@"
+)
 
+const (
 	srliStorage = iota
 	srliPath
 	srliID
+
 	srlLength
 )
 
