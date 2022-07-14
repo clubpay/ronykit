@@ -166,26 +166,26 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 
 func (s Service) dtoStub(stub *Stub) error {
 	for _, c := range s.Contracts {
-		err := stub.addDTO(reflect.TypeOf(c.Input))
+		err := stub.addDTO(reflect.TypeOf(c.Input), false)
 		if err != nil {
 			return err
 		}
 		if c.Output != nil {
-			err = stub.addDTO(reflect.TypeOf(c.Output))
+			err = stub.addDTO(reflect.TypeOf(c.Output), false)
 			if err != nil {
 				return err
 			}
 		}
 
 		for _, pe := range s.PossibleErrors {
-			err = stub.addDTO(reflect.TypeOf(pe.Message))
+			err = stub.addDTO(reflect.TypeOf(pe.Message), true)
 			if err != nil {
 				return err
 			}
 		}
 
 		for _, pe := range c.PossibleErrors {
-			err = stub.addDTO(reflect.TypeOf(pe.Message))
+			err = stub.addDTO(reflect.TypeOf(pe.Message), true)
 			if err != nil {
 				return err
 			}
@@ -207,8 +207,10 @@ func (s Service) rpcStub(
 	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 		m.Request = dto
 	}
-	if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-		m.Response = dto
+	if c.Output != nil {
+		if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+			m.Response = dto
+		}
 	}
 
 	var possibleErrors []Error
@@ -216,8 +218,7 @@ func (s Service) rpcStub(
 	possibleErrors = append(possibleErrors, c.PossibleErrors...)
 	for _, e := range possibleErrors {
 		if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
-			m.PossibleErrors = append(
-				m.PossibleErrors,
+			m.addPossibleError(
 				ErrorDTO{
 					Code: e.Code,
 					Item: e.Item,
@@ -241,8 +242,10 @@ func (s Service) restStub(
 	if dto, ok := stub.getDTO(reflect.TypeOf(c.Input)); ok {
 		m.Request = dto
 	}
-	if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
-		m.Response = dto
+	if c.Output != nil {
+		if dto, ok := stub.getDTO(reflect.TypeOf(c.Output)); ok {
+			m.Response = dto
+		}
 	}
 
 	var possibleErrors []Error
@@ -250,8 +253,7 @@ func (s Service) restStub(
 	possibleErrors = append(possibleErrors, c.PossibleErrors...)
 	for _, e := range possibleErrors {
 		if dto, ok := stub.getDTO(reflect.TypeOf(e.Message)); ok {
-			m.PossibleErrors = append(
-				m.PossibleErrors,
+			m.addPossibleError(
 				ErrorDTO{
 					Code: e.Code,
 					Item: e.Item,

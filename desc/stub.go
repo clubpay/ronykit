@@ -3,6 +3,7 @@ package desc
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/clubpay/ronykit"
 )
@@ -12,7 +13,44 @@ type DTO struct {
 	Comments []string
 	Name     string
 	Type     string
+	IsErr    bool
 	Fields   []DTOField
+}
+
+func (dto DTO) CodeField() string {
+	var fn string
+	for _, f := range dto.Fields {
+		x := strings.ToLower(f.Name)
+		if f.Type != "int" {
+			continue
+		}
+		if x == "code" {
+			return f.Name
+		}
+		if strings.HasPrefix(f.Name, "code") {
+			fn = f.Name
+		}
+	}
+
+	return fn
+}
+
+func (dto DTO) ItemField() string {
+	var fn string
+	for _, f := range dto.Fields {
+		x := strings.ToLower(f.Name)
+		if f.Type != "string" {
+			continue
+		}
+		if x == "item" || x == "items" {
+			return f.Name
+		}
+		if strings.HasPrefix(f.Name, "item") {
+			fn = f.Name
+		}
+	}
+
+	return fn
 }
 
 // DTOField represents description of a field of the DTO
@@ -49,6 +87,15 @@ type RESTMethod struct {
 	PossibleErrors []ErrorDTO
 }
 
+func (rm *RESTMethod) addPossibleError(dto ErrorDTO) {
+	for _, e := range rm.PossibleErrors {
+		if e.Code == dto.Code {
+			return
+		}
+	}
+	rm.PossibleErrors = append(rm.PossibleErrors, dto)
+}
+
 // RPCMethod represents description of a Contract with ronykit.RPCRouteSelector
 type RPCMethod struct {
 	Name           string
@@ -59,6 +106,15 @@ type RPCMethod struct {
 	Encoding       string
 	ronykit.IncomingRPCContainer
 	ronykit.OutgoingRPCContainer
+}
+
+func (rm *RPCMethod) addPossibleError(dto ErrorDTO) {
+	for _, e := range rm.PossibleErrors {
+		if e.Code == dto.Code {
+			return
+		}
+	}
+	rm.PossibleErrors = append(rm.PossibleErrors, dto)
 }
 
 // Stub represents description of a stub of the service described by Service descriptor.
@@ -78,8 +134,10 @@ func newStub(tags ...string) *Stub {
 	}
 }
 
-func (d *Stub) addDTO(mTyp reflect.Type) error {
-	dto := DTO{}
+func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
+	dto := DTO{
+		IsErr: isErr,
+	}
 	if mTyp.Kind() == reflect.Ptr {
 		mTyp = mTyp.Elem()
 	}
@@ -93,12 +151,12 @@ func (d *Stub) addDTO(mTyp reflect.Type) error {
 
 			switch {
 			case k == reflect.Struct:
-				err := d.addDTO(ft.Type)
+				err := d.addDTO(ft.Type, false)
 				if err != nil {
 					return err
 				}
 			case k == reflect.Ptr && ft.Type.Elem().Kind() == reflect.Struct:
-				err := d.addDTO(ft.Type.Elem())
+				err := d.addDTO(ft.Type.Elem(), false)
 				if err != nil {
 					return err
 				}

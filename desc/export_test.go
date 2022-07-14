@@ -7,6 +7,6 @@ var (
 	NewStub = newStub
 )
 
-func (d *Stub) AddDTO(mTyp reflect.Type) error {
-	return d.addDTO(mTyp)
+func (d *Stub) AddDTO(mTyp reflect.Type, isErr bool) error {
+	return d.addDTO(mTyp, isErr)
 }

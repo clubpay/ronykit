@@ -20,12 +20,18 @@ func NewError(code int, item string) *Error {
 	}
 }
 
-func NewErrorWithMsg(code int, item string, msg ronykit.Message) *Error {
-	return &Error{
-		code: code,
-		item: item,
-		msg:  msg,
+func NewErrorWithMsg(msg ronykit.Message) *Error {
+	wErr := &Error{
+		msg: msg,
 	}
+	if e, ok := msg.(interface{ GetCode() int }); ok {
+		wErr.code = e.GetCode()
+	}
+	if e, ok := msg.(interface{ GetItem() string }); ok {
+		wErr.item = e.GetItem()
+	}
+
+	return wErr
 }
 
 func WrapError(err error) *Error {

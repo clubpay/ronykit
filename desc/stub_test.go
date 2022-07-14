@@ -12,7 +12,7 @@ var _ = Describe("Desc", func() {
 	It("should detect all DTOs", func() {
 		d := desc.NewStub("json")
 
-		Expect(d.AddDTO(reflect.TypeOf(&customStruct{}))).To(Succeed())
+		Expect(d.AddDTO(reflect.TypeOf(&customStruct{}), false)).To(Succeed())
 		Expect(d.DTOs).To(HaveLen(2))
 		Expect(d.DTOs["customSubStruct"].Fields).To(HaveLen(2))
 		Expect(d.DTOs["customSubStruct"].Fields[0].Name).To(Equal("SubParam1"))

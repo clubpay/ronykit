@@ -44,6 +44,13 @@ type ErrorMessage struct {
 	Item string `json:"item"`
 }
 
+func (x ErrorMessage) GetCode() int {
+	return x.Code
+}
+func (x ErrorMessage) GetItem() string {
+	return x.Item
+}
+
 // RedirectRequest is a data transfer object
 type RedirectRequest struct {
 	URL string `json:"url"`
@@ -92,7 +99,7 @@ func (s SampleServiceStub) Echo(ctx context.Context, req *EchoRequest) (*EchoRes
 					return err
 				}
 
-				return stub.NewErrorWithMsg(400, "INPUT", res)
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		DefaultResponseHandler(
@@ -123,7 +130,7 @@ func (s SampleServiceStub) Sum1(ctx context.Context, req *SumRequest) (*SumRespo
 					return err
 				}
 
-				return stub.NewErrorWithMsg(400, "INPUT", res)
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		DefaultResponseHandler(
@@ -154,7 +161,7 @@ func (s SampleServiceStub) Sum2(ctx context.Context, req *SumRequest) (*SumRespo
 					return err
 				}
 
-				return stub.NewErrorWithMsg(400, "INPUT", res)
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		DefaultResponseHandler(
@@ -185,7 +192,7 @@ func (s SampleServiceStub) SumRedirect(ctx context.Context, req *SumRequest) (*S
 					return err
 				}
 
-				return stub.NewErrorWithMsg(400, "INPUT", res)
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		DefaultResponseHandler(
