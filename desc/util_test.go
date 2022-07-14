@@ -33,5 +33,6 @@ var _ = Describe("Check Type", func() {
 		Expect(desc.TypeOf("", reflect.TypeOf([]int64{}))).To(Equal("[]int64"))
 		Expect(desc.TypeOf("", reflect.TypeOf([18]int64{}))).To(Equal("[18]int64"))
 		Expect(desc.TypeOf("", reflect.TypeOf(map[string]*customStruct{}))).To(Equal("map[string]*customStruct"))
+		Expect(desc.TypeOf("", reflect.TypeOf(map[string]interface{}{}))).To(Equal("map[string]interface{}"))
 	})
 })

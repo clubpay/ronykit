@@ -15,7 +15,12 @@ func typ(prefix string, t reflect.Type) string {
 	case reflect.Ptr:
 		prefix += "*"
 	case reflect.Interface:
-		return fmt.Sprintf("%s%s", prefix, t.Name())
+		in := t.Name()
+		if in == "" {
+			in = "interface{}"
+		}
+
+		return fmt.Sprintf("%s%s", prefix, in)
 	case reflect.Struct:
 		return fmt.Sprintf("%s%s", prefix, t.Name())
 	case reflect.Map:
