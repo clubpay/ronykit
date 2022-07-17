@@ -12,7 +12,7 @@ import (
 
 type (
 	Params      = httpmux.Params
-	DecoderFunc = httpmux.DecoderFunc
+	DecoderFunc = func(bag Params, data []byte) (ronykit.Message, error)
 )
 
 // emptyInterface is the header for an interface{} value.
