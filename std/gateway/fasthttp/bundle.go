@@ -139,16 +139,28 @@ func (b *bundle) registerREST(
 		decoder = reflectDecoder(enc, ronykit.CreateMessageFactory(input))
 	}
 
-	b.httpMux.Handle(
-		restSelector.GetMethod(), restSelector.GetPath(),
-		&httpmux.RouteData{
-			ServiceName: svcName,
-			ContractID:  contractID,
-			Method:      restSelector.GetMethod(),
-			Path:        restSelector.GetPath(),
-			Decoder:     decoder,
-		},
-	)
+	var methods []string
+	if method := restSelector.GetMethod(); method == MethodWildcard {
+		methods = append(methods,
+			MethodGet, MethodPost, MethodPut, MethodPatch, MethodDelete, MethodOptions,
+			MethodConnect, MethodTrace, MethodHead,
+		)
+	} else {
+		methods = append(methods, method)
+	}
+
+	for _, method := range methods {
+		b.httpMux.Handle(
+			method, restSelector.GetPath(),
+			&httpmux.RouteData{
+				ServiceName: svcName,
+				ContractID:  contractID,
+				Method:      method,
+				Path:        restSelector.GetPath(),
+				Decoder:     decoder,
+			},
+		)
+	}
 }
 
 func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
