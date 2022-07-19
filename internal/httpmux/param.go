@@ -1,6 +1,9 @@
 package httpmux
 
-import "github.com/clubpay/ronykit"
+import (
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/utils"
+)
 
 // Param is a single URL parameter, consisting of a key and a value.
 type Param struct {
@@ -18,7 +21,7 @@ type Params []Param
 func (ps Params) ByName(name string) string {
 	for _, p := range ps {
 		if p.Key == name {
-			return p.Value
+			return string(utils.S2B(p.Value))
 		}
 	}
 
