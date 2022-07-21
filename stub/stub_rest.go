@@ -20,8 +20,11 @@ type RESTResponse interface {
 	GetHeader(key string) string
 }
 
+type RESTPreflightHandler func(r *fasthttp.Request)
+
 type restClientCtx struct {
 	err            *Error
+	preflights     []RESTPreflightHandler
 	handlers       map[int]RESTResponseHandler
 	defaultHandler RESTResponseHandler
 	r              *reflector.Reflector
@@ -101,10 +104,20 @@ func (hc *restClientCtx) SetBody(body []byte) *restClientCtx {
 	return hc
 }
 
-func (hc *restClientCtx) Run(ctx context.Context) *restClientCtx {
+func (hc *restClientCtx) Run(ctx context.Context, opt ...RESTOption) *restClientCtx {
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
+
+	// apply options
+	for _, o := range opt {
+		o(hc)
+	}
+
+	// run preflights
+	for _, pre := range hc.preflights {
+		pre(hc.req)
+	}
 
 	// execute the request
 	hc.err = WrapError(hc.c.Do(hc.req, hc.res))
@@ -247,6 +260,7 @@ func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 // Run(context.Background())
 func (hc *restClientCtx) AutoRun(
 	ctx context.Context, route string, enc ronykit.Encoding, m ronykit.Message,
+	opt ...RESTOption,
 ) *restClientCtx {
 	ref := hc.r.Load(m, enc.Tag())
 	fields, ok := ref.ByTag(enc.Tag())
@@ -287,5 +301,5 @@ func (hc *restClientCtx) AutoRun(
 		)
 	}
 
-	return hc.SetPath(path).Run(ctx)
+	return hc.SetPath(path).Run(ctx, opt...)
 }

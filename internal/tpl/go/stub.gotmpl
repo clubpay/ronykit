@@ -73,7 +73,9 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 {{ range .RESTs }}
 {{$methodName := .Name}}
 {{- if ne $methodName "" }}
-func (s {{$serviceName}}Stub) {{$methodName}}(ctx context.Context, req *{{.Request.Name}}) (*{{.Response.Name}}, *stub.Error){
+func (s {{$serviceName}}Stub) {{$methodName}}(
+	ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption,
+) (*{{.Response.Name}}, *stub.Error){
 	res := &{{.Response.Name}}{}
 	httpCtx := s.s.REST().
 		SetMethod("{{.Method}}").
@@ -96,7 +98,7 @@ func (s {{$serviceName}}Stub) {{$methodName}}(ctx context.Context, req *{{.Reque
 				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req)
+		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
