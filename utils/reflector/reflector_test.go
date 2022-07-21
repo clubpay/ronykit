@@ -16,8 +16,8 @@ func TestReflector(t *testing.T) {
 }
 
 type testMessage struct {
-	X string `json:"xTag"`
-	Y int64  `json:"yTag"`
+	X string `json:"xTag" otherTag:"xOther"`
+	Y int64  `json:"yTag" otherTag:"yOther"`
 	z string
 	M map[string]string
 }
@@ -31,6 +31,7 @@ var _ = Describe("Reflector", func() {
 		M: nil,
 	}
 	rObj := r.Load(m, "json")
+
 	It("Load by Struct Fields", func() {
 		obj := rObj.Obj()
 		Expect(obj.GetStringDefault(m, "X", "")).To(Equal(m.X))

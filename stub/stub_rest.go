@@ -9,6 +9,7 @@ import (
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
+	"github.com/goccy/go-json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -282,8 +283,10 @@ func (hc *restClientCtx) AutoRun(
 			return fmt.Sprintf("%v", v)
 		},
 	)
+	hc.SetPath(path)
 
-	if utils.B2S(hc.req.Header.Method()) == http.MethodGet {
+	switch utils.B2S(hc.req.Header.Method()) {
+	case http.MethodGet:
 		fields.WalkFields(
 			func(key string, f reflector.FieldInfo) {
 				_, ok := usedParams[key]
@@ -299,7 +302,16 @@ func (hc *restClientCtx) AutoRun(
 				hc.SetQuery(key, fmt.Sprintf("%v", v))
 			},
 		)
+	default:
+		var reqBody []byte
+		switch enc {
+		case ronykit.JSON:
+			reqBody, _ = json.Marshal(m)
+		default:
+			reqBody, _ = ronykit.MarshalMessage(m)
+		}
+		hc.SetBody(reqBody)
 	}
 
-	return hc.SetPath(path).Run(ctx, opt...)
+	return hc.Run(ctx, opt...)
 }
