@@ -294,6 +294,17 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 		},
 	)
 
+	conn.ctx.PostArgs().VisitAll(
+		func(key, value []byte) {
+			params = append(
+				params,
+				httpmux.Param{
+					Key:   utils.B2S(key),
+					Value: utils.B2S(value),
+				},
+			)
+		})
+
 	m, err := routeData.Decoder(params, in)
 	if err != nil {
 		return ronykit.NoExecuteArg, err
