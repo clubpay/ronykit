@@ -23,17 +23,12 @@ func (t testSelector) GetEncoding() ronykit.Encoding {
 
 type testGateway struct {
 	d ronykit.GatewayDelegate
-	c testConn
 }
 
 var _ ronykit.Gateway = (*testGateway)(nil)
 
-func (t *testGateway) Send(msg []byte) {
-	t.d.OnMessage(t.c, msg)
-}
-
-func (t *testGateway) Receive() ([]byte, error) {
-	return t.c.Read()
+func (t *testGateway) Send(c *testConn, msg []byte) {
+	t.d.OnMessage(c, msg)
 }
 
 func (t testGateway) Start(_ context.Context) error {
@@ -79,9 +74,7 @@ var _ = Describe("EdgeServer", func() {
 		edge *ronykit.EdgeServer
 	)
 	BeforeEach(func() {
-		b = &testGateway{
-			c: newTestConn(utils.RandomUint64(0), "", false),
-		}
+		b = &testGateway{}
 		var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
 			return desc.NewService("testService").
 				AddContract(
@@ -112,8 +105,9 @@ var _ = Describe("EdgeServer", func() {
 
 	DescribeTable("should echo back the message",
 		func(msg []byte) {
-			b.Send(msg)
-			Expect(b.Receive()).To(BeEquivalentTo(msg))
+			c := newTestConn(utils.RandomUint64(0), "", false)
+			b.Send(c, msg)
+			Expect(c.Read()).To(BeEquivalentTo(msg))
 		},
 		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
 		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
@@ -131,10 +125,8 @@ func BenchmarkServer(b *testing.B) {
 						AddSelector(testSelector{}).
 						AddHandler(
 							func(ctx *ronykit.Context) {
-								m := ctx.In().GetMsg()
-
 								ctx.Out().
-									SetMsg(m).
+									SetMsg(ctx.In().GetMsg()).
 									Send()
 
 								return
@@ -152,7 +144,8 @@ func BenchmarkServer(b *testing.B) {
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				bundle.Send(req)
+				c := newTestConn(utils.RandomUint64(0), "", false)
+				bundle.Send(c, req)
 			}
 		},
 	)

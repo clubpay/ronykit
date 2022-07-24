@@ -25,8 +25,8 @@ type testConn struct {
 
 var _ ronykit.Conn = (*testConn)(nil)
 
-func newTestConn(id uint64, clientIP string, stream bool) testConn {
-	return testConn{
+func newTestConn(id uint64, clientIP string, stream bool) *testConn {
+	return &testConn{
 		id:       id,
 		clientIP: clientIP,
 		stream:   stream,
