@@ -5,9 +5,9 @@ go 1.17
 require (
 	github.com/fasthttp/websocket v1.5.1-rc.4
 	github.com/gobwas/ws v1.1.0
-	github.com/goccy/go-json v0.9.8
-	github.com/goccy/go-reflect v1.1.1-0.20210520085854-e1eb8c5193d0
-	github.com/jedib0t/go-pretty/v6 v6.3.1
+	github.com/goccy/go-json v0.9.10
+	github.com/goccy/go-reflect v1.2.0
+	github.com/jedib0t/go-pretty/v6 v6.3.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
 	github.com/panjf2000/gnet/v2 v2.0.0
