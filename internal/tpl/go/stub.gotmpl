@@ -22,7 +22,7 @@
 		return x.{{.CodeField}}
 	}
 	{{- end }}
-	{{- if ne .ItemField ""}}
+	{{ if ne .ItemField ""}}
 	func (x {{.Name}}) GetItem() string {
 		return x.{{.ItemField}}
 	}

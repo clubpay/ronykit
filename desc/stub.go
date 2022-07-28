@@ -147,20 +147,15 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 	case reflect.Struct:
 		for i := 0; i < mTyp.NumField(); i++ {
 			ft := mTyp.Field(i)
-			k := ft.Type.Kind()
+			fe := extractElem(ft)
 
-			switch {
-			case k == reflect.Struct:
-				err := d.addDTO(ft.Type, false)
+			switch fe.Kind() {
+			case reflect.Struct:
+				err := d.addDTO(fe, false)
 				if err != nil {
 					return err
 				}
-			case k == reflect.Ptr && ft.Type.Elem().Kind() == reflect.Struct:
-				err := d.addDTO(ft.Type.Elem(), false)
-				if err != nil {
-					return err
-				}
-			case k == reflect.Interface:
+			case reflect.Interface:
 				// we ignore interface types in DTOs
 				// FIXME: maybe we can implement some dummy struct which implements the interface ?
 				continue
@@ -171,7 +166,7 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 				Name:     ft.Name,
 				Type:     typ("", ft.Type),
 				Embedded: ft.Anonymous,
-				IsDTO:    k == reflect.Struct,
+				IsDTO:    fe.Kind() == reflect.Struct,
 			}
 
 			for _, t := range d.tags {
@@ -200,6 +195,31 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 	d.DTOs[dto.Name] = dto
 
 	return nil
+}
+
+func extractElem(in reflect.StructField) reflect.Type {
+	t := in.Type
+	k := t.Kind()
+
+Loop:
+	if k == reflect.Ptr {
+		return t.Elem()
+	}
+	if k == reflect.Slice {
+		switch t.Elem().Kind() {
+		case reflect.Struct:
+			return t.Elem()
+		case reflect.Ptr:
+			t = t.Elem()
+			k = t.Kind()
+
+			goto Loop
+		}
+
+		return t.Elem()
+	}
+
+	return t
 }
 
 func (d *Stub) getDTO(mTyp reflect.Type) (DTO, bool) {

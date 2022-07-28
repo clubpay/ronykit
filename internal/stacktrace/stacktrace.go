@@ -37,7 +37,7 @@ const (
 	stacktraceFull
 )
 
-var _stacktracePool = sync.Pool{
+var stacktracePool = sync.Pool{
 	New: func() interface{} {
 		return &stacktrace{
 			storage: make([]uintptr, 64),
@@ -68,7 +68,7 @@ type stacktraceDepth int
 //
 // The caller must call Free on the returned stacktrace after using it.
 func captureStacktrace(skip int, depth stacktraceDepth) *stacktrace {
-	stack := _stacktracePool.Get().(*stacktrace) //nolint:forcetypeassert
+	stack := stacktracePool.Get().(*stacktrace) //nolint:forcetypeassert
 
 	switch depth {
 	case stacktraceFirst:
@@ -113,7 +113,7 @@ func captureStacktrace(skip int, depth stacktraceDepth) *stacktrace {
 func (st *stacktrace) Free() {
 	st.frames = nil
 	st.pcs = nil
-	_stacktracePool.Put(st)
+	stacktracePool.Put(st)
 }
 
 // Count reports the total number of frames in this stacktrace.
