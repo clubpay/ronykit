@@ -1,5 +1,9 @@
 package ronykit
 
+import (
+	"github.com/clubpay/ronykit/internal/errors"
+)
+
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
@@ -52,10 +56,18 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 
 	arg, err := n.gw.Dispatch(ctx, msg)
 	if err != nil {
-		n.eh(ctx, err)
+		n.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
 	} else {
 		ctx.execute(arg, n.cr(arg.ContractID))
 	}
 
 	n.releaseCtx(ctx)
 }
+
+var (
+	ErrNoHandler                   = errors.New("handler is not set for request")
+	ErrWriteToClosedConn           = errors.New("write to closed connection")
+	ErrDecodeIncomingMessageFailed = errors.New("decoding the incoming message failed")
+	ErrEncodeOutgoingMessageFailed = errors.New("encoding the outgoing message failed")
+	ErrDispatchFailed              = errors.New("dispatch failed")
+)

@@ -17,10 +17,6 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-var errServiceAlreadyRegistered errors.ErrFunc = func(v ...interface{}) error {
-	return fmt.Errorf("service %s already registered", v...)
-}
-
 type contractResolver func(contractID string) Contract
 
 // EdgeServer is the main component of the ronykit. It glues all other components of the
@@ -89,7 +85,7 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 // RouteSelector in each desc.Contract.
 func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 	if _, ok := s.contracts[svc.Name()]; ok {
-		panic(errServiceAlreadyRegistered(svc.Name()))
+		panic(errors.New("service already registered: %s", svc.Name()))
 	}
 
 	s.svc = append(s.svc, svc)

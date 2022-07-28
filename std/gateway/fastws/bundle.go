@@ -2,11 +2,11 @@ package fastws
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
+	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/panjf2000/gnet/v2"
 )
 
@@ -79,18 +79,18 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return ronykit.NoExecuteArg, err
+		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return ronykit.NoExecuteArg, errNoHandler
+		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.Fill(msg)
 	if err != nil {
-		return ronykit.NoExecuteArg, err
+		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -116,7 +116,7 @@ func (b *bundle) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 
 	data, err := outputMsgContainer.Marshal()
 	if err != nil {
-		return err
+		return errors.Wrap(ronykit.ErrEncodeOutgoingMessageFailed, err)
 	}
 
 	_, err = conn.Write(data)
@@ -153,5 +153,3 @@ func (b *bundle) Shutdown(ctx context.Context) error {
 func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
-
-var errNoHandler = fmt.Errorf("no handler for request")

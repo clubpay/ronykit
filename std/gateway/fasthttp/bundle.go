@@ -9,6 +9,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
+	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/clubpay/ronykit/internal/httpmux"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/buf"
@@ -213,13 +214,13 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 
 	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return ronykit.NoExecuteArg, errNoHandler
+		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.Fill(msg)
 	if err != nil {
-		return ronykit.NoExecuteArg, err
+		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -278,7 +279,7 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
-		return ronykit.NoExecuteArg, errRouteNotFound
+		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
 	}
 
 	// Walk over all the query params
@@ -307,7 +308,7 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 
 	m, err := routeData.Decoder(params, in)
 	if err != nil {
-		return ronykit.NoExecuteArg, err
+		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -375,9 +376,3 @@ func (b *bundle) Shutdown(_ context.Context) error {
 func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
 	b.d = d
 }
-
-var (
-	errRouteNotFound    = fmt.Errorf("route not found")
-	errNoHandler        = fmt.Errorf("no handler for request")
-	errConnectionClosed = fmt.Errorf("connection closed")
-)

@@ -37,7 +37,7 @@ func (w *wsConn) Write(data []byte) (int, error) {
 	if w.c != nil {
 		err = w.c.WriteMessage(websocket.TextMessage, data)
 	} else {
-		err = errConnectionClosed
+		err = ronykit.ErrWriteToClosedConn
 	}
 	w.Unlock()
 	if err != nil {

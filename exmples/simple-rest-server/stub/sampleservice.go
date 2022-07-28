@@ -47,6 +47,7 @@ type ErrorMessage struct {
 func (x ErrorMessage) GetCode() int {
 	return x.Code
 }
+
 func (x ErrorMessage) GetItem() string {
 	return x.Item
 }
