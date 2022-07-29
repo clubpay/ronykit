@@ -65,7 +65,7 @@ func UnmarshalMessage(data []byte, m Message) error {
 	case encoding.TextUnmarshaler:
 		err = v.UnmarshalText(data)
 	default:
-		err = json.Unmarshal(data, m)
+		err = json.UnmarshalNoEscape(data, m)
 	}
 
 	return err
@@ -84,7 +84,7 @@ func MarshalMessage(m Message) ([]byte, error) {
 	case encoding.TextMarshaler:
 		return v.MarshalText()
 	default:
-		return json.Marshal(m)
+		return json.MarshalNoEscape(m)
 	}
 }
 

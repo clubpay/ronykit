@@ -306,7 +306,7 @@ func (hc *restClientCtx) AutoRun(
 		var reqBody []byte
 		switch enc {
 		case ronykit.JSON:
-			reqBody, _ = json.Marshal(m)
+			reqBody, _ = json.MarshalNoEscape(m)
 		default:
 			reqBody, _ = ronykit.MarshalMessage(m)
 		}

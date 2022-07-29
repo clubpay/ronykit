@@ -18,11 +18,11 @@ var SimpleIncomingJSONRPC = func() ronykit.IncomingRPCContainer {
 }
 
 func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
-	return json.Unmarshal(data, e)
+	return json.UnmarshalNoEscape(data, e)
 }
 
 func (e *simpleIncomingJSONRPC) Fill(m ronykit.Message) error {
-	return json.Unmarshal(e.Payload, m)
+	return json.UnmarshalNoEscape(e.Payload, m)
 }
 
 func (e *simpleIncomingJSONRPC) GetHdr(key string) string {

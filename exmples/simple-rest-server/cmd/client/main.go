@@ -20,7 +20,7 @@ func main() {
 		SetResponseHandler(
 			http.StatusOK,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(json.Unmarshal(r.GetBody(), &res1))
+				return stub.WrapError(json.UnmarshalNoEscape(r.GetBody(), &res1))
 			},
 		).
 		Run(context.Background())

@@ -18,8 +18,9 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.EchoRequest{}).
 				SetOutput(&dto.EchoResponse{}).
-				NamedSelector("Echo", fasthttp.REST(http.MethodGet, "/echo/:randomID")).
-				NamedSelector("Echo", fasthttp.RPC("echoRequest")).
+				NamedSelector("EchoGET", fasthttp.REST(http.MethodGet, "/echo/:randomID")).
+				NamedSelector("EchoPOST", fasthttp.REST(http.MethodPost, "/echo-post")).
+				NamedSelector("EchoRPC", fasthttp.RPC("echoRequest")).
 				AddModifier(func(envelope ronykit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).

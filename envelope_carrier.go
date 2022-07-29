@@ -42,7 +42,7 @@ func envelopeCarrierFromContext(ctx *Context) envelopeCarrier {
 
 func envelopeCarrierFromData(data []byte) envelopeCarrier {
 	ec := envelopeCarrier{}
-	_ = json.Unmarshal(data, &ec)
+	_ = json.UnmarshalNoEscape(data, &ec)
 
 	return ec
 }

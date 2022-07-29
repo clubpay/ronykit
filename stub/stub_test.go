@@ -51,7 +51,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 					switch r.StatusCode() {
 					case http.StatusOK:
 						v := &ipInfoResponse{}
-						Expect(json.Unmarshal(r.GetBody(), v)).To(Succeed())
+						Expect(json.UnmarshalNoEscape(r.GetBody(), v)).To(Succeed())
 						Expect(v.Readme).To(Not(BeEmpty()))
 						Expect(v.IP).To(Not(BeEmpty()))
 					default:
