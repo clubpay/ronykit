@@ -29,7 +29,7 @@ type GatewayDelegate interface {
 	// OnClose must be called whenever the connection is gone.
 	OnClose(connID uint64)
 	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c Conn, msg []byte)
+	OnMessage(c Conn, wf WriteFunc, msg []byte)
 }
 
 // northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
@@ -51,8 +51,9 @@ func (n *northBridge) OnClose(connID uint64) {
 	// Maybe later we can do something
 }
 
-func (n *northBridge) OnMessage(conn Conn, msg []byte) {
+func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx := n.acquireCtx(conn)
+	ctx.wf = wf
 
 	arg, err := n.gw.Dispatch(ctx, msg)
 	if err != nil {

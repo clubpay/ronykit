@@ -98,30 +98,10 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 		SetMsg(msg)
 
 	return ronykit.ExecuteArg{
-		WriteFunc:   b.writeFunc,
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       routeData.Predicate,
 	}, nil
-}
-
-func (b *bundle) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
-	outputMsgContainer := b.rpcOutFactory()
-	outputMsgContainer.SetPayload(e.GetMsg())
-	e.WalkHdr(func(key string, val string) bool {
-		outputMsgContainer.SetHdr(key, val)
-
-		return true
-	})
-
-	data, err := outputMsgContainer.Marshal()
-	if err != nil {
-		return errors.Wrap(ronykit.ErrEncodeOutgoingMessageFailed, err)
-	}
-
-	_, err = conn.Write(data)
-
-	return err
 }
 
 func (b *bundle) Start(_ context.Context) error {

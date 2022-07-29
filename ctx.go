@@ -49,7 +49,6 @@ func newContext() *Context {
 
 // execute the Context with the provided ExecuteArg. It implements ExecuteFunc
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
-	ctx.wf = arg.WriteFunc
 	ctx.
 		Set(CtxServiceName, arg.ServiceName).
 		Set(CtxContractID, arg.ContractID).

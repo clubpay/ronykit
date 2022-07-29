@@ -20,7 +20,6 @@ type Bundle interface {
 
 type (
 	ExecuteArg struct {
-		WriteFunc
 		ServiceName string
 		ContractID  string
 		Route       string

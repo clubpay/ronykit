@@ -201,7 +201,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
-	b.d.OnMessage(wsc, *buf.Bytes())
+	b.d.OnMessage(wsc, b.wsWriteFunc, *buf.Bytes())
 	buf.Release()
 }
 
@@ -228,7 +228,6 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 		SetMsg(msg)
 
 	return ronykit.ExecuteArg{
-		WriteFunc:   b.wsWriteFunc,
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       routeData.Predicate,
@@ -262,7 +261,7 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 
 	c.ctx = ctx
 	b.d.OnOpen(c)
-	b.d.OnMessage(c, ctx.PostBody())
+	b.d.OnMessage(c, b.httpWriteFunc, ctx.PostBody())
 	b.d.OnClose(c.ConnID())
 
 	b.connPool.Put(c)
@@ -316,7 +315,6 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 		SetMsg(m)
 
 	return ronykit.ExecuteArg{
-		WriteFunc:   b.httpWriteFunc,
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       fmt.Sprintf("%s %s", routeData.Method, routeData.Path),

@@ -2,13 +2,15 @@ package fastws
 
 import (
 	"bytes"
-	"errors"
+	builtinErr "errors"
 	"io"
 	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/gobwas/ws"
@@ -33,8 +35,27 @@ func newGateway(b *bundle) (*gateway, error) {
 	return gw, nil
 }
 
+func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
+	outputMsgContainer := gw.b.rpcOutFactory()
+	outputMsgContainer.SetPayload(e.GetMsg())
+	e.WalkHdr(func(key string, val string) bool {
+		outputMsgContainer.SetHdr(key, val)
+
+		return true
+	})
+
+	data, err := outputMsgContainer.Marshal()
+	if err != nil {
+		return errors.Wrap(ronykit.ErrEncodeOutgoingMessageFailed, err)
+	}
+
+	_, err = conn.Write(data)
+
+	return err
+}
+
 func (e *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
-	e.b.d.OnMessage(wsc, (*payload.Bytes())[:n])
+	e.b.d.OnMessage(wsc, e.writeFunc, (*payload.Bytes())[:n])
 	payload.Release()
 }
 
@@ -143,7 +164,7 @@ func (e *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 
 	payloadBuffer := buf.GetLen(int(hdr.Length))
 	n, err := wsc.r.Read(*payloadBuffer.Bytes())
-	if err != nil && !errors.Is(err, io.EOF) {
+	if err != nil && !builtinErr.Is(err, io.EOF) {
 		return gnet.None
 	}
 

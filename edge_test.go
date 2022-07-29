@@ -28,7 +28,20 @@ type testGateway struct {
 var _ ronykit.Gateway = (*testGateway)(nil)
 
 func (t *testGateway) Send(c *testConn, msg []byte) {
-	t.d.OnMessage(c, msg)
+	t.d.OnMessage(
+		c,
+		func(conn ronykit.Conn, e ronykit.Envelope) error {
+			b, err := ronykit.MarshalMessage(e.GetMsg())
+			if err != nil {
+				return err
+			}
+
+			_, err = conn.Write(b)
+
+			return err
+		},
+		msg,
+	)
 }
 
 func (t testGateway) Start(_ context.Context) error {
@@ -47,16 +60,6 @@ func (t testGateway) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 	ctx.In().SetMsg(ronykit.RawMessage(in))
 
 	return ronykit.ExecuteArg{
-		WriteFunc: func(conn ronykit.Conn, e ronykit.Envelope) error {
-			b, err := ronykit.MarshalMessage(e.GetMsg())
-			if err != nil {
-				return err
-			}
-
-			_, err = conn.Write(b)
-
-			return err
-		},
 		ServiceName: "testService",
 		ContractID:  "testService.1",
 		Route:       "someRoute",
