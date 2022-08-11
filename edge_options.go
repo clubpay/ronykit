@@ -1,5 +1,7 @@
 package ronykit
 
+import "time"
+
 type Option func(s *EdgeServer)
 
 func WithLogger(l Logger) Option {
@@ -24,6 +26,14 @@ func RegisterService(services ...Service) Option {
 		for _, svc := range services {
 			s.RegisterService(svc)
 		}
+	}
+}
+
+// WithShutdownTimeout sets the maximum time to wait until all running request to finish.
+// Default is to wait forever.
+func WithShutdownTimeout(d time.Duration) Option {
+	return func(s *EdgeServer) {
+		s.shutdownTimeout = d
 	}
 }
 

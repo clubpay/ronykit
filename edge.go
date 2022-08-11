@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/clubpay/ronykit/utils"
@@ -28,6 +30,10 @@ type EdgeServer struct {
 	contracts map[string]Contract
 	eh        ErrHandler
 	l         Logger
+	wg        sync.WaitGroup
+
+	// configs
+	shutdownTimeout time.Duration
 }
 
 func NewServer(opts ...Option) *EdgeServer {
@@ -57,6 +63,7 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 			eh: s.eh,
 			cr: s.getContract,
 			gw: gw,
+			wg: &s.wg,
 		}
 		s.nb = append(s.nb, nb)
 
@@ -141,6 +148,23 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 		if err != nil {
 			s.l.Errorf("got error on shutdown: %v", err)
 		}
+	}
+
+	if s.shutdownTimeout == 0 {
+		s.wg.Wait()
+
+		return
+	}
+
+	waitCh := make(chan struct{}, 1)
+	go func() {
+		s.wg.Wait()
+		waitCh <- struct{}{}
+	}()
+
+	select {
+	case <-waitCh:
+	case <-time.After(s.shutdownTimeout):
 	}
 }
 

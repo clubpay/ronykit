@@ -27,19 +27,6 @@ type ipInfoResponse struct {
 var _ = Describe("Stub Basic Functionality", func() {
 	ctx := context.Background()
 
-	It("should return 200 status", func() {
-		s := stub.New("webhook.site", stub.Secure())
-		httpCtx := s.REST().
-			SetMethod(http.MethodGet).
-			SetPath("/22fda9e7-1660-406e-b11e-993e070f175e").
-			SetQuery("someKey", "someValue").
-			Run(ctx)
-		defer httpCtx.Release()
-
-		Expect(httpCtx.Err()).To(BeNil())
-		Expect(httpCtx.StatusCode()).To(Equal(http.StatusOK))
-	})
-
 	It("should unmarshal response from json", func() {
 		s := stub.New("ipinfo.io", stub.Secure())
 		httpCtx := s.REST().

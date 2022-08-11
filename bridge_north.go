@@ -1,6 +1,8 @@
 package ronykit
 
 import (
+	"sync"
+
 	"github.com/clubpay/ronykit/internal/errors"
 )
 
@@ -39,6 +41,7 @@ type northBridge struct {
 	eh ErrHandler
 	cr contractResolver
 	gw Gateway
+	wg *sync.WaitGroup
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
@@ -52,6 +55,7 @@ func (n *northBridge) OnClose(connID uint64) {
 }
 
 func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
+	n.wg.Add(1)
 	ctx := n.acquireCtx(conn)
 	ctx.wf = wf
 
@@ -63,6 +67,7 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	}
 
 	n.releaseCtx(ctx)
+	n.wg.Done()
 }
 
 var (
