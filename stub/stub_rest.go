@@ -263,6 +263,13 @@ func (hc *restClientCtx) AutoRun(
 	ctx context.Context, route string, enc ronykit.Encoding, m ronykit.Message,
 	opt ...RESTOption,
 ) *restClientCtx {
+	switch enc.Tag() {
+	case ronykit.JSON.Tag():
+		hc.SetHeader("Content-Type", "application/json")
+	case ronykit.Proto.Tag():
+		hc.SetHeader("Content-Type", "application/protobuf")
+	}
+
 	ref := hc.r.Load(m, enc.Tag())
 	fields, ok := ref.ByTag(enc.Tag())
 	if !ok {
