@@ -11,6 +11,7 @@ type Selector struct {
 
 var _ ronykit.RPCRouteSelector = (*Selector)(nil)
 
+// RPC returns a selector that acts on websocket messages
 func RPC(predicate string) Selector {
 	return Selector{
 		Predicate: predicate,

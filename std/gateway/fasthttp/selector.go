@@ -1,6 +1,8 @@
 package fasthttp
 
 import (
+	"net/http"
+
 	"github.com/clubpay/ronykit"
 )
 
@@ -20,6 +22,7 @@ var (
 	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
 )
 
+// REST returns a Selector which acts on http requests.
 func REST(method, path string) Selector {
 	return Selector{
 		Method: method,
@@ -27,6 +30,32 @@ func REST(method, path string) Selector {
 	}
 }
 
+// POST a shortcut for REST(http.MethodPost, path)
+func POST(path string) Selector {
+	return REST(http.MethodPost, path)
+}
+
+// GET a shortcut for REST(http.MethodGet, path)
+func GET(path string) Selector {
+	return REST(http.MethodGet, path)
+}
+
+// PATCH a shortcut for REST(http.MethodPatch, path)
+func PATCH(path string) Selector {
+	return REST(http.MethodPatch, path)
+}
+
+// PUT a shortcut for REST(http.MethodPut, path)
+func PUT(path string) Selector {
+	return REST(http.MethodPut, path)
+}
+
+// DELETE a shortcut for REST(http.MethodDelete, path)
+func DELETE(path string) Selector {
+	return REST(http.MethodDelete, path)
+}
+
+// RPC returns a Selector which acts on websocket requests
 func RPC(predicate string) Selector {
 	return Selector{
 		Predicate: predicate,
