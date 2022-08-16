@@ -48,6 +48,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 					return nil
 				},
 			).
+			SetHeader("SomeKey", "SomeValue").
 			Run(ctx)
 		defer httpCtx.Release()
 

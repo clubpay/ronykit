@@ -145,6 +145,19 @@ func (hc *restClientCtx) Run(ctx context.Context, opt ...RESTOption) *restClient
 
 // Err returns the error if any occurred during the execution.
 func (hc *restClientCtx) Err() *Error {
+	if hc.err == nil {
+		return nil
+	}
+
+	return hc.err
+}
+
+// Error returns the error if any occurred during the execution.
+func (hc *restClientCtx) Error() error {
+	if hc.err == nil {
+		return nil
+	}
+
 	return hc.err
 }
 
