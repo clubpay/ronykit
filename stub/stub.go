@@ -17,7 +17,7 @@ type Stub struct {
 
 func New(hostPort string, opts ...Option) *Stub {
 	cfg := config{
-		name:         "RonyKIT StubClient",
+		name:         "RonyKIT Client",
 		hostPort:     hostPort,
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
