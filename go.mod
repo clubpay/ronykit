@@ -10,7 +10,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.3.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
-	github.com/panjf2000/gnet/v2 v2.0.0
+	github.com/panjf2000/gnet/v2 v2.1.1
 	github.com/valyala/fasthttp v1.39.0
 )
 

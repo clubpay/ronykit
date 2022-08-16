@@ -54,59 +54,59 @@ func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	return err
 }
 
-func (e *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
-	e.b.d.OnMessage(wsc, e.writeFunc, (*payload.Bytes())[:n])
+func (gw *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
+	gw.b.d.OnMessage(wsc, gw.writeFunc, (*payload.Bytes())[:n])
 	payload.Release()
 }
 
-func (e *gateway) getConnWrap(conn gnet.Conn) *wsConn {
+func (gw *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 	connID, ok := conn.Context().(uint64)
 	if !ok {
 		return nil
 	}
-	e.Lock()
-	cw := e.conns[connID]
-	e.Unlock()
+	gw.Lock()
+	cw := gw.conns[connID]
+	gw.Unlock()
 
 	return cw
 }
 
-func (e *gateway) OnBoot(_ gnet.Engine) (action gnet.Action) {
+func (gw *gateway) OnBoot(_ gnet.Engine) (action gnet.Action) {
 	return gnet.None
 }
 
-func (e *gateway) OnShutdown(_ gnet.Engine) {}
+func (gw *gateway) OnShutdown(_ gnet.Engine) {}
 
-func (e *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
-	wsc := newWebsocketConn(atomic.AddUint64(&e.nextID, 1), c)
+func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
+	wsc := newWebsocketConn(atomic.AddUint64(&gw.nextID, 1), c)
 	c.SetContext(wsc.id)
 
-	e.Lock()
-	e.conns[wsc.id] = wsc
-	e.Unlock()
+	gw.Lock()
+	gw.conns[wsc.id] = wsc
+	gw.Unlock()
 
-	e.b.d.OnOpen(wsc)
+	gw.b.d.OnOpen(wsc)
 
 	return nil, gnet.None
 }
 
-func (e *gateway) OnClose(c gnet.Conn, err error) (action gnet.Action) {
+func (gw *gateway) OnClose(c gnet.Conn, err error) (action gnet.Action) {
 	connID, ok := c.Context().(uint64)
 	if ok {
-		e.b.d.OnClose(connID)
+		gw.b.d.OnClose(connID)
 
-		e.Lock()
-		delete(e.conns, connID)
-		e.Unlock()
+		gw.Lock()
+		delete(gw.conns, connID)
+		gw.Unlock()
 	}
 
-	_ = c.Close(nil)
+	_ = c.Close()
 
 	return gnet.Close
 }
 
-func (e *gateway) OnTraffic(c gnet.Conn) gnet.Action {
-	wsc := e.getConnWrap(c)
+func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
+	wsc := gw.getConnWrap(c)
 	if wsc == nil {
 		return gnet.Close
 	}
@@ -168,12 +168,12 @@ func (e *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		return gnet.None
 	}
 
-	go e.reactFunc(wsc, payloadBuffer, n)
+	go gw.reactFunc(wsc, payloadBuffer, n)
 
 	return gnet.None
 }
 
-func (e *gateway) OnTick() (delay time.Duration, action gnet.Action) {
+func (gw *gateway) OnTick() (delay time.Duration, action gnet.Action) {
 	return 0, gnet.None
 }
 

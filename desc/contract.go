@@ -115,6 +115,11 @@ func (c *Contract) NamedSelector(name string, s ronykit.RouteSelector) *Contract
 	return c.AddNamedSelector(name, s)
 }
 
+// SelectorWithName is an alias for AddNamedSelector
+func (c *Contract) SelectorWithName(name string, s ronykit.RouteSelector) *Contract {
+	return c.AddNamedSelector(name, s)
+}
+
 // SetCoordinator sets a ronykit.EdgeSelectorFunc for this contract, to coordinate requests to
 // right ronykit.EdgeServer instance.
 func (c *Contract) SetCoordinator(f ronykit.EdgeSelectorFunc) *Contract {

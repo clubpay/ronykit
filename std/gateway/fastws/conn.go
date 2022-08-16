@@ -31,7 +31,7 @@ func newWebsocketConn(id uint64, c gnet.Conn) *wsConn {
 }
 
 func (c *wsConn) Close() {
-	_ = c.c.Close(nil)
+	_ = c.c.Close()
 }
 
 func (c *wsConn) ConnID() uint64 {
