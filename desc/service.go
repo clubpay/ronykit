@@ -20,11 +20,14 @@ type Service struct {
 	Contracts      []Contract
 	PreHandlers    []ronykit.HandlerFunc
 	PostHandlers   []ronykit.HandlerFunc
+
+	contractNames map[string]struct{}
 }
 
 func NewService(name string) *Service {
 	return &Service{
-		Name: name,
+		Name:          name,
+		contractNames: map[string]struct{}{},
 	}
 }
 
@@ -113,10 +116,18 @@ func (s Service) Generate() ronykit.Service {
 		reflector.Register(c.Output)
 
 		index++
+		contractID := fmt.Sprintf("%s.%d", svc.name, index)
+		if c.Name != "" {
+			if _, ok := s.contractNames[c.Name]; ok {
+				panic(fmt.Sprintf("contract name %s already defined in service %s", c.Name, svc.name))
+			}
+			contractID = fmt.Sprintf("%s.%s", svc.name, c.Name)
+			s.contractNames[c.Name] = struct{}{}
+		}
 
 		contracts := make([]ronykit.Contract, len(c.RouteSelectors))
 		for idx, s := range c.RouteSelectors {
-			ci := (&contractImpl{id: fmt.Sprintf("%s.%d", svc.name, index)}).
+			ci := (&contractImpl{id: contractID}).
 				addHandler(svc.pre...).
 				addHandler(c.Handlers...).
 				addHandler(svc.post...).
