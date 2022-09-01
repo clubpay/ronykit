@@ -35,11 +35,14 @@ package {{.Pkg}}
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
 	"github.com/clubpay/ronykit/utils/reflector"
 )
+
+var _ fmt.Stringer
 
 {{$tags := strQuote .Tags}}
 func init() {

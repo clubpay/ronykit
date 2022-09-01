@@ -11,6 +11,8 @@ import (
 	"github.com/clubpay/ronykit/utils/reflector"
 )
 
+var _ fmt.Stringer
+
 func init() {
 	reflector.Register(&EchoRequest{}, "json")
 	reflector.Register(&EchoResponse{}, "json")
