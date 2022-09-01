@@ -145,9 +145,9 @@ func Mock{{$methodName}}(
 type {{$serviceName}}StubMock struct {
 {{ range .RESTs }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" }}
+	{{- if ne $methodName "" -}}
 	{{toLower $methodName}} func(ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption) (*{{.Response.Name}}, *stub.Error)
-	{{ end }}
+	{{- end -}}
 {{- end }}
 }
 
@@ -176,63 +176,3 @@ func (s {{$serviceName}}StubMock) {{$methodName}}(
 }
 {{ end }}
 {{- end }}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

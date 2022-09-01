@@ -319,14 +319,10 @@ func MockSumRedirect(
 // SampleServiceStubMock represents the mocked for client/stub for SampleService.
 // Implements ISampleServiceStub
 type SampleServiceStubMock struct {
-	echoget func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
-
-	echopost func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
-
-	sum1 func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
-
-	sum2 func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
-
+	echoget     func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
+	echopost    func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
+	sum1        func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
+	sum2        func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
 	sumredirect func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
 }
 
