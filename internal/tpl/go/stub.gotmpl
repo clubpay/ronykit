@@ -53,7 +53,19 @@ reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
 {{ end }}
 
 {{$serviceName := .Name}}
+type I{{$serviceName}}Stub interface {
+	{{ range .RESTs }}
+	{{$methodName := .Name}}
+	{{- if ne $methodName "" -}}
+	{{$methodName}}(
+		ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption,
+	) (*{{.Response.Name}}, *stub.Error)
+	{{- end -}}
+	{{- end }}
+}
+
 // {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
+// Implements I{{$serviceName}}Stub
 type {{$serviceName}}Stub struct {
     hostPort string
     secure bool
@@ -69,6 +81,8 @@ func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceNa
 
     return s
 }
+
+var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 
 {{ range .RESTs }}
 {{$methodName := .Name}}
@@ -109,3 +123,116 @@ func (s {{$serviceName}}Stub) {{$methodName}}(
 }
 {{ end }}
 {{- end }}
+
+type MockOption func(*{{$serviceName}}StubMock)
+
+{{ range .RESTs }}
+{{$methodName := .Name}}
+{{- if ne $methodName "" }}
+func Mock{{$methodName}}(
+	f func(ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption) (*{{.Response.Name}}, *stub.Error),
+) MockOption {
+	return func(sm *{{$serviceName}}StubMock) {
+			sm.{{toLower $methodName}} = f
+	}
+}
+{{ end }}
+{{- end }}
+
+
+// {{$serviceName}}StubMock represents the mocked for client/stub for {{$serviceName}}.
+// Implements I{{$serviceName}}Stub
+type {{$serviceName}}StubMock struct {
+{{ range .RESTs }}
+	{{$methodName := .Name}}
+	{{- if ne $methodName "" }}
+	{{toLower $methodName}} func(ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption) (*{{.Response.Name}}, *stub.Error)
+	{{ end }}
+{{- end }}
+}
+
+func New{{$serviceName}}StubMock(opts ...MockOption) *{{$serviceName}}StubMock {
+    s := &{{$serviceName}}StubMock{}
+		for _, o := range opts {
+			o(s)
+		}
+
+    return s
+}
+
+var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
+
+{{ range .RESTs }}
+{{$methodName := .Name}}
+{{- if ne $methodName "" }}
+func (s {{$serviceName}}StubMock) {{$methodName}}(
+	ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption,
+) (*{{.Response.Name}}, *stub.Error){
+	if s.{{toLower $methodName}} == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.{{toLower $methodName}}(ctx, req, opt...)
+}
+{{ end }}
+{{- end }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

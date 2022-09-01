@@ -4,6 +4,7 @@ package sampleservice
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/stub"
@@ -70,7 +71,26 @@ type SumResponse struct {
 	Val int64 `json:"val"`
 }
 
+type ISampleServiceStub interface {
+	EchoGET(
+		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
+	) (*EchoResponse, *stub.Error)
+	EchoPOST(
+		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
+	) (*EchoResponse, *stub.Error)
+	Sum1(
+		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+	) (*SumResponse, *stub.Error)
+	Sum2(
+		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+	) (*SumResponse, *stub.Error)
+	SumRedirect(
+		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+	) (*SumResponse, *stub.Error)
+}
+
 // SampleServiceStub represents the client/stub for SampleService.
+// Implements ISampleServiceStub
 type SampleServiceStub struct {
 	hostPort  string
 	secure    bool
@@ -87,7 +107,9 @@ func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceSt
 	return s
 }
 
-func (s SampleServiceStub) Echo(
+var _ ISampleServiceStub = (*SampleServiceStub)(nil)
+
+func (s SampleServiceStub) EchoGET(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
 ) (*EchoResponse, *stub.Error) {
 	res := &EchoResponse{}
@@ -111,6 +133,39 @@ func (s SampleServiceStub) Echo(
 			},
 		).
 		AutoRun(ctx, "/echo/:randomID", ronykit.JSON, req, opt...)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (s SampleServiceStub) EchoPOST(
+	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
+) (*EchoResponse, *stub.Error) {
+	res := &EchoResponse{}
+	httpCtx := s.s.REST().
+		SetMethod("POST").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(res)
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		AutoRun(ctx, "/echo-post", ronykit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -217,4 +272,121 @@ func (s SampleServiceStub) SumRedirect(
 	}
 
 	return res, nil
+}
+
+type MockOption func(*SampleServiceStubMock)
+
+func MockEchoGET(
+	f func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error),
+) MockOption {
+	return func(sm *SampleServiceStubMock) {
+		sm.echoget = f
+	}
+}
+
+func MockEchoPOST(
+	f func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error),
+) MockOption {
+	return func(sm *SampleServiceStubMock) {
+		sm.echopost = f
+	}
+}
+
+func MockSum1(
+	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+) MockOption {
+	return func(sm *SampleServiceStubMock) {
+		sm.sum1 = f
+	}
+}
+
+func MockSum2(
+	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+) MockOption {
+	return func(sm *SampleServiceStubMock) {
+		sm.sum2 = f
+	}
+}
+
+func MockSumRedirect(
+	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+) MockOption {
+	return func(sm *SampleServiceStubMock) {
+		sm.sumredirect = f
+	}
+}
+
+// SampleServiceStubMock represents the mocked for client/stub for SampleService.
+// Implements ISampleServiceStub
+type SampleServiceStubMock struct {
+	echoget func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
+
+	echopost func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
+
+	sum1 func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
+
+	sum2 func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
+
+	sumredirect func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
+}
+
+func NewSampleServiceStubMock(opts ...MockOption) *SampleServiceStubMock {
+	s := &SampleServiceStubMock{}
+	for _, o := range opts {
+		o(s)
+	}
+
+	return s
+}
+
+var _ ISampleServiceStub = (*SampleServiceStubMock)(nil)
+
+func (s SampleServiceStubMock) EchoGET(
+	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
+) (*EchoResponse, *stub.Error) {
+	if s.echoget == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.echoget(ctx, req, opt...)
+}
+
+func (s SampleServiceStubMock) EchoPOST(
+	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
+) (*EchoResponse, *stub.Error) {
+	if s.echopost == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.echopost(ctx, req, opt...)
+}
+
+func (s SampleServiceStubMock) Sum1(
+	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+) (*SumResponse, *stub.Error) {
+	if s.sum1 == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.sum1(ctx, req, opt...)
+}
+
+func (s SampleServiceStubMock) Sum2(
+	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+) (*SumResponse, *stub.Error) {
+	if s.sum2 == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.sum2(ctx, req, opt...)
+}
+
+func (s SampleServiceStubMock) SumRedirect(
+	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
+) (*SumResponse, *stub.Error) {
+	if s.sumredirect == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.sumredirect(ctx, req, opt...)
 }

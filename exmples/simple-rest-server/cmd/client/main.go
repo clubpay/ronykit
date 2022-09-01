@@ -35,7 +35,7 @@ func main() {
 	s2 := sampleservicestub.NewSampleServiceStub(
 		"127.0.0.1",
 	)
-	res2, err := s2.Echo(
+	res2, err := s2.EchoGET(
 		context.Background(),
 		&sampleservicestub.EchoRequest{
 			RandomID: 1450,
