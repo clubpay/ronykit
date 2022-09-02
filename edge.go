@@ -26,6 +26,7 @@ type contractResolver func(contractID string) Contract
 type EdgeServer struct {
 	nb        []*northBridge
 	sb        []*southBridge
+	gh        []HandlerFunc
 	svc       []Service
 	contracts map[string]Contract
 	eh        ErrHandler
@@ -97,10 +98,27 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 
 	s.svc = append(s.svc, svc)
 	for _, c := range svc.Contracts() {
-		s.contracts[c.ID()] = WrapContract(c, ContractWrapperFunc(wrapWithCoordinator))
+		s.contracts[c.ID()] = WrapContract(
+			c,
+			ContractWrapperFunc(s.wrapWithGlobalHandlers),
+			ContractWrapperFunc(wrapWithCoordinator),
+		)
 	}
 
 	return s
+}
+
+func (s *EdgeServer) wrapWithGlobalHandlers(c Contract) Contract {
+	if len(s.gh) == 0 {
+		return c
+	}
+
+	cw := &contractWrap{
+		Contract: c,
+		h:        s.gh,
+	}
+
+	return cw
 }
 
 // Start registers services in the registered bundles and start the bundles.

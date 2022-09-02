@@ -84,7 +84,7 @@ func wrapWithCoordinator(c Contract) Contract {
 
 	cw := &contractWrap{
 		Contract: c,
-		preH: []HandlerFunc{
+		h: []HandlerFunc{
 			genForwarderHandler(c.EdgeSelector()),
 		},
 	}

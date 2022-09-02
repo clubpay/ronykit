@@ -81,8 +81,7 @@ func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 // contract.
 type contractWrap struct {
 	Contract
-	preH  []HandlerFunc
-	postH []HandlerFunc
+	h     []HandlerFunc
 	preM  []Modifier
 	postM []Modifier
 }
@@ -90,10 +89,9 @@ type contractWrap struct {
 var _ Contract = (*contractWrap)(nil)
 
 func (c contractWrap) Handlers() []HandlerFunc {
-	h := make([]HandlerFunc, 0, len(c.preH)+len(c.postH)+len(c.Contract.Handlers()))
-	h = append(h, c.preH...)
+	h := make([]HandlerFunc, 0, len(c.h)+len(c.Contract.Handlers()))
+	h = append(h, c.h...)
 	h = append(h, c.Contract.Handlers()...)
-	h = append(h, c.postH...)
 
 	return h
 }

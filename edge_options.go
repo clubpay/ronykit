@@ -49,3 +49,10 @@ func WithErrorHandler(h ErrHandler) Option {
 		s.eh = h
 	}
 }
+
+// WithGlobalHandlers sets the handlers that will be executed before any service's contract.
+func WithGlobalHandlers(handlers ...HandlerFunc) Option {
+	return func(s *EdgeServer) {
+		s.gh = handlers
+	}
+}

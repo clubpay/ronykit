@@ -2,6 +2,7 @@ package ronykit_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/clubpay/ronykit"
@@ -71,7 +72,7 @@ func (t testGateway) Register(
 ) {
 }
 
-var _ = Describe("EdgeServer", func() {
+var _ = Describe("EdgeServer/Simple", func() {
 	var (
 		b    *testGateway
 		edge *ronykit.EdgeServer
@@ -111,6 +112,63 @@ var _ = Describe("EdgeServer", func() {
 			c := newTestConn(utils.RandomUint64(0), "", false)
 			b.Send(c, msg)
 			Expect(c.Read()).To(BeEquivalentTo(msg))
+		},
+		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
+		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
+	)
+})
+
+var _ = Describe("EdgeServer/GlobalHandlers", func() {
+	var (
+		b    *testGateway
+		edge *ronykit.EdgeServer
+	)
+	BeforeEach(func() {
+		b = &testGateway{}
+		var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
+			return desc.NewService("testService").
+				AddContract(
+					desc.NewContract().
+						SetInput(&ronykit.RawMessage{}).
+						SetOutput(&ronykit.RawMessage{}).
+						AddSelector(testSelector{}).
+						AddHandler(
+							func(ctx *ronykit.Context) {
+								in := utils.B2S(ctx.In().GetMsg().(ronykit.RawMessage))
+								out := fmt.Sprintf("%s-%s-%s",
+									ctx.GetString("PRE_KEY", ""),
+									in,
+									ctx.GetString("POST_KEY", ""),
+								)
+								ctx.Out().
+									SetMsg(ronykit.RawMessage(out)).
+									Send()
+
+								return
+							},
+						),
+				)
+		}
+		edge = ronykit.NewServer(
+			ronykit.RegisterBundle(b),
+			ronykit.WithGlobalHandlers(
+				func(ctx *ronykit.Context) {
+					ctx.Set("PRE_KEY", "PRE_VALUE")
+				},
+			),
+			desc.Register(serviceDesc),
+		)
+		edge.Start(nil)
+	})
+	AfterEach(func() {
+		edge.Shutdown(nil)
+	})
+
+	DescribeTable("should echo back the message",
+		func(msg []byte) {
+			c := newTestConn(utils.RandomUint64(0), "", false)
+			b.Send(c, msg)
+			Expect(c.Read()).To(BeEquivalentTo(fmt.Sprintf("PRE_VALUE-%s-", string(msg))))
 		},
 		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
 		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
