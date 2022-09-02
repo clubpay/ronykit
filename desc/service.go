@@ -18,7 +18,7 @@ type Service struct {
 	PossibleErrors []Error
 	Wrappers       []ronykit.ServiceWrapper
 	Contracts      []Contract
-	Middlewares    []ronykit.HandlerFunc
+	Handlers       []ronykit.HandlerFunc
 
 	contractNames map[string]struct{}
 }
@@ -50,14 +50,14 @@ func (s *Service) SetDescription(d string) *Service {
 
 // AddPreHandler Deprecated use AddHandler instead.
 func (s *Service) AddPreHandler(h ...ronykit.HandlerFunc) *Service {
-	s.Middlewares = append(s.Middlewares, h...)
+	s.Handlers = append(s.Handlers, h...)
 
 	return s
 }
 
 // AddHandler adds handlers to run before and/or after the contract's handlers
 func (s *Service) AddHandler(h ...ronykit.HandlerFunc) *Service {
-	s.Middlewares = append(s.Middlewares, h...)
+	s.Handlers = append(s.Handlers, h...)
 
 	return s
 }
@@ -107,7 +107,7 @@ func (s *Service) AddError(err ronykit.ErrorMessage) *Service {
 func (s Service) Generate() ronykit.Service {
 	svc := &serviceImpl{
 		name: s.Name,
-		mw:   s.Middlewares,
+		h:    s.Handlers,
 	}
 
 	var index int64
@@ -128,7 +128,7 @@ func (s Service) Generate() ronykit.Service {
 		contracts := make([]ronykit.Contract, len(c.RouteSelectors))
 		for idx, s := range c.RouteSelectors {
 			ci := (&contractImpl{id: contractID}).
-				addHandler(svc.mw...).
+				addHandler(svc.h...).
 				addHandler(c.Handlers...).
 				setModifier(c.Modifiers...).
 				setInput(c.Input).
@@ -294,7 +294,7 @@ func getEncoding(rrs ronykit.RouteSelector) string {
 // serviceImpl is a simple implementation of ronykit.Service interface.
 type serviceImpl struct {
 	name      string
-	mw        []ronykit.HandlerFunc
+	h         []ronykit.HandlerFunc
 	contracts []ronykit.Contract
 }
 
