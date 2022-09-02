@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/exmples/simple-rest-server/api"
-	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/examples/simple-rest-server/api"
+	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 )
 
 func TestSampleService(t *testing.T) {

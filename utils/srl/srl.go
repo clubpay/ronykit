@@ -18,7 +18,7 @@ const (
 	srlLength
 )
 
-var pattern = regexp.MustCompile(`(?:([^:\s]*)(?::))?([^@\s]*)@?(.*)`)
+var pattern = regexp.MustCompile(`(?:([^:\s]*):)?([^@\s]*)@?(.*)`)
 
 // SRL stands for Simple Resource Locator, A 3 part address.
 type SRL [srlLength]string

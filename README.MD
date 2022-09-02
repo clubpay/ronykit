@@ -13,7 +13,6 @@
     <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/clubpay/ronykit?style=for-the-badge">
 </a>
 
-
 # RonyKit
 
 RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate
@@ -21,7 +20,8 @@ components for each task, you are almost free to develop your API server using R
 in-house defined protocol. However, some components are implemented in the 'std' which make it easy to use RonyKit out of the box.
 In RonyKIT, I wanted to make it more flexible but still very performant. I will maintain two bundles one based on
 [fasthttp](https://github.com/valyala/fasthttp) and the other provides only rpc over websocket based on two very fast
-libraries [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those, and
+libraries [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those,
+and
 can build your own Bundles. To have a better understanding of how it is going to work please check examples folder.
 in [simple-rest-server](examples/simple-rest-server) it shows a very simple hello world app.
 in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but use them with multiple formats like
@@ -30,45 +30,26 @@ REST or RPC.
 ## Contents
 
 - [RonyKIT](#ronykit)
-    - [Contents](#contents)
-    - [Installation](#installation)
-    - [Quick start](#quick-start)
-    - [Benchmark](#benchmark)
-    - [Define Services and Contracts](#define-services-and-contracts)
+	- [Contents](#contents)
+	- [Installation](#installation)
+	- [Quick start](#quick-start)
+	- [Benchmark](#benchmark)
+	- [Define Services and Contracts](#define-services-and-contracts)
 
 ## Installation
 
 To install RonyKIT package, you need to install Go and set your Go workspace first.
 
-1. The first need [Go](https://golang.org/) installed (**version 1.17+ is required**), then you can use the below Go command to install
-   RonyKIT.
+First need to install[Go](https://golang.org/) (**version 1.17+ is required**), then you can use the below Go command to install
+RonyKIT.
 
 ```sh
 $ go get -u github.com/clubpay/ronykit/...
 ```
 
-2. Import it in your code:
-
-```go
-package main
-
-import "github.com/clubpay/ronykit"
-```
-
-3. (Optional) You might also need to import some standard bundles provided in the main repo.
-
-```go
-package main
-
-import (
-	"github.com/clubpay/ronykit/std/gateway/fasthttp"
-	"github.com/clubpay/ronykit/std/gateway/fastws"
-)
-```
-
 ## Quick start
 
-You can find some sample codes in the [Examples](examples) folder.
+You can find some sample codes in the [Examples](./examples) folder.
 
 ## Define Services and Contracts
 
@@ -85,7 +66,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"syscall"
 
 	"github.com/clubpay/ronykit"
@@ -93,7 +73,11 @@ import (
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
 
-type echoRequest struct {
+type EchoRequest struct {
+	RandomID int64 `json:"randomId"`
+}
+
+type EchoResponse struct {
 	RandomID int64 `json:"randomId"`
 }
 
@@ -102,20 +86,23 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 		desc.NewContract().
 			// Add the selector which this contract will be selected based of. Every bundle have its own selector
 			// and here we use our std/fasthttp package.
-			AddSelector(
-				fasthttp.Selector{
-					Method: fasthttp.MethodGet,
-					Path:   "/echo/:randomId",
-				},
-			).
+			AddSelector(fasthttp.GET("/echo/:randomId")).
 			// Define the input message, it defines the message your handler expects to receive.
-			SetInput(&echoRequest{}).
+			SetInput(&EchoRequest{}).
 			// Define the output message, it defines the message your handler expects to return.
-			SetOutput(&echoResponse{}).
+			SetOutput(&EchoResponse{}).
 			// Set the handler which is going to handle this request.
 			SetHandler(echoHandler),
 	)
 
+func echoHandler(ctx *ronykit.Context) {
+	req, _ := ctx.In().GetMsg().(*EchoRequest)
+	ctx.Out().SetMsg(
+		&EchoResponse{
+			RandomID: req.RandomID,
+		},
+	).Send()
+}
 func main() {
 	app := ronykit.NewServer(
 		desc.Register(serviceDesc),

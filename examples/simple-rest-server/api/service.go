@@ -6,7 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
-	"github.com/clubpay/ronykit/exmples/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
 
