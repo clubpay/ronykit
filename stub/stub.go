@@ -40,8 +40,8 @@ func New(hostPort string, opts ...Option) *Stub {
 	}
 }
 
-func (s *Stub) REST() *restClientCtx {
-	hc := &restClientCtx{
+func (s *Stub) REST() *RESTCtx {
+	hc := &RESTCtx{
 		c:        &s.httpC,
 		r:        s.r,
 		handlers: map[int]RESTResponseHandler{},

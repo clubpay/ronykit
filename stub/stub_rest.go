@@ -23,7 +23,7 @@ type RESTResponse interface {
 
 type RESTPreflightHandler func(r *fasthttp.Request)
 
-type restClientCtx struct {
+type RESTCtx struct {
 	err            *Error
 	preflights     []RESTPreflightHandler
 	handlers       map[int]RESTResponseHandler
@@ -40,72 +40,72 @@ type restClientCtx struct {
 	res  *fasthttp.Response
 }
 
-func (hc *restClientCtx) SetMethod(method string) *restClientCtx {
+func (hc *RESTCtx) SetMethod(method string) *RESTCtx {
 	hc.req.Header.SetMethod(method)
 
 	return hc
 }
 
-func (hc *restClientCtx) SetPath(path string) *restClientCtx {
+func (hc *RESTCtx) SetPath(path string) *RESTCtx {
 	hc.uri.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) GET(path string) *restClientCtx {
+func (hc *RESTCtx) GET(path string) *RESTCtx {
 	hc.SetMethod(http.MethodGet)
 	hc.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) POST(path string) *restClientCtx {
+func (hc *RESTCtx) POST(path string) *RESTCtx {
 	hc.SetMethod(http.MethodPost)
 	hc.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) PUT(path string) *restClientCtx {
+func (hc *RESTCtx) PUT(path string) *RESTCtx {
 	hc.SetMethod(http.MethodPut)
 	hc.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) PATCH(path string) *restClientCtx {
+func (hc *RESTCtx) PATCH(path string) *RESTCtx {
 	hc.SetMethod(http.MethodPatch)
 	hc.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) OPTIONS(path string) *restClientCtx {
+func (hc *RESTCtx) OPTIONS(path string) *RESTCtx {
 	hc.SetMethod(http.MethodOptions)
 	hc.SetPath(path)
 
 	return hc
 }
 
-func (hc *restClientCtx) SetQuery(key, value string) *restClientCtx {
+func (hc *RESTCtx) SetQuery(key, value string) *RESTCtx {
 	hc.args.Set(key, value)
 
 	return hc
 }
 
-func (hc *restClientCtx) SetHeader(key, value string) *restClientCtx {
+func (hc *RESTCtx) SetHeader(key, value string) *RESTCtx {
 	hc.req.Header.Set(key, value)
 
 	return hc
 }
 
-func (hc *restClientCtx) SetBody(body []byte) *restClientCtx {
+func (hc *RESTCtx) SetBody(body []byte) *RESTCtx {
 	hc.req.SetBody(body)
 
 	return hc
 }
 
-func (hc *restClientCtx) Run(ctx context.Context, opt ...RESTOption) *restClientCtx {
+func (hc *RESTCtx) Run(ctx context.Context, opt ...RESTOption) *RESTCtx {
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
@@ -144,7 +144,7 @@ func (hc *restClientCtx) Run(ctx context.Context, opt ...RESTOption) *restClient
 }
 
 // Err returns the error if any occurred during the execution.
-func (hc *restClientCtx) Err() *Error {
+func (hc *RESTCtx) Err() *Error {
 	if hc.err == nil {
 		return nil
 	}
@@ -153,7 +153,7 @@ func (hc *restClientCtx) Err() *Error {
 }
 
 // Error returns the error if any occurred during the execution.
-func (hc *restClientCtx) Error() error {
+func (hc *RESTCtx) Error() error {
 	if hc.err == nil {
 		return nil
 	}
@@ -162,17 +162,17 @@ func (hc *restClientCtx) Error() error {
 }
 
 // StatusCode returns the status code of the response
-func (hc *restClientCtx) StatusCode() int { return hc.res.StatusCode() }
+func (hc *RESTCtx) StatusCode() int { return hc.res.StatusCode() }
 
 // GetHeader returns the header value for key in the response
-func (hc *restClientCtx) GetHeader(key string) string {
+func (hc *RESTCtx) GetHeader(key string) string {
 	return string(hc.res.Header.Peek(key))
 }
 
 // GetBody returns the body, but please note that the returned slice is only valid until
-// Release is called. If you need to use the body after releasing restClientCtx then
+// Release is called. If you need to use the body after releasing RESTCtx then
 // use CopyBody method.
-func (hc *restClientCtx) GetBody() []byte {
+func (hc *RESTCtx) GetBody() []byte {
 	if hc.err != nil {
 		return nil
 	}
@@ -181,7 +181,7 @@ func (hc *restClientCtx) GetBody() []byte {
 }
 
 // CopyBody copies the body to `dst`. It creates a new slice and returns it if dst is nil.
-func (hc *restClientCtx) CopyBody(dst []byte) []byte {
+func (hc *RESTCtx) CopyBody(dst []byte) []byte {
 	if hc.err != nil {
 		return nil
 	}
@@ -194,26 +194,26 @@ func (hc *restClientCtx) CopyBody(dst []byte) []byte {
 // Release frees the allocates internal resources to be re-used.
 // You MUST NOT refer to any method of this object after calling this method, if
 // you call any method after Release has been called, the result is unpredictable.
-func (hc *restClientCtx) Release() {
+func (hc *RESTCtx) Release() {
 	fasthttp.ReleaseArgs(hc.args)
 	fasthttp.ReleaseURI(hc.uri)
 	fasthttp.ReleaseRequest(hc.req)
 	fasthttp.ReleaseResponse(hc.res)
 }
 
-func (hc *restClientCtx) SetResponseHandler(statusCode int, h RESTResponseHandler) *restClientCtx {
+func (hc *RESTCtx) SetResponseHandler(statusCode int, h RESTResponseHandler) *RESTCtx {
 	hc.handlers[statusCode] = h
 
 	return hc
 }
 
-func (hc *restClientCtx) DefaultResponseHandler(h RESTResponseHandler) *restClientCtx {
+func (hc *RESTCtx) DefaultResponseHandler(h RESTResponseHandler) *RESTCtx {
 	hc.defaultHandler = h
 
 	return hc
 }
 
-func (hc *restClientCtx) DumpResponse() string {
+func (hc *RESTCtx) DumpResponse() string {
 	return hc.res.String()
 }
 
@@ -229,13 +229,13 @@ func (hc *restClientCtx) DumpResponse() string {
 //
 // **YOU MUST NOT USE httpCtx after httpCtx.Release() is called.**
 //
-func (hc *restClientCtx) DumpResponseTo(w io.Writer) *restClientCtx {
+func (hc *RESTCtx) DumpResponseTo(w io.Writer) *RESTCtx {
 	hc.dumpRes = w
 
 	return hc
 }
 
-func (hc *restClientCtx) DumpRequest() string {
+func (hc *RESTCtx) DumpRequest() string {
 	if hc.err != nil {
 		return hc.err.Error()
 	}
@@ -247,7 +247,7 @@ func (hc *restClientCtx) DumpRequest() string {
 // executed.
 //
 // Please refer to DumpResponseTo
-func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
+func (hc *RESTCtx) DumpRequestTo(w io.Writer) *RESTCtx {
 	hc.dumpReq = w
 
 	return hc
@@ -272,10 +272,10 @@ func (hc *restClientCtx) DumpRequestTo(w io.Writer) *restClientCtx {
 //
 // SetPath("/something/10/customName").
 // Run(context.Background())
-func (hc *restClientCtx) AutoRun(
+func (hc *RESTCtx) AutoRun(
 	ctx context.Context, route string, enc ronykit.Encoding, m ronykit.Message,
 	opt ...RESTOption,
-) *restClientCtx {
+) *RESTCtx {
 	switch enc.Tag() {
 	case ronykit.JSON.Tag():
 		hc.SetHeader("Content-Type", "application/json")
