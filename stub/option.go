@@ -15,7 +15,7 @@ type config struct {
 	dumpReq       io.Writer
 	dumpRes       io.Writer
 
-	readTimeout, writeTimeout time.Duration
+	readTimeout, writeTimeout, dialTimeout time.Duration
 }
 
 func Secure() Option {
@@ -45,6 +45,12 @@ func WithReadTimeout(timeout time.Duration) Option {
 func WithWriteTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.writeTimeout = timeout
+	}
+}
+
+func WithDialTimeout(timeout time.Duration) Option {
+	return func(cfg *config) {
+		cfg.dialTimeout = timeout
 	}
 }
 

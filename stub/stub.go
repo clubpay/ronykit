@@ -2,9 +2,11 @@ package stub
 
 import (
 	"crypto/tls"
+	"net/http"
 	"time"
 
 	"github.com/clubpay/ronykit/utils/reflector"
+	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )
 
@@ -21,6 +23,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		hostPort:     hostPort,
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
+		dialTimeout:  time.Second * 45,
 	}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -40,8 +43,8 @@ func New(hostPort string, opts ...Option) *Stub {
 	}
 }
 
-func (s *Stub) REST() *RESTCtx {
-	hc := &RESTCtx{
+func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
+	ctx := &RESTCtx{
 		c:        &s.httpC,
 		r:        s.r,
 		handlers: map[int]RESTResponseHandler{},
@@ -52,14 +55,37 @@ func (s *Stub) REST() *RESTCtx {
 	}
 
 	if s.cfg.secure {
-		hc.uri.SetScheme("https")
+		ctx.uri.SetScheme("https")
 	} else {
-		hc.uri.SetScheme("http")
+		ctx.uri.SetScheme("http")
 	}
 
-	hc.uri.SetHost(s.cfg.hostPort)
-	hc.DumpRequestTo(s.cfg.dumpReq)
-	hc.DumpResponseTo(s.cfg.dumpRes)
+	ctx.uri.SetHost(s.cfg.hostPort)
+	ctx.DumpRequestTo(s.cfg.dumpReq)
+	ctx.DumpResponseTo(s.cfg.dumpRes)
 
-	return hc
+	for _, o := range opt {
+		o(&ctx.cfg)
+	}
+
+	return ctx
+}
+
+func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
+	ctx := &WebsocketCtx{
+		cfg: wsConfig{
+			d: &websocket.Dialer{
+				Proxy:            http.ProxyFromEnvironment,
+				HandshakeTimeout: s.cfg.dialTimeout,
+			},
+		},
+		r:        s.r,
+		handlers: map[string]WSResponseHandler{},
+	}
+
+	for _, o := range opts {
+		o(&ctx.cfg)
+	}
+
+	return ctx
 }

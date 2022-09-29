@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	queryMethod    = "fasthttp.Method"
+	queryMethod    = "fasthttp.method"
 	queryPath      = "fasthttp.path"
 	queryDecoder   = "fasthttp.decoder"
 	queryPredicate = "fasthttp.predicate"
@@ -44,7 +44,7 @@ type bundle struct {
 
 var _ ronykit.Gateway = (*bundle)(nil)
 
-func New(opts ...Option) (*bundle, error) {
+func New(opts ...Option) (ronykit.Gateway, error) {
 	r := &bundle{
 		httpMux: &httpmux.Mux{
 			RedirectTrailingSlash:  true,
@@ -82,7 +82,7 @@ func New(opts ...Option) (*bundle, error) {
 	return r, nil
 }
 
-func MustNew(opts ...Option) *bundle {
+func MustNew(opts ...Option) ronykit.Gateway {
 	b, err := New(opts...)
 	if err != nil {
 		panic(err)

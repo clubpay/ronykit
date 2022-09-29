@@ -24,8 +24,8 @@ type RESTResponse interface {
 type RESTPreflightHandler func(r *fasthttp.Request)
 
 type RESTCtx struct {
+	cfg            restConfig
 	err            *Error
-	preflights     []RESTPreflightHandler
 	handlers       map[int]RESTResponseHandler
 	defaultHandler RESTResponseHandler
 	r              *reflector.Reflector
@@ -112,11 +112,11 @@ func (hc *RESTCtx) Run(ctx context.Context, opt ...RESTOption) *RESTCtx {
 
 	// apply options
 	for _, o := range opt {
-		o(hc)
+		o(&hc.cfg)
 	}
 
 	// run preflights
-	for _, pre := range hc.preflights {
+	for _, pre := range hc.cfg.preflights {
 		pre(hc.req)
 	}
 
