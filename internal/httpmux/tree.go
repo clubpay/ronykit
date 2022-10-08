@@ -107,6 +107,7 @@ func (n *node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
+//
 //nolint:gocognit
 func (n *node) addRoute(path string, handle *RouteData) {
 	fullPath := path
@@ -333,7 +334,8 @@ func (n *node) insertChild(path, fullPath string, handle *RouteData) {
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-//nolint: gocyclo,gocognit
+//
+//nolint:gocognit,gocyclo
 func (n *node) getValue(path string, params func() *Params) (handle *RouteData, ps *Params, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {
@@ -495,7 +497,8 @@ func shiftNRuneBytes(rb [4]byte, n int) [4]byte {
 }
 
 // Recursive case-insensitive lookup function used by n.findCaseInsensitivePath
-//nolint: gocyclo,gocognit,maintidx
+//
+//nolint:gocognit,gocyclo,maintidx
 func (n *node) findCaseInsensitivePathRec(
 	path string, ciPath []byte, rb [4]byte, fixTrailingSlash bool,
 ) []byte {

@@ -49,13 +49,11 @@ var _ = Describe("Reflector", func() {
 })
 
 /*
-
 Benchmark results:
 
 BenchmarkReflector/unsafe-16            	18662281      60.08 ns/op    5 B/op    1 allocs/op.
 BenchmarkReflector/unsafeRegistered-16      77882029      15.52 ns/op    5 B/op    1 allocs/op.
 BenchmarkReflector/reflect-16               30601716      35.86 ns/op   24 B/op    3 allocs/op.
-
 */
 func BenchmarkReflector(b *testing.B) {
 	benchs := []struct {

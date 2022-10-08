@@ -88,7 +88,7 @@ var _ = Describe("Address stringer & formatter", func() {
 	)
 })
 
-//nolint
+// nolint
 var _ = Describe("Address append", func() {
 	entries := []interface{}{
 		Entry("both empty",
@@ -152,7 +152,7 @@ var _ = Describe("Address append", func() {
 	)
 })
 
-//nolint
+// nolint
 var _ = Describe("Address replace", func() {
 	entries := []interface{}{
 		Entry("both empty",
@@ -216,7 +216,7 @@ var _ = Describe("Address replace", func() {
 	)
 })
 
-//nolint
+// nolint
 var _ = Describe("Address merge", func() {
 	entries := []interface{}{
 		Entry("both empty",

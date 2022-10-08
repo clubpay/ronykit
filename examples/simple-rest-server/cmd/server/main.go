@@ -7,6 +7,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/clubpay/ronykit"
@@ -25,7 +26,7 @@ func main() {
 	// Create, start and wait for shutdown signal of the server.
 	defer ronykit.NewServer(
 		ronykit.WithErrorHandler(func(ctx *ronykit.Context, err error) {
-			fmt.Println(ctx, err)
+			fmt.Println(err, string(debug.Stack()))
 		}),
 		ronykit.RegisterBundle(
 			fasthttp.MustNew(

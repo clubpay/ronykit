@@ -1,20 +1,30 @@
 package stub
 
 import (
+	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/clubpay/ronykit"
+	"github.com/clubpay/ronykit/internal/common"
 	"github.com/clubpay/ronykit/utils/reflector"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )
 
+type (
+	Header              map[string]string
+	RPCContainerHandler func(c ronykit.IncomingRPCContainer)
+	RPCMessageHandler   func(ctx context.Context, msg ronykit.Message, hdr Header, err error)
+)
+
 type Stub struct {
 	cfg config
+	r   *reflector.Reflector
 
 	httpC fasthttp.Client
-	r     *reflector.Reflector
 }
 
 func New(hostPort string, opts ...Option) *Stub {
@@ -74,17 +84,25 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
+			rpcInFactory:  common.SimpleIncomingJSONRPC,
+			rpcOutFactory: common.SimpleOutgoingJSONRPC,
 			d: &websocket.Dialer{
 				Proxy:            http.ProxyFromEnvironment,
 				HandshakeTimeout: s.cfg.dialTimeout,
 			},
 		},
-		r:        s.r,
-		handlers: map[string]WSResponseHandler{},
+		r:       s.r,
+		pending: make(map[string]chan ronykit.IncomingRPCContainer, 1024),
 	}
 
 	for _, o := range opts {
 		o(&ctx.cfg)
+	}
+
+	if s.cfg.secure {
+		ctx.url = fmt.Sprintf("wss://%s", s.cfg.hostPort)
+	} else {
+		ctx.url = fmt.Sprintf("ws://%s", s.cfg.hostPort)
 	}
 
 	return ctx

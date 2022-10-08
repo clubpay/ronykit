@@ -7,6 +7,7 @@ import (
 
 // simpleIncomingJSONRPC implements ronykit.IncomingRPCContainer
 type simpleIncomingJSONRPC struct {
+	ID      string            `json:"id"`
 	Header  map[string]string `json:"hdr"`
 	Payload json.RawMessage   `json:"payload"`
 }
@@ -17,12 +18,16 @@ var SimpleIncomingJSONRPC = func() ronykit.IncomingRPCContainer {
 	}
 }
 
+func (e *simpleIncomingJSONRPC) GetID() string {
+	return e.ID
+}
+
 func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 	return json.UnmarshalNoEscape(data, e)
 }
 
 func (e *simpleIncomingJSONRPC) Fill(m ronykit.Message) error {
-	return json.UnmarshalNoEscape(e.Payload, m)
+	return json.Unmarshal(e.Payload, m)
 }
 
 func (e *simpleIncomingJSONRPC) GetHdr(key string) string {
@@ -35,6 +40,7 @@ func (e *simpleIncomingJSONRPC) GetHdrMap() map[string]string {
 
 // simpleOutgoingJSONRPC implements ronykit.OutgoingRPCContainer
 type simpleOutgoingJSONRPC struct {
+	ID      string            `json:"id"`
 	Header  map[string]string `json:"hdr"`
 	Payload ronykit.Message   `json:"payload"`
 }
@@ -43,6 +49,10 @@ var SimpleOutgoingJSONRPC = func() ronykit.OutgoingRPCContainer {
 	return &simpleOutgoingJSONRPC{
 		Header: make(map[string]string, 4),
 	}
+}
+
+func (e *simpleOutgoingJSONRPC) SetID(id string) {
+	e.ID = id
 }
 
 func (e *simpleOutgoingJSONRPC) SetHdr(k, v string) {

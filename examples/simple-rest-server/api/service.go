@@ -55,7 +55,7 @@ func EchoHandler(ctx *ronykit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
-	ctx.Out().
+	ctx.In().Reply().
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
 			&dto.EchoResponse{
@@ -71,7 +71,7 @@ func SumHandler(ctx *ronykit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.SumRequest)
 
-	ctx.Out().
+	ctx.In().Reply().
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
 			&dto.SumResponse{
@@ -89,7 +89,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 
 	rc, ok := ctx.Conn().(ronykit.RESTConn)
 	if !ok {
-		ctx.Out().
+		ctx.In().Reply().
 			SetMsg(dto.Err(http.StatusBadRequest, "Only supports REST requests")).
 			Send()
 
@@ -108,7 +108,7 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 			fmt.Sprintf("http://%s/sum", rc.GetHost()),
 		)
 	default:
-		ctx.Out().
+		ctx.In().Reply().
 			SetMsg(dto.Err(http.StatusBadRequest, "Unsupported method")).
 			Send()
 

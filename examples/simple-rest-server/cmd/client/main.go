@@ -32,6 +32,9 @@ func main() {
 	//nolint:forbidigo
 	fmt.Println("RESPONSE1: ", res1.Ok, res1.RandomID)
 
+	/*
+		Using the auto-generated service stub
+	*/
 	s2 := sampleservicestub.NewSampleServiceStub(
 		"127.0.0.1",
 	)

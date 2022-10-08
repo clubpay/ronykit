@@ -36,15 +36,16 @@ func newGateway(b *bundle) (*gateway, error) {
 }
 
 func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
-	outputMsgContainer := gw.b.rpcOutFactory()
-	outputMsgContainer.SetPayload(e.GetMsg())
+	outC := gw.b.rpcOutFactory()
+	outC.SetPayload(e.GetMsg())
+	outC.SetID(e.GetID())
 	e.WalkHdr(func(key string, val string) bool {
-		outputMsgContainer.SetHdr(key, val)
+		outC.SetHdr(key, val)
 
 		return true
 	})
 
-	data, err := outputMsgContainer.Marshal()
+	data, err := outC.Marshal()
 	if err != nil {
 		return errors.Wrap(ronykit.ErrEncodeOutgoingMessageFailed, err)
 	}

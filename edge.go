@@ -228,7 +228,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 				text.Bold.Sprint("ContractID"),
 				text.Bold.Sprint("Bundle"),
 				text.Bold.Sprint("API"),
-				text.Bold.Sprint("Route / Predicate"),
+				text.Bold.Sprint("Route | Predicate"),
 				text.Bold.Sprint("Handlers"),
 			},
 		)

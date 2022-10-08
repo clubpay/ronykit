@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Check dependencies
-GOPRIVATE="github.com/clubpay*" go mod tidy -v || exit
-#GOPRIVATE="github.com/clubpay*" go mod verify || exit
-
 # Check for errors and warnings
 go vet ./... || exit
 
@@ -13,13 +9,6 @@ go vet ./... || exit
 # Format your code
 go fmt ./... || exit
 
-# Format the code
-dirs=$(go list -f {{.Dir}} ./...)
-for d in ${dirs}; do
-	goimports -w ${d}/*.go || exit;
-done
-
 golangci-lint run || exit
-
 
 go test -v -race -cover -covermode=atomic -count=1 ./... || exit

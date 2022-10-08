@@ -9,6 +9,7 @@ package ronykit
 //
 // Example implementations: common.SimpleIncomingJSONRPC
 type IncomingRPCContainer interface {
+	GetID() string
 	// Unmarshal deserialize the received payload.
 	Unmarshal(data []byte) error
 	// Fill the actual message which will be later used from Context method In().GetMsg().
@@ -26,6 +27,7 @@ type IncomingRPCFactory func() IncomingRPCContainer
 //
 // Example implementations: common.SimpleOutgoingJSONRPC
 type OutgoingRPCContainer interface {
+	SetID(id string)
 	// Marshal serializes the contained message
 	Marshal() ([]byte, error)
 	// SetHdr set the header.

@@ -220,7 +220,8 @@ func (hc *RESTCtx) DumpResponse() string {
 // DumpResponseTo accepts a writer and will write the response dump to it when Run is
 // executed.
 // Example:
-// 	httpCtx := s.REST().
+//
+//	httpCtx := s.REST().
 //								DumpRequestTo(os.Stdout).
 //								DumpResponseTo(os.Stdout).
 //								GET("https//google.com").
@@ -228,7 +229,6 @@ func (hc *RESTCtx) DumpResponse() string {
 //	defer httpCtx.Release()
 //
 // **YOU MUST NOT USE httpCtx after httpCtx.Release() is called.**
-//
 func (hc *RESTCtx) DumpResponseTo(w io.Writer) *RESTCtx {
 	hc.dumpRes = w
 
@@ -257,15 +257,19 @@ func (hc *RESTCtx) DumpRequestTo(w io.Writer) *RESTCtx {
 // It checks the route which is a path pattern, and fills the dynamic url params based on
 // the `m`'s `tag` keys.
 // Example:
-// type Request struct {
-//		ID int64 `json:"id"`
-//		Name string `json:"name"`
-// }
+//
+//	type Request struct {
+//			ID int64 `json:"id"`
+//			Name string `json:"name"`
+//	}
+//
 // AutoRun(
+//
 //		context.Background(),
 //	  "/something/:id/:name",
 //	  ronykit.JSON,
 //	  &Request{ID: 10, Name: "customName"},
+//
 // )
 //
 // Is equivalent to:

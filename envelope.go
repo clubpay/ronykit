@@ -19,6 +19,8 @@ type EnvelopeHdr map[string]string
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope interface {
+	SetID(id string) Envelope
+	GetID() string
 	SetHdr(key, value string) Envelope
 	SetHdrWalker(walker Walker) Envelope
 	SetHdrMap(kv map[string]string) Envelope
@@ -32,6 +34,8 @@ type Envelope interface {
 	// You **MUST NOT** call this method on incoming envelopes. i.e. the Envelope that you
 	// get from Context.In
 	Send()
+	// Reply creates a new envelope which it's id is
+	Reply() Envelope
 }
 
 // Modifier is a function which can modify the outgoing Envelope before sending it to the
@@ -40,6 +44,7 @@ type Modifier func(envelope Envelope)
 
 // envelopeImpl implements Envelope
 type envelopeImpl struct {
+	id   []byte
 	ctx  *Context
 	conn Conn
 	kvl  utils.SpinLock
@@ -88,12 +93,23 @@ func (e *envelopeImpl) release() {
 	e.m = nil
 	e.ctx = nil
 	e.conn = nil
+	e.id = e.id[:0]
 
 	e.p.Put(e)
 }
 
 func (e *envelopeImpl) dontReuse() {
 	e.reuse = false
+}
+
+func (e *envelopeImpl) GetID() string {
+	return string(e.id)
+}
+
+func (e *envelopeImpl) SetID(id string) Envelope {
+	e.id = append(e.id[:0], id...)
+
+	return e
 }
 
 func (e *envelopeImpl) SetHdr(key, value string) Envelope {
@@ -180,4 +196,9 @@ func (e *envelopeImpl) Send() {
 
 	// Release the envelope
 	e.release()
+}
+
+func (e *envelopeImpl) Reply() Envelope {
+	return newEnvelope(e.ctx, e.conn, true).
+		SetID(utils.B2S(e.id))
 }

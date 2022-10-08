@@ -224,6 +224,7 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 	}
 
 	ctx.In().
+		SetID(inputMsgContainer.GetID()).
 		SetHdrMap(inputMsgContainer.GetHdrMap()).
 		SetMsg(msg)
 
@@ -235,15 +236,16 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 }
 
 func (b *bundle) wsWriteFunc(conn ronykit.Conn, e ronykit.Envelope) error {
-	outputMsgContainer := b.rpcOutFactory()
-	outputMsgContainer.SetPayload(e.GetMsg())
+	outC := b.rpcOutFactory()
+	outC.SetPayload(e.GetMsg())
+	outC.SetID(e.GetID())
 	e.WalkHdr(func(key string, val string) bool {
-		outputMsgContainer.SetHdr(key, val)
+		outC.SetHdr(key, val)
 
 		return true
 	})
 
-	data, err := outputMsgContainer.Marshal()
+	data, err := outC.Marshal()
 	if err != nil {
 		return err
 	}

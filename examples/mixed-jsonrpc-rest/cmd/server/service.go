@@ -28,7 +28,7 @@ func echoHandler(ctx *ronykit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
-	ctx.Out().
+	ctx.In().Reply().
 		SetHdr("cmd", ctx.In().GetHdr("cmd")).
 		SetMsg(
 			&dto.EchoResponse{

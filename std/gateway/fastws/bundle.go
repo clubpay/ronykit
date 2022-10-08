@@ -94,6 +94,7 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 	}
 
 	ctx.In().
+		SetID(inputMsgContainer.GetID()).
 		SetHdrMap(inputMsgContainer.GetHdrMap()).
 		SetMsg(msg)
 
