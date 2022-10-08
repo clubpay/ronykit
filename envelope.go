@@ -18,6 +18,8 @@ type EnvelopeHdr map[string]string
 // by the RonyKIT framework, and provide the abstraction which Bundle implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
+//
+//nolint:interfacebloat
 type Envelope interface {
 	SetID(id string) Envelope
 	GetID() string
