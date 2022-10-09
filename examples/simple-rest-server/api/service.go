@@ -48,6 +48,13 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetInput(&dto.RedirectRequest{}).
 				Selector(fasthttp.REST(http.MethodGet, "/redirect")).
 				SetHandler(Redirect),
+		).
+		AddContract(
+			desc.NewContract().
+				SetInput(ronykit.RawMessage{}).
+				SetOutput(ronykit.RawMessage{}).
+				Selector(fasthttp.REST(http.MethodPost, "/raw_echo")).
+				SetHandler(RawEchoHandler),
 		)
 }
 
@@ -63,6 +70,15 @@ func EchoHandler(ctx *ronykit.Context) {
 				Ok:       req.Ok,
 			},
 		).Send()
+
+	return
+}
+
+func RawEchoHandler(ctx *ronykit.Context) {
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(ronykit.RawMessage)
+
+	ctx.In().Reply().SetMsg(req).Send()
 
 	return
 }

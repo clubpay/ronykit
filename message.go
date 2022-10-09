@@ -31,7 +31,10 @@ type (
 )
 
 func CreateMessageFactory(in Message) MessageFactoryFunc {
-	if in == nil {
+	switch {
+	case in == nil:
+		fallthrough
+	case reflect.Indirect(reflect.ValueOf(in)).Type() == reflect.TypeOf(RawMessage{}):
 		return func() Message {
 			return RawMessage{}
 		}
