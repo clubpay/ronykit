@@ -228,6 +228,9 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 		SetHdrMap(inputMsgContainer.GetHdrMap()).
 		SetMsg(msg)
 
+	// release the container
+	inputMsgContainer.Release()
+
 	return ronykit.ExecuteArg{
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
@@ -251,6 +254,7 @@ func (b *bundle) wsWriteFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	}
 
 	_, err = conn.Write(data)
+	outC.Release()
 
 	return err
 }

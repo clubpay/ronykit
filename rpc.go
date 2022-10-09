@@ -18,6 +18,8 @@ type IncomingRPCContainer interface {
 	GetHdr(key string) string
 	// GetHdrMap returns all the header key-values.
 	GetHdrMap() map[string]string
+	// Release will be called when we finished our work with it.
+	Release()
 }
 
 type IncomingRPCFactory func() IncomingRPCContainer
@@ -34,6 +36,8 @@ type OutgoingRPCContainer interface {
 	SetHdr(k, v string)
 	// SetPayload set the body/payload of the container with the actual Message.
 	SetPayload(m Message)
+	// Release will be called when we finished our work with it.
+	Release()
 }
 
 type OutgoingRPCFactory func() OutgoingRPCContainer

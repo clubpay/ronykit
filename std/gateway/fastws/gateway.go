@@ -51,6 +51,7 @@ func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	}
 
 	_, err = conn.Write(data)
+	outC.Release()
 
 	return err
 }

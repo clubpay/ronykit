@@ -11,6 +11,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/onsi/gomega v1.21.1
 	github.com/panjf2000/gnet/v2 v2.1.2
+	github.com/pkg/profile v1.6.0
 	github.com/valyala/fasthttp v1.40.0
 )
 

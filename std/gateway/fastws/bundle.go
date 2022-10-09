@@ -98,6 +98,9 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 		SetHdrMap(inputMsgContainer.GetHdrMap()).
 		SetMsg(msg)
 
+	// release the container
+	inputMsgContainer.Release()
+
 	return ronykit.ExecuteArg{
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,

@@ -81,6 +81,7 @@ func (wCtx *WebsocketCtx) receiver() {
 		} else if h = wCtx.cfg.defaultHandler; h != nil {
 			h(c)
 		}
+		c.Release()
 	}
 }
 
@@ -122,6 +123,8 @@ func (wCtx *WebsocketCtx) do(
 	if err != nil {
 		return err
 	}
+
+	outC.Release()
 
 	go wCtx.waitForMessage(ctx, id, res, cb)
 

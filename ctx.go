@@ -29,6 +29,10 @@ type Context struct {
 	ctx context.Context //nolint:containedctx
 	cf  func()
 
+	serviceName []byte
+	contractID  []byte
+	route       []byte
+
 	kv         map[string]interface{}
 	hdr        map[string]string
 	conn       Conn
@@ -53,9 +57,9 @@ func newContext() *Context {
 // execute the Context with the provided ExecuteArg. It implements ExecuteFunc
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
-		Set(CtxServiceName, arg.ServiceName).
-		Set(CtxContractID, arg.ContractID).
-		Set(CtxRoute, arg.Route).
+		setRoute(arg.Route).
+		setServiceName(arg.ServiceName).
+		setContractID(arg.ContractID).
 		AddModifier(c.Modifiers()...)
 
 	ctx.handlers = append(ctx.handlers, c.Handlers()...)
@@ -194,6 +198,10 @@ func (ctx *Context) reset() {
 	for k := range ctx.hdr {
 		delete(ctx.hdr, k)
 	}
+
+	ctx.serviceName = ctx.serviceName[:0]
+	ctx.contractID = ctx.contractID[:0]
+	ctx.route = ctx.route[:0]
 
 	ctx.in.release()
 	ctx.statusCode = http.StatusOK

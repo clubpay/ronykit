@@ -1,27 +1,35 @@
 package ronykit
 
-const (
-	CtxServiceName = "__ServiceName__"
-	CtxContractID  = "__ContractID__"
-	CtxRoute       = "__Route__"
-)
+import "github.com/clubpay/ronykit/utils"
+
+func (ctx *Context) setRoute(route string) *Context {
+	ctx.route = append(ctx.route[:0], route...)
+
+	return ctx
+}
 
 func (ctx *Context) Route() string {
-	route, _ := ctx.Get(CtxRoute).(string)
+	return utils.B2S(ctx.route)
+}
 
-	return route
+func (ctx *Context) setServiceName(s string) *Context {
+	ctx.serviceName = append(ctx.serviceName[:0], s...)
+
+	return ctx
 }
 
 func (ctx *Context) ServiceName() string {
-	svcName, _ := ctx.Get(CtxServiceName).(string)
+	return utils.B2S(ctx.serviceName)
+}
 
-	return svcName
+func (ctx *Context) setContractID(contractID string) *Context {
+	ctx.contractID = append(ctx.contractID[:0], contractID...)
+
+	return ctx
 }
 
 func (ctx *Context) ContractID() string {
-	contractID, _ := ctx.Get(CtxContractID).(string)
-
-	return contractID
+	return utils.B2S(ctx.contractID)
 }
 
 func (ctx *Context) Set(key string, val interface{}) *Context {
