@@ -76,6 +76,10 @@ func (b *bundle) Register(
 }
 
 func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+	if len(in) == 0 {
+		return ronykit.NoExecuteArg, ronykit.ErrDecodeIncomingContainerFailed
+	}
+
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {

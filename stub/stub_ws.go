@@ -55,7 +55,7 @@ func (wCtx *WebsocketCtx) Disconnect() error {
 func (wCtx *WebsocketCtx) receiver() {
 	for {
 		_, p, err := wCtx.c.ReadMessage()
-		if err != nil {
+		if err != nil || len(p) == 0 {
 			// TODO:: maybe error handler ?
 			return
 		}

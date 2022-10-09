@@ -71,9 +71,10 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 }
 
 var (
-	ErrNoHandler                   = errors.New("handler is not set for request")
-	ErrWriteToClosedConn           = errors.New("write to closed connection")
-	ErrDecodeIncomingMessageFailed = errors.New("decoding the incoming message failed")
-	ErrEncodeOutgoingMessageFailed = errors.New("encoding the outgoing message failed")
-	ErrDispatchFailed              = errors.New("dispatch failed")
+	ErrNoHandler                     = errors.New("handler is not set for request")
+	ErrWriteToClosedConn             = errors.New("write to closed connection")
+	ErrDecodeIncomingMessageFailed   = errors.New("decoding the incoming message failed")
+	ErrEncodeOutgoingMessageFailed   = errors.New("encoding the outgoing message failed")
+	ErrDecodeIncomingContainerFailed = errors.New("decoding the incoming container failed")
+	ErrDispatchFailed                = errors.New("dispatch failed")
 )

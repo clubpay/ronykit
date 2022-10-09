@@ -206,6 +206,10 @@ func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
 }
 
 func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+	if len(in) == 0 {
+		return ronykit.NoExecuteArg, ronykit.ErrDecodeIncomingContainerFailed
+	}
+
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
