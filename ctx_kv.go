@@ -1,7 +1,5 @@
 package ronykit
 
-import "github.com/clubpay/ronykit/utils"
-
 func (ctx *Context) setRoute(route string) *Context {
 	ctx.route = append(ctx.route[:0], route...)
 
@@ -9,7 +7,7 @@ func (ctx *Context) setRoute(route string) *Context {
 }
 
 func (ctx *Context) Route() string {
-	return utils.B2S(ctx.route)
+	return string(ctx.route)
 }
 
 func (ctx *Context) setServiceName(s string) *Context {
@@ -19,7 +17,7 @@ func (ctx *Context) setServiceName(s string) *Context {
 }
 
 func (ctx *Context) ServiceName() string {
-	return utils.B2S(ctx.serviceName)
+	return string(ctx.serviceName)
 }
 
 func (ctx *Context) setContractID(contractID string) *Context {
@@ -29,7 +27,7 @@ func (ctx *Context) setContractID(contractID string) *Context {
 }
 
 func (ctx *Context) ContractID() string {
-	return utils.B2S(ctx.contractID)
+	return string(ctx.contractID)
 }
 
 func (ctx *Context) Set(key string, val interface{}) *Context {
