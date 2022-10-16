@@ -7,7 +7,7 @@ require (
 	github.com/gobwas/ws v1.1.0
 	github.com/goccy/go-json v0.9.11
 	github.com/goccy/go-reflect v1.2.0
-	github.com/jedib0t/go-pretty/v6 v6.3.9
+	github.com/jedib0t/go-pretty/v6 v6.4.0
 	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/onsi/gomega v1.21.1
 	github.com/panjf2000/gnet/v2 v2.1.2
