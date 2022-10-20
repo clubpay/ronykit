@@ -11,7 +11,7 @@ var inPool sync.Pool
 
 // simpleIncomingJSONRPC implements ronykit.IncomingRPCContainer
 type simpleIncomingJSONRPC struct {
-	ID      []byte            `json:"id"`
+	ID      string            `json:"id"`
 	Header  map[string]string `json:"hdr"`
 	Payload json.RawMessage   `json:"payload"`
 }
@@ -28,7 +28,7 @@ func SimpleIncomingJSONRPC() ronykit.IncomingRPCContainer {
 }
 
 func (e *simpleIncomingJSONRPC) GetID() string {
-	return string(e.ID)
+	return e.ID
 }
 
 func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
