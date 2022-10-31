@@ -6,23 +6,28 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/reflector"
 	"github.com/fasthttp/websocket"
-	"github.com/goccy/go-json"
 )
 
 type WebsocketCtx struct {
 	cfg     wsConfig
 	err     *Error
 	r       *reflector.Reflector
+	l       ronykit.Logger
 	dumpReq io.Writer
 	dumpRes io.Writer
 
-	pendingL sync.Mutex
-	pending  map[string]chan ronykit.IncomingRPCContainer
+	pendingL     sync.Mutex
+	pending      map[string]chan ronykit.IncomingRPCContainer
+	lastActivity int64
+	disconnect   bool
+	path         string
 
 	// fasthttp entities
 	url string
@@ -31,39 +36,112 @@ type WebsocketCtx struct {
 
 func (wCtx *WebsocketCtx) Connect(ctx context.Context, path string) error {
 	path = strings.TrimLeft(path, "/")
+	wCtx.path = path
+
+	return wCtx.connect(ctx)
+}
+
+func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	url := wCtx.url
-	if path != "" {
-		url = fmt.Sprintf("%s/%s", wCtx.url, path)
+	if wCtx.path != "" {
+		url = fmt.Sprintf("%s/%s", wCtx.url, wCtx.path)
 	}
-	c, _, err := wCtx.cfg.d.DialContext(ctx, url, wCtx.cfg.upgradeHdr)
+	wCtx.l.Debugf("connect: %s", url)
+
+	d := wCtx.cfg.dialerBuilder()
+	c, _, err := d.DialContext(ctx, url, wCtx.cfg.upgradeHdr)
 	if err != nil {
 		return err
 	}
 
+	wCtx.setActivity()
+	c.SetPongHandler(func(appData string) error {
+		wCtx.l.Debug("pong received")
+		wCtx.setActivity()
+
+		return nil
+	})
+
 	wCtx.c = c
 
-	// run receiver in background
-	go wCtx.receiver()
+	// run receiver & watchdog in background
+	go wCtx.receiver(c)
+	go wCtx.watchdog()
+
+	if wCtx.cfg.onConnect != nil {
+		wCtx.cfg.onConnect(wCtx)
+	}
 
 	return nil
 }
 
 func (wCtx *WebsocketCtx) Disconnect() error {
+	wCtx.disconnect = true
+
 	return wCtx.c.Close()
 }
 
-func (wCtx *WebsocketCtx) receiver() {
+func (wCtx *WebsocketCtx) setActivity() {
+	atomic.StoreInt64(&wCtx.lastActivity, utils.TimeUnix())
+}
+
+func (wCtx *WebsocketCtx) watchdog() {
+	wCtx.l.Debugf("watchdog started: %s", wCtx.c.LocalAddr().String())
+
+	t := time.NewTicker(wCtx.cfg.pingTime)
+	d := int64(wCtx.cfg.pingTime/time.Second) * 2
 	for {
-		_, p, err := wCtx.c.ReadMessage()
+		select {
+		case <-t.C:
+			if wCtx.disconnect {
+				wCtx.l.Debugf("going to disconnect: %s", wCtx.c.LocalAddr().String())
+
+				_ = wCtx.c.Close()
+
+				return
+			}
+
+			if utils.TimeUnix()-wCtx.lastActivity > d {
+				if wCtx.cfg.autoReconnect {
+					wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
+
+					_ = wCtx.c.Close()
+
+					ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
+					err := wCtx.connect(ctx)
+					cf()
+					if err != nil {
+						wCtx.l.Debugf("failed to reconnect: %s", err)
+
+						continue
+					}
+				}
+
+				return
+			}
+
+			_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+			wCtx.l.Debug("ping sent")
+		}
+	}
+}
+
+func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
+	for {
+		_, p, err := c.ReadMessage()
 		if err != nil || len(p) == 0 {
-			// TODO:: maybe error handler ?
+			wCtx.l.Debugf("receiver shutdown: %s: %v", c.LocalAddr().String(), err)
+
 			return
 		}
+
+		wCtx.setActivity()
 
 		c := wCtx.cfg.rpcInFactory()
 		err = c.Unmarshal(p)
 		if err != nil {
-			// TODO:: maybe error handler ?
+			wCtx.l.Debugf("received unexpected message: %v", err)
+
 			continue
 		}
 		wCtx.pendingL.Lock()
@@ -105,12 +183,8 @@ func (wCtx *WebsocketCtx) do(
 ) error {
 	outC := wCtx.cfg.rpcOutFactory()
 
-	payloadData, err := ronykit.MarshalMessage(req)
-	if err != nil {
-		return err
-	}
 	id := utils.RandomDigit(10)
-	outC.SetPayload(json.RawMessage(payloadData))
+	outC.InjectMessage(req)
 	outC.SetHdr(wCtx.cfg.predicateKey, predicate)
 	outC.SetID(id)
 
@@ -141,7 +215,7 @@ func (wCtx *WebsocketCtx) waitForMessage(
 
 	select {
 	case c := <-resCh:
-		err := c.Fill(res)
+		err := c.ExtractMessage(res)
 		cb(ctx, res, c.GetHdrMap(), err)
 
 	case <-ctx.Done():

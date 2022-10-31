@@ -33,6 +33,7 @@ func echoHandler(ctx *ronykit.Context) {
 		SetMsg(
 			&dto.EchoResponse{
 				RandomID: req.RandomID,
+				Ok:       req.Ok,
 			},
 		).Send()
 

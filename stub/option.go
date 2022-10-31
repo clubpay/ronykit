@@ -3,6 +3,8 @@ package stub
 import (
 	"io"
 	"time"
+
+	"github.com/clubpay/ronykit"
 )
 
 type Option func(cfg *config)
@@ -14,6 +16,7 @@ type config struct {
 	skipVerifyTLS bool
 	dumpReq       io.Writer
 	dumpRes       io.Writer
+	l             ronykit.Logger
 
 	readTimeout, writeTimeout, dialTimeout time.Duration
 }
@@ -51,6 +54,12 @@ func WithWriteTimeout(timeout time.Duration) Option {
 func WithDialTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.dialTimeout = timeout
+	}
+}
+
+func WithLogger(l ronykit.Logger) Option {
+	return func(cfg *config) {
+		cfg.l = l
 	}
 }
 

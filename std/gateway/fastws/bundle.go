@@ -92,7 +92,7 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.Fill(msg)
+	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
 		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}

@@ -12,8 +12,8 @@ type IncomingRPCContainer interface {
 	GetID() string
 	// Unmarshal deserialize the received payload.
 	Unmarshal(data []byte) error
-	// Fill the actual message which will be later used from Context method In().GetMsg().
-	Fill(m Message) error
+	// ExtractMessage extracts the payload of the container to the input message.
+	ExtractMessage(m Message) error
 	// GetHdr to read header. This method is used by RonyKIT to fill Envelope's header fields.
 	GetHdr(key string) string
 	// GetHdrMap returns all the header key-values.
@@ -34,8 +34,8 @@ type OutgoingRPCContainer interface {
 	Marshal() ([]byte, error)
 	// SetHdr set the header.
 	SetHdr(k, v string)
-	// SetPayload set the body/payload of the container with the actual Message.
-	SetPayload(m Message)
+	// InjectMessage set the body/payload of the container with the actual Message.
+	InjectMessage(m Message)
 	// Release will be called when we finished our work with it.
 	Release()
 }

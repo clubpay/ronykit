@@ -222,7 +222,7 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.Fill(msg)
+	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
 		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
 	}
@@ -244,7 +244,7 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 
 func (b *bundle) wsWriteFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	outC := b.rpcOutFactory()
-	outC.SetPayload(e.GetMsg())
+	outC.InjectMessage(e.GetMsg())
 	outC.SetID(e.GetID())
 	e.WalkHdr(func(key string, val string) bool {
 		outC.SetHdr(key, val)

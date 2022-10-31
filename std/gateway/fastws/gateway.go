@@ -37,7 +37,7 @@ func newGateway(b *bundle) (*gateway, error) {
 
 func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
 	outC := gw.b.rpcOutFactory()
-	outC.SetPayload(e.GetMsg())
+	outC.InjectMessage(e.GetMsg())
 	outC.SetID(e.GetID())
 	e.WalkHdr(func(key string, val string) bool {
 		outC.SetHdr(key, val)
@@ -136,6 +136,10 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	for {
 		hdr, err = wsc.r.NextFrame()
 		if err != nil {
+			if err == io.EOF {
+				return gnet.None
+			}
+
 			return gnet.Close
 		}
 		if hdr.OpCode.IsControl() {

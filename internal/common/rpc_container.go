@@ -35,7 +35,7 @@ func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 	return json.UnmarshalNoEscape(data, e)
 }
 
-func (e *simpleIncomingJSONRPC) Fill(m ronykit.Message) error {
+func (e *simpleIncomingJSONRPC) ExtractMessage(m ronykit.Message) error {
 	return json.UnmarshalNoEscape(e.Payload, m)
 }
 
@@ -61,7 +61,7 @@ var outPool = sync.Pool{}
 
 // simpleOutgoingJSONRPC implements ronykit.OutgoingRPCContainer
 type simpleOutgoingJSONRPC struct {
-	ID      []byte            `json:"id"`
+	ID      string            `json:"id"`
 	Header  map[string]string `json:"hdr"`
 	Payload ronykit.Message   `json:"payload"`
 }
@@ -78,14 +78,14 @@ func SimpleOutgoingJSONRPC() ronykit.OutgoingRPCContainer {
 }
 
 func (e *simpleOutgoingJSONRPC) SetID(id string) {
-	e.ID = append(e.ID[:0], id...)
+	e.ID = id
 }
 
 func (e *simpleOutgoingJSONRPC) SetHdr(k, v string) {
 	e.Header[k] = v
 }
 
-func (e *simpleOutgoingJSONRPC) SetPayload(m ronykit.Message) {
+func (e *simpleOutgoingJSONRPC) InjectMessage(m ronykit.Message) {
 	e.Payload = m
 }
 

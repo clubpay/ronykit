@@ -2,21 +2,31 @@ package stub
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/clubpay/ronykit"
 	"github.com/fasthttp/websocket"
 )
 
+type OnConnectHandler func(ctx *WebsocketCtx)
+
 type WebsocketOption func(cfg *wsConfig)
 
 type wsConfig struct {
-	upgradeHdr     http.Header
 	predicateKey   string
-	d              *websocket.Dialer
 	rpcInFactory   ronykit.IncomingRPCFactory
 	rpcOutFactory  ronykit.OutgoingRPCFactory
 	handlers       map[string]RPCContainerHandler
 	defaultHandler RPCContainerHandler
+
+	autoReconnect bool
+	dialerBuilder func() *websocket.Dialer
+	upgradeHdr    http.Header
+	pingTime      time.Duration
+	dialTimeout   time.Duration
+	writeTimeout  time.Duration
+
+	onConnect OnConnectHandler
 }
 
 func WithUpgradeHeader(key string, values ...string) WebsocketOption {
@@ -28,9 +38,9 @@ func WithUpgradeHeader(key string, values ...string) WebsocketOption {
 	}
 }
 
-func WithCustomDialer(d *websocket.Dialer) WebsocketOption {
+func WithCustomDialerBuilder(b func() *websocket.Dialer) WebsocketOption {
 	return func(cfg *wsConfig) {
-		cfg.d = d
+		cfg.dialerBuilder = b
 	}
 }
 
@@ -56,8 +66,26 @@ func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory
 	}
 }
 
+func WithOnConnectHandler(f OnConnectHandler) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.onConnect = f
+	}
+}
+
 func WithPredicateKey(key string) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.predicateKey = key
+	}
+}
+
+func WithAutoReconnect(b bool) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.autoReconnect = b
+	}
+}
+
+func WithPingTime(t time.Duration) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.pingTime = t
 	}
 }

@@ -34,6 +34,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
 		dialTimeout:  time.Second * 45,
+		l:            nopLogger{},
 	}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -84,14 +85,21 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
+			autoReconnect: true,
+			pingTime:      time.Second * 30,
+			dialTimeout:   s.cfg.dialTimeout,
+			writeTimeout:  s.cfg.writeTimeout,
 			rpcInFactory:  common.SimpleIncomingJSONRPC,
 			rpcOutFactory: common.SimpleOutgoingJSONRPC,
-			d: &websocket.Dialer{
-				Proxy:            http.ProxyFromEnvironment,
-				HandshakeTimeout: s.cfg.dialTimeout,
+			dialerBuilder: func() *websocket.Dialer {
+				return &websocket.Dialer{
+					Proxy:            http.ProxyFromEnvironment,
+					HandshakeTimeout: s.cfg.dialTimeout,
+				}
 			},
 		},
 		r:       s.r,
+		l:       s.cfg.l,
 		pending: make(map[string]chan ronykit.IncomingRPCContainer, 1024),
 	}
 
