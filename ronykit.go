@@ -24,7 +24,7 @@ type (
 		ContractID  string
 		Route       string
 	}
-	WriteFunc   func(conn Conn, e Envelope) error
+	WriteFunc   func(conn Conn, e *Envelope) error
 	ExecuteFunc func(arg ExecuteArg)
 )
 

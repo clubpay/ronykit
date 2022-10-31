@@ -31,7 +31,7 @@ var _ ronykit.Gateway = (*testGateway)(nil)
 func (t *testGateway) Send(c *testConn, msg []byte) {
 	t.d.OnMessage(
 		c,
-		func(conn ronykit.Conn, e ronykit.Envelope) error {
+		func(conn ronykit.Conn, e *ronykit.Envelope) error {
 			b, err := ronykit.MarshalMessage(e.GetMsg())
 			if err != nil {
 				return err

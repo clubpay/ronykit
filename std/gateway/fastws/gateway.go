@@ -35,7 +35,7 @@ func newGateway(b *bundle) (*gateway, error) {
 	return gw, nil
 }
 
-func (gw *gateway) writeFunc(conn ronykit.Conn, e ronykit.Envelope) error {
+func (gw *gateway) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
 	outC := gw.b.rpcOutFactory()
 	outC.InjectMessage(e.GetMsg())
 	outC.SetID(e.GetID())

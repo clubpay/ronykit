@@ -14,38 +14,15 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
+// Modifier is a function which can modify the outgoing Envelope before sending it to the
+// client. Modifier only applies to outgoing envelopes.
+type Modifier func(envelope *Envelope)
+
 // Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
 // by the RonyKIT framework, and provide the abstraction which Bundle implementations could
 // take advantage of. For example in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
-//
-//nolint:interfacebloat
-type Envelope interface {
-	SetID(id string) Envelope
-	GetID() string
-	SetHdr(key, value string) Envelope
-	SetHdrWalker(walker Walker) Envelope
-	SetHdrMap(kv map[string]string) Envelope
-	GetHdr(key string) string
-	WalkHdr(f func(key, val string) bool) Envelope
-	SetMsg(msg Message) Envelope
-	GetMsg() Message
-	// Send writes the envelope to the connection based on the Gateway specification.
-	// You **MUST NOT** use the Envelope after calling this method.
-	// You **MUST NOT** call this function more than once.
-	// You **MUST NOT** call this method on incoming envelopes. i.e. the Envelope that you
-	// get from Context.In
-	Send()
-	// Reply creates a new envelope which it's id is
-	Reply() Envelope
-}
-
-// Modifier is a function which can modify the outgoing Envelope before sending it to the
-// client. Modifier only applies to outgoing envelopes.
-type Modifier func(envelope Envelope)
-
-// envelopeImpl implements Envelope
-type envelopeImpl struct {
+type Envelope struct {
 	id   []byte
 	ctx  *Context
 	conn Conn
@@ -61,12 +38,10 @@ type envelopeImpl struct {
 	p     *sync.Pool
 }
 
-var _ Envelope = (*envelopeImpl)(nil)
-
-func newEnvelope(ctx *Context, conn Conn, outgoing bool) *envelopeImpl {
-	e, ok := envelopePool.Get().(*envelopeImpl)
+func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
+	e, ok := envelopePool.Get().(*Envelope)
 	if !ok {
-		e = &envelopeImpl{
+		e = &Envelope{
 			kv:    EnvelopeHdr{},
 			p:     envelopePool,
 			reuse: true,
@@ -84,7 +59,7 @@ func newEnvelope(ctx *Context, conn Conn, outgoing bool) *envelopeImpl {
 	return e
 }
 
-func (e *envelopeImpl) release() {
+func (e *Envelope) release() {
 	if !e.reuse {
 		return
 	}
@@ -100,21 +75,21 @@ func (e *envelopeImpl) release() {
 	e.p.Put(e)
 }
 
-func (e *envelopeImpl) dontReuse() {
+func (e *Envelope) dontReuse() {
 	e.reuse = false
 }
 
-func (e *envelopeImpl) GetID() string {
+func (e *Envelope) GetID() string {
 	return string(e.id)
 }
 
-func (e *envelopeImpl) SetID(id string) Envelope {
+func (e *Envelope) SetID(id string) *Envelope {
 	e.id = append(e.id[:0], id...)
 
 	return e
 }
 
-func (e *envelopeImpl) SetHdr(key, value string) Envelope {
+func (e *Envelope) SetHdr(key, value string) *Envelope {
 	e.kvl.Lock()
 	e.kv[key] = value
 	e.kvl.Unlock()
@@ -122,7 +97,7 @@ func (e *envelopeImpl) SetHdr(key, value string) Envelope {
 	return e
 }
 
-func (e *envelopeImpl) SetHdrWalker(walker Walker) Envelope {
+func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
 	e.kvl.Lock()
 	walker.Walk(func(k, v string) bool {
 		e.kv[k] = v
@@ -134,7 +109,7 @@ func (e *envelopeImpl) SetHdrWalker(walker Walker) Envelope {
 	return e
 }
 
-func (e *envelopeImpl) SetHdrMap(kv map[string]string) Envelope {
+func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
 	e.kvl.Lock()
 	for k, v := range kv {
 		e.kv[k] = v
@@ -144,7 +119,7 @@ func (e *envelopeImpl) SetHdrMap(kv map[string]string) Envelope {
 	return e
 }
 
-func (e *envelopeImpl) GetHdr(key string) string {
+func (e *Envelope) GetHdr(key string) string {
 	e.kvl.Lock()
 	v := e.kv[key]
 	e.kvl.Unlock()
@@ -152,7 +127,7 @@ func (e *envelopeImpl) GetHdr(key string) string {
 	return v
 }
 
-func (e *envelopeImpl) WalkHdr(f func(key string, val string) bool) Envelope {
+func (e *Envelope) WalkHdr(f func(key string, val string) bool) *Envelope {
 	e.kvl.Lock()
 	for k, v := range e.kv {
 		if !f(k, v) {
@@ -164,13 +139,13 @@ func (e *envelopeImpl) WalkHdr(f func(key string, val string) bool) Envelope {
 	return e
 }
 
-func (e *envelopeImpl) SetMsg(msg Message) Envelope {
+func (e *Envelope) SetMsg(msg Message) *Envelope {
 	e.m = msg
 
 	return e
 }
 
-func (e *envelopeImpl) GetMsg() Message {
+func (e *Envelope) GetMsg() Message {
 	if e.m == nil {
 		return nil
 	}
@@ -178,7 +153,12 @@ func (e *envelopeImpl) GetMsg() Message {
 	return e.m
 }
 
-func (e *envelopeImpl) Send() {
+// Send writes the envelope to the connection based on the Gateway specification.
+// You **MUST NOT** use the Envelope after calling this method.
+// You **MUST NOT** call this function more than once.
+// You **MUST NOT** call this method on incoming envelopes. i.e. the Envelope that you
+// get from Context.In
+func (e *Envelope) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")
 	}
@@ -200,7 +180,8 @@ func (e *envelopeImpl) Send() {
 	e.release()
 }
 
-func (e *envelopeImpl) Reply() Envelope {
+// Reply creates a new envelope which it's id is
+func (e *Envelope) Reply() *Envelope {
 	return newEnvelope(e.ctx, e.conn, true).
 		SetID(utils.B2S(e.id))
 }

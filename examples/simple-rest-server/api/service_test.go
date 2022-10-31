@@ -20,7 +20,7 @@ func TestSampleService(t *testing.T) {
 			nil,
 		).
 		Receiver(
-			func(out ...ronykit.Envelope) error {
+			func(out ...*ronykit.Envelope) error {
 				if len(out) != 1 {
 					t.Fatalf("expected 1 envelope, got %d", len(out))
 				}

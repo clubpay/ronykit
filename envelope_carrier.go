@@ -22,8 +22,9 @@ func envelopeCarrierFromContext(ctx *Context) envelopeCarrier {
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
 		ExecIndex:   ctx.handlerIndex,
+		IsREST:      ctx.isREST(),
 	}
-	_, ec.IsREST = ctx.Conn().(RESTConn)
+
 	ec.Msg, _ = MarshalMessage(ctx.In().GetMsg())
 	ctx.In().
 		WalkHdr(func(key, val string) bool {
