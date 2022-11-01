@@ -279,13 +279,13 @@ func (s Service) restStub(
 func getEncoding(rrs ronykit.RouteSelector) string {
 	switch rrs.GetEncoding().Tag() {
 	case ronykit.JSON.Tag():
-		return "ronykit.JSON"
+		return "ronykit.ToJSON"
 	case ronykit.Proto.Tag():
 		return "ronykit.Proto"
 	case ronykit.MSG.Tag():
 		return "ronykit.MSG"
 	case "":
-		return "ronykit.JSON"
+		return "ronykit.ToJSON"
 	default:
 		return fmt.Sprintf("ronykit.CustomEncoding(%q)", rrs.GetEncoding().Tag())
 	}

@@ -53,7 +53,7 @@ var _ = Describe("EnvelopeCarrier", func() {
 			},
 		)
 
-	envCarrier1 := ronykit.EnvelopeCarrierFromContext(ctx)
+	envCarrier1 := ronykit.EnvelopeCarrierFromContext(ctx, 1)
 	It("Must create EnvelopeCarrier from Context", func() {
 		Expect(envCarrier1.ServiceName).To(Equal("testService"))
 		Expect(envCarrier1.Hdr).To(HaveKeyWithValue("envH1", "envVal1"))
@@ -62,12 +62,13 @@ var _ = Describe("EnvelopeCarrier", func() {
 	})
 
 	envCarrierData, err := json.Marshal(envCarrier1)
-	It("Must marshal EnvelopeCarrier to JSON", func() {
+	It("Must marshal EnvelopeCarrier to ToJSON", func() {
 		Expect(err).To(BeNil())
 	})
 
-	envCarrier2 := ronykit.EnvelopeCarrierFromData(envCarrierData)
-	It("Must create EnvelopeCarrier from JSON", func() {
+	envCarrier2, err := ronykit.EnvelopeCarrierFromData(envCarrierData)
+	It("Must create EnvelopeCarrier from ToJSON", func() {
+		Expect(err).To(BeNil())
 		Expect(envCarrier2.ServiceName).To(Equal("testService"))
 		Expect(envCarrier2.Hdr).To(HaveKeyWithValue("envH1", "envVal1"))
 		Expect(envCarrier2.ConnHdr).To(HaveKeyWithValue("k1", "v1"))

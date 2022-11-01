@@ -136,7 +136,7 @@ func ToScreamingDelimited(s string, delimiter uint8, ignore uint8, screaming boo
 			v -= 'A'
 		}
 
-		// treat acronyms as words, eg for JSONData -> JSON is a whole word
+		// treat acronyms as words, eg for JSONData -> ToJSON is a whole word
 		//nolint:nestif
 		if i+1 < len(s) {
 			next := s[i+1]

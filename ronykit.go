@@ -18,17 +18,7 @@ type Bundle interface {
 	)
 }
 
-type (
-	ExecuteArg struct {
-		ServiceName string
-		ContractID  string
-		Route       string
-	}
-	WriteFunc   func(conn Conn, e *Envelope) error
-	ExecuteFunc func(arg ExecuteArg)
-)
-
-var NoExecuteArg = ExecuteArg{}
+type WriteFunc func(conn Conn, e *Envelope) error
 
 // Conn represents a connection between EdgeServer and client.
 type Conn interface {

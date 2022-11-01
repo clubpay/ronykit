@@ -114,7 +114,7 @@ var _ = Describe("EdgeServer/Simple", func() {
 			Expect(c.Read()).To(BeEquivalentTo(msg))
 		},
 		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
-		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
+		Entry("a ToJSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
 	)
 })
 
@@ -171,7 +171,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 			Expect(c.Read()).To(BeEquivalentTo(fmt.Sprintf("PRE_VALUE-%s-", string(msg))))
 		},
 		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
-		Entry("a JSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
+		Entry("a ToJSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
 	)
 })
 

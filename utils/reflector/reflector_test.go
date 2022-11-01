@@ -39,7 +39,7 @@ var _ = Describe("Reflector", func() {
 		Expect(obj.GetStringDefault(m, "z", "")).To(BeEmpty())
 	})
 
-	It("Load by JSON tag", func() {
+	It("Load by ToJSON tag", func() {
 		byTag, ok := rObj.ByTag("json")
 		Expect(ok).To(BeTrue())
 		Expect(byTag.GetStringDefault(m, "xTag", "")).To(Equal(m.X))

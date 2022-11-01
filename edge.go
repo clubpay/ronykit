@@ -24,8 +24,8 @@ type contractResolver func(contractID string) Contract
 // EdgeServer is the main component of the ronykit. It glues all other components of the
 // app to each other.
 type EdgeServer struct {
+	sb        *southBridge
 	nb        []*northBridge
-	sb        []*southBridge
 	gh        []HandlerFunc
 	svc       []Service
 	contracts map[string]Contract
@@ -72,18 +72,17 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 		gw.Subscribe(nb)
 	}
 
-	c, ok := b.(Cluster)
-	if ok {
-		sb := &southBridge{
-			l:  s.l,
-			eh: s.eh,
-			cr: s.getContract,
-			c:  c,
-		}
-		s.sb = append(s.sb, sb)
+	return s
+}
 
-		// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
-		c.Subscribe(sb)
+func (s *EdgeServer) RegisterClusterBackend(cb ClusterBackend) *EdgeServer {
+	s.sb = &southBridge{
+		l:          s.l,
+		eh:         s.eh,
+		cr:         s.getContract,
+		wg:         &s.wg,
+		cb:         cb,
+		inProgress: map[string]chan *envelopeCarrier{},
 	}
 
 	return s

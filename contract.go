@@ -24,13 +24,13 @@ type RPCRouteSelector interface {
 	GetPredicate() string
 }
 
-// EdgeSelectorFunc returns the target EdgeServer in the Cluster. If you have
+// EdgeSelectorFunc returns the target EdgeServer's ID in the Cluster. If you have
 // multiple instances of the EdgeServer, and you want to forward some requests to a specific
 // instance, you can set up this function in desc.Contract's SetCoordinator method, then, the
 // receiving EdgeServer will detect the target instance by calling this function and forwards
 // the request to the returned instance.
 // From the external client point of view this forwarding request is not observable.
-type EdgeSelectorFunc func(ctx *LimitedContext) (ClusterMember, error)
+type EdgeSelectorFunc func(ctx *LimitedContext) (string, error)
 
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
 // hence, this is the implementor's task to make sure return correct value based on 'q'.

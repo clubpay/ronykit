@@ -2,80 +2,186 @@ package ronykit
 
 import (
 	"context"
+	"sync"
 
-	"github.com/goccy/go-json"
+	"github.com/clubpay/ronykit/internal/errors"
+	"github.com/clubpay/ronykit/utils"
 )
 
-// Cluster identifies all instances of our EdgeServer. The implementation of the Cluster is not
-// forced by the architecture. However, we can break down Cluster implementations into two categories:
-// shared store, or gossip based clusters. In our std package, we provide a store based cluster, which
-// could be integrated with other services with the help of implementing ClusterStore.
-type Cluster interface {
-	Bundle
-	Members(ctx context.Context) ([]ClusterMember, error)
-	MemberByID(ctx context.Context, id string) (ClusterMember, error)
-	Me() ClusterMember
-	Subscribe(d ClusterDelegate)
+type ClusterBackend interface {
+	// Start starts the gateway to accept connections.
+	Start(ctx context.Context) error
+	// Shutdown shuts down the gateway gracefully.
+	Shutdown(ctx context.Context) error
+	Subscribe(id string, d ClusterDelegate)
+	Publish(id string, data []byte) error
 }
 
-// ClusterMember represents an EdgeServer instance in the Cluster.
-type ClusterMember interface {
-	ServerID() string
-	AdvertisedURL() []string
-	RoundTrip(ctx context.Context, sendData []byte) (receivedData []byte, err error)
-}
-
-// ClusterDelegate is the delegate that connects the Cluster to the rest of the system.
 type ClusterDelegate interface {
-	OnError(err error)
-	OnJoin(members ...ClusterMember)
-	OnLeave(memberIDs ...string)
-	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c Conn, msg []byte)
-}
-
-// ClusterStore is the abstraction of the store for store based cluster.
-type ClusterStore interface {
-	// SetMember call whenever the node has changed its state or metadata.
-	SetMember(ctx context.Context, clusterMember ClusterMember) error
-	// GetMember returns the ClusterMember by its ID.
-	GetMember(ctx context.Context, serverID string) (ClusterMember, error)
-	// SetLastActive is called periodically and implementor must keep track of last active timestamps
-	// of all members and return the correct set in GetActiveMembers.
-	SetLastActive(ctx context.Context, serverID string, ts int64) error
-	// GetActiveMembers must return a list of ClusterMembers that their last active is larger
-	// than the lastActive input.
-	GetActiveMembers(ctx context.Context, lastActive int64) ([]ClusterMember, error)
-}
-
-type ClusterChannel interface {
-	RoundTrip(ctx context.Context, targetID string, sendData []byte) (receivedData []byte, err error)
+	OnMessage(data []byte)
 }
 
 // southBridge is a container component that connects EdgeServer with a Cluster type Bundle.
 type southBridge struct {
 	ctxPool
+	id string
 	l  Logger
 	eh ErrHandler
 	cr contractResolver
-	c  Cluster
+	wg *sync.WaitGroup
+	cb ClusterBackend
+
+	shutdownChan  chan struct{}
+	inProgressMtx utils.SpinLock
+	inProgress    map[string]chan *envelopeCarrier
 }
 
-var _ ClusterDelegate = (*southBridge)(nil)
-
-func (s *southBridge) OnError(err error) {
-	s.eh(nil, err)
+func (sb *southBridge) Start(ctx context.Context) error {
+	return sb.cb.Start(ctx)
 }
 
-func (s *southBridge) OnJoin(members ...ClusterMember) {
-	// Maybe later we can do something
+func (sb *southBridge) OnMessage(data []byte) {
+	sb.wg.Add(1)
+	conn := &clusterConn{}
+	ctx := sb.acquireCtx(conn)
+	ctx.wf = writeFunc
+
+	carrier, err := envelopeCarrierFromData(data)
+	if err != nil {
+		sb.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
+		sb.releaseCtx(ctx)
+		sb.wg.Done()
+
+		return
+	}
+
+	switch carrier.Kind {
+	case incomingCarrier:
+		sb.onIncomingMessage(ctx, carrier)
+	case outgoingCarrier:
+		sb.onOutgoingMessage(carrier)
+	case eofCarrier:
+		sb.onEOF(carrier)
+	}
+
+	sb.releaseCtx(ctx)
+	sb.wg.Done()
 }
 
-func (s *southBridge) OnLeave(memberIDs ...string) {
-	// Maybe later we can do something
+func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
+	ctx.in.
+		SetID(carrier.ID).
+		SetHdrMap(carrier.Hdr).
+		SetMsg(carrier.Msg)
+
+	ctx.handlerIndex = carrier.ExecIndex
+	ctx.execute(
+		ExecuteArg{
+			ServiceName: carrier.ServiceName,
+			ContractID:  carrier.ContractID,
+			Route:       carrier.Route,
+		},
+		sb.cr(carrier.ContractID),
+	)
+
+	eof := &envelopeCarrier{
+		ID:   carrier.ID,
+		Kind: eofCarrier,
+	}
+	err := sb.cb.Publish(carrier.ID, eof.ToJSON())
+	if err != nil {
+		sb.eh(ctx, err)
+	}
 }
 
-func (s *southBridge) OnMessage(conn Conn, data []byte) {}
+func (sb *southBridge) onOutgoingMessage(carrier *envelopeCarrier) {
+	sb.inProgressMtx.Lock()
+	ch, ok := sb.inProgress[carrier.ID]
+	sb.inProgressMtx.Unlock()
+	if ok {
+		ch <- carrier
+	}
+}
+
+func (sb *southBridge) onEOF(carrier *envelopeCarrier) {
+	sb.inProgressMtx.Lock()
+	ch, ok := sb.inProgress[carrier.ID]
+	delete(sb.inProgress, carrier.ID)
+	sb.inProgressMtx.Unlock()
+	if ok {
+		close(ch)
+	}
+}
+
+type clusterConn struct {
+	serverID string
+	cb       ClusterBackend
+
+	id       uint64
+	clientIP string
+	stream   bool
+
+	kvMtx sync.Mutex
+	kv    map[string]string
+}
+
+var _ Conn = (*clusterConn)(nil)
+
+func (c *clusterConn) ConnID() uint64 {
+	return c.id
+}
+
+func (c *clusterConn) ClientIP() string {
+	return c.clientIP
+}
+
+func (c *clusterConn) Write(data []byte) (int, error) {
+	return len(data), c.cb.Publish(c.serverID, data)
+}
+
+func (c *clusterConn) Stream() bool {
+	return c.stream
+}
+
+func (c *clusterConn) Walk(f func(key string, val string) bool) {
+	c.kvMtx.Lock()
+	defer c.kvMtx.Unlock()
+
+	for k, v := range c.kv {
+		if !f(k, v) {
+			return
+		}
+	}
+}
+
+func (c *clusterConn) Get(key string) string {
+	c.kvMtx.Lock()
+	v := c.kv[key]
+	c.kvMtx.Unlock()
+
+	return v
+}
+
+func (c *clusterConn) Set(key string, val string) {
+	c.kvMtx.Lock()
+	c.kv[key] = val
+	c.kvMtx.Unlock()
+}
+
+func writeFunc(conn Conn, e *Envelope) error {
+	ec := envelopeCarrier{
+		ID:          e.GetID(),
+		Kind:        outgoingCarrier,
+		Msg:         e.GetMsg(),
+		ContractID:  e.ctx.ContractID(),
+		ServiceName: e.ctx.ServiceName(),
+		ExecIndex:   0,
+		Route:       e.ctx.Route(),
+	}
+	_, err := conn.Write(ec.ToJSON())
+
+	return err
+}
 
 func wrapWithCoordinator(c Contract) Contract {
 	if c.EdgeSelector() == nil {
@@ -101,25 +207,24 @@ func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 			return
 		}
 
-		out := envelopeCarrierFromContext(ctx)
-		outData, err := json.Marshal(out)
+		arg := executeRemoteArg{
+			ServerID: target,
+			SentData: envelopeCarrierFromContext(ctx, incomingCarrier),
+			Callback: func(carrier *envelopeCarrier) {
+				ctx.Out().
+					SetHdrMap(carrier.Hdr).
+					SetMsg(carrier.Msg).
+					Send()
+			},
+		}
+
+		err = ctx.executeRemote(arg)
 		if err != nil {
 			ctx.Error(err)
 
 			return
 		}
-
-		inData, err := target.RoundTrip(ctx.Context(), outData)
-		if err != nil {
-			ctx.Error(err)
-
-			return
-		}
-
-		in := envelopeCarrierFromData(inData)
-		ctx.Out().
-			SetHdrMap(in.Hdr).
-			SetMsg(RawMessage(in.Msg)).
-			Send()
 	}
 }
+
+var ErrSouthBridgeDisabled = errors.New("south bridge is disabled")

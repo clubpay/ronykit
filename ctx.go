@@ -28,6 +28,7 @@ type Context struct {
 	utils.SpinLock
 	ctx context.Context //nolint:containedctx
 	cf  func()
+	sb  *southBridge
 
 	serviceName []byte
 	contractID  []byte
@@ -54,6 +55,14 @@ func newContext() *Context {
 	}
 }
 
+type ExecuteArg struct {
+	ServiceName string
+	ContractID  string
+	Route       string
+}
+
+var NoExecuteArg = ExecuteArg{}
+
 // execute the Context with the provided ExecuteArg. It implements ExecuteFunc
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
@@ -64,6 +73,34 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 
 	ctx.handlers = append(ctx.handlers, c.Handlers()...)
 	ctx.Next()
+}
+
+type executeRemoteArg struct {
+	ServerID string
+	SentData *envelopeCarrier
+	Callback func(carrier *envelopeCarrier)
+}
+
+func (ctx *Context) executeRemote(arg executeRemoteArg) error {
+	if ctx.sb == nil {
+		return ErrSouthBridgeDisabled
+	}
+	sb := ctx.sb
+	ch := make(chan *envelopeCarrier, 4)
+	sb.inProgressMtx.Lock()
+	sb.inProgress[arg.SentData.ID] = ch
+	sb.inProgressMtx.Unlock()
+
+	err := sb.cb.Publish(arg.ServerID, arg.SentData.ToJSON())
+	if err != nil {
+		return err
+	}
+
+	for c := range ch {
+		arg.Callback(c)
+	}
+
+	return nil
 }
 
 // Next sets the next handler which will be called after the current handler.
