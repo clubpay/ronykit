@@ -58,6 +58,10 @@ func (sb *southBridge) OnMessage(data []byte) {
 
 		return
 	}
+	conn.cb = sb.cb
+	conn.originID = carrier.OriginID
+	conn.sessionID = carrier.SessionID
+	conn.serverID = sb.id
 
 	switch carrier.Kind {
 	case incomingCarrier:
@@ -74,25 +78,25 @@ func (sb *southBridge) OnMessage(data []byte) {
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
 	ctx.in.
-		SetID(carrier.ID).
-		SetHdrMap(carrier.Hdr).
-		SetMsg(carrier.Msg)
+		SetID(carrier.Data.EnvelopeID).
+		SetHdrMap(carrier.Data.Hdr).
+		SetMsg(carrier.Data.Msg)
 
-	ctx.handlerIndex = carrier.ExecIndex
+	ctx.handlerIndex = carrier.Data.ExecIndex
 	ctx.execute(
 		ExecuteArg{
-			ServiceName: carrier.ServiceName,
-			ContractID:  carrier.ContractID,
-			Route:       carrier.Route,
+			ServiceName: carrier.Data.ServiceName,
+			ContractID:  carrier.Data.ContractID,
+			Route:       carrier.Data.Route,
 		},
-		sb.e.getContract(carrier.ContractID),
+		sb.e.getContract(carrier.Data.ContractID),
 	)
 
-	eof := &envelopeCarrier{
-		ID:   carrier.ID,
-		Kind: eofCarrier,
-	}
-	err := sb.cb.Publish(carrier.ID, eof.ToJSON())
+	eof := newEnvelopeCarrier(eofCarrier, carrier.SessionID, sb.id, carrier.OriginID)
+	err := sb.cb.Publish(
+		carrier.OriginID,
+		eof.ToJSON(),
+	)
 	if err != nil {
 		sb.e.eh(ctx, err)
 	}
@@ -100,7 +104,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 
 func (sb *southBridge) onOutgoingMessage(carrier *envelopeCarrier) {
 	sb.inProgressMtx.Lock()
-	ch, ok := sb.inProgress[carrier.ID]
+	ch, ok := sb.inProgress[carrier.SessionID]
 	sb.inProgressMtx.Unlock()
 	if ok {
 		ch <- carrier
@@ -109,8 +113,8 @@ func (sb *southBridge) onOutgoingMessage(carrier *envelopeCarrier) {
 
 func (sb *southBridge) onEOF(carrier *envelopeCarrier) {
 	sb.inProgressMtx.Lock()
-	ch, ok := sb.inProgress[carrier.ID]
-	delete(sb.inProgress, carrier.ID)
+	ch, ok := sb.inProgress[carrier.SessionID]
+	delete(sb.inProgress, carrier.SessionID)
 	sb.inProgressMtx.Unlock()
 	if ok {
 		close(ch)
@@ -118,8 +122,10 @@ func (sb *southBridge) onEOF(carrier *envelopeCarrier) {
 }
 
 type clusterConn struct {
-	serverID string
-	cb       ClusterBackend
+	sessionID string
+	originID  string
+	serverID  string
+	cb        ClusterBackend
 
 	id       uint64
 	clientIP string
@@ -140,7 +146,7 @@ func (c *clusterConn) ClientIP() string {
 }
 
 func (c *clusterConn) Write(data []byte) (int, error) {
-	return len(data), c.cb.Publish(c.serverID, data)
+	return len(data), c.cb.Publish(c.originID, data)
 }
 
 func (c *clusterConn) Stream() bool {
@@ -173,18 +179,18 @@ func (c *clusterConn) Set(key string, val string) {
 }
 
 func writeFunc(conn Conn, e *Envelope) error {
-	ec := envelopeCarrier{
-		ID:          e.GetID(),
-		Kind:        outgoingCarrier,
+	c := conn.(*clusterConn) //nolint:forcetypeassert
+
+	ec := newEnvelopeCarrier(outgoingCarrier, c.sessionID, c.serverID, c.originID)
+	ec.Data = &carrierData{
 		Msg:         e.GetMsg(),
 		ContractID:  e.ctx.ContractID(),
 		ServiceName: e.ctx.ServiceName(),
 		ExecIndex:   0,
 		Route:       e.ctx.Route(),
 	}
-	_, err := conn.Write(ec.ToJSON())
 
-	return err
+	return c.cb.Publish(c.originID, ec.ToJSON())
 }
 
 func wrapWithCoordinator(c Contract) Contract {
@@ -204,6 +210,8 @@ func wrapWithCoordinator(c Contract) Contract {
 
 func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
+		defer ctx.StopExecution()
+
 		target, err := sel(ctx.Limited())
 		if ctx.Error(err) {
 			return
@@ -211,11 +219,16 @@ func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 
 		arg := executeRemoteArg{
 			ServerID: target,
-			SentData: envelopeCarrierFromContext(ctx, incomingCarrier),
+			SentData: newEnvelopeCarrier(
+				incomingCarrier,
+				utils.RandomID(32),
+				ctx.sb.id,
+				target,
+			).FillWithContext(ctx),
 			Callback: func(carrier *envelopeCarrier) {
 				ctx.Out().
-					SetHdrMap(carrier.Hdr).
-					SetMsg(carrier.Msg).
+					SetHdrMap(carrier.Data.Hdr).
+					SetMsg(carrier.Data.Msg).
 					Send()
 			},
 		}

@@ -76,6 +76,33 @@ func (t testGateway) Register(
 type testCluster struct {
 	sync.Mutex
 	delegates map[string]ronykit.ClusterDelegate
+	m         chan struct {
+		id   string
+		data []byte
+	}
+}
+
+func newTestCluster() *testCluster {
+	t := &testCluster{
+		delegates: map[string]ronykit.ClusterDelegate{},
+		m: make(chan struct {
+			id   string
+			data []byte
+		}, 10),
+	}
+
+	go func() {
+		for x := range t.m {
+			t.Lock()
+			d, ok := t.delegates[x.id]
+			t.Unlock()
+			if ok {
+				d.OnMessage(x.data)
+			}
+		}
+	}()
+
+	return t
 }
 
 func (t *testCluster) Start(ctx context.Context) error {
@@ -99,13 +126,10 @@ func (t *testCluster) Subscribe(id string, d ronykit.ClusterDelegate) {
 
 func (t *testCluster) Publish(id string, data []byte) error {
 	fmt.Println("Publish: ", id, string(data))
-
-	t.Lock()
-	d, ok := t.delegates[id]
-	t.Unlock()
-	if ok {
-		d.OnMessage(data)
-	}
+	t.m <- struct {
+		id   string
+		data []byte
+	}{id: id, data: data}
 
 	return nil
 }
@@ -224,7 +248,8 @@ var _ = Describe("EdgeServer/Cluster", func() {
 	BeforeEach(func() {
 		b1 = &testGateway{}
 		b2 = &testGateway{}
-		c = &testCluster{}
+		c = newTestCluster()
+
 		var serviceDesc = func(id string) desc.ServiceDescFunc {
 			return func() *desc.Service {
 				return desc.NewService("testService").
@@ -240,8 +265,9 @@ var _ = Describe("EdgeServer/Cluster", func() {
 							).
 							AddHandler(
 								func(ctx *ronykit.Context) {
+									fmt.Println("handler", id)
 									ctx.Out().
-										SetMsg(ronykit.RawMessage(id)).
+										SetMsg(id).
 										Send()
 
 									return
@@ -272,10 +298,12 @@ var _ = Describe("EdgeServer/Cluster", func() {
 		func(msg []byte) {
 			c := newTestConn(utils.RandomUint64(0), "", false)
 			b1.Send(c, msg)
-			Expect(c.Read()).To(BeEquivalentTo(msg))
+			out, err := c.Read()
+			Expect(err).To(BeNil())
+			Expect(string(out)).To(BeEquivalentTo("\"edge2\""))
 		},
-		Entry("a raw string", ronykit.RawMessage("edge2")),
-		Entry("a ToJSON string", ronykit.RawMessage(`edge2`)),
+		Entry("a raw string", ronykit.RawMessage("Hello this is a simple message")),
+		Entry("a ToJSON string", ronykit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
 	)
 })
 

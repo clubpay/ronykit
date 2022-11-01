@@ -89,7 +89,7 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 	sb := ctx.sb
 	ch := make(chan *envelopeCarrier, 4)
 	sb.inProgressMtx.Lock()
-	sb.inProgress[arg.SentData.ID] = ch
+	sb.inProgress[arg.SentData.SessionID] = ch
 	sb.inProgressMtx.Unlock()
 
 	err := sb.cb.Publish(arg.ServerID, arg.SentData.ToJSON())
