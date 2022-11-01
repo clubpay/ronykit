@@ -85,6 +85,7 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 	if ctx.sb == nil {
 		return ErrSouthBridgeDisabled
 	}
+
 	sb := ctx.sb
 	ch := make(chan *envelopeCarrier, 4)
 	sb.inProgressMtx.Lock()

@@ -60,11 +60,8 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	gw, ok := b.(Gateway)
 	if ok {
 		nb := &northBridge{
-			l:  s.l,
-			eh: s.eh,
-			cr: s.getContract,
+			e:  s,
 			gw: gw,
-			wg: &s.wg,
 		}
 		s.nb = append(s.nb, nb)
 
@@ -75,15 +72,18 @@ func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
 	return s
 }
 
-func (s *EdgeServer) RegisterClusterBackend(cb ClusterBackend) *EdgeServer {
+func (s *EdgeServer) RegisterCluster(id string, cb ClusterBackend) *EdgeServer {
 	s.sb = &southBridge{
-		l:          s.l,
-		eh:         s.eh,
-		cr:         s.getContract,
-		wg:         &s.wg,
-		cb:         cb,
-		inProgress: map[string]chan *envelopeCarrier{},
+		id:            id,
+		e:             s,
+		cb:            cb,
+		shutdownChan:  nil,
+		inProgressMtx: utils.SpinLock{},
+		inProgress:    map[string]chan *envelopeCarrier{},
 	}
+
+	// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
+	cb.Subscribe(id, s.sb)
 
 	return s
 }
@@ -140,6 +140,14 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 		}
 	}
 
+	if s.sb != nil {
+		err := s.sb.Start(ctx)
+		if err != nil {
+			s.l.Errorf("got error on starting cluster: %v", err)
+			panic(err)
+		}
+	}
+
 	s.l.Debug("server started.")
 
 	return s
@@ -159,11 +167,18 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 		<-shutdownChan
 	}
 
-	// Start all the registered gateways
+	// Shutdown all the registered gateways
 	for idx := range s.nb {
 		err := s.nb[idx].gw.Shutdown(ctx)
 		if err != nil {
-			s.l.Errorf("got error on shutdown: %v", err)
+			s.l.Errorf("got error on shutdown gateway: %v", err)
+		}
+	}
+
+	if s.sb != nil {
+		err := s.sb.Shutdown(ctx)
+		if err != nil {
+			s.l.Errorf("got error on shutdown cluster: %v", err)
 		}
 	}
 

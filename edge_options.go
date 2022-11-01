@@ -21,6 +21,12 @@ func RegisterBundle(bundles ...Bundle) Option {
 	}
 }
 
+func RegisterCluster(id string, cb ClusterBackend) Option {
+	return func(s *EdgeServer) {
+		s.RegisterCluster(id, cb)
+	}
+}
+
 func RegisterService(services ...Service) Option {
 	return func(s *EdgeServer) {
 		for _, svc := range services {

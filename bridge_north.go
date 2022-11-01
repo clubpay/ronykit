@@ -1,8 +1,6 @@
 package ronykit
 
 import (
-	"sync"
-
 	"github.com/clubpay/ronykit/internal/errors"
 )
 
@@ -37,11 +35,8 @@ type GatewayDelegate interface {
 // northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
 type northBridge struct {
 	ctxPool
-	l  Logger
-	eh ErrHandler
-	cr contractResolver
+	e  *EdgeServer
 	gw Gateway
-	wg *sync.WaitGroup
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
@@ -55,19 +50,20 @@ func (n *northBridge) OnClose(connID uint64) {
 }
 
 func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
-	n.wg.Add(1)
+	n.e.wg.Add(1)
 	ctx := n.acquireCtx(conn)
 	ctx.wf = wf
+	ctx.sb = n.e.sb
 
 	arg, err := n.gw.Dispatch(ctx, msg)
 	if err != nil {
-		n.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
+		n.e.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
 	} else {
-		ctx.execute(arg, n.cr(arg.ContractID))
+		ctx.execute(arg, n.e.getContract(arg.ContractID))
 	}
 
 	n.releaseCtx(ctx)
-	n.wg.Done()
+	n.e.wg.Done()
 }
 
 var (

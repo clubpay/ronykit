@@ -25,10 +25,7 @@ type ClusterDelegate interface {
 type southBridge struct {
 	ctxPool
 	id string
-	l  Logger
-	eh ErrHandler
-	cr contractResolver
-	wg *sync.WaitGroup
+	e  *EdgeServer
 	cb ClusterBackend
 
 	shutdownChan  chan struct{}
@@ -36,21 +33,28 @@ type southBridge struct {
 	inProgress    map[string]chan *envelopeCarrier
 }
 
+var _ ClusterDelegate = (*southBridge)(nil)
+
 func (sb *southBridge) Start(ctx context.Context) error {
 	return sb.cb.Start(ctx)
 }
 
+func (sb *southBridge) Shutdown(ctx context.Context) error {
+	return sb.cb.Shutdown(ctx)
+}
+
 func (sb *southBridge) OnMessage(data []byte) {
-	sb.wg.Add(1)
+	sb.e.wg.Add(1)
 	conn := &clusterConn{}
 	ctx := sb.acquireCtx(conn)
 	ctx.wf = writeFunc
+	ctx.sb = sb
 
 	carrier, err := envelopeCarrierFromData(data)
 	if err != nil {
-		sb.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
+		sb.e.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
 		sb.releaseCtx(ctx)
-		sb.wg.Done()
+		sb.e.wg.Done()
 
 		return
 	}
@@ -65,7 +69,7 @@ func (sb *southBridge) OnMessage(data []byte) {
 	}
 
 	sb.releaseCtx(ctx)
-	sb.wg.Done()
+	sb.e.wg.Done()
 }
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
@@ -81,7 +85,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 			ContractID:  carrier.ContractID,
 			Route:       carrier.Route,
 		},
-		sb.cr(carrier.ContractID),
+		sb.e.getContract(carrier.ContractID),
 	)
 
 	eof := &envelopeCarrier{
@@ -90,7 +94,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 	}
 	err := sb.cb.Publish(carrier.ID, eof.ToJSON())
 	if err != nil {
-		sb.eh(ctx, err)
+		sb.e.eh(ctx, err)
 	}
 }
 
@@ -201,9 +205,7 @@ func wrapWithCoordinator(c Contract) Contract {
 func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
 		target, err := sel(ctx.Limited())
-		if err != nil {
-			ctx.Error(err)
-
+		if ctx.Error(err) {
 			return
 		}
 
@@ -219,9 +221,7 @@ func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 		}
 
 		err = ctx.executeRemote(arg)
-		if err != nil {
-			ctx.Error(err)
-
+		if ctx.Error(err) {
 			return
 		}
 	}
