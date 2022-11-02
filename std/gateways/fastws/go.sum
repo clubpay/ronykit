@@ -2,10 +2,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
-github.com/clubpay/ronykit v0.7.3 h1:Q8H/VVOoHvPyg0aEC61Pt6SKHjYELhnD7uyioHe0/s8=
-github.com/clubpay/ronykit v0.7.3/go.mod h1:tkwJK3UtgFpf688cQlE+gypnrI1CDA1bOAqyrNNHoxk=
-github.com/clubpay/ronykit/kit v0.8.2 h1:eS5v8lYiOWaHz9XJOfPAkiNbtoJvdFtxuWnA/RTmQME=
-github.com/clubpay/ronykit/kit v0.8.2/go.mod h1:Eckt1fQrAdEF6mrSMBtQ014Z7ppYQD6WgFMbUGP+CqM=
+github.com/clubpay/ronykit/kit v0.8.4 h1:Ijgbh1uvvW0iX28agH74gFQRpnq51Or/+DLq7qu/DI0=
+github.com/clubpay/ronykit/kit v0.8.4/go.mod h1:Eckt1fQrAdEF6mrSMBtQ014Z7ppYQD6WgFMbUGP+CqM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -35,6 +33,7 @@ github.com/panjf2000/gnet/v2 v2.1.2 h1:WJ/PkbfV6G0wcGOng2pyCwv8oadKiqtP8p+38smN7
 github.com/panjf2000/gnet/v2 v2.1.2/go.mod h1:unWr2B4jF0DQPJH3GsXBGQiDcAamM6+Pf5FiK705kc4=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/profile v1.6.0/go.mod h1:qBsxPvzyUincmltOk6iyRVxHYg4adc0OFOv72ZdLa18=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
