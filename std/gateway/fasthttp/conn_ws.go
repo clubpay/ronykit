@@ -1,7 +1,8 @@
 package fasthttp
 
 import (
-	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/fasthttp/websocket"
 )
 

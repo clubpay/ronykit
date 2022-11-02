@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/internal/errors"
+	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"

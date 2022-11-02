@@ -7,11 +7,12 @@ import (
 	"net"
 	"sync"
 
-	"github.com/clubpay/ronykit/internal/common"
-	"github.com/clubpay/ronykit/internal/errors"
-	"github.com/clubpay/ronykit/internal/httpmux"
-	"github.com/clubpay/ronykit/utils"
-	"github.com/clubpay/ronykit/utils/buf"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/common"
+	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/httpmux"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )

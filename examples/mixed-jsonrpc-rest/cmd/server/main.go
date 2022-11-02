@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/clubpay/ronykit/desc"
+	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 	"github.com/clubpay/ronykit/std/gateway/fastws"
 )

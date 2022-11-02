@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/clubpay/ronykit/kit/internal/errors"
+	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 )
 

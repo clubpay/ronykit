@@ -3,7 +3,7 @@ package fasthttp
 import (
 	"strings"
 
-	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/valyala/fasthttp"
 )
 

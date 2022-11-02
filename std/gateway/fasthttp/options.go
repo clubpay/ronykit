@@ -1,5 +1,7 @@
 package fasthttp
 
+import "github.com/clubpay/ronykit/kit"
+
 type Option func(b *bundle)
 
 func WithServerName(name string) Option {

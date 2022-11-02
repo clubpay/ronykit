@@ -3,7 +3,7 @@ package kit
 import (
 	"context"
 
-	"github.com/clubpay/ronykit/kit/internal/errors"
+	"github.com/clubpay/ronykit/kit/errors"
 )
 
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use

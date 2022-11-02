@@ -4,8 +4,10 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/clubpay/ronykit/internal/httpmux"
-	"github.com/clubpay/ronykit/utils"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/httpmux"
+	"github.com/goccy/go-reflect"
 )
 
 type (

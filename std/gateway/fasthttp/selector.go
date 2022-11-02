@@ -2,6 +2,8 @@ package fasthttp
 
 import (
 	"net/http"
+
+	"github.com/clubpay/ronykit/kit"
 )
 
 // Selector implements kit.RouteSelector and
