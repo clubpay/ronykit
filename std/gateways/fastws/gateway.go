@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/gobwas/ws"

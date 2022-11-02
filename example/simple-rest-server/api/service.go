@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/example/simple-rest-server/dto"
-	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
 var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
