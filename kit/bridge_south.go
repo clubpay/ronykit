@@ -13,7 +13,9 @@ type ClusterBackend interface {
 	Start(ctx context.Context) error
 	// Shutdown shuts down the gateway gracefully.
 	Shutdown(ctx context.Context) error
+	// Subscribe registers the southBridge as the delegate of the backend.
 	Subscribe(id string, d ClusterDelegate)
+	// Publish sends the data to the other instance identified by id.
 	Publish(id string, data []byte) error
 }
 
