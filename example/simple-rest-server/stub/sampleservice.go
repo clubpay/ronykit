@@ -6,9 +6,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/clubpay/ronykit"
-	"github.com/clubpay/ronykit/stub"
-	"github.com/clubpay/ronykit/utils/reflector"
+
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/kit/utils/reflector"
 )
 
 var _ fmt.Stringer

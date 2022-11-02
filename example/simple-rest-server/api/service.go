@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/clubpay/ronykit/desc"
-	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/example/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 )
 

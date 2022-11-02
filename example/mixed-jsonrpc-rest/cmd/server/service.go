@@ -3,10 +3,11 @@ package main
 import (
 	"net/http"
 
-	"github.com/clubpay/ronykit/desc"
-	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
-	"github.com/clubpay/ronykit/std/gateway/fasthttp"
-	"github.com/clubpay/ronykit/std/gateway/fastws"
+	"github.com/clubpay/ronykit/example/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
 var sample desc.ServiceDescFunc = func() *desc.Service {

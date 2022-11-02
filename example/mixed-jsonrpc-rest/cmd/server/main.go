@@ -7,12 +7,11 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"runtime"
-	"runtime/debug"
-	"syscall"
 
-	"github.com/clubpay/ronykit/desc"
-	"github.com/clubpay/ronykit/examples/simple-rest-server/api"
-	"github.com/clubpay/ronykit/std/gateway/fasthttp"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
 func main() {
@@ -24,23 +23,27 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer kit.NewServer(
-		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
-			fmt.Println(err, string(debug.Stack()))
-		}),
+		kit.WithErrorHandler(
+			func(ctx *kit.Context, err error) {
+				fmt.Println("got error: ", err)
+			},
+		),
 		kit.RegisterGateway(
+			fastws.MustNew(
+				fastws.Listen("tcp4://0.0.0.0:80"),
+				fastws.WithPredicateKey("cmd"),
+			),
 			fasthttp.MustNew(
-				fasthttp.Listen(":80"),
-				fasthttp.WithServerName("RonyKIT Server"),
-				fasthttp.WithCORS(fasthttp.CORSConfig{}),
 				fasthttp.WithWebsocketEndpoint("/ws"),
 				fasthttp.WithPredicateKey("cmd"),
+				fasthttp.Listen(":81"),
 			),
 		),
-		desc.Register(api.SampleDesc),
+		desc.Register(sample),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
-		Shutdown(context.TODO(), syscall.SIGHUP)
+		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 
 	//nolint:forbidigo
 	fmt.Println("Server started.")

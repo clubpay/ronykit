@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	sampleservicestub "github.com/clubpay/ronykit/examples/simple-rest-server/stub"
-	"github.com/clubpay/ronykit/stub"
+	sampleservicestub "github.com/clubpay/ronykit/example/simple-rest-server/stub"
+	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/goccy/go-json"
 )
 
 func main() {
