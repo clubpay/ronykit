@@ -7,6 +7,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221102175408-d998f6d39a22
 	github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221102175408-d998f6d39a22
 	github.com/goccy/go-json v0.9.11
+	github.com/pkg/profile v1.6.0
 )
 
 require (

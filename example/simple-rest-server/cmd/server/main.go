@@ -10,13 +10,15 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/example/simple-rest-server/api"
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/pkg/profile"
 )
 
 func main() {
+	defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
 	runtime.GOMAXPROCS(4)
 
 	go func() {
