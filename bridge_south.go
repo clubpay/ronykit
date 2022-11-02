@@ -18,17 +18,16 @@ type ClusterBackend interface {
 }
 
 type ClusterDelegate interface {
-	OnMessage(data []byte)
+	OnMessage(data []byte) error
 }
 
-// southBridge is a container component that connects EdgeServer with a Cluster type Bundle.
+// southBridge is a container component that connects EdgeServers using ClusterBackend.
 type southBridge struct {
 	ctxPool
 	id string
 	e  *EdgeServer
 	cb ClusterBackend
 
-	shutdownChan  chan struct{}
 	inProgressMtx utils.SpinLock
 	inProgress    map[string]chan *envelopeCarrier
 }
@@ -43,25 +42,22 @@ func (sb *southBridge) Shutdown(ctx context.Context) error {
 	return sb.cb.Shutdown(ctx)
 }
 
-func (sb *southBridge) OnMessage(data []byte) {
+func (sb *southBridge) OnMessage(data []byte) error {
+	carrier := &envelopeCarrier{}
+	if err := carrier.FromJSON(data); err != nil {
+		return err
+	}
+
 	sb.e.wg.Add(1)
-	conn := &clusterConn{}
+	conn := &clusterConn{
+		cb:        sb.cb,
+		originID:  carrier.OriginID,
+		sessionID: carrier.SessionID,
+		serverID:  sb.id,
+	}
 	ctx := sb.acquireCtx(conn)
 	ctx.wf = writeFunc
 	ctx.sb = sb
-
-	carrier, err := envelopeCarrierFromData(data)
-	if err != nil {
-		sb.e.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
-		sb.releaseCtx(ctx)
-		sb.e.wg.Done()
-
-		return
-	}
-	conn.cb = sb.cb
-	conn.originID = carrier.OriginID
-	conn.sessionID = carrier.SessionID
-	conn.serverID = sb.id
 
 	switch carrier.Kind {
 	case incomingCarrier:
@@ -74,6 +70,8 @@ func (sb *southBridge) OnMessage(data []byte) {
 
 	sb.releaseCtx(ctx)
 	sb.e.wg.Done()
+
+	return nil
 }
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
@@ -119,6 +117,24 @@ func (sb *southBridge) onEOF(carrier *envelopeCarrier) {
 	if ok {
 		close(ch)
 	}
+}
+
+func (sb *southBridge) sendMessage(sessionID string, targetID string, data []byte) (<-chan *envelopeCarrier, error) {
+	ch := make(chan *envelopeCarrier, 4)
+	sb.inProgressMtx.Lock()
+	sb.inProgress[sessionID] = ch
+	sb.inProgressMtx.Unlock()
+
+	err := sb.cb.Publish(targetID, data)
+	if err != nil {
+		sb.inProgressMtx.Lock()
+		delete(sb.inProgress, sessionID)
+		sb.inProgressMtx.Unlock()
+
+		return nil, err
+	}
+
+	return ch, nil
 }
 
 type clusterConn struct {
@@ -218,15 +234,16 @@ func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 		}
 
 		arg := executeRemoteArg{
-			ServerID: target,
-			SentData: newEnvelopeCarrier(
+			Target: target,
+			In: newEnvelopeCarrier(
 				incomingCarrier,
 				utils.RandomID(32),
 				ctx.sb.id,
 				target,
 			).FillWithContext(ctx),
-			Callback: func(carrier *envelopeCarrier) {
+			OutCallback: func(carrier *envelopeCarrier) {
 				ctx.Out().
+					SetID(carrier.Data.EnvelopeID).
 					SetHdrMap(carrier.Data.Hdr).
 					SetMsg(carrier.Data.Msg).
 					Send()
@@ -234,9 +251,7 @@ func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 		}
 
 		err = ctx.executeRemote(arg)
-		if ctx.Error(err) {
-			return
-		}
+		ctx.Error(err)
 	}
 }
 

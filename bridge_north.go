@@ -1,6 +1,8 @@
 package ronykit
 
 import (
+	"context"
+
 	"github.com/clubpay/ronykit/internal/errors"
 )
 
@@ -8,7 +10,15 @@ import (
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
 type Gateway interface {
-	Bundle
+	// Start starts the gateway to accept connections.
+	Start(ctx context.Context) error
+	// Shutdown shuts down the gateway gracefully.
+	Shutdown(ctx context.Context) error
+	// Register registers the route in the Bundle. This is how Bundle get information
+	// about the services and their contracts.
+	Register(
+		serviceName, contractID string, enc Encoding, sel RouteSelector, input Message,
+	)
 	// Subscribe will be called by the EdgeServer. These delegate functions
 	// must be called by the Gateway implementation. In other words, Gateway communicates
 	// with EdgeServer through the GatewayDelegate methods.

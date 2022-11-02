@@ -54,20 +54,16 @@ func (s *EdgeServer) getContract(contractID string) Contract {
 	return s.contracts[contractID]
 }
 
-// RegisterBundle registers a Bundle to our server.
-// Currently, two types of Bundles are supported: Gateway and Cluster
-func (s *EdgeServer) RegisterBundle(b Bundle) *EdgeServer {
-	gw, ok := b.(Gateway)
-	if ok {
-		nb := &northBridge{
-			e:  s,
-			gw: gw,
-		}
-		s.nb = append(s.nb, nb)
-
-		// Subscribe the northBridge, which is a GatewayDelegate, to connect northBridge with the Gateway
-		gw.Subscribe(nb)
+// RegisterGateway registers a Gateway to our server.
+func (s *EdgeServer) RegisterGateway(gw Gateway) *EdgeServer {
+	nb := &northBridge{
+		e:  s,
+		gw: gw,
 	}
+	s.nb = append(s.nb, nb)
+
+	// Subscribe the northBridge, which is a GatewayDelegate, to connect northBridge with the Gateway
+	gw.Subscribe(nb)
 
 	return s
 }
@@ -77,7 +73,6 @@ func (s *EdgeServer) RegisterCluster(id string, cb ClusterBackend) *EdgeServer {
 		id:            id,
 		e:             s,
 		cb:            cb,
-		shutdownChan:  nil,
 		inProgressMtx: utils.SpinLock{},
 		inProgress:    map[string]chan *envelopeCarrier{},
 	}

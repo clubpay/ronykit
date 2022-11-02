@@ -160,7 +160,7 @@ var _ = Describe("EdgeServer/Simple", func() {
 				)
 		}
 		edge = ronykit.NewServer(
-			ronykit.RegisterBundle(b),
+			ronykit.RegisterGateway(b),
 			desc.Register(serviceDesc),
 		)
 		edge.Start(nil)
@@ -212,7 +212,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 				)
 		}
 		edge = ronykit.NewServer(
-			ronykit.RegisterBundle(b),
+			ronykit.RegisterGateway(b),
 			ronykit.WithGlobalHandlers(
 				func(ctx *ronykit.Context) {
 					ctx.Set("PRE_KEY", "PRE_VALUE")
@@ -277,13 +277,13 @@ var _ = Describe("EdgeServer/Cluster", func() {
 			}
 		}
 		edge1 = ronykit.NewServer(
-			ronykit.RegisterBundle(b1),
+			ronykit.RegisterGateway(b1),
 			ronykit.RegisterCluster("edge1", c),
 			desc.Register(serviceDesc("edge1")),
 		)
 		edge1.Start(nil)
 		edge2 = ronykit.NewServer(
-			ronykit.RegisterBundle(b2),
+			ronykit.RegisterGateway(b2),
 			ronykit.RegisterCluster("edge2", c),
 			desc.Register(serviceDesc("edge2")),
 		)
@@ -310,7 +310,7 @@ var _ = Describe("EdgeServer/Cluster", func() {
 func BenchmarkServer(b *testing.B) {
 	bundle := &testGateway{}
 	s := ronykit.NewServer(
-		ronykit.RegisterBundle(bundle),
+		ronykit.RegisterGateway(bundle),
 		ronykit.RegisterService(
 			desc.NewService("testService").
 				AddContract(

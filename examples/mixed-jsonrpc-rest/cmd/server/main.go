@@ -28,7 +28,7 @@ func main() {
 				fmt.Println("got error: ", err)
 			},
 		),
-		ronykit.RegisterBundle(
+		ronykit.RegisterGateway(
 			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:80"),
 				fastws.WithPredicateKey("cmd"),

@@ -7,19 +7,23 @@ import (
 type carrierKind int
 
 const (
-	outgoingCarrier carrierKind = iota + 1
-	incomingCarrier
+	incomingCarrier carrierKind = iota + 1
+	outgoingCarrier
 	eofCarrier
 )
 
 // envelopeCarrier is a serializable message which is used by Cluster component of the
 // EdgeServer to send information from one instance to another instance.
 type envelopeCarrier struct {
-	SessionID string       `json:"id"`
-	Kind      carrierKind  `json:"kind"`
-	OriginID  string       `json:"originID"`
-	TargetID  string       `json:"targetID"`
-	Data      *carrierData `json:"data"`
+	// SessionID is a unique identifier for each remote-execution session.
+	SessionID string `json:"id"`
+	// Kind identifies what type of the data this carrier has
+	Kind carrierKind `json:"kind"`
+	// OriginID the instance's id of the sender of this message
+	OriginID string `json:"originID"`
+	// TargetID the instance's id of the receiver of this message
+	TargetID string       `json:"targetID"`
+	Data     *carrierData `json:"data"`
 }
 
 func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
@@ -70,6 +74,15 @@ func (ec *envelopeCarrier) ToJSON() []byte {
 	return data
 }
 
+func (ec *envelopeCarrier) FromJSON(data []byte) error {
+	err := UnmarshalMessage(data, ec)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) *envelopeCarrier {
 	return &envelopeCarrier{
 		Kind:      kind,
@@ -77,14 +90,4 @@ func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) 
 		OriginID:  originID,
 		TargetID:  targetID,
 	}
-}
-
-func envelopeCarrierFromData(data []byte) (*envelopeCarrier, error) {
-	ec := &envelopeCarrier{}
-	err := UnmarshalMessage(data, ec)
-	if err != nil {
-		return nil, err
-	}
-
-	return ec, nil
 }

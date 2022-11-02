@@ -28,7 +28,7 @@ func main() {
 		ronykit.WithErrorHandler(func(ctx *ronykit.Context, err error) {
 			fmt.Println(err, string(debug.Stack()))
 		}),
-		ronykit.RegisterBundle(
+		ronykit.RegisterGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),

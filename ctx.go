@@ -76,9 +76,9 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 }
 
 type executeRemoteArg struct {
-	ServerID string
-	SentData *envelopeCarrier
-	Callback func(carrier *envelopeCarrier)
+	Target      string
+	In          *envelopeCarrier
+	OutCallback func(carrier *envelopeCarrier)
 }
 
 func (ctx *Context) executeRemote(arg executeRemoteArg) error {
@@ -86,19 +86,17 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 		return ErrSouthBridgeDisabled
 	}
 
-	sb := ctx.sb
-	ch := make(chan *envelopeCarrier, 4)
-	sb.inProgressMtx.Lock()
-	sb.inProgress[arg.SentData.SessionID] = ch
-	sb.inProgressMtx.Unlock()
-
-	err := sb.cb.Publish(arg.ServerID, arg.SentData.ToJSON())
+	ch, err := ctx.sb.sendMessage(
+		arg.In.SessionID,
+		arg.Target,
+		arg.In.ToJSON(),
+	)
 	if err != nil {
 		return err
 	}
 
 	for c := range ch {
-		arg.Callback(c)
+		arg.OutCallback(c)
 	}
 
 	return nil
