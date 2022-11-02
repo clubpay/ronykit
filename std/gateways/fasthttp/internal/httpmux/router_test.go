@@ -1,7 +1,7 @@
 package httpmux_test
 
 import (
-	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/httpmux"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/valyala/fasthttp"

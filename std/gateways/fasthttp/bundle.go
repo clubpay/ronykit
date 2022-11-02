@@ -12,7 +12,7 @@ import (
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
-	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/httpmux"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )

@@ -1,13 +1,19 @@
 #!/bin/bash
 
 # Check for errors and warnings
-go vet ./... || exit
+go vet ./kit/... || exit
+go vet ./std/gateways/fasthttp/... || exit
+go vet ./std/gateways/fastws/... || exit
+go vet ./examples/... || exit
 
 # Generate version and git commit
 # go generate ./... || exit
 
 # Format your code
-go fmt ./... || exit
+go fmt ./kit/... || exit
+go fmt ./std/gateways/fasthttp/... || exit
+go fmt ./std/gateways/fastws/... || exit
+go fmt ./examples/... || exit
 
 golangci-lint run || exit
 

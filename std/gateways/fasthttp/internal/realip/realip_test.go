@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/realip"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/valyala/fasthttp"
 )
 
