@@ -1,7 +1,5 @@
 package fasthttp
 
-import "github.com/clubpay/ronykit"
-
 type Option func(b *bundle)
 
 func WithServerName(name string) Option {
@@ -17,7 +15,7 @@ func WithBufferSize(read, write int) Option {
 	}
 }
 
-func WithLogger(l ronykit.Logger) Option {
+func WithLogger(l kit.Logger) Option {
 	return func(b *bundle) {
 		b.l = l
 	}
@@ -48,7 +46,7 @@ func WithWebsocketEndpoint(endpoint string) Option {
 	}
 }
 
-func WithCustomRPC(in ronykit.IncomingRPCFactory, out ronykit.OutgoingRPCFactory) Option {
+func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option {
 	return func(b *bundle) {
 		b.rpcInFactory = in
 		b.rpcOutFactory = out

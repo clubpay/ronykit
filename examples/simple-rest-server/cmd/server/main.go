@@ -10,7 +10,6 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/api"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
@@ -24,11 +23,11 @@ func main() {
 	}()
 
 	// Create, start and wait for shutdown signal of the server.
-	defer ronykit.NewServer(
-		ronykit.WithErrorHandler(func(ctx *ronykit.Context, err error) {
+	defer kit.NewServer(
+		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
 			fmt.Println(err, string(debug.Stack()))
 		}),
-		ronykit.RegisterGateway(
+		kit.RegisterGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),

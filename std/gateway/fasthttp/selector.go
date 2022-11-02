@@ -2,24 +2,22 @@ package fasthttp
 
 import (
 	"net/http"
-
-	"github.com/clubpay/ronykit"
 )
 
-// Selector implements ronykit.RouteSelector and
-// also ronykit.RPCRouteSelector and ronykit.RESTRouteSelector
+// Selector implements kit.RouteSelector and
+// also kit.RPCRouteSelector and kit.RESTRouteSelector
 type Selector struct {
 	Method    string
 	Path      string
 	Predicate string
 	Decoder   DecoderFunc
-	Encoding  ronykit.Encoding
+	Encoding  kit.Encoding
 }
 
 var (
-	_ ronykit.RouteSelector     = (*Selector)(nil)
-	_ ronykit.RESTRouteSelector = (*Selector)(nil)
-	_ ronykit.RPCRouteSelector  = (*Selector)(nil)
+	_ kit.RouteSelector     = (*Selector)(nil)
+	_ kit.RESTRouteSelector = (*Selector)(nil)
+	_ kit.RPCRouteSelector  = (*Selector)(nil)
 )
 
 // REST returns a Selector which acts on http requests.
@@ -62,11 +60,11 @@ func RPC(predicate string) Selector {
 	}
 }
 
-func (r Selector) GetEncoding() ronykit.Encoding {
+func (r Selector) GetEncoding() kit.Encoding {
 	return r.Encoding
 }
 
-func (r *Selector) SetEncoding(enc ronykit.Encoding) *Selector {
+func (r *Selector) SetEncoding(enc kit.Encoding) *Selector {
 	r.Encoding = enc
 
 	return r

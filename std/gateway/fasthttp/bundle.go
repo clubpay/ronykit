@@ -7,7 +7,6 @@ import (
 	"net"
 	"sync"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
 	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/clubpay/ronykit/internal/httpmux"
@@ -25,8 +24,8 @@ const (
 )
 
 type bundle struct {
-	l        ronykit.Logger
-	d        ronykit.GatewayDelegate
+	l        kit.Logger
+	d        kit.GatewayDelegate
 	srv      *fasthttp.Server
 	listen   string
 	connPool sync.Pool
@@ -38,13 +37,13 @@ type bundle struct {
 	wsRoutes      map[string]*httpmux.RouteData
 	wsEndpoint    string
 	predicateKey  string
-	rpcInFactory  ronykit.IncomingRPCFactory
-	rpcOutFactory ronykit.OutgoingRPCFactory
+	rpcInFactory  kit.IncomingRPCFactory
+	rpcOutFactory kit.OutgoingRPCFactory
 }
 
-var _ ronykit.Gateway = (*bundle)(nil)
+var _ kit.Gateway = (*bundle)(nil)
 
-func New(opts ...Option) (ronykit.Gateway, error) {
+func New(opts ...Option) (kit.Gateway, error) {
 	r := &bundle{
 		httpMux: &httpmux.Mux{
 			RedirectTrailingSlash:  true,
@@ -82,7 +81,7 @@ func New(opts ...Option) (ronykit.Gateway, error) {
 	return r, nil
 }
 
-func MustNew(opts ...Option) ronykit.Gateway {
+func MustNew(opts ...Option) kit.Gateway {
 	b, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -92,16 +91,16 @@ func MustNew(opts ...Option) ronykit.Gateway {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
 	b.registerRPC(svcName, contractID, enc, sel, input)
 	b.registerREST(svcName, contractID, enc, sel, input)
 }
 
 func (b *bundle) registerRPC(
-	svcName, contractID string, _ ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+	svcName, contractID string, _ kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
-	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
+	rpcSelector, ok := sel.(kit.RPCRouteSelector)
 	if !ok {
 		// this selector is not an RPCRouteSelector then we return with no
 		// extra action taken.
@@ -117,16 +116,16 @@ func (b *bundle) registerRPC(
 		ServiceName: svcName,
 		ContractID:  contractID,
 		Predicate:   rpcSelector.GetPredicate(),
-		Factory:     ronykit.CreateMessageFactory(input),
+		Factory:     kit.CreateMessageFactory(input),
 	}
 
 	b.wsRoutes[rd.Predicate] = rd
 }
 
 func (b *bundle) registerREST(
-	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
-	restSelector, ok := sel.(ronykit.RESTRouteSelector)
+	restSelector, ok := sel.(kit.RESTRouteSelector)
 	if !ok {
 		return
 	}
@@ -137,7 +136,7 @@ func (b *bundle) registerREST(
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
 	if !ok || decoder == nil {
-		decoder = reflectDecoder(enc, ronykit.CreateMessageFactory(input))
+		decoder = reflectDecoder(enc, kit.CreateMessageFactory(input))
 	}
 
 	var methods []string
@@ -164,7 +163,7 @@ func (b *bundle) registerREST(
 	}
 }
 
-func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	switch ctx.Conn().(type) {
 	case *httpConn:
 		return b.httpDispatch(ctx, in)
@@ -205,26 +204,26 @@ func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
 	buf.Release()
 }
 
-func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	if len(in) == 0 {
-		return ronykit.NoExecuteArg, ronykit.ErrDecodeIncomingContainerFailed
+		return kit.NoExecuteArg, kit.ErrDecodeIncomingContainerFailed
 	}
 
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return ronykit.NoExecuteArg, err
+		return kit.NoExecuteArg, err
 	}
 
 	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
+		return kit.NoExecuteArg, kit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
-		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
+		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -235,14 +234,14 @@ func (b *bundle) wsDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg
 	// release the container
 	inputMsgContainer.Release()
 
-	return ronykit.ExecuteArg{
+	return kit.ExecuteArg{
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       routeData.Predicate,
 	}, nil
 }
 
-func (b *bundle) wsWriteFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+func (b *bundle) wsWriteFunc(conn kit.Conn, e *kit.Envelope) error {
 	outC := b.rpcOutFactory()
 	outC.InjectMessage(e.GetMsg())
 	outC.SetID(e.GetID())
@@ -277,7 +276,7 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 	b.connPool.Put(c)
 }
 
-func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	//nolint:forcetypeassert
 	conn := ctx.Conn().(*httpConn)
 
@@ -288,7 +287,7 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
-		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
+		return kit.NoExecuteArg, kit.ErrNoHandler
 	}
 
 	// Walk over all the query params
@@ -317,21 +316,21 @@ func (b *bundle) httpDispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteA
 
 	m, err := routeData.Decoder(params, in)
 	if err != nil {
-		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
+		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
 		SetHdrWalker(conn).
 		SetMsg(m)
 
-	return ronykit.ExecuteArg{
+	return kit.ExecuteArg{
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       fmt.Sprintf("%s %s", routeData.Method, routeData.Path),
 	}, nil
 }
 
-func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
+func (b *bundle) httpWriteFunc(c kit.Conn, e *kit.Envelope) error {
 	rc, ok := c.(*httpConn)
 	if !ok {
 		panic("BUG!! incorrect connection")
@@ -342,7 +341,7 @@ func (b *bundle) httpWriteFunc(c ronykit.Conn, e *ronykit.Envelope) error {
 		err  error
 	)
 
-	data, err = ronykit.MarshalMessage(e.GetMsg())
+	data, err = kit.MarshalMessage(e.GetMsg())
 	if err != nil {
 		return err
 	}
@@ -381,6 +380,6 @@ func (b *bundle) Shutdown(_ context.Context) error {
 	return b.srv.Shutdown()
 }
 
-func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
+func (b *bundle) Subscribe(d kit.GatewayDelegate) {
 	b.d = d
 }

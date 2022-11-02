@@ -121,7 +121,7 @@ func (s SampleServiceStub) EchoGET(
 			400,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				res := &ErrorMessage{}
-				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 				if err != nil {
 					return err
 				}
@@ -131,10 +131,10 @@ func (s SampleServiceStub) EchoGET(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", ronykit.JSON, req, opt...)
+		AutoRun(ctx, "/echo/:randomID", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -154,7 +154,7 @@ func (s SampleServiceStub) EchoPOST(
 			400,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				res := &ErrorMessage{}
-				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 				if err != nil {
 					return err
 				}
@@ -164,10 +164,10 @@ func (s SampleServiceStub) EchoPOST(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo-post", ronykit.JSON, req, opt...)
+		AutoRun(ctx, "/echo-post", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -187,7 +187,7 @@ func (s SampleServiceStub) Sum1(
 			400,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				res := &ErrorMessage{}
-				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 				if err != nil {
 					return err
 				}
@@ -197,10 +197,10 @@ func (s SampleServiceStub) Sum1(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", ronykit.JSON, req, opt...)
+		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -220,7 +220,7 @@ func (s SampleServiceStub) Sum2(
 			400,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				res := &ErrorMessage{}
-				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 				if err != nil {
 					return err
 				}
@@ -230,10 +230,10 @@ func (s SampleServiceStub) Sum2(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum", ronykit.JSON, req, opt...)
+		AutoRun(ctx, "/sum", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -253,7 +253,7 @@ func (s SampleServiceStub) SumRedirect(
 			400,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				res := &ErrorMessage{}
-				err := stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 				if err != nil {
 					return err
 				}
@@ -263,10 +263,10 @@ func (s SampleServiceStub) SumRedirect(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(ronykit.UnmarshalMessage(r.GetBody(), res))
+				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", ronykit.JSON, req, opt...)
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {

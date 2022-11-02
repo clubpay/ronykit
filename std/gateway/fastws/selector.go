@@ -1,15 +1,11 @@
 package fastws
 
-import (
-	"github.com/clubpay/ronykit"
-)
-
 type Selector struct {
 	Predicate string
-	Encoding  ronykit.Encoding
+	Encoding  kit.Encoding
 }
 
-var _ ronykit.RPCRouteSelector = (*Selector)(nil)
+var _ kit.RPCRouteSelector = (*Selector)(nil)
 
 // RPC returns a selector that acts on websocket messages
 func RPC(predicate string) Selector {
@@ -18,11 +14,11 @@ func RPC(predicate string) Selector {
 	}
 }
 
-func (r Selector) GetEncoding() ronykit.Encoding {
+func (r Selector) GetEncoding() kit.Encoding {
 	return r.Encoding
 }
 
-func (r *Selector) SetEncoding(enc ronykit.Encoding) *Selector {
+func (r *Selector) SetEncoding(enc kit.Encoding) *Selector {
 	r.Encoding = enc
 
 	return r
@@ -45,5 +41,5 @@ type routeData struct {
 	ServiceName string
 	Predicate   string
 	ContractID  string
-	Factory     ronykit.MessageFactoryFunc
+	Factory     kit.MessageFactoryFunc
 }

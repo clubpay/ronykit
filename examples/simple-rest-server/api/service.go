@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
@@ -12,7 +11,7 @@ import (
 
 var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 	return desc.NewService("SampleService").
-		SetEncoding(ronykit.JSON).
+		SetEncoding(kit.JSON).
 		AddError(dto.Err(http.StatusBadRequest, "INPUT")).
 		AddContract(
 			desc.NewContract().
@@ -21,7 +20,7 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				NamedSelector("EchoGET", fasthttp.REST(http.MethodGet, "/echo/:randomID")).
 				NamedSelector("EchoPOST", fasthttp.REST(http.MethodPost, "/echo-post")).
 				NamedSelector("EchoRPC", fasthttp.RPC("echoRequest")).
-				AddModifier(func(envelope *ronykit.Envelope) {
+				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
 				SetHandler(EchoHandler),
@@ -51,14 +50,14 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 		).
 		AddContract(
 			desc.NewContract().
-				SetInput(ronykit.RawMessage{}).
-				SetOutput(ronykit.RawMessage{}).
+				SetInput(kit.RawMessage{}).
+				SetOutput(kit.RawMessage{}).
 				Selector(fasthttp.REST(http.MethodPost, "/raw_echo")).
 				SetHandler(RawEchoHandler),
 		)
 }
 
-func EchoHandler(ctx *ronykit.Context) {
+func EchoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
@@ -74,16 +73,16 @@ func EchoHandler(ctx *ronykit.Context) {
 	return
 }
 
-func RawEchoHandler(ctx *ronykit.Context) {
+func RawEchoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
-	req := ctx.In().GetMsg().(ronykit.RawMessage)
+	req := ctx.In().GetMsg().(kit.RawMessage)
 
 	ctx.In().Reply().SetMsg(req).Send()
 
 	return
 }
 
-func SumHandler(ctx *ronykit.Context) {
+func SumHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.SumRequest)
 
@@ -99,11 +98,11 @@ func SumHandler(ctx *ronykit.Context) {
 	return
 }
 
-func SumRedirectHandler(ctx *ronykit.Context) {
+func SumRedirectHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.SumRequest)
 
-	rc, ok := ctx.Conn().(ronykit.RESTConn)
+	rc, ok := ctx.Conn().(kit.RESTConn)
 	if !ok {
 		ctx.In().Reply().
 			SetMsg(dto.Err(http.StatusBadRequest, "Only supports REST requests")).
@@ -134,9 +133,9 @@ func SumRedirectHandler(ctx *ronykit.Context) {
 	return
 }
 
-func Redirect(ctx *ronykit.Context) {
+func Redirect(ctx *kit.Context) {
 	req := ctx.In().GetMsg().(*dto.RedirectRequest) //nolint:forcetypeassert
 
-	rc := ctx.Conn().(ronykit.RESTConn) //nolint:forcetypeassert
+	rc := ctx.Conn().(kit.RESTConn) //nolint:forcetypeassert
 	rc.Redirect(http.StatusTemporaryRedirect, req.URL)
 }

@@ -1,18 +1,18 @@
 # Contribution Guide
 
 * [Before you get started](#before-you-get-started)
-    * [Code of Conduct](#code-of-conduct)
+	* [Code of Conduct](#code-of-conduct)
 * [Your First Contribution](#your-first-contribution)
-    * [Find a good first topic](#find-a-good-first-topic)
+	* [Find a good first topic](#find-a-good-first-topic)
 * [Setting up your development environment](#setting-up-your-development-environment)
-    * [Fork the project](#fork-the-project)
-    * [Clone the project](#clone-the-project)
-    * [New branch for a new code](#new-branch-for-a-new-code)
-    * [Test](#test)
-    * [Commit and push](#commit-and-push)
-    * [Create a Pull Request](#create-a-pull-request)
-    * [Sign the CLA](#sign-the-cla)
-    * [Get a code review](#get-a-code-review)
+	* [Fork the project](#fork-the-project)
+	* [Clone the project](#clone-the-project)
+	* [New branch for a new code](#new-branch-for-a-new-code)
+	* [Test](#test)
+	* [Commit and push](#commit-and-push)
+	* [Create a Pull Request](#create-a-pull-request)
+	* [Sign the CLA](#sign-the-cla)
+	* [Get a code review](#get-a-code-review)
 
 ## Before you get started
 
@@ -25,8 +25,8 @@ Please make sure to read and observe our [Code of Conduct](./CODE_OF_CONDUCT.md)
 ### Find a good first topic
 
 You can start by finding an existing issue with the
-[good first issue](https://github.com/clubpay/ronykit/labels/good%20first%20issue) or [help wanted](https://github.com/clubpay/ronykit/labels/help%20wanted) labels. These issues are well suited for new contributors.
-
+[good first issue](https://github.com/clubpay/ronykit/labels/good%20first%20issue)
+or [help wanted](https://github.com/clubpay/ronykit/labels/help%20wanted) labels. These issues are well suited for new contributors.
 
 ## Setting up your development environment
 
@@ -43,7 +43,7 @@ to manage dependencies. The version of Go should be **1.17** or above.
 ```sh
 $ git clone https://github.com/$GITHUB_USER/ronykit
 $ cd ronykit
-$ git remote add upstream git@github.com:clubpay/ronykit.git
+$ git remote add upstream git@github.com:clubpay/kit.git
 
 # Never push to the upstream master
 git remote set-url --push upstream no_push

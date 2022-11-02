@@ -2,48 +2,48 @@
 <!-- Path should be correct -->
 <!DOCTYPE tsung SYSTEM "/opt/tsung-1.0.dtd">
 <tsung loglevel="notice" version="1.0">
-    <!-- Clients to generate load -->
-    <clients>
-        <!-- Must be hostname, can't be IP -->
-        <client host="localhost" use_controller_vm="true" maxusers="30000"/>
-    </clients>
+	<!-- Clients to generate load -->
+	<clients>
+		<!-- Must be hostname, can't be IP -->
+		<client host="localhost" use_controller_vm="true" maxusers="30000"/>
+	</clients>
 
-    <!-- Target servers -->
-    <servers>
-        <server host="127.0.0.1" port="7080" type="tcp"></server>
-    </servers>
+	<!-- Target servers -->
+	<servers>
+		<server host="127.0.0.1" port="7080" type="tcp"></server>
+	</servers>
 
-    <!-- Connections -->
-    <load>
-        <arrivalphase phase="1" duration="1" unit="minute">
-            <users maxnumber="30000" arrivalrate="1000" unit="second"></users>
-        </arrivalphase>
-    </load>
+	<!-- Connections -->
+	<load>
+		<arrivalphase phase="1" duration="1" unit="minute">
+			<users maxnumber="30000" arrivalrate="1000" unit="second"></users>
+		</arrivalphase>
+	</load>
 
-    <options>
-        <option name="ports_range" min="1025" max="65535"/>
-        <option name="websocket_path" value="/"/>
-        <option name="websocket_frame" value="text"/>
-    </options>
+	<options>
+		<option name="ports_range" min="1025" max="65535"/>
+		<option name="websocket_path" value="/"/>
+		<option name="websocket_frame" value="text"/>
+	</options>
 
-    <!-- Sessions for a connection. Sum of all session's probabilities must be 100 -->
-    <sessions>
-        <session probability="100" name="websocket-example" type="ts_websocket">
-            <request>
-                <websocket type="connect" path="/"/>
-            </request>
-            <thinktime min="2" max="10" random="true"/>
+	<!-- Sessions for a connection. Sum of all session's probabilities must be 100 -->
+	<sessions>
+		<session probability="100" name="websocket-example" type="ts_websocket">
+			<request>
+				<websocket type="connect" path="/"/>
+			</request>
+			<thinktime min="2" max="10" random="true"/>
 
-            <!-- stay connected -->
-            <for var="reqid" from="1" to="99" incr="1">
-                <request>
-                    <websocket type="message">{"hdr": {"id":"%%_reqid%%","cmd":"echoRequest"},"payload":{"randomID": 1000}}</websocket>
-                </request>
-            </for>
+			<!-- stay connected -->
+			<for var="reqid" from="1" to="99" incr="1">
+				<request>
+					<websocket type="message">{"hdr": {"id":"%%_reqid%%","cmd":"echoRequest"},"payload":{"randomID": 1000}}</websocket>
+				</request>
+			</for>
 
-            <request>
-                <websocket type="close"/>
-            </request>
-        </session>
-    </sessions>
+			<request>
+				<websocket type="close"/>
+			</request>
+		</session>
+	</sessions>
 </tsung>

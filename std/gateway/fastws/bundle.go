@@ -4,10 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/common"
 	"github.com/clubpay/ronykit/internal/errors"
-	"github.com/panjf2000/gnet/v2"
 )
 
 const (
@@ -16,17 +14,17 @@ const (
 
 type bundle struct {
 	listen string
-	l      ronykit.Logger
+	l      kit.Logger
 	eh     gnet.EventHandler
-	d      ronykit.GatewayDelegate
+	d      kit.GatewayDelegate
 
 	predicateKey  string
 	routes        map[string]*routeData
-	rpcInFactory  ronykit.IncomingRPCFactory
-	rpcOutFactory ronykit.OutgoingRPCFactory
+	rpcInFactory  kit.IncomingRPCFactory
+	rpcOutFactory kit.OutgoingRPCFactory
 }
 
-var _ ronykit.Gateway = (*bundle)(nil)
+var _ kit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (*bundle, error) {
 	b := &bundle{
@@ -60,9 +58,9 @@ func MustNew(opts ...Option) *bundle {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc ronykit.Encoding, sel ronykit.RouteSelector, input ronykit.Message,
+	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
-	rpcSelector, ok := sel.(ronykit.RPCRouteSelector)
+	rpcSelector, ok := sel.(kit.RPCRouteSelector)
 	if !ok {
 		return
 	}
@@ -71,30 +69,30 @@ func (b *bundle) Register(
 		ServiceName: svcName,
 		ContractID:  contractID,
 		Predicate:   rpcSelector.GetPredicate(),
-		Factory:     ronykit.CreateMessageFactory(input),
+		Factory:     kit.CreateMessageFactory(input),
 	}
 }
 
-func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, error) {
+func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	if len(in) == 0 {
-		return ronykit.NoExecuteArg, ronykit.ErrDecodeIncomingContainerFailed
+		return kit.NoExecuteArg, kit.ErrDecodeIncomingContainerFailed
 	}
 
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
+		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return ronykit.NoExecuteArg, ronykit.ErrNoHandler
+		return kit.NoExecuteArg, kit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
-		return ronykit.NoExecuteArg, errors.Wrap(ronykit.ErrDecodeIncomingMessageFailed, err)
+		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -105,7 +103,7 @@ func (b *bundle) Dispatch(ctx *ronykit.Context, in []byte) (ronykit.ExecuteArg, 
 	// release the container
 	inputMsgContainer.Release()
 
-	return ronykit.ExecuteArg{
+	return kit.ExecuteArg{
 		ServiceName: routeData.ServiceName,
 		ContractID:  routeData.ContractID,
 		Route:       routeData.Predicate,
@@ -138,6 +136,6 @@ func (b *bundle) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (b *bundle) Subscribe(d ronykit.GatewayDelegate) {
+func (b *bundle) Subscribe(d kit.GatewayDelegate) {
 	b.d = d
 }

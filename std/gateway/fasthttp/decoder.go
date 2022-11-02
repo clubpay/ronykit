@@ -4,15 +4,13 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/httpmux"
 	"github.com/clubpay/ronykit/utils"
-	"github.com/goccy/go-reflect"
 )
 
 type (
 	Params      = httpmux.Params
-	DecoderFunc = func(bag Params, data []byte) (ronykit.Message, error)
+	DecoderFunc = func(bag Params, data []byte) (kit.Message, error)
 )
 
 // emptyInterface is the header for an interface{} value.
@@ -28,11 +26,11 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) DecoderFunc {
+func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	m := factory()
 	switch m := m.(type) {
-	case ronykit.RawMessage:
-		return func(bag Params, data []byte) (ronykit.Message, error) {
+	case kit.RawMessage:
+		return func(bag Params, data []byte) (kit.Message, error) {
 			m.Copy(data)
 
 			return m, nil
@@ -42,7 +40,7 @@ func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) De
 
 	tagKey := enc.Tag()
 	if tagKey == "" {
-		tagKey = ronykit.JSON.Tag()
+		tagKey = kit.JSON.Tag()
 	}
 
 	rVal := reflect.ValueOf(factory())
@@ -76,11 +74,11 @@ func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) De
 		}
 	}
 
-	return func(bag Params, data []byte) (ronykit.Message, error) {
+	return func(bag Params, data []byte) (kit.Message, error) {
 		v := factory()
 		var err error
 		if len(data) > 0 {
-			err = ronykit.UnmarshalMessage(data, v)
+			err = kit.UnmarshalMessage(data, v)
 			if err != nil {
 				return nil, err
 			}
@@ -116,6 +114,6 @@ func reflectDecoder(enc ronykit.Encoding, factory ronykit.MessageFactoryFunc) De
 			}
 		}
 
-		return v.(ronykit.Message), nil //nolint:forcetypeassert
+		return v.(kit.Message), nil //nolint:forcetypeassert
 	}
 }

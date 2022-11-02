@@ -9,13 +9,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/internal/errors"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/clubpay/ronykit/utils/buf"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/panjf2000/gnet/v2"
 )
 
 type gateway struct {
@@ -35,7 +33,7 @@ func newGateway(b *bundle) (*gateway, error) {
 	return gw, nil
 }
 
-func (gw *gateway) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
+func (gw *gateway) writeFunc(conn kit.Conn, e *kit.Envelope) error {
 	outC := gw.b.rpcOutFactory()
 	outC.InjectMessage(e.GetMsg())
 	outC.SetID(e.GetID())
@@ -47,7 +45,7 @@ func (gw *gateway) writeFunc(conn ronykit.Conn, e *ronykit.Envelope) error {
 
 	data, err := outC.Marshal()
 	if err != nil {
-		return errors.Wrap(ronykit.ErrEncodeOutgoingMessageFailed, err)
+		return errors.Wrap(kit.ErrEncodeOutgoingMessageFailed, err)
 	}
 
 	_, err = conn.Write(data)

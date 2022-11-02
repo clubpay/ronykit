@@ -3,7 +3,6 @@ package fasthttp
 import (
 	"mime/multipart"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/valyala/fasthttp"
@@ -17,7 +16,7 @@ type httpConn struct {
 	ctx *fasthttp.RequestCtx
 }
 
-var _ ronykit.RESTConn = (*httpConn)(nil)
+var _ kit.RESTConn = (*httpConn)(nil)
 
 func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false

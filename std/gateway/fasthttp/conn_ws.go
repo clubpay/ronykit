@@ -1,7 +1,6 @@
 package fasthttp
 
 import (
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/utils"
 	"github.com/fasthttp/websocket"
 )
@@ -14,7 +13,7 @@ type wsConn struct {
 	c        *websocket.Conn
 }
 
-var _ ronykit.Conn = (*wsConn)(nil)
+var _ kit.Conn = (*wsConn)(nil)
 
 func (w *wsConn) Close() {
 	w.Lock()
@@ -37,7 +36,7 @@ func (w *wsConn) Write(data []byte) (int, error) {
 	if w.c != nil {
 		err = w.c.WriteMessage(websocket.TextMessage, data)
 	} else {
-		err = ronykit.ErrWriteToClosedConn
+		err = kit.ErrWriteToClosedConn
 	}
 	w.Unlock()
 	if err != nil {

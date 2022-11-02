@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/internal/testlog"
 	"github.com/clubpay/ronykit/stub"
@@ -30,7 +29,7 @@ func main() {
 							Ok:       true,
 						},
 						&dto.EchoResponse{},
-						func(ctx context.Context, msg ronykit.Message, hdr stub.Header, err error) {
+						func(ctx context.Context, msg kit.Message, hdr stub.Header, err error) {
 							res := msg.(*dto.EchoResponse)
 							fmt.Println("Received response:", res.Ok, res.RandomID)
 						},

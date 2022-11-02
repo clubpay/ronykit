@@ -7,7 +7,6 @@ import (
 
 	sampleservicestub "github.com/clubpay/ronykit/examples/simple-rest-server/stub"
 	"github.com/clubpay/ronykit/stub"
-	"github.com/goccy/go-json"
 )
 
 func main() {

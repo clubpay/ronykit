@@ -8,7 +8,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
 	"github.com/clubpay/ronykit/std/gateway/fastws"
@@ -22,13 +21,13 @@ func main() {
 	}()
 
 	// Create, start and wait for shutdown signal of the server.
-	defer ronykit.NewServer(
-		ronykit.WithErrorHandler(
-			func(ctx *ronykit.Context, err error) {
+	defer kit.NewServer(
+		kit.WithErrorHandler(
+			func(ctx *kit.Context, err error) {
 				fmt.Println("got error: ", err)
 			},
 		),
-		ronykit.RegisterGateway(
+		kit.RegisterGateway(
 			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:80"),
 				fastws.WithPredicateKey("cmd"),

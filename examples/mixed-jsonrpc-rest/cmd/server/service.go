@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/desc"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 	"github.com/clubpay/ronykit/std/gateway/fasthttp"
@@ -12,7 +11,7 @@ import (
 
 var sample desc.ServiceDescFunc = func() *desc.Service {
 	return desc.NewService("SampleService").
-		SetEncoding(ronykit.JSON).
+		SetEncoding(kit.JSON).
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.EchoRequest{}).
@@ -24,7 +23,7 @@ var sample desc.ServiceDescFunc = func() *desc.Service {
 		)
 }
 
-func echoHandler(ctx *ronykit.Context) {
+func echoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 

@@ -54,8 +54,8 @@ You can find some sample codes in the [Examples](./examples) folder.
 ## Define Services and Contracts
 
 In RonyKIT you better to define the description of your services and their contracts using `desc` package,
-and it provides you many helper methods. Although you can create your concrete implementations of ronykit.Service
-and ronykit.Contract, but we strongly recommend you to use `desc` package.
+and it provides you many helper methods. Although you can create your concrete implementations of kit.Service
+and kit.Contract, but we strongly recommend you to use `desc` package.
 
 ### Define Service Descriptor
 
@@ -95,7 +95,7 @@ var serviceDesc = desc.NewService("yourServiceUniqueName").
 			SetHandler(echoHandler),
 	)
 
-func echoHandler(ctx *ronykit.Context) {
+func echoHandler(ctx *kit.Context) {
 	req, _ := ctx.In().GetMsg().(*EchoRequest)
 	ctx.Out().SetMsg(
 		&EchoResponse{
@@ -104,7 +104,7 @@ func echoHandler(ctx *ronykit.Context) {
 	).Send()
 }
 func main() {
-	app := ronykit.NewServer(
+	app := kit.NewServer(
 		desc.Register(serviceDesc),
 	)
 

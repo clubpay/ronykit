@@ -4,13 +4,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/clubpay/ronykit"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/api"
 	"github.com/clubpay/ronykit/examples/simple-rest-server/dto"
 )
 
 func TestSampleService(t *testing.T) {
-	err := ronykit.NewTestContext().
+	err := kit.NewTestContext().
 		SetHandler(api.EchoHandler).
 		Input(
 			&dto.EchoRequest{
@@ -20,7 +19,7 @@ func TestSampleService(t *testing.T) {
 			nil,
 		).
 		Receiver(
-			func(out ...*ronykit.Envelope) error {
+			func(out ...*kit.Envelope) error {
 				if len(out) != 1 {
 					t.Fatalf("expected 1 envelope, got %d", len(out))
 				}
