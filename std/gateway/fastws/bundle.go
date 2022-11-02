@@ -4,8 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/clubpay/ronykit/internal/common"
-	"github.com/clubpay/ronykit/internal/errors"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/common"
+	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/panjf2000/gnet/v2"
 )
 
 const (

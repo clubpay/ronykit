@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/internal/common"
+	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"

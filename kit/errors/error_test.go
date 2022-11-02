@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/clubpay/ronykit/kit/internal/errors"
+	"github.com/clubpay/ronykit/kit/errors"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

@@ -1,5 +1,7 @@
 package fastws
 
+import "github.com/clubpay/ronykit/kit"
+
 type Option func(b *bundle)
 
 func WithLogger(l kit.Logger) Option {

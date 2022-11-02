@@ -1,5 +1,7 @@
 package fastws
 
+import "github.com/clubpay/ronykit/kit"
+
 type Selector struct {
 	Predicate string
 	Encoding  kit.Encoding
