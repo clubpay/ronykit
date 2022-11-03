@@ -8,7 +8,7 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
-type ClusterBackend interface {
+type Cluster interface {
 	// Start starts the gateway to accept connections.
 	Start(ctx context.Context) error
 	// Shutdown shuts down the gateway gracefully.
@@ -27,12 +27,12 @@ type ClusterDelegate interface {
 	OnMessage(data []byte) error
 }
 
-// southBridge is a container component that connects EdgeServers using ClusterBackend.
+// southBridge is a container component that connects EdgeServers using Cluster.
 type southBridge struct {
 	ctxPool
 	id string
 	e  *EdgeServer
-	cb ClusterBackend
+	cb Cluster
 
 	inProgressMtx utils.SpinLock
 	inProgress    map[string]chan *envelopeCarrier
@@ -147,7 +147,7 @@ type clusterConn struct {
 	sessionID string
 	originID  string
 	serverID  string
-	cb        ClusterBackend
+	cb        Cluster
 
 	id       uint64
 	clientIP string

@@ -68,7 +68,7 @@ func (s *EdgeServer) RegisterGateway(gw Gateway) *EdgeServer {
 	return s
 }
 
-func (s *EdgeServer) RegisterCluster(id string, cb ClusterBackend) *EdgeServer {
+func (s *EdgeServer) RegisterCluster(id string, cb Cluster) *EdgeServer {
 	s.sb = &southBridge{
 		id:            id,
 		e:             s,

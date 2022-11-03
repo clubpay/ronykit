@@ -21,7 +21,7 @@ func RegisterGateway(gw ...Gateway) Option {
 	}
 }
 
-func RegisterCluster(id string, cb ClusterBackend) Option {
+func RegisterCluster(id string, cb Cluster) Option {
 	return func(s *EdgeServer) {
 		s.RegisterCluster(id, cb)
 	}

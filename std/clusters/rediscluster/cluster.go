@@ -19,7 +19,7 @@ type cluster struct {
 	prefix       string
 }
 
-func New(opts ...Option) (kit.ClusterBackend, error) {
+func New(opts ...Option) (kit.Cluster, error) {
 	c := &cluster{}
 	for _, o := range opts {
 		o(c)
@@ -59,4 +59,4 @@ func (c *cluster) Publish(id string, data []byte) error {
 	return c.rc.Publish(context.Background(), fmt.Sprintf("%s:chan:%s", c.prefix, id), data).Err()
 }
 
-var _ kit.ClusterBackend = (*cluster)(nil)
+var _ kit.Cluster = (*cluster)(nil)
