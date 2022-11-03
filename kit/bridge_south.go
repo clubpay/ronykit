@@ -24,6 +24,8 @@ type Cluster interface {
 	DeleteKey(key string) error
 	// GetKey returns the value bind to the key
 	GetKey(key string) (string, error)
+	// Subscribers returns the list of the instance ids.
+	Subscribers() ([]string, error)
 }
 
 type ClusterDelegate interface {
@@ -172,38 +174,38 @@ func (sb *southBridge) wrapWithCoordinator(c Contract) Contract {
 
 func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
-		defer ctx.StopExecution()
-
 		target, err := sel(ctx.Limited())
 		if ctx.Error(err) {
 			return
 		}
 
-		if target == "" {
+		if target == "" || target == sb.id {
 			return
 		}
-		
-		arg := executeRemoteArg{
-			Target: target,
-			In: newEnvelopeCarrier(
-				incomingCarrier,
-				utils.RandomID(32),
-				ctx.sb.id,
-				target,
-			).FillWithContext(ctx),
-			OutCallback: func(carrier *envelopeCarrier) {
-				msg := sb.msgFactories[carrier.Data.MsgType]()
-				unmarshalMessageX(carrier.Data.Msg, msg)
-				ctx.Out().
-					SetID(carrier.Data.EnvelopeID).
-					SetHdrMap(carrier.Data.Hdr).
-					SetMsg(msg).
-					Send()
-			},
-		}
 
-		err = ctx.executeRemote(arg)
+		err = ctx.executeRemote(
+			executeRemoteArg{
+				Target: target,
+				In: newEnvelopeCarrier(
+					incomingCarrier,
+					utils.RandomID(32),
+					ctx.sb.id,
+					target,
+				).FillWithContext(ctx),
+				OutCallback: func(carrier *envelopeCarrier) {
+					msg := sb.msgFactories[carrier.Data.MsgType]()
+					unmarshalMessageX(carrier.Data.Msg, msg)
+					ctx.Out().
+						SetID(carrier.Data.EnvelopeID).
+						SetHdrMap(carrier.Data.Hdr).
+						SetMsg(msg).
+						Send()
+				},
+			},
+		)
+
 		ctx.Error(err)
+		ctx.StopExecution()
 	}
 }
 

@@ -62,8 +62,10 @@ func (c *cluster) Shutdown(ctx context.Context) error {
 }
 
 func (c *cluster) Subscribe(id string, d kit.ClusterDelegate) {
+	ctx := context.Background()
 	c.id = id
-	c.ps = c.rc.Subscribe(context.Background(), fmt.Sprintf("%s:chan:%s", c.prefix, id))
+	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, id))
+	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), id, utils.TimeUnix())
 	c.d = d
 }
 
@@ -91,4 +93,9 @@ func (c *cluster) GetKey(key string) (string, error) {
 		context.Background(),
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),
 	).Result()
+}
+
+func (c *cluster) Subscribers() ([]string, error) {
+	ctx := context.Background()
+	return c.rc.HKeys(ctx, fmt.Sprintf("%s:instances", c.prefix)).Result()
 }

@@ -35,3 +35,11 @@ func (ctx *Context) ClusterID() string {
 
 	return ctx.sb.id
 }
+
+func (ctx *Context) ClusterMembers() ([]string, error) {
+	if ctx.sb == nil {
+		return nil, ErrClusterNotSet
+	}
+
+	return ctx.sb.cb.Subscribers()
+}

@@ -1,10 +1,18 @@
 package dto
 
-type EchoRequest struct {
-	RandomID int64 `json:"randomID"`
+type SetKeyRequest struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
-type EchoResponse struct {
-	RandomID int64  `json:"randomID"`
-	OriginID string `json:"origin"`
+type SetKeyResponse struct {
+	Success bool `json:"success"`
+}
+
+type GetKeyRequest struct {
+	Key string `json:"key"`
+}
+
+type Key struct {
+	Value string `json:"value"`
 }

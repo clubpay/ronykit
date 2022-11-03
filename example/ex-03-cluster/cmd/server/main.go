@@ -35,7 +35,7 @@ func main() {
 				fasthttp.Listen(fmt.Sprintf(":%d", port)),
 			),
 		),
-		desc.Register(genDesc(instanceID)),
+		desc.Register(serviceDesc),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).

@@ -59,6 +59,10 @@ func (ctx *LimitedContext) ClusterID() string {
 	return ctx.ctx.ClusterID()
 }
 
+func (ctx *LimitedContext) ClusterMembers() ([]string, error) {
+	return ctx.ctx.ClusterMembers()
+}
+
 func (ctx *LimitedContext) ClusterSet(key, value string) error {
 	return ctx.ctx.ClusterSet(key, value)
 }
