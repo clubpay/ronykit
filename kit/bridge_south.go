@@ -2,6 +2,7 @@ package kit
 
 import (
 	"context"
+	"reflect"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit/errors"
@@ -38,9 +39,15 @@ type southBridge struct {
 
 	inProgressMtx utils.SpinLock
 	inProgress    map[string]chan *envelopeCarrier
+	msgFactories  map[string]MessageFactoryFunc
 }
 
 var _ ClusterDelegate = (*southBridge)(nil)
+
+func (sb *southBridge) registerContract(input, output Message) {
+	sb.msgFactories[reflect.TypeOf(input).String()] = CreateMessageFactory(input)
+	sb.msgFactories[reflect.TypeOf(output).String()] = CreateMessageFactory(output)
+}
 
 func (sb *southBridge) Start(ctx context.Context) error {
 	return sb.cb.Start(ctx)
@@ -64,7 +71,7 @@ func (sb *southBridge) OnMessage(data []byte) error {
 		serverID:  sb.id,
 	}
 	ctx := sb.acquireCtx(conn)
-	ctx.wf = writeFunc
+	ctx.wf = sb.writeFunc
 	ctx.sb = sb
 
 	switch carrier.Kind {
@@ -83,10 +90,13 @@ func (sb *southBridge) OnMessage(data []byte) error {
 }
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
+	msg := sb.msgFactories[carrier.Data.MsgType]()
+	unmarshalMessageX(carrier.Data.Msg, msg)
+
 	ctx.in.
 		SetID(carrier.Data.EnvelopeID).
 		SetHdrMap(carrier.Data.Hdr).
-		SetMsg(carrier.Data.Msg)
+		SetMsg(msg)
 
 	ctx.handlerIndex = carrier.Data.ExecIndex
 	ctx.execute(
@@ -145,6 +155,74 @@ func (sb *southBridge) sendMessage(sessionID string, targetID string, data []byt
 	return ch, nil
 }
 
+func (sb *southBridge) wrapWithCoordinator(c Contract) Contract {
+	if c.EdgeSelector() == nil || sb == nil {
+		return c
+	}
+
+	cw := &contractWrap{
+		Contract: c,
+		h: []HandlerFunc{
+			sb.genForwarderHandler(c.EdgeSelector()),
+		},
+	}
+
+	return cw
+}
+
+func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
+	return func(ctx *Context) {
+		defer ctx.StopExecution()
+
+		target, err := sel(ctx.Limited())
+		if ctx.Error(err) {
+			return
+		}
+
+		if target == "" {
+			return
+		}
+		
+		arg := executeRemoteArg{
+			Target: target,
+			In: newEnvelopeCarrier(
+				incomingCarrier,
+				utils.RandomID(32),
+				ctx.sb.id,
+				target,
+			).FillWithContext(ctx),
+			OutCallback: func(carrier *envelopeCarrier) {
+				msg := sb.msgFactories[carrier.Data.MsgType]()
+				unmarshalMessageX(carrier.Data.Msg, msg)
+				ctx.Out().
+					SetID(carrier.Data.EnvelopeID).
+					SetHdrMap(carrier.Data.Hdr).
+					SetMsg(msg).
+					Send()
+			},
+		}
+
+		err = ctx.executeRemote(arg)
+		ctx.Error(err)
+	}
+}
+
+func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
+	c := conn.(*clusterConn) //nolint:forcetypeassert
+
+	ec := newEnvelopeCarrier(outgoingCarrier, c.sessionID, c.serverID, c.originID)
+	ec.Data = &carrierData{
+		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
+		Msg:         marshalMessageX(e.GetMsg()),
+		ContractID:  e.ctx.ContractID(),
+		ServiceName: e.ctx.ServiceName(),
+		ExecIndex:   0,
+		Route:       e.ctx.Route(),
+	}
+
+	return c.cb.Publish(c.originID, ec.ToJSON())
+}
+
 type clusterConn struct {
 	sessionID string
 	originID  string
@@ -169,8 +247,8 @@ func (c *clusterConn) ClientIP() string {
 	return c.clientIP
 }
 
-func (c *clusterConn) Write(data []byte) (int, error) {
-	return len(data), c.cb.Publish(c.originID, data)
+func (c *clusterConn) Write(_ []byte) (int, error) {
+	return 0, ErrWritingToClusterConnection
 }
 
 func (c *clusterConn) Stream() bool {
@@ -202,65 +280,7 @@ func (c *clusterConn) Set(key string, val string) {
 	c.kvMtx.Unlock()
 }
 
-func writeFunc(conn Conn, e *Envelope) error {
-	c := conn.(*clusterConn) //nolint:forcetypeassert
-
-	ec := newEnvelopeCarrier(outgoingCarrier, c.sessionID, c.serverID, c.originID)
-	ec.Data = &carrierData{
-		Msg:         e.GetMsg(),
-		ContractID:  e.ctx.ContractID(),
-		ServiceName: e.ctx.ServiceName(),
-		ExecIndex:   0,
-		Route:       e.ctx.Route(),
-	}
-
-	return c.cb.Publish(c.originID, ec.ToJSON())
-}
-
-func wrapWithCoordinator(c Contract) Contract {
-	if c.EdgeSelector() == nil {
-		return c
-	}
-
-	cw := &contractWrap{
-		Contract: c,
-		h: []HandlerFunc{
-			genForwarderHandler(c.EdgeSelector()),
-		},
-	}
-
-	return cw
-}
-
-func genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
-	return func(ctx *Context) {
-		defer ctx.StopExecution()
-
-		target, err := sel(ctx.Limited())
-		if ctx.Error(err) {
-			return
-		}
-
-		arg := executeRemoteArg{
-			Target: target,
-			In: newEnvelopeCarrier(
-				incomingCarrier,
-				utils.RandomID(32),
-				ctx.sb.id,
-				target,
-			).FillWithContext(ctx),
-			OutCallback: func(carrier *envelopeCarrier) {
-				ctx.Out().
-					SetID(carrier.Data.EnvelopeID).
-					SetHdrMap(carrier.Data.Hdr).
-					SetMsg(carrier.Data.Msg).
-					Send()
-			},
-		}
-
-		err = ctx.executeRemote(arg)
-		ctx.Error(err)
-	}
-}
-
-var ErrSouthBridgeDisabled = errors.New("south bridge is disabled")
+var (
+	ErrSouthBridgeDisabled        = errors.New("south bridge is disabled")
+	ErrWritingToClusterConnection = errors.New("writing to cluster connection is not possible")
+)

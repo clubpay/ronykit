@@ -15,3 +15,14 @@ func WithRedisClient(rc *redis.Client) Option {
 		c.rc = rc
 	}
 }
+
+func WithRedisURL(url string) Option {
+	return func(c *cluster) {
+		opt, err := redis.ParseURL(url)
+		if err != nil {
+			panic(err)
+		}
+
+		c.rc = redis.NewClient(opt)
+	}
+}

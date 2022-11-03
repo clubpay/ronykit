@@ -49,6 +49,7 @@ type Contract interface {
 	EdgeSelector() EdgeSelectorFunc
 	Encoding() Encoding
 	Input() Message
+	Output() Message
 	Handlers() []HandlerFunc
 	Modifiers() []Modifier
 }

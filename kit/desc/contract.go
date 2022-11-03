@@ -165,6 +165,7 @@ type contractImpl struct {
 	handlers       []kit.HandlerFunc
 	modifiers      []kit.Modifier
 	input          kit.Message
+	output         kit.Message
 	enc            kit.Encoding
 }
 
@@ -173,6 +174,12 @@ var _ kit.Contract = (*contractImpl)(nil)
 func (r *contractImpl) setInput(input kit.Message) *contractImpl {
 	r.input = input
 
+	return r
+}
+
+func (r *contractImpl) setOutput(output kit.Message) *contractImpl {
+	r.output = output
+	
 	return r
 }
 
@@ -230,6 +237,9 @@ func (r *contractImpl) Input() kit.Message {
 	return r.input
 }
 
+func (r *contractImpl) Output() kit.Message {
+	return r.output
+}
 func (r *contractImpl) Encoding() kit.Encoding {
 	return r.enc
 }

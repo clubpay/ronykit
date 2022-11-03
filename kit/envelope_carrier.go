@@ -1,6 +1,9 @@
 package kit
 
-import "github.com/goccy/go-json"
+import (
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-reflect"
+)
 
 type carrierKind int
 
@@ -30,7 +33,8 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 		ConnHdr:     map[string]string{},
 		Hdr:         map[string]string{},
 		IsREST:      ctx.isREST(),
-		Msg:         ctx.In().GetMsg(),
+		MsgType:     reflect.TypeOf(ctx.In().GetMsg()).String(),
+		Msg:         marshalMessageX(ctx.In().GetMsg()),
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
 		ExecIndex:   ctx.handlerIndex,
@@ -59,7 +63,8 @@ type carrierData struct {
 	ConnHdr     map[string]string `json:"connHdr,omitempty"`
 	IsREST      bool              `json:"isREST,omitempty"`
 	Hdr         map[string]string `json:"hdr,omitempty"`
-	Msg         Message           `json:"msg,omitempty"`
+	MsgType     string            `json:"msgType,omitempty"`
+	Msg         []byte            `json:"msg,omitempty"`
 	ContractID  string            `json:"cid,omitempty"`
 	ServiceName string            `json:"svc,omitempty"`
 	ExecIndex   int               `json:"idx,omitempty"`
@@ -73,7 +78,7 @@ func (ec *envelopeCarrier) ToJSON() []byte {
 }
 
 func (ec *envelopeCarrier) FromJSON(data []byte) error {
-	err := UnmarshalMessage(data, ec)
+	err := json.UnmarshalNoEscape(data, ec)
 	if err != nil {
 		return err
 	}

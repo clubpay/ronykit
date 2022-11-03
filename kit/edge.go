@@ -75,6 +75,7 @@ func (s *EdgeServer) RegisterCluster(id string, cb Cluster) *EdgeServer {
 		cb:            cb,
 		inProgressMtx: utils.SpinLock{},
 		inProgress:    map[string]chan *envelopeCarrier{},
+		msgFactories:  map[string]MessageFactoryFunc{},
 	}
 
 	// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
@@ -95,7 +96,7 @@ func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
 		s.contracts[c.ID()] = WrapContract(
 			c,
 			ContractWrapperFunc(s.wrapWithGlobalHandlers),
-			ContractWrapperFunc(wrapWithCoordinator),
+			ContractWrapperFunc(s.sb.wrapWithCoordinator),
 		)
 	}
 
@@ -136,6 +137,11 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 	}
 
 	if s.sb != nil {
+		for _, svc := range s.svc {
+			for _, c := range svc.Contracts() {
+				s.sb.registerContract(c.Input(), c.Output())
+			}
+		}
 		err := s.sb.Start(ctx)
 		if err != nil {
 			s.l.Errorf("got error on starting cluster: %v", err)

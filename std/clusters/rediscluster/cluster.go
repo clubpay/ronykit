@@ -30,6 +30,15 @@ func New(opts ...Option) (kit.Cluster, error) {
 	return c, nil
 }
 
+func MustNew(opts ...Option) kit.Cluster {
+	c, err := New(opts...)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
 func (c *cluster) Start(ctx context.Context) error {
 	c.msgChan = c.ps.Channel()
 	go func() {
@@ -55,6 +64,7 @@ func (c *cluster) Shutdown(ctx context.Context) error {
 func (c *cluster) Subscribe(id string, d kit.ClusterDelegate) {
 	c.id = id
 	c.ps = c.rc.Subscribe(context.Background(), fmt.Sprintf("%s:chan:%s", c.prefix, id))
+	c.d = d
 }
 
 func (c *cluster) Publish(id string, data []byte) error {

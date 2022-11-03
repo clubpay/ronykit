@@ -74,6 +74,13 @@ func UnmarshalMessage(data []byte, m Message) error {
 	return err
 }
 
+func unmarshalMessageX(data []byte, m Message) {
+	err := UnmarshalMessage(data, m)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func MarshalMessage(m Message) ([]byte, error) {
 	switch v := m.(type) {
 	case Marshaler:
@@ -89,6 +96,15 @@ func MarshalMessage(m Message) ([]byte, error) {
 	default:
 		return json.MarshalNoEscape(m)
 	}
+}
+
+func marshalMessageX(m Message) []byte {
+	data, err := MarshalMessage(m)
+	if err != nil {
+		panic(err)
+	}
+
+	return data
 }
 
 // RawMessage is a bytes slice which could be used as Message. This is helpful for

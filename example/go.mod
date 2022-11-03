@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/example
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.8.4
+	github.com/clubpay/ronykit/kit v0.8.6
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221102175408-d998f6d39a22
 	github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221102175408-d998f6d39a22
 	github.com/goccy/go-json v0.9.11

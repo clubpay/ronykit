@@ -132,6 +132,7 @@ func (s Service) Generate() kit.Service {
 				addHandler(c.Handlers...).
 				setModifier(c.Modifiers...).
 				setInput(c.Input).
+				setOutput(c.Output).
 				setRouteSelector(s.Selector).
 				setMemberSelector(c.EdgeSelector).
 				setEncoding(c.Encoding)
