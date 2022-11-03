@@ -66,3 +66,7 @@ func (ctx *LimitedContext) ClusterSet(key, value string) error {
 func (ctx *LimitedContext) ClusterUnset(key string) error {
 	return ctx.ctx.ClusterUnset(key)
 }
+
+func (ctx *LimitedContext) ClusterGet(key string) (string, error) {
+	return ctx.ctx.ClusterGet(key)
+}

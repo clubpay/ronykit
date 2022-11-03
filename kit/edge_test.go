@@ -141,7 +141,7 @@ func (t *testCluster) SetKey(key, value string) error {
 	}
 
 	t.kv[key] = value
-	
+
 	return nil
 }
 
@@ -153,6 +153,10 @@ func (t *testCluster) DeleteKey(key string) error {
 	delete(t.kv, key)
 
 	return nil
+}
+
+func (t *testCluster) GetKey(key string) (string, error) {
+	return t.kv[key], nil
 }
 
 var _ = Describe("EdgeServer/Simple", func() {

@@ -19,6 +19,8 @@ type cluster struct {
 	prefix       string
 }
 
+var _ kit.Cluster = (*cluster)(nil)
+
 func New(opts ...Option) (kit.Cluster, error) {
 	c := &cluster{}
 	for _, o := range opts {
@@ -59,4 +61,24 @@ func (c *cluster) Publish(id string, data []byte) error {
 	return c.rc.Publish(context.Background(), fmt.Sprintf("%s:chan:%s", c.prefix, id), data).Err()
 }
 
-var _ kit.Cluster = (*cluster)(nil)
+func (c *cluster) SetKey(key, value string) error {
+	return c.rc.Set(
+		context.Background(),
+		fmt.Sprintf("%s:kv:%s", c.prefix, key), value,
+		redis.KeepTTL,
+	).Err()
+}
+
+func (c *cluster) DeleteKey(key string) error {
+	return c.rc.Del(
+		context.Background(),
+		fmt.Sprintf("%s:kv:%s", c.prefix, key),
+	).Err()
+}
+
+func (c *cluster) GetKey(key string) (string, error) {
+	return c.rc.Get(
+		context.Background(),
+		fmt.Sprintf("%s:kv:%s", c.prefix, key),
+	).Result()
+}

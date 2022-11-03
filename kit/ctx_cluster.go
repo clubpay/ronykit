@@ -20,6 +20,14 @@ func (ctx *Context) ClusterUnset(key string) error {
 	return ctx.sb.cb.DeleteKey(key)
 }
 
+func (ctx *Context) ClusterGet(key string) (string, error) {
+	if ctx.sb == nil {
+		return "", ErrClusterNotSet
+	}
+
+	return ctx.sb.cb.GetKey(key)
+}
+
 func (ctx *Context) ClusterID() string {
 	if ctx.sb == nil {
 		return ""

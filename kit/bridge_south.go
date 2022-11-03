@@ -21,6 +21,8 @@ type Cluster interface {
 	SetKey(key, value string) error
 	// DeleteKey deletes the key-value pair from the cluster
 	DeleteKey(key string) error
+	// GetKey returns the value bind to the key
+	GetKey(key string) (string, error)
 }
 
 type ClusterDelegate interface {
