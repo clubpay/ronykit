@@ -121,6 +121,7 @@ func (sg *Generator) addOperation(swag *spec.Swagger, serviceName string, c desc
 		switch strings.ToUpper(restSel.GetMethod()) {
 		case http.MethodGet:
 			pathItem.Get = op
+
 		case http.MethodDelete:
 			pathItem.Delete = op
 		case http.MethodPost:
@@ -357,8 +358,10 @@ func setSwaggerParam(p *spec.Parameter, t reflect.Type, optional bool) *spec.Par
 		p.Typed("integer", "int32")
 	case reflect.Int, reflect.Int64, reflect.Uint, reflect.Uint64:
 		p.Typed("integer", "int64")
+	case reflect.Bool:
+		p.Typed("integer", "int64")
 	default:
-		return nil
+		p.Typed("boolean", "")
 	}
 
 	return p
