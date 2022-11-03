@@ -3,16 +3,20 @@ module github.com/clubpay/ronykit/example
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.8.6
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221102175408-d998f6d39a22
-	github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221102175408-d998f6d39a22
+	github.com/clubpay/ronykit/kit v0.8.8
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.0.0-20221103161610-c41125a85daa
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa
+	github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221103161610-c41125a85daa
 	github.com/goccy/go-json v0.9.11
 	github.com/pkg/profile v1.6.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fasthttp/websocket v1.5.1-rc.7 // indirect
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
@@ -30,5 +34,4 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
