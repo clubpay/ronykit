@@ -54,3 +54,15 @@ func (ctx *LimitedContext) Route() string {
 func (ctx *LimitedContext) ServiceName() string {
 	return ctx.ctx.ServiceName()
 }
+
+func (ctx *LimitedContext) ClusterID() string {
+	return ctx.ctx.ClusterID()
+}
+
+func (ctx *LimitedContext) ClusterSet(key, value string) error {
+	return ctx.ctx.ClusterSet(key, value)
+}
+
+func (ctx *LimitedContext) ClusterUnset(key string) error {
+	return ctx.ctx.ClusterUnset(key)
+}

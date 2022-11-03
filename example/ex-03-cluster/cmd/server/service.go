@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/clubpay/ronykit/example/mixed-jsonrpc-rest/dto"
+	"github.com/clubpay/ronykit/example/ex-03-cluster/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
@@ -33,7 +33,7 @@ func echoHandler(ctx *kit.Context) {
 		SetMsg(
 			&dto.EchoResponse{
 				RandomID: req.RandomID,
-				Ok:       req.Ok,
+				OriginID:
 			},
 		).Send()
 

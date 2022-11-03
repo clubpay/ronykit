@@ -76,6 +76,7 @@ func (t testGateway) Register(
 type testCluster struct {
 	sync.Mutex
 	delegates map[string]kit.ClusterDelegate
+	kv        map[string]string
 	m         chan struct {
 		id   string
 		data []byte
@@ -130,6 +131,26 @@ func (t *testCluster) Publish(id string, data []byte) error {
 		id   string
 		data []byte
 	}{id: id, data: data}
+
+	return nil
+}
+
+func (t *testCluster) SetKey(key, value string) error {
+	if t.kv == nil {
+		t.kv = map[string]string{}
+	}
+
+	t.kv[key] = value
+	
+	return nil
+}
+
+func (t *testCluster) DeleteKey(key string) error {
+	if t.kv == nil {
+		t.kv = map[string]string{}
+	}
+
+	delete(t.kv, key)
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/example/internal/testlog"
-	"github.com/clubpay/ronykit/example/mixed-jsonrpc-rest/cmd/dto"
+	"github.com/clubpay/ronykit/example/mixed-jsonrpc-rest/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 )

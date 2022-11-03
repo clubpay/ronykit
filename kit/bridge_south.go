@@ -17,6 +17,10 @@ type ClusterBackend interface {
 	Subscribe(id string, d ClusterDelegate)
 	// Publish sends the data to the other instance identified by id.
 	Publish(id string, data []byte) error
+	// SetKey creates/updates a key-value pair in the cluster
+	SetKey(key, value string) error
+	// DeleteKey deletes the key-value pair from the cluster
+	DeleteKey(key string) error
 }
 
 type ClusterDelegate interface {
