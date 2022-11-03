@@ -1,0 +1,10 @@
+go 1.19
+
+use (
+	./contrib
+	./example
+	./kit
+	./std/clusters/rediscluster
+	./std/gateways/fasthttp
+	./std/gateways/fastws
+)
