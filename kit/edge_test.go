@@ -46,11 +46,11 @@ func (t *testGateway) Send(c *testConn, msg []byte) {
 	)
 }
 
-func (t testGateway) Start(_ context.Context) error {
+func (t *testGateway) Start(_ context.Context) error {
 	return nil
 }
 
-func (t testGateway) Shutdown(_ context.Context) error {
+func (t *testGateway) Shutdown(_ context.Context) error {
 	return nil
 }
 
@@ -58,7 +58,7 @@ func (t *testGateway) Subscribe(d kit.GatewayDelegate) {
 	t.d = d
 }
 
-func (t testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
+func (t *testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	ctx.In().SetMsg(kit.RawMessage(in))
 
 	return kit.ExecuteArg{
@@ -68,7 +68,7 @@ func (t testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 	}, nil
 }
 
-func (t testGateway) Register(
+func (t *testGateway) Register(
 	serviceName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
 }
@@ -82,6 +82,8 @@ type testCluster struct {
 		data []byte
 	}
 }
+
+var _ kit.Cluster = (*testCluster)(nil)
 
 func newTestCluster() *testCluster {
 	t := &testCluster{
@@ -123,6 +125,10 @@ func (t *testCluster) Subscribe(id string, d kit.ClusterDelegate) {
 	}
 	t.delegates[id] = d
 	t.Unlock()
+}
+
+func (t *testCluster) Subscribers() ([]string, error) {
+	return nil, nil
 }
 
 func (t *testCluster) Publish(id string, data []byte) error {
