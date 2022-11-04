@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/clubpay/ronykit/example/mixed-jsonrpc-rest/dto"
+	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"

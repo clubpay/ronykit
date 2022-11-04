@@ -2,7 +2,9 @@ go 1.19
 
 use (
 	./contrib
-	./example
+	./example/ex-01-rpc
+	./example/ex-02-rest
+	./example/ex-03-cluster
 	./kit
 	./std/clusters/rediscluster
 	./std/gateways/fasthttp

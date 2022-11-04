@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/example/internal/testlog"
-	"github.com/clubpay/ronykit/example/mixed-jsonrpc-rest/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 )
