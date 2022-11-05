@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/contrib
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.8.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221102180426-858a9252fd98
+	github.com/clubpay/ronykit/kit v0.9.0
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.8.3
 	github.com/go-openapi/spec v0.20.7
 	github.com/goccy/go-json v0.9.11
 	go.opentelemetry.io/contrib/propagators/b3 v1.11.1
