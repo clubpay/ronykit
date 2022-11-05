@@ -117,8 +117,6 @@ func (t *testCluster) Shutdown(ctx context.Context) error {
 }
 
 func (t *testCluster) Subscribe(id string, d kit.ClusterDelegate) {
-	fmt.Println("Subscribe: ", id)
-
 	t.Lock()
 	if t.delegates == nil {
 		t.delegates = map[string]kit.ClusterDelegate{}
@@ -128,11 +126,17 @@ func (t *testCluster) Subscribe(id string, d kit.ClusterDelegate) {
 }
 
 func (t *testCluster) Subscribers() ([]string, error) {
-	return nil, nil
+	var members []string
+	t.Lock()
+	for m := range t.delegates {
+		members = append(members, m)
+	}
+	t.Unlock()
+
+	return members, nil
 }
 
 func (t *testCluster) Publish(id string, data []byte) error {
-	fmt.Println("Publish: ", id, string(data))
 	t.m <- struct {
 		id   string
 		data []byte
@@ -286,19 +290,28 @@ var _ = Describe("EdgeServer/Cluster", func() {
 				return desc.NewService("testService").
 					AddContract(
 						desc.NewContract().
-							SetInput(&kit.RawMessage{}).
-							SetOutput(&kit.RawMessage{}).
+							SetInput(kit.RawMessage{}).
+							SetOutput(kit.RawMessage{}).
 							AddSelector(testSelector{}).
 							SetCoordinator(
 								func(ctx *kit.LimitedContext) (string, error) {
-									return "edge2", nil
+									members, err := ctx.ClusterMembers()
+									if err != nil {
+										return "", err
+									}
+									for _, m := range members {
+										if m != ctx.ClusterID() {
+											return m, nil
+										}
+									}
+
+									return ctx.ClusterID(), nil
 								},
 							).
 							AddHandler(
 								func(ctx *kit.Context) {
-									fmt.Println("handler", id)
 									ctx.Out().
-										SetMsg(id).
+										SetMsg(kit.RawMessage(id)).
 										Send()
 
 									return
@@ -330,9 +343,7 @@ var _ = Describe("EdgeServer/Cluster", func() {
 		func(msg []byte) {
 			c := newTestConn(utils.RandomUint64(0), "", false)
 			b1.Send(c, msg)
-			out, err := c.Read()
-			Expect(err).To(BeNil())
-			Expect(string(out)).To(BeEquivalentTo("\"edge2\""))
+			Expect(c.ReadString()).To(BeEquivalentTo("edge2"))
 		},
 		Entry("a raw string", kit.RawMessage("Hello this is a simple message")),
 		Entry("a ToJSON string", kit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),

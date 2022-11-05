@@ -93,7 +93,12 @@ func (sb *southBridge) OnMessage(data []byte) error {
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
 	msg := sb.msgFactories[carrier.Data.MsgType]()
-	unmarshalMessageX(carrier.Data.Msg, msg)
+	switch msg := msg.(type) {
+	case RawMessage:
+		msg.CopyFrom(carrier.Data.Msg)
+	default:
+		unmarshalMessageX(carrier.Data.Msg, msg)
+	}
 
 	ctx.in.
 		SetID(carrier.Data.EnvelopeID).
@@ -194,7 +199,13 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 				).FillWithContext(ctx),
 				OutCallback: func(carrier *envelopeCarrier) {
 					msg := sb.msgFactories[carrier.Data.MsgType]()
-					unmarshalMessageX(carrier.Data.Msg, msg)
+					switch msg.(type) {
+					case RawMessage:
+						msg = RawMessage(carrier.Data.Msg)
+					default:
+						unmarshalMessageX(carrier.Data.Msg, msg)
+					}
+
 					ctx.Out().
 						SetID(carrier.Data.EnvelopeID).
 						SetHdrMap(carrier.Data.Hdr).

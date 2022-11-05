@@ -33,7 +33,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	switch m := m.(type) {
 	case kit.RawMessage:
 		return func(bag Params, data []byte) (kit.Message, error) {
-			m.Copy(data)
+			m.CopyFrom(data)
 
 			return m, nil
 		}

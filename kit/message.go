@@ -83,6 +83,8 @@ func unmarshalMessageX(data []byte, m Message) {
 
 func MarshalMessage(m Message) ([]byte, error) {
 	switch v := m.(type) {
+	case RawMessage:
+		return v, nil
 	case Marshaler:
 		return v.Marshal()
 	case ProtoMarshaler:
@@ -111,11 +113,11 @@ func marshalMessageX(m Message) []byte {
 // raw data messages.
 type RawMessage []byte
 
-func (rm RawMessage) Marshal() ([]byte, error) {
-	return rm, nil
+func (rm *RawMessage) Marshal() ([]byte, error) {
+	return *rm, nil
 }
 
-func (rm *RawMessage) Copy(in []byte) {
+func (rm *RawMessage) CopyFrom(in []byte) {
 	*rm = append(*rm, in...)
 }
 

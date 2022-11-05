@@ -2,7 +2,7 @@ package kit_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
@@ -48,7 +48,15 @@ func (t testConn) Write(data []byte) (int, error) {
 }
 
 func (t testConn) Read() ([]byte, error) {
-	return ioutil.ReadAll(t.buf)
+	return io.ReadAll(t.buf)
+}
+
+func (t testConn) ReadString() (string, error) {
+	d, err := t.Read()
+	if err != nil {
+		return "", err
+	}
+	return string(d), nil
 }
 
 func (t testConn) Stream() bool {
