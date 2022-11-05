@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/clubpay/ronykit/example/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/example/ex-02-rest/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"

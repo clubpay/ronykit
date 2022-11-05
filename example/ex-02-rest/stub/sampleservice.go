@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
@@ -19,6 +18,7 @@ func init() {
 	reflector.Register(&EchoResponse{}, "json")
 	reflector.Register(&EmbeddedHeader{}, "json")
 	reflector.Register(&ErrorMessage{}, "json")
+	reflector.Register(&RawMessage{}, "json")
 	reflector.Register(&RedirectRequest{}, "json")
 	reflector.Register(&SumRequest{}, "json")
 	reflector.Register(&SumResponse{}, "json")
@@ -54,6 +54,10 @@ func (x ErrorMessage) GetCode() int {
 
 func (x ErrorMessage) GetItem() string {
 	return x.Item
+}
+
+// RawMessage is a data transfer object
+type RawMessage struct {
 }
 
 // RedirectRequest is a data transfer object
@@ -135,7 +139,7 @@ func (s SampleServiceStub) EchoGET(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", kit.JSON, req, opt...)
+		AutoRun(ctx, "/echo/:randomID", kit.ToJSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -168,7 +172,7 @@ func (s SampleServiceStub) EchoPOST(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo-post", kit.JSON, req, opt...)
+		AutoRun(ctx, "/echo-post", kit.ToJSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -201,7 +205,7 @@ func (s SampleServiceStub) Sum1(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum/:val1/:val2", kit.ToJSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -234,7 +238,7 @@ func (s SampleServiceStub) Sum2(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum", kit.ToJSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -267,7 +271,7 @@ func (s SampleServiceStub) SumRedirect(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.ToJSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {

@@ -4,14 +4,13 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/example v0.0.0-20221103162015-55366f863bfd
-	github.com/clubpay/ronykit/kit v0.8.8
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.8.3
-	github.com/clubpay/ronykit/std/gateways/fastws v0.8.3
+	github.com/clubpay/ronykit/kit v0.8.9
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa
+	github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221103161610-c41125a85daa
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/clubpay/ronykit v0.7.3 // indirect
 	github.com/fasthttp/websocket v1.5.1-rc.7 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect

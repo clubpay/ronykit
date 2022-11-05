@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	sampleservicestub "github.com/clubpay/ronykit/example/simple-rest-server/stub"
 	"github.com/clubpay/ronykit/kit/stub"
 	"github.com/goccy/go-json"
 )
