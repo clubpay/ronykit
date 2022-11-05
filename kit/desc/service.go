@@ -23,6 +23,8 @@ type Service struct {
 	contractNames map[string]struct{}
 }
 
+var _ kit.ServiceDescriptor = (*Service)(nil)
+
 func NewService(name string) *Service {
 	return &Service{
 		Name:          name,
@@ -104,7 +106,7 @@ func (s *Service) AddError(err kit.ErrorMessage) *Service {
 }
 
 // Generate generates the kit.Service
-func (s Service) Generate() kit.Service {
+func (s *Service) Generate() kit.Service {
 	svc := &serviceImpl{
 		name: s.Name,
 		h:    s.Handlers,
@@ -148,7 +150,7 @@ func (s Service) Generate() kit.Service {
 
 // Stub returns the Stub, which describes the stub specification and
 // could be used to auto-generate stub for this service.
-func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
+func (s *Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	stub := newStub(tags...)
 	stub.Pkg = pkgName
 	stub.Name = s.Name
@@ -175,7 +177,7 @@ func (s Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	return stub, nil
 }
 
-func (s Service) dtoStub(stub *Stub) error {
+func (s *Service) dtoStub(stub *Stub) error {
 	for _, c := range s.Contracts {
 		err := stub.addDTO(reflect.TypeOf(c.Input), false)
 		if err != nil {
@@ -206,7 +208,7 @@ func (s Service) dtoStub(stub *Stub) error {
 	return nil
 }
 
-func (s Service) rpcStub(
+func (s *Service) rpcStub(
 	stub *Stub, c Contract, routeName string, rrs kit.RPCRouteSelector,
 ) {
 	m := RPCMethod{
@@ -240,7 +242,7 @@ func (s Service) rpcStub(
 	}
 }
 
-func (s Service) restStub(
+func (s *Service) restStub(
 	stub *Stub, c Contract, routeName string, rrs kit.RESTRouteSelector,
 ) {
 	m := RESTMethod{

@@ -46,7 +46,7 @@ func (t *testGateway) Send(c *testConn, msg []byte) {
 	)
 }
 
-func (t *testGateway) Start(_ context.Context) error {
+func (t *testGateway) Start(_ context.Context, _ kit.GatewayStartConfig) error {
 	return nil
 }
 
@@ -192,7 +192,7 @@ var _ = Describe("EdgeServer/Simple", func() {
 		}
 		edge = kit.NewServer(
 			kit.RegisterGateway(b),
-			desc.Register(serviceDesc),
+			kit.RegisterServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -249,7 +249,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 					ctx.Set("PRE_KEY", "PRE_VALUE")
 				},
 			),
-			desc.Register(serviceDesc),
+			kit.RegisterServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -309,14 +309,15 @@ var _ = Describe("EdgeServer/Cluster", func() {
 		}
 		edge1 = kit.NewServer(
 			kit.RegisterGateway(b1),
-			kit.RegisterCluster("edge1", c),
-			desc.Register(serviceDesc("edge1")),
+			kit.RegisterCluster(c),
+			kit.RegisterServiceDesc(serviceDesc("edge1").Desc()),
+
 		)
 		edge1.Start(nil)
 		edge2 = kit.NewServer(
 			kit.RegisterGateway(b2),
-			kit.RegisterCluster("edge2", c),
-			desc.Register(serviceDesc("edge2")),
+			kit.RegisterCluster(c),
+			kit.RegisterServiceDesc(serviceDesc("edge2").Desc()),
 		)
 		edge2.Start(nil)
 	})

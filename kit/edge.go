@@ -6,6 +6,7 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
 	"reflect"
 	"runtime"
@@ -34,17 +35,34 @@ type EdgeServer struct {
 	wg        sync.WaitGroup
 
 	// configs
+	prefork         bool
 	shutdownTimeout time.Duration
 }
 
 func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
-		l:         nopLogger{},
 		contracts: map[string]Contract{},
-		eh:        func(ctx *Context, err error) {},
+	}
+	cfg := &edgeConfig{
+		logger:     nopLogger{},
+		errHandler: func(ctx *Context, err error) {},
 	}
 	for _, opt := range opts {
-		opt(s)
+		opt(cfg)
+	}
+
+	s.l = cfg.logger
+	s.prefork = cfg.prefork
+	s.eh = cfg.errHandler
+	s.gh = cfg.globalHandlers
+	if cfg.cluster != nil {
+		s.registerCluster(utils.RandomID(32), cfg.cluster)
+	}
+	for _, gw := range cfg.gateways {
+		s.registerGateway(gw)
+	}
+	for _, svc := range cfg.services {
+		s.registerService(svc)
 	}
 
 	return s
@@ -55,7 +73,7 @@ func (s *EdgeServer) getContract(contractID string) Contract {
 }
 
 // RegisterGateway registers a Gateway to our server.
-func (s *EdgeServer) RegisterGateway(gw Gateway) *EdgeServer {
+func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 	nb := &northBridge{
 		e:  s,
 		gw: gw,
@@ -68,7 +86,7 @@ func (s *EdgeServer) RegisterGateway(gw Gateway) *EdgeServer {
 	return s
 }
 
-func (s *EdgeServer) RegisterCluster(id string, cb Cluster) *EdgeServer {
+func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 	s.sb = &southBridge{
 		id:            id,
 		e:             s,
@@ -86,7 +104,7 @@ func (s *EdgeServer) RegisterCluster(id string, cb Cluster) *EdgeServer {
 
 // RegisterService registers a Service to our server. We need to define the appropriate
 // RouteSelector in each desc.Contract.
-func (s *EdgeServer) RegisterService(svc Service) *EdgeServer {
+func (s *EdgeServer) registerService(svc Service) *EdgeServer {
 	if _, ok := s.contracts[svc.Name()]; ok {
 		panic(errors.New("service already registered: %s", svc.Name()))
 	}
@@ -122,6 +140,106 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 		ctx = context.Background()
 	}
 
+	s.l.Debug("server started.")
+
+	if s.prefork {
+		if childID() > 0 {
+			s.startChild(ctx)
+		} else {
+			s.startParent(ctx)
+		}
+
+		return s
+	}
+
+	s.startup(ctx)
+
+	return s
+}
+
+func (s *EdgeServer) startChild(ctx context.Context) {
+	s.l.Debugf("child process [%d] with parent [%d] started. ", os.Getpid(), os.Getppid())
+
+	// we are in child process
+	// use 1 cpu core per child process
+	runtime.GOMAXPROCS(1)
+
+	// kill current child proc when master exits
+	go s.watchParent()
+
+	s.startup(ctx)
+}
+
+// watchParent watches parent process
+func (s *EdgeServer) watchParent() {
+	if runtime.GOOS == "windows" {
+		// finds parent process,
+		// and waits for it to exit
+		p, err := os.FindProcess(os.Getppid())
+		if err == nil {
+			_, _ = p.Wait()
+		}
+
+		s.shutdown(context.Background())
+
+		return
+	}
+	// if it is equal to 1 (init process ID),
+	// it indicates that the master process has exited
+	for range time.NewTicker(time.Millisecond * 500).C {
+		if os.Getppid() == 1 {
+			s.shutdown(context.Background())
+
+			return
+		}
+	}
+}
+
+func (s *EdgeServer) startParent(ctx context.Context) {
+	// create variables
+	max := runtime.GOMAXPROCS(0)
+
+	childs := make(map[int]*exec.Cmd)
+	childChan := make(chan child, max)
+
+	// launch child procs
+	for i := 0; i < max; i++ {
+		/* #nosec G204 */
+		cmd := exec.Command(os.Args[0], os.Args[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		// add child flag into child proc env
+		cmd.Env = append(
+			os.Environ(),
+			fmt.Sprintf("%s=%d", envForkChildKey, i+1),
+		)
+		if err := cmd.Start(); err != nil {
+			panic(fmt.Errorf("failed to start a child prefork process, error: %v", err))
+		}
+
+		// store child process
+		pid := cmd.Process.Pid
+		childs[pid] = cmd
+
+		// notify master if child crashes
+		go func() {
+			childChan <- child{pid, cmd.Wait()}
+		}()
+	}
+
+	ch := <-childChan
+	s.l.Debugf("detect child's exit. pid=%d, err=%v", ch.pid, ch.err)
+
+	// if any child exited then we terminate all childs and exit program.
+	for _, proc := range childs {
+		_ = proc.Process.Kill()
+	}
+
+	os.Exit(0)
+}
+
+func (s *EdgeServer) startup(ctx context.Context) {
 	for idx := range s.nb {
 		for _, svc := range s.svc {
 			for _, c := range svc.Contracts() {
@@ -129,7 +247,12 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 			}
 		}
 
-		err := s.nb[idx].gw.Start(ctx)
+		err := s.nb[idx].gw.Start(
+			ctx,
+			GatewayStartConfig{
+				ReusePort: s.prefork,
+			},
+		)
 		if err != nil {
 			s.l.Errorf("got error on starting gateway: %v", err)
 			panic(err)
@@ -148,12 +271,14 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 			panic(err)
 		}
 	}
-
-	s.l.Debug("server started.")
-
-	return s
 }
 
+// Shutdown stops the server. If there is no signal input then it shut down the server immediately.
+// However, if there is one or more signals added in the input argument then it waits for any of them to
+// trigger the shutdown process.
+// Since this is a graceful shutdown, it waits for all flying requests to complete. However, you can set
+// the maximum time that it waits before forcefully shutting down the server, by WithShutdownTimeout
+// option. Default value is 1 minute.
 func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -168,6 +293,14 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 		<-shutdownChan
 	}
 
+	if s.prefork && childID() == 0 {
+		return
+	}
+
+	s.shutdown(ctx)
+}
+
+func (s *EdgeServer) shutdown(ctx context.Context) {
 	// Shutdown all the registered gateways
 	for idx := range s.nb {
 		err := s.nb[idx].gw.Shutdown(ctx)
@@ -184,9 +317,7 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 	}
 
 	if s.shutdownTimeout == 0 {
-		s.wg.Wait()
-
-		return
+		s.shutdownTimeout = time.Minute
 	}
 
 	waitCh := make(chan struct{}, 1)
@@ -202,53 +333,69 @@ func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 }
 
 func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
-	for _, svc := range s.svc {
-		tw := table.NewWriter()
-		tw.SuppressEmptyColumns()
-		tw.SetStyle(table.StyleRounded)
-		tw.Style().Title.Colors = text.Colors{text.FgBlack, text.BgWhite}
-		tw.Style().Format.Header = text.FormatTitle
-		tw.Style().Options.SeparateRows = true
-		tw.SetColumnConfigs([]table.ColumnConfig{
-			{
-				Number:   1,
-				Align:    text.AlignLeft,
-				WidthMax: 24,
-			},
-			{
-				Number:   2,
-				Align:    text.AlignLeft,
-				WidthMax: 36,
-			},
-			{
-				Number:   3,
-				Align:    text.AlignLeft,
-				WidthMax: 12,
-			},
-			{
-				Number:           4,
-				Align:            text.AlignLeft,
-				WidthMax:         52,
-				WidthMaxEnforcer: text.WrapSoft,
-			},
-			{
-				Number:           5,
-				Align:            text.AlignLeft,
-				WidthMax:         84,
-				WidthMaxEnforcer: text.WrapSoft,
-			},
-		})
-		tw.AppendHeader(
-			table.Row{
-				text.Bold.Sprint("ContractID"),
-				text.Bold.Sprint("Bundle"),
-				text.Bold.Sprint("API"),
-				text.Bold.Sprint("Route | Predicate"),
-				text.Bold.Sprint("Handlers"),
-			},
-		)
-		tw.SetTitle(text.Bold.Sprint(svc.Name()))
+	if s.prefork && childID() > 1 {
+		return s
+	}
 
+	tw := table.NewWriter()
+	tw.SuppressEmptyColumns()
+	tw.SetStyle(table.StyleRounded)
+	style := tw.Style()
+	style.Title = table.TitleOptions{
+		Align:  text.AlignLeft,
+		Colors: text.Colors{text.FgBlack, text.BgWhite},
+		Format: text.FormatTitle,
+	}
+	style.Options.SeparateRows = true
+	style.Color.Header = text.Colors{text.Bold, text.FgWhite}
+
+	tw.SetColumnConfigs([]table.ColumnConfig{
+		{
+			Number:    1,
+			AutoMerge: true,
+			VAlign:    text.VAlignTop,
+			Align:     text.AlignLeft,
+			WidthMax:  24,
+		},
+		{
+			Number:    2,
+			AutoMerge: true,
+			VAlign:    text.VAlignTop,
+			Align:     text.AlignLeft,
+			WidthMax:  36,
+		},
+		{
+			Number:   3,
+			Align:    text.AlignLeft,
+			WidthMax: 12,
+		},
+		{
+			Number:           4,
+			Align:            text.AlignLeft,
+			WidthMax:         52,
+			WidthMaxEnforcer: text.WrapSoft,
+		},
+		{
+			Number:           5,
+			AutoMerge:        true,
+			VAlign:           text.VAlignTop,
+			Align:            text.AlignLeft,
+			WidthMax:         84,
+			WidthMaxEnforcer: text.WrapSoft,
+		},
+	})
+
+	tw.AppendHeader(
+		table.Row{
+			"ContractID",
+			"Bundle",
+			"API",
+			"Route | Predicate",
+			"Handlers",
+		},
+	)
+
+	for _, svc := range s.svc {
 		for _, c := range svc.Contracts() {
 			if route := rpcRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
@@ -275,9 +422,9 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 		}
 
 		tw.AppendSeparator()
-		_, _ = w.Write(utils.S2B(tw.Render()))
-		_, _ = w.Write(utils.S2B("\n"))
 	}
+	_, _ = w.Write(utils.S2B(tw.Render()))
+	_, _ = w.Write(utils.S2B("\n"))
 
 	return s
 }

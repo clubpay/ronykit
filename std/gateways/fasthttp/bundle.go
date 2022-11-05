@@ -15,6 +15,7 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/httpmux"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/reuseport"
 )
 
 const (
@@ -360,8 +361,16 @@ func (b *bundle) httpWriteFunc(c kit.Conn, e *kit.Envelope) error {
 	return nil
 }
 
-func (b *bundle) Start(_ context.Context) error {
-	ln, err := net.Listen("tcp4", b.listen)
+func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
+	var (
+		ln  net.Listener
+		err error
+	)
+	if cfg.ReusePort {
+		ln, err = reuseport.Listen("tcp4", b.listen)
+	} else {
+		ln, err = net.Listen("tcp4", b.listen)
+	}
 	if err != nil {
 		return err
 	}

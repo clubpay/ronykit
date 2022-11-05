@@ -6,12 +6,16 @@ import (
 	"github.com/clubpay/ronykit/kit/errors"
 )
 
+type GatewayStartConfig struct {
+	ReusePort bool
+}
+
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
 type Gateway interface {
 	// Start starts the gateway to accept connections.
-	Start(ctx context.Context) error
+	Start(ctx context.Context, cfg GatewayStartConfig) error
 	// Shutdown shuts down the gateway gracefully.
 	Shutdown(ctx context.Context) error
 	// Register registers the route in the Bundle. This is how Bundle get information

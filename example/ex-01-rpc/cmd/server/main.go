@@ -9,7 +9,6 @@ import (
 	"runtime"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
@@ -42,12 +41,9 @@ func main() {
 			//		fasthttp.Listen(":80"),
 			//	),
 		),
-		desc.Register(sample),
+		kit.RegisterServiceDesc(sample.Desc()),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
 		Shutdown(context.TODO(), os.Kill, os.Interrupt)
-
-	//nolint:forbidigo
-	fmt.Println("Server started.")
 }

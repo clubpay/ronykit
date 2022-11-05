@@ -2,35 +2,54 @@ package kit
 
 import "time"
 
-type Option func(s *EdgeServer)
+type edgeConfig struct {
+	logger          Logger
+	prefork         bool
+	shutdownTimeout time.Duration
+	gateways        []Gateway
+	cluster         Cluster
+	services        []Service
+	errHandler      ErrHandler
+	globalHandlers  []HandlerFunc
+}
+
+type Option func(s *edgeConfig)
 
 func WithLogger(l Logger) Option {
-	return func(s *EdgeServer) {
-		s.l = l
+	return func(s *edgeConfig) {
+		s.logger = l
 	}
 }
 
-// RegisterGateway lets you register a bundle in constructor of the EdgeServer. However,
-// you still can EdgeServer.RegisterGateway method after the constructor. But you must
-// be noticed that this is method is not concurrent safe.
+func WithPrefork() Option {
+	return func(s *edgeConfig) {
+		s.prefork = true
+	}
+}
+
+// RegisterGateway lets you register a bundle in constructor of the EdgeServer.
 func RegisterGateway(gw ...Gateway) Option {
-	return func(s *EdgeServer) {
-		for _, b := range gw {
-			s.RegisterGateway(b)
-		}
+	return func(s *edgeConfig) {
+		s.gateways = append(s.gateways, gw...)
 	}
 }
 
-func RegisterCluster(id string, cb Cluster) Option {
-	return func(s *EdgeServer) {
-		s.RegisterCluster(id, cb)
+func RegisterCluster(cb Cluster) Option {
+	return func(s *edgeConfig) {
+		s.cluster = cb
 	}
 }
 
-func RegisterService(services ...Service) Option {
-	return func(s *EdgeServer) {
-		for _, svc := range services {
-			s.RegisterService(svc)
+func RegisterService(service ...Service) Option {
+	return func(s *edgeConfig) {
+		s.services = append(s.services, service...)
+	}
+}
+
+func RegisterServiceDesc(desc ...ServiceDescriptor) Option {
+	return func(s *edgeConfig) {
+		for _, d := range desc {
+			s.services = append(s.services, d.Generate())
 		}
 	}
 }
@@ -38,7 +57,7 @@ func RegisterService(services ...Service) Option {
 // WithShutdownTimeout sets the maximum time to wait until all running request to finish.
 // Default is to wait forever.
 func WithShutdownTimeout(d time.Duration) Option {
-	return func(s *EdgeServer) {
+	return func(s *edgeConfig) {
 		s.shutdownTimeout = d
 	}
 }
@@ -51,14 +70,14 @@ func WithShutdownTimeout(d time.Duration) Option {
 // ErrDispatchFailed, ErrWriteToClosedConn, ErrNoHandler
 // ErrDecodeIncomingMessageFailed,, ErrEncodeOutgoingMessageFailed
 func WithErrorHandler(h ErrHandler) Option {
-	return func(s *EdgeServer) {
-		s.eh = h
+	return func(s *edgeConfig) {
+		s.errHandler = h
 	}
 }
 
 // WithGlobalHandlers sets the handlers that will be executed before any service's contract.
 func WithGlobalHandlers(handlers ...HandlerFunc) Option {
-	return func(s *EdgeServer) {
-		s.gh = handlers
+	return func(s *edgeConfig) {
+		s.globalHandlers = handlers
 	}
 }

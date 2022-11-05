@@ -1,5 +1,9 @@
 package kit
 
+type ServiceDescriptor interface {
+	Generate() Service
+}
+
 // Service defines a set of RPC handlers which usually they are related to one service.
 // Name must be unique per each Gateway.
 type Service interface {

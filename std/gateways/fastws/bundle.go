@@ -28,7 +28,7 @@ type bundle struct {
 
 var _ kit.Gateway = (*bundle)(nil)
 
-func New(opts ...Option) (*bundle, error) {
+func New(opts ...Option) (kit.Gateway, error) {
 	b := &bundle{
 		routes:        map[string]*routeData{},
 		predicateKey:  "predicate",
@@ -50,7 +50,7 @@ func New(opts ...Option) (*bundle, error) {
 	return b, nil
 }
 
-func MustNew(opts ...Option) *bundle {
+func MustNew(opts ...Option) kit.Gateway {
 	b, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -112,10 +112,11 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	}, nil
 }
 
-func (b *bundle) Start(_ context.Context) error {
+func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	go func() {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
+			gnet.WithReusePort(cfg.ReusePort),
 		}
 
 		err := gnet.Run(b.eh, b.listen, opts...)
