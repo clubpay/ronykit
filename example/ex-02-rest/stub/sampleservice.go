@@ -139,7 +139,7 @@ func (s SampleServiceStub) EchoGET(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", kit.ToJSON, req, opt...)
+		AutoRun(ctx, "/echo/:randomID", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -172,7 +172,7 @@ func (s SampleServiceStub) EchoPOST(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo-post", kit.ToJSON, req, opt...)
+		AutoRun(ctx, "/echo-post", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -205,7 +205,7 @@ func (s SampleServiceStub) Sum1(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", kit.ToJSON, req, opt...)
+		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -238,7 +238,7 @@ func (s SampleServiceStub) Sum2(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum", kit.ToJSON, req, opt...)
+		AutoRun(ctx, "/sum", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -271,7 +271,7 @@ func (s SampleServiceStub) SumRedirect(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.ToJSON, req, opt...)
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req, opt...)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {

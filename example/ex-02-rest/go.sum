@@ -2,10 +2,10 @@ github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/clubpay/ronykit/example v0.0.0-20221103162015-55366f863bfd h1:LoLQtOSaTk68RvZ/fEAVnt4XWvPq6GASWAte+uaCIsY=
 github.com/clubpay/ronykit/example v0.0.0-20221103162015-55366f863bfd/go.mod h1:hyEb4BGsJ3HebZtXAwg+pyu38b2SQO/CSRlfL/WS1VU=
-github.com/clubpay/ronykit/kit v0.8.9 h1:R+QwfFNG1X9t+RQ05/8L0/b7T3igSfpouGsbYM68KhU=
-github.com/clubpay/ronykit/kit v0.8.9/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBCIjruUVst0t0=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.8.3 h1:+ZIzK6yIf4n5IF8Xf3Po9uMxzRPcl07I4/yB9B3kXEY=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.8.3/go.mod h1:8IiIwizx/YINne4iPlrdMSylmqgc0TAV72aTDn44E0M=
+github.com/clubpay/ronykit/kit v0.9.0 h1:/bw2CnKB428F51x1ZgLEhkyt9ZzwtQCAtNzrHtgxu8k=
+github.com/clubpay/ronykit/kit v0.9.0/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBCIjruUVst0t0=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa h1:WNqqsHvrv4EKJA3/6a6dDtqk/GhKdgSSB/wNbcW3Jdk=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa/go.mod h1:Os2rmHPCYyXwnI5cMX5zCZNgBGVt4dppo49JKSJk/co=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
