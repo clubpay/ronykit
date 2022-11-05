@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/kit v0.9.0
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.8.3
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245
 	github.com/go-openapi/spec v0.20.7
 	github.com/goccy/go-json v0.9.11
 	go.opentelemetry.io/contrib/propagators/b3 v1.11.1
@@ -30,6 +30,7 @@ require (
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.41.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
