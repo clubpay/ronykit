@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
+	sampleservice "github.com/clubpay/ronykit/example/ex-02-rest/stub"
 	"github.com/clubpay/ronykit/kit/stub"
 	"github.com/goccy/go-json"
 )
 
 func main() {
-	res1 := sampleservicestub.EchoResponse{}
+	res1 := sampleservice.EchoResponse{}
 	s := stub.New("127.0.0.1")
 	httpCtx := s.REST().
 		SetMethod(http.MethodGet).
@@ -34,12 +35,12 @@ func main() {
 	/*
 		Using the auto-generated service stub
 	*/
-	s2 := sampleservicestub.NewSampleServiceStub(
+	s2 := sampleservice.NewSampleServiceStub(
 		"127.0.0.1",
 	)
 	res2, err := s2.EchoGET(
 		context.Background(),
-		&sampleservicestub.EchoRequest{
+		&sampleservice.EchoRequest{
 			RandomID: 1450,
 			Ok:       true,
 		},

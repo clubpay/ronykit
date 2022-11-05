@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/clubpay/ronykit/example/simple-rest-server/api"
-	"github.com/clubpay/ronykit/example/simple-rest-server/dto"
+	"github.com/clubpay/ronykit/example/ex-02-rest/api"
+	"github.com/clubpay/ronykit/example/ex-02-rest/dto"
 	"github.com/clubpay/ronykit/kit"
 )
 

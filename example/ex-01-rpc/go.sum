@@ -4,13 +4,12 @@ github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
-github.com/clubpay/ronykit/example v0.0.0-20221103162015-55366f863bfd h1:LoLQtOSaTk68RvZ/fEAVnt4XWvPq6GASWAte+uaCIsY=
-github.com/clubpay/ronykit/example v0.0.0-20221103162015-55366f863bfd/go.mod h1:hyEb4BGsJ3HebZtXAwg+pyu38b2SQO/CSRlfL/WS1VU=
 github.com/clubpay/ronykit/kit v0.9.0 h1:/bw2CnKB428F51x1ZgLEhkyt9ZzwtQCAtNzrHtgxu8k=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa h1:WNqqsHvrv4EKJA3/6a6dDtqk/GhKdgSSB/wNbcW3Jdk=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221103161610-c41125a85daa/go.mod h1:Os2rmHPCYyXwnI5cMX5zCZNgBGVt4dppo49JKSJk/co=
-github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221103161610-c41125a85daa h1:CCX5byJ8VHsvtyWuTlHHr74JEV5yAw5+DErDbcfz7Is=
-github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221103161610-c41125a85daa/go.mod h1:MEt2A+vNw8435oSD9D/7wbi5/miu5lP+2HbENqPrhKU=
+github.com/clubpay/ronykit/kit v0.9.0/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBCIjruUVst0t0=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245 h1:4RFY4mLYpLniFV8GNY9znVYaG11CpfKDfRd4hlEt2G8=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245/go.mod h1:Zou8dVPmUxYINHkqfL/rjX6cAbG40D9J68g5Sp+DNnQ=
+github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221105160236-d76312620245 h1:Uy6dvlmzUfp4QxTKBwKEgKXF0CWgE9ao1uiGEMXc28A=
+github.com/clubpay/ronykit/std/gateways/fastws v0.0.0-20221105160236-d76312620245/go.mod h1:T3cc2mhFVJG2mWLxPlid3uqGOtVkXg7S/LqleOqQ46Q=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -67,6 +66,7 @@ github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6Kllzaw
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.41.0 h1:zeR0Z1my1wDHTRiamBCXVglQdbUwgb9uWG3k1HQz6jY=
 github.com/valyala/fasthttp v1.41.0/go.mod h1:f6VbjjoI3z1NDOZOv17o6RvtRSWxC77seBFc2uWtgiY=
+github.com/valyala/tcplisten v1.0.0 h1:rBHj/Xf+E1tRGZyWIWwJDiRY0zc1Js+CV5DqwacVSA8=
 github.com/valyala/tcplisten v1.0.0/go.mod h1:T0xQ8SeCZGxckz9qRXTfG43PvQ/mcWh7FwZEA7Ioqkc=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=

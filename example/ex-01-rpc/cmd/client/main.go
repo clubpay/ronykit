@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
-	"github.com/clubpay/ronykit/example/internal/testlog"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 )
@@ -16,7 +15,6 @@ import (
 func main() {
 	wsCtx := stub.New("127.0.0.1:80",
 		stub.WithDialTimeout(time.Second*3),
-		stub.WithLogger(testlog.Log{}),
 	).
 		Websocket(
 			stub.WithPredicateKey("cmd"),
