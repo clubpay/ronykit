@@ -63,14 +63,6 @@ func (ctx *LimitedContext) ClusterMembers() ([]string, error) {
 	return ctx.ctx.ClusterMembers()
 }
 
-func (ctx *LimitedContext) ClusterSet(key, value string) error {
-	return ctx.ctx.ClusterSet(key, value)
-}
-
-func (ctx *LimitedContext) ClusterUnset(key string) error {
-	return ctx.ctx.ClusterUnset(key)
-}
-
-func (ctx *LimitedContext) ClusterGet(key string) (string, error) {
-	return ctx.ctx.ClusterGet(key)
+func (ctx *LimitedContext) ClusterStore() ClusterStore {
+	return ctx.ctx.ClusterStore()
 }

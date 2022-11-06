@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
@@ -145,7 +146,11 @@ func (t *testCluster) Publish(id string, data []byte) error {
 	return nil
 }
 
-func (t *testCluster) SetKey(key, value string) error {
+func (t *testCluster) Store() kit.ClusterStore {
+	return t
+}
+
+func (t *testCluster) Set(key, value string, ttl time.Duration) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -155,7 +160,7 @@ func (t *testCluster) SetKey(key, value string) error {
 	return nil
 }
 
-func (t *testCluster) DeleteKey(key string) error {
+func (t *testCluster) Delete(key string) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -165,7 +170,7 @@ func (t *testCluster) DeleteKey(key string) error {
 	return nil
 }
 
-func (t *testCluster) GetKey(key string) (string, error) {
+func (t *testCluster) Get(key string) (string, error) {
 	return t.kv[key], nil
 }
 

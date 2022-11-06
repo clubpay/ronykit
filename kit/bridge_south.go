@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -18,14 +19,19 @@ type Cluster interface {
 	Subscribe(id string, d ClusterDelegate)
 	// Publish sends the data to the other instance identified by id.
 	Publish(id string, data []byte) error
-	// SetKey creates/updates a key-value pair in the cluster
-	SetKey(key, value string) error
-	// DeleteKey deletes the key-value pair from the cluster
-	DeleteKey(key string) error
-	// GetKey returns the value bind to the key
-	GetKey(key string) (string, error)
 	// Subscribers returns the list of the instance ids.
 	Subscribers() ([]string, error)
+	// Store returns a shared key-value store between all instances.
+	Store() ClusterStore
+}
+
+type ClusterStore interface {
+	// Set creates/updates a key-value pair in the cluster
+	Set(key, value string, ttl time.Duration) error
+	// Delete deletes the key-value pair from the cluster
+	Delete(key string) error
+	// Get returns the value bind to the key
+	Get(key string) (string, error)
 }
 
 type ClusterDelegate interface {

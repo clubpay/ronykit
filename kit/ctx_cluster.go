@@ -4,28 +4,13 @@ import "github.com/clubpay/ronykit/kit/errors"
 
 var ErrClusterNotSet = errors.New("cluster is not set")
 
-func (ctx *Context) ClusterSet(key, value string) error {
+// ClusterStore returns a key-value store which is shared between different instances of the cluster.
+func (ctx *Context) ClusterStore() ClusterStore {
 	if ctx.sb == nil {
-		return ErrClusterNotSet
+		panic(ErrClusterNotSet)
 	}
 
-	return ctx.sb.cb.SetKey(key, value)
-}
-
-func (ctx *Context) ClusterUnset(key string) error {
-	if ctx.sb == nil {
-		return ErrClusterNotSet
-	}
-
-	return ctx.sb.cb.DeleteKey(key)
-}
-
-func (ctx *Context) ClusterGet(key string) (string, error) {
-	if ctx.sb == nil {
-		return "", ErrClusterNotSet
-	}
-
-	return ctx.sb.cb.GetKey(key)
+	return ctx.sb.cb.Store()
 }
 
 func (ctx *Context) ClusterID() string {
