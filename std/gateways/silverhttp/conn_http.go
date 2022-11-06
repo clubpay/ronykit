@@ -5,7 +5,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/std/gateway/silverhttp/realip"
+	"github.com/clubpay/ronykit/std/gateways/silverhttp/realip"
 	"github.com/go-www/silverlining"
 )
 

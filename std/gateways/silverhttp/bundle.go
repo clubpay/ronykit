@@ -10,7 +10,7 @@ import (
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/std/gateway/silverhttp/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
 	"github.com/go-www/silverlining"
 	reuse "github.com/libp2p/go-reuseport"
 )

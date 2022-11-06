@@ -1,8 +1,8 @@
 package httpmux_test
 
 import (
-	"github.com/clubpay/ronykit/std/gateway/silverhttp"
-	"github.com/clubpay/ronykit/std/gateway/silverhttp/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/silverhttp"
+	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

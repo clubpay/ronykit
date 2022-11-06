@@ -6,7 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/std/gateway/silverhttp/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
 	"github.com/goccy/go-reflect"
 )
 

@@ -1,4 +1,4 @@
-module github.com/clubpay/ronykit/std/gateway/silverhttp
+module github.com/clubpay/ronykit/std/gateways/silverhttp
 
 go 1.19
 
