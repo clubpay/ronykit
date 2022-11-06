@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/kit v0.9.0
-	github.com/go-www/silverlining v1.2.1
+	github.com/go-www/silverlining v1.3.0
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.2.0
 	github.com/onsi/ginkgo/v2 v2.2.0

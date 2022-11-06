@@ -11,7 +11,6 @@ import (
 
 type httpConn struct {
 	utils.SpinLock
-	id uint64
 
 	ctx *silverlining.Context
 }
@@ -47,11 +46,10 @@ func (c *httpConn) SetStatusCode(code int) {
 }
 
 func (c *httpConn) ConnID() uint64 {
-	return c.id
+	return c.ctx.ConnID()
 }
 
 func (c *httpConn) ClientIP() string {
-
 	return realip.FromRequest(c.ctx)
 }
 
@@ -68,7 +66,7 @@ func (c *httpConn) Stream() bool {
 }
 
 func (c *httpConn) GetHost() string {
-	return ""
+	return c.ctx.Host()
 }
 
 func (c *httpConn) GetRequestURI() string {

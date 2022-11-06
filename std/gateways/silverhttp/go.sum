@@ -3,8 +3,8 @@ github.com/clubpay/ronykit/kit v0.9.0/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBC
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/go-www/silverlining v1.2.1 h1:c5Jq+hTYlPlaM9Xd4V7VmdGkyx2WrwgKiWo3t+tHSr0=
-github.com/go-www/silverlining v1.2.1/go.mod h1:19uoOu+jstnafSPQ9hhZNP+/nd0gTRmyAhMG25uXy8o=
+github.com/go-www/silverlining v1.3.0 h1:COAfrmUndKOA9UooF65dL87qAH6N7KAnUiOWqXMDfws=
+github.com/go-www/silverlining v1.3.0/go.mod h1:a3oBz4W7SfC21HcBBs/6dL/h8omWbG3QCY9ORjZ/ooQ=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=
 github.com/gobwas/pool v0.2.1 h1:xfeeEhW7pwmX8nuLVlqbzVc7udMDrwetjEv+TZIz1og=

@@ -113,7 +113,16 @@ func FromRequest(ctx *silverlining.Context) string {
 		return ip
 	}
 
-	return ""
+	var remoteIP string
+	remoteAddr := ctx.RemoteAddr().String()
+
+	if strings.ContainsRune(remoteAddr, ':') {
+		remoteIP, _, _ = net.SplitHostPort(remoteAddr)
+	} else {
+		remoteIP = remoteAddr
+	}
+
+	return remoteIP
 }
 
 func fromSpecialHeaders(ctx *silverlining.Context) (string, error) {
