@@ -3,6 +3,7 @@ package rediscluster
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -19,10 +20,15 @@ type cluster struct {
 	prefix       string
 }
 
-var _ kit.Cluster = (*cluster)(nil)
+var (
+	_ kit.Cluster      = (*cluster)(nil)
+	_ kit.ClusterStore = (*cluster)(nil)
+)
 
-func New(opts ...Option) (kit.Cluster, error) {
-	c := &cluster{}
+func New(name string, opts ...Option) (kit.Cluster, error) {
+	c := &cluster{
+		prefix: name,
+	}
 	for _, o := range opts {
 		o(c)
 	}
@@ -30,8 +36,8 @@ func New(opts ...Option) (kit.Cluster, error) {
 	return c, nil
 }
 
-func MustNew(opts ...Option) kit.Cluster {
-	c, err := New(opts...)
+func MustNew(name string, opts ...Option) kit.Cluster {
+	c, err := New(name, opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -73,22 +79,26 @@ func (c *cluster) Publish(id string, data []byte) error {
 	return c.rc.Publish(context.Background(), fmt.Sprintf("%s:chan:%s", c.prefix, id), data).Err()
 }
 
-func (c *cluster) SetKey(key, value string) error {
+func (c *cluster) Store() kit.ClusterStore {
+	return c
+}
+
+func (c *cluster) Set(key, value string, ttl time.Duration) error {
 	return c.rc.Set(
 		context.Background(),
 		fmt.Sprintf("%s:kv:%s", c.prefix, key), value,
-		redis.KeepTTL,
+		ttl,
 	).Err()
 }
 
-func (c *cluster) DeleteKey(key string) error {
+func (c *cluster) Delete(key string) error {
 	return c.rc.Del(
 		context.Background(),
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),
 	).Err()
 }
 
-func (c *cluster) GetKey(key string) (string, error) {
+func (c *cluster) Get(key string) (string, error) {
 	return c.rc.Get(
 		context.Background(),
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),

@@ -1,7 +1,7 @@
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
 github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/clubpay/ronykit/kit v0.9.0 h1:/bw2CnKB428F51x1ZgLEhkyt9ZzwtQCAtNzrHtgxu8k=
-github.com/clubpay/ronykit/kit v0.9.0/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBCIjruUVst0t0=
+github.com/clubpay/ronykit/kit v0.9.1 h1:3qTh70rhyJ6g8MJW7JnR23F85UVQmV8WEjjDlnbQVik=
+github.com/clubpay/ronykit/kit v0.9.1/go.mod h1:QgK1bf6aP9aF71Ot9KyBLn2bonBmlKBCIjruUVst0t0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
