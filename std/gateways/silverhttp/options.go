@@ -33,22 +33,3 @@ func WithCORS(cfg CORSConfig) Option {
 		b.cors = newCORS(cfg)
 	}
 }
-
-func WithPredicateKey(key string) Option {
-	return func(b *bundle) {
-		b.predicateKey = key
-	}
-}
-
-func WithWebsocketEndpoint(endpoint string) Option {
-	return func(b *bundle) {
-		b.wsEndpoint = endpoint
-	}
-}
-
-func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option {
-	return func(b *bundle) {
-		b.rpcInFactory = in
-		b.rpcOutFactory = out
-	}
-}

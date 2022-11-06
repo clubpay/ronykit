@@ -31,14 +31,7 @@ type bundle struct {
 
 	connPool sync.Pool
 	cors     *cors
-
-	httpMux      *httpmux.Mux
-	wsRoutes     map[string]*httpmux.RouteData
-	wsEndpoint   string
-	predicateKey string
-
-	rpcInFactory  kit.IncomingRPCFactory
-	rpcOutFactory kit.OutgoingRPCFactory
+	httpMux  *httpmux.Mux
 }
 
 var _ kit.Gateway = (*bundle)(nil)
@@ -51,11 +44,11 @@ func New(opts ...Option) (kit.Gateway, error) {
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
 		},
-		wsRoutes:      map[string]*httpmux.RouteData{},
-		srv:           &silverlining.Server{},
-		rpcInFactory:  common.SimpleIncomingJSONRPC,
-		rpcOutFactory: common.SimpleOutgoingJSONRPC,
-		l:             common.NewNopLogger(),
+		srv: &silverlining.Server{},
+		l:   common.NewNopLogger(),
+	}
+	for _, opt := range opts {
+		opt(r)
 	}
 
 	r.srv.Handler = r.httpHandler
@@ -105,33 +98,7 @@ func (b *bundle) Shutdown(_ context.Context) error {
 func (b *bundle) Register(
 	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
-	b.registerRPC(svcName, contractID, enc, sel, input)
 	b.registerREST(svcName, contractID, enc, sel, input)
-}
-
-func (b *bundle) registerRPC(
-	svcName, contractID string, _ kit.Encoding, sel kit.RouteSelector, input kit.Message,
-) {
-	rpcSelector, ok := sel.(kit.RPCRouteSelector)
-	if !ok {
-		// this selector is not an RPCRouteSelector then we return with no
-		// extra action taken.
-		return
-	}
-
-	// We don't accept selector with empty Predicate for the obvious reason.
-	if rpcSelector.GetPredicate() == "" {
-		return
-	}
-
-	rd := &httpmux.RouteData{
-		ServiceName: svcName,
-		ContractID:  contractID,
-		Predicate:   rpcSelector.GetPredicate(),
-		Factory:     kit.CreateMessageFactory(input),
-	}
-
-	b.wsRoutes[rd.Predicate] = rd
 }
 
 func (b *bundle) registerREST(
