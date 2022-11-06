@@ -9,6 +9,7 @@ import (
 
 // TestContext is useful for writing end-to-end tests for your Contract handlers.
 type TestContext struct {
+	ls         localStore
 	handlers   HandlerFuncChain
 	inMsg      Message
 	inHdr      EnvelopeHdr
@@ -17,7 +18,11 @@ type TestContext struct {
 }
 
 func NewTestContext() *TestContext {
-	return &TestContext{}
+	return &TestContext{
+		ls: localStore{
+			kv: map[string]any{},
+		},
+	}
 }
 
 func (testCtx *TestContext) SetHandler(h ...HandlerFunc) *TestContext {
@@ -46,7 +51,7 @@ func (testCtx *TestContext) Receiver(f func(out ...*Envelope) error) *TestContex
 }
 
 func (testCtx *TestContext) Run(stream bool) error {
-	ctx := newContext()
+	ctx := newContext(&testCtx.ls)
 	conn := newTestConn()
 	conn.clientIP = testCtx.clientIP
 	conn.stream = stream
@@ -71,7 +76,7 @@ func (testCtx *TestContext) Run(stream bool) error {
 }
 
 func (testCtx *TestContext) RunREST() error {
-	ctx := newContext()
+	ctx := newContext(&testCtx.ls)
 	conn := newTestRESTConn()
 	conn.clientIP = testCtx.clientIP
 	conn.stream = false

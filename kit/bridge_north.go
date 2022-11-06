@@ -65,7 +65,7 @@ func (n *northBridge) OnClose(connID uint64) {
 
 func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	n.e.wg.Add(1)
-	ctx := n.acquireCtx(conn)
+	ctx := n.acquireCtx(conn, &n.e.ls)
 	ctx.wf = wf
 	ctx.sb = n.e.sb
 

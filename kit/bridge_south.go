@@ -78,7 +78,7 @@ func (sb *southBridge) OnMessage(data []byte) error {
 		sessionID: carrier.SessionID,
 		serverID:  sb.id,
 	}
-	ctx := sb.acquireCtx(conn)
+	ctx := sb.acquireCtx(conn, &sb.e.ls)
 	ctx.wf = sb.writeFunc
 	ctx.sb = sb
 

@@ -29,6 +29,7 @@ type Context struct {
 	ctx context.Context //nolint:containedctx
 	cf  func()
 	sb  *southBridge
+	ls  *localStore
 
 	serviceName []byte
 	contractID  []byte
@@ -47,8 +48,9 @@ type Context struct {
 	handlerIndex int
 }
 
-func newContext() *Context {
+func newContext(ls *localStore) *Context {
 	return &Context{
+		ls:         ls,
 		kv:         make(map[string]interface{}, 4),
 		hdr:        make(map[string]string, 4),
 		statusCode: http.StatusOK,
@@ -261,10 +263,10 @@ type ctxPool struct {
 	sync.Pool
 }
 
-func (p *ctxPool) acquireCtx(c Conn) *Context {
+func (p *ctxPool) acquireCtx(c Conn, ls *localStore) *Context {
 	ctx, ok := p.Pool.Get().(*Context)
 	if !ok {
-		ctx = newContext()
+		ctx = newContext(ls)
 	}
 
 	ctx.conn = c

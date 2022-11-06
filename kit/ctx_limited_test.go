@@ -7,7 +7,7 @@ import (
 )
 
 var _ = Describe("CtxLimited", func() {
-	ctx := kit.NewContext()
+	ctx := kit.NewContext(nil)
 	conn := newTestConn(100, "", true)
 	ctx.SetConn(conn)
 

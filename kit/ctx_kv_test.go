@@ -9,7 +9,7 @@ import (
 var _ = DescribeTable(
 	"GetString",
 	func(key string, val, def string) {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		Expect(ctx.GetString(key, def)).To(Equal(def))
 		Expect(ctx.Set(key, val).GetString(key, def)).To(Equal(val))
 	},
@@ -22,7 +22,7 @@ var _ = DescribeTable(
 var _ = DescribeTable(
 	"GetInt32",
 	func(key string, val, def int32) {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		Expect(ctx.GetInt32(key, def)).To(Equal(def))
 		Expect(ctx.Set(key, val).GetInt32(key, def)).To(Equal(val))
 	},
@@ -35,7 +35,7 @@ var _ = DescribeTable(
 var _ = DescribeTable(
 	"GetInt64",
 	func(key string, val, def int64) {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		Expect(ctx.GetInt64(key, def)).To(Equal(def))
 		Expect(ctx.Set(key, val).GetInt64(key, def)).To(Equal(val))
 	},
@@ -48,7 +48,7 @@ var _ = DescribeTable(
 var _ = DescribeTable(
 	"GetUInt64",
 	func(key string, val, def uint64) {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		Expect(ctx.GetUint64(key, def)).To(Equal(def))
 		Expect(ctx.Set(key, val).GetUint64(key, def)).To(Equal(val))
 	},
@@ -60,7 +60,7 @@ var _ = DescribeTable(
 var _ = DescribeTable(
 	"GetUInt32",
 	func(key string, val, def uint32) {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		Expect(ctx.GetUint32(key, def)).To(Equal(def))
 		Expect(ctx.Set(key, val).GetUint32(key, def)).To(Equal(val))
 	},
@@ -72,7 +72,7 @@ var _ = DescribeTable(
 var _ = Describe(
 	"Walk",
 	func() {
-		ctx := kit.NewContext()
+		ctx := kit.NewContext(nil)
 		ctx.Set("k1", "v1")
 		ctx.Set("k2", "v2")
 

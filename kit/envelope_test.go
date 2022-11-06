@@ -8,7 +8,7 @@ import (
 
 var _ = Describe("Envelope", func() {
 	tc := newTestConn(1, "", false)
-	ctx := kit.NewContext()
+	ctx := kit.NewContext(nil)
 	e := kit.NewEnvelope(ctx, tc, true)
 	e.
 		SetHdr("K1", "V1").

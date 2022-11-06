@@ -111,3 +111,16 @@ func (ctx *Context) GetBytes(key string, defaultValue []byte) []byte {
 
 	return v
 }
+
+type Store interface {
+	Get(key string) any
+	Exists(key string) bool
+	Set(key string, val any)
+}
+
+// LocalStore returns a local store which could be used to share some key-values between different
+// requests. If you need to have a shared key-value store between different instances of your server
+// then you need to use ClusterStore method.
+func (ctx *Context) LocalStore() Store {
+	return ctx.ls
+}

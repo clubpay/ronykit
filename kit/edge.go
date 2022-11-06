@@ -20,7 +20,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-type contractResolver func(contractID string) Contract
+type any = interface{}
 
 // EdgeServer is the main component of the kit. It glues all other components of the
 // app to each other.
@@ -37,11 +37,17 @@ type EdgeServer struct {
 	// configs
 	prefork         bool
 	shutdownTimeout time.Duration
+
+	// local store
+	ls localStore
 }
 
 func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
 		contracts: map[string]Contract{},
+		ls: localStore{
+			kv: map[string]any{},
+		},
 	}
 	cfg := &edgeConfig{
 		logger:     nopLogger{},
@@ -476,4 +482,33 @@ func restRoute(rs RouteSelector) string {
 			text.BgWhite, text.FgBlack,
 		}.Sprint(rest.GetPath()),
 	)
+}
+
+type localStore struct {
+	kvl utils.SpinLock
+	kv  map[string]any
+}
+
+func (ls *localStore) Get(key string) any {
+	ls.kvl.Lock()
+	v := ls.kv[key]
+	ls.kvl.Unlock()
+
+	return v
+}
+
+func (ls *localStore) Set(key string, value any) {
+	ls.kvl.Lock()
+	ls.kv[key] = value
+	ls.kvl.Unlock()
+
+	return
+}
+
+func (ls *localStore) Exists(key string) bool {
+	ls.kvl.Lock()
+	_, v := ls.kv[key]
+	ls.kvl.Unlock()
+
+	return v
 }
