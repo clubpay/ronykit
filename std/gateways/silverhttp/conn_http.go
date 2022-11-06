@@ -57,6 +57,7 @@ func (c *httpConn) ClientIP() string {
 
 func (c *httpConn) Write(data []byte) (int, error) {
 	c.ctx.SetContentLength(len(data))
+
 	_, err := c.ctx.Write(data)
 
 	return len(data), err

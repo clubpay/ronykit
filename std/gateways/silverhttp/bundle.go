@@ -240,6 +240,7 @@ func (b *bundle) httpWriteFunc(c kit.Conn, e *kit.Envelope) error {
 		},
 	)
 
+	rc.ctx.SetContentLength(len(data))
 	_, err = rc.ctx.Write(data)
 
 	return err
