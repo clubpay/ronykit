@@ -62,7 +62,7 @@ func RPC(predicate string) Selector {
 	}
 }
 
-func (r *Selector) GetEncoding() kit.Encoding {
+func (r Selector) GetEncoding() kit.Encoding {
 	return r.Encoding
 }
 
@@ -72,19 +72,19 @@ func (r *Selector) SetEncoding(enc kit.Encoding) *Selector {
 	return r
 }
 
-func (r *Selector) GetMethod() string {
+func (r Selector) GetMethod() string {
 	return r.Method
 }
 
-func (r *Selector) GetPath() string {
+func (r Selector) GetPath() string {
 	return r.Path
 }
 
-func (r *Selector) GetPredicate() string {
+func (r Selector) GetPredicate() string {
 	return r.Predicate
 }
 
-func (r *Selector) Query(q string) interface{} {
+func (r Selector) Query(q string) interface{} {
 	switch q {
 	case queryDecoder:
 		return r.Decoder

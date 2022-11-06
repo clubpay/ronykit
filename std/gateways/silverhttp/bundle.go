@@ -143,8 +143,7 @@ func (b *bundle) registerREST(
 }
 
 func (b *bundle) Subscribe(d kit.GatewayDelegate) {
-	//TODO implement me
-	panic("implement me")
+	b.d = d
 }
 
 func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
