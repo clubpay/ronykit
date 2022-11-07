@@ -15,6 +15,15 @@ import (
 	"github.com/fasthttp/websocket"
 )
 
+const (
+	// TextMessage denotes a text data message. The text message payload is
+	// interpreted as UTF-8 encoded text data.
+	TextMessage = 1
+
+	// BinaryMessage denotes a binary data message.
+	BinaryMessage = 2
+)
+
 type WebsocketCtx struct {
 	cfg     wsConfig
 	err     *Error
