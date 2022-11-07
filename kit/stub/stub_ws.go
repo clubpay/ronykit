@@ -221,6 +221,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	id := utils.RandomDigit(10)
 	outC.InjectMessage(req.ReqMsg)
 	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)
+	for k, v := range req.ReqHdr {
+		outC.SetHdr(k, v)
+	}
 	outC.SetID(id)
 
 	reqData, err := outC.Marshal()
