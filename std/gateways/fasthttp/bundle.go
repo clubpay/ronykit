@@ -202,7 +202,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
-	b.d.OnMessage(wsc, b.wsWriteFunc, *buf.Bytes())
+	b.d.OnMessage(wsc, b.writeFunc, *buf.Bytes())
 	buf.Release()
 }
 
@@ -243,25 +243,54 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 	}, nil
 }
 
-func (b *bundle) wsWriteFunc(conn kit.Conn, e *kit.Envelope) error {
-	outC := b.rpcOutFactory()
-	outC.InjectMessage(e.GetMsg())
-	outC.SetID(e.GetID())
-	e.WalkHdr(func(key string, val string) bool {
-		outC.SetHdr(key, val)
+func (b *bundle) writeFunc(conn kit.Conn, e *kit.Envelope) error {
+	switch c := conn.(type) {
+	case *wsConn:
+		outC := b.rpcOutFactory()
+		outC.InjectMessage(e.GetMsg())
+		outC.SetID(e.GetID())
+		e.WalkHdr(
+			func(key string, val string) bool {
+				outC.SetHdr(key, val)
 
-		return true
-	})
+				return true
+			},
+		)
 
-	data, err := outC.Marshal()
-	if err != nil {
+		data, err := outC.Marshal()
+		if err != nil {
+			return err
+		}
+
+		_, err = c.Write(data)
+		outC.Release()
+
 		return err
+	case *httpConn:
+		var (
+			data []byte
+			err  error
+		)
+
+		data, err = kit.MarshalMessage(e.GetMsg())
+		if err != nil {
+			return err
+		}
+
+		e.WalkHdr(
+			func(key string, val string) bool {
+				c.ctx.Response.Header.Set(key, val)
+
+				return true
+			},
+		)
+
+		c.ctx.SetBody(data)
+
+		return nil
+	default:
+		panic("BUG!! incorrect connection")
 	}
-
-	_, err = conn.Write(data)
-	outC.Release()
-
-	return err
 }
 
 func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
@@ -272,7 +301,7 @@ func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
 
 	c.ctx = ctx
 	b.d.OnOpen(c)
-	b.d.OnMessage(c, b.httpWriteFunc, ctx.PostBody())
+	b.d.OnMessage(c, b.writeFunc, ctx.PostBody())
 	b.d.OnClose(c.ConnID())
 
 	b.connPool.Put(c)
@@ -330,35 +359,6 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		ContractID:  routeData.ContractID,
 		Route:       fmt.Sprintf("%s %s", routeData.Method, routeData.Path),
 	}, nil
-}
-
-func (b *bundle) httpWriteFunc(c kit.Conn, e *kit.Envelope) error {
-	rc, ok := c.(*httpConn)
-	if !ok {
-		panic("BUG!! incorrect connection")
-	}
-
-	var (
-		data []byte
-		err  error
-	)
-
-	data, err = kit.MarshalMessage(e.GetMsg())
-	if err != nil {
-		return err
-	}
-
-	e.WalkHdr(
-		func(key string, val string) bool {
-			rc.ctx.Response.Header.Set(key, val)
-
-			return true
-		},
-	)
-
-	rc.ctx.SetBody(data)
-
-	return nil
 }
 
 func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
