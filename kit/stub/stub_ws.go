@@ -167,25 +167,51 @@ func (wCtx *WebsocketCtx) TextMessage(
 	ctx context.Context, predicate string, req, res kit.Message,
 	cb RPCMessageHandler,
 ) error {
-	return wCtx.do(ctx, predicate, websocket.TextMessage, req, res, cb)
+	return wCtx.Do(
+		ctx,
+		WebsocketRequest{
+			Predicate:   predicate,
+			MessageType: websocket.TextMessage,
+			ReqMsg:      req,
+			ResMsg:      res,
+			ReqHdr:      nil,
+			Callback:    cb,
+		},
+	)
 }
 
 func (wCtx *WebsocketCtx) BinaryMessage(
 	ctx context.Context, predicate string, req, res kit.Message,
 	cb RPCMessageHandler,
 ) error {
-	return wCtx.do(ctx, predicate, websocket.BinaryMessage, req, res, cb)
+	return wCtx.Do(
+		ctx,
+		WebsocketRequest{
+			Predicate:   predicate,
+			MessageType: websocket.BinaryMessage,
+			ReqMsg:      req,
+			ResMsg:      res,
+			ReqHdr:      nil,
+			Callback:    cb,
+		},
+	)
 }
 
-func (wCtx *WebsocketCtx) do(
-	ctx context.Context, predicate string, msgType int, req, res kit.Message,
-	cb RPCMessageHandler,
-) error {
+type WebsocketRequest struct {
+	Predicate   string
+	MessageType int
+	ReqMsg      kit.Message
+	ResMsg      kit.Message
+	ReqHdr      Header
+	Callback    RPCMessageHandler
+}
+
+func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	outC := wCtx.cfg.rpcOutFactory()
 
 	id := utils.RandomDigit(10)
-	outC.InjectMessage(req)
-	outC.SetHdr(wCtx.cfg.predicateKey, predicate)
+	outC.InjectMessage(req.ReqMsg)
+	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)
 	outC.SetID(id)
 
 	reqData, err := outC.Marshal()
@@ -193,14 +219,14 @@ func (wCtx *WebsocketCtx) do(
 		return err
 	}
 
-	err = wCtx.c.WriteMessage(msgType, reqData)
+	err = wCtx.c.WriteMessage(req.MessageType, reqData)
 	if err != nil {
 		return err
 	}
 
 	outC.Release()
 
-	go wCtx.waitForMessage(ctx, id, res, cb)
+	go wCtx.waitForMessage(ctx, id, req.ResMsg, req.Callback)
 
 	return nil
 }
