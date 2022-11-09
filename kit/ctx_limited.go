@@ -66,3 +66,7 @@ func (ctx *LimitedContext) ClusterMembers() ([]string, error) {
 func (ctx *LimitedContext) ClusterStore() ClusterStore {
 	return ctx.ctx.ClusterStore()
 }
+
+func (ctx *LimitedContext) SetUserContext(userCtx context.Context) {
+	ctx.ctx.SetUserContext(userCtx)
+}

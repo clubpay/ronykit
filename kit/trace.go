@@ -3,7 +3,7 @@ package kit
 import "context"
 
 type Tracer interface {
-	Handler() LimitedHandlerFunc
+	Handler() HandlerFunc
 	Propagator() TracePropagator
 }
 

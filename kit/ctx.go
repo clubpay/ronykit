@@ -31,7 +31,6 @@ type Context struct {
 	cf  func()
 	sb  *southBridge
 	ls  *localStore
-	th  LimitedHandlerFunc
 
 	serviceName []byte
 	contractID  []byte
@@ -74,9 +73,6 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 		AddModifier(c.Modifiers()...)
 
 	ctx.handlers = append(ctx.handlers, c.Handlers()...)
-	if ctx.th != nil {
-		ctx.th(ctx.Limited())
-	}
 	ctx.Next()
 }
 
@@ -265,18 +261,20 @@ func (ctx *Context) isREST() bool {
 type ctxPool struct {
 	sync.Pool
 	ls *localStore
-	th LimitedHandlerFunc
+	th HandlerFunc
 }
 
 func (p *ctxPool) acquireCtx(c Conn) *Context {
 	ctx, ok := p.Pool.Get().(*Context)
 	if !ok {
 		ctx = newContext(p.ls)
-		ctx.th = p.th
 	}
 
 	ctx.conn = c
 	ctx.in = newEnvelope(ctx, c, false)
+	if p.th != nil {
+		ctx.handlers = append(ctx.handlers, p.th)
+	}
 
 	return ctx
 }

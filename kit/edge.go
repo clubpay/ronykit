@@ -35,7 +35,7 @@ type EdgeServer struct {
 	wg        sync.WaitGroup
 
 	// trace tools
-	th LimitedHandlerFunc
+	th HandlerFunc
 	tp TracePropagator
 
 	// configs
