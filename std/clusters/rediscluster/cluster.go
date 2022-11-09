@@ -59,6 +59,8 @@ func (c *cluster) gc() {
 		if c.id != "" {
 			c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
 		}
+		
+		time.Sleep(c.gcPeriod)
 
 		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.gcPeriod*10).Result()
 		if ok {
