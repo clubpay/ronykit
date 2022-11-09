@@ -46,6 +46,7 @@ type southBridge struct {
 	eh ErrHandler
 	c  map[string]Contract
 	cb Cluster
+	tp TracePropagator
 
 	inProgressMtx utils.SpinLock
 	inProgress    map[string]chan *envelopeCarrier
@@ -187,6 +188,10 @@ func (sb *southBridge) wrapWithCoordinator(c Contract) Contract {
 
 func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
+		if ctx.forwarded {
+			return
+		}
+
 		target, err := sel(ctx.Limited())
 		if ctx.Error(err) {
 			return
@@ -239,6 +244,10 @@ func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
 		ServiceName: e.ctx.ServiceName(),
 		ExecIndex:   0,
 		Route:       e.ctx.Route(),
+	}
+
+	if sb.tp != nil {
+		sb.tp.Inject(e.ctx.ctx, ec.Data)
 	}
 
 	return c.cb.Publish(c.originID, ec.ToJSON())

@@ -37,8 +37,11 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 		Msg:         marshalMessageX(ctx.In().GetMsg()),
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
-		ExecIndex:   ctx.handlerIndex,
 		Route:       ctx.Route(),
+	}
+
+	if tp := ctx.sb.tp; tp != nil {
+		tp.Inject(ctx.ctx, ec.Data)
 	}
 
 	ctx.In().
@@ -69,6 +72,14 @@ type carrierData struct {
 	ServiceName string            `json:"svc,omitempty"`
 	ExecIndex   int               `json:"idx,omitempty"`
 	Route       string            `json:"route,omitempty"`
+}
+
+func (c carrierData) Get(key string) string {
+	return c.ConnHdr[key]
+}
+
+func (c carrierData) Set(key string, value string) {
+	c.ConnHdr[key] = value
 }
 
 func (ec *envelopeCarrier) ToJSON() []byte {

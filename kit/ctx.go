@@ -27,10 +27,11 @@ type (
 
 type Context struct {
 	utils.SpinLock
-	ctx context.Context //nolint:containedctx
-	cf  func()
-	sb  *southBridge
-	ls  *localStore
+	ctx       context.Context //nolint:containedctx
+	cf        func()
+	sb        *southBridge
+	ls        *localStore
+	forwarded bool
 
 	serviceName []byte
 	contractID  []byte
@@ -236,6 +237,7 @@ func (ctx *Context) reset() {
 		delete(ctx.hdr, k)
 	}
 
+	ctx.forwarded = false
 	ctx.serviceName = ctx.serviceName[:0]
 	ctx.contractID = ctx.contractID[:0]
 	ctx.route = ctx.route[:0]
