@@ -34,6 +34,10 @@ type EdgeServer struct {
 	l         Logger
 	wg        sync.WaitGroup
 
+	// trace tools
+	th LimitedHandlerFunc
+	tp TracePropagator
+
 	// configs
 	prefork         bool
 	shutdownTimeout time.Duration
@@ -61,6 +65,10 @@ func NewServer(opts ...Option) *EdgeServer {
 	s.prefork = cfg.prefork
 	s.eh = cfg.errHandler
 	s.gh = cfg.globalHandlers
+	if cfg.tracer != nil {
+		s.th = cfg.tracer.Handler()
+		s.tp = cfg.tracer.Propagator()
+	}
 	if cfg.cluster != nil {
 		s.registerCluster(utils.RandomID(32), cfg.cluster)
 	}
@@ -74,15 +82,18 @@ func NewServer(opts ...Option) *EdgeServer {
 	return s
 }
 
-func (s *EdgeServer) getContract(contractID string) Contract {
-	return s.contracts[contractID]
-}
-
 // RegisterGateway registers a Gateway to our server.
 func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 	nb := &northBridge{
-		e:  s,
+		ctxPool: ctxPool{
+			ls: &s.ls,
+			th: s.th,
+		},
+		wg: &s.wg,
+		eh: s.eh,
+		c:  s.contracts,
 		gw: gw,
+		sb: s.sb,
 	}
 	s.nb = append(s.nb, nb)
 
@@ -94,8 +105,14 @@ func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 
 func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 	s.sb = &southBridge{
+		ctxPool: ctxPool{
+			ls: &s.ls,
+			th: s.th,
+		},
 		id:            id,
-		e:             s,
+		wg:            &s.wg,
+		eh:            s.eh,
+		c:             s.contracts,
 		cb:            cb,
 		inProgressMtx: utils.SpinLock{},
 		inProgress:    map[string]chan *envelopeCarrier{},

@@ -42,7 +42,9 @@ type ClusterDelegate interface {
 type southBridge struct {
 	ctxPool
 	id string
-	e  *EdgeServer
+	wg *sync.WaitGroup
+	eh ErrHandler
+	c  map[string]Contract
 	cb Cluster
 
 	inProgressMtx utils.SpinLock
@@ -71,14 +73,14 @@ func (sb *southBridge) OnMessage(data []byte) error {
 		return err
 	}
 
-	sb.e.wg.Add(1)
+	sb.wg.Add(1)
 	conn := &clusterConn{
 		cb:        sb.cb,
 		originID:  carrier.OriginID,
 		sessionID: carrier.SessionID,
 		serverID:  sb.id,
 	}
-	ctx := sb.acquireCtx(conn, &sb.e.ls)
+	ctx := sb.acquireCtx(conn)
 	ctx.wf = sb.writeFunc
 	ctx.sb = sb
 
@@ -92,7 +94,7 @@ func (sb *southBridge) OnMessage(data []byte) error {
 	}
 
 	sb.releaseCtx(ctx)
-	sb.e.wg.Done()
+	sb.wg.Done()
 
 	return nil
 }
@@ -118,7 +120,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 			ContractID:  carrier.Data.ContractID,
 			Route:       carrier.Data.Route,
 		},
-		sb.e.getContract(carrier.Data.ContractID),
+		sb.c[carrier.Data.ContractID],
 	)
 
 	eof := newEnvelopeCarrier(eofCarrier, carrier.SessionID, sb.id, carrier.OriginID)
@@ -127,7 +129,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 		eof.ToJSON(),
 	)
 	if err != nil {
-		sb.e.eh(ctx, err)
+		sb.eh(ctx, err)
 	}
 }
 

@@ -2,9 +2,12 @@ package kit
 
 import (
 	"context"
+	"sync"
 
 	"github.com/clubpay/ronykit/kit/errors"
 )
+
+type WriteFunc func(conn Conn, e *Envelope) error
 
 type GatewayStartConfig struct {
 	ReusePort bool
@@ -49,8 +52,11 @@ type GatewayDelegate interface {
 // northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
 type northBridge struct {
 	ctxPool
-	e  *EdgeServer
+	wg *sync.WaitGroup
+	eh ErrHandler
+	c  map[string]Contract
 	gw Gateway
+	sb *southBridge
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
@@ -64,20 +70,20 @@ func (n *northBridge) OnClose(connID uint64) {
 }
 
 func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
-	n.e.wg.Add(1)
-	ctx := n.acquireCtx(conn, &n.e.ls)
+	n.wg.Add(1)
+	ctx := n.acquireCtx(conn)
 	ctx.wf = wf
-	ctx.sb = n.e.sb
+	ctx.sb = n.sb
 
 	arg, err := n.gw.Dispatch(ctx, msg)
 	if err != nil {
-		n.e.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
+		n.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
 	} else {
-		ctx.execute(arg, n.e.getContract(arg.ContractID))
+		ctx.execute(arg, n.c[arg.ContractID])
 	}
 
 	n.releaseCtx(ctx)
-	n.e.wg.Done()
+	n.wg.Done()
 }
 
 var (

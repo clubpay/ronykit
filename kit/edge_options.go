@@ -11,6 +11,7 @@ type edgeConfig struct {
 	services        []Service
 	errHandler      ErrHandler
 	globalHandlers  []HandlerFunc
+	tracer          Tracer
 }
 
 type Option func(s *edgeConfig)
@@ -82,8 +83,8 @@ func WithGlobalHandlers(handlers ...HandlerFunc) Option {
 	}
 }
 
-func WithTrace() Option {
+func WithTrace(tp Tracer) Option {
 	return func(s *edgeConfig) {
-
+		s.tracer = tp
 	}
 }

@@ -20,8 +20,9 @@ type (
 	// HandlerFunc is a function that will execute code in its context. If there is another handler
 	// set in the path, by calling ctx.Next you can move forward and then run the rest of the code in
 	// your handler.
-	HandlerFunc      func(ctx *Context)
-	HandlerFuncChain []HandlerFunc
+	HandlerFunc        func(ctx *Context)
+	HandlerFuncChain   []HandlerFunc
+	LimitedHandlerFunc func(ctx *LimitedContext)
 )
 
 type Context struct {
@@ -30,6 +31,7 @@ type Context struct {
 	cf  func()
 	sb  *southBridge
 	ls  *localStore
+	th  LimitedHandlerFunc
 
 	serviceName []byte
 	contractID  []byte
@@ -63,8 +65,6 @@ type ExecuteArg struct {
 	Route       string
 }
 
-var NoExecuteArg = ExecuteArg{}
-
 // execute the Context with the provided ExecuteArg. It implements ExecuteFunc
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
@@ -74,6 +74,9 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 		AddModifier(c.Modifiers()...)
 
 	ctx.handlers = append(ctx.handlers, c.Handlers()...)
+	if ctx.th != nil {
+		ctx.th(ctx.Limited())
+	}
 	ctx.Next()
 }
 
@@ -261,12 +264,15 @@ func (ctx *Context) isREST() bool {
 
 type ctxPool struct {
 	sync.Pool
+	ls *localStore
+	th LimitedHandlerFunc
 }
 
-func (p *ctxPool) acquireCtx(c Conn, ls *localStore) *Context {
+func (p *ctxPool) acquireCtx(c Conn) *Context {
 	ctx, ok := p.Pool.Get().(*Context)
 	if !ok {
-		ctx = newContext(ls)
+		ctx = newContext(p.ls)
+		ctx.th = p.th
 	}
 
 	ctx.conn = c
