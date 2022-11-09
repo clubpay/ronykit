@@ -18,6 +18,8 @@ type cluster struct {
 	d            kit.ClusterDelegate
 	shutdownChan <-chan struct{}
 	prefix       string
+	idleTime     time.Duration
+	gcPeriod     time.Duration
 }
 
 var (
@@ -27,11 +29,15 @@ var (
 
 func New(name string, opts ...Option) (kit.Cluster, error) {
 	c := &cluster{
-		prefix: name,
+		prefix:   name,
+		idleTime: time.Minute * 10,
+		gcPeriod: time.Minute,
 	}
 	for _, o := range opts {
 		o(c)
 	}
+
+	go c.gc()
 
 	return c, nil
 }
@@ -43,6 +49,28 @@ func MustNew(name string, opts ...Option) kit.Cluster {
 	}
 
 	return c
+}
+
+func (c *cluster) gc() {
+	key := fmt.Sprintf("%s:gc", c.prefix)
+	ctx := context.Background()
+	idleSec := int64(c.idleTime / time.Second)
+	for {
+		if c.id != "" {
+			c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
+		}
+
+		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.gcPeriod*10).Result()
+		if ok {
+			members, _ := c.rc.HGetAll(ctx, key).Result()
+			now := utils.TimeUnix()
+			for k, v := range members {
+				if now-utils.StrToInt64(v) > idleSec {
+					c.rc.HDel(ctx, fmt.Sprintf("%s:instances", c.prefix), k)
+				}
+			}
+		}
+	}
 }
 
 func (c *cluster) Start(ctx context.Context) error {
@@ -64,7 +92,7 @@ func (c *cluster) Start(ctx context.Context) error {
 }
 
 func (c *cluster) Shutdown(ctx context.Context) error {
-	return nil
+	return c.rc.HDel(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id).Err()
 }
 
 func (c *cluster) Subscribe(id string, d kit.ClusterDelegate) {
