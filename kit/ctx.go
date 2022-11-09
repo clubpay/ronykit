@@ -97,6 +97,7 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 		return err
 	}
 
+	// FixME: this can block forever
 	for c := range ch {
 		arg.OutCallback(c)
 	}

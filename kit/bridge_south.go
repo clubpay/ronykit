@@ -89,7 +89,7 @@ func (sb *southBridge) OnMessage(data []byte) error {
 	case incomingCarrier:
 		sb.onIncomingMessage(ctx, carrier)
 	case outgoingCarrier:
-		sb.onOutgoingMessage(carrier)
+		sb.onOutgoingMessage(ctx, carrier)
 	case eofCarrier:
 		sb.onEOF(carrier)
 	}
@@ -109,12 +109,15 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 		unmarshalMessageX(carrier.Data.Msg, msg)
 	}
 
+	if sb.tp != nil {
+		ctx.SetUserContext(sb.tp.Extract(ctx.Context(), carrier.Data))
+	}
+
 	ctx.in.
 		SetID(carrier.Data.EnvelopeID).
 		SetHdrMap(carrier.Data.Hdr).
 		SetMsg(msg)
 
-	ctx.handlerIndex = carrier.Data.ExecIndex
 	ctx.execute(
 		ExecuteArg{
 			ServiceName: carrier.Data.ServiceName,
@@ -124,22 +127,31 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 		sb.c[carrier.Data.ContractID],
 	)
 
-	eof := newEnvelopeCarrier(eofCarrier, carrier.SessionID, sb.id, carrier.OriginID)
 	err := sb.cb.Publish(
 		carrier.OriginID,
-		eof.ToJSON(),
+		newEnvelopeCarrier(
+			eofCarrier,
+			carrier.SessionID,
+			sb.id,
+			carrier.OriginID,
+		).ToJSON(),
 	)
 	if err != nil {
 		sb.eh(ctx, err)
 	}
 }
 
-func (sb *southBridge) onOutgoingMessage(carrier *envelopeCarrier) {
+func (sb *southBridge) onOutgoingMessage(ctx *Context, carrier *envelopeCarrier) {
 	sb.inProgressMtx.Lock()
 	ch, ok := sb.inProgress[carrier.SessionID]
 	sb.inProgressMtx.Unlock()
 	if ok {
-		ch <- carrier
+		select {
+		case ch <- carrier:
+		default:
+			sb.eh(ctx, ErrWritingToClusterConnection)
+		}
+
 	}
 }
 
@@ -236,15 +248,13 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
 	c := conn.(*clusterConn) //nolint:forcetypeassert
 
-	ec := newEnvelopeCarrier(outgoingCarrier, c.sessionID, c.serverID, c.originID)
-	ec.Data = &carrierData{
-		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
-		Msg:         marshalMessageX(e.GetMsg()),
-		ContractID:  e.ctx.ContractID(),
-		ServiceName: e.ctx.ServiceName(),
-		ExecIndex:   0,
-		Route:       e.ctx.Route(),
-	}
+	ec := newEnvelopeCarrier(
+		outgoingCarrier,
+		c.sessionID,
+		c.serverID,
+		c.originID,
+	).
+		FillWithEnvelope(e)
 
 	if sb.tp != nil {
 		sb.tp.Inject(e.ctx.ctx, ec.Data)

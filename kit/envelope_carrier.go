@@ -1,6 +1,7 @@
 package kit
 
 import (
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
@@ -30,14 +31,14 @@ type envelopeCarrier struct {
 func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 	ec.Data = &carrierData{
 		EnvelopeID:  ctx.In().GetID(),
-		ConnHdr:     map[string]string{},
-		Hdr:         map[string]string{},
 		IsREST:      ctx.isREST(),
 		MsgType:     reflect.TypeOf(ctx.In().GetMsg()).String(),
 		Msg:         marshalMessageX(ctx.In().GetMsg()),
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
 		Route:       ctx.Route(),
+		ConnHdr:     map[string]string{},
+		Hdr:         map[string]string{},
 	}
 
 	if tp := ctx.sb.tp; tp != nil {
@@ -61,6 +62,28 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 	return ec
 }
 
+func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
+	ec.Data = &carrierData{
+		EnvelopeID:  utils.B2S(e.id),
+		IsREST:      e.ctx.isREST(),
+		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
+		Msg:         marshalMessageX(e.GetMsg()),
+		ContractID:  e.ctx.ContractID(),
+		ServiceName: e.ctx.ServiceName(),
+		Route:       e.ctx.Route(),
+		ConnHdr:     map[string]string{},
+		Hdr:         map[string]string{},
+	}
+
+	e.WalkHdr(func(key string, val string) bool {
+		ec.Data.Hdr[key] = val
+
+		return true
+	})
+
+	return ec
+}
+
 type carrierData struct {
 	EnvelopeID  string            `json:"envelopID,omitempty"`
 	ConnHdr     map[string]string `json:"connHdr,omitempty"`
@@ -70,7 +93,6 @@ type carrierData struct {
 	Msg         []byte            `json:"msg,omitempty"`
 	ContractID  string            `json:"cid,omitempty"`
 	ServiceName string            `json:"svc,omitempty"`
-	ExecIndex   int               `json:"idx,omitempty"`
 	Route       string            `json:"route,omitempty"`
 }
 
