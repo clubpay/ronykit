@@ -14,6 +14,8 @@ const (
 	queryPredicate = "fastws.predicate"
 )
 
+var noExecuteArg = kit.ExecuteArg{}
+
 type bundle struct {
 	listen string
 	l      kit.Logger
@@ -77,24 +79,24 @@ func (b *bundle) Register(
 
 func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	if len(in) == 0 {
-		return kit.NoExecuteArg, kit.ErrDecodeIncomingContainerFailed
+		return noExecuteArg, kit.ErrDecodeIncomingContainerFailed
 	}
 
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	routeData := b.routes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return kit.NoExecuteArg, kit.ErrNoHandler
+		return noExecuteArg, kit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
-		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().

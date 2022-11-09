@@ -22,6 +22,8 @@ const (
 	queryPredicate = "silverhttp.predicate"
 )
 
+var noExecuteArg = kit.ExecuteArg{}
+
 type bundle struct {
 	listen  string
 	l       kit.Logger
@@ -185,7 +187,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
-		return kit.NoExecuteArg, kit.ErrNoHandler
+		return noExecuteArg, kit.ErrNoHandler
 	}
 
 	// Walk over all the query params
@@ -201,7 +203,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	m, err := routeData.Decoder(params, in)
 	if err != nil {
-		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().

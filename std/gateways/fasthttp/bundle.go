@@ -25,6 +25,8 @@ const (
 	queryPredicate = "fasthttp.predicate"
 )
 
+var noExecuteArg = kit.ExecuteArg{}
+
 type bundle struct {
 	l        kit.Logger
 	d        kit.GatewayDelegate
@@ -208,24 +210,24 @@ func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
 
 func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	if len(in) == 0 {
-		return kit.NoExecuteArg, kit.ErrDecodeIncomingContainerFailed
+		return noExecuteArg, kit.ErrDecodeIncomingContainerFailed
 	}
 
 	inputMsgContainer := b.rpcInFactory()
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
-		return kit.NoExecuteArg, err
+		return noExecuteArg, err
 	}
 
 	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
-		return kit.NoExecuteArg, kit.ErrNoHandler
+		return noExecuteArg, kit.ErrNoHandler
 	}
 
 	msg := routeData.Factory()
 	err = inputMsgContainer.ExtractMessage(msg)
 	if err != nil {
-		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().
@@ -318,7 +320,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 	b.cors.handle(conn, routeData != nil)
 
 	if routeData == nil {
-		return kit.NoExecuteArg, kit.ErrNoHandler
+		return noExecuteArg, kit.ErrNoHandler
 	}
 
 	// Walk over all the query params
@@ -347,7 +349,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	m, err := routeData.Decoder(params, in)
 	if err != nil {
-		return kit.NoExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
 
 	ctx.In().

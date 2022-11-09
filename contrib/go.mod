@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/contrib
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.9.5
+	github.com/clubpay/ronykit/kit v0.9.6
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245
 	github.com/go-openapi/spec v0.20.7
 	github.com/goccy/go-json v0.9.11
