@@ -112,6 +112,8 @@ func (t *tracer) Handler() kit.HandlerFunc {
 
 		ctx.SetUserContext(userCtx)
 
+		ctx.Next()
+
 		span.End()
 	}
 }
