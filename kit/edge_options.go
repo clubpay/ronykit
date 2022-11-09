@@ -81,3 +81,9 @@ func WithGlobalHandlers(handlers ...HandlerFunc) Option {
 		s.globalHandlers = handlers
 	}
 }
+
+func WithTrace() Option {
+	return func(s *edgeConfig) {
+
+	}
+}

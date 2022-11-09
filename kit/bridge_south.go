@@ -299,6 +299,17 @@ func (c *clusterConn) Set(key string, val string) {
 	c.kvMtx.Unlock()
 }
 
+func (c *clusterConn) Keys() []string {
+	keys := make([]string, 0, len(c.kv))
+	c.kvMtx.Lock()
+	for k := range c.kv {
+		keys = append(keys, k)
+	}
+	c.kvMtx.Unlock()
+
+	return keys
+}
+
 var (
 	ErrSouthBridgeDisabled        = errors.New("south bridge is disabled")
 	ErrWritingToClusterConnection = errors.New("writing to cluster connection is not possible")

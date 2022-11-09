@@ -79,6 +79,15 @@ func (t testConn) Set(key string, val string) {
 	t.kv[key] = val
 }
 
+func (t testConn) Keys() []string {
+	keys := make([]string, 0, len(t.kv))
+	for k := range t.kv {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
 // testRESTSelector implements kit.RESTRouteSelector for testing purposes.
 type testRESTSelector struct {
 	enc    kit.Encoding

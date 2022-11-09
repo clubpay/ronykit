@@ -158,6 +158,15 @@ func (t *testConn) Set(key string, val string) {
 	t.Unlock()
 }
 
+func (t *testConn) Keys() []string {
+	keys := make([]string, 0, len(t.kv))
+	for k := range t.kv {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
 type testRESTConn struct {
 	testConn
 	method     string
