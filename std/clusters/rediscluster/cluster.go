@@ -53,22 +53,23 @@ func MustNew(name string, opts ...Option) kit.Cluster {
 
 func (c *cluster) gc() {
 	key := fmt.Sprintf("%s:gc", c.prefix)
+	instancesKey := fmt.Sprintf("%s:instances", c.prefix)
 	ctx := context.Background()
 	idleSec := int64(c.idleTime / time.Second)
 	for {
 		if c.id != "" {
-			c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
+			c.rc.HSet(ctx, instancesKey, c.id, utils.TimeUnix())
 		}
-		
+
 		time.Sleep(c.gcPeriod)
 
-		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.gcPeriod*10).Result()
+		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.idleTime).Result()
 		if ok {
-			members, _ := c.rc.HGetAll(ctx, key).Result()
+			members, _ := c.rc.HGetAll(ctx, instancesKey).Result()
 			now := utils.TimeUnix()
 			for k, v := range members {
 				if now-utils.StrToInt64(v) > idleSec {
-					c.rc.HDel(ctx, fmt.Sprintf("%s:instances", c.prefix), k)
+					c.rc.HDel(ctx, instancesKey, k)
 				}
 			}
 		}
