@@ -26,7 +26,8 @@ type wsConfig struct {
 	dialTimeout   time.Duration
 	writeTimeout  time.Duration
 
-	onConnect OnConnectHandler
+	onConnect  OnConnectHandler
+	preflights []RPCPreflightHandler
 }
 
 func WithUpgradeHeader(key string, values ...string) WebsocketOption {
@@ -87,5 +88,15 @@ func WithAutoReconnect(b bool) WebsocketOption {
 func WithPingTime(t time.Duration) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.pingTime = t
+	}
+}
+
+// WithPreflightRPC register one or many handlers to run in sequence before
+// actually making requests.
+func WithPreflightRPC(h ...RPCPreflightHandler) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.preflights = append(cfg.preflights[:0], h...)
+
+		return
 	}
 }

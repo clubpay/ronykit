@@ -24,6 +24,14 @@ const (
 	BinaryMessage = 2
 )
 
+type (
+	Header              map[string]string
+	RPCContainerHandler func(c kit.IncomingRPCContainer)
+	RPCMessageHandler   func(ctx context.Context, msg kit.Message, hdr Header, err error)
+)
+
+type RPCPreflightHandler func(req *WebsocketRequest)
+
 type WebsocketCtx struct {
 	cfg     wsConfig
 	err     *Error
@@ -216,8 +224,12 @@ type WebsocketRequest struct {
 }
 
 func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
-	outC := wCtx.cfg.rpcOutFactory()
+	// run preflights
+	for _, pre := range wCtx.cfg.preflights {
+		pre(&req)
+	}
 
+	outC := wCtx.cfg.rpcOutFactory()
 	id := utils.RandomDigit(10)
 	outC.InjectMessage(req.ReqMsg)
 	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)

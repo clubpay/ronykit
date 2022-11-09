@@ -1,7 +1,6 @@
 package stub
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -12,12 +11,6 @@ import (
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
-)
-
-type (
-	Header              map[string]string
-	RPCContainerHandler func(c kit.IncomingRPCContainer)
-	RPCMessageHandler   func(ctx context.Context, msg kit.Message, hdr Header, err error)
 )
 
 type Stub struct {
