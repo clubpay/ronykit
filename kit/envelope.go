@@ -14,9 +14,9 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
-// Modifier is a function which can modify the outgoing Envelope before sending it to the
-// client. Modifier only applies to outgoing envelopes.
-type Modifier func(envelope *Envelope)
+// ModifierFunc is a function which can modify the outgoing Envelope before sending it to the
+// client. ModifierFunc only applies to outgoing envelopes.
+type ModifierFunc func(envelope *Envelope)
 
 // Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
 // by the RonyKIT framework, and provide the abstraction which Bundle implementations could

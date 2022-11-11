@@ -9,7 +9,7 @@ type edgeConfig struct {
 	gateways        []Gateway
 	cluster         Cluster
 	services        []Service
-	errHandler      ErrHandler
+	errHandler      ErrHandlerFunc
 	globalHandlers  []HandlerFunc
 	tracer          Tracer
 }
@@ -70,7 +70,7 @@ func WithShutdownTimeout(d time.Duration) Option {
 // You can check with errors.Is function to see if the error is one of the following:
 // ErrDispatchFailed, ErrWriteToClosedConn, ErrNoHandler
 // ErrDecodeIncomingMessageFailed,, ErrEncodeOutgoingMessageFailed
-func WithErrorHandler(h ErrHandler) Option {
+func WithErrorHandler(h ErrHandlerFunc) Option {
 	return func(s *edgeConfig) {
 		s.errHandler = h
 	}

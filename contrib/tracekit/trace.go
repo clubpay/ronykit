@@ -92,11 +92,13 @@ type tracer struct {
 	dynTags  func(ctx *kit.LimitedContext) map[string]string
 }
 
+var _ kit.Tracer = (*tracer)(nil)
+
 func (t *tracer) Handler() kit.HandlerFunc {
 	return func(ctx *kit.Context) {
 		userCtx, span := otel.Tracer(t.name).
 			Start(
-				t.p.Extract(ctx.Context(), connCarrier{ctx.Conn()}),
+				t.p.Extract(ctx.Context(), envelopeCarrier{e: ctx.In()}),
 				ctx.Route(),
 				t.spanOpts...,
 			)
@@ -112,36 +114,54 @@ func (t *tracer) Handler() kit.HandlerFunc {
 
 		ctx.SetUserContext(userCtx)
 
+		ctx.AddModifier(
+			func(e *kit.Envelope) {
+				t.p.Inject(userCtx, envelopeCarrier{e: e})
+			},
+		)
+
 		ctx.Next()
 
 		span.End()
 	}
 }
 
-func (t *tracer) Propagator() kit.TracePropagator {
-	return t
-}
-
 func (t *tracer) Inject(ctx context.Context, carrier kit.TraceCarrier) {
-	t.p.Inject(ctx, connCarrier{c: carrier})
+	t.p.Inject(ctx, carrierAdapter{c: carrier})
 }
 
 func (t *tracer) Extract(ctx context.Context, carrier kit.TraceCarrier) context.Context {
-	return t.p.Extract(ctx, connCarrier{c: carrier})
+	return t.p.Extract(ctx, carrierAdapter{c: carrier})
 }
 
-type connCarrier struct {
+type carrierAdapter struct {
 	c kit.TraceCarrier
 }
 
-func (c connCarrier) Get(key string) string {
+func (c carrierAdapter) Get(key string) string {
 	return c.c.Get(key)
 }
 
-func (c connCarrier) Set(key string, value string) {
+func (c carrierAdapter) Set(key string, value string) {
 	c.c.Set(key, value)
 }
 
-func (c connCarrier) Keys() []string {
+func (c carrierAdapter) Keys() []string {
+	return nil
+}
+
+type envelopeCarrier struct {
+	e *kit.Envelope
+}
+
+func (e envelopeCarrier) Get(key string) string {
+	return e.e.GetHdr(key)
+}
+
+func (e envelopeCarrier) Set(key string, value string) {
+	e.e.SetHdr(key, value)
+}
+
+func (e envelopeCarrier) Keys() []string {
 	return nil
 }

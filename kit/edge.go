@@ -30,13 +30,12 @@ type EdgeServer struct {
 	gh        []HandlerFunc
 	svc       []Service
 	contracts map[string]Contract
-	eh        ErrHandler
+	eh        ErrHandlerFunc
 	l         Logger
 	wg        sync.WaitGroup
 
 	// trace tools
-	th HandlerFunc
-	tp TracePropagator
+	t Tracer
 
 	// configs
 	prefork         bool
@@ -66,8 +65,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s.eh = cfg.errHandler
 	s.gh = cfg.globalHandlers
 	if cfg.tracer != nil {
-		s.th = cfg.tracer.Handler()
-		s.tp = cfg.tracer.Propagator()
+		s.t = cfg.tracer
 	}
 	if cfg.cluster != nil {
 		s.registerCluster(utils.RandomID(32), cfg.cluster)
@@ -87,7 +85,7 @@ func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 	nb := &northBridge{
 		ctxPool: ctxPool{
 			ls: &s.ls,
-			th: s.th,
+			th: s.t.Handler(),
 		},
 		wg: &s.wg,
 		eh: s.eh,
@@ -107,14 +105,14 @@ func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 	s.sb = &southBridge{
 		ctxPool: ctxPool{
 			ls: &s.ls,
-			th: s.th,
+			th: s.t.Handler(),
 		},
 		id:            id,
 		wg:            &s.wg,
 		eh:            s.eh,
 		c:             s.contracts,
 		cb:            cb,
-		tp:            s.tp,
+		tp:            s.t,
 		inProgressMtx: utils.SpinLock{},
 		inProgress:    map[string]chan *envelopeCarrier{},
 		msgFactories:  map[string]MessageFactoryFunc{},

@@ -53,7 +53,7 @@ type GatewayDelegate interface {
 type northBridge struct {
 	ctxPool
 	wg *sync.WaitGroup
-	eh ErrHandler
+	eh ErrHandlerFunc
 	c  map[string]Contract
 	gw Gateway
 	sb *southBridge

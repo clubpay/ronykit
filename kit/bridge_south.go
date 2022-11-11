@@ -43,7 +43,7 @@ type southBridge struct {
 	ctxPool
 	id string
 	wg *sync.WaitGroup
-	eh ErrHandler
+	eh ErrHandlerFunc
 	c  map[string]Contract
 	cb Cluster
 	tp TracePropagator

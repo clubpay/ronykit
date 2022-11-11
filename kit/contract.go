@@ -51,7 +51,7 @@ type Contract interface {
 	Input() Message
 	Output() Message
 	Handlers() []HandlerFunc
-	Modifiers() []Modifier
+	Modifiers() []ModifierFunc
 }
 
 // ContractWrapper is like an interceptor which can add Pre- and Post- handlers to all
@@ -83,8 +83,8 @@ func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 type contractWrap struct {
 	Contract
 	h     []HandlerFunc
-	preM  []Modifier
-	postM []Modifier
+	preM  []ModifierFunc
+	postM []ModifierFunc
 }
 
 var _ Contract = (*contractWrap)(nil)
@@ -97,8 +97,8 @@ func (c contractWrap) Handlers() []HandlerFunc {
 	return h
 }
 
-func (c contractWrap) Modifiers() []Modifier {
-	m := make([]Modifier, 0, len(c.preM)+len(c.postM)+len(c.Contract.Modifiers()))
+func (c contractWrap) Modifiers() []ModifierFunc {
+	m := make([]ModifierFunc, 0, len(c.preM)+len(c.postM)+len(c.Contract.Modifiers()))
 	m = append(m, c.preM...)
 	m = append(m, c.Contract.Modifiers()...)
 	m = append(m, c.postM...)

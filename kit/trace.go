@@ -2,11 +2,6 @@ package kit
 
 import "context"
 
-type Tracer interface {
-	Handler() HandlerFunc
-	Propagator() TracePropagator
-}
-
 // TracePropagator propagates cross-cutting concerns as key-value text
 // pairs within a carrier that travels in-band across process boundaries.
 type TracePropagator interface {
@@ -24,4 +19,9 @@ type TraceCarrier interface {
 
 	// Set stores the key-value pair.
 	Set(key string, value string)
+}
+
+type Tracer interface {
+	TracePropagator
+	Handler() HandlerFunc
 }

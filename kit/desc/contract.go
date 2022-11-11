@@ -15,7 +15,7 @@ type Contract struct {
 	Wrappers       []kit.ContractWrapper
 	RouteSelectors []RouteSelector
 	EdgeSelector   kit.EdgeSelectorFunc
-	Modifiers      []kit.Modifier
+	Modifiers      []kit.ModifierFunc
 	Input          kit.Message
 	Output         kit.Message
 	PossibleErrors []Error
@@ -128,9 +128,9 @@ func (c *Contract) SetCoordinator(f kit.EdgeSelectorFunc) *Contract {
 	return c
 }
 
-// AddModifier adds a kit.Modifier for this contract. Modifiers are used to modify
+// AddModifier adds a kit.ModifierFunc for this contract. Modifiers are used to modify
 // the outgoing kit.Envelope just before sending to the client.
-func (c *Contract) AddModifier(m kit.Modifier) *Contract {
+func (c *Contract) AddModifier(m kit.ModifierFunc) *Contract {
 	c.Modifiers = append(c.Modifiers, m)
 
 	return c
@@ -163,7 +163,7 @@ type contractImpl struct {
 	routeSelector  kit.RouteSelector
 	memberSelector kit.EdgeSelectorFunc
 	handlers       []kit.HandlerFunc
-	modifiers      []kit.Modifier
+	modifiers      []kit.ModifierFunc
 	input          kit.Message
 	output         kit.Message
 	enc            kit.Encoding
@@ -179,7 +179,7 @@ func (r *contractImpl) setInput(input kit.Message) *contractImpl {
 
 func (r *contractImpl) setOutput(output kit.Message) *contractImpl {
 	r.output = output
-	
+
 	return r
 }
 
@@ -207,7 +207,7 @@ func (r *contractImpl) addHandler(handlers ...kit.HandlerFunc) *contractImpl {
 	return r
 }
 
-func (r *contractImpl) setModifier(modifiers ...kit.Modifier) *contractImpl {
+func (r *contractImpl) setModifier(modifiers ...kit.ModifierFunc) *contractImpl {
 	r.modifiers = append(r.modifiers[:0], modifiers...)
 
 	return r
@@ -229,7 +229,7 @@ func (r *contractImpl) Handlers() []kit.HandlerFunc {
 	return r.handlers
 }
 
-func (r *contractImpl) Modifiers() []kit.Modifier {
+func (r *contractImpl) Modifiers() []kit.ModifierFunc {
 	return r.modifiers
 }
 

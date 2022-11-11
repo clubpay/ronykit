@@ -14,9 +14,9 @@ const (
 )
 
 type (
-	// ErrHandler is called when an error happens in internal layers.
+	// ErrHandlerFunc is called when an error happens in internal layers.
 	// NOTICE: ctx could be nil, make sure you do nil-check before calling its methods.
-	ErrHandler func(ctx *Context, err error)
+	ErrHandlerFunc func(ctx *Context, err error)
 	// HandlerFunc is a function that will execute code in its context. If there is another handler
 	// set in the path, by calling ctx.Next you can move forward and then run the rest of the code in
 	// your handler.
@@ -42,7 +42,7 @@ type Context struct {
 	conn       Conn
 	in         *Envelope
 	wf         WriteFunc
-	modifiers  []Modifier
+	modifiers  []ModifierFunc
 	err        error
 	statusCode int
 
@@ -123,7 +123,7 @@ func (ctx *Context) StopExecution() {
 
 // AddModifier adds one or more modifiers to the context which will be executed on each outgoing
 // Envelope before writing it to the wire.
-func (ctx *Context) AddModifier(modifiers ...Modifier) {
+func (ctx *Context) AddModifier(modifiers ...ModifierFunc) {
 	ctx.modifiers = append(ctx.modifiers, modifiers...)
 }
 
@@ -207,7 +207,7 @@ func (ctx *Context) OutTo(c Conn) *Envelope {
 }
 
 // Error is useful for some kind of errors which you are not going to return it to the connection,
-// or you want to use its side effect for logging, monitoring etc. This will call your ErrHandler.
+// or you want to use its side effect for logging, monitoring etc. This will call your ErrHandlerFunc.
 // The boolean result indicates if 'err' was an actual error.
 func (ctx *Context) Error(err error) bool {
 	if err != nil {
