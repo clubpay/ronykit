@@ -13,11 +13,12 @@ type OnConnectHandler func(ctx *WebsocketCtx)
 type WebsocketOption func(cfg *wsConfig)
 
 type wsConfig struct {
-	predicateKey   string
-	rpcInFactory   kit.IncomingRPCFactory
-	rpcOutFactory  kit.OutgoingRPCFactory
-	handlers       map[string]RPCContainerHandler
-	defaultHandler RPCContainerHandler
+	predicateKey    string
+	rpcInFactory    kit.IncomingRPCFactory
+	rpcOutFactory   kit.OutgoingRPCFactory
+	handlers        map[string]RPCContainerHandler
+	defaultHandler  RPCContainerHandler
+	tracePropagator kit.TracePropagator
 
 	autoReconnect bool
 	dialerBuilder func() *websocket.Dialer

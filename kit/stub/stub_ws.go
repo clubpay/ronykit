@@ -26,7 +26,7 @@ const (
 
 type (
 	Header              map[string]string
-	RPCContainerHandler func(c kit.IncomingRPCContainer)
+	RPCContainerHandler func(ctx context.Context, c kit.IncomingRPCContainer)
 	RPCMessageHandler   func(ctx context.Context, msg kit.Message, hdr Header, err error)
 )
 
@@ -171,10 +171,15 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			continue
 		}
 
+		ctx := context.Background()
+		if tp := wCtx.cfg.tracePropagator; tp != nil {
+			ctx = tp.Extract(ctx, containerTraceCarrier{in: c})
+		}
+
 		if h, ok := wCtx.cfg.handlers[c.GetHdr(wCtx.cfg.predicateKey)]; ok {
-			h(c)
+			h(ctx, c)
 		} else if h = wCtx.cfg.defaultHandler; h != nil {
-			h(c)
+			h(ctx, c)
 		}
 		c.Release()
 	}
@@ -233,6 +238,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	id := utils.RandomDigit(10)
 	outC.InjectMessage(req.ReqMsg)
 	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)
+	if tp := wCtx.cfg.tracePropagator; tp != nil {
+		tp.Inject(ctx, containerTraceCarrier{out: outC})
+	}
 	for k, v := range req.ReqHdr {
 		outC.SetHdr(k, v)
 	}
@@ -274,4 +282,17 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	wCtx.pendingL.Lock()
 	delete(wCtx.pending, id)
 	wCtx.pendingL.Unlock()
+}
+
+type containerTraceCarrier struct {
+	out kit.OutgoingRPCContainer
+	in  kit.IncomingRPCContainer
+}
+
+func (c containerTraceCarrier) Get(key string) string {
+	return c.in.GetHdr(key)
+}
+
+func (c containerTraceCarrier) Set(key string, value string) {
+	c.out.SetHdr(key, value)
 }

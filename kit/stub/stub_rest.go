@@ -105,14 +105,13 @@ func (hc *RESTCtx) SetBody(body []byte) *RESTCtx {
 	return hc
 }
 
-func (hc *RESTCtx) Run(ctx context.Context, opt ...RESTOption) *RESTCtx {
+func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
 
-	// apply options
-	for _, o := range opt {
-		o(&hc.cfg)
+	if tp := hc.cfg.tp; tp != nil {
+		tp.Inject(ctx, restTraceCarrier{r: &hc.req.Header})
 	}
 
 	// run preflights
@@ -278,7 +277,6 @@ func (hc *RESTCtx) DumpRequestTo(w io.Writer) *RESTCtx {
 // Run(context.Background())
 func (hc *RESTCtx) AutoRun(
 	ctx context.Context, route string, enc kit.Encoding, m kit.Message,
-	opt ...RESTOption,
 ) *RESTCtx {
 	switch enc.Tag() {
 	case kit.JSON.Tag():
@@ -337,5 +335,17 @@ func (hc *RESTCtx) AutoRun(
 		hc.SetBody(reqBody)
 	}
 
-	return hc.Run(ctx, opt...)
+	return hc.Run(ctx)
+}
+
+type restTraceCarrier struct {
+	r *fasthttp.RequestHeader
+}
+
+func (t restTraceCarrier) Get(key string) string {
+	return string(t.r.Peek(key))
+}
+
+func (t restTraceCarrier) Set(key string, value string) {
+	t.r.Set(key, value)
 }

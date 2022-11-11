@@ -16,6 +16,7 @@ import (
 type Stub struct {
 	cfg config
 	r   *reflector.Reflector
+	tp  kit.TracePropagator
 
 	httpC fasthttp.Client
 }
@@ -58,6 +59,7 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 		res:      fasthttp.AcquireResponse(),
 	}
 
+	s.cfg.tp = s.tp
 	if s.cfg.secure {
 		ctx.uri.SetScheme("https")
 	} else {
@@ -90,6 +92,7 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 					HandshakeTimeout: s.cfg.dialTimeout,
 				}
 			},
+			tracePropagator: s.tp,
 		},
 		r:       s.r,
 		l:       s.cfg.l,

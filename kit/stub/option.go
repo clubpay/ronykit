@@ -17,6 +17,7 @@ type config struct {
 	dumpReq       io.Writer
 	dumpRes       io.Writer
 	l             kit.Logger
+	tp            kit.TracePropagator
 
 	readTimeout, writeTimeout, dialTimeout time.Duration
 }
@@ -67,5 +68,11 @@ func DumpTo(w io.Writer) Option {
 	return func(cfg *config) {
 		cfg.dumpReq = w
 		cfg.dumpRes = w
+	}
+}
+
+func WithTracePropagator(tp kit.TracePropagator) Option {
+	return func(cfg *config) {
+		cfg.tp = tp
 	}
 }
