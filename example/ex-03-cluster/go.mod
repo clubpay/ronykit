@@ -4,8 +4,8 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/contrib v0.0.0-20221109105837-95d3fffdd987
-	github.com/clubpay/ronykit/kit v0.9.6
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.0.0-20221109105837-95d3fffdd987
+	github.com/clubpay/ronykit/kit v0.9.8
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.0.0-20221111170939-ed00faff1066
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245
 )
 
