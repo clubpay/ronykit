@@ -101,6 +101,8 @@ func (sb *southBridge) OnMessage(data []byte) error {
 }
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
+	ctx.forwarded = true
+
 	msg := sb.msgFactories[carrier.Data.MsgType]()
 	switch msg := msg.(type) {
 	case RawMessage:
@@ -151,7 +153,6 @@ func (sb *southBridge) onOutgoingMessage(ctx *Context, carrier *envelopeCarrier)
 		default:
 			sb.eh(ctx, ErrWritingToClusterConnection)
 		}
-
 	}
 }
 

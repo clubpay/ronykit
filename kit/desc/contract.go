@@ -240,6 +240,7 @@ func (r *contractImpl) Input() kit.Message {
 func (r *contractImpl) Output() kit.Message {
 	return r.output
 }
+
 func (r *contractImpl) Encoding() kit.Encoding {
 	return r.enc
 }

@@ -264,7 +264,7 @@ func (ctx *Context) isREST() bool {
 type ctxPool struct {
 	sync.Pool
 	ls *localStore
-	th HandlerFunc
+	th HandlerFunc // trace handler
 }
 
 func (p *ctxPool) acquireCtx(c Conn) *Context {

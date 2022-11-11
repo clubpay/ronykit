@@ -82,7 +82,7 @@ func (t *testGateway) Register(
 }
 
 type testCluster struct {
-	sync.Mutex
+	mtx       sync.Mutex
 	delegates map[string]kit.ClusterDelegate
 	kv        map[string]string
 	m         chan struct {
@@ -104,11 +104,11 @@ func newTestCluster() *testCluster {
 
 	go func() {
 		for x := range t.m {
-			t.Lock()
+			t.mtx.Lock()
 			d, ok := t.delegates[x.id]
-			t.Unlock()
+			t.mtx.Unlock()
 			if ok {
-				d.OnMessage(x.data)
+				_ = d.OnMessage(x.data)
 			}
 		}
 	}()
@@ -125,21 +125,21 @@ func (t *testCluster) Shutdown(ctx context.Context) error {
 }
 
 func (t *testCluster) Subscribe(id string, d kit.ClusterDelegate) {
-	t.Lock()
+	t.mtx.Lock()
 	if t.delegates == nil {
 		t.delegates = map[string]kit.ClusterDelegate{}
 	}
 	t.delegates[id] = d
-	t.Unlock()
+	t.mtx.Unlock()
 }
 
 func (t *testCluster) Subscribers() ([]string, error) {
 	var members []string
-	t.Lock()
+	t.mtx.Lock()
 	for m := range t.delegates {
 		members = append(members, m)
 	}
-	t.Unlock()
+	t.mtx.Unlock()
 
 	return members, nil
 }
@@ -425,6 +425,7 @@ var _ = Describe("EdgeServer/Cluster", func() {
 									if err != nil {
 										return "", err
 									}
+
 									for _, m := range members {
 										if m != ctx.ClusterID() {
 											return m, nil

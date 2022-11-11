@@ -67,6 +67,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	if cfg.tracer != nil {
 		s.t = cfg.tracer
 	}
+
 	if cfg.cluster != nil {
 		s.registerCluster(utils.RandomID(32), cfg.cluster)
 	}
@@ -82,10 +83,15 @@ func NewServer(opts ...Option) *EdgeServer {
 
 // RegisterGateway registers a Gateway to our server.
 func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
+	var th HandlerFunc
+	if s.t != nil {
+		th = s.t.Handler()
+	}
+
 	nb := &northBridge{
 		ctxPool: ctxPool{
 			ls: &s.ls,
-			th: s.t.Handler(),
+			th: th,
 		},
 		wg: &s.wg,
 		eh: s.eh,
@@ -101,11 +107,17 @@ func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 	return s
 }
 
+// RegisterCluster registers a Cluster to our server.
 func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
+	var th HandlerFunc
+	if s.t != nil {
+		th = s.t.Handler()
+	}
+
 	s.sb = &southBridge{
 		ctxPool: ctxPool{
 			ls: &s.ls,
-			th: s.t.Handler(),
+			th: th,
 		},
 		id:            id,
 		wg:            &s.wg,
