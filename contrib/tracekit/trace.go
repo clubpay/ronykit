@@ -2,6 +2,7 @@ package tracekit
 
 import (
 	"context"
+	"strings"
 
 	"github.com/clubpay/ronykit/kit"
 	"go.opentelemetry.io/contrib/propagators/b3"
@@ -155,7 +156,20 @@ type envelopeCarrier struct {
 }
 
 func (e envelopeCarrier) Get(key string) string {
-	return e.e.GetHdr(key)
+	var val string
+	e.e.WalkHdr(
+		func(k string, v string) bool {
+			if strings.EqualFold(key, k) {
+				val = v
+
+				return false
+			}
+
+			return true
+		},
+	)
+
+	return val
 }
 
 func (e envelopeCarrier) Set(key string, value string) {

@@ -23,11 +23,11 @@ func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
 	c.ctx.Request.Header.VisitAll(
 		func(key, value []byte) {
-			if !stopCall {
-				if !f(utils.B2S(key), utils.B2S(value)) {
-					stopCall = true
-				}
+			if stopCall {
+				return
 			}
+
+			stopCall = !f(utils.B2S(key), utils.B2S(value))
 		},
 	)
 }
