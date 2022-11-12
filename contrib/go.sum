@@ -1,7 +1,7 @@
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
-github.com/clubpay/ronykit/kit v0.9.8 h1:OSOZsyDR9TK+nPELWurwM9H4xra1y0peq+yqYm9D0hk=
-github.com/clubpay/ronykit/kit v0.9.8/go.mod h1:qdy1Au68HothAWHZ2/IT1IsLzMr32GlV7hebsQAxH8Y=
+github.com/clubpay/ronykit/kit v0.9.9 h1:wXkz5dlm+uV7JyMj9sVXpTj637twQROb0G7BCXHIYog=
+github.com/clubpay/ronykit/kit v0.9.9/go.mod h1:/2CHUac3Pz+PFMxwHJTR1+dxwWhv7YZjBflcTOk+1JE=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245 h1:4RFY4mLYpLniFV8GNY9znVYaG11CpfKDfRd4hlEt2G8=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245/go.mod h1:Zou8dVPmUxYINHkqfL/rjX6cAbG40D9J68g5Sp+DNnQ=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
@@ -41,6 +41,7 @@ github.com/klauspost/compress v1.15.12 h1:YClS/PImqYbn+UILDnqxQCZ3RehC9N318SU3kE
 github.com/klauspost/compress v1.15.12/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pretty v0.2.1 h1:Fmg33tUaq4/8ym9TJN1x7sLJnHVwhP33CNkpYV/7rwI=
+github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
