@@ -10,10 +10,16 @@ func typ(prefix string, t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Slice:
 		prefix += "[]"
+
+		return typ(prefix, t.Elem())
 	case reflect.Array:
 		prefix += fmt.Sprintf("[%d]", t.Len())
+
+		return typ(prefix, t.Elem())
 	case reflect.Ptr:
 		prefix += "*"
+
+		return typ(prefix, t.Elem())
 	case reflect.Interface:
 		in := t.Name()
 		if in == "" {
@@ -28,6 +34,4 @@ func typ(prefix string, t reflect.Type) string {
 	default:
 		return fmt.Sprintf("%s%s", prefix, t.Kind().String())
 	}
-
-	return typ(prefix, t.Elem())
 }

@@ -1,20 +1,22 @@
 package desc
 
 import (
-	"fmt"
+	"errors"
 	"reflect"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
 )
 
-// DTO represents the description of Data Object Transfer of the Stub
+// DTO represents the description of Data Transfer Object of the Stub
 type DTO struct {
+	// Comments could be used by generators to print some useful information about this DTO
 	Comments []string
-	Name     string
-	Type     string
-	IsErr    bool
-	Fields   []DTOField
+	// Name is the name of this DTO struct
+	Name   string
+	Type   string
+	IsErr  bool
+	Fields []DTOField
 }
 
 func (dto DTO) CodeField() string {
@@ -55,8 +57,15 @@ func (dto DTO) ItemField() string {
 
 // DTOField represents description of a field of the DTO
 type DTOField struct {
-	Name     string
+	// Name of this field
+	Name string
+	// Type of this field and if this type is slice or map then it might have one or two
+	// subtypes
 	Type     string
+	SubType1 string
+	SubType2 string
+	// If this field was an embedded field means fields are coming from an embedded DTO
+	// If Embedded is TRUE then for sure IsDTO must be TRUE
 	Embedded bool
 	IsDTO    bool
 	Tags     []DTOFieldTag
@@ -135,61 +144,89 @@ func newStub(tags ...string) *Stub {
 }
 
 func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
-	dto := DTO{
-		IsErr: isErr,
-	}
 	if mTyp.Kind() == reflect.Ptr {
 		mTyp = mTyp.Elem()
 	}
 
-	dto.Name = mTyp.Name()
-	switch mTyp.Kind() {
-	case reflect.Struct:
-		for i := 0; i < mTyp.NumField(); i++ {
-			ft := mTyp.Field(i)
-			fe := extractElem(ft)
+	dto := DTO{
+		Name:  mTyp.Name(),
+		Type:  typ("", mTyp),
+		IsErr: isErr,
+	}
 
-			switch fe.Kind() {
-			case reflect.Struct:
-				err := d.addDTO(fe, false)
+	// We don't support non-struct DTOs
+	if mTyp.Kind() != reflect.Struct {
+		return errUnsupportedType
+	}
+
+	// if DTO is already parsed just return
+	if _, ok := d.DTOs[dto.Name]; ok {
+		return nil
+	}
+
+	d.DTOs[dto.Name] = dto
+
+	for i := 0; i < mTyp.NumField(); i++ {
+		ft := mTyp.Field(i)
+		fe := extractElem(ft)
+		dtoF := DTOField{
+			Name:     ft.Name,
+			Type:     typ("", ft.Type),
+			Embedded: ft.Anonymous,
+		}
+
+		for _, t := range d.tags {
+			v, ok := ft.Tag.Lookup(t)
+			if ok {
+				dtoF.Tags = append(
+					dtoF.Tags,
+					DTOFieldTag{
+						Name:  t,
+						Value: v,
+					},
+				)
+			}
+		}
+
+		switch fe.Kind() {
+		case reflect.Struct:
+			dtoF.IsDTO = true
+			err := d.addDTO(fe, false)
+			if err != nil {
+				return err
+			}
+		case reflect.Map:
+			dtoF.SubType1 = typ("", fe.Key())
+			dtoF.SubType2 = typ("", fe.Elem())
+			if fe.Key().Kind() == reflect.Struct {
+				err := d.addDTO(fe.Key(), false)
 				if err != nil {
 					return err
 				}
-			case reflect.Interface:
-				// we ignore interface types in DTOs
-				// FIXME: maybe we can implement some dummy struct which implements the interface ?
-				continue
 			}
-
-			dto.Type = typ("", mTyp)
-			dtoF := DTOField{
-				Name:     ft.Name,
-				Type:     typ("", ft.Type),
-				Embedded: ft.Anonymous,
-				IsDTO:    fe.Kind() == reflect.Struct,
-			}
-
-			for _, t := range d.tags {
-				v, ok := ft.Tag.Lookup(t)
-				if ok {
-					dtoF.Tags = append(dtoF.Tags,
-						DTOFieldTag{
-							Name:  t,
-							Value: v,
-						},
-					)
+			if fe.Elem().Kind() == reflect.Struct {
+				err := d.addDTO(fe.Elem(), false)
+				if err != nil {
+					return err
 				}
 			}
-
-			dto.Fields = append(dto.Fields, dtoF)
+		case reflect.Slice, reflect.Array:
+			dtoF.SubType1 = typ("", fe.Elem())
+			if fe.Elem().Kind() == reflect.Struct {
+				err := d.addDTO(fe.Elem(), false)
+				if err != nil {
+					return err
+				}
+			}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64, reflect.Bool,
+			reflect.String, reflect.Uintptr, reflect.Ptr:
+		default:
+			continue
 		}
-	case reflect.Interface:
-		// we ignore interface types in DTOs
-		// FIXME: maybe we can implement some dummy struct which implements the interface ?
 
-		return fmt.Errorf("we don't support interface types as DTO")
-	default:
-		dto.Type = typ("", mTyp)
+		dto.Fields = append(dto.Fields, dtoF)
 	}
 
 	d.DTOs[dto.Name] = dto
@@ -235,3 +272,7 @@ func (d *Stub) getDTO(mTyp reflect.Type) (DTO, bool) {
 func (d *Stub) Tags() []string {
 	return d.tags
 }
+
+var (
+	errUnsupportedType = errors.New("we don't support non-struct types as DTO")
+)
