@@ -32,8 +32,8 @@ type Generator struct {
 	tags    []string
 }
 
-func New(pkgName string, tags ...string) Generator {
-	return Generator{
+func New(pkgName string, tags ...string) *Generator {
+	return &Generator{
 		pkgName: pkgName,
 		tags:    tags,
 	}
