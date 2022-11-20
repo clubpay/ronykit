@@ -94,7 +94,7 @@ func (s {{$serviceName}}Stub) {{$methodName}}(
 	ctx context.Context, req *{{.Request.Name}}, opt ...stub.RESTOption,
 ) (*{{.Response.Name}}, *stub.Error){
 	res := &{{.Response.Name}}{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("{{.Method}}").
 		{{ range $idx, $errDto := .PossibleErrors }}
 		SetResponseHandler(
@@ -115,7 +115,7 @@ func (s {{$serviceName}}Stub) {{$methodName}}(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req, opt...)
+		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {

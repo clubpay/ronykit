@@ -1,11 +1,11 @@
 package desc
 
 import (
-	"errors"
 	"reflect"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/errors"
 )
 
 // DTO represents the description of Data Transfer Object of the Stub
@@ -154,9 +154,13 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 		IsErr: isErr,
 	}
 
+	if mTyp == reflect.TypeOf(kit.RawMessage{}) {
+		return nil
+	}
+	
 	// We don't support non-struct DTOs
 	if mTyp.Kind() != reflect.Struct {
-		return errUnsupportedType
+		return errUnsupportedType(mTyp.Kind().String())
 	}
 
 	// if DTO is already parsed just return
@@ -274,5 +278,5 @@ func (d *Stub) Tags() []string {
 }
 
 var (
-	errUnsupportedType = errors.New("we don't support non-struct types as DTO")
+	errUnsupportedType = errors.NewG(" we don't support non-struct types as DTO : %s")
 )

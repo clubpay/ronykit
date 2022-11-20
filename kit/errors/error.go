@@ -30,6 +30,12 @@ func New(format string, v ...interface{}) error {
 	return fmt.Errorf(format, v...)
 }
 
+func NewG(format string) func(v ...interface{}) error {
+	return func(v ...interface{}) error {
+		return New(format, v...)
+	}
+}
+
 func Wrap(top, down error) error {
 	if top == nil {
 		return down

@@ -18,7 +18,6 @@ func init() {
 	reflector.Register(&EchoResponse{}, "json")
 	reflector.Register(&EmbeddedHeader{}, "json")
 	reflector.Register(&ErrorMessage{}, "json")
-	reflector.Register(&RawMessage{}, "json")
 	reflector.Register(&RedirectRequest{}, "json")
 	reflector.Register(&SumRequest{}, "json")
 	reflector.Register(&SumResponse{}, "json")
@@ -54,10 +53,6 @@ func (x ErrorMessage) GetCode() int {
 
 func (x ErrorMessage) GetItem() string {
 	return x.Item
-}
-
-// RawMessage is a data transfer object
-type RawMessage struct {
 }
 
 // RedirectRequest is a data transfer object
@@ -120,7 +115,7 @@ func (s SampleServiceStub) EchoGET(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
 ) (*EchoResponse, *stub.Error) {
 	res := &EchoResponse{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -139,7 +134,7 @@ func (s SampleServiceStub) EchoGET(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", kit.JSON, req, opt...)
+		AutoRun(ctx, "/echo/:randomID", kit.JSON, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -153,7 +148,7 @@ func (s SampleServiceStub) EchoPOST(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
 ) (*EchoResponse, *stub.Error) {
 	res := &EchoResponse{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
 			400,
@@ -172,7 +167,7 @@ func (s SampleServiceStub) EchoPOST(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/echo-post", kit.JSON, req, opt...)
+		AutoRun(ctx, "/echo-post", kit.JSON, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -186,7 +181,7 @@ func (s SampleServiceStub) Sum1(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -205,7 +200,7 @@ func (s SampleServiceStub) Sum1(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -219,7 +214,7 @@ func (s SampleServiceStub) Sum2(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
 			400,
@@ -238,7 +233,7 @@ func (s SampleServiceStub) Sum2(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum", kit.JSON, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -252,7 +247,7 @@ func (s SampleServiceStub) SumRedirect(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, *stub.Error) {
 	res := &SumResponse{}
-	httpCtx := s.s.REST().
+	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
 			400,
@@ -271,7 +266,7 @@ func (s SampleServiceStub) SumRedirect(
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req, opt...)
+		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
