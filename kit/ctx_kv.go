@@ -116,6 +116,8 @@ type Store interface {
 	Get(key string) any
 	Exists(key string) bool
 	Set(key string, val any)
+	Delete(key string)
+	Scan(prefix string, cb func(key string) bool)
 }
 
 // LocalStore returns a local store which could be used to share some key-values between different

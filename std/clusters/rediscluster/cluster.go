@@ -10,6 +10,9 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// KeepTTL is used in Set method of the ClusterStore interface.
+const KeepTTL = -1
+
 type cluster struct {
 	rc           *redis.Client
 	ps           *redis.PubSub
@@ -134,6 +137,19 @@ func (c *cluster) Get(key string) (string, error) {
 		context.Background(),
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),
 	).Result()
+}
+
+func (c *cluster) Scan(prefix string, cb func(string) bool) error {
+	ctx := context.Background()
+	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s*", prefix), 512).Iterator()
+
+	for iter.Next(ctx) {
+		if !cb(iter.Val()) {
+			return nil
+		}
+	}
+
+	return nil
 }
 
 func (c *cluster) Subscribers() ([]string, error) {

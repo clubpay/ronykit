@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -179,6 +180,18 @@ func (t *testCluster) Delete(key string) error {
 
 func (t *testCluster) Get(key string) (string, error) {
 	return t.kv[key], nil
+}
+
+func (t *testCluster) Scan(prefix string, cb func(key string) bool) error {
+	for k := range t.kv {
+		if strings.HasPrefix(k, prefix) {
+			if !cb(k) {
+				return nil
+			}
+		}
+	}
+
+	return nil
 }
 
 type testConn struct {

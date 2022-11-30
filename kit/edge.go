@@ -513,14 +513,14 @@ func restRoute(rs RouteSelector) string {
 }
 
 type localStore struct {
-	kvl utils.SpinLock
+	kvl sync.RWMutex
 	kv  map[string]any
 }
 
 func (ls *localStore) Get(key string) any {
-	ls.kvl.Lock()
+	ls.kvl.RLock()
 	v := ls.kv[key]
-	ls.kvl.Unlock()
+	ls.kvl.RUnlock()
 
 	return v
 }
@@ -533,10 +533,33 @@ func (ls *localStore) Set(key string, value any) {
 	return
 }
 
-func (ls *localStore) Exists(key string) bool {
+func (ls *localStore) Delete(key string) {
 	ls.kvl.Lock()
-	_, v := ls.kv[key]
+	delete(ls.kv, key)
 	ls.kvl.Unlock()
 
+	return
+}
+
+func (ls *localStore) Exists(key string) bool {
+	ls.kvl.RLock()
+	_, v := ls.kv[key]
+	ls.kvl.RUnlock()
+
 	return v
+}
+
+func (ls *localStore) Scan(prefix string, cb func(key string) bool) {
+	ls.kvl.RLock()
+	defer ls.kvl.RUnlock()
+
+	for k := range ls.kv {
+		if strings.HasPrefix(k, prefix) {
+			if cb(k) {
+				return
+			}
+		}
+	}
+
+	return
 }

@@ -32,6 +32,9 @@ type ClusterStore interface {
 	Delete(key string) error
 	// Get returns the value bind to the key
 	Get(key string) (string, error)
+	// Scan scans through the keys which has the prefix. If callback returns `false`, then
+	// the scan is aborted.
+	Scan(prefix string, cb func(string) bool) error
 }
 
 type ClusterDelegate interface {
