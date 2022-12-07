@@ -236,7 +236,7 @@ func (s *EdgeServer) startParent(ctx context.Context) {
 	childs := make(map[int]*exec.Cmd)
 	childChan := make(chan child, max)
 
-	// launch child procs
+	// launch child processes
 	for i := 0; i < max; i++ {
 		/* #nosec G204 */
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
@@ -415,7 +415,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 			VAlign:           text.VAlignTop,
 			Align:            text.AlignLeft,
 			WidthMax:         84,
-			WidthMaxEnforcer: text.WrapSoft,
+			WidthMaxEnforcer: text.WrapText,
 		},
 	})
 

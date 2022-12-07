@@ -157,7 +157,7 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 	if mTyp == reflect.TypeOf(kit.RawMessage{}) {
 		return nil
 	}
-	
+
 	// We don't support non-struct DTOs
 	if mTyp.Kind() != reflect.Struct {
 		return errUnsupportedType(mTyp.Kind().String())

@@ -61,7 +61,6 @@ type testService struct{}
 func (t testService) Desc() *desc.Service {
 	return (&desc.Service{
 		Name: "testService",
-
 	}).
 		AddContract(
 			desc.NewContract().

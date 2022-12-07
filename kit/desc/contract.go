@@ -115,17 +115,17 @@ func (c *Contract) NamedSelector(name string, s kit.RouteSelector) *Contract {
 	return c.AddNamedSelector(name, s)
 }
 
-// SelectorWithName is an alias for AddNamedSelector
-func (c *Contract) SelectorWithName(name string, s kit.RouteSelector) *Contract {
-	return c.AddNamedSelector(name, s)
-}
-
 // SetCoordinator sets a kit.EdgeSelectorFunc for this contract, to coordinate requests to
 // right kit.EdgeServer instance.
 func (c *Contract) SetCoordinator(f kit.EdgeSelectorFunc) *Contract {
 	c.EdgeSelector = f
 
 	return c
+}
+
+// Coordinator is an alias for SetCoordinator
+func (c *Contract) Coordinator(f kit.EdgeSelectorFunc) *Contract {
+	return c.SetCoordinator(f)
 }
 
 // AddModifier adds a kit.ModifierFunc for this contract. Modifiers are used to modify

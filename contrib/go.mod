@@ -3,13 +3,13 @@ module github.com/clubpay/ronykit/contrib
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.9.9
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.0.0-20221105160236-d76312620245
+	github.com/clubpay/ronykit/kit v0.9.14
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.9.12
 	github.com/go-openapi/spec v0.20.7
-	github.com/goccy/go-json v0.9.11
+	github.com/goccy/go-json v0.10.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.11.1
-	go.opentelemetry.io/otel v1.11.1
-	go.opentelemetry.io/otel/trace v1.11.1
+	go.opentelemetry.io/otel v1.11.2
+	go.opentelemetry.io/otel/trace v1.11.2
 )
 
 require (
@@ -24,7 +24,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.4.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
-	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect

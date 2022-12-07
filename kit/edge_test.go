@@ -464,7 +464,6 @@ var _ = Describe("EdgeServer/Cluster", func() {
 			kit.RegisterGateway(b1),
 			kit.RegisterCluster(c),
 			kit.RegisterServiceDesc(serviceDesc("edge1").Desc()),
-
 		)
 		edge1.Start(nil)
 		edge2 = kit.NewServer(

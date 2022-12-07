@@ -50,13 +50,6 @@ func (s *Service) SetDescription(d string) *Service {
 	return s
 }
 
-// AddPreHandler Deprecated use AddHandler instead.
-func (s *Service) AddPreHandler(h ...kit.HandlerFunc) *Service {
-	s.Handlers = append(s.Handlers, h...)
-
-	return s
-}
-
 // AddHandler adds handlers to run before and/or after the contract's handlers
 func (s *Service) AddHandler(h ...kit.HandlerFunc) *Service {
 	s.Handlers = append(s.Handlers, h...)
@@ -92,6 +85,9 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 // AddError sets the possible errors for all the Contracts of this Service.
 // Using this method is OPTIONAL, which mostly could be used by external tools such as
 // Swagger or any other doc generator tools.
+// NOTE:	The auto-generated stub also use these errors to identifies if the response should be considered
+//
+//	as error or successful.
 func (s *Service) AddError(err kit.ErrorMessage) *Service {
 	s.PossibleErrors = append(
 		s.PossibleErrors,

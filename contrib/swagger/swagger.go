@@ -52,8 +52,11 @@ func (sg *Generator) WriteToFile(filename string, services ...desc.ServiceDesc) 
 
 func (sg *Generator) WriteTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	for _, d := range descs {
+		// extract the service description
 		s := d.Desc()
+
 		addSwaggerTag(sg.s, s)
+
 		for _, c := range s.Contracts {
 			c.PossibleErrors = append(c.PossibleErrors, s.PossibleErrors...)
 			sg.addOperation(sg.s, s.Name, c)
@@ -76,14 +79,25 @@ func (sg *Generator) addOperation(swag *spec.Swagger, serviceName string, c desc
 			Paths: map[string]spec.PathItem{},
 		}
 	}
+	var contentType string
+	switch c.Encoding {
+	case kit.JSON:
+		contentType = "application/json"
+	case kit.Proto:
+		contentType = "application/x-protobuf"
+	case kit.MSG:
+		contentType = "application/octet-stream"
+	default:
+		contentType = "application/json"
+	}
 
 	inType := reflect.Indirect(reflect.ValueOf(c.Input)).Type()
 	outType := reflect.Indirect(reflect.ValueOf(c.Output)).Type()
 	opID := c.Name
 	op := spec.NewOperation(opID).
 		WithTags(serviceName).
-		WithProduces("application/json").
-		WithConsumes("application/json").
+		WithProduces(contentType).
+		WithConsumes(contentType).
 		RespondsWith(
 			http.StatusOK,
 			spec.NewResponse().
