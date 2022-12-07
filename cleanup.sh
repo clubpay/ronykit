@@ -1,3 +1,5 @@
+#!/bin/zsh
+
 wd=$(pwd)
 
 cd "$wd"/contrib || exit
