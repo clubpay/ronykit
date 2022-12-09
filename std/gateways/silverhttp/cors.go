@@ -68,7 +68,7 @@ func newCORS(cfg CORSConfig) *cors {
 	return c
 }
 
-func (cors *cors) handle(rc *httpConn, routeFound bool) {
+func (cors *cors) handle(rc *httpConn) {
 	if cors == nil {
 		return
 	}
@@ -87,10 +87,6 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 				resHdr.Set(HeaderAccessControlAllowOrigin, origin)
 			}
 		}
-	}
-
-	if routeFound {
-		return
 	}
 
 	if rc.ctx.Method() == h1.MethodOPTIONS {
@@ -115,8 +111,6 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 
 		resHdr.Set(HeaderAccessControlAllowMethods, cors.methods)
 		rc.ctx.WriteHeader(StatusNoContent)
-	} else {
-		rc.ctx.WriteHeader(StatusNotImplemented)
 	}
 }
 

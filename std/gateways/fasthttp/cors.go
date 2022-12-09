@@ -53,7 +53,12 @@ func newCORS(cfg CORSConfig) *cors {
 	return c
 }
 
-func (cors *cors) handle(rc *httpConn, routeFound bool) {
+func (cors *cors) preflightCheck(rc *httpConn) {
+	rc.ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestMethod)
+
+}
+
+func (cors *cors) handle(rc *httpConn) {
 	if cors == nil {
 		return
 	}
@@ -73,10 +78,6 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 		}
 	}
 
-	if routeFound {
-		return
-	}
-
 	if rc.ctx.IsOptions() {
 		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestMethod)
 		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestHeaders)
@@ -90,8 +91,6 @@ func (cors *cors) handle(rc *httpConn, routeFound bool) {
 
 		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowMethods, cors.methods)
 		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
-	} else {
-		rc.ctx.SetStatusCode(fasthttp.StatusNotImplemented)
 	}
 }
 

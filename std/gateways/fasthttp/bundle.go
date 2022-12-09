@@ -317,9 +317,13 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	// check CORS rules before even returning errRouteNotFound. This makes sure that
 	// we handle any CORS even for non-routable requests.
-	b.cors.handle(conn, routeData != nil)
+	b.cors.handle(conn)
 
 	if routeData == nil {
+		if conn.ctx.IsOptions() {
+			return noExecuteArg, kit.ErrPreflight
+		}
+
 		return noExecuteArg, kit.ErrNoHandler
 	}
 
@@ -345,7 +349,8 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 					Value: utils.B2S(value),
 				},
 			)
-		})
+		},
+	)
 
 	m, err := routeData.Decoder(params, in)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
 	"github.com/go-www/silverlining"
+	"github.com/go-www/silverlining/h1"
 	reuse "github.com/libp2p/go-reuseport"
 )
 
@@ -184,9 +185,13 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	// check CORS rules before even returning errRouteNotFound. This makes sure that
 	// we handle any CORS even for non-routable requests.
-	b.cors.handle(conn, routeData != nil)
+	b.cors.handle(conn)
 
 	if routeData == nil {
+		if conn.ctx.Method() == h1.MethodOPTIONS {
+			return noExecuteArg, kit.ErrPreflight
+		}
+
 		return noExecuteArg, kit.ErrNoHandler
 	}
 

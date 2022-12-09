@@ -76,10 +76,11 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx.sb = n.sb
 
 	arg, err := n.gw.Dispatch(ctx, msg)
-	if err != nil {
-		n.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
-	} else {
+	switch err {
+	case nil:
 		ctx.execute(arg, n.c[arg.ContractID])
+	default:
+		n.eh(ctx, errors.Wrap(ErrDispatchFailed, err))
 	}
 
 	n.releaseCtx(ctx)
@@ -93,4 +94,5 @@ var (
 	ErrEncodeOutgoingMessageFailed   = errors.New("encoding the outgoing message failed")
 	ErrDecodeIncomingContainerFailed = errors.New("decoding the incoming container failed")
 	ErrDispatchFailed                = errors.New("dispatch failed")
+	ErrPreflight                     = errors.New("preflight request")
 )
