@@ -1,6 +1,5 @@
 #!/bin/zsh
 
-git tag -a kit/"$1" -m "$1"
 git tag -a contrib/"$1" -m "$1"
 git tag -a std/gateways/fasthttp/"$1" -m "$1"
 git tag -a std/gateways/fastws/"$1" -m "$1"

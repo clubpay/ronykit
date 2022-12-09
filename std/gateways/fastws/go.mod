@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/fastws
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.9.14
+	github.com/clubpay/ronykit/kit v0.9.16
 	github.com/gobwas/ws v1.1.0
 	github.com/panjf2000/gnet/v2 v2.2.0
 )
@@ -11,9 +11,9 @@ require (
 require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/goccy/go-json v0.9.11 // indirect
+	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.4.2 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.4.3 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
