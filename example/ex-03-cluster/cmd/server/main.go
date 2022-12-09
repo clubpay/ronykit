@@ -7,7 +7,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 
-	"github.com/clubpay/ronykit/contrib/middleware/tracekit"
+	"github.com/clubpay/ronykit/contrib/tracekit"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
