@@ -66,8 +66,14 @@ func (r Selector) GetEncoding() kit.Encoding {
 	return r.Encoding
 }
 
-func (r *Selector) SetEncoding(enc kit.Encoding) *Selector {
+func (r Selector) SetEncoding(enc kit.Encoding) Selector {
 	r.Encoding = enc
+
+	return r
+}
+
+func (r Selector) SetDecoder(f DecoderFunc) Selector {
+	r.Decoder = f
 
 	return r
 }
