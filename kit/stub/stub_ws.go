@@ -73,7 +73,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	wCtx.setActivity()
 	c.SetPongHandler(func(appData string) error {
-		wCtx.l.Debug("pong received")
+		wCtx.l.Debugf("pong received")
 		wCtx.setActivity()
 
 		return nil
@@ -119,26 +119,25 @@ func (wCtx *WebsocketCtx) watchdog() {
 			}
 
 			if utils.TimeUnix()-wCtx.lastActivity > d {
-				if wCtx.cfg.autoReconnect {
-					wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
-
-					_ = wCtx.c.Close()
-
-					ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
-					err := wCtx.connect(ctx)
-					cf()
-					if err != nil {
-						wCtx.l.Debugf("failed to reconnect: %s", err)
-
-						continue
-					}
+				if !wCtx.cfg.autoReconnect {
+					return
 				}
+				wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
 
-				return
+				_ = wCtx.c.Close()
+
+				ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
+				err := wCtx.connect(ctx)
+				cf()
+				if err != nil {
+					wCtx.l.Debugf("failed to reconnect: %s", err)
+
+					continue
+				}
 			}
 
 			_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
-			wCtx.l.Debug("ping sent")
+			wCtx.l.Debugf("websocket ping sent")
 		}
 	}
 }
@@ -154,34 +153,34 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 
 		wCtx.setActivity()
 
-		c := wCtx.cfg.rpcInFactory()
-		err = c.Unmarshal(p)
+		rpcIn := wCtx.cfg.rpcInFactory()
+		err = rpcIn.Unmarshal(p)
 		if err != nil {
 			wCtx.l.Debugf("received unexpected message: %v", err)
 
 			continue
 		}
 		wCtx.pendingL.Lock()
-		ch, ok := wCtx.pending[c.GetID()]
+		ch, ok := wCtx.pending[rpcIn.GetID()]
 		wCtx.pendingL.Unlock()
 
 		if ok {
-			ch <- c
+			ch <- rpcIn
 
 			continue
 		}
 
 		ctx := context.Background()
 		if tp := wCtx.cfg.tracePropagator; tp != nil {
-			ctx = tp.Extract(ctx, containerTraceCarrier{in: c})
+			ctx = tp.Extract(ctx, containerTraceCarrier{in: rpcIn})
 		}
 
-		if h, ok := wCtx.cfg.handlers[c.GetHdr(wCtx.cfg.predicateKey)]; ok {
-			h(ctx, c)
+		if h, ok := wCtx.cfg.handlers[rpcIn.GetHdr(wCtx.cfg.predicateKey)]; ok {
+			h(ctx, rpcIn)
 		} else if h = wCtx.cfg.defaultHandler; h != nil {
-			h(ctx, c)
+			h(ctx, rpcIn)
 		}
-		c.Release()
+		rpcIn.Release()
 	}
 }
 

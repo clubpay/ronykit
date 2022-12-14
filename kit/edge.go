@@ -174,7 +174,7 @@ func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
 		ctx = context.Background()
 	}
 
-	s.l.Debug("server started.")
+	s.l.Debugf("server started.")
 
 	if s.prefork {
 		if childID() > 0 {

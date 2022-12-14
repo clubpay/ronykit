@@ -1,9 +1,7 @@
 package kit
 
 type Logger interface {
-	Debug(args ...interface{})
 	Debugf(format string, args ...interface{})
-	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
 }
 
