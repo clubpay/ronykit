@@ -85,7 +85,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	// run receiver & watchdog in background
 	go wCtx.receiver(c)
-	go wCtx.watchdog()
+	go wCtx.watchdog(c)
 
 	if wCtx.cfg.onConnect != nil {
 		wCtx.cfg.onConnect(wCtx)
@@ -104,7 +104,7 @@ func (wCtx *WebsocketCtx) setActivity() {
 	atomic.StoreInt64(&wCtx.lastActivity, utils.TimeUnix())
 }
 
-func (wCtx *WebsocketCtx) watchdog() {
+func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 	wCtx.l.Debugf("watchdog started: %s", wCtx.c.LocalAddr().String())
 
 	t := time.NewTicker(wCtx.cfg.pingTime)
@@ -120,26 +120,30 @@ func (wCtx *WebsocketCtx) watchdog() {
 				return
 			}
 
-			if utils.TimeUnix()-wCtx.lastActivity > d {
-				if !wCtx.cfg.autoReconnect {
-					return
-				}
-				wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
+			if utils.TimeUnix()-wCtx.lastActivity <= d {
+				_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+				wCtx.l.Debugf("websocket ping sent")
 
-				_ = wCtx.c.Close()
-
-				ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
-				err := wCtx.connect(ctx)
-				cf()
-				if err != nil {
-					wCtx.l.Debugf("failed to reconnect: %s", err)
-
-					continue
-				}
+				continue
 			}
 
-			_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
-			wCtx.l.Debugf("websocket ping sent")
+			if !wCtx.cfg.autoReconnect {
+				return
+			}
+
+			wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
+			_ = wCtx.c.Close()
+
+			ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
+			err := wCtx.connect(ctx)
+			cf()
+			if err != nil {
+				wCtx.l.Debugf("failed to reconnect: %s", err)
+
+				continue
+			}
+
+			return
 		}
 	}
 }
@@ -162,6 +166,8 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 
 			continue
 		}
+
+		// if this is a reply message we return it to the pending channel
 		wCtx.pendingL.Lock()
 		ch, ok := wCtx.pending[rpcIn.GetID()]
 		wCtx.pendingL.Unlock()
