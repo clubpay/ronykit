@@ -72,12 +72,14 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	}
 
 	wCtx.setActivity()
-	c.SetPongHandler(func(appData string) error {
-		wCtx.l.Debugf("pong received")
-		wCtx.setActivity()
+	c.SetPongHandler(
+		func(appData string) error {
+			wCtx.l.Debugf("websocket pong received")
+			wCtx.setActivity()
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	wCtx.c = c
 
