@@ -152,7 +152,11 @@ instances of your EdgeServer.
 EdgeServer is the main component of the RonyKIT which glues different components together to make it a working
 server.
 
+---
 
+---
+
+---
 # RonyKIT Storage layers
 When we develop API server usually we need to store data with different lifecycles. Sometimes we need to store data
 that lives between different handlers, in some cases, we need to keep the data between different requests of a connection.
@@ -166,7 +170,11 @@ Basically in RonyKIT we provide 4 layers of storage:
 | Local      | this is shared between different contracts, services and is in the local memory of the server                                                                                    |
 | Cluster    | this is shared between different instances of the EdgeServer. This is enabled ONLY if a Cluster bundle is attached                                                               |
 
+---
 
+---
+
+---
 # RonyKIT Standard Packages
 This repository is holding all the projects related to RonyKIT. The main package which is the heart of
 the RonyKIT framework is [kit](./kit) and the standard modules are in the /std folders.
