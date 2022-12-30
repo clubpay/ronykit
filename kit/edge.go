@@ -29,6 +29,7 @@ type EdgeServer struct {
 	nb        []*northBridge
 	gh        []HandlerFunc
 	svc       []Service
+	cd        ConnDelegate
 	contracts map[string]Contract
 	eh        ErrHandlerFunc
 	l         Logger
@@ -64,6 +65,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s.prefork = cfg.prefork
 	s.eh = cfg.errHandler
 	s.gh = cfg.globalHandlers
+	s.cd = cfg.connDelegate
 	if cfg.tracer != nil {
 		s.t = cfg.tracer
 	}
@@ -84,6 +86,8 @@ func NewServer(opts ...Option) *EdgeServer {
 // RegisterGateway registers a Gateway to our server.
 func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 	var th HandlerFunc
+
+	// if tracer is set we inject it to our context pool as the first handler
 	if s.t != nil {
 		th = s.t.Handler()
 	}
@@ -93,6 +97,7 @@ func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 			ls: &s.ls,
 			th: th,
 		},
+		cd: s.cd,
 		wg: &s.wg,
 		eh: s.eh,
 		c:  s.contracts,

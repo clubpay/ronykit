@@ -12,6 +12,7 @@ type edgeConfig struct {
 	errHandler      ErrHandlerFunc
 	globalHandlers  []HandlerFunc
 	tracer          Tracer
+	connDelegate    ConnDelegate
 }
 
 type Option func(s *edgeConfig)
@@ -86,5 +87,14 @@ func WithGlobalHandlers(handlers ...HandlerFunc) Option {
 func WithTrace(tp Tracer) Option {
 	return func(s *edgeConfig) {
 		s.tracer = tp
+	}
+}
+
+// WithConnDelegate registers the delegate to receive callbacks on connection open/close events.
+// This delegate could be useful to add metrics based on the connections, or any other advanced
+// scenarios. For most use cases this is not necessary.
+func WithConnDelegate(d ConnDelegate) Option {
+	return func(s *edgeConfig) {
+		s.connDelegate = d
 	}
 }

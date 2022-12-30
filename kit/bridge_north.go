@@ -41,12 +41,16 @@ type Gateway interface {
 
 // GatewayDelegate is the delegate that connects the Gateway to the rest of the system.
 type GatewayDelegate interface {
+	ConnDelegate
+	// OnMessage must be called whenever a new message arrives.
+	OnMessage(c Conn, wf WriteFunc, msg []byte)
+}
+
+type ConnDelegate interface {
 	// OnOpen must be called whenever a new connection is established.
 	OnOpen(c Conn)
 	// OnClose must be called whenever the connection is gone.
 	OnClose(connID uint64)
-	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c Conn, wf WriteFunc, msg []byte)
 }
 
 // northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
@@ -57,16 +61,25 @@ type northBridge struct {
 	c  map[string]Contract
 	gw Gateway
 	sb *southBridge
+	cd ConnDelegate
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
 
 func (n *northBridge) OnOpen(c Conn) {
-	// Maybe later we can do something
+	if n.cd == nil {
+		return
+	}
+
+	n.cd.OnOpen(c)
 }
 
 func (n *northBridge) OnClose(connID uint64) {
-	// Maybe later we can do something
+	if n.cd == nil {
+		return
+	}
+
+	n.cd.OnClose(connID)
 }
 
 func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
