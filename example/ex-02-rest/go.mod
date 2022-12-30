@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/example/ex-02-rest
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.9.22
+	github.com/clubpay/ronykit/kit v0.9.24
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.9.22
 	github.com/goccy/go-json v0.10.0
 )
