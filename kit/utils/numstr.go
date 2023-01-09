@@ -125,6 +125,25 @@ func IntToStr(x int) string {
 	return strconv.FormatUint(uint64(x), 10)
 }
 
+func StrTruncate(s string, maxSize int) string {
+
+	count := 0
+	builder := strings.Builder{}
+	for _, char := range s {
+		if maxSize <= 0 {
+			break
+		}
+		builder.WriteString(string(char))
+
+		count++
+		if count >= maxSize {
+			break
+		}
+	}
+	return builder.String()
+
+}
+
 // ByteToStr converts byte slice to a string without memory allocation.
 // Note it may break if string and/or slice header will change
 // in the future go versions.
