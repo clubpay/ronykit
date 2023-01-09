@@ -55,4 +55,19 @@ var _ = Describe("Numeric tests", func() {
 		Entry("unchanged", utils.ParseNumeric("13.14"), 2, 13.14, "13.14"),
 		Entry("unset", utils.ParseNumeric("13.14"), -1, 13.14, "13.14"),
 	)
+
+	DescribeTable(
+		"string truncate",
+		func(s string, maxSize int, xs string) {
+			Expect(utils.StrTruncate(s, maxSize)).To(BeIdenticalTo(xs))
+		},
+		Entry("test", utils.StrTruncate("Merci Marcel Tiong Bahru", 13), 13, "Merci Marcel "),
+		Entry("test", utils.StrTruncate("Merci Marcel Tiong Bahru", 4), 4, "Merc"),
+		Entry("test", utils.StrTruncate("", 3), 3, ""),
+		Entry("test", utils.StrTruncate("Merci Marcel Tiong Bahru", 1), 1, "M"),
+		Entry("test", utils.StrTruncate("Merci Marcel Tiong Bahru", 0), 0, ""),
+		Entry("test", utils.StrTruncate("Merci Marcel Tiong Bahru", -1), -1, ""),
+		Entry("test", utils.StrTruncate(" ", 0), 0, ""),
+		Entry("test", utils.StrTruncate(" ", 1), 1, " "),
+	)
 })

@@ -127,16 +127,20 @@ func IntToStr(x int) string {
 
 func StrTruncate(s string, maxSize int) string {
 
-	truncated := ""
 	count := 0
+	builder := strings.Builder{}
 	for _, char := range s {
-		truncated += string(char)
+		if maxSize <= 0 {
+			break
+		}
+		builder.WriteString(string(char))
+
 		count++
 		if count >= maxSize {
 			break
 		}
 	}
-	return truncated
+	return builder.String()
 
 }
 
