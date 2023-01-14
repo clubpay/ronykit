@@ -13,17 +13,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const (
-	w3cTraceParent = "traceparent"
-	w3cState       = "tracestate"
-	b3Single       = "b3"
-	b3TraceID      = "x-b3-traceid"
-	b3ParentSpanID = "x-b3-parentspanid"
-	b3SpanID       = "x-b3-spanid"
-	b3Sampled      = "x-b3-sampled"
-	b3Flags        = "x-b3-flags"
-)
-
 type TracePropagator int
 
 const (

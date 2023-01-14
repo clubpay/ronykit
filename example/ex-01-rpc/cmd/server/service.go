@@ -10,19 +10,17 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
-var sample desc.ServiceDescFunc = func() *desc.Service {
-	return desc.NewService("SampleService").
-		SetEncoding(kit.JSON).
-		AddContract(
-			desc.NewContract().
-				SetInput(&dto.EchoRequest{}).
-				SetOutput(&dto.EchoResponse{}).
-				AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
-				AddSelector(fasthttp.RPC("echoRequest")).
-				AddSelector(fastws.RPC("echoRequest")).
-				SetHandler(echoHandler),
-		)
-}
+var sampleService = desc.NewService("SampleService").
+	SetEncoding(kit.JSON).
+	AddContract(
+		desc.NewContract().
+			SetInput(&dto.EchoRequest{}).
+			SetOutput(&dto.EchoResponse{}).
+			AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
+			AddSelector(fasthttp.RPC("echoRequest")).
+			AddSelector(fastws.RPC("echoRequest")).
+			SetHandler(echoHandler),
+	)
 
 func echoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert

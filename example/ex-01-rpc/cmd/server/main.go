@@ -41,7 +41,7 @@ func main() {
 			//		fasthttp.Listen(":80"),
 			//	),
 		),
-		kit.RegisterServiceDesc(sample.Desc()),
+		kit.RegisterServiceDesc(sampleService),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
