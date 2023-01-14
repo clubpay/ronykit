@@ -15,6 +15,11 @@ func (ctx *Context) ClusterStore() ClusterStore {
 	return ctx.sb.cb.Store()
 }
 
+// HasCluster returns true if the cluster is set for this EdgeServer.
+func (ctx *Context) HasCluster() bool {
+	return ctx.sb != nil
+}
+
 func (ctx *Context) ClusterID() string {
 	if ctx.sb == nil {
 		return ""
