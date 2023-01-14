@@ -96,7 +96,7 @@ fill the PR description.
 
 ### Sign the CLA
 
-Click the **Sign in with Github to agree** button to sign the CLA. [An example](https://cla-assistant.io/clubpay/ronykit?pullRequest=1377).
+Click the **Sign in with GitHub to agree** button to sign the CLA. [An example](https://cla-assistant.io/clubpay/ronykit?pullRequest=1377).
 
 ### Get a code review
 

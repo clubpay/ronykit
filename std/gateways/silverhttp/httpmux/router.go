@@ -52,7 +52,7 @@ type Mux struct {
 	// handler.
 	HandleMethodNotAllowed bool
 
-	// If enabled, the Mux automatically replies to OPTIONS requests.
+	// If enabled, the Mux automatically replies to `OPTIONS` requests.
 	// Custom OPTIONS handlers take priority over automatic replies.
 	HandleOPTIONS bool
 

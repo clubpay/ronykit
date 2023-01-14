@@ -2,6 +2,7 @@ package utils_test
 
 import (
 	"encoding/json"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -17,7 +18,7 @@ var _ = Describe("ParseNumeric tests", func() {
 			Expect(on.String()).To(BeIdenticalTo(xs))
 		},
 		Entry("string", "13.14", 13.14, "13.14"),
-		Entry("float64", float64(13.14), 13.14, "13.14"),
+		Entry("float64", 13.14, 13.14, "13.14"),
 		Entry("float32", float32(13.14), 13.14, "13.14"),
 		Entry("int", 13, 13.0, "13.00"),
 		Entry("int64", int64(13), 13.0, "13.00"),

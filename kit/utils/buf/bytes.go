@@ -11,7 +11,7 @@ const (
 )
 
 type Bytes struct {
-	p  *bytesPool
+	p  *BytesPool
 	ri int
 	b  []byte
 }
@@ -32,7 +32,7 @@ func (bb *Bytes) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-func newBytes(p *bytesPool, n, c int) *Bytes {
+func newBytes(p *BytesPool, n, c int) *Bytes {
 	if n > c {
 		panic("requested length is greater than capacity")
 	}
@@ -104,18 +104,18 @@ func (bb *Bytes) Release() {
 	bb.p.put(bb)
 }
 
-// bytesPool. contains logic of reusing objects distinguishable by size in generic
+// BytesPool. contains logic of reusing objects distinguishable by size in generic
 // way.
-type bytesPool struct {
+type BytesPool struct {
 	pool map[int]*sync.Pool
 }
 
 var defaultPool = NewBytesPool(32, 1<<20)
 
-// NewBytesPool creates new bytesPool that reuses objects which size is in logarithmic range
+// NewBytesPool creates new BytesPool that reuses objects which size is in logarithmic range
 // [min, max].
-func NewBytesPool(min, max int) *bytesPool {
-	p := &bytesPool{
+func NewBytesPool(min, max int) *BytesPool {
+	p := &BytesPool{
 		pool: make(map[int]*sync.Pool),
 	}
 	logarithmicRange(min, max, func(n int) {
@@ -127,7 +127,7 @@ func NewBytesPool(min, max int) *bytesPool {
 
 // Get returns probably reused slice of bytes with at least capacity of c and
 // exactly len of n.
-func (p *bytesPool) Get(n, c int) *Bytes {
+func (p *BytesPool) Get(n, c int) *Bytes {
 	if n > c {
 		panic("requested length is greater than capacity")
 	}
@@ -153,7 +153,7 @@ func Get(n, c int) *Bytes {
 }
 
 // GetCap returns probably reused slice of bytes with at least capacity of n.
-func (p *bytesPool) GetCap(c int) *Bytes {
+func (p *BytesPool) GetCap(c int) *Bytes {
 	return p.Get(0, c)
 }
 
@@ -163,7 +163,7 @@ func GetCap(c int) *Bytes {
 
 // GetLen returns probably reused slice of bytes with at least capacity of n
 // and exactly len of n.
-func (p *bytesPool) GetLen(n int) *Bytes {
+func (p *BytesPool) GetLen(n int) *Bytes {
 	return p.Get(n, n)
 }
 
@@ -181,7 +181,7 @@ func FromBytes(in []byte) *Bytes {
 // put returns given Bytes to reuse pool.
 // It does not reuse bytes whose size is not power of two or is out of pool
 // min/max range.
-func (p *bytesPool) put(bb *Bytes) {
+func (p *BytesPool) put(bb *Bytes) {
 	if pool := p.pool[cap(bb.b)]; pool != nil {
 		pool.Put(bb)
 	}

@@ -23,8 +23,8 @@ In RonyKIT, I wanted to make it more flexible but still very performant. I will 
 libraries [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet), however you are not limited to use those,
 and
 can build your own Bundles. To have a better understanding of how it is going to work please check examples folder.
-in [simple-rest-server](examples/simple-rest-server) it shows a very simple hello world app.
-in [mixed-jsonrpc-rest](examples/mixed-jsonrpc-rest) it shows how you can write your services once but use them with multiple formats like
+in [simple-rest-server](../example/ex-02-rest) it shows a very simple hello world app.
+in [mixed-jsonrpc-rest](../example/ex-01-rpc) it shows how you can write your services once but use them with multiple formats like
 REST or RPC.
 
 ## Contents
@@ -49,7 +49,7 @@ $ go get -u github.com/clubpay/ronykit/...
 
 ## Quick start
 
-You can find some sample codes in the [Examples](./examples) folder.
+You can find some sample codes in the [Examples](../example) folder.
 
 ## Define Services and Contracts
 

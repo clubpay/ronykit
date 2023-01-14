@@ -175,7 +175,7 @@ func (sg *Generator) setInput(op *spec.Operation, path string, inType reflect.Ty
 		return
 	}
 
-	var pathParams = make([]string, 0)
+	var pathParams []string
 	for _, pp := range strings.Split(path, "/") {
 		if !strings.HasPrefix(pp, ":") {
 			continue
@@ -224,7 +224,6 @@ func (sg *Generator) setInput(op *spec.Operation, path string, inType reflect.Ty
 			}
 		}
 	}
-
 }
 
 func (sg *Generator) addDefinition(swag *spec.Swagger, rType reflect.Type) {
@@ -249,6 +248,7 @@ func (sg *Generator) addDefinition(swag *spec.Swagger, rType reflect.Type) {
 			f := rType.Field(i)
 			if f.Anonymous {
 				queue = append(queue, f.Type)
+
 				continue
 			}
 			fType := f.Type
@@ -327,7 +327,6 @@ func (sg *Generator) addDefinition(swag *spec.Swagger, rType reflect.Type) {
 
 		swag.Definitions[rType.Name()] = def
 	}
-
 }
 
 func addSwaggerTag(swag *spec.Swagger, s *desc.Service) {

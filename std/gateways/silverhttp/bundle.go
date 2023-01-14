@@ -83,7 +83,6 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 	}
 
 	go func() {
-
 		err = b.srv.Serve(ln)
 		if err != nil {
 			b.l.Errorf("got error on serving: %v", err)

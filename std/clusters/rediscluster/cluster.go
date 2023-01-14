@@ -154,5 +154,6 @@ func (c *cluster) Scan(prefix string, cb func(string) bool) error {
 
 func (c *cluster) Subscribers() ([]string, error) {
 	ctx := context.Background()
+
 	return c.rc.HKeys(ctx, fmt.Sprintf("%s:instances", c.prefix)).Result()
 }

@@ -50,7 +50,7 @@ type stacktrace struct {
 	frames *runtime.Frames
 
 	// The size of pcs varies depending on requirements:
-	// it will be one if the only the first frame was requested,
+	// it will be one, if only the first frame was requested,
 	// and otherwise it will reflect the depth of the call stack.
 	//
 	// storage decouples the slice we need (pcs) from the slice we pool.
@@ -84,7 +84,7 @@ func captureStacktrace(skip int, depth stacktraceDepth) *stacktrace {
 		stack.pcs,
 	)
 
-	// runtime.Callers truncates the recorded stacktrace if there is no
+	// runtime.Callers truncate the recorded stacktrace if there is no
 	// room in the provided slice. For the full stack trace, keep expanding
 	// storage until there are fewer frames than there is room.
 	if depth == stacktraceFull {

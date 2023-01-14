@@ -370,7 +370,7 @@ walk: // Outer loop for walking the tree
 				n = n.children[0]
 				switch n.nType {
 				case param:
-					// Find param end (either '/' or path end)
+					// Find param end (either '/' or path end.)
 					end := 0
 					for end < len(path) && path[end] != '/' {
 						end++
@@ -605,13 +605,13 @@ walk: // Outer loop for walking the tree
 			n = n.children[0]
 			switch n.nType {
 			case param:
-				// Find param end (either '/' or path end)
+				// Find param end (either '/' or path end.)
 				end := 0
 				for end < len(path) && path[end] != '/' {
 					end++
 				}
 
-				// Add param value to case insensitive path
+				// Add param value to case-insensitive path
 				ciPath = append(ciPath, path[:end]...)
 
 				// We need to go deeper!
