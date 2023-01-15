@@ -104,7 +104,7 @@ func (bb *Bytes) Release() {
 	bb.p.put(bb)
 }
 
-// BytesPool. contains logic of reusing objects distinguishable by size in generic
+// BytesPool contains logic of reusing objects distinguishable by size in generic
 // way.
 type BytesPool struct {
 	pool map[int]*sync.Pool

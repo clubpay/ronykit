@@ -126,7 +126,6 @@ func IntToStr(x int) string {
 }
 
 func StrTruncate(s string, maxSize int) string {
-
 	count := 0
 	builder := strings.Builder{}
 	for _, char := range s {
@@ -140,8 +139,8 @@ func StrTruncate(s string, maxSize int) string {
 			break
 		}
 	}
-	return builder.String()
 
+	return builder.String()
 }
 
 // ByteToStr converts byte slice to a string without memory allocation.

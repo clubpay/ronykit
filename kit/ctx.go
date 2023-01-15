@@ -170,6 +170,18 @@ func (ctx *Context) Conn() Conn {
 	return ctx.conn
 }
 
+// RESTConn returns the underlying REST connection. It panics if the underlying connection
+// does not implement RESTConn interface.
+func (ctx *Context) RESTConn() RESTConn {
+	return ctx.conn.(RESTConn) //nolint:forcetypeassert
+}
+
+func (ctx *Context) IsREST() bool {
+	_, ok := ctx.conn.(RESTConn)
+
+	return ok
+}
+
 // PresetHdr sets the common header key-value pairs so in Out method we don't need to
 // repeatedly set those. This method is useful for some cases if we need to update the
 // header in some middleware before the actual response is prepared.

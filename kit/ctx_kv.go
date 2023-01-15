@@ -113,9 +113,9 @@ func (ctx *Context) GetBytes(key string, defaultValue []byte) []byte {
 }
 
 type Store interface {
-	Get(key string) any
+	Get(key string) interface{}
 	Exists(key string) bool
-	Set(key string, val any)
+	Set(key string, val interface{})
 	Delete(key string)
 	Scan(prefix string, cb func(key string) bool)
 }

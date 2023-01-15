@@ -277,6 +277,4 @@ func (d *Stub) Tags() []string {
 	return d.tags
 }
 
-var (
-	errUnsupportedType = errors.NewG(" we don't support non-struct types as DTO : %s")
-)
+var errUnsupportedType = errors.NewG("non-struct types as DTO : %s")

@@ -20,8 +20,6 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-type any = interface{}
-
 // EdgeServer is the main component of the kit. It glues all other components of the
 // app to each other.
 type EdgeServer struct {
@@ -50,7 +48,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
 		contracts: map[string]Contract{},
 		ls: localStore{
-			kv: map[string]any{},
+			kv: map[string]interface{}{},
 		},
 	}
 	cfg := &edgeConfig{
@@ -519,10 +517,10 @@ func restRoute(rs RouteSelector) string {
 
 type localStore struct {
 	kvl sync.RWMutex
-	kv  map[string]any
+	kv  map[string]interface{}
 }
 
-func (ls *localStore) Get(key string) any {
+func (ls *localStore) Get(key string) interface{} {
 	ls.kvl.RLock()
 	v := ls.kv[key]
 	ls.kvl.RUnlock()
@@ -530,7 +528,7 @@ func (ls *localStore) Get(key string) any {
 	return v
 }
 
-func (ls *localStore) Set(key string, value any) {
+func (ls *localStore) Set(key string, value interface{}) {
 	ls.kvl.Lock()
 	ls.kv[key] = value
 	ls.kvl.Unlock()
