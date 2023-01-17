@@ -125,7 +125,7 @@ func ParseService(svc *Service) ParsedService {
 }
 
 func parseContract(c Contract) []ParsedContract {
-	var pcs []ParsedContract
+	var pcs []ParsedContract //nolint:prealloc
 	for _, s := range c.RouteSelectors {
 		name := s.Name
 		if name == "" {

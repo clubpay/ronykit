@@ -143,6 +143,7 @@ func newStub(tags ...string) *Stub {
 	}
 }
 
+//nolint:gocognit
 func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 	if mTyp.Kind() == reflect.Ptr {
 		mTyp = mTyp.Elem()

@@ -176,7 +176,7 @@ func (sg *Generator) setSwagInput(op *spec.Operation, path string, inType reflec
 		return
 	}
 
-	var pathParams []string
+	var pathParams []string //nolint:prealloc
 	for _, pp := range strings.Split(path, "/") {
 		if !strings.HasPrefix(pp, ":") {
 			continue
@@ -342,7 +342,6 @@ func (sg *Generator) WritePostmanToFile(filename string, services ...desc.Servic
 func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	col := postman.CreateCollection(sg.tagName, "Auto Generated Postman Collection by RonyKIT")
 	for _, d := range descs {
-
 		ps := desc.Parse(d)
 
 		col.Variables = append(
