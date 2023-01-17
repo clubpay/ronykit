@@ -372,7 +372,7 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract) {
 	itm := postman.CreateItem(
 		postman.Item{
-			Name:                    c.Name,
+			Name:                    c.SuggestName(),
 			Variables:               nil,
 			Events:                  nil,
 			ProtocolProfileBehavior: nil,
