@@ -42,16 +42,16 @@ func (sg *Generator) WithTag(tagName string) *Generator {
 	return sg
 }
 
-func (sg *Generator) WriteToFile(filename string, services ...desc.ServiceDesc) error {
+func (sg *Generator) WriteSwagToFile(filename string, services ...desc.ServiceDesc) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 
-	return sg.WriteSwaggerTo(f, services...)
+	return sg.WriteSwagTo(f, services...)
 }
 
-func (sg *Generator) WriteSwaggerTo(w io.Writer, descs ...desc.ServiceDesc) error {
+func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	for _, d := range descs {
 		// extract the service description
 		s := d.Desc()
@@ -131,7 +131,7 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Co
 		sg.addSwagDefinition(swag, inType)
 		sg.addSwagDefinition(swag, outType)
 
-		restPath := replacePath(restSel.GetPath())
+		restPath := fixPathForSwag(restSel.GetPath())
 		pathItem := swag.Paths.Paths[restPath]
 		switch strings.ToUpper(restSel.GetMethod()) {
 		case http.MethodGet:
@@ -330,155 +330,88 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, rType reflect.Type) {
 	}
 }
 
-func (sg *Generator) WritePostmanCollectionTo(w io.Writer, descs ...desc.ServiceDesc) error {
+func (sg *Generator) WritePostmanToFile(filename string, services ...desc.ServiceDesc) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	return sg.WritePostmanTo(f, services...)
+}
+
+func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	col := postman.CreateCollection(sg.tagName, "Auto Generated Postman Collection by RonyKIT")
 	for _, d := range descs {
-		// extract the service description
-		s := d.Desc()
+
+		ps := desc.Parse(d)
 
 		col.Variables = append(
 			col.Variables,
 			&postman.Variable{
 				Type: "string",
 				Name: "baseURL",
+				Key:  "baseURL",
 			},
 		)
-		colItems := col.AddItemGroup(s.Name)
+		colItems := col.AddItemGroup(ps.Origin.Name)
 
-		addSwaggerTag(sg.s, s)
-
-		for _, c := range s.Contracts {
-			c.PossibleErrors = append(c.PossibleErrors, s.PossibleErrors...)
-			sg.addPostmanItem(colItems, s.Name, c)
+		for _, c := range ps.Contracts {
+			sg.addPostmanItem(colItems, c)
 		}
 	}
 
 	return col.Write(w, postman.V210)
 }
 
-func (sg *Generator) addPostmanItem(items *postman.Items, serviceName string, c desc.Contract) {
-
-	var contentType string
-	switch c.Encoding {
-	case kit.JSON:
-		contentType = "application/json"
-	case kit.Proto:
-		contentType = "application/x-protobuf"
-	case kit.MSG:
-		contentType = "application/octet-stream"
-	default:
-		contentType = "application/json"
+func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract) {
+	itm := postman.CreateItem(
+		postman.Item{
+			Name:                    c.Name,
+			Variables:               nil,
+			Events:                  nil,
+			ProtocolProfileBehavior: nil,
+		},
+	)
+	if c.Encoding == "" {
+		c.Encoding = "json"
 	}
 
-	inType := reflect.Indirect(reflect.ValueOf(c.Input)).Type()
-	outType := reflect.Indirect(reflect.ValueOf(c.Output)).Type()
-
-	for _, sel := range c.RouteSelectors {
-		restSel, ok := sel.Selector.(kit.RESTRouteSelector)
-		if !ok {
-			continue
+	for _, pp := range c.PathParams {
+		v := &postman.Variable{
+			Name: pp,
+			Key:  pp,
 		}
-		itm := postman.CreateItem(
-			postman.Item{
-				Name:                    c.Name,
-				Variables:               nil,
-				Events:                  nil,
-				ProtocolProfileBehavior: nil,
+		for _, p := range c.Request.Message.Params {
+			if p.Name == pp {
+				v.Type = string(p.Kind)
+				v.Value = p.SampleValue
+
+				break
+			}
+		}
+		itm.Variables = append(itm.Variables, v)
+	}
+	itm.Request = &postman.Request{
+		URL: &postman.URL{
+			Raw: fmt.Sprintf("{{baseURL}}%s", c.Path),
+			Host: []string{
+				"{{baseURL}}",
 			},
-		)
-		itm.Request = &postman.Request{
-			URL: &postman.URL{
-				Raw: fmt.Sprintf("{{baseURL}}/%s", replacePath(restSel.GetPath())),
-			},
-			Method: postman.Method(restSel.GetMethod()),
-			Body: &postman.Body{
-				Mode:       "raw",
-				Raw:        kit.MarshalMessage(c.Input),
-				URLEncoded: nil,
-				FormData:   nil,
-				File:       nil,
-				GraphQL:    nil,
-				Disabled:   false,
-				Options: &postman.BodyOptions{
-					Raw: postman.BodyOptionsRaw{
-						Language: c.Encoding.Tag(),
-					},
+			Path: strings.Split(c.Path, "/"),
+		},
+		Method: postman.Method(c.Method),
+		Body: &postman.Body{
+			Mode: "raw",
+			Raw:  c.Request.Message.JSON(),
+			Options: &postman.BodyOptions{
+				Raw: postman.BodyOptionsRaw{
+					Language: c.Encoding,
 				},
 			},
-		}
+		},
 	}
 
-	op := spec.NewOperation(opID).
-		WithTags(serviceName).
-		WithProduces(contentType).
-		WithConsumes(contentType).
-		RespondsWith(
-			http.StatusOK,
-			spec.NewResponse().
-				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", outType.Name())),
-				),
-		)
-
-	possibleErrors := map[int][]string{}
-	for _, pe := range c.PossibleErrors {
-		errType := reflect.Indirect(reflect.ValueOf(pe.Message)).Type()
-		sg.addSwagDefinition(swag, errType)
-		possibleErrors[pe.Code] = append(possibleErrors[pe.Code], pe.Item)
-		op.RespondsWith(
-			pe.Code,
-			spec.NewResponse().
-				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", errType.Name())),
-				).
-				WithDescription(fmt.Sprintf("Items: %s", strings.Join(possibleErrors[pe.Code], ", "))),
-		)
-	}
-	for _, sel := range c.RouteSelectors {
-		restSel, ok := sel.Selector.(kit.RESTRouteSelector)
-		if !ok {
-			continue
-		}
-
-		sg.setSwagInput(op, restSel.GetPath(), inType)
-		sg.addSwagDefinition(swag, inType)
-		sg.addSwagDefinition(swag, outType)
-
-		restPath := replacePath(restSel.GetPath())
-		pathItem := swag.Paths.Paths[restPath]
-		switch strings.ToUpper(restSel.GetMethod()) {
-		case http.MethodGet:
-			pathItem.Get = op
-
-		case http.MethodDelete:
-			pathItem.Delete = op
-		case http.MethodPost:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Post = op
-		case http.MethodPut:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Put = op
-		case http.MethodPatch:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Patch = op
-		}
-		swag.Paths.Paths[restPath] = pathItem
-	}
+	items.AddItem(itm)
 }
 
 func addSwaggerTag(swag *spec.Swagger, s *desc.Service) {
@@ -532,9 +465,9 @@ func setSwaggerParam(p *spec.Parameter, t reflect.Type, optional bool) *spec.Par
 	return p
 }
 
-// replacePath converts the ronykit mux format urls to swagger url format.
+// fixPathForSwag converts the ronykit mux format urls to swagger url format.
 // e.g. /some/path/:x1 --> /some/path/{x1}
-func replacePath(path string) string {
+func fixPathForSwag(path string) string {
 	sb := strings.Builder{}
 	for idx, p := range strings.Split(path, "/") {
 		if idx > 0 {

@@ -1,10 +1,11 @@
 package desc
 
 import (
-	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/goccy/go-json"
 )
 
 type ParsedService struct {
@@ -24,10 +25,11 @@ type ParsedContract struct {
 	Name      string
 	Encoding  string
 
-	Type      ContractType
-	Path      string
-	Method    string
-	Predicate string
+	Type       ContractType
+	Path       string
+	PathParams []string
+	Method     string
+	Predicate  string
 
 	Request   ParsedRequest
 	Responses []ParsedResponse
@@ -36,6 +38,17 @@ type ParsedContract struct {
 type ParsedMessage struct {
 	Name   string
 	Params []ParsedParam
+}
+
+func (pm ParsedMessage) JSON() string {
+	m := map[string]string{}
+	for _, p := range pm.Params {
+		m[p.Name] = p.Name
+	}
+
+	d, _ := json.MarshalIndent(m, "", "  ")
+
+	return string(d)
 }
 
 type ParsedRequest struct {
@@ -114,9 +127,13 @@ func ParseService(svc *Service) ParsedService {
 func parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract
 	for _, s := range c.RouteSelectors {
+		name := s.Name
+		if name == "" {
+			name = c.Name
+		}
 		pc := ParsedContract{
 			GroupName: c.Name,
-			Name:      s.Name,
+			Name:      name,
 			Encoding:  s.Selector.GetEncoding().Tag(),
 		}
 
@@ -125,6 +142,12 @@ func parseContract(c Contract) []ParsedContract {
 			pc.Type = REST
 			pc.Path = r.GetPath()
 			pc.Method = r.GetMethod()
+
+			for _, p := range strings.Split(pc.Path, "/") {
+				if strings.HasPrefix(p, ":") {
+					pc.PathParams = append(pc.PathParams, p[1:])
+				}
+			}
 		case kit.RPCRouteSelector:
 			pc.Type = RPC
 			pc.Predicate = r.GetPredicate()
@@ -134,12 +157,14 @@ func parseContract(c Contract) []ParsedContract {
 			Message: parseMessage(c.Input, s.Selector.GetEncoding()),
 		}
 
-		pc.Responses = append(
-			pc.Responses,
-			ParsedResponse{
-				Message: parseMessage(c.Output, s.Selector.GetEncoding()),
-			},
-		)
+		if c.Output != nil {
+			pc.Responses = append(
+				pc.Responses,
+				ParsedResponse{
+					Message: parseMessage(c.Output, s.Selector.GetEncoding()),
+				},
+			)
+		}
 
 		for _, e := range c.PossibleErrors {
 			pc.Responses = append(
@@ -174,13 +199,18 @@ func parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
 		return pm
 	}
 
+	tagName := enc.Tag()
+	if tagName == "" {
+		tagName = kit.JSON.Tag()
+	}
+
 	// if we are here, it means that mt is a struct
 	var params []ParsedParam
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
 		ft := f.Type
 		pp := ParsedParam{
-			Name: f.Tag.Get(enc.Tag()),
+			Name: f.Tag.Get(tagName),
 		}
 
 		if ft.Kind() == reflect.Ptr {
@@ -210,7 +240,6 @@ func parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
 			} else if isVisited(ft.Name()) {
 				panic("infinite recursion detected")
 			} else {
-				fmt.Println(ft.Name())
 				pp.Message = parseMessage(reflect.New(ft).Interface(), enc)
 			}
 		case reflect.Chan, reflect.Interface, reflect.Func:
