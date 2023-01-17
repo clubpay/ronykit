@@ -362,7 +362,10 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 		colItems := col.AddItemGroup(ps.Origin.Name)
 
 		for _, c := range ps.Contracts {
-			sg.addPostmanItem(colItems, c)
+			switch c.Type {
+			case desc.REST:
+				sg.addPostmanItem(colItems, c)
+			}
 		}
 	}
 
@@ -397,13 +400,38 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 		}
 		itm.Variables = append(itm.Variables, v)
 	}
+
+	var queryParams []*postman.QueryParam
+	if len(c.PathParams) > len(c.Request.Message.Params) && c.Method == "GET" {
+		for _, p := range c.Request.Message.Params {
+			found := false
+			for _, pp := range c.PathParams {
+				if p.Name == pp {
+					found = true
+
+					break
+				}
+			}
+
+			if !found {
+				queryParams = append(
+					queryParams,
+					&postman.QueryParam{
+						Key:   p.Name,
+						Value: p.SampleValue,
+					},
+				)
+			}
+		}
+	}
 	itm.Request = &postman.Request{
 		URL: &postman.URL{
 			Raw: fmt.Sprintf("{{baseURL}}%s", c.Path),
 			Host: []string{
 				"{{baseURL}}",
 			},
-			Path: strings.Split(c.Path, "/"),
+			Path:  strings.Split(c.Path, "/"),
+			Query: queryParams,
 		},
 		Method: postman.Method(c.Method),
 		Body: &postman.Body{
