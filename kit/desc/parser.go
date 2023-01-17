@@ -66,9 +66,18 @@ type ParsedMessage struct {
 }
 
 func (pm ParsedMessage) JSON() string {
-	m := map[string]string{}
+	m := map[string]interface{}{}
 	for _, p := range pm.Params {
-		m[p.Name] = p.Name
+		switch p.Kind {
+		case Map:
+			m[p.Name] = map[string]interface{}{}
+		case Array:
+			m[p.Name] = []interface{}{}
+		case Integer, Float:
+			m[p.Name] = 0
+		default:
+			m[p.Name] = p.Kind
+		}
 	}
 
 	d, _ := json.MarshalIndent(m, "", "  ")
