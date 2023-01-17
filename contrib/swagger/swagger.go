@@ -17,11 +17,17 @@ import (
 type Generator struct {
 	s       *spec.Swagger
 	tagName string
+	title   string
+	version string
+	desc    string
 }
 
 func New(title, ver, desc string) *Generator {
 	sg := &Generator{
-		s: &spec.Swagger{},
+		s:       &spec.Swagger{},
+		title:   title,
+		version: ver,
+		desc:    desc,
 	}
 	sg.s.Info = &spec.Info{
 		InfoProps: spec.InfoProps{
@@ -340,18 +346,19 @@ func (sg *Generator) WritePostmanToFile(filename string, services ...desc.Servic
 }
 
 func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) error {
-	col := postman.CreateCollection(sg.tagName, "Auto Generated Postman Collection by RonyKIT")
+	col := postman.CreateCollection(sg.title, sg.desc)
+	col.Variables = append(
+		col.Variables,
+		&postman.Variable{
+			Type: "string",
+			Name: "baseURL",
+			Key:  "baseURL",
+		},
+	)
+
 	for _, d := range descs {
 		ps := desc.Parse(d)
 
-		col.Variables = append(
-			col.Variables,
-			&postman.Variable{
-				Type: "string",
-				Name: "baseURL",
-				Key:  "baseURL",
-			},
-		)
 		colItems := col.AddItemGroup(ps.Origin.Name)
 
 		for _, c := range ps.Contracts {

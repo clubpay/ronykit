@@ -1,10 +1,12 @@
 package desc
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/goccy/go-json"
 )
 
@@ -21,6 +23,7 @@ const (
 )
 
 type ParsedContract struct {
+	Index     int
 	GroupName string
 	Name      string
 	Encoding  string
@@ -33,6 +36,28 @@ type ParsedContract struct {
 
 	Request   ParsedRequest
 	Responses []ParsedResponse
+}
+
+func (pc ParsedContract) SuggestName() string {
+	if pc.Name != "" {
+		return pc.Name
+	}
+
+	switch pc.Type {
+	case REST:
+		parts := strings.Split(pc.Path, "/")
+		for i := len(parts) - 1; i >= 0; i-- {
+			if strings.HasPrefix(parts[i], ":") {
+				continue
+			}
+
+			return utils.ToCamel(parts[i])
+		}
+	case RPC:
+		return utils.ToCamel(pc.Predicate)
+	}
+
+	return fmt.Sprintf("%s%d", pc.GroupName, pc.Index)
 }
 
 type ParsedMessage struct {
@@ -79,6 +104,7 @@ const (
 
 type ParsedParam struct {
 	Name        string
+	Tag         ParsedStructTag
 	SampleValue string
 	Optional    bool
 	Kind        ParamKind
@@ -126,12 +152,13 @@ func ParseService(svc *Service) ParsedService {
 
 func parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract //nolint:prealloc
-	for _, s := range c.RouteSelectors {
+	for idx, s := range c.RouteSelectors {
 		name := s.Name
 		if name == "" {
 			name = c.Name
 		}
 		pc := ParsedContract{
+			Index:     idx,
 			GroupName: c.Name,
 			Name:      name,
 			Encoding:  s.Selector.GetEncoding().Tag(),
@@ -209,8 +236,10 @@ func parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
 		ft := f.Type
+		ptn := getParsedStructTag(f.Tag, tagName)
 		pp := ParsedParam{
-			Name: f.Tag.Get(tagName),
+			Name: ptn.Name,
+			Tag:  ptn,
 		}
 
 		if ft.Kind() == reflect.Ptr {
@@ -273,4 +302,51 @@ func parseKind(k reflect.Kind) ParamKind {
 	}
 
 	return ""
+}
+
+const (
+	swagTagKey   = "swag"
+	swagSep      = ";"
+	swagIdentSep = ":"
+	swagValueSep = ","
+)
+
+type ParsedStructTag struct {
+	Name           string
+	Optional       bool
+	PossibleValues []string
+}
+
+func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
+	pst := ParsedStructTag{}
+	nameTag := tag.Get(name)
+	if nameTag == "" {
+		return pst
+	}
+
+	// This is a hack to remove omitempty from tags
+	fNameParts := strings.Split(nameTag, swagValueSep)
+	if len(fNameParts) > 0 {
+		pst.Name = strings.TrimSpace(fNameParts[0])
+	}
+
+	swagTag := tag.Get(swagTagKey)
+	parts := strings.Split(swagTag, swagSep)
+	for _, p := range parts {
+		x := strings.TrimSpace(strings.ToLower(p))
+		switch {
+		case x == "optional":
+			pst.Optional = true
+		case strings.HasPrefix(x, "enum:"):
+			xx := strings.SplitN(p, swagIdentSep, 2)
+			if len(xx) == 2 {
+				xx = strings.Split(xx[1], swagValueSep)
+				for _, v := range xx {
+					pst.PossibleValues = append(pst.PossibleValues, strings.TrimSpace(v))
+				}
+			}
+		}
+	}
+
+	return pst
 }

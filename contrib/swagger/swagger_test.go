@@ -11,8 +11,8 @@ import (
 )
 
 type sampleReq struct {
-	X string   `json:"x"`
-	Y string   `json:"y"`
+	X string   `json:"x,int"`
+	Y string   `json:"y,omitempty"`
 	Z int64    `json:"z"`
 	W []string `json:"w"`
 }
