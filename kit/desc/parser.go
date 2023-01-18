@@ -11,7 +11,11 @@ import (
 )
 
 type ParsedService struct {
-	Origin    *Service
+	// Origin is the original service descriptor untouched by the parser
+	Origin *Service
+	// Contracts is the list of parsed contracts. The relation between ParsedContract
+	// and Contract is not 1:1 because a Contract can have multiple RouteSelectors.
+	// Each RouteSelector will be parsed into a ParsedContract.
 	Contracts []ParsedContract
 }
 
@@ -117,31 +121,25 @@ type ParsedParam struct {
 	SampleValue string
 	Optional    bool
 	Kind        ParamKind
-	SubKind     ParamKind
-	Message     ParsedMessage
+	// SubKind is the kind of the elements of the array or map. For other kinds,
+	// it is empty.
+	SubKind ParamKind
+	// Message is the parsed message if the kind is Object, Map or Array.
+	// In Map and Array, the Message is the parsed message of the elements.
+	// In Object, the Message is the parsed message of the struct.
+	Message ParsedMessage
 }
 
-var (
-	visited map[string]struct{}
-	parsed  map[string]ParsedMessage
-)
-
-func isParsed(name string) bool {
-	_, ok := parsed[name]
-
-	return ok
-}
-
-func isVisited(name string) bool {
-	_, ok := visited[name]
-
-	return ok
-}
-
+// Parse extracts the Service descriptor from the input ServiceDesc
+// Refer to ParseService for more details.
 func Parse(desc ServiceDesc) ParsedService {
 	return ParseService(desc.Desc())
 }
 
+// ParseService extracts information from a Service descriptor using reflection.
+// It returns a ParsedService. The ParsedService is useful to generate custom
+// code based on the service descriptor.
+// In the contrib package this is used to generate the swagger spec and postman collections.
 func ParseService(svc *Service) ParsedService {
 	// reset the parsed map
 	// we need this map, to prevent infinite recursion
@@ -358,4 +356,21 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	}
 
 	return pst
+}
+
+var (
+	visited map[string]struct{}
+	parsed  map[string]ParsedMessage
+)
+
+func isParsed(name string) bool {
+	_, ok := parsed[name]
+
+	return ok
+}
+
+func isVisited(name string) bool {
+	_, ok := visited[name]
+
+	return ok
 }
