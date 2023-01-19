@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
@@ -15,7 +14,6 @@ import (
 )
 
 type Generator struct {
-	s       *spec.Swagger
 	tagName string
 	title   string
 	version string
@@ -24,20 +22,10 @@ type Generator struct {
 
 func New(title, ver, desc string) *Generator {
 	sg := &Generator{
-		s:       &spec.Swagger{},
 		title:   title,
 		version: ver,
 		desc:    desc,
 	}
-	sg.s.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Description: desc,
-			Title:       title,
-			Version:     ver,
-		},
-	}
-	sg.s.Schemes = []string{"http", "https"}
-	sg.s.Swagger = "2.0"
 
 	return sg
 }
@@ -58,19 +46,35 @@ func (sg *Generator) WriteSwagToFile(filename string, services ...desc.ServiceDe
 }
 
 func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
+	swag := &spec.Swagger{}
+	swag.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Description: sg.desc,
+			Title:       sg.title,
+			Version:     sg.version,
+		},
+	}
+	swag.Schemes = []string{"http", "https"}
+	swag.Swagger = "2.0"
+
 	for _, d := range descs {
-		// extract the service description
-		s := d.Desc()
+		ps := desc.Parse(d)
 
-		addSwaggerTag(sg.s, s)
+		swag.Tags = append(
+			swag.Tags,
+			spec.NewTag(ps.Origin.Name, ps.Origin.Description, nil),
+		)
 
-		for _, c := range s.Contracts {
-			c.PossibleErrors = append(c.PossibleErrors, s.PossibleErrors...)
-			sg.addSwagOp(sg.s, s.Name, c)
+		for _, c := range ps.Contracts {
+			sg.addSwagOp(swag, ps.Origin.Name, c)
+		}
+
+		for _, m := range ps.Messages() {
+			sg.addSwagDefinition(swag, m)
 		}
 	}
 
-	swaggerJSON, err := sg.s.MarshalJSON()
+	swaggerJSON, err := swag.MarshalJSON()
 	if err != nil {
 		return err
 	}
@@ -80,7 +84,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	return err
 }
 
-func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Contract) {
+func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	if swag.Paths == nil {
 		swag.Paths = &spec.Paths{
 			Paths: map[string]spec.PathItem{},
@@ -88,18 +92,20 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Co
 	}
 	var contentType string
 	switch c.Encoding {
-	case kit.JSON:
+	case kit.JSON.Tag():
 		contentType = "application/json"
-	case kit.Proto:
+	case kit.Proto.Tag():
 		contentType = "application/x-protobuf"
-	case kit.MSG:
+	case kit.MSG.Tag():
 		contentType = "application/octet-stream"
 	default:
 		contentType = "application/json"
 	}
 
-	inType := reflect.Indirect(reflect.ValueOf(c.Input)).Type()
-	outType := reflect.Indirect(reflect.ValueOf(c.Output)).Type()
+	if c.Type != desc.REST {
+		return
+	}
+
 	opID := c.Name
 	op := spec.NewOperation(opID).
 		WithTags(serviceName).
@@ -109,231 +115,122 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Co
 			http.StatusOK,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", outType.Name())),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.OKResponse().Message.Name)),
 				),
 		)
 
 	possibleErrors := map[int][]string{}
-	for _, pe := range c.PossibleErrors {
-		errType := reflect.Indirect(reflect.ValueOf(pe.Message)).Type()
-		sg.addSwagDefinition(swag, errType)
-		possibleErrors[pe.Code] = append(possibleErrors[pe.Code], pe.Item)
+	for _, r := range c.Responses {
+		if !r.IsError() {
+			continue
+		}
+
+		possibleErrors[r.ErrCode] = append(possibleErrors[r.ErrCode], r.ErrItem)
 		op.RespondsWith(
-			pe.Code,
+			r.ErrCode,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", errType.Name())),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", r.Message.Name)),
 				).
-				WithDescription(fmt.Sprintf("Items: %s", strings.Join(possibleErrors[pe.Code], ", "))),
+				WithDescription(fmt.Sprintf("Items: %s", strings.Join(possibleErrors[r.ErrCode], ", "))),
 		)
 	}
-	for _, sel := range c.RouteSelectors {
-		restSel, ok := sel.Selector.(kit.RESTRouteSelector)
-		if !ok {
-			continue
-		}
 
-		sg.setSwagInput(op, restSel.GetPath(), inType)
-		sg.addSwagDefinition(swag, inType)
-		sg.addSwagDefinition(swag, outType)
+	sg.setSwagInput(op, c)
 
-		restPath := fixPathForSwag(restSel.GetPath())
-		pathItem := swag.Paths.Paths[restPath]
-		switch strings.ToUpper(restSel.GetMethod()) {
-		case http.MethodGet:
-			pathItem.Get = op
+	restPath := fixPathForSwag(c.Path)
+	pathItem := swag.Paths.Paths[restPath]
+	switch strings.ToUpper(c.Method) {
+	case http.MethodGet:
+		pathItem.Get = op
 
-		case http.MethodDelete:
-			pathItem.Delete = op
-		case http.MethodPost:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Post = op
-		case http.MethodPut:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Put = op
-		case http.MethodPatch:
-			op.AddParam(
-				spec.BodyParam(
-					inType.Name(),
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", inType.Name())),
-				),
-			)
-			pathItem.Patch = op
-		}
-		swag.Paths.Paths[restPath] = pathItem
+	case http.MethodDelete:
+		pathItem.Delete = op
+	case http.MethodPost:
+		op.AddParam(
+			spec.BodyParam(
+				c.Request.Message.Name,
+				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+			),
+		)
+		pathItem.Post = op
+	case http.MethodPut:
+		op.AddParam(
+			spec.BodyParam(
+				c.Request.Message.Name,
+				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+			),
+		)
+		pathItem.Put = op
+	case http.MethodPatch:
+		op.AddParam(
+			spec.BodyParam(
+				c.Request.Message.Name,
+				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+			),
+		)
+		pathItem.Patch = op
 	}
+	swag.Paths.Paths[restPath] = pathItem
 }
 
-func (sg *Generator) setSwagInput(op *spec.Operation, path string, inType reflect.Type) {
-	if inType.Kind() == reflect.Ptr {
-		inType = inType.Elem()
-	}
-	if inType.Kind() != reflect.Struct {
+func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
+	if len(c.Request.Message.Params) == 0 {
 		return
 	}
 
-	var pathParams []string //nolint:prealloc
-	for _, pp := range strings.Split(path, "/") {
-		if !strings.HasPrefix(pp, ":") {
-			continue
-		}
-		pathParam := strings.TrimPrefix(pp, ":")
-		pathParams = append(pathParams, pathParam)
-	}
-
-	queue := []reflect.Type{inType}
-	for j := 0; j < len(queue); j++ {
-		inType := queue[j]
-		for i := 0; i < inType.NumField(); i++ {
-			if inType.Field(i).Anonymous {
-				queue = append(queue, inType.Field(i).Type)
-
-				continue
-			}
-			pt := getParsedStructTag(inType.Field(i).Tag, sg.tagName)
-			if pt.Name == "" {
-				continue
-			}
-			found := false
-			for _, pathParam := range pathParams {
-				if strings.ToLower(pt.Name) == strings.ToLower(pathParam) {
-					found = true
-				}
-			}
-
-			switch {
-			case found:
-				op.AddParam(
-					setSwaggerParam(
-						spec.PathParam(pt.Name),
-						inType.Field(i).Type,
-						pt.Optional,
-					),
-				)
-			default:
-				op.AddParam(
-					setSwaggerParam(
-						spec.QueryParam(pt.Name),
-						inType.Field(i).Type,
-						pt.Optional,
-					),
-				)
-			}
+	for _, p := range c.Request.Message.Params {
+		if c.IsPathParam(p.Name) {
+			op.AddParam(
+				setSwaggerParam(spec.PathParam(p.Name), p),
+			)
+		} else if c.Method == http.MethodGet {
+			op.AddParam(
+				setSwaggerParam(spec.QueryParam(p.Name), p),
+			)
 		}
 	}
 }
 
-func (sg *Generator) addSwagDefinition(swag *spec.Swagger, rType reflect.Type) {
-	if rType.Kind() == reflect.Ptr {
-		rType = rType.Elem()
-	}
-	if rType.Kind() != reflect.Struct {
-		return
-	}
-
+func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
 	if swag.Definitions == nil {
 		swag.Definitions = map[string]spec.Schema{}
 	}
 
 	def := spec.Schema{}
 	def.Typed("object", "")
+	for _, p := range m.Params {
+		var wrapFuncChain schemaWrapperChain
 
-	queue := []reflect.Type{rType}
-	for j := 0; j < len(queue); j++ {
-		rType := queue[j]
-		for i := 0; i < rType.NumField(); i++ {
-			f := rType.Field(i)
-			if f.Anonymous {
-				queue = append(queue, f.Type)
-
-				continue
-			}
-			fType := f.Type
-			pt := getParsedStructTag(f.Tag, sg.tagName)
-			if pt.Name == "" {
-				continue
-			}
-
-			var wrapFuncChain schemaWrapperChain
-			switch fType.Kind() {
-			case reflect.Ptr:
-				fType = fType.Elem()
-				wrapFuncChain.Add(
-					func(schema *spec.Schema) *spec.Schema {
-						return schema
-					},
-				)
-			case reflect.Slice:
-				fType = fType.Elem()
-				wrapFuncChain.Add(
-					func(schema *spec.Schema) *spec.Schema {
-						return spec.ArrayProperty(schema)
-					},
-				)
+		kind := p.Kind
+		keepGoing := true
+		for keepGoing {
+			switch kind {
+			case desc.Map:
+				wrapFuncChain.Add(spec.MapProperty)
+				kind = p.SubKind
+			case desc.Array:
+				wrapFuncChain.Add(spec.ArrayProperty)
+				kind = p.SubKind
 			default:
-				wrapFuncChain.Add(
-					func(schema *spec.Schema) *spec.Schema {
-						return schema
-					},
-				)
-			}
-
-			if len(pt.PossibleValues) > 0 {
-				wrapFuncChain.Add(
-					func(schema *spec.Schema) *spec.Schema {
-						for _, v := range pt.PossibleValues {
-							schema.Enum = append(schema.Enum, v)
-						}
-
-						return schema
-					},
-				)
-			}
-
-		Switch:
-			switch fType.Kind() {
-			case reflect.String:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.StringProperty()))
-			case reflect.Int8, reflect.Uint8:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.ArrayProperty(spec.Int8Property())))
-			case reflect.Int32, reflect.Uint32:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.Int32Property()))
-			case reflect.Int, reflect.Uint, reflect.Int64, reflect.Uint64:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.Int64Property()))
-			case reflect.Float32:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.Float32Property()))
-			case reflect.Float64:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.Float64Property()))
-			case reflect.Struct:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", fType.Name()))))
-				sg.addSwagDefinition(swag, fType)
-			case reflect.Bool:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.BoolProperty()))
-			case reflect.Interface, reflect.Map:
-				sub := &spec.Schema{}
-				sub.Typed("object", "")
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(sub))
-			case reflect.Ptr:
-				fType = fType.Elem()
-
-				goto Switch
-			default:
-				def.SetProperty(pt.Name, wrapFuncChain.Apply(spec.StringProperty()))
+				keepGoing = false
 			}
 		}
-
-		swag.Definitions[rType.Name()] = def
+		switch kind {
+		case desc.Object:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", p.Message.Name))))
+		case desc.String:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+		case desc.Float:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
+		case desc.Integer:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
+		default:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+		}
 	}
+
+	swag.Definitions[m.Name] = def
 }
 
 func (sg *Generator) WritePostmanToFile(filename string, services ...desc.ServiceDesc) error {
@@ -448,52 +345,26 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 	items.AddItem(itm)
 }
 
-func addSwaggerTag(swag *spec.Swagger, s *desc.Service) {
-	swag.Tags = append(
-		swag.Tags,
-		spec.NewTag(s.Name, s.Description, nil),
-	)
-}
-
-func setSwaggerParam(p *spec.Parameter, t reflect.Type, optional bool) *spec.Parameter {
-	if optional {
+func setSwaggerParam(p *spec.Parameter, pp desc.ParsedParam) *spec.Parameter {
+	if pp.Tag.Optional {
 		p.AsOptional()
 	} else {
 		p.AsRequired()
 	}
-	kind := t.Kind()
-	switch kind {
-	case reflect.Map:
-		p.Typed("object", "")
-	case reflect.Slice:
-		switch t.Elem().Kind() {
-		case reflect.String:
-			p.Typed("string", kind.String())
-		case reflect.Float64, reflect.Float32:
-			p.Typed("number", kind.String())
-		case reflect.Int8, reflect.Uint8:
-			p.Typed("integer", "int8")
-		case reflect.Int32, reflect.Uint32:
-			p.Typed("integer", "int32")
-		case reflect.Int, reflect.Int64, reflect.Uint, reflect.Uint64:
-			p.Typed("integer", "int64")
-		default:
-			return nil
-		}
-	case reflect.String:
-		p.Typed("string", kind.String())
-	case reflect.Float64, reflect.Float32:
-		p.Typed("number", kind.String())
-	case reflect.Int8, reflect.Uint8:
-		p.Typed("integer", "int8")
-	case reflect.Int32, reflect.Uint32:
-		p.Typed("integer", "int32")
-	case reflect.Int, reflect.Int64, reflect.Uint, reflect.Uint64:
-		p.Typed("integer", "int64")
-	case reflect.Bool:
-		p.Typed("integer", "int64")
-	default:
+
+	switch pp.Kind {
+	case desc.Bool:
 		p.Typed("boolean", "")
+	case desc.Integer:
+		p.Typed("integer", "")
+	case desc.Float:
+		p.Typed("number", "")
+	case desc.Object:
+		p.Typed("object", "")
+	case desc.Map:
+		p.Typed("object", "")
+	case desc.String:
+		p.Typed("string", "")
 	}
 
 	return p

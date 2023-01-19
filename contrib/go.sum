@@ -4,8 +4,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/clubpay/ronykit/kit v0.10.0/go.mod h1:UisQPm74bFe6HIk2F9UpG4/AfyDURhil5oPnrxAiMZQ=
-github.com/clubpay/ronykit/kit v0.10.1 h1:oKqF/lWroHz+RUWL8WmeiL1IZ3N3t9f7mvhuv6dYQXI=
-github.com/clubpay/ronykit/kit v0.10.1/go.mod h1:UisQPm74bFe6HIk2F9UpG4/AfyDURhil5oPnrxAiMZQ=
+github.com/clubpay/ronykit/kit v0.10.4 h1:/gQfsiJFbTYZfzpzt4JxbSQg4LCM20n2aTASEH3ByYE=
+github.com/clubpay/ronykit/kit v0.10.4/go.mod h1:UisQPm74bFe6HIk2F9UpG4/AfyDURhil5oPnrxAiMZQ=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.0 h1:6Z0mzyDMRmAQ5tVzp98bgTem81mN5UM49qD6/hrQ5f8=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.0/go.mod h1:v96mUjzBTHQpL0UYa6GVvdt8xovIbG2fPlYOz0ZhrEs=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

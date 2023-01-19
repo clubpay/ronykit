@@ -3,6 +3,7 @@ package desc
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
@@ -17,6 +18,169 @@ type ParsedService struct {
 	// and Contract is not 1:1 because a Contract can have multiple RouteSelectors.
 	// Each RouteSelector will be parsed into a ParsedContract.
 	Contracts []ParsedContract
+
+	// internals
+	visited map[string]struct{}
+	parsed  map[string]ParsedMessage
+}
+
+func (ps *ParsedService) Messages() []ParsedMessage {
+	var msgs []ParsedMessage //nolint:prealloc
+	for _, m := range ps.parsed {
+		msgs = append(msgs, m)
+	}
+
+	sort.Slice(msgs, func(i, j int) bool {
+		return msgs[i].Name < msgs[j].Name
+	})
+
+	return msgs
+}
+
+func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
+	var pcs []ParsedContract //nolint:prealloc
+	for idx, s := range c.RouteSelectors {
+		name := s.Name
+		if name == "" {
+			name = c.Name
+		}
+		pc := ParsedContract{
+			Index:     idx,
+			GroupName: c.Name,
+			Name:      name,
+			Encoding:  s.Selector.GetEncoding().Tag(),
+		}
+
+		switch r := s.Selector.(type) {
+		case kit.RESTRouteSelector:
+			pc.Type = REST
+			pc.Path = r.GetPath()
+			pc.Method = r.GetMethod()
+
+			for _, p := range strings.Split(pc.Path, "/") {
+				if strings.HasPrefix(p, ":") {
+					pc.PathParams = append(pc.PathParams, p[1:])
+				}
+			}
+		case kit.RPCRouteSelector:
+			pc.Type = RPC
+			pc.Predicate = r.GetPredicate()
+		}
+
+		pc.Request = ParsedRequest{
+			Message: ps.parseMessage(c.Input, s.Selector.GetEncoding()),
+		}
+
+		if c.Output != nil {
+			pc.Responses = append(
+				pc.Responses,
+				ParsedResponse{
+					Message: ps.parseMessage(c.Output, s.Selector.GetEncoding()),
+				},
+			)
+		}
+
+		for _, e := range c.PossibleErrors {
+			pc.Responses = append(
+				pc.Responses,
+				ParsedResponse{
+					Message: ps.parseMessage(e.Message, s.Selector.GetEncoding()),
+					ErrCode: e.Code,
+					ErrItem: e.Item,
+				},
+			)
+		}
+
+		pcs = append(pcs, pc)
+	}
+
+	return pcs
+}
+
+func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
+	mt := reflect.TypeOf(m)
+	pm := ParsedMessage{
+		Name: mt.Name(),
+	}
+
+	if mt.Kind() == reflect.Ptr {
+		mt = mt.Elem()
+	}
+
+	ps.visited[mt.Name()] = struct{}{}
+
+	if mt.Kind() != reflect.Struct {
+		return pm
+	}
+
+	tagName := enc.Tag()
+	if tagName == "" {
+		tagName = kit.JSON.Tag()
+	}
+
+	// if we are here, it means that mt is a struct
+	var params []ParsedParam
+	for i := 0; i < mt.NumField(); i++ {
+		f := mt.Field(i)
+		ft := f.Type
+		ptn := getParsedStructTag(f.Tag, tagName)
+		pp := ParsedParam{
+			Name: ptn.Name,
+			Tag:  ptn,
+		}
+
+		if ft.Kind() == reflect.Ptr {
+			pp.Optional = true
+			ft = ft.Elem()
+		}
+		pp.Kind = parseKind(ft.Kind())
+
+		switch ft.Kind() {
+		case reflect.Map:
+			if ft.Key().Kind() != reflect.String {
+				continue
+			}
+
+			fallthrough
+		case reflect.Array, reflect.Slice:
+			pp.SubKind = parseKind(ft.Elem().Kind())
+			if pp.SubKind != Object && pp.SubKind != Array && pp.SubKind != Map {
+				break
+			}
+			ft = ft.Elem()
+
+			fallthrough
+		case reflect.Struct:
+			if ps.isParsed(ft.Name()) {
+				pp.Message = ps.parsed[ft.Name()]
+			} else if ps.isVisited(ft.Name()) {
+				panic("infinite recursion detected")
+			} else {
+				pp.Message = ps.parseMessage(reflect.New(ft).Interface(), enc)
+			}
+		case reflect.Chan, reflect.Interface, reflect.Func:
+			continue
+		}
+
+		params = append(params, pp)
+	}
+
+	pm.Params = params
+	ps.parsed[mt.Name()] = pm
+
+	return pm
+}
+
+func (ps *ParsedService) isParsed(name string) bool {
+	_, ok := ps.parsed[name]
+
+	return ok
+}
+
+func (ps *ParsedService) isVisited(name string) bool {
+	_, ok := ps.visited[name]
+
+	return ok
 }
 
 type ContractType string
@@ -64,6 +228,26 @@ func (pc ParsedContract) SuggestName() string {
 	return fmt.Sprintf("%s%d", pc.GroupName, pc.Index)
 }
 
+func (pc ParsedContract) OKResponse() ParsedResponse {
+	for _, r := range pc.Responses {
+		if !r.IsError() {
+			return r
+		}
+	}
+
+	return ParsedResponse{}
+}
+
+func (pc ParsedContract) IsPathParam(name string) bool {
+	for _, p := range pc.PathParams {
+		if p == name {
+			return true
+		}
+	}
+
+	return false
+}
+
 type ParsedMessage struct {
 	Name   string
 	Params []ParsedParam
@@ -107,6 +291,7 @@ type ParamKind string
 
 const (
 	None    ParamKind = ""
+	Bool    ParamKind = "boolean"
 	String  ParamKind = "string"
 	Integer ParamKind = "integer"
 	Float   ParamKind = "float"
@@ -143,156 +328,24 @@ func Parse(desc ServiceDesc) ParsedService {
 func ParseService(svc *Service) ParsedService {
 	// reset the parsed map
 	// we need this map, to prevent infinite recursion
-	parsed = make(map[string]ParsedMessage)
-	visited = make(map[string]struct{})
 
 	pd := ParsedService{
-		Origin: svc,
+		Origin:  svc,
+		parsed:  make(map[string]ParsedMessage),
+		visited: make(map[string]struct{}),
 	}
 
 	for _, c := range svc.Contracts {
-		pd.Contracts = append(pd.Contracts, parseContract(c)...)
+		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)
 	}
 
 	return pd
 }
 
-func parseContract(c Contract) []ParsedContract {
-	var pcs []ParsedContract //nolint:prealloc
-	for idx, s := range c.RouteSelectors {
-		name := s.Name
-		if name == "" {
-			name = c.Name
-		}
-		pc := ParsedContract{
-			Index:     idx,
-			GroupName: c.Name,
-			Name:      name,
-			Encoding:  s.Selector.GetEncoding().Tag(),
-		}
-
-		switch r := s.Selector.(type) {
-		case kit.RESTRouteSelector:
-			pc.Type = REST
-			pc.Path = r.GetPath()
-			pc.Method = r.GetMethod()
-
-			for _, p := range strings.Split(pc.Path, "/") {
-				if strings.HasPrefix(p, ":") {
-					pc.PathParams = append(pc.PathParams, p[1:])
-				}
-			}
-		case kit.RPCRouteSelector:
-			pc.Type = RPC
-			pc.Predicate = r.GetPredicate()
-		}
-
-		pc.Request = ParsedRequest{
-			Message: parseMessage(c.Input, s.Selector.GetEncoding()),
-		}
-
-		if c.Output != nil {
-			pc.Responses = append(
-				pc.Responses,
-				ParsedResponse{
-					Message: parseMessage(c.Output, s.Selector.GetEncoding()),
-				},
-			)
-		}
-
-		for _, e := range c.PossibleErrors {
-			pc.Responses = append(
-				pc.Responses,
-				ParsedResponse{
-					Message: parseMessage(e.Message, s.Selector.GetEncoding()),
-					ErrCode: e.Code,
-					ErrItem: e.Item,
-				},
-			)
-		}
-
-		pcs = append(pcs, pc)
-	}
-
-	return pcs
-}
-
-func parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
-	mt := reflect.TypeOf(m)
-	pm := ParsedMessage{
-		Name: mt.Name(),
-	}
-
-	if mt.Kind() == reflect.Ptr {
-		mt = mt.Elem()
-	}
-
-	visited[mt.Name()] = struct{}{}
-
-	if mt.Kind() != reflect.Struct {
-		return pm
-	}
-
-	tagName := enc.Tag()
-	if tagName == "" {
-		tagName = kit.JSON.Tag()
-	}
-
-	// if we are here, it means that mt is a struct
-	var params []ParsedParam
-	for i := 0; i < mt.NumField(); i++ {
-		f := mt.Field(i)
-		ft := f.Type
-		ptn := getParsedStructTag(f.Tag, tagName)
-		pp := ParsedParam{
-			Name: ptn.Name,
-			Tag:  ptn,
-		}
-
-		if ft.Kind() == reflect.Ptr {
-			pp.Optional = true
-			ft = ft.Elem()
-		}
-		pp.Kind = parseKind(ft.Kind())
-
-		switch ft.Kind() {
-		case reflect.Map:
-			if ft.Key().Kind() != reflect.String {
-				continue
-			}
-
-			fallthrough
-		case reflect.Array, reflect.Slice:
-			pp.SubKind = parseKind(ft.Elem().Kind())
-			if pp.SubKind != Object {
-				break
-			}
-			ft = ft.Elem()
-
-			fallthrough
-		case reflect.Struct:
-			if isParsed(ft.Name()) {
-				pp.Message = parsed[ft.Name()]
-			} else if isVisited(ft.Name()) {
-				panic("infinite recursion detected")
-			} else {
-				pp.Message = parseMessage(reflect.New(ft).Interface(), enc)
-			}
-		case reflect.Chan, reflect.Interface, reflect.Func:
-			continue
-		}
-
-		params = append(params, pp)
-	}
-
-	pm.Params = params
-	parsed[mt.Name()] = pm
-
-	return pm
-}
-
 func parseKind(k reflect.Kind) ParamKind {
 	switch k {
+	case reflect.Bool:
+		return Bool
 	case reflect.String:
 		return String
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -356,21 +409,4 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	}
 
 	return pst
-}
-
-var (
-	visited map[string]struct{}
-	parsed  map[string]ParsedMessage
-)
-
-func isParsed(name string) bool {
-	_, ok := parsed[name]
-
-	return ok
-}
-
-func isVisited(name string) bool {
-	_, ok := visited[name]
-
-	return ok
 }
