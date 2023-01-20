@@ -61,8 +61,8 @@ var _ = Describe("DescParser", func() {
 				SetName("c1").
 				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
 				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
-				In(NestedMessage{}).
-				Out(FlatMessage{}),
+				In(&NestedMessage{}).
+				Out(&FlatMessage{}),
 		)
 
 	It("should parse the description", func() {
@@ -93,11 +93,23 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
 		Expect(contract0.Request.Message.Fields[0].Kind).To(Equal(desc.String))
 
-		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
-		Expect(contract0.Request.Message.Fields[1].Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[1].Message.Fields).To(HaveLen(6))
-		Expect(contract0.Request.Message.Fields[1].Message.Fields[0].Name).To(Equal("a"))
-		Expect(contract0.Request.Message.Fields[1].Message.Fields[0].Kind).To(Equal(desc.String))
+		b := contract0.Request.Message.Fields[1]
+		Expect(b.Name).To(Equal("b"))
+		Expect(b.Kind).To(Equal(desc.Object))
+		Expect(b.Message.Name).To(Equal("FlatMessage"))
+		Expect(b.Message.Fields).To(HaveLen(6))
+		Expect(b.Message.Fields[0].Name).To(Equal("a"))
+		Expect(b.Message.Fields[0].Kind).To(Equal(desc.String))
+
+		ba := contract0.Request.Message.Fields[2]
+		Expect(ba.Name).To(Equal("ba"))
+		Expect(ba.Kind).To(Equal(desc.Array))
+		Expect(ba.Message).To(BeNil())
+		Expect(ba.Element.Kind).To(Equal(desc.Object))
+		Expect(ba.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(ba.Element.Message.Fields).To(HaveLen(6))
+		Expect(ba.Element.Message.Fields[0].Name).To(Equal("a"))
+		Expect(ba.Element.Message.Fields[0].Kind).To(Equal(desc.String))
 
 		g := contract0.Responses[0].Message.Fields[4]
 		Expect(g.Name).To(Equal("g"))

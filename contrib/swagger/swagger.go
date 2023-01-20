@@ -65,12 +65,12 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 			spec.NewTag(ps.Origin.Name, ps.Origin.Description, nil),
 		)
 
-		for _, c := range ps.Contracts {
-			sg.addSwagOp(swag, ps.Origin.Name, c)
-		}
-
 		for _, m := range ps.Messages() {
 			sg.addSwagDefinition(swag, m)
+		}
+
+		for _, c := range ps.Contracts {
+			sg.addSwagOp(swag, ps.Origin.Name, c)
 		}
 	}
 
@@ -203,28 +203,37 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 		var wrapFuncChain schemaWrapperChain
 		wrapFuncChain = wrapFuncChain[:0]
 
-		kind := p.Kind
+		var (
+			kind = p.Kind
+			name string
+		)
+
 		switch kind {
 		case desc.Map:
 			wrapFuncChain.Add(spec.MapProperty)
 		case desc.Array:
 			wrapFuncChain.Add(spec.ArrayProperty)
+		case desc.Object:
+			name = p.Message.Name
 		}
 
 		e := p.Element
 		for e != nil {
+			kind = e.Kind
 			switch e.Kind {
 			case desc.Map:
 				wrapFuncChain.Add(spec.MapProperty)
 			case desc.Array:
 				wrapFuncChain.Add(spec.ArrayProperty)
+			case desc.Object:
+				name = e.Message.Name
 			}
 			e = e.Element
 		}
 
 		switch kind {
 		case desc.Object:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", p.Message.Name))))
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
 		case desc.String:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		case desc.Float:
@@ -232,6 +241,7 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 		case desc.Integer:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
 		default:
+			fmt.Println(p.Name, kind)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
 	}

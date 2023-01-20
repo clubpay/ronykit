@@ -99,12 +99,12 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 
 func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
 	mt := reflect.TypeOf(m)
-	pm := ParsedMessage{
-		Name: mt.Name(),
-	}
-
 	if mt.Kind() == reflect.Ptr {
 		mt = mt.Elem()
+	}
+
+	pm := ParsedMessage{
+		Name: mt.Name(),
 	}
 
 	if mt.Kind() != reflect.Struct {
@@ -155,7 +155,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 					pe.Element = &ParsedElement{}
 					pe = pe.Element
 				case Object:
-					pm := ps.parseMessage(ft, enc)
+					pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
 					pe.Message = &pm
 					keepGoing = false
 				default:
