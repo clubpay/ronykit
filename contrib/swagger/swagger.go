@@ -175,11 +175,11 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Pa
 }
 
 func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
-	if len(c.Request.Message.Params) == 0 {
+	if len(c.Request.Message.Fields) == 0 {
 		return
 	}
 
-	for _, p := range c.Request.Message.Params {
+	for _, p := range c.Request.Message.Fields {
 		if c.IsPathParam(p.Name) {
 			op.AddParam(
 				setSwaggerParam(spec.PathParam(p.Name), p),
@@ -199,23 +199,29 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 
 	def := spec.Schema{}
 	def.Typed("object", "")
-	for _, p := range m.Params {
+	for _, p := range m.Fields {
 		var wrapFuncChain schemaWrapperChain
+		wrapFuncChain = wrapFuncChain[:0]
 
 		kind := p.Kind
-		keepGoing := true
-		for keepGoing {
-			switch kind {
+		switch kind {
+		case desc.Map:
+			wrapFuncChain.Add(spec.MapProperty)
+		case desc.Array:
+			wrapFuncChain.Add(spec.ArrayProperty)
+		}
+
+		e := p.Element
+		for e != nil {
+			switch e.Kind {
 			case desc.Map:
 				wrapFuncChain.Add(spec.MapProperty)
-				kind = p.SubKind
 			case desc.Array:
 				wrapFuncChain.Add(spec.ArrayProperty)
-				kind = p.SubKind
-			default:
-				keepGoing = false
 			}
+			e = e.Element
 		}
+
 		switch kind {
 		case desc.Object:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", p.Message.Name))))
@@ -287,7 +293,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 			Name: pp,
 			Key:  pp,
 		}
-		for _, p := range c.Request.Message.Params {
+		for _, p := range c.Request.Message.Fields {
 			if p.Name == pp {
 				v.Type = string(p.Kind)
 				v.Value = p.SampleValue
@@ -299,8 +305,8 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 	}
 
 	var queryParams []*postman.QueryParam
-	if len(c.PathParams) > len(c.Request.Message.Params) && c.Method == "GET" {
-		for _, p := range c.Request.Message.Params {
+	if len(c.PathParams) > len(c.Request.Message.Fields) && c.Method == "GET" {
+		for _, p := range c.Request.Message.Fields {
 			found := false
 			for _, pp := range c.PathParams {
 				if p.Name == pp {
@@ -345,7 +351,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 	items.AddItem(itm)
 }
 
-func setSwaggerParam(p *spec.Parameter, pp desc.ParsedParam) *spec.Parameter {
+func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 	if pp.Tag.Optional {
 		p.AsOptional()
 	} else {

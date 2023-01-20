@@ -38,11 +38,13 @@ func (d dummyRESTSelector) GetPath() string {
 }
 
 type FlatMessage struct {
-	A string            `json:"a"`
-	B int64             `json:"b"`
-	C map[string]string `json:"c"`
-	D map[string]int64  `json:"d"`
-	E map[int64]string  `json:"e"`
+	A string                       `json:"a"`
+	B int64                        `json:"b"`
+	C map[string]string            `json:"c"`
+	D map[string]int64             `json:"d"`
+	E map[int64]string             `json:"e"`
+	G [][]string                   `json:"g"`
+	M map[string]map[string]string `json:"m"`
 }
 
 type NestedMessage struct {
@@ -65,32 +67,52 @@ var _ = Describe("DescParser", func() {
 
 	It("should parse the description", func() {
 		pd := desc.ParseService(d)
+		contract0 := pd.Contracts[0]
+		contract1 := pd.Contracts[1]
 		Expect(pd.Contracts).To(HaveLen(2))
-		Expect(pd.Contracts[0].Name).To(Equal("s1"))
-		Expect(pd.Contracts[0].Type).To(Equal(desc.REST))
-		Expect(pd.Contracts[0].Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(pd.Contracts[0].Path).To(Equal("/path1"))
-		Expect(pd.Contracts[0].Method).To(Equal("GET"))
-		Expect(pd.Contracts[0].GroupName).To(Equal("c1"))
+		Expect(contract0.Name).To(Equal("s1"))
+		Expect(contract0.Type).To(Equal(desc.REST))
+		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
+		Expect(contract0.Path).To(Equal("/path1"))
+		Expect(contract0.Method).To(Equal("GET"))
+		Expect(contract0.GroupName).To(Equal("c1"))
+		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(4))
+		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(6))
 
-		Expect(pd.Contracts[1].Name).To(Equal("s2"))
-		Expect(pd.Contracts[1].Type).To(Equal(desc.REST))
-		Expect(pd.Contracts[1].Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(pd.Contracts[1].Path).To(Equal("/path2"))
-		Expect(pd.Contracts[1].Method).To(Equal("POST"))
-		Expect(pd.Contracts[1].GroupName).To(Equal("c1"))
+		Expect(contract1.Name).To(Equal("s2"))
+		Expect(contract1.Type).To(Equal(desc.REST))
+		Expect(contract1.Encoding).To(Equal(kit.JSON.Tag()))
+		Expect(contract1.Path).To(Equal("/path2"))
+		Expect(contract1.Method).To(Equal("POST"))
+		Expect(contract1.GroupName).To(Equal("c1"))
 
-		Expect(pd.Contracts[0].Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(pd.Contracts[0].Request.Message.Params).To(HaveLen(4))
-		Expect(pd.Contracts[0].Request.Message.Params[0].Name).To(Equal("a"))
-		Expect(pd.Contracts[0].Request.Message.Params[0].SubKind).To(Equal(desc.None))
-		Expect(pd.Contracts[0].Request.Message.Params[0].Kind).To(Equal(desc.String))
+		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(4))
+		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
+		Expect(contract0.Request.Message.Fields[0].Kind).To(Equal(desc.String))
 
-		Expect(pd.Contracts[0].Request.Message.Params[1].Name).To(Equal("b"))
-		Expect(pd.Contracts[0].Request.Message.Params[1].Kind).To(Equal(desc.Object))
-		Expect(pd.Contracts[0].Request.Message.Params[1].Message.Params).To(HaveLen(4))
-		Expect(pd.Contracts[0].Request.Message.Params[1].Message.Params[0].Name).To(Equal("a"))
-		Expect(pd.Contracts[0].Request.Message.Params[1].Message.Params[0].Kind).To(Equal(desc.String))
+		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
+		Expect(contract0.Request.Message.Fields[1].Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[1].Message.Fields).To(HaveLen(6))
+		Expect(contract0.Request.Message.Fields[1].Message.Fields[0].Name).To(Equal("a"))
+		Expect(contract0.Request.Message.Fields[1].Message.Fields[0].Kind).To(Equal(desc.String))
 
+		g := contract0.Responses[0].Message.Fields[4]
+		Expect(g.Name).To(Equal("g"))
+		Expect(g.Kind).To(Equal(desc.Array))
+		Expect(g.Element.Kind).To(Equal(desc.Array))
+		Expect(g.Element.Element.Kind).To(Equal(desc.String))
+		Expect(g.Element.Element.Message).To(BeNil())
+		Expect(g.Element.Message).To(BeNil())
+
+		m := contract0.Responses[0].Message.Fields[5]
+		Expect(m.Name).To(Equal("m"))
+		Expect(m.Kind).To(Equal(desc.Map))
+		Expect(m.Element.Kind).To(Equal(desc.Map))
+		Expect(m.Element.Message).To(BeNil())
+		Expect(m.Element.Element.Kind).To(Equal(desc.String))
+		Expect(m.Element.Element.Message).To(BeNil())
 	})
 })

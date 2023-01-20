@@ -11,10 +11,11 @@ import (
 )
 
 type sampleReq struct {
-	X string   `json:"x,int"`
-	Y string   `json:"y,omitempty"`
-	Z int64    `json:"z"`
-	W []string `json:"w"`
+	X  string     `json:"x,int"`
+	Y  string     `json:"y,omitempty"`
+	Z  int64      `json:"z"`
+	W  []string   `json:"w"`
+	TT [][]string `json:"tt"`
 }
 
 type subRes struct {
@@ -89,7 +90,7 @@ func (t testService) Desc() *desc.Service {
 func TestNewSwagger(t *testing.T) {
 	err := swagger.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
-		WriteSwagToFile("_test.json", testService{})
+		WriteSwagToFile("_swagger.json", testService{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +99,7 @@ func TestNewSwagger(t *testing.T) {
 func TestPostmanCollection(t *testing.T) {
 	err := swagger.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
-		WritePostmanToFile("_test.json", testService{})
+		WritePostmanToFile("_postman.json", testService{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -21,13 +21,13 @@ type ParsedService struct {
 
 	// internals
 	visited map[string]struct{}
-	parsed  map[string]ParsedMessage
+	parsed  map[string]*ParsedMessage
 }
 
 func (ps *ParsedService) Messages() []ParsedMessage {
 	var msgs []ParsedMessage //nolint:prealloc
 	for _, m := range ps.parsed {
-		msgs = append(msgs, m)
+		msgs = append(msgs, *m)
 	}
 
 	sort.Slice(msgs, func(i, j int) bool {
@@ -107,11 +107,11 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		mt = mt.Elem()
 	}
 
-	ps.visited[mt.Name()] = struct{}{}
-
 	if mt.Kind() != reflect.Struct {
 		return pm
 	}
+
+	ps.visited[mt.Name()] = struct{}{}
 
 	tagName := enc.Tag()
 	if tagName == "" {
@@ -119,54 +119,69 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 	}
 
 	// if we are here, it means that mt is a struct
-	var params []ParsedParam
+	var fields []ParsedField
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
-		ft := f.Type
 		ptn := getParsedStructTag(f.Tag, tagName)
-		pp := ParsedParam{
+		pp := ParsedField{
 			Name: ptn.Name,
 			Tag:  ptn,
 		}
 
+		ft := f.Type
 		if ft.Kind() == reflect.Ptr {
 			pp.Optional = true
-			ft = ft.Elem()
 		}
-		pp.Kind = parseKind(ft.Kind())
 
-		switch ft.Kind() {
-		case reflect.Map:
+		pp.Kind = parseKind(ft)
+		switch pp.Kind {
+		case Map:
 			if ft.Key().Kind() != reflect.String {
 				continue
 			}
 
 			fallthrough
-		case reflect.Array, reflect.Slice:
-			pp.SubKind = parseKind(ft.Elem().Kind())
-			if pp.SubKind != Object && pp.SubKind != Array && pp.SubKind != Map {
-				break
-			}
-			ft = ft.Elem()
+		case Array:
+			pe := &ParsedElement{}
+			pp.Element = pe
 
-			fallthrough
-		case reflect.Struct:
+			keepGoing := true
+			for keepGoing {
+				ft = ft.Elem()
+				kind := parseKind(ft)
+				pe.Kind = kind
+				switch kind {
+				case Map, Array:
+					pe.Element = &ParsedElement{}
+					pe = pe.Element
+				case Object:
+					pm := ps.parseMessage(ft, enc)
+					pe.Message = &pm
+					keepGoing = false
+				default:
+					keepGoing = false
+				}
+			}
+		case Object:
 			if ps.isParsed(ft.Name()) {
 				pp.Message = ps.parsed[ft.Name()]
 			} else if ps.isVisited(ft.Name()) {
-				panic("infinite recursion detected")
+				fmt.Println(ps.visited, ps.parsed)
+				panic(fmt.Sprintf("infinite recursion detected: %s.%s", mt.Name(), ft.Name()))
 			} else {
-				pp.Message = ps.parseMessage(reflect.New(ft).Interface(), enc)
+				pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
+				pp.Message = &pm
 			}
-		case reflect.Chan, reflect.Interface, reflect.Func:
+
+		case None:
 			continue
 		}
 
-		params = append(params, pp)
+		fields = append(fields, pp)
 	}
 
-	pm.Params = params
-	ps.parsed[mt.Name()] = pm
+	pm.Fields = fields
+	ps.parsed[mt.Name()] = &pm
 
 	return pm
 }
@@ -248,14 +263,42 @@ func (pc ParsedContract) IsPathParam(name string) bool {
 	return false
 }
 
+type ParsedRequest struct {
+	Message ParsedMessage
+}
+
+type ParsedResponse struct {
+	Message ParsedMessage
+	ErrCode int
+	ErrItem string
+}
+
+func (pr ParsedResponse) IsError() bool {
+	return pr.ErrCode != 0
+}
+
+type Kind string
+
+const (
+	None    Kind = ""
+	Bool    Kind = "boolean"
+	String  Kind = "string"
+	Integer Kind = "integer"
+	Float   Kind = "float"
+	Object  Kind = "object"
+	Map     Kind = "map"
+	Array   Kind = "array"
+)
+
 type ParsedMessage struct {
 	Name   string
-	Params []ParsedParam
+	Kind   Kind
+	Fields []ParsedField
 }
 
 func (pm ParsedMessage) JSON() string {
 	m := map[string]interface{}{}
-	for _, p := range pm.Params {
+	for _, p := range pm.Fields {
 		switch p.Kind {
 		case Map:
 			m[p.Name] = map[string]interface{}{}
@@ -273,46 +316,62 @@ func (pm ParsedMessage) JSON() string {
 	return string(d)
 }
 
-type ParsedRequest struct {
-	Message ParsedMessage
+func (pm ParsedMessage) String() string {
+	sb := strings.Builder{}
+	sb.WriteString(pm.Name)
+	sb.WriteString("[")
+	for idx, p := range pm.Fields {
+		if idx > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(p.Name)
+		sb.WriteString(":")
+		sb.WriteString(string(p.Kind))
+
+		switch p.Kind {
+		case Map, Array:
+			sb.WriteString(":")
+			sb.WriteString(p.Element.String())
+		case Object:
+			sb.WriteString(":")
+		}
+	}
+	sb.WriteString("]")
+
+	return sb.String()
 }
 
-type ParsedResponse struct {
-	Message ParsedMessage
-	ErrCode int
-	ErrItem string
-}
-
-func (pr ParsedResponse) IsError() bool {
-	return pr.ErrCode != 0
-}
-
-type ParamKind string
-
-const (
-	None    ParamKind = ""
-	Bool    ParamKind = "boolean"
-	String  ParamKind = "string"
-	Integer ParamKind = "integer"
-	Float   ParamKind = "float"
-	Object  ParamKind = "object"
-	Map     ParamKind = "map"
-	Array   ParamKind = "array"
-)
-
-type ParsedParam struct {
+type ParsedField struct {
 	Name        string
 	Tag         ParsedStructTag
 	SampleValue string
 	Optional    bool
-	Kind        ParamKind
-	// SubKind is the kind of the elements of the array or map. For other kinds,
-	// it is empty.
-	SubKind ParamKind
-	// Message is the parsed message if the kind is Object, Map or Array.
-	// In Map and Array, the Message is the parsed message of the elements.
-	// In Object, the Message is the parsed message of the struct.
-	Message ParsedMessage
+	Kind        Kind
+
+	// Kind == Object
+	// Message is the parsed message if the kind is Object.
+	Message *ParsedMessage
+	// Kind == Array || Kind == Map
+	Element *ParsedElement
+}
+
+type ParsedElement struct {
+	Kind    Kind
+	Element *ParsedElement
+	Message *ParsedMessage
+}
+
+func (pf ParsedElement) String() string {
+	switch pf.Kind {
+	case Map:
+		return fmt.Sprintf("map[%s]", pf.Element.String())
+	case Array:
+		return fmt.Sprintf("array[%s]", pf.Element.String())
+	case Object:
+		return pf.Message.String()
+	default:
+		return string(pf.Kind)
+	}
 }
 
 // Parse extracts the Service descriptor from the input ServiceDesc
@@ -331,7 +390,7 @@ func ParseService(svc *Service) ParsedService {
 
 	pd := ParsedService{
 		Origin:  svc,
-		parsed:  make(map[string]ParsedMessage),
+		parsed:  make(map[string]*ParsedMessage),
 		visited: make(map[string]struct{}),
 	}
 
@@ -342,8 +401,12 @@ func ParseService(svc *Service) ParsedService {
 	return pd
 }
 
-func parseKind(k reflect.Kind) ParamKind {
-	switch k {
+func parseKind(t reflect.Type) Kind {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	switch t.Kind() {
 	case reflect.Bool:
 		return Bool
 	case reflect.String:
@@ -361,7 +424,7 @@ func parseKind(k reflect.Kind) ParamKind {
 		return Array
 	}
 
-	return ""
+	return None
 }
 
 const (
