@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"sync/atomic"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
@@ -40,6 +41,7 @@ type bundle struct {
 	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*httpmux.RouteData
 	wsEndpoint    string
+	wsNextID      uint64
 	predicateKey  string
 	rpcInFactory  kit.IncomingRPCFactory
 	rpcOutFactory kit.OutgoingRPCFactory
@@ -183,7 +185,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
 				kv:       map[string]string{},
-				id:       0,
+				id:       atomic.AddUint64(&b.wsNextID, 1),
 				clientIP: conn.RemoteAddr().String(),
 				c:        conn,
 			}

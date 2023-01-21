@@ -17,3 +17,7 @@ type Error struct {
 	Item    string
 	Message kit.Message
 }
+
+func GenerateService(desc ServiceDesc) kit.Service {
+	return desc.Desc().Generate()
+}

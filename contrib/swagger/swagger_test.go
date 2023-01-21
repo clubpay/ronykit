@@ -2,21 +2,20 @@ package swagger_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
-	"github.com/goccy/go-json"
 )
 
 type sampleReq struct {
-	X string   `json:"x"`
-	Y string   `json:"y"`
-	Z int64    `json:"z"`
-	W []string `json:"w"`
+	X  string     `json:"x,int"`
+	Y  string     `json:"y,omitempty"`
+	Z  int64      `json:"z"`
+	W  []string   `json:"w"`
+	TT [][]string `json:"tt"`
 }
 
 type subRes struct {
@@ -32,8 +31,8 @@ type sampleRes struct {
 }
 
 type sampleError struct {
-	Code int `json:"code" swag:"enum:504,503"`
-	Item string
+	Code int    `json:"code" swag:"enum:504,503"`
+	Item string `json:"item"`
 }
 
 var _ kit.ErrorMessage = (*sampleError)(nil)
@@ -64,6 +63,7 @@ func (t testService) Desc() *desc.Service {
 	}).
 		AddContract(
 			desc.NewContract().
+				SetName("sumGET").
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodGet,
 					Path:   "/some/:x/:y",
@@ -76,6 +76,7 @@ func (t testService) Desc() *desc.Service {
 		).
 		AddContract(
 			desc.NewContract().
+				SetName("sumPOST").
 				AddSelector(fasthttp.Selector{
 					Method: fasthttp.MethodPost,
 					Path:   "/some/:x/:y",
@@ -87,15 +88,19 @@ func (t testService) Desc() *desc.Service {
 }
 
 func TestNewSwagger(t *testing.T) {
-	sg := swagger.New("TestTitle", "v0.0.1", "")
-	sg.WithTag("json")
-
-	sb := &strings.Builder{}
-	err := sg.WriteTo(sb, testService{})
+	err := swagger.New("TestTitle", "v0.0.1", "").
+		WithTag("json").
+		WriteSwagToFile("_swagger.json", testService{})
 	if err != nil {
 		t.Fatal(err)
 	}
+}
 
-	x, _ := json.MarshalIndent(json.RawMessage(sb.String()), "", "   ")
-	fmt.Println(string(x))
+func TestPostmanCollection(t *testing.T) {
+	err := swagger.New("TestTitle", "v0.0.1", "").
+		WithTag("json").
+		WritePostmanToFile("_postman.json", testService{})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
