@@ -240,8 +240,9 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
 		case desc.Integer:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
+		case desc.Bool:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
 		default:
-			fmt.Println(p.Name, kind)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
 	}
