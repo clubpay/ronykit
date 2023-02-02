@@ -143,6 +143,18 @@ func StrTruncate(s string, maxSize int) string {
 	return builder.String()
 }
 
+func RemoveRestrictedCharsFromStr(s string) string {
+
+	s = strings.Replace(s, "<", "", -1)
+	s = strings.Replace(s, ">", "", -1)
+	s = strings.Replace(s, "\\", "", -1)
+	s = strings.Replace(s, "'", "", -1)
+	s = strings.Replace(s, "\"", "", -1)
+	s = strings.Replace(s, "*", "", -1)
+
+	return s
+}
+
 // ByteToStr converts byte slice to a string without memory allocation.
 // Note it may break if string and/or slice header will change
 // in the future go versions.

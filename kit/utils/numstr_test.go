@@ -71,4 +71,17 @@ var _ = Describe("Numeric tests", func() {
 		Entry("test", utils.StrTruncate(" ", 0), 0, ""),
 		Entry("test", utils.StrTruncate(" ", 1), 1, " "),
 	)
+	DescribeTable(
+		"RemoveRestrictedCharsFromStr",
+		func(s, expected string) {
+			Expect(utils.RemoveRestrictedCharsFromStr(s)).To(BeIdenticalTo(expected))
+		},
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Morganfield's"), "Morganfields"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Coffee>Tea"), "CoffeeTea"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Coffee<Tea"), "CoffeeTea"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Coffee>Tea*"), "CoffeeTea"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Coffee>Tea\\"), "CoffeeTea"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Coffee>Tea\""), "CoffeeTea"),
+		Entry("test", utils.RemoveRestrictedCharsFromStr("Tea Hut"), "Tea Hut"),
+	)
 })
