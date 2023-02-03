@@ -54,3 +54,20 @@ func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option
 		b.rpcOutFactory = out
 	}
 }
+
+// CompressionLevel is numeric representation of compression level
+type CompressionLevel int
+
+// Represents compression level that will be used in the middleware
+const (
+	CompressionLevelDisabled        CompressionLevel = -1
+	CompressionLevelDefault         CompressionLevel = 0
+	CompressionLevelBestSpeed       CompressionLevel = 1
+	CompressionLevelBestCompression CompressionLevel = 2
+)
+
+func WithCompressionLevel(level CompressionLevel) Option {
+	return func(b *bundle) {
+		b.compress = level
+	}
+}
