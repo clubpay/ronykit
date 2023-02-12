@@ -369,6 +369,10 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 		p.AsRequired()
 	}
 
+	if pp.Tag.Deprecated {
+		p.Description = "Deprecated"
+	}
+
 	switch pp.Kind {
 	case desc.Bool:
 		p.Typed("boolean", "")

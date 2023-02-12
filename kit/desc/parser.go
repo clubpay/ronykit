@@ -438,6 +438,7 @@ type ParsedStructTag struct {
 	Name           string
 	Optional       bool
 	PossibleValues []string
+	Deprecated     bool
 }
 
 func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
@@ -460,6 +461,8 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 		switch {
 		case x == "optional":
 			pst.Optional = true
+		case x == "deprecated":
+			pst.Deprecated = true
 		case strings.HasPrefix(x, "enum:"):
 			xx := strings.SplitN(p, swagIdentSep, 2)
 			if len(xx) == 2 {
