@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/silverhttp
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.6
+	github.com/clubpay/ronykit/kit v0.10.8
 	github.com/go-www/silverlining v1.3.0
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.2.0
