@@ -190,6 +190,20 @@ func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 			)
 		}
 	}
+
+	for _, hdr := range c.Request.Headers {
+		if hdr.Required {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsRequired(),
+			)
+		} else {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsOptional(),
+			)
+		}
+	}
 }
 
 func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
@@ -357,6 +371,16 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 				},
 			},
 		},
+	}
+
+	for _, hdr := range c.Request.Headers {
+		itm.Request.Header = append(
+			itm.Request.Header,
+			&postman.Header{
+				Key:   hdr.Name,
+				Value: "",
+			},
+		)
 	}
 
 	items.AddItem(itm)
