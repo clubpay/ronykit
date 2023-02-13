@@ -68,6 +68,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 		}
 
 		pc.Request = ParsedRequest{
+			Headers: c.InputHeaders,
 			Message: ps.parseMessage(c.Input, s.Selector.GetEncoding()),
 		}
 
@@ -264,6 +265,7 @@ func (pc ParsedContract) IsPathParam(name string) bool {
 }
 
 type ParsedRequest struct {
+	Headers []Header
 	Message ParsedMessage
 }
 
