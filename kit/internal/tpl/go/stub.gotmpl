@@ -110,9 +110,15 @@ func (s {{$serviceName}}Stub) {{$methodName}}(
 			},
 		).
 		{{- end }}
-		DefaultResponseHandler(
+		SetOKHandler(
+			200,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "{{.Path}}", {{.Encoding}}, req)

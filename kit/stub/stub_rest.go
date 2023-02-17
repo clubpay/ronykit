@@ -206,6 +206,14 @@ func (hc *RESTCtx) SetResponseHandler(statusCode int, h RESTResponseHandler) *RE
 	return hc
 }
 
+func (hc *RESTCtx) SetOKHandler(h RESTResponseHandler) *RESTCtx {
+	hc.handlers[http.StatusOK] = h
+	hc.handlers[http.StatusCreated] = h
+	hc.handlers[http.StatusAccepted] = h
+
+	return hc
+}
+
 func (hc *RESTCtx) DefaultResponseHandler(h RESTResponseHandler) *RESTCtx {
 	hc.defaultHandler = h
 
