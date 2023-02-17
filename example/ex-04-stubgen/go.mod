@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/example/ex-04-stubgen
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.9.16
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.9.16
+	github.com/clubpay/ronykit/kit v0.10.9
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.9
 )
 
 require (
