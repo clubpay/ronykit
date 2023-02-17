@@ -8,8 +8,8 @@ require (
 	github.com/go-openapi/spec v0.20.7
 	github.com/rbretecher/go-postman-collection v0.9.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.11.1
-	go.opentelemetry.io/otel v1.11.2
-	go.opentelemetry.io/otel/trace v1.11.2
+	go.opentelemetry.io/otel v1.13.0
+	go.opentelemetry.io/otel/trace v1.13.0
 )
 
 require (
