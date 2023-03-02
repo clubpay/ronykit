@@ -92,7 +92,10 @@ type testCluster struct {
 	}
 }
 
-var _ kit.Cluster = (*testCluster)(nil)
+var (
+	_ kit.Cluster      = (*testCluster)(nil)
+	_ kit.ClusterStore = (*testCluster)(nil)
+)
 
 func newTestCluster() *testCluster {
 	t := &testCluster{
@@ -186,6 +189,18 @@ func (t *testCluster) Scan(prefix string, cb func(key string) bool) error {
 	for k := range t.kv {
 		if strings.HasPrefix(k, prefix) {
 			if !cb(k) {
+				return nil
+			}
+		}
+	}
+
+	return nil
+}
+
+func (t *testCluster) ScanWithValue(prefix string, cb func(string, string) bool) error {
+	for k, v := range t.kv {
+		if strings.HasPrefix(k, prefix) {
+			if !cb(k, v) {
 				return nil
 			}
 		}

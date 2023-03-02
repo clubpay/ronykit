@@ -141,10 +141,27 @@ func (c *cluster) Get(key string) (string, error) {
 
 func (c *cluster) Scan(prefix string, cb func(string) bool) error {
 	ctx := context.Background()
-	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s*", prefix), 512).Iterator()
+	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
 
 	for iter.Next(ctx) {
 		if !cb(iter.Val()) {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (c *cluster) ScanWithValue(prefix string, cb func(string, string) bool) error {
+	ctx := context.Background()
+	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
+
+	for iter.Next(ctx) {
+		v, err := c.rc.Get(ctx, iter.Val()).Result()
+		if err != nil {
+			return err
+		}
+		if !cb(iter.Val(), v) {
 			return nil
 		}
 	}

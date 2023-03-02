@@ -35,6 +35,7 @@ type ClusterStore interface {
 	// Scan scans through the keys which has the prefix. If callback returns `false`, then
 	// the scan is aborted.
 	Scan(prefix string, cb func(string) bool) error
+	ScanWithValue(prefix string, cb func(string, string) bool) error
 }
 
 type ClusterDelegate interface {

@@ -167,7 +167,6 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 			if ps.isParsed(ft.Name()) {
 				pp.Message = ps.parsed[ft.Name()]
 			} else if ps.isVisited(ft.Name()) {
-				fmt.Println(ps.visited, ps.parsed)
 				panic(fmt.Sprintf("infinite recursion detected: %s.%s", mt.Name(), ft.Name()))
 			} else {
 				pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
