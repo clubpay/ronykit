@@ -36,7 +36,8 @@ type bundle struct {
 	connPool sync.Pool
 	cors     *cors
 
-	httpMux *httpmux.Mux
+	httpMux  *httpmux.Mux
+	compress CompressionLevel
 
 	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*httpmux.RouteData
@@ -57,6 +58,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 			HandleMethodNotAllowed: true,
 			HandleOPTIONS:          true,
 		},
+		compress:      CompressionLevelDefault,
 		wsRoutes:      map[string]*httpmux.RouteData{},
 		srv:           &fasthttp.Server{},
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
@@ -71,17 +73,39 @@ func New(opts ...Option) (kit.Gateway, error) {
 		opt(r)
 	}
 
+	httpHandler := r.httpHandler
+	switch r.compress {
+	case CompressionLevelDefault:
+		httpHandler = fasthttp.CompressHandlerBrotliLevel(
+			r.httpHandler,
+			fasthttp.CompressBrotliDefaultCompression,
+			fasthttp.CompressDefaultCompression,
+		)
+	case CompressionLevelBestSpeed:
+		httpHandler = fasthttp.CompressHandlerBrotliLevel(
+			r.httpHandler,
+			fasthttp.CompressBrotliBestSpeed,
+			fasthttp.CompressBestSpeed,
+		)
+	case CompressionLevelBestCompression:
+		httpHandler = fasthttp.CompressHandlerBrotliLevel(
+			r.httpHandler,
+			fasthttp.CompressBrotliBestCompression,
+			fasthttp.CompressBestCompression,
+		)
+	}
+
 	if r.wsEndpoint != "" {
 		wsEndpoint := utils.S2B(r.wsEndpoint)
 		r.srv.Handler = func(ctx *fasthttp.RequestCtx) {
 			if ctx.IsGet() && bytes.EqualFold(ctx.Path(), wsEndpoint) {
 				r.wsHandler(ctx)
 			} else {
-				r.httpHandler(ctx)
+				httpHandler(ctx)
 			}
 		}
 	} else {
-		r.srv.Handler = r.httpHandler
+		r.srv.Handler = httpHandler
 	}
 
 	return r, nil

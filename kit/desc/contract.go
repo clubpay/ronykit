@@ -2,6 +2,25 @@ package desc
 
 import "github.com/clubpay/ronykit/kit"
 
+type Header struct {
+	Name     string
+	Required bool
+}
+
+func OptionalHeader(name string) Header {
+	return Header{
+		Name:     name,
+		Required: false,
+	}
+}
+
+func RequiredHeader(name string) Header {
+	return Header{
+		Name:     name,
+		Required: true,
+	}
+}
+
 type RouteSelector struct {
 	Name     string
 	Selector kit.RouteSelector
@@ -16,6 +35,7 @@ type Contract struct {
 	RouteSelectors []RouteSelector
 	EdgeSelector   kit.EdgeSelectorFunc
 	Modifiers      []kit.ModifierFunc
+	InputHeaders   []Header
 	Input          kit.Message
 	Output         kit.Message
 	PossibleErrors []Error
@@ -41,9 +61,15 @@ func (c *Contract) SetEncoding(enc kit.Encoding) *Contract {
 	return c
 }
 
+// SetInputHeader sets the headers for this Contract. This is an OPTIONAL parameter, which
+// could be used by external tools such as Swagger or any other doc generator tools.
+func (c *Contract) SetInputHeader(headers ...Header) *Contract {
+	c.InputHeaders = headers
+
+	return c
+}
+
 // SetInput sets the accepting message for this Contract. Contracts are bound to one input message.
-// In some odd cases if you need to handle multiple input messages, then you SHOULD create multiple
-// contracts but with same handlers and/or selectors.
 func (c *Contract) SetInput(m kit.Message) *Contract {
 	c.Input = m
 

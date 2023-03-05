@@ -68,6 +68,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 		}
 
 		pc.Request = ParsedRequest{
+			Headers: c.InputHeaders,
 			Message: ps.parseMessage(c.Input, s.Selector.GetEncoding()),
 		}
 
@@ -166,7 +167,6 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 			if ps.isParsed(ft.Name()) {
 				pp.Message = ps.parsed[ft.Name()]
 			} else if ps.isVisited(ft.Name()) {
-				fmt.Println(ps.visited, ps.parsed)
 				panic(fmt.Sprintf("infinite recursion detected: %s.%s", mt.Name(), ft.Name()))
 			} else {
 				pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
@@ -264,6 +264,7 @@ func (pc ParsedContract) IsPathParam(name string) bool {
 }
 
 type ParsedRequest struct {
+	Headers []Header
 	Message ParsedMessage
 }
 
@@ -438,6 +439,7 @@ type ParsedStructTag struct {
 	Name           string
 	Optional       bool
 	PossibleValues []string
+	Deprecated     bool
 }
 
 func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
@@ -460,6 +462,8 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 		switch {
 		case x == "optional":
 			pst.Optional = true
+		case x == "deprecated":
+			pst.Deprecated = true
 		case strings.HasPrefix(x, "enum:"):
 			xx := strings.SplitN(p, swagIdentSep, 2)
 			if len(xx) == 2 {

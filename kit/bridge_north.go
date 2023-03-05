@@ -87,6 +87,7 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx := n.acquireCtx(conn)
 	ctx.wf = wf
 	ctx.sb = n.sb
+	ctx.rawData = msg
 
 	arg, err := n.gw.Dispatch(ctx, msg)
 	switch err {

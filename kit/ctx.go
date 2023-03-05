@@ -36,6 +36,7 @@ type Context struct {
 	serviceName []byte
 	contractID  []byte
 	route       []byte
+	rawData     []byte
 
 	kv         map[string]interface{}
 	hdr        map[string]string
@@ -204,6 +205,14 @@ func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 // of the Context
 func (ctx *Context) In() *Envelope {
 	return ctx.in
+}
+
+// InputRawData returns the raw input data from the connection. This slice is not valid
+// after this Context lifetime. If you need to use it after the Context lifetime,
+// you need to copy it.
+// You should not use this method in your code, ONLY if you need it for debugging.
+func (ctx *Context) InputRawData() []byte {
+	return ctx.rawData
 }
 
 // Out generate a new Envelope which could be used to send data to the connection.

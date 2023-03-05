@@ -3,18 +3,18 @@ module github.com/clubpay/ronykit/contrib
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.6
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.6
+	github.com/clubpay/ronykit/kit v0.10.13
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.13
 	github.com/go-openapi/spec v0.20.7
 	github.com/rbretecher/go-postman-collection v0.9.0
-	go.opentelemetry.io/contrib/propagators/b3 v1.11.1
-	go.opentelemetry.io/otel v1.11.1
-	go.opentelemetry.io/otel/trace v1.11.1
+	go.opentelemetry.io/contrib/propagators/b3 v1.14.0
+	go.opentelemetry.io/otel v1.13.0
+	go.opentelemetry.io/otel/trace v1.13.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/fasthttp/websocket v1.5.1-rc.9 // indirect
+	github.com/fasthttp/websocket v1.5.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/rivo/uniseg v0.4.2 // indirect
+	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.44.0 // indirect

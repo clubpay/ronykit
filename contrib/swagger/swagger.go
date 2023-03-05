@@ -190,6 +190,20 @@ func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 			)
 		}
 	}
+
+	for _, hdr := range c.Request.Headers {
+		if hdr.Required {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsRequired(),
+			)
+		} else {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsOptional(),
+			)
+		}
+	}
 }
 
 func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
@@ -240,8 +254,9 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
 		case desc.Integer:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
+		case desc.Bool:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
 		default:
-			fmt.Println(p.Name, kind)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
 	}
@@ -358,6 +373,16 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 		},
 	}
 
+	for _, hdr := range c.Request.Headers {
+		itm.Request.Header = append(
+			itm.Request.Header,
+			&postman.Header{
+				Key:   hdr.Name,
+				Value: "",
+			},
+		)
+	}
+
 	items.AddItem(itm)
 }
 
@@ -366,6 +391,10 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 		p.AsOptional()
 	} else {
 		p.AsRequired()
+	}
+
+	if pp.Tag.Deprecated {
+		p.Description = "Deprecated"
 	}
 
 	switch pp.Kind {
