@@ -32,6 +32,8 @@ type wsConfig struct {
 
 	onConnect  OnConnectHandler
 	preflights []RPCPreflightHandler
+
+	panicRecoverFunc func(err interface{})
 }
 
 func WithUpgradeHeader(key string, values ...string) WebsocketOption {
@@ -98,6 +100,12 @@ func WithPingTime(t time.Duration) WebsocketOption {
 func WithConcurrency(n int) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.ratelimitChan = make(chan struct{}, n)
+	}
+}
+
+func WithRecoverPanic(f func(err interface{})) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.panicRecoverFunc = f
 	}
 }
 

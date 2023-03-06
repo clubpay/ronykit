@@ -188,11 +188,23 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 		wCtx.cfg.ratelimitChan <- struct{}{}
 		wCtx.cfg.handlersWG.Add(1)
 		go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
+			defer wCtx.recoverPanic()
+
 			h(ctx, rpcIn)
 			<-wCtx.cfg.ratelimitChan
 			wCtx.cfg.handlersWG.Done()
 			rpcIn.Release()
 		}(ctx, rpcIn)
+	}
+}
+
+func (wCtx *WebsocketCtx) recoverPanic() {
+	if r := recover(); r != nil {
+		wCtx.l.Errorf("panic recovered: %v", r)
+
+		if wCtx.cfg.panicRecoverFunc != nil {
+			wCtx.cfg.panicRecoverFunc(r)
+		}
 	}
 }
 
