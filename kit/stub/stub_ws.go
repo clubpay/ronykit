@@ -174,12 +174,25 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			ctx = tp.Extract(ctx, containerTraceCarrier{in: rpcIn})
 		}
 
-		if h, ok := wCtx.cfg.handlers[rpcIn.GetHdr(wCtx.cfg.predicateKey)]; ok {
-			h(ctx, rpcIn)
-		} else if h = wCtx.cfg.defaultHandler; h != nil {
-			h(ctx, rpcIn)
+		h, ok := wCtx.cfg.handlers[rpcIn.GetHdr(wCtx.cfg.predicateKey)]
+		if !ok {
+			h = wCtx.cfg.defaultHandler
 		}
-		rpcIn.Release()
+
+		if h == nil {
+			rpcIn.Release()
+
+			continue
+		}
+
+		wCtx.cfg.ratelimitChan <- struct{}{}
+		wCtx.cfg.handlersWG.Add(1)
+		go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
+			h(ctx, rpcIn)
+			<-wCtx.cfg.ratelimitChan
+			wCtx.cfg.handlersWG.Done()
+			rpcIn.Release()
+		}(ctx, rpcIn)
 	}
 }
 

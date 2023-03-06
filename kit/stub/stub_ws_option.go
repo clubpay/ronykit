@@ -2,6 +2,7 @@ package stub
 
 import (
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -16,6 +17,8 @@ type wsConfig struct {
 	predicateKey    string
 	rpcInFactory    kit.IncomingRPCFactory
 	rpcOutFactory   kit.OutgoingRPCFactory
+	ratelimitChan   chan struct{}
+	handlersWG      sync.WaitGroup
 	handlers        map[string]RPCContainerHandler
 	defaultHandler  RPCContainerHandler
 	tracePropagator kit.TracePropagator
@@ -89,6 +92,12 @@ func WithAutoReconnect(b bool) WebsocketOption {
 func WithPingTime(t time.Duration) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.pingTime = t
+	}
+}
+
+func WithConcurrency(n int) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.ratelimitChan = make(chan struct{}, n)
 	}
 }
 
