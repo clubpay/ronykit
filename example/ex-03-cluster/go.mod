@@ -22,15 +22,13 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.4.3 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/onsi/ginkgo/v2 v2.7.0 // indirect
-	github.com/onsi/gomega v1.24.2 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.44.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	go.opentelemetry.io/contrib/propagators/b3 v1.11.1 // indirect
-	go.opentelemetry.io/otel v1.11.2 // indirect
-	go.opentelemetry.io/otel/trace v1.11.2 // indirect
+	go.opentelemetry.io/contrib/propagators/b3 v1.14.0 // indirect
+	go.opentelemetry.io/otel v1.13.0 // indirect
+	go.opentelemetry.io/otel/trace v1.13.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 )
