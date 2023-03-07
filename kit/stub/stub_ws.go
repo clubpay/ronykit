@@ -31,15 +31,16 @@ type WebsocketCtx struct {
 	dumpReq io.Writer
 	dumpRes io.Writer
 
-	pendingL     sync.Mutex
+	pendingMtx   sync.Mutex
 	pending      map[string]chan kit.IncomingRPCContainer
 	lastActivity int64
 	disconnect   bool
 	path         string
 
 	// fasthttp entities
-	url string
-	c   *websocket.Conn
+	url  string
+	cMtx sync.Mutex
+	c    *websocket.Conn
 }
 
 func (wCtx *WebsocketCtx) Connect(ctx context.Context, path string) error {
@@ -112,7 +113,9 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 			}
 
 			if utils.TimeUnix()-wCtx.lastActivity <= d {
+				wCtx.cMtx.Lock()
 				_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+				wCtx.cMtx.Unlock()
 				wCtx.l.Debugf("websocket ping sent")
 
 				continue
@@ -159,9 +162,9 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 		}
 
 		// if this is a reply message we return it to the pending channel
-		wCtx.pendingL.Lock()
+		wCtx.pendingMtx.Lock()
 		ch, ok := wCtx.pending[rpcIn.GetID()]
-		wCtx.pendingL.Unlock()
+		wCtx.pendingMtx.Unlock()
 
 		if ok {
 			ch <- rpcIn
@@ -274,7 +277,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 		return err
 	}
 
+	wCtx.cMtx.Lock()
 	err = wCtx.c.WriteMessage(req.MessageType, reqData)
+	wCtx.cMtx.Unlock()
 	if err != nil {
 		return err
 	}
@@ -290,9 +295,9 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	ctx context.Context, id string, res kit.Message, cb RPCMessageHandler,
 ) {
 	resCh := make(chan kit.IncomingRPCContainer, 1)
-	wCtx.pendingL.Lock()
+	wCtx.pendingMtx.Lock()
 	wCtx.pending[id] = resCh
-	wCtx.pendingL.Unlock()
+	wCtx.pendingMtx.Unlock()
 
 	select {
 	case c := <-resCh:
@@ -302,9 +307,9 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	case <-ctx.Done():
 	}
 
-	wCtx.pendingL.Lock()
+	wCtx.pendingMtx.Lock()
 	delete(wCtx.pending, id)
-	wCtx.pendingL.Unlock()
+	wCtx.pendingMtx.Unlock()
 }
 
 type containerTraceCarrier struct {
