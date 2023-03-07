@@ -33,9 +33,8 @@ type WebsocketCtx struct {
 
 	pendingMtx   sync.Mutex
 	pending      map[string]chan kit.IncomingRPCContainer
-	lastActivity int64
+	lastActivity uint32
 	disconnect   bool
-	path         string
 
 	// fasthttp entities
 	url  string
@@ -45,20 +44,18 @@ type WebsocketCtx struct {
 
 func (wCtx *WebsocketCtx) Connect(ctx context.Context, path string) error {
 	path = strings.TrimLeft(path, "/")
-	wCtx.path = path
+	if path != "" {
+		wCtx.url = fmt.Sprintf("%s/%s", wCtx.url, path)
+	}
 
 	return wCtx.connect(ctx)
 }
 
 func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
-	url := wCtx.url
-	if wCtx.path != "" {
-		url = fmt.Sprintf("%s/%s", wCtx.url, wCtx.path)
-	}
-	wCtx.l.Debugf("connect: %s", url)
+	wCtx.l.Debugf("connect: %s", wCtx.url)
 
 	d := wCtx.cfg.dialerBuilder()
-	c, _, err := d.DialContext(ctx, url, wCtx.cfg.upgradeHdr)
+	c, _, err := d.DialContext(ctx, wCtx.url, wCtx.cfg.upgradeHdr)
 	if err != nil {
 		return err
 	}
@@ -93,7 +90,11 @@ func (wCtx *WebsocketCtx) Disconnect() error {
 }
 
 func (wCtx *WebsocketCtx) setActivity() {
-	atomic.StoreInt64(&wCtx.lastActivity, utils.TimeUnix())
+	atomic.StoreUint32(&wCtx.lastActivity, uint32(utils.TimeUnix()))
+}
+
+func (wCtx *WebsocketCtx) getActivity() int64 {
+	return int64(atomic.LoadUint32(&wCtx.lastActivity))
 }
 
 func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
@@ -112,7 +113,7 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 				return
 			}
 
-			if utils.TimeUnix()-wCtx.lastActivity <= d {
+			if utils.TimeUnix()-wCtx.getActivity() <= d {
 				wCtx.cMtx.Lock()
 				_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
 				wCtx.cMtx.Unlock()
