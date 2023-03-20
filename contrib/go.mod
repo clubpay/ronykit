@@ -1,10 +1,10 @@
-module github.com/clubpay/ronykit/contrib
+module github.com/clubpay/rony/contrib
 
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.19
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.19
+	github.com/clubpay/ronykit/kit v0.10.20
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.20
 	github.com/go-openapi/spec v0.20.7
 	github.com/rbretecher/go-postman-collection v0.9.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.14.0
