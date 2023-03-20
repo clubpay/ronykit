@@ -130,7 +130,6 @@ func (rm *RPCMethod) addPossibleError(dto ErrorDTO) {
 type Stub struct {
 	tags  []string
 	Pkg   string
-	Name  string
 	DTOs  map[string]DTO
 	RESTs []RESTMethod
 	RPCs  []RPCMethod
@@ -279,3 +278,23 @@ func (d *Stub) Tags() []string {
 }
 
 var errUnsupportedType = errors.NewG("non-struct types as DTO : %s")
+
+func MergeStubs(stubs ...*Stub) *Stub {
+	stub := newStub()
+
+	for _, s := range stubs {
+		for _, dto := range s.DTOs {
+			stub.DTOs[dto.Name] = dto
+		}
+
+		for _, rest := range s.RESTs {
+			stub.RESTs = append(stub.RESTs, rest)
+		}
+
+		for _, rpc := range s.RPCs {
+			stub.RPCs = append(stub.RPCs, rpc)
+		}
+	}
+
+	return stub
+}

@@ -149,7 +149,6 @@ func (s *Service) Generate() kit.Service {
 func (s *Service) Stub(pkgName string, tags ...string) (*Stub, error) {
 	stub := newStub(tags...)
 	stub.Pkg = pkgName
-	stub.Name = s.Name
 
 	if err := s.dtoStub(stub); err != nil {
 		return nil, err
