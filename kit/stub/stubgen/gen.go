@@ -11,10 +11,10 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
-func GolangStub(desc *desc.Stub) (string, error) {
+func GolangStub(in Input) (string, error) {
 	sb := &strings.Builder{}
 
-	err := tpl.GoStub.Execute(sb, desc)
+	err := tpl.GoStub.Execute(sb, in)
 	if err != nil {
 		return "", err
 	}
@@ -22,9 +22,15 @@ func GolangStub(desc *desc.Stub) (string, error) {
 	return sb.String(), nil
 }
 
+type Input struct {
+	desc.Stub
+	Name string
+	Pkg  string
+}
+
 // GenFunc is the function which generates the final code. For example to generate
 // golang code use GolangStub
-type GenFunc func(stub *desc.Stub) (string, error)
+type GenFunc func(in Input) (string, error)
 
 type Generator struct {
 	cfg genConfig
@@ -44,9 +50,7 @@ func New(opt ...Option) *Generator {
 func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	stubs := make([]*desc.Stub, 0, len(descs))
 	for _, serviceDesc := range descs {
-		stubDesc, err := serviceDesc.Desc().Stub(
-			strings.ToLower(g.cfg.pkgName), g.cfg.tags...,
-		)
+		stubDesc, err := serviceDesc.Desc().Stub(g.cfg.tags...)
 		if err != nil {
 			return err
 		}
@@ -55,7 +59,11 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	}
 
 	mergedStub := desc.MergeStubs(stubs...)
-	rawContent, err := g.cfg.genFunc(mergedStub)
+	rawContent, err := g.cfg.genFunc(Input{
+		Stub: *mergedStub,
+		Name: g.cfg.stubName,
+		Pkg:  g.cfg.pkgName,
+	})
 	if err != nil {
 		return err
 	}

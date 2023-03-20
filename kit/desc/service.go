@@ -146,9 +146,8 @@ func (s *Service) Generate() kit.Service {
 
 // Stub returns the Stub, which describes the stub specification and
 // could be used to auto-generate stub for this service.
-func (s *Service) Stub(pkgName string, tags ...string) (*Stub, error) {
+func (s *Service) Stub(tags ...string) (*Stub, error) {
 	stub := newStub(tags...)
-	stub.Pkg = pkgName
 
 	if err := s.dtoStub(stub); err != nil {
 		return nil, err

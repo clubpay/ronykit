@@ -60,15 +60,15 @@ type VeryComplexResponse struct {
 	SliceKey2 []KeyValue          `json:"sliceKey2"`
 }
 
-type ISampleServiceStub interface {
+type IsampleServiceStub interface {
 	ComplexDummy(
 		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 	) (*VeryComplexResponse, *stub.Error)
 }
 
-// SampleServiceStub represents the client/stub for SampleService.
-// Implements ISampleServiceStub
-type SampleServiceStub struct {
+// sampleServiceStub represents the client/stub for sampleService.
+// Implements IsampleServiceStub
+type sampleServiceStub struct {
 	hostPort  string
 	secure    bool
 	verifyTLS bool
@@ -76,17 +76,17 @@ type SampleServiceStub struct {
 	s *stub.Stub
 }
 
-func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceStub {
-	s := &SampleServiceStub{
+func NewsampleServiceStub(hostPort string, opts ...stub.Option) *sampleServiceStub {
+	s := &sampleServiceStub{
 		s: stub.New(hostPort, opts...),
 	}
 
 	return s
 }
 
-var _ ISampleServiceStub = (*SampleServiceStub)(nil)
+var _ IsampleServiceStub = (*sampleServiceStub)(nil)
 
-func (s SampleServiceStub) ComplexDummy(
+func (s sampleServiceStub) ComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	res := &VeryComplexResponse{}
@@ -104,9 +104,14 @@ func (s SampleServiceStub) ComplexDummy(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/complexDummy", kit.JSON, req)
@@ -119,24 +124,24 @@ func (s SampleServiceStub) ComplexDummy(
 	return res, nil
 }
 
-type MockOption func(*SampleServiceStubMock)
+type MockOption func(*sampleServiceStubMock)
 
 func MockComplexDummy(
 	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *sampleServiceStubMock) {
 		sm.complexdummy = f
 	}
 }
 
-// SampleServiceStubMock represents the mocked for client/stub for SampleService.
-// Implements ISampleServiceStub
-type SampleServiceStubMock struct {
+// sampleServiceStubMock represents the mocked for client/stub for sampleService.
+// Implements IsampleServiceStub
+type sampleServiceStubMock struct {
 	complexdummy func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error)
 }
 
-func NewSampleServiceStubMock(opts ...MockOption) *SampleServiceStubMock {
-	s := &SampleServiceStubMock{}
+func NewsampleServiceStubMock(opts ...MockOption) *sampleServiceStubMock {
+	s := &sampleServiceStubMock{}
 	for _, o := range opts {
 		o(s)
 	}
@@ -144,9 +149,9 @@ func NewSampleServiceStubMock(opts ...MockOption) *SampleServiceStubMock {
 	return s
 }
 
-var _ ISampleServiceStub = (*SampleServiceStubMock)(nil)
+var _ IsampleServiceStub = (*sampleServiceStubMock)(nil)
 
-func (s SampleServiceStubMock) ComplexDummy(
+func (s sampleServiceStubMock) ComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.complexdummy == nil {

@@ -3,11 +3,20 @@ package stubgen
 type Option func(*genConfig)
 
 type genConfig struct {
-	genFunc    GenFunc
-	pkgName    string
+	genFunc GenFunc
+	// stubName is name of the stub that will be generated.
+	stubName string
+	// pkgName is name of the package the is generated.
+	// It is useful in languages that need package name like go
+	pkgName string
+	// folderName is name of the folder that will be created and generated
+	// code will be placed in it.
 	folderName string
-	outputDir  string
-	tags       []string
+	// outputDir is the directory where the generated code will be placed.
+	// final path will be outputDir/folderName
+	// default is current directory
+	outputDir string
+	tags      []string
 }
 
 var defaultConfig = genConfig{
@@ -42,5 +51,11 @@ func WithOutputDir(dir string) Option {
 func WithTags(tags ...string) Option {
 	return func(c *genConfig) {
 		c.tags = tags
+	}
+}
+
+func WithStubName(name string) Option {
+	return func(c *genConfig) {
+		c.stubName = name
 	}
 }
