@@ -9,26 +9,26 @@ require (
 )
 
 require (
-	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/fasthttp/websocket v1.5.1 // indirect
+	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/fasthttp/websocket v1.5.2 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
-	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.4.3 // indirect
-	github.com/klauspost/compress v1.15.12 // indirect
+	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/panjf2000/gnet/v2 v2.2.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
-	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.44.0 // indirect
+	github.com/valyala/fasthttp v1.45.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
