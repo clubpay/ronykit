@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/fasthttp
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.17
+	github.com/clubpay/ronykit/kit v0.10.19
 	github.com/fasthttp/websocket v1.5.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/onsi/ginkgo/v2 v2.7.0
@@ -14,7 +14,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
-	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.4.3 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
