@@ -66,9 +66,9 @@ func (c *cluster) gc() {
 
 		time.Sleep(c.gcPeriod)
 
-		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.idleTime).Result()
+		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.idleTime).Result() //nolint:errcheck
 		if ok {
-			members, _ := c.rc.HGetAll(ctx, instancesKey).Result()
+			members, _ := c.rc.HGetAll(ctx, instancesKey).Result() //nolint:errcheck
 			now := utils.TimeUnix()
 			for k, v := range members {
 				if now-utils.StrToInt64(v) > idleSec {
@@ -79,13 +79,13 @@ func (c *cluster) gc() {
 	}
 }
 
-func (c *cluster) Start(ctx context.Context) error {
+func (c *cluster) Start(_ context.Context) error {
 	c.msgChan = c.ps.Channel()
 	go func() {
 		for {
 			select {
 			case msg := <-c.msgChan:
-				_ = c.d.OnMessage(utils.S2B(msg.Payload))
+				_ = c.d.OnMessage(utils.S2B(msg.Payload)) //nolint:errcheck
 			case <-c.shutdownChan:
 				_ = c.ps.Close()
 

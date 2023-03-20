@@ -17,9 +17,7 @@ linters:
     - scopelint
     - exhaustivestruct
     - exhaustruct
-    - exhaustive
-    - interfacer
-    - golint
+#    - exhaustive
     - maligned
     - wrapcheck
     - varnamelen

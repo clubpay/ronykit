@@ -56,7 +56,7 @@ func (gw *gateway) writeFunc(conn kit.Conn, e *kit.Envelope) error {
 	return err
 }
 
-func (gw *gateway) reactFunc(wsc *wsConn, payload *buf.Bytes, n int) {
+func (gw *gateway) reactFunc(wsc kit.Conn, payload *buf.Bytes, n int) {
 	gw.b.d.OnMessage(wsc, gw.writeFunc, (*payload.Bytes())[:n])
 	payload.Release()
 }
@@ -92,7 +92,7 @@ func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 	return nil, gnet.None
 }
 
-func (gw *gateway) OnClose(c gnet.Conn, err error) (action gnet.Action) {
+func (gw *gateway) OnClose(c gnet.Conn, _ error) (action gnet.Action) {
 	connID, ok := c.Context().(uint64)
 	if ok {
 		gw.b.d.OnClose(connID)

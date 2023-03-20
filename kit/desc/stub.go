@@ -287,13 +287,8 @@ func MergeStubs(stubs ...*Stub) *Stub {
 			stub.DTOs[dto.Name] = dto
 		}
 
-		for _, rest := range s.RESTs {
-			stub.RESTs = append(stub.RESTs, rest)
-		}
-
-		for _, rpc := range s.RPCs {
-			stub.RPCs = append(stub.RPCs, rpc)
-		}
+		stub.RESTs = append(stub.RESTs, s.RESTs...)
+		stub.RPCs = append(stub.RPCs, s.RPCs...)
 	}
 
 	return stub
