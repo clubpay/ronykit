@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/contrib
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.22
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.22
+	github.com/clubpay/ronykit/kit v0.10.23
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.23
 	github.com/go-openapi/spec v0.20.7
 	github.com/rbretecher/go-postman-collection v0.9.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.14.0
