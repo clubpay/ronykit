@@ -330,7 +330,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 	}
 
 	var queryParams []*postman.QueryParam
-	if len(c.PathParams) > len(c.Request.Message.Fields) && c.Method == "GET" {
+	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == "GET" {
 		for _, p := range c.Request.Message.Fields {
 			found := false
 			for _, pp := range c.PathParams {

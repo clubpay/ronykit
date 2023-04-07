@@ -70,6 +70,7 @@ var _ = Describe("DescParser", func() {
 		contract0 := pd.Contracts[0]
 		contract1 := pd.Contracts[1]
 		Expect(pd.Contracts).To(HaveLen(2))
+
 		Expect(contract0.Name).To(Equal("s1"))
 		Expect(contract0.Type).To(Equal(desc.REST))
 		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))

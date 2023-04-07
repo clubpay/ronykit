@@ -2,7 +2,6 @@ package swagger_test
 
 import (
 	"fmt"
-	"testing"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
@@ -87,20 +86,18 @@ func (t testService) Desc() *desc.Service {
 		)
 }
 
-func TestNewSwagger(t *testing.T) {
+func ExampleGenerator_WriteSwagToFile() {
 	err := swagger.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
 		WriteSwagToFile("_swagger.json", testService{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	fmt.Println(err)
+	// Output: <nil>
 }
 
-func TestPostmanCollection(t *testing.T) {
+func ExampleGenerator_WritePostmanToFile() {
 	err := swagger.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
 		WritePostmanToFile("_postman.json", testService{})
-	if err != nil {
-		t.Fatal(err)
-	}
+	fmt.Println(err)
+	// Output: <nil>
 }
