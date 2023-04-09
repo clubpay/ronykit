@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/example/ex-01-rpc
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.11
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.11
-	github.com/clubpay/ronykit/std/gateways/fastws v0.10.11
+	github.com/clubpay/ronykit/kit v0.10.24
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.24
+	github.com/clubpay/ronykit/std/gateways/fastws v0.10.24
 )
 
 require (
@@ -22,7 +22,6 @@ require (
 	github.com/panjf2000/gnet/v2 v2.2.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.45.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
@@ -31,4 +30,5 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
