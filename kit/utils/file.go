@@ -33,12 +33,16 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func(src *os.File) {
+		_ = src.Close()
+	}(src)
 	dst, err := os.Create(dstFile)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer func(dst *os.File) {
+		_ = dst.Close()
+	}(dst)
 
 	for {
 		n, err := src.Read(buf)
@@ -62,7 +66,9 @@ func WriteYamlFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
 	enc := yaml.NewEncoder(f)
 	err = enc.Encode(data)
@@ -78,7 +84,9 @@ func ReadYamlFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
 	dec := yaml.NewDecoder(f)
 

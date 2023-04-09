@@ -232,7 +232,7 @@ func (s *EdgeServer) watchParent() {
 	}
 }
 
-func (s *EdgeServer) startParent(ctx context.Context) {
+func (s *EdgeServer) startParent(_ context.Context) {
 	// create variables
 	max := runtime.GOMAXPROCS(0)
 

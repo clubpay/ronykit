@@ -30,7 +30,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
 		dialTimeout:  time.Second * 45,
-		l:            nopLogger{},
+		l:            common.NewNopLogger(),
 	}
 	for _, opt := range opts {
 		opt(&cfg)

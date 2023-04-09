@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/clubpay/ronykit/kit v0.10.24
 	github.com/gobwas/ws v1.1.0
-	github.com/panjf2000/gnet/v2 v2.2.0
+	github.com/panjf2000/gnet/v2 v2.2.6
 )
 
 require (

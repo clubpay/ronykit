@@ -24,7 +24,7 @@ func TestRonykit(t *testing.T) {
 
 type testSelector struct{}
 
-func (t testSelector) Query(q string) interface{} {
+func (t testSelector) Query(_ string) interface{} {
 	return nil
 }
 
@@ -78,7 +78,7 @@ func (t *testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, err
 }
 
 func (t *testGateway) Register(
-	serviceName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	_, _ string, _ kit.Encoding, _ kit.RouteSelector, _ kit.Message,
 ) {
 }
 
@@ -161,7 +161,7 @@ func (t *testCluster) Store() kit.ClusterStore {
 	return t
 }
 
-func (t *testCluster) Set(key, value string, ttl time.Duration) error {
+func (t *testCluster) Set(key, value string, _ time.Duration) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -311,7 +311,7 @@ type testRPCSelector struct {
 	predicate string
 }
 
-func (t testRPCSelector) Query(q string) interface{} {
+func (t testRPCSelector) Query(_ string) interface{} {
 	return nil
 }
 

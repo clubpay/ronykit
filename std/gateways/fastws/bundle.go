@@ -62,7 +62,7 @@ func MustNew(opts ...Option) kit.Gateway {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	svcName, contractID string, _ kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
 	rpcSelector, ok := sel.(kit.RPCRouteSelector)
 	if !ok {

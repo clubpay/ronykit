@@ -21,7 +21,7 @@ func newREST(enc kit.Encoding, path, method string) dummyRESTSelector {
 	}
 }
 
-func (d dummyRESTSelector) Query(q string) interface{} {
+func (d dummyRESTSelector) Query(_ string) interface{} {
 	return nil
 }
 

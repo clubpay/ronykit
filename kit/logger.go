@@ -7,10 +7,12 @@ type Logger interface {
 
 type nopLogger struct{}
 
-func (n nopLogger) Error(args ...interface{}) {}
+var _ Logger = (*nopLogger)(nil)
 
-func (n nopLogger) Errorf(format string, args ...interface{}) {}
+func (n nopLogger) Error(_ ...interface{}) {}
 
-func (n nopLogger) Debug(args ...interface{}) {}
+func (n nopLogger) Errorf(_ string, _ ...interface{}) {}
 
-func (n nopLogger) Debugf(format string, args ...interface{}) {}
+func (n nopLogger) Debug(_ ...interface{}) {}
+
+func (n nopLogger) Debugf(_ string, _ ...interface{}) {}
