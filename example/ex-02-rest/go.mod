@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/example/ex-02-rest
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.11
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.11
+	github.com/clubpay/ronykit/kit v0.10.24
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.10.24
 	github.com/goccy/go-json v0.10.2
 )
 
@@ -17,9 +17,9 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
-	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.45.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

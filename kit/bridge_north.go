@@ -113,3 +113,12 @@ var (
 	ErrDispatchFailed                = errors.New("dispatch failed")
 	ErrPreflight                     = errors.New("preflight request")
 )
+
+// These are just to silence the linter.
+var (
+	_ = ErrNoHandler
+	_ = ErrWriteToClosedConn
+	_ = ErrDecodeIncomingMessageFailed
+	_ = ErrEncodeOutgoingMessageFailed
+	_ = ErrDecodeIncomingContainerFailed
+)

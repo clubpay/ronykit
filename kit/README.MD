@@ -33,7 +33,6 @@ REST or RPC.
 	- [Contents](#contents)
 	- [Installation](#installation)
 	- [Quick start](#quick-start)
-	- [Benchmark](#benchmark)
 	- [Define Services and Contracts](#define-services-and-contracts)
 
 ## Installation
