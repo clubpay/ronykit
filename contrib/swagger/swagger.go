@@ -143,7 +143,6 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Pa
 	switch strings.ToUpper(c.Method) {
 	case http.MethodGet:
 		pathItem.Get = op
-
 	case http.MethodDelete:
 		pathItem.Delete = op
 	case http.MethodPost:

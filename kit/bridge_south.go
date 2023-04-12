@@ -251,7 +251,10 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 }
 
 func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
-	c := conn.(*clusterConn) //nolint:forcetypeassert
+	c, ok := conn.(*clusterConn)
+	if !ok {
+		return ErrWritingToClusterConnection
+	}
 
 	ec := newEnvelopeCarrier(
 		outgoingCarrier,

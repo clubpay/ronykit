@@ -134,6 +134,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 			pp.Optional = true
 		}
 
+		pp.Embedded = f.Anonymous
 		pp.Kind = parseKind(ft)
 		switch pp.Kind {
 		case Map:
@@ -348,6 +349,7 @@ type ParsedField struct {
 	SampleValue string
 	Optional    bool
 	Kind        Kind
+	Embedded    bool
 
 	// Kind == Object
 	// Message is the parsed message if the kind is Object.
