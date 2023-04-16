@@ -345,7 +345,6 @@ func (pm ParsedMessage) JSON() string {
 			m[p.Name] = []interface{}{inner}
 		case Integer, Float, Byte:
 			m[p.Name] = 0
-
 		}
 	}
 

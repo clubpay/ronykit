@@ -258,12 +258,11 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
 	var (
 		wrapFuncChain = schemaWrapperChain{}
-		kind          = p.Kind
 		name          string
 	)
 
 	msg := p.Message
-	kind = p.Kind
+	kind := p.Kind
 	elem := p.Element
 Loop:
 	switch kind {
