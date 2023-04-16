@@ -2,11 +2,14 @@ package swagger_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 type sampleReq struct {
@@ -101,3 +104,65 @@ func ExampleGenerator_WritePostmanToFile() {
 	fmt.Println(err)
 	// Output: <nil>
 }
+
+func TestSwagger(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Swagger Suite")
+}
+
+var _ = Describe("ToSwaggerDefinition", func() {
+	ps := desc.Parse(testService{})
+	BeforeEach(func() {
+
+	})
+	It("Check Request for Contract[0].Request (sampleReq)", func() {
+		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
+		props := d.Properties.ToOrderedSchemaItems()
+		Expect(props[0].Name).To(Equal("tt"))
+		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[1].Name).To(Equal("w"))
+		Expect(props[1].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[2].Name).To(Equal("x"))
+		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[3].Name).To(Equal("y"))
+		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[4].Name).To(Equal("z"))
+		Expect(props[4].SchemaProps.Type[0]).To(Equal("integer"))
+	})
+	It("Check Request for Contract[0].Response (sampleRes)", func() {
+		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Responses[0].Message)
+		props := d.Properties.ToOrderedSchemaItems()
+		Expect(props[0].Name).To(Equal("out1"))
+		Expect(props[0].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[1].Name).To(Equal("out2"))
+		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[2].Name).To(Equal("sub"))
+		Expect(props[2].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[3].Name).To(Equal("subs"))
+		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
+	})
+
+	It("Check Request for Contract[1].Response (anotherRes)", func() {
+		// type subRes struct {
+		// 	Some    string `json:"some"`
+		// 	Another []byte `json:"another"`
+		// }
+		// type anotherRes struct {
+		// 	subRes
+		// 	Out1 int    `json:"out1"`
+		// 	Out2 string `json:"out2"`
+		// }
+
+		d := swagger.ToSwaggerDefinition(ps.Contracts[1].Responses[0].Message)
+		props := d.Properties.ToOrderedSchemaItems()
+		Expect(props[0].Name).To(Equal("another"))
+		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[1].Name).To(Equal("out1"))
+		Expect(props[1].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[2].Name).To(Equal("out2"))
+		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[3].Name).To(Equal("some"))
+		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
+	})
+})
