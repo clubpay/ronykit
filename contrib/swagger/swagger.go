@@ -224,7 +224,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 	}
 
 	for fields.Back() != nil {
-		p := fields.Remove(fields.Back()).(desc.ParsedField)
+		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:forcetypeassert
 
 		name, kind, wrapFuncChain := getWrapFunc(p)
 
@@ -245,6 +245,8 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
 		case desc.Bool:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
+		case desc.Byte:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
 		default:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
@@ -315,7 +317,7 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 		for _, c := range ps.Contracts {
 			switch c.Type {
 			case desc.REST:
-				sg.addPostmanItem(colItems, c)
+				colItems.AddItem(toPostmanItem(c))
 			}
 		}
 	}
@@ -323,7 +325,7 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 	return col.Write(w, postman.V210)
 }
 
-func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract) {
+func toPostmanItem(c desc.ParsedContract) *postman.Items {
 	itm := postman.CreateItem(
 		postman.Item{
 			Name:                    c.SuggestName(),
@@ -406,7 +408,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 		)
 	}
 
-	items.AddItem(itm)
+	return itm
 }
 
 func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {

@@ -1,6 +1,8 @@
 package desc_test
 
 import (
+	"fmt"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	. "github.com/onsi/ginkgo/v2"
@@ -128,4 +130,19 @@ var _ = Describe("DescParser", func() {
 		Expect(m.Element.Element.Kind).To(Equal(desc.String))
 		Expect(m.Element.Element.Message).To(BeNil())
 	})
+})
+
+var _ = Describe("ParseMessage.JSON()", func() {
+	d := desc.NewService("sample").
+		AddContract(
+			desc.NewContract().
+				SetName("c1").
+				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
+				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				In(&NestedMessage{}).
+				Out(&FlatMessage{}),
+		)
+
+	ps := desc.ParseService(d)
+	fmt.Println(ps.Contracts[0].Request.Message.JSON())
 })

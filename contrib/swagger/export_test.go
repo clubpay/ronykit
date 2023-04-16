@@ -1,3 +1,6 @@
 package swagger
 
-var ToSwaggerDefinition = toSwagDefinition
+var (
+	ToSwaggerDefinition = toSwagDefinition
+	ToPostmanItem       = toPostmanItem
+)

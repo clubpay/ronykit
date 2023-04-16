@@ -112,16 +112,24 @@ func TestSwagger(t *testing.T) {
 
 var _ = Describe("ToSwaggerDefinition", func() {
 	ps := desc.Parse(testService{})
-	BeforeEach(func() {
-
-	})
 	It("Check Request for Contract[0].Request (sampleReq)", func() {
+		// type sampleReq struct {
+		//  	X  string     `json:"x,int"`
+		//  	Y  string     `json:"y,omitempty"`
+		//  	Z  int64      `json:"z"`
+		//  	W  []string   `json:"w"`
+		//  	TT [][]string `json:"tt"`
+		// }
+
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("tt"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[0].SchemaProps.Items.Schema.Type[0]).To(Equal("array"))
+		Expect(props[0].SchemaProps.Items.Schema.Items.Schema.Type[0]).To(Equal("string"))
 		Expect(props[1].Name).To(Equal("w"))
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[1].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
 		Expect(props[2].Name).To(Equal("x"))
 		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
 		Expect(props[3].Name).To(Equal("y"))
@@ -129,6 +137,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[4].Name).To(Equal("z"))
 		Expect(props[4].SchemaProps.Type[0]).To(Equal("integer"))
 	})
+
 	It("Check Request for Contract[0].Response (sampleRes)", func() {
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
@@ -158,6 +167,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("another"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[0].SchemaProps.Items.Schema.Type[0]).To(Equal("integer"))
 		Expect(props[1].Name).To(Equal("out1"))
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("integer"))
 		Expect(props[2].Name).To(Equal("out2"))

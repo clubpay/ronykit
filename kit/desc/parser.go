@@ -287,6 +287,7 @@ const (
 	String  Kind = "string"
 	Integer Kind = "integer"
 	Float   Kind = "float"
+	Byte    Kind = "byte"
 	Object  Kind = "object"
 	Map     Kind = "map"
 	Array   Kind = "array"
@@ -302,14 +303,49 @@ func (pm ParsedMessage) JSON() string {
 	m := map[string]interface{}{}
 	for _, p := range pm.Fields {
 		switch p.Kind {
-		case Map:
-			m[p.Name] = map[string]interface{}{}
-		case Array:
-			m[p.Name] = []interface{}{}
-		case Integer, Float:
-			m[p.Name] = 0
 		default:
 			m[p.Name] = p.Kind
+		case Object:
+			m[p.Name] = json.RawMessage(p.Message.JSON())
+		case Map:
+			var inner interface{}
+			switch p.Element.Kind {
+			default:
+				inner = p.Element.Kind
+			case Object:
+				inner = json.RawMessage(p.Element.Message.JSON())
+			case Integer, Float, Byte:
+				inner = 0
+			case Array:
+				inner = []interface{}{p.Element.Element.Kind}
+			case Map:
+				inner = map[string]interface{}{
+					"keyName": p.Element.Element.Kind,
+				}
+			}
+			m[p.Name] = map[string]interface{}{
+				"keyName": inner,
+			}
+		case Array:
+			var inner interface{}
+			switch p.Element.Kind {
+			default:
+				inner = p.Element.Kind
+			case Object:
+				inner = json.RawMessage(p.Element.Message.JSON())
+			case Integer, Float, Byte:
+				inner = 0
+			case Array:
+				inner = []interface{}{p.Element.Element.Kind}
+			case Map:
+				inner = map[string]interface{}{
+					"keyName": p.Element.Element.Kind,
+				}
+			}
+			m[p.Name] = []interface{}{inner}
+		case Integer, Float, Byte:
+			m[p.Name] = 0
+
 		}
 	}
 
@@ -414,8 +450,10 @@ func parseKind(t reflect.Type) Kind {
 		return Bool
 	case reflect.String:
 		return String
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint8, reflect.Int8:
+		return Byte
+	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return Integer
 	case reflect.Float32, reflect.Float64:
 		return Float
