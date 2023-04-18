@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/fastws
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.26
+	github.com/clubpay/ronykit/kit v0.10.27
 	github.com/gobwas/ws v1.1.0
 	github.com/panjf2000/gnet/v2 v2.2.6
 )
