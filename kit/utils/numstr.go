@@ -217,6 +217,10 @@ func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	return nil
 }
 
+func (n Numeric) MarshalJSON() ([]byte, error) {
+	return json.Marshal(n.String())
+}
+
 func (n Numeric) Value() float64 {
 	return n.value
 }
