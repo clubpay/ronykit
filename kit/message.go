@@ -109,8 +109,8 @@ func marshalMessageX(m Message) []byte {
 	return data
 }
 
-// RawMessage is a bytes slice which could be used as Message. This is helpful for
-// raw data messages.
+// RawMessage is a byte slice which could be used as a Message.
+// This is helpful for raw data messages.
 type RawMessage []byte
 
 func (rm *RawMessage) Marshal() ([]byte, error) {

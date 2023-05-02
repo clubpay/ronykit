@@ -18,7 +18,7 @@ type RouteData struct {
 	Factory     kit.MessageFactoryFunc
 }
 
-// Mux is a http.Handler which can be used to dispatch requests to different
+// Mux is an http.Handler which can be used to dispatch requests to different
 // handler functions via configurable routes.
 type Mux struct {
 	trees map[string]*node
@@ -28,7 +28,7 @@ type Mux struct {
 
 	// Enables automatic redirection if the current route can't be matched but a
 	// handler for the path with (without) the trailing slash exists.
-	// For example if /foo/ is requested but a route only exists for /foo, the
+	// For example, if /foo/ is requested but a route only exists for /foo, the
 	// client is redirected to /foo with http status code 301 for GET requests
 	// and 308 for all other request methods.
 	RedirectTrailingSlash bool
@@ -36,7 +36,7 @@ type Mux struct {
 	// If enabled, the Mux tries to fix the current request path, if no
 	// handle is registered for it.
 	// First superfluous path elements like ../ or // are removed.
-	// Afterwards the Mux does a case-insensitive lookup of the cleaned path.
+	// Afterward, the Mux does a case-insensitive lookup of the cleaned path.
 	// If a handle can be found for this route, the Mux makes a redirection
 	// to the corrected path with status code 301 for GET requests and 308 for
 	// all other request methods.
@@ -45,7 +45,7 @@ type Mux struct {
 	RedirectFixedPath bool
 
 	// If enabled, the Mux checks if another Method is allowed for the
-	// current route, if the current request can not be routed.
+	// current route if the current request can not be routed.
 	// If this is the case, the request is answered with 'Method Not Allowed'
 	// and HTTP status code 405.
 	// If no other Method is allowed, the request is delegated to the NotFound
@@ -65,11 +65,11 @@ type Mux struct {
 	// Cached value of global (*) allowed methods
 	globalAllowed string
 
-	// Configurable http.Handler which is called when no matching route is
+	// Configurable http.Handler, which is called when no matching route is
 	// found. If it is not set, http.NotFound is used.
 	NotFound http.Handler
 
-	// Configurable http.Handler which is called when a request
+	// Configurable http.Handler, which is called when a request
 	// cannot be routed and HandleMethodNotAllowed is true.
 	// If it is not set, http.Error with http.StatusMethodNotAllowed is used.
 	// The "Allow" header with allowed request methods is set before the handler
@@ -80,7 +80,7 @@ type Mux struct {
 	// It should be used to generate an error page and return the http error code
 	// 500 (Internal Server Error).
 	// The handler can be used to keep your server from crashing because of
-	// un-recovered panics.
+	// unrecovered panics.
 	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 

@@ -56,7 +56,7 @@ func RegisterServiceDesc(desc ...ServiceDescriptor) Option {
 	}
 }
 
-// WithShutdownTimeout sets the maximum time to wait until all running request to finish.
+// WithShutdownTimeout sets the maximum time to wait until all running requests to finish.
 // Default is to wait forever.
 func WithShutdownTimeout(d time.Duration) Option {
 	return func(s *edgeConfig) {
@@ -65,7 +65,7 @@ func WithShutdownTimeout(d time.Duration) Option {
 }
 
 // WithErrorHandler registers a global error handler to catch any error that
-// happens before EdgeServer can deliver incoming message to the handler, or delivering
+// happens before EdgeServer can deliver the incoming message to the handler, or delivering
 // the outgoing message to the client.
 // Internal errors are usually wrapped and could be checked for better error handling.
 // You can check with errors.Is function to see if the error is one of the following:
