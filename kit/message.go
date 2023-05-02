@@ -26,6 +26,18 @@ type (
 	ProtoUnmarshaler interface {
 		UnmarshalProto([]byte) error
 	}
+	// Message is a generic interface for all messages. Message MUST BE serializable.
+	// It could implement one or many of the following interfaces:
+	// 	- Marshaler
+	// 	- Unmarshaler
+	// 	- JSONMarshaler
+	// 	- JSONUnmarshaler
+	// 	- ProtoMarshaler
+	// 	- ProtoUnmarshaler
+	// 	- encoding.BinaryMarshaler
+	// 	- encoding.BinaryUnmarshaler
+	// 	- encoding.TextMarshaler
+	// 	- encoding.TextUnmarshaler
 	Message            any
 	MessageFactoryFunc func() Message
 )
@@ -128,3 +140,6 @@ type ErrorMessage interface {
 	Message
 	error
 }
+
+// EmptyMessage is a special kind of Message which is empty.
+type EmptyMessage struct{}

@@ -169,11 +169,11 @@ func (t *testConn) Keys() []string {
 
 type testRESTConn struct {
 	testConn
+
 	method     string
 	path       string
 	host       string
 	requestURI string
-
 	statusCode int
 }
 
