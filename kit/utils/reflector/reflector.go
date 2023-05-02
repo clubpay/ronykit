@@ -116,7 +116,7 @@ func (r *Reflector) Load(m kit.Message, tags ...string) *Reflected {
 	return cachedData
 }
 
-func (r *Reflector) Get(m kit.Message, fieldName string) (interface{}, error) {
+func (r *Reflector) Get(m kit.Message, fieldName string) (any, error) {
 	e, err := getValue(m)
 	if err != nil {
 		return nil, err

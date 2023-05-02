@@ -13,7 +13,7 @@ import (
 var _ = Describe("ParseNumeric tests", func() {
 	DescribeTable(
 		"inputs of multiple types",
-		func(in interface{}, xv float64, xs string) {
+		func(in any, xv float64, xs string) {
 			on := utils.ParseNumeric(in)
 			Expect(on.Value()).To(BeNumerically("~", xv-1e-6, xv+1e-6))
 			Expect(on.String()).To(BeIdenticalTo(xs))

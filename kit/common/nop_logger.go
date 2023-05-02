@@ -10,10 +10,10 @@ func NewNopLogger() NOPLogger {
 
 var _ kit.Logger = (*NOPLogger)(nil)
 
-func (n NOPLogger) Debug(_ ...interface{}) {}
+func (n NOPLogger) Debug(_ ...any) {}
 
-func (n NOPLogger) Debugf(_ string, _ ...interface{}) {}
+func (n NOPLogger) Debugf(_ string, _ ...any) {}
 
-func (n NOPLogger) Error(_ ...interface{}) {}
+func (n NOPLogger) Error(_ ...any) {}
 
-func (n NOPLogger) Errorf(_ string, _ ...interface{}) {}
+func (n NOPLogger) Errorf(_ string, _ ...any) {}

@@ -30,7 +30,7 @@ func (ctx *Context) ContractID() string {
 	return string(ctx.contractID)
 }
 
-func (ctx *Context) Set(key string, val interface{}) *Context {
+func (ctx *Context) Set(key string, val any) *Context {
 	ctx.Lock()
 	ctx.kv[key] = val
 	ctx.Unlock()
@@ -38,7 +38,7 @@ func (ctx *Context) Set(key string, val interface{}) *Context {
 	return ctx
 }
 
-func (ctx *Context) Get(key string) interface{} {
+func (ctx *Context) Get(key string) any {
 	ctx.Lock()
 	v := ctx.kv[key]
 	ctx.Unlock()
@@ -46,7 +46,7 @@ func (ctx *Context) Get(key string) interface{} {
 	return v
 }
 
-func (ctx *Context) Walk(f func(key string, val interface{}) bool) {
+func (ctx *Context) Walk(f func(key string, val any) bool) {
 	for k, v := range ctx.kv {
 		if !f(k, v) {
 			return
@@ -113,9 +113,9 @@ func (ctx *Context) GetBytes(key string, defaultValue []byte) []byte {
 }
 
 type Store interface {
-	Get(key string) interface{}
+	Get(key string) any
 	Exists(key string) bool
-	Set(key string, val interface{})
+	Set(key string, val any)
 	Delete(key string)
 	Scan(prefix string, cb func(key string) bool)
 }

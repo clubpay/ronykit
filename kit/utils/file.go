@@ -61,7 +61,7 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 	return nil
 }
 
-func WriteYamlFile(filePath string, data interface{}) error {
+func WriteYamlFile(filePath string, data any) error {
 	f, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func WriteYamlFile(filePath string, data interface{}) error {
 	return enc.Close()
 }
 
-func ReadYamlFile(filePath string, data interface{}) error {
+func ReadYamlFile(filePath string, data any) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return err

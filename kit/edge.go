@@ -48,7 +48,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
 		contracts: map[string]Contract{},
 		ls: localStore{
-			kv: map[string]interface{}{},
+			kv: map[string]any{},
 		},
 	}
 	cfg := &edgeConfig{
@@ -517,10 +517,10 @@ func restRoute(rs RouteSelector) string {
 
 type localStore struct {
 	kvl sync.RWMutex
-	kv  map[string]interface{}
+	kv  map[string]any
 }
 
-func (ls *localStore) Get(key string) interface{} {
+func (ls *localStore) Get(key string) any {
 	ls.kvl.RLock()
 	v := ls.kv[key]
 	ls.kvl.RUnlock()
@@ -528,7 +528,7 @@ func (ls *localStore) Get(key string) interface{} {
 	return v
 }
 
-func (ls *localStore) Set(key string, value interface{}) {
+func (ls *localStore) Set(key string, value any) {
 	ls.kvl.Lock()
 	ls.kv[key] = value
 	ls.kvl.Unlock()

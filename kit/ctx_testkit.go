@@ -20,7 +20,7 @@ type TestContext struct {
 func NewTestContext() *TestContext {
 	return &TestContext{
 		ls: localStore{
-			kv: map[string]interface{}{},
+			kv: map[string]any{},
 		},
 	}
 }

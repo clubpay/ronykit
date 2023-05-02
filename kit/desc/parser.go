@@ -300,7 +300,7 @@ type ParsedMessage struct {
 }
 
 func (pm ParsedMessage) JSON() string {
-	m := map[string]interface{}{}
+	m := map[string]any{}
 	for _, p := range pm.Fields {
 		switch p.Kind {
 		default:
@@ -308,7 +308,7 @@ func (pm ParsedMessage) JSON() string {
 		case Object:
 			m[p.Name] = json.RawMessage(p.Message.JSON())
 		case Map:
-			var inner interface{}
+			var inner any
 			switch p.Element.Kind {
 			default:
 				inner = p.Element.Kind
@@ -317,17 +317,17 @@ func (pm ParsedMessage) JSON() string {
 			case Integer, Float, Byte:
 				inner = 0
 			case Array:
-				inner = []interface{}{p.Element.Element.Kind}
+				inner = []any{p.Element.Element.Kind}
 			case Map:
-				inner = map[string]interface{}{
+				inner = map[string]any{
 					"keyName": p.Element.Element.Kind,
 				}
 			}
-			m[p.Name] = map[string]interface{}{
+			m[p.Name] = map[string]any{
 				"keyName": inner,
 			}
 		case Array:
-			var inner interface{}
+			var inner any
 			switch p.Element.Kind {
 			default:
 				inner = p.Element.Kind
@@ -336,13 +336,13 @@ func (pm ParsedMessage) JSON() string {
 			case Integer, Float, Byte:
 				inner = 0
 			case Array:
-				inner = []interface{}{p.Element.Element.Kind}
+				inner = []any{p.Element.Element.Kind}
 			case Map:
-				inner = map[string]interface{}{
+				inner = map[string]any{
 					"keyName": p.Element.Element.Kind,
 				}
 			}
-			m[p.Name] = []interface{}{inner}
+			m[p.Name] = []any{inner}
 		case Integer, Float, Byte:
 			m[p.Name] = 0
 		}

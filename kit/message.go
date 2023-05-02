@@ -26,7 +26,7 @@ type (
 	ProtoUnmarshaler interface {
 		UnmarshalProto([]byte) error
 	}
-	Message            interface{}
+	Message            any
 	MessageFactoryFunc func() Message
 )
 

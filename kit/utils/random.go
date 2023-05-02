@@ -17,7 +17,7 @@ import (
 */
 
 func init() {
-	rndGen.New = func() interface{} {
+	rndGen.New = func() any {
 		x := mathRand.New(mathRand.NewSource(CPUTicks()))
 
 		return x

@@ -19,7 +19,7 @@ func init() {
 	GoStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(goFileStub))
 }
 
-var funcMaps = map[string]interface{}{
+var funcMaps = map[string]any{
 	"strQuote": func(elems []string) []string {
 		out := make([]string, len(elems))
 		for i, e := range elems {

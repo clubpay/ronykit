@@ -24,7 +24,7 @@ func TestRonykit(t *testing.T) {
 
 type testSelector struct{}
 
-func (t testSelector) Query(_ string) interface{} {
+func (t testSelector) Query(_ string) any {
 	return nil
 }
 
@@ -289,7 +289,7 @@ type testRESTSelector struct {
 	path   string
 }
 
-func (t testRESTSelector) Query(q string) interface{} {
+func (t testRESTSelector) Query(q string) any {
 	return nil
 }
 
@@ -311,7 +311,7 @@ type testRPCSelector struct {
 	predicate string
 }
 
-func (t testRPCSelector) Query(_ string) interface{} {
+func (t testRPCSelector) Query(_ string) any {
 	return nil
 }
 

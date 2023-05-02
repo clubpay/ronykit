@@ -16,7 +16,7 @@ import (
 */
 
 var poolSha512 = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return sha512.New()
 	},
 }
@@ -49,7 +49,7 @@ func MustSha512(in, out []byte) []byte {
 }
 
 var poolSha256 = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return sha256.New()
 	},
 }

@@ -38,7 +38,7 @@ type Context struct {
 	route       []byte
 	rawData     []byte
 
-	kv         map[string]interface{}
+	kv         map[string]any
 	hdr        map[string]string
 	conn       Conn
 	in         *Envelope
@@ -54,7 +54,7 @@ type Context struct {
 func newContext(ls *localStore) *Context {
 	return &Context{
 		ls:         ls,
-		kv:         make(map[string]interface{}, 4),
+		kv:         make(map[string]any, 4),
 		hdr:        make(map[string]string, 4),
 		statusCode: http.StatusOK,
 	}

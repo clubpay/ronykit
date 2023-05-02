@@ -76,8 +76,8 @@ var _ = Describe(
 		ctx.Set("k1", "v1")
 		ctx.Set("k2", "v2")
 
-		hdr := map[string]interface{}{}
-		ctx.Walk(func(key string, val interface{}) bool {
+		hdr := map[string]any{}
+		ctx.Walk(func(key string, val any) bool {
 			hdr[key] = val
 
 			return true

@@ -38,7 +38,7 @@ const (
 )
 
 var stacktracePool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return &stacktrace{
 			storage: make([]uintptr, 64),
 		}

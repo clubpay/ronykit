@@ -5,7 +5,7 @@ package kit
 // RouteSelector is actually a base interface and Gateway implementors usually implement
 // either RESTRouteSelector, RPCRouteSelector or both.
 type RouteSelector interface {
-	Query(q string) interface{}
+	Query(q string) any
 	GetEncoding() Encoding
 }
 

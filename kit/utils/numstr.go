@@ -206,7 +206,7 @@ type Numeric struct {
 const defaultPrecision = 2
 
 func (n *Numeric) UnmarshalJSON(bb []byte) error {
-	type medium interface{}
+	type medium any
 	m := new(medium)
 	if err := json.Unmarshal(bb, m); err != nil {
 		return err
@@ -244,7 +244,7 @@ func (n Numeric) WithoutPrecision() Numeric {
 }
 
 // ParseNumeric converts int, string, float to Numeric.
-func ParseNumeric(src interface{}) Numeric {
+func ParseNumeric(src any) Numeric {
 	var number float64
 	switch v := src.(type) {
 	case float64:
