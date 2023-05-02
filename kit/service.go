@@ -9,12 +9,12 @@ type ServiceDescriptor interface {
 type Service interface {
 	// Name of the service which must be unique per EdgeServer.
 	Name() string
-	// Contracts returns a list of APIs which this service provides.
+	// Contracts return a list of APIs which this service provides.
 	Contracts() []Contract
 }
 
 // ServiceWrapper lets you add customizations to your service. A specific case of it is serviceInterceptor
-// which can add Pre- and Post- handlers to all the Contracts of the Service.
+// which can add Pre- and Post-handlers to all the Contracts of the Service.
 type ServiceWrapper interface {
 	Wrap(Service) Service
 }

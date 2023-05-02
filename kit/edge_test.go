@@ -349,8 +349,8 @@ var _ = Describe("EdgeServer/Simple", func() {
 				)
 		}
 		edge = kit.NewServer(
-			kit.RegisterGateway(b),
-			kit.RegisterServiceDesc(serviceDesc.Desc()),
+			kit.WithGateway(b),
+			kit.WithServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -385,7 +385,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 						AddSelector(testSelector{}).
 						AddHandler(
 							func(ctx *kit.Context) {
-								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage))
+								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage)) //nolint:forcetypeassert
 								out := fmt.Sprintf("%s-%s-%s",
 									ctx.GetString("PRE_KEY", ""),
 									in,
@@ -401,13 +401,13 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 				)
 		}
 		edge = kit.NewServer(
-			kit.RegisterGateway(b),
+			kit.WithGateway(b),
 			kit.WithGlobalHandlers(
 				func(ctx *kit.Context) {
 					ctx.Set("PRE_KEY", "PRE_VALUE")
 				},
 			),
-			kit.RegisterServiceDesc(serviceDesc.Desc()),
+			kit.WithServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -476,15 +476,15 @@ var _ = Describe("EdgeServer/Cluster", func() {
 			}
 		}
 		edge1 = kit.NewServer(
-			kit.RegisterGateway(b1),
-			kit.RegisterCluster(c),
-			kit.RegisterServiceDesc(serviceDesc("edge1").Desc()),
+			kit.WithGateway(b1),
+			kit.WithCluster(c),
+			kit.WithServiceDesc(serviceDesc("edge1").Desc()),
 		)
 		edge1.Start(nil)
 		edge2 = kit.NewServer(
-			kit.RegisterGateway(b2),
-			kit.RegisterCluster(c),
-			kit.RegisterServiceDesc(serviceDesc("edge2").Desc()),
+			kit.WithGateway(b2),
+			kit.WithCluster(c),
+			kit.WithServiceDesc(serviceDesc("edge2").Desc()),
 		)
 		edge2.Start(nil)
 	})
@@ -507,8 +507,8 @@ var _ = Describe("EdgeServer/Cluster", func() {
 func BenchmarkServer(b *testing.B) {
 	bundle := &testGateway{}
 	s := kit.NewServer(
-		kit.RegisterGateway(bundle),
-		kit.RegisterService(
+		kit.WithGateway(bundle),
+		kit.WithService(
 			desc.NewService("testService").
 				AddContract(
 					desc.NewContract().

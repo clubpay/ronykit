@@ -201,7 +201,7 @@ func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 
 // In returns the incoming Envelope which received from the connection.
 // You **MUST NOT** call Send method of this Envelope.
-// If you want to return a message/envelope to connection use Out or OutTo methods
+// If you want to return a message/envelope to connection, use Out or OutTo methods
 // of the Context
 func (ctx *Context) In() *Envelope {
 	return ctx.in

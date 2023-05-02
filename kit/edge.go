@@ -310,12 +310,12 @@ func (s *EdgeServer) startup(ctx context.Context) {
 	}
 }
 
-// Shutdown stops the server. If there is no signal input then it shut down the server immediately.
-// However, if there is one or more signals added in the input argument then it waits for any of them to
+// Shutdown stops the server. If there is no signal input, then it shut down the server immediately.
+// However, if there is one or more signals added in the input argument, then it waits for any of them to
 // trigger the shutdown process.
 // Since this is a graceful shutdown, it waits for all flying requests to complete. However, you can set
 // the maximum time that it waits before forcefully shutting down the server, by WithShutdownTimeout
-// option. Default value is 1 minute.
+// option. The Default value is 1 minute.
 func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 	if ctx == nil {
 		ctx = context.Background()
