@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/contrib
 
-go 1.17
+go 1.18
 
 require (
 	github.com/clubpay/ronykit/kit v0.10.27

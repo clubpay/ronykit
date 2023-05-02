@@ -238,11 +238,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 				def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
 			}
 		case desc.String:
-			strSpec := spec.StringProperty()
-			for _, v := range p.Tag.PossibleValues {
-				strSpec.Enum = append(strSpec.Enum, v)
-			}
-			def.SetProperty(p.Name, wrapFuncChain.Apply(strSpec))
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		case desc.Float:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
 		case desc.Integer:
@@ -252,11 +248,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 		case desc.Byte:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
 		default:
-			strSpec := spec.StringProperty()
-			for _, v := range p.Tag.PossibleValues {
-				strSpec.Enum = append(strSpec.Enum, v)
-			}
-			def.SetProperty(p.Name, wrapFuncChain.Apply(strSpec))
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
 	}
 
@@ -291,6 +283,48 @@ Loop:
 		elem = elem.Element
 
 		goto Loop
+	}
+
+	enum := make([]any, 0, len(p.Tag.PossibleValues))
+	for _, v := range p.Tag.PossibleValues {
+		enum = append(enum, v)
+	}
+	if len(enum) > 0 {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				schema.Enum = enum
+
+				return schema
+			},
+		)
+	}
+
+	if p.Tag.Optional {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				spacer := ""
+				if len(schema.Description) > 0 {
+					spacer = " "
+				}
+				schema.Description = fmt.Sprintf("[Optional]%s%s", spacer, schema.Description)
+
+				return schema
+			},
+		)
+	}
+
+	if p.Tag.Deprecated {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				spacer := ""
+				if len(schema.Description) > 0 {
+					spacer = " "
+				}
+				schema.Description = fmt.Sprintf("[Deprecated]%s%s", spacer, schema.Description)
+
+				return schema
+			},
+		)
 	}
 
 	return name, kind, wrapFuncChain

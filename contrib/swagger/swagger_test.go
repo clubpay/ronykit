@@ -15,7 +15,7 @@ import (
 type sampleReq struct {
 	X  string     `json:"x,int"`
 	Y  string     `json:"y,omitempty"`
-	Z  int64      `json:"z"`
+	Z  int64      `json:"z" swag:"deprecated;optional"`
 	W  []string   `json:"w"`
 	TT [][]string `json:"tt"`
 }
@@ -53,7 +53,7 @@ func (e sampleError) Error() string {
 
 type anotherRes struct {
 	subRes
-	Out1 int    `json:"out1"`
+	Out1 int    `json:"out1" swag:"deprecated"`
 	Out2 string `json:"out2" swag:"enum:OUT1,OUT2"`
 }
 
@@ -136,6 +136,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
 		Expect(props[4].Name).To(Equal("z"))
 		Expect(props[4].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[4].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {
@@ -170,6 +171,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[0].SchemaProps.Items.Schema.Type[0]).To(Equal("integer"))
 		Expect(props[1].Name).To(Equal("out1"))
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[1].Description).To(Equal("[Deprecated]"))
 		Expect(props[2].Name).To(Equal("out2"))
 		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
 		Expect(props[2].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
