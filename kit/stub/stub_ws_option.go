@@ -114,7 +114,5 @@ func WithRecoverPanic(f func(err any)) WebsocketOption {
 func WithPreflightRPC(h ...RPCPreflightHandler) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.preflights = append(cfg.preflights[:0], h...)
-
-		return
 	}
 }

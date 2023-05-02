@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/std/gateways/fasthttp
 
-go 1.17
+go 1.19
 
 require (
 	github.com/clubpay/ronykit/kit v0.10.27

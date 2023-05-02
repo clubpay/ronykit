@@ -90,7 +90,7 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx.rawData = msg
 
 	arg, err := n.gw.Dispatch(ctx, msg)
-	switch err {
+	switch err { //nolint:errorlint
 	case nil:
 		ctx.execute(arg, n.c[arg.ContractID])
 	case ErrPreflight:

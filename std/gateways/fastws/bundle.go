@@ -38,11 +38,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),
 	}
-	gw, err := newGateway(b)
-	if err != nil {
-		return nil, err
-	}
-
+	gw := newGateway(b)
 	b.eh = gw
 
 	for _, opt := range opts {

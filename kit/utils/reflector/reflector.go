@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrNotExported = fmt.Errorf("not exported")
-	ErrNoField     = fmt.Errorf("field not exists")
+	ErrNotExported        = fmt.Errorf("not exported")
+	ErrNoField            = fmt.Errorf("field not exists")
+	ErrMessageIsNotStruct = fmt.Errorf("message is not a struct")
 )
 
 type Reflector struct {
@@ -44,7 +45,7 @@ func Register(m kit.Message, tags ...string) {
 func getValue(m kit.Message) (reflect.Value, error) {
 	mVal := reflect.Indirect(reflect.ValueOf(m))
 	if mVal.Kind() != reflect.Struct {
-		return reflect.Value{}, fmt.Errorf("message is not a struct")
+		return reflect.Value{}, ErrMessageIsNotStruct
 	}
 
 	return mVal, nil

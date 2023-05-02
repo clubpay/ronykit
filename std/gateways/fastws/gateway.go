@@ -26,13 +26,13 @@ type gateway struct {
 	conns  map[uint64]*wsConn
 }
 
-func newGateway(b *bundle) (*gateway, error) {
+func newGateway(b *bundle) *gateway {
 	gw := &gateway{
 		b:     b,
 		conns: map[uint64]*wsConn{},
 	}
 
-	return gw, nil
+	return gw
 }
 
 func (gw *gateway) writeFunc(conn kit.Conn, e *kit.Envelope) error {
@@ -136,7 +136,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	for {
 		hdr, err = wsc.r.NextFrame()
 		if err != nil {
-			if err == io.EOF {
+			if builtinErr.Is(err, io.EOF) {
 				return gnet.None
 			}
 
@@ -200,8 +200,7 @@ func newSwitchProtocol() *SwitchProtocol {
 	}
 
 	sp.u.OnHeader = func(key, value []byte) error {
-		switch {
-		case bytes.Equal(key, utils.S2B(headerOrigin)):
+		if bytes.Equal(key, utils.S2B(headerOrigin)) {
 			sp.hdr.Set(headerAccessControlAllowOrigin, string(value))
 		}
 

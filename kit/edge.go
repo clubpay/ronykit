@@ -252,7 +252,7 @@ func (s *EdgeServer) startParent(_ context.Context) {
 			fmt.Sprintf("%s=%d", envForkChildKey, i+1),
 		)
 		if err := cmd.Start(); err != nil {
-			panic(fmt.Errorf("failed to start a child prefork process, error: %v", err))
+			panic(fmt.Errorf("failed to start a child prefork process, error: %w", err))
 		}
 
 		// store child process
@@ -532,16 +532,12 @@ func (ls *localStore) Set(key string, value any) {
 	ls.kvl.Lock()
 	ls.kv[key] = value
 	ls.kvl.Unlock()
-
-	return
 }
 
 func (ls *localStore) Delete(key string) {
 	ls.kvl.Lock()
 	delete(ls.kv, key)
 	ls.kvl.Unlock()
-
-	return
 }
 
 func (ls *localStore) Exists(key string) bool {
@@ -563,6 +559,4 @@ func (ls *localStore) Scan(prefix string, cb func(key string) bool) {
 			}
 		}
 	}
-
-	return
 }

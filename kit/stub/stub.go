@@ -44,7 +44,7 @@ func New(hostPort string, opts ...Option) *Stub {
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
 			TLSConfig: &tls.Config{
-				InsecureSkipVerify: cfg.skipVerifyTLS,
+				InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 			},
 		},
 	}

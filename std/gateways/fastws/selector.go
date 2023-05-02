@@ -30,9 +30,8 @@ func (r Selector) GetPredicate() string {
 	return r.Predicate
 }
 
-func (r Selector) Query(q string) interface{} {
-	switch q {
-	case queryPredicate:
+func (r Selector) Query(q string) any {
+	if q == queryPredicate {
 		return r.Predicate
 	}
 
