@@ -238,7 +238,11 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 				def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
 			}
 		case desc.String:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+			strSpec := spec.StringProperty()
+			for _, v := range p.Tag.PossibleValues {
+				strSpec.Enum = append(strSpec.Enum, v)
+			}
+			def.SetProperty(p.Name, wrapFuncChain.Apply(strSpec))
 		case desc.Float:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
 		case desc.Integer:
@@ -248,7 +252,11 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 		case desc.Byte:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
 		default:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+			strSpec := spec.StringProperty()
+			for _, v := range p.Tag.PossibleValues {
+				strSpec.Enum = append(strSpec.Enum, v)
+			}
+			def.SetProperty(p.Name, wrapFuncChain.Apply(strSpec))
 		}
 	}
 

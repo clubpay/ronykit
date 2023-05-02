@@ -54,7 +54,7 @@ func (e sampleError) Error() string {
 type anotherRes struct {
 	subRes
 	Out1 int    `json:"out1"`
-	Out2 string `json:"out2"`
+	Out2 string `json:"out2" swag:"enum:OUT1,OUT2"`
 }
 
 type testService struct{}
@@ -172,6 +172,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("integer"))
 		Expect(props[2].Name).To(Equal("out2"))
 		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[2].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
 		Expect(props[3].Name).To(Equal("some"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
 	})
