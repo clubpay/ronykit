@@ -110,12 +110,12 @@ var MyServiceDesc desc.ServiceDescFunc = func() *desc.Service {
 
 func main() {
 	defer kit.NewServer(
-		kit.RegisterGateway(
+		kit.WithGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 			),
 		),
-		kit.RegisterServiceDesc(MyServiceDesc()),
+		kit.WithServiceDesc(MyServiceDesc()),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
