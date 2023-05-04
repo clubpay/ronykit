@@ -250,12 +250,19 @@ func (wCtx *WebsocketCtx) NetConn() net.Conn {
 }
 
 type WebsocketRequest struct {
-	Predicate   string
+	// Predicate is the routing key for the message, which will be added to the kit.OutgoingRPCContainer
+	Predicate string
+	// MessageType is the type of the message, either websocket.TextMessage or websocket.BinaryMessage
 	MessageType int
 	ReqMsg      kit.Message
-	ResMsg      kit.Message
-	ReqHdr      Header
-	Callback    RPCMessageHandler
+	// ResMsg is the message that will be used to unmarshal the response.
+	// You should pass a pointer to the struct that you want to unmarshal the response into.
+	ResMsg kit.Message
+	// ReqHdr is the headers that will be added to the kit.OutgoingRPCContainer
+	ReqHdr Header
+	// Callback is the callback that will be called when the response is received.
+	// This MUST BE non-nil otherwise it panics.
+	Callback RPCMessageHandler
 }
 
 func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
