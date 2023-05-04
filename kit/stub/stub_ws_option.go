@@ -9,6 +9,10 @@ import (
 	"github.com/fasthttp/websocket"
 )
 
+type Dialer = websocket.Dialer
+
+type PreDialHandler func(d *Dialer)
+
 type OnConnectHandler func(ctx *WebsocketCtx)
 
 type WebsocketOption func(cfg *wsConfig)
@@ -30,6 +34,7 @@ type wsConfig struct {
 	dialTimeout   time.Duration
 	writeTimeout  time.Duration
 
+	preDial    func(d *websocket.Dialer)
 	onConnect  OnConnectHandler
 	preflights []RPCPreflightHandler
 
@@ -76,6 +81,12 @@ func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Websoc
 func WithOnConnectHandler(f OnConnectHandler) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.onConnect = f
+	}
+}
+
+func WithPreDialHandler(f PreDialHandler) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.preDial = f
 	}
 }
 

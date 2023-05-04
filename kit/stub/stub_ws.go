@@ -3,6 +3,7 @@ package stub
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -51,6 +52,9 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	wCtx.l.Debugf("connect: %s", wCtx.url)
 
 	d := wCtx.cfg.dialerBuilder()
+	if f := wCtx.cfg.preDial; f != nil {
+		f(d)
+	}
 	c, rsp, err := d.DialContext(ctx, wCtx.url, wCtx.cfg.upgradeHdr)
 	if err != nil {
 		return err
@@ -73,8 +77,8 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	go wCtx.receiver(c) //nolint:contextcheck
 	go wCtx.watchdog()  //nolint:contextcheck
 
-	if wCtx.cfg.onConnect != nil {
-		wCtx.cfg.onConnect(wCtx)
+	if f := wCtx.cfg.onConnect; f != nil {
+		f(wCtx)
 	}
 
 	return nil
@@ -238,6 +242,11 @@ func (wCtx *WebsocketCtx) BinaryMessage(
 			Callback:    cb,
 		},
 	)
+}
+
+// NetConn returns the underlying net.Conn, ONLY for advanced use cases
+func (wCtx *WebsocketCtx) NetConn() net.Conn {
+	return wCtx.c.NetConn()
 }
 
 type WebsocketRequest struct {
