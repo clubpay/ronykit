@@ -224,11 +224,13 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 	}
 
 	for fields.Back() != nil {
-		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:forcetypeassert
+		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
 
 		name, kind, wrapFuncChain := getWrapFunc(p)
 
 		switch kind {
+		default:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		case desc.Object:
 			if p.Embedded {
 				for _, f := range p.Message.Fields {
@@ -247,8 +249,6 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
 		case desc.Byte:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
-		default:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		}
 	}
 

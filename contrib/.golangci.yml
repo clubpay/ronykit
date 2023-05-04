@@ -28,7 +28,9 @@ linters:
     - ifshort
     - deadcode
     - structcheck
-  fast: true
+    - gocritic
+    - exhaustive
+  fast: false
 linters-settings:
   #  decorder:
   #    # Required order of `type`, `const`, `var` and `func` declarations inside a file.
@@ -56,5 +58,6 @@ linters-settings:
     # Such cases aren't reported by default.
     # Default: false
     check-blank: true
-
+  cyclop:
+    max-complexity: 15
 
