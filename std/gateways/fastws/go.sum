@@ -1,7 +1,7 @@
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
-github.com/clubpay/ronykit/kit v0.10.27 h1:VxUf0rOR7gV5uzKskJo4BoZ79Pcvu6xhMAPszamNNNI=
-github.com/clubpay/ronykit/kit v0.10.27/go.mod h1:KuX+SXaQy1kCwD5pMvqr0ADLx2C/Febhm8pXTxP0WGs=
+github.com/clubpay/ronykit/kit v0.10.29 h1:d/aOstR/5/WI6Dgi4RsI56orfCMc2YToRrYHhrDok+8=
+github.com/clubpay/ronykit/kit v0.10.29/go.mod h1:GsHKjCPeLMt6vZL/qW4sYGRK5Iug348gOm+cgln8f8w=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

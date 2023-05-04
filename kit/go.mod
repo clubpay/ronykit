@@ -3,13 +3,13 @@ module github.com/clubpay/ronykit/kit
 go 1.18
 
 require (
-	github.com/fasthttp/websocket v1.5.2
+	github.com/fasthttp/websocket v1.5.3
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.6
-	github.com/valyala/fasthttp v1.45.0
+	github.com/valyala/fasthttp v1.47.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -19,7 +19,7 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
-	github.com/klauspost/compress v1.16.3 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
