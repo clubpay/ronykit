@@ -6,7 +6,7 @@ require (
 	github.com/clubpay/ronykit/kit v0.10.31
 	github.com/go-www/silverlining v1.3.1
 	github.com/goccy/go-reflect v1.2.0
-	github.com/libp2p/go-reuseport v0.2.0
+	github.com/libp2p/go-reuseport v0.3.0
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.6
 )

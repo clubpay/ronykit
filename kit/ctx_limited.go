@@ -15,7 +15,7 @@ func newLimitedContext(ctx *Context) *LimitedContext {
 	}
 }
 
-// Context returns a context.WithCancel which can be used a reference context for
+// Context returns a context.WithCancel, which can be used a reference context for
 // other context-aware function calls.
 // This context will be canceled at the end of Context lifetime.
 func (ctx *LimitedContext) Context() context.Context {
