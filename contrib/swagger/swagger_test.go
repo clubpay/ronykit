@@ -30,6 +30,7 @@ type sampleRes struct {
 	Out2 string   `json:"out2"`
 	Sub  subRes   `json:"sub"`
 	Subs []subRes `json:"subs"`
+	XSub *subRes  `json:"xSub"`
 }
 
 type sampleError struct {

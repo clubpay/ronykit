@@ -132,6 +132,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		ft := f.Type
 		if ft.Kind() == reflect.Ptr {
 			pp.Optional = true
+			ft = ft.Elem()
 		}
 
 		pp.Embedded = f.Anonymous
