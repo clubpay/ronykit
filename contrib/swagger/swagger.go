@@ -299,7 +299,7 @@ Loop:
 		)
 	}
 
-	if p.Tag.Optional {
+	if p.Tag.Optional || p.Optional {
 		wrapFuncChain = wrapFuncChain.Add(
 			func(schema *spec.Schema) *spec.Schema {
 				spacer := ""
