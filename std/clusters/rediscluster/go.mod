@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/clusters/rediscluster
 go 1.17
 
 require (
-	github.com/clubpay/ronykit/kit v0.10.32
+	github.com/clubpay/ronykit/kit v0.10.33
 	github.com/redis/go-redis/v9 v9.0.3
 )
 
