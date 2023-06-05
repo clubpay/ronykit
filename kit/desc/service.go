@@ -184,7 +184,7 @@ func (s *Service) dtoStub(stub *Stub) error {
 			}
 		}
 
-		// detect DTOs for service
+		// detect error DTOs for service
 		for _, pe := range s.PossibleErrors {
 			err = stub.addDTO(reflect.TypeOf(pe.Message), true)
 			if err != nil {
@@ -192,7 +192,7 @@ func (s *Service) dtoStub(stub *Stub) error {
 			}
 		}
 
-		// detect DTOs for contract
+		// detect error DTOs for contract
 		for _, pe := range c.PossibleErrors {
 			err = stub.addDTO(reflect.TypeOf(pe.Message), true)
 			if err != nil {

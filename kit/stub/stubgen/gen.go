@@ -59,11 +59,13 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	}
 
 	mergedStub := desc.MergeStubs(stubs...)
-	rawContent, err := g.cfg.genFunc(Input{
-		Stub: *mergedStub,
-		Name: g.cfg.stubName,
-		Pkg:  g.cfg.pkgName,
-	})
+	rawContent, err := g.cfg.genFunc(
+		Input{
+			Stub: *mergedStub,
+			Name: g.cfg.stubName,
+			Pkg:  g.cfg.pkgName,
+		},
+	)
 	if err != nil {
 		return err
 	}

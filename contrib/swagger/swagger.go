@@ -71,7 +71,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 		}
 
 		for _, c := range ps.Contracts {
-			sg.addSwagOp(swag, ps.Origin.Name, c)
+			addSwagOp(swag, ps.Origin.Name, c)
 		}
 	}
 
@@ -85,7 +85,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	return err
 }
 
-func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
+func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	if swag.Paths == nil {
 		swag.Paths = &spec.Paths{
 			Paths: map[string]spec.PathItem{},
