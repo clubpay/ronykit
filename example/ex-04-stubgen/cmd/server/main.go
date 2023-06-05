@@ -25,7 +25,7 @@ func main() {
 		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
 			fmt.Println(err, string(debug.Stack()))
 		}),
-		kit.RegisterGateway(
+		kit.WithGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(":80"),
 				fasthttp.WithServerName("RonyKIT Server"),
@@ -34,7 +34,7 @@ func main() {
 				fasthttp.WithPredicateKey("cmd"),
 			),
 		),
-		kit.RegisterServiceDesc(
+		kit.WithServiceDesc(
 			api.SampleDesc.Desc(),
 		),
 	).

@@ -26,7 +26,7 @@ func main() {
 				fmt.Println("got error: ", err)
 			},
 		),
-		kit.RegisterGateway(
+		kit.WithGateway(
 			fastws.MustNew(
 				fastws.Listen("tcp4://0.0.0.0:80"),
 				fastws.WithPredicateKey("cmd"),
@@ -41,7 +41,7 @@ func main() {
 			//		fasthttp.Listen(":80"),
 			//	),
 		),
-		kit.RegisterServiceDesc(sampleService),
+		kit.WithServiceDesc(sampleService),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).

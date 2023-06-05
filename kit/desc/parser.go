@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/goccy/go-json"
 )
 
 type ParsedService struct {

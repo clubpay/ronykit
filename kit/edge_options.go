@@ -36,22 +36,8 @@ func WithGateway(gw ...Gateway) Option {
 	}
 }
 
-// RegisterGateway lets you register a bundle in constructor of the EdgeServer.
-// Deprecated: Use WithGateway instead.
-func RegisterGateway(gw ...Gateway) Option {
-	return WithGateway(gw...)
-}
-
 // WithCluster lets you register a cluster in constructor of the EdgeServer.
 func WithCluster(cb Cluster) Option {
-	return func(s *edgeConfig) {
-		s.cluster = cb
-	}
-}
-
-// RegisterCluster lets you register a cluster in constructor of the EdgeServer.
-// Deprecated: Use WithCluster instead.
-func RegisterCluster(cb Cluster) Option {
 	return func(s *edgeConfig) {
 		s.cluster = cb
 	}
@@ -64,26 +50,8 @@ func WithService(service ...Service) Option {
 	}
 }
 
-// RegisterService lets you register a service in constructor of the EdgeServer.
-// Deprecated: Use WithService instead.
-func RegisterService(service ...Service) Option {
-	return func(s *edgeConfig) {
-		s.services = append(s.services, service...)
-	}
-}
-
 // WithServiceDesc lets you register a ServiceDescriptor in constructor of the EdgeServer.
 func WithServiceDesc(desc ...ServiceDescriptor) Option {
-	return func(s *edgeConfig) {
-		for _, d := range desc {
-			s.services = append(s.services, d.Generate())
-		}
-	}
-}
-
-// RegisterServiceDesc lets you register a ServiceDescriptor in constructor of the EdgeServer.
-// Deprecated: Use WithServiceDesc instead.
-func RegisterServiceDesc(desc ...ServiceDescriptor) Option {
 	return func(s *edgeConfig) {
 		for _, d := range desc {
 			s.services = append(s.services, d.Generate())

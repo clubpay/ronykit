@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
-	"github.com/goccy/go-json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -336,7 +336,7 @@ func (hc *RESTCtx) AutoRun(
 		var reqBody []byte
 		switch enc {
 		case kit.JSON:
-			reqBody, _ = json.MarshalNoEscape(m)
+			reqBody, _ = json.Marshal(m)
 		default:
 			reqBody, _ = kit.MarshalMessage(m)
 		}
