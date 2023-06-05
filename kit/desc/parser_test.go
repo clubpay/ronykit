@@ -1,8 +1,6 @@
 package desc_test
 
 import (
-	"fmt"
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	. "github.com/onsi/ginkgo/v2"
@@ -145,6 +143,10 @@ var _ = Describe("ParseMessage.JSON()", func() {
 	d := desc.NewService("sample").
 		AddContract(
 			desc.NewContract().
+				SetInputHeader(
+					desc.RequiredHeader("hdr1"),
+					desc.OptionalHeader("optionalHdr1"),
+				).
 				SetName("c1").
 				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
 				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
@@ -152,6 +154,15 @@ var _ = Describe("ParseMessage.JSON()", func() {
 				Out(&FlatMessage{}),
 		)
 
-	ps := desc.ParseService(d)
-	fmt.Println(ps.Contracts[0].Request.Message.JSON())
+	It("Parse Service", func() {
+		ps := desc.ParseService(d)
+		Expect(ps.Messages()).To(HaveLen(2))
+		Expect(ps.Contracts).To(HaveLen(2))
+		Expect(ps.Contracts[0].Type).To(Equal(desc.REST))
+		Expect(ps.Contracts[0].Request.Headers).To(HaveLen(2))
+		Expect(ps.Contracts[0].Request.Headers[0].Required).To(BeTrue())
+		Expect(ps.Contracts[0].Request.Headers[0].Name).To(Equal("hdr1"))
+		Expect(ps.Contracts[0].Request.Headers[1].Required).To(BeFalse())
+		Expect(ps.Contracts[0].Request.Headers[1].Name).To(Equal("optionalHdr1"))
+	})
 })
