@@ -99,6 +99,10 @@ func MarshalMessage(m Message) ([]byte, error) {
 }
 
 func marshalMessageX(m Message) []byte {
+	switch v := m.(type) {
+	case RawMessage:
+		return v
+	}
 	data, err := jsonMarshaler.Marshal(m)
 	if err != nil {
 		panic(err)
