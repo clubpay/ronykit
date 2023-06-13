@@ -335,3 +335,5 @@ func (c containerTraceCarrier) Get(key string) string {
 func (c containerTraceCarrier) Set(key string, value string) {
 	c.out.SetHdr(key, value)
 }
+
+var ErrBadHandshake = websocket.ErrBadHandshake
