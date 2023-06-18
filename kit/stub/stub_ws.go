@@ -75,7 +75,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	// run receiver & watchdog in the background
 	go wCtx.receiver(c) //nolint:contextcheck
-	go wCtx.watchdog()  //nolint:contextcheck
+	go wCtx.watchdog(c) //nolint:contextcheck
 
 	if f := wCtx.cfg.onConnect; f != nil {
 		f(wCtx)
@@ -98,23 +98,23 @@ func (wCtx *WebsocketCtx) getActivity() int64 {
 	return int64(atomic.LoadUint32(&wCtx.lastActivity))
 }
 
-func (wCtx *WebsocketCtx) watchdog() {
-	wCtx.l.Debugf("watchdog started: %s", wCtx.c.LocalAddr().String())
+func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
+	wCtx.l.Debugf("watchdog started: %s", c.LocalAddr().String())
 
 	t := time.NewTicker(wCtx.cfg.pingTime)
 	d := int64(wCtx.cfg.pingTime/time.Second) * 2
 	for range t.C {
 		if wCtx.disconnect {
-			wCtx.l.Debugf("going to disconnect: %s", wCtx.c.LocalAddr().String())
+			wCtx.l.Debugf("going to disconnect: %s", c.LocalAddr().String())
 
-			_ = wCtx.c.Close()
+			_ = c.Close()
 
 			return
 		}
 
 		if utils.TimeUnix()-wCtx.getActivity() <= d {
 			wCtx.cMtx.Lock()
-			_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+			_ = c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
 			wCtx.cMtx.Unlock()
 			wCtx.l.Debugf("websocket ping sent")
 
@@ -125,14 +125,14 @@ func (wCtx *WebsocketCtx) watchdog() {
 			return
 		}
 
-		wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
-		_ = wCtx.c.Close()
+		wCtx.l.Errorf("inactivity detected, reconnecting: %s", c.LocalAddr().String())
+		_ = c.Close()
 
 		ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
 		err := wCtx.connect(ctx)
 		cf()
 		if err != nil {
-			wCtx.l.Debugf("failed to reconnect: %s", err)
+			wCtx.l.Errorf("failed to reconnect: %s", err)
 
 			continue
 		}
@@ -187,16 +187,21 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			continue
 		}
 
-		wCtx.cfg.ratelimitChan <- struct{}{}
-		wCtx.cfg.handlersWG.Add(1)
-		go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
-			defer wCtx.recoverPanic()
+		select {
+		default:
+			wCtx.l.Errorf("ratelimit reached, packet dropped")
+		case wCtx.cfg.ratelimitChan <- struct{}{}:
+			wCtx.cfg.handlersWG.Add(1)
+			go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
+				defer wCtx.recoverPanic()
 
-			h(ctx, rpcIn)
-			<-wCtx.cfg.ratelimitChan
-			wCtx.cfg.handlersWG.Done()
-			rpcIn.Release()
-		}(ctx, rpcIn)
+				h(ctx, rpcIn)
+				<-wCtx.cfg.ratelimitChan
+				wCtx.cfg.handlersWG.Done()
+				rpcIn.Release()
+			}(ctx, rpcIn)
+		}
+
 	}
 }
 
