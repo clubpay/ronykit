@@ -12,6 +12,7 @@ var _ = Describe("Router", func() {
 	rd := &httpmux.RouteData{}
 	mux.POST("/r1/:p1/something", rd)
 	mux.GET("/r1/:p1/something", rd)
+	mux.DELETE("/r1/:p1", rd)
 
 	It("Wildcard route must match with GET", func() {
 		rd, p, _ := mux.Lookup(fasthttp.MethodGet, "/r1/x/something")

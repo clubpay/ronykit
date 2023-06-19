@@ -107,6 +107,21 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 }
 
 // Next sets the next handler which will be called after the current handler.
+/*
+	Here's a brief explanation of the Next() method:
+
+	1. It increments the handlerIndex of the Context by 1.
+	2. It enters a for loop that runs as long as the handlerIndex is less than or equal to the number of
+			registered handlers in the Context.
+	3. Inside the loop, it calls the next registered handler with the current instance of Context.
+	4. After the execution of the handler, it increments the handlerIndex by 1, and the loop continues until all remaining
+			handlers are called.
+
+	This method is useful in situations where you may have a set of middlewares to be executed in sequence,
+	and you want to control the order in which they're called. By calling Next() in a middleware function,
+	you allow the processing flow to continue and pass control to the subsequent middleware functions
+	in the chain.
+*/
 func (ctx *Context) Next() {
 	ctx.handlerIndex++
 	for ctx.handlerIndex <= len(ctx.handlers) {
