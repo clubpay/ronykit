@@ -74,7 +74,7 @@ func (c *cluster) initRaft() error {
 	stableStore := &stableStore{}
 	ssStore := raft.NewInmemSnapshotStore()
 
-	trans, err := raft.NewTCPTransport()
+	trans, err := raft.NewTCPTransport("", nil, 0, 0, nil)
 	if err != nil {
 		return err
 	}
@@ -106,20 +106,21 @@ func (c *cluster) Shutdown(ctx context.Context) error {
 }
 
 func (c *cluster) Subscribe(id string, d kit.ClusterDelegate) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (c *cluster) Publish(id string, data []byte) error {
-	c.members.SendReliable()
+	// TODO implement me
+	panic("implement me")
 }
 
 func (c *cluster) Subscribers() ([]string, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (c *cluster) Store() kit.ClusterStore {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

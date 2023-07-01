@@ -109,16 +109,48 @@ func Int64ToStr(x int64) string {
 	return strconv.FormatInt(x, 10)
 }
 
+func Int64ToBigEndian(x int64) [8]byte {
+	var b [8]byte
+
+	binary.BigEndian.PutUint64(b[:], uint64(x))
+
+	return b
+}
+
 func Int32ToStr(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
+}
+
+func Int32ToBigEndian(x int32) [4]byte {
+	var b [4]byte
+
+	binary.BigEndian.PutUint32(b[:], uint32(x))
+
+	return b
 }
 
 func UInt64ToStr(x uint64) string {
 	return strconv.FormatUint(x, 10)
 }
 
+func UInt64ToBigEndian(x uint64) [8]byte {
+	var b [8]byte
+
+	binary.BigEndian.PutUint64(b[:], x)
+
+	return b
+}
+
 func UInt32ToStr(x uint32) string {
 	return strconv.FormatUint(uint64(x), 10)
+}
+
+func UInt32ToBigEndian(x uint32) [4]byte {
+	var b [4]byte
+
+	binary.BigEndian.PutUint32(b[:], x)
+
+	return b
 }
 
 func Float64ToStr(x float64) string {
