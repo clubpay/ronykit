@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/kit v0.10.36
-	github.com/gobwas/ws v1.2.0
+	github.com/gobwas/ws v1.2.1
 	github.com/panjf2000/gnet/v2 v2.2.7
 )
 

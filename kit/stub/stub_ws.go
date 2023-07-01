@@ -201,7 +201,6 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 				rpcIn.Release()
 			}(ctx, rpcIn)
 		}
-
 	}
 }
 

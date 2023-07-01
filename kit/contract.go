@@ -13,10 +13,11 @@ type RouteSelector interface {
 	GetEncoding() Encoding
 }
 
-// RESTRouteSelector is an interface that extends RouteSelector with methods specific to REST operations, primarily
-// used by REST-based gateways. With GetMethod and GetPath methods, this interface provides the HTTP method and path information
-// necessary for routing REST requests to the appropriate contract. Implementations of this interface are expected to provide
-// their own GetMethod and GetPath methods that return the desired method and path as strings.
+// RESTRouteSelector is an interface that extends RouteSelector with methods specific to REST operations,
+// primarily used by REST-based gateways. With GetMethod and GetPath methods, this interface provides
+// the HTTP method and path information necessary for routing REST requests to the appropriate contract.
+// Implementations of this interface are expected to provide their own GetMethod and GetPath methods that
+// return the desired method and path as strings.
 type RESTRouteSelector interface {
 	RouteSelector
 	GetMethod() string
@@ -26,9 +27,10 @@ type RESTRouteSelector interface {
 // RPCRouteSelector defines the RouteSelector which could be used in RPC operations.
 // Gateway implementation which handle RPC requests could check the selector if it supports RPC.
 // It is an interface that extends RouteSelector with a method specific to RPC operations. It is primarily
-// used by RPC-based gateways for routing RPC requests to the appropriate contract. Implementations of this interface should
-// provide their own GetPredicate method, which returns a string representing a predicate used to evaluate the route. In this
-// context, a predicate is a condition or criteria that helps in selecting the proper handler for the RPC request.
+// used by RPC-based gateways for routing RPC requests to the appropriate contract. Implementations of this
+// interface should provide their own GetPredicate method, which returns a string representing a predicate
+// used to evaluate the route. In this context, a predicate is a condition or criteria that helps in
+// selecting the proper handler for the RPC request.
 type RPCRouteSelector interface {
 	RouteSelector
 	GetPredicate() string
