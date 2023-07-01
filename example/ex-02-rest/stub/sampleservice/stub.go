@@ -129,9 +129,14 @@ func (s SampleServiceStub) EchoGET(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/echo/:randomID", kit.JSON, req)
@@ -162,9 +167,14 @@ func (s SampleServiceStub) EchoPOST(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/echo-post", kit.JSON, req)
@@ -195,9 +205,14 @@ func (s SampleServiceStub) Sum1(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req)
@@ -228,9 +243,14 @@ func (s SampleServiceStub) Sum2(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/sum", kit.JSON, req)
@@ -261,9 +281,14 @@ func (s SampleServiceStub) SumRedirect(
 				return stub.NewErrorWithMsg(res)
 			},
 		).
-		DefaultResponseHandler(
+		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
 		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req)

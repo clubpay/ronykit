@@ -15,7 +15,7 @@ func TestSRL(t *testing.T) {
 }
 
 var _ = Describe("Address stringer & formatter", func() {
-	entries := []interface{}{
+	entries := []any{
 		Entry("empty", srl.New("", "", ""), ""),
 		Entry("without group", srl.New("", "", "pos-vendor"), "@pos-vendor"),
 		Entry("without storage & id", srl.New("", "ir", ""), "ir"),
@@ -48,7 +48,7 @@ var _ = Describe("Address stringer & formatter", func() {
 	DescribeTable(
 		"address stringer",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr srl.SRL, str string) {
 					Expect(addr.String()).To(BeIdenticalTo(str))
 				},
@@ -58,7 +58,7 @@ var _ = Describe("Address stringer & formatter", func() {
 	DescribeTable(
 		"address parser",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr srl.SRL, str string) {
 					Expect(srl.Parse(str)).To(BeIdenticalTo(addr))
 				},
@@ -68,7 +68,7 @@ var _ = Describe("Address stringer & formatter", func() {
 	DescribeTable(
 		"parse formatted address",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr srl.SRL, _ string) {
 					Expect(srl.Parse(addr.String())).To(BeIdenticalTo(addr))
 				},
@@ -78,7 +78,7 @@ var _ = Describe("Address stringer & formatter", func() {
 	DescribeTable(
 		"format parsed address",
 		append(
-			[]interface{}{
+			[]any{
 				func(_ srl.SRL, str string) {
 					Expect(srl.Parse(str).String()).To(BeIdenticalTo(str))
 				},
@@ -88,7 +88,7 @@ var _ = Describe("Address stringer & formatter", func() {
 
 // nolint
 var _ = Describe("Address append", func() {
-	entries := []interface{}{
+	entries := []any{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -142,7 +142,7 @@ var _ = Describe("Address append", func() {
 	DescribeTable(
 		"append two addresses",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr1, addr2, expected srl.SRL) {
 					Expect(addr1.Append(addr2)).To(BeIdenticalTo(expected))
 				},
@@ -152,7 +152,7 @@ var _ = Describe("Address append", func() {
 
 // nolint
 var _ = Describe("Address replace", func() {
-	entries := []interface{}{
+	entries := []any{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -206,7 +206,7 @@ var _ = Describe("Address replace", func() {
 	DescribeTable(
 		"replace two addresses",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr1, addr2, expected srl.SRL) {
 					Expect(addr1.Replace(addr2)).To(BeIdenticalTo(expected))
 				},
@@ -216,7 +216,7 @@ var _ = Describe("Address replace", func() {
 
 // nolint
 var _ = Describe("Address merge", func() {
-	entries := []interface{}{
+	entries := []any{
 		Entry("both empty",
 			srl.New("", "", ""),
 			srl.New("", "", ""),
@@ -270,7 +270,7 @@ var _ = Describe("Address merge", func() {
 	DescribeTable(
 		"merge two addresses",
 		append(
-			[]interface{}{
+			[]any{
 				func(addr1, addr2, expected srl.SRL) {
 					Expect(addr1.Merge(addr2)).To(BeIdenticalTo(expected))
 				},

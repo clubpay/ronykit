@@ -341,8 +341,8 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
-	// check CORS rules before even returning errRouteNotFound. This makes sure that
-	// we handle any CORS even for non-routable requests.
+	// Check CORS rules before even returning errRouteNotFound.
+	// This makes sure that we handle any CORS even for non-routable requests.
 	b.cors.handle(conn)
 
 	if routeData == nil {

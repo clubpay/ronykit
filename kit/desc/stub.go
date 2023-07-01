@@ -129,8 +129,6 @@ func (rm *RPCMethod) addPossibleError(dto ErrorDTO) {
 // Stub represents description of a stub of the service described by Service descriptor.
 type Stub struct {
 	tags  []string
-	Pkg   string
-	Name  string
 	DTOs  map[string]DTO
 	RESTs []RESTMethod
 	RPCs  []RPCMethod
@@ -274,8 +272,42 @@ func (d *Stub) getDTO(mTyp reflect.Type) (DTO, bool) {
 	return dto, ok
 }
 
-func (d *Stub) Tags() []string {
+func (d Stub) Tags() []string {
 	return d.tags
 }
 
 var errUnsupportedType = errors.NewG("non-struct types as DTO : %s")
+
+func MergeStubs(stubs ...*Stub) *Stub {
+	stub := newStub()
+
+	for _, s := range stubs {
+		for _, dto := range s.DTOs {
+			stub.DTOs[dto.Name] = dto
+		}
+
+		stub.RESTs = append(stub.RESTs, s.RESTs...)
+		stub.RPCs = append(stub.RPCs, s.RPCs...)
+		stub.tags = appendUnique(stub.tags, s.tags...)
+	}
+
+	return stub
+}
+
+func appendUnique(slice []string, s ...string) []string {
+	for _, z := range s {
+		found := false
+		for _, x := range slice {
+			if z == x {
+				found = true
+
+				break
+			}
+		}
+		if !found {
+			slice = append(slice, z)
+		}
+	}
+
+	return slice
+}

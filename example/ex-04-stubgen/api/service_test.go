@@ -11,11 +11,15 @@ import (
 
 func TestSampleService(t *testing.T) {
 	err := kit.NewTestContext().
-		SetHandler(api.EchoHandler).
+		SetHandler(api.DummyHandler).
 		Input(
-			&dto.EchoRequest{
-				RandomID: 2374,
-				Ok:       false,
+			&dto.VeryComplexRequest{
+				Key1:      "somekey",
+				Key1Ptr:   nil,
+				MapKey1:   nil,
+				MapKey2:   nil,
+				SliceKey1: nil,
+				SliceKey2: nil,
 			},
 			nil,
 		).
@@ -25,12 +29,12 @@ func TestSampleService(t *testing.T) {
 					t.Fatalf("expected 1 envelope, got %d", len(out))
 				}
 				out1 := out[0]
-				res1, ok := out1.GetMsg().(*dto.EchoResponse)
+				res1, ok := out1.GetMsg().(*dto.VeryComplexResponse)
 				if !ok {
 					t.Fatalf("expected echoResponse, got %v", reflect.TypeOf(out1.GetMsg()))
 				}
-				if res1.RandomID != 2374 {
-					t.Fatalf("got unexpected randomID: %d", res1.RandomID)
+				if res1.Key1 != "somekey" {
+					t.Fatalf("got unexpected randomID: %s", res1.Key1)
 				}
 
 				return nil

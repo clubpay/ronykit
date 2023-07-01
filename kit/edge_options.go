@@ -29,26 +29,29 @@ func WithPrefork() Option {
 	}
 }
 
-// RegisterGateway lets you register a bundle in constructor of the EdgeServer.
-func RegisterGateway(gw ...Gateway) Option {
+// WithGateway lets you register a bundle in constructor of the EdgeServer.
+func WithGateway(gw ...Gateway) Option {
 	return func(s *edgeConfig) {
 		s.gateways = append(s.gateways, gw...)
 	}
 }
 
-func RegisterCluster(cb Cluster) Option {
+// WithCluster lets you register a cluster in constructor of the EdgeServer.
+func WithCluster(cb Cluster) Option {
 	return func(s *edgeConfig) {
 		s.cluster = cb
 	}
 }
 
-func RegisterService(service ...Service) Option {
+// WithService lets you register a service in constructor of the EdgeServer.
+func WithService(service ...Service) Option {
 	return func(s *edgeConfig) {
 		s.services = append(s.services, service...)
 	}
 }
 
-func RegisterServiceDesc(desc ...ServiceDescriptor) Option {
+// WithServiceDesc lets you register a ServiceDescriptor in constructor of the EdgeServer.
+func WithServiceDesc(desc ...ServiceDescriptor) Option {
 	return func(s *edgeConfig) {
 		for _, d := range desc {
 			s.services = append(s.services, d.Generate())
@@ -56,7 +59,7 @@ func RegisterServiceDesc(desc ...ServiceDescriptor) Option {
 	}
 }
 
-// WithShutdownTimeout sets the maximum time to wait until all running request to finish.
+// WithShutdownTimeout sets the maximum time to wait until all running requests to finish.
 // Default is to wait forever.
 func WithShutdownTimeout(d time.Duration) Option {
 	return func(s *edgeConfig) {
@@ -65,7 +68,7 @@ func WithShutdownTimeout(d time.Duration) Option {
 }
 
 // WithErrorHandler registers a global error handler to catch any error that
-// happens before EdgeServer can deliver incoming message to the handler, or delivering
+// happens before EdgeServer can deliver the incoming message to the handler, or delivering
 // the outgoing message to the client.
 // Internal errors are usually wrapped and could be checked for better error handling.
 // You can check with errors.Is function to see if the error is one of the following:

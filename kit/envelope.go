@@ -156,8 +156,8 @@ func (e *Envelope) GetMsg() Message {
 // Send writes the envelope to the connection based on the Gateway specification.
 // You **MUST NOT** use the Envelope after calling this method.
 // You **MUST NOT** call this function more than once.
-// You **MUST NOT** call this method on incoming envelopes. i.e. the Envelope that you
-// get from Context.In
+// You **MUST NOT** call this method on incoming envelopes.
+// You **MUST NOT** call this on the Envelope that you get from Context.In
 func (e *Envelope) Send() {
 	if e.conn == nil {
 		panic("BUG!! do not call Send on nil conn, maybe called multiple times ?!")

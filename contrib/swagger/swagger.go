@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"container/list"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,11 +67,11 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 		)
 
 		for _, m := range ps.Messages() {
-			sg.addSwagDefinition(swag, m)
+			addSwagDefinition(swag, m)
 		}
 
 		for _, c := range ps.Contracts {
-			sg.addSwagOp(swag, ps.Origin.Name, c)
+			addSwagOp(swag, ps.Origin.Name, c)
 		}
 	}
 
@@ -84,7 +85,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	return err
 }
 
-func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
+func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	if swag.Paths == nil {
 		swag.Paths = &spec.Paths{
 			Paths: map[string]spec.PathItem{},
@@ -136,14 +137,13 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Pa
 		)
 	}
 
-	sg.setSwagInput(op, c)
+	setSwagInput(op, c)
 
 	restPath := fixPathForSwag(c.Path)
 	pathItem := swag.Paths.Paths[restPath]
 	switch strings.ToUpper(c.Method) {
 	case http.MethodGet:
 		pathItem.Get = op
-
 	case http.MethodDelete:
 		pathItem.Delete = op
 	case http.MethodPost:
@@ -174,7 +174,7 @@ func (sg *Generator) addSwagOp(swag *spec.Swagger, serviceName string, c desc.Pa
 	swag.Paths.Paths[restPath] = pathItem
 }
 
-func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
+func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 	if len(c.Request.Message.Fields) == 0 {
 		return
 	}
@@ -206,48 +206,39 @@ func (sg *Generator) setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 	}
 }
 
-func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
+func addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
 	if swag.Definitions == nil {
 		swag.Definitions = map[string]spec.Schema{}
 	}
 
+	swag.Definitions[m.Name] = toSwagDefinition(m)
+}
+
+func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 	def := spec.Schema{}
 	def.Typed("object", "")
-	for _, p := range m.Fields {
-		var wrapFuncChain schemaWrapperChain
-		wrapFuncChain = wrapFuncChain[:0]
 
-		var (
-			kind = p.Kind
-			name string
-		)
+	fields := list.New()
+	for _, f := range m.Fields {
+		fields.PushFront(f)
+	}
+
+	for fields.Back() != nil {
+		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
+
+		name, kind, wrapFuncChain := getWrapFunc(p)
 
 		switch kind {
-		case desc.Map:
-			wrapFuncChain.Add(spec.MapProperty)
-		case desc.Array:
-			wrapFuncChain.Add(spec.ArrayProperty)
+		default:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		case desc.Object:
-			name = p.Message.Name
-		}
-
-		e := p.Element
-		for e != nil {
-			kind = e.Kind
-			switch e.Kind {
-			case desc.Map:
-				wrapFuncChain.Add(spec.MapProperty)
-			case desc.Array:
-				wrapFuncChain.Add(spec.ArrayProperty)
-			case desc.Object:
-				name = e.Message.Name
+			if p.Embedded {
+				for _, f := range p.Message.Fields {
+					fields.PushBack(f)
+				}
+			} else {
+				def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
 			}
-			e = e.Element
-		}
-
-		switch kind {
-		case desc.Object:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
 		case desc.String:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
 		case desc.Float:
@@ -256,12 +247,87 @@ func (sg *Generator) addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage)
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
 		case desc.Bool:
 			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
-		default:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+		case desc.Byte:
+			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
 		}
 	}
 
-	swag.Definitions[m.Name] = def
+	return def
+}
+
+func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
+	var (
+		wrapFuncChain = schemaWrapperChain{}
+		name          string
+	)
+
+	msg := p.Message
+	kind := p.Kind
+	elem := p.Element
+Loop:
+	switch kind {
+	default:
+	case desc.Object:
+		name = msg.Name
+	case desc.Map:
+		wrapFuncChain = wrapFuncChain.Add(spec.MapProperty)
+		kind = elem.Kind
+		msg = elem.Message
+		elem = elem.Element
+
+		goto Loop
+	case desc.Array:
+		wrapFuncChain = wrapFuncChain.Add(spec.ArrayProperty)
+		kind = elem.Kind
+		msg = elem.Message
+		elem = elem.Element
+
+		goto Loop
+	}
+
+	enum := make([]any, 0, len(p.Tag.PossibleValues))
+	for _, v := range p.Tag.PossibleValues {
+		enum = append(enum, v)
+	}
+	if len(enum) > 0 {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				schema.Enum = enum
+
+				return schema
+			},
+		)
+	}
+
+	if p.Tag.Optional || p.Optional {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				spacer := ""
+				if len(schema.Description) > 0 {
+					spacer = " "
+				}
+				schema.Description = fmt.Sprintf("[Optional]%s%s", spacer, schema.Description)
+
+				return schema
+			},
+		)
+	}
+
+	if p.Tag.Deprecated {
+		wrapFuncChain = wrapFuncChain.Add(
+			func(schema *spec.Schema) *spec.Schema {
+				spacer := ""
+				if len(schema.Description) > 0 {
+					spacer = " "
+				}
+				schema.Description = fmt.Sprintf("[Deprecated]%s%s", spacer, schema.Description)
+
+				return schema
+			},
+		)
+	}
+
+	return name, kind, wrapFuncChain
 }
 
 func (sg *Generator) WritePostmanToFile(filename string, services ...desc.ServiceDesc) error {
@@ -292,7 +358,7 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 		for _, c := range ps.Contracts {
 			switch c.Type {
 			case desc.REST:
-				sg.addPostmanItem(colItems, c)
+				colItems.AddItem(toPostmanItem(c))
 			}
 		}
 	}
@@ -300,7 +366,7 @@ func (sg *Generator) WritePostmanTo(w io.Writer, descs ...desc.ServiceDesc) erro
 	return col.Write(w, postman.V210)
 }
 
-func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract) {
+func toPostmanItem(c desc.ParsedContract) *postman.Items {
 	itm := postman.CreateItem(
 		postman.Item{
 			Name:                    c.SuggestName(),
@@ -330,7 +396,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 	}
 
 	var queryParams []*postman.QueryParam
-	if len(c.PathParams) > len(c.Request.Message.Fields) && c.Method == "GET" {
+	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == "GET" {
 		for _, p := range c.Request.Message.Fields {
 			found := false
 			for _, pp := range c.PathParams {
@@ -383,7 +449,7 @@ func (sg *Generator) addPostmanItem(items *postman.Items, c desc.ParsedContract)
 		)
 	}
 
-	items.AddItem(itm)
+	return itm
 }
 
 func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {

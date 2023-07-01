@@ -68,7 +68,7 @@ func MustNew(opts ...Option) kit.Gateway {
 	return b
 }
 
-func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
+func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	var (
 		ln  net.Listener
 		err error

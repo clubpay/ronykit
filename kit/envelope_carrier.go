@@ -1,8 +1,8 @@
 package kit
 
 import (
+	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
 
@@ -105,13 +105,13 @@ func (c carrierData) Set(key string, value string) {
 }
 
 func (ec *envelopeCarrier) ToJSON() []byte {
-	data, _ := json.MarshalNoEscape(ec)
+	data, _ := json.Marshal(ec)
 
 	return data
 }
 
 func (ec *envelopeCarrier) FromJSON(data []byte) error {
-	err := json.UnmarshalNoEscape(data, ec)
+	err := json.Unmarshal(data, ec)
 	if err != nil {
 		return err
 	}

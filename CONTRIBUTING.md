@@ -43,7 +43,7 @@ to manage dependencies. The version of Go should be **1.17** or above.
 ```sh
 $ git clone https://github.com/$GITHUB_USER/ronykit
 $ cd ronykit
-$ git remote add upstream git@github.com:clubpay/kit.git
+$ git remote add upstream git@github.com:clubpay/ronykit.git
 
 # Never push to the upstream master
 git remote set-url --push upstream no_push

@@ -21,7 +21,7 @@ func newREST(enc kit.Encoding, path, method string) dummyRESTSelector {
 	}
 }
 
-func (d dummyRESTSelector) Query(q string) interface{} {
+func (d dummyRESTSelector) Query(_ string) any {
 	return nil
 }
 
@@ -52,6 +52,7 @@ type NestedMessage struct {
 	B  FlatMessage            `json:"b"`
 	BA []FlatMessage          `json:"ba"`
 	BM map[string]FlatMessage `json:"bm"`
+	C  *FlatMessage           `json:"c"`
 }
 
 var _ = Describe("DescParser", func() {
@@ -70,6 +71,7 @@ var _ = Describe("DescParser", func() {
 		contract0 := pd.Contracts[0]
 		contract1 := pd.Contracts[1]
 		Expect(pd.Contracts).To(HaveLen(2))
+
 		Expect(contract0.Name).To(Equal("s1"))
 		Expect(contract0.Type).To(Equal(desc.REST))
 		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
@@ -77,7 +79,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Method).To(Equal("GET"))
 		Expect(contract0.GroupName).To(Equal("c1"))
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(4))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(5))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(6))
 
@@ -89,9 +91,17 @@ var _ = Describe("DescParser", func() {
 		Expect(contract1.GroupName).To(Equal("c1"))
 
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(4))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(5))
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
 		Expect(contract0.Request.Message.Fields[0].Kind).To(Equal(desc.String))
+		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
+		Expect(contract0.Request.Message.Fields[1].Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[1].Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[1].Optional).To(BeFalse())
+		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("c"))
+		Expect(contract0.Request.Message.Fields[4].Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[4].Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[4].Optional).To(BeTrue())
 
 		b := contract0.Request.Message.Fields[1]
 		Expect(b.Name).To(Equal("b"))
@@ -126,5 +136,33 @@ var _ = Describe("DescParser", func() {
 		Expect(m.Element.Message).To(BeNil())
 		Expect(m.Element.Element.Kind).To(Equal(desc.String))
 		Expect(m.Element.Element.Message).To(BeNil())
+	})
+})
+
+var _ = Describe("ParseMessage.JSON()", func() {
+	d := desc.NewService("sample").
+		AddContract(
+			desc.NewContract().
+				SetInputHeader(
+					desc.RequiredHeader("hdr1"),
+					desc.OptionalHeader("optionalHdr1"),
+				).
+				SetName("c1").
+				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
+				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				In(&NestedMessage{}).
+				Out(&FlatMessage{}),
+		)
+
+	It("Parse Service", func() {
+		ps := desc.ParseService(d)
+		Expect(ps.Messages()).To(HaveLen(2))
+		Expect(ps.Contracts).To(HaveLen(2))
+		Expect(ps.Contracts[0].Type).To(Equal(desc.REST))
+		Expect(ps.Contracts[0].Request.Headers).To(HaveLen(2))
+		Expect(ps.Contracts[0].Request.Headers[0].Required).To(BeTrue())
+		Expect(ps.Contracts[0].Request.Headers[0].Name).To(Equal("hdr1"))
+		Expect(ps.Contracts[0].Request.Headers[1].Required).To(BeFalse())
+		Expect(ps.Contracts[0].Request.Headers[1].Name).To(Equal("optionalHdr1"))
 	})
 })

@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/goccy/go-json"
 )
 
 type ParsedService struct {
@@ -132,8 +132,10 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		ft := f.Type
 		if ft.Kind() == reflect.Ptr {
 			pp.Optional = true
+			ft = ft.Elem()
 		}
 
+		pp.Embedded = f.Anonymous
 		pp.Kind = parseKind(ft)
 		switch pp.Kind {
 		case Map:
@@ -286,6 +288,7 @@ const (
 	String  Kind = "string"
 	Integer Kind = "integer"
 	Float   Kind = "float"
+	Byte    Kind = "byte"
 	Object  Kind = "object"
 	Map     Kind = "map"
 	Array   Kind = "array"
@@ -298,17 +301,51 @@ type ParsedMessage struct {
 }
 
 func (pm ParsedMessage) JSON() string {
-	m := map[string]interface{}{}
+	m := map[string]any{}
 	for _, p := range pm.Fields {
 		switch p.Kind {
-		case Map:
-			m[p.Name] = map[string]interface{}{}
-		case Array:
-			m[p.Name] = []interface{}{}
-		case Integer, Float:
-			m[p.Name] = 0
 		default:
 			m[p.Name] = p.Kind
+		case Object:
+			m[p.Name] = json.RawMessage(p.Message.JSON())
+		case Map:
+			var inner any
+			switch p.Element.Kind {
+			default:
+				inner = p.Element.Kind
+			case Object:
+				inner = json.RawMessage(p.Element.Message.JSON())
+			case Integer, Float, Byte:
+				inner = 0
+			case Array:
+				inner = []any{p.Element.Element.Kind}
+			case Map:
+				inner = map[string]any{
+					"keyName": p.Element.Element.Kind,
+				}
+			}
+			m[p.Name] = map[string]any{
+				"keyName": inner,
+			}
+		case Array:
+			var inner any
+			switch p.Element.Kind {
+			default:
+				inner = p.Element.Kind
+			case Object:
+				inner = json.RawMessage(p.Element.Message.JSON())
+			case Integer, Float, Byte:
+				inner = 0
+			case Array:
+				inner = []any{p.Element.Element.Kind}
+			case Map:
+				inner = map[string]any{
+					"keyName": p.Element.Element.Kind,
+				}
+			}
+			m[p.Name] = []any{inner}
+		case Integer, Float, Byte:
+			m[p.Name] = 0
 		}
 	}
 
@@ -348,6 +385,7 @@ type ParsedField struct {
 	SampleValue string
 	Optional    bool
 	Kind        Kind
+	Embedded    bool
 
 	// Kind == Object
 	// Message is the parsed message if the kind is Object.
@@ -412,8 +450,10 @@ func parseKind(t reflect.Type) Kind {
 		return Bool
 	case reflect.String:
 		return String
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint8, reflect.Int8:
+		return Byte
+	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return Integer
 	case reflect.Float32, reflect.Float64:
 		return Float

@@ -26,12 +26,12 @@ func (e qError) Unwrap() error {
 	return e.down
 }
 
-func New(format string, v ...interface{}) error {
+func New(format string, v ...any) error {
 	return fmt.Errorf(format, v...)
 }
 
-func NewG(format string) func(v ...interface{}) error {
-	return func(v ...interface{}) error {
+func NewG(format string) func(v ...any) error {
+	return func(v ...any) error {
 		return New(format, v...)
 	}
 }

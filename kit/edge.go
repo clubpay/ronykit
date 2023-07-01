@@ -48,7 +48,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s := &EdgeServer{
 		contracts: map[string]Contract{},
 		ls: localStore{
-			kv: map[string]interface{}{},
+			kv: map[string]any{},
 		},
 	}
 	cfg := &edgeConfig{
@@ -232,7 +232,7 @@ func (s *EdgeServer) watchParent() {
 	}
 }
 
-func (s *EdgeServer) startParent(ctx context.Context) {
+func (s *EdgeServer) startParent(_ context.Context) {
 	// create variables
 	max := runtime.GOMAXPROCS(0)
 
@@ -252,7 +252,7 @@ func (s *EdgeServer) startParent(ctx context.Context) {
 			fmt.Sprintf("%s=%d", envForkChildKey, i+1),
 		)
 		if err := cmd.Start(); err != nil {
-			panic(fmt.Errorf("failed to start a child prefork process, error: %v", err))
+			panic(fmt.Errorf("failed to start a child prefork process, error: %w", err))
 		}
 
 		// store child process
@@ -310,12 +310,12 @@ func (s *EdgeServer) startup(ctx context.Context) {
 	}
 }
 
-// Shutdown stops the server. If there is no signal input then it shut down the server immediately.
-// However, if there is one or more signals added in the input argument then it waits for any of them to
+// Shutdown stops the server. If there is no signal input, then it shut down the server immediately.
+// However, if there is one or more signals added in the input argument, then it waits for any of them to
 // trigger the shutdown process.
 // Since this is a graceful shutdown, it waits for all flying requests to complete. However, you can set
 // the maximum time that it waits before forcefully shutting down the server, by WithShutdownTimeout
-// option. Default value is 1 minute.
+// option. The Default value is 1 minute.
 func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -463,6 +463,93 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 	_, _ = w.Write(utils.S2B(tw.Render()))
 	_, _ = w.Write(utils.S2B("\n"))
 
+	if x, ok := w.(interface{ Sync() error }); ok {
+		_ = x.Sync()
+	} else if x, ok := w.(interface{ Flush() error }); ok {
+		_ = x.Flush()
+	}
+
+	return s
+}
+
+func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
+	if s.prefork && childID() > 1 {
+		return s
+	}
+
+	tw := table.NewWriter()
+	tw.SuppressEmptyColumns()
+	tw.SetStyle(table.StyleRounded)
+	style := tw.Style()
+	style.Title = table.TitleOptions{
+		Align:  text.AlignLeft,
+		Colors: text.Colors{text.FgBlack, text.BgWhite},
+		Format: text.FormatTitle,
+	}
+	style.Color.Header = text.Colors{text.Bold, text.FgWhite}
+
+	tw.SetColumnConfigs([]table.ColumnConfig{
+		{
+			Number:    1,
+			AutoMerge: true,
+			VAlign:    text.VAlignTop,
+			Align:     text.AlignLeft,
+			WidthMax:  32,
+		},
+		{
+			Number:   2,
+			Align:    text.AlignLeft,
+			WidthMax: 12,
+		},
+		{
+			Number:           3,
+			Align:            text.AlignLeft,
+			WidthMax:         120,
+			WidthMaxEnforcer: text.WrapSoft,
+		},
+	})
+
+	tw.AppendHeader(
+		table.Row{
+			"Service",
+			"API",
+			"Route | Predicate",
+		},
+	)
+
+	for _, svc := range s.svc {
+		for _, c := range svc.Contracts() {
+			if route := rpcRoute(c.RouteSelector()); route != "" {
+				tw.AppendRow(
+					table.Row{
+						svc.Name(),
+						text.FgBlue.Sprint("RPC"),
+						route,
+					},
+				)
+			}
+			if route := restRoute(c.RouteSelector()); route != "" {
+				tw.AppendRow(
+					table.Row{
+						svc.Name(),
+						text.FgGreen.Sprint("REST"),
+						route,
+					},
+				)
+			}
+		}
+
+		tw.AppendSeparator()
+	}
+	_, _ = w.Write(utils.S2B(tw.Render()))
+	_, _ = w.Write(utils.S2B("\n"))
+
+	if x, ok := w.(interface{ Sync() error }); ok {
+		_ = x.Sync()
+	} else if x, ok := w.(interface{ Flush() error }); ok {
+		_ = x.Flush()
+	}
+
 	return s
 }
 
@@ -470,10 +557,14 @@ func getFuncName(f HandlerFunc) string {
 	name := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	parts := strings.Split(name, "/")
 
-	c := text.Color(crc32.ChecksumIEEE(utils.S2B(parts[len(parts)-1])) % 7)
+	return getColor(parts[len(parts)-1]).Sprint(parts[len(parts)-1])
+}
+
+func getColor(s string) text.Color {
+	c := text.Color(crc32.ChecksumIEEE(utils.S2B(s)) % 7)
 	c += text.FgBlack + 1
 
-	return c.Sprint(parts[len(parts)-1])
+	return c
 }
 
 func getHandlers(handlers ...HandlerFunc) string {
@@ -507,7 +598,8 @@ func restRoute(rs RouteSelector) string {
 
 	return fmt.Sprintf("%s %s",
 		text.Colors{
-			text.Bold, text.FgGreen,
+			getColor(rest.GetMethod()),
+			text.Bold,
 		}.Sprint(rest.GetMethod()),
 		text.Colors{
 			text.BgWhite, text.FgBlack,
@@ -517,10 +609,10 @@ func restRoute(rs RouteSelector) string {
 
 type localStore struct {
 	kvl sync.RWMutex
-	kv  map[string]interface{}
+	kv  map[string]any
 }
 
-func (ls *localStore) Get(key string) interface{} {
+func (ls *localStore) Get(key string) any {
 	ls.kvl.RLock()
 	v := ls.kv[key]
 	ls.kvl.RUnlock()
@@ -528,20 +620,16 @@ func (ls *localStore) Get(key string) interface{} {
 	return v
 }
 
-func (ls *localStore) Set(key string, value interface{}) {
+func (ls *localStore) Set(key string, value any) {
 	ls.kvl.Lock()
 	ls.kv[key] = value
 	ls.kvl.Unlock()
-
-	return
 }
 
 func (ls *localStore) Delete(key string) {
 	ls.kvl.Lock()
 	delete(ls.kv, key)
 	ls.kvl.Unlock()
-
-	return
 }
 
 func (ls *localStore) Exists(key string) bool {
@@ -563,6 +651,4 @@ func (ls *localStore) Scan(prefix string, cb func(key string) bool) {
 			}
 		}
 	}
-
-	return
 }

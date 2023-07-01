@@ -20,7 +20,7 @@ type TestContext struct {
 func NewTestContext() *TestContext {
 	return &TestContext{
 		ls: localStore{
-			kv: map[string]interface{}{},
+			kv: map[string]any{},
 		},
 	}
 }
@@ -87,7 +87,7 @@ func (testCtx *TestContext) RunREST() error {
 		SetHdrMap(testCtx.inHdr)
 	ctx.wf = func(conn Conn, e *Envelope) error {
 		e.dontReuse()
-		tc := conn.(*testConn) //nolint:forcetypeassert
+		tc := conn.(*testRESTConn) //nolint:forcetypeassert
 		tc.Lock()
 		tc.out = append(tc.out, e)
 		tc.Unlock()
@@ -126,7 +126,7 @@ func (t *testConn) ClientIP() string {
 	return t.clientIP
 }
 
-func (t *testConn) Write(data []byte) (int, error) {
+func (t *testConn) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 
@@ -169,11 +169,11 @@ func (t *testConn) Keys() []string {
 
 type testRESTConn struct {
 	testConn
+
 	method     string
 	path       string
 	host       string
 	requestURI string
-
 	statusCode int
 }
 
@@ -211,4 +211,4 @@ func (t *testRESTConn) SetStatusCode(code int) {
 	t.statusCode = code
 }
 
-func (t *testRESTConn) Redirect(code int, url string) {}
+func (t *testRESTConn) Redirect(_ int, _ string) {}

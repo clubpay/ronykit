@@ -13,7 +13,7 @@ var (
 	errInvalidFieldType = func(s string) error { return fmt.Errorf("the field type does not match: %s", s) }
 )
 
-// emptyInterface is the header for an interface{} value.
+// emptyInterface is the header for an any value.
 type emptyInterface struct {
 	_    uint64
 	word unsafe.Pointer
@@ -42,7 +42,7 @@ func (f FieldInfo) Type() reflect.StructField {
 
 type Fields map[string]FieldInfo
 
-func (fields Fields) Get(m kit.Message, fieldName string) interface{} {
+func (fields Fields) Get(m kit.Message, fieldName string) any {
 	fi := fields[fieldName]
 	mVal := reflect.Indirect(reflect.ValueOf(m)).Field(fi.idx)
 	switch fi.Kind() {

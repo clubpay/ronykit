@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
-	"github.com/goccy/go-json"
 	"github.com/valyala/fasthttp"
 )
 
@@ -163,7 +163,7 @@ func (hc *RESTCtx) Error() error {
 // StatusCode returns the status code of the response
 func (hc *RESTCtx) StatusCode() int { return hc.res.StatusCode() }
 
-// GetHeader returns the header value for key in the response
+// GetHeader returns the header value for the key in the response
 func (hc *RESTCtx) GetHeader(key string) string {
 	return string(hc.res.Header.Peek(key))
 }
@@ -190,7 +190,7 @@ func (hc *RESTCtx) CopyBody(dst []byte) []byte {
 	return dst
 }
 
-// Release frees the allocates internal resources to be re-used.
+// Release frees the allocated internal resources to be re-used.
 // You MUST NOT refer to any method of this object after calling this method, if
 // you call any method after Release has been called, the result is unpredictable.
 func (hc *RESTCtx) Release() {
@@ -336,7 +336,7 @@ func (hc *RESTCtx) AutoRun(
 		var reqBody []byte
 		switch enc {
 		case kit.JSON:
-			reqBody, _ = json.MarshalNoEscape(m)
+			reqBody, _ = json.Marshal(m)
 		default:
 			reqBody, _ = kit.MarshalMessage(m)
 		}

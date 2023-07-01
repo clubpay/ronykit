@@ -17,14 +17,18 @@ linters:
     - scopelint
     - exhaustivestruct
     - exhaustruct
-    - exhaustive
-    - interfacer
-    - golint
     - maligned
     - wrapcheck
     - varnamelen
     - ireturn
-  fast: true
+    - varcheck
+    - nosnakecase
+    - interfacer
+    - golint
+    - ifshort
+    - deadcode
+    - structcheck
+  fast: false
 linters-settings:
   #  decorder:
   #    # Required order of `type`, `const`, `var` and `func` declarations inside a file.
@@ -39,7 +43,7 @@ linters-settings:
   #    disable-dec-order-check: false
   #    # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
   #    # Default: true (disabled)
-  #    disable-init-func-first-check: false
+  disable-init-func-first-check: false
   #    # If true, multiple global `type`, `const` and `var` declarations are allowed.
   #    # Default: true (disabled)
   #    disable-dec-num-check: false
@@ -52,5 +56,9 @@ linters-settings:
     # Such cases aren't reported by default.
     # Default: false
     check-blank: true
+  cyclop:
+    # The maximal code complexity to report.
+    # Default: 10
+    max-complexity: 15
 
 

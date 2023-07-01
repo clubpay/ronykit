@@ -38,7 +38,7 @@ type Context struct {
 	route       []byte
 	rawData     []byte
 
-	kv         map[string]interface{}
+	kv         map[string]any
 	hdr        map[string]string
 	conn       Conn
 	in         *Envelope
@@ -54,7 +54,7 @@ type Context struct {
 func newContext(ls *localStore) *Context {
 	return &Context{
 		ls:         ls,
-		kv:         make(map[string]interface{}, 4),
+		kv:         make(map[string]any, 4),
 		hdr:        make(map[string]string, 4),
 		statusCode: http.StatusOK,
 	}
@@ -66,7 +66,7 @@ type ExecuteArg struct {
 	Route       string
 }
 
-// execute the Context with the provided ExecuteArg. It implements ExecuteFunc
+// Execute the Context with the provided ExecuteArg.
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
 		setRoute(arg.Route).
@@ -107,6 +107,21 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 }
 
 // Next sets the next handler which will be called after the current handler.
+/*
+	Here's a brief explanation of the Next() method:
+
+	1. It increments the handlerIndex of the Context by 1.
+	2. It enters a for loop that runs as long as the handlerIndex is less than or equal to the number of
+			registered handlers in the Context.
+	3. Inside the loop, it calls the next registered handler with the current instance of Context.
+	4. After the execution of the handler, it increments the handlerIndex by 1, and the loop continues until all remaining
+			handlers are called.
+
+	This method is useful in situations where you may have a set of middlewares to be executed in sequence,
+	and you want to control the order in which they're called. By calling Next() in a middleware function,
+	you allow the processing flow to continue and pass control to the subsequent middleware functions
+	in the chain.
+*/
 func (ctx *Context) Next() {
 	ctx.handlerIndex++
 	for ctx.handlerIndex <= len(ctx.handlers) {
@@ -115,9 +130,9 @@ func (ctx *Context) Next() {
 	}
 }
 
-// StopExecution stops the execution of the next handlers, in other words, when you
-// call this in your handler, any other middleware that are not executed will yet will
-// be skipped over.
+// StopExecution stops the execution of the next handlers.
+// When you call this in your handler, any other middleware that is not executed yet
+// will be skipped over.
 func (ctx *Context) StopExecution() {
 	ctx.handlerIndex = abortIndex
 }
@@ -133,8 +148,8 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 }
 
 // Context returns a context.WithCancel which can be used a reference context for
-// other context aware function calls. This context will be canceled at the end of
-// Context lifetime.
+// other context-aware function calls.
+// This context will be canceled at the end of Context lifetime.
 func (ctx *Context) Context() context.Context {
 	ctx.Lock()
 	if ctx.ctx == nil {
@@ -183,7 +198,7 @@ func (ctx *Context) IsREST() bool {
 	return ok
 }
 
-// PresetHdr sets the common header key-value pairs so in Out method we don't need to
+// PresetHdr sets the common header key-value pairs, so in Out method we do not need to
 // repeatedly set those. This method is useful for some cases if we need to update the
 // header in some middleware before the actual response is prepared.
 // If you only want to set the header for an envelope, you can use Envelope.SetHdr method instead.
@@ -191,7 +206,7 @@ func (ctx *Context) PresetHdr(k, v string) {
 	ctx.hdr[k] = v
 }
 
-// PresetHdrMap sets the common header key-value pairs so in Out method we don't need to
+// PresetHdrMap sets the common header key-value pairs so in Out method we do not need to
 // repeatedly set those. Please refer to PresetHdr for more details
 func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 	for k, v := range hdr {
@@ -201,7 +216,7 @@ func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 
 // In returns the incoming Envelope which received from the connection.
 // You **MUST NOT** call Send method of this Envelope.
-// If you want to return a message/envelope to connection use Out or OutTo methods
+// If you want to return a message/envelope to connection, use Out or OutTo methods
 // of the Context
 func (ctx *Context) In() *Envelope {
 	return ctx.in
@@ -220,15 +235,15 @@ func (ctx *Context) Out() *Envelope {
 	return ctx.OutTo(ctx.conn)
 }
 
-// OutTo is similar to Out except that it lets you send your envelope to other connection.
-// This is useful for scenarios where you want to send cross-client message. For example,
+// OutTo is similar to Out except that it lets you send your envelope to another connection.
+// This is useful for scenarios where you want to send a cross-client message. For example,
 // in a fictional chat server, you want to pass a message from client A to client B.
 func (ctx *Context) OutTo(c Conn) *Envelope {
 	return newEnvelope(ctx, c, true)
 }
 
 // Error is useful for some kind of errors which you are not going to return it to the connection,
-// or you want to use its side effect for logging, monitoring etc. This will call your ErrHandlerFunc.
+// or you want to use its side effect for logging, monitoring, etc. This will call your ErrHandlerFunc.
 // The boolean result indicates if 'err' was an actual error.
 func (ctx *Context) Error(err error) bool {
 	if err != nil {
@@ -245,7 +260,7 @@ func (ctx *Context) HasError() bool {
 	return ctx.err != nil
 }
 
-// Limited returns a LimitedContext. This is useful when you don't want to give all
+// Limited returns a LimitedContext. This is useful when you do not want to give all
 // capabilities of the Context to some other function/method.
 func (ctx *Context) Limited() *LimitedContext {
 	return newLimitedContext(ctx)

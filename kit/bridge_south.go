@@ -19,7 +19,7 @@ type Cluster interface {
 	Subscribe(id string, d ClusterDelegate)
 	// Publish sends the data to the other instance identified by id.
 	Publish(id string, data []byte) error
-	// Subscribers returns the list of the instance ids.
+	// Subscribers return the list of the instance ids.
 	Subscribers() ([]string, error)
 	// Store returns a shared key-value store between all instances.
 	Store() ClusterStore
@@ -32,8 +32,8 @@ type ClusterStore interface {
 	Delete(key string) error
 	// Get returns the value bind to the key
 	Get(key string) (string, error)
-	// Scan scans through the keys which has the prefix. If callback returns `false`, then
-	// the scan is aborted.
+	// Scan scans through the keys which have the prefix.
+	// If callback returns `false`, then the scan is aborted.
 	Scan(prefix string, cb func(string) bool) error
 	ScanWithValue(prefix string, cb func(string, string) bool) error
 }
@@ -251,7 +251,10 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 }
 
 func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
-	c := conn.(*clusterConn) //nolint:forcetypeassert
+	c, ok := conn.(*clusterConn)
+	if !ok {
+		return ErrWritingToClusterConnection
+	}
 
 	ec := newEnvelopeCarrier(
 		outgoingCarrier,

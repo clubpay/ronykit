@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
-	sampleservice "github.com/clubpay/ronykit/example/ex-02-rest/stub"
+	"github.com/clubpay/ronykit/example/ex-02-rest/dto"
+	"github.com/clubpay/ronykit/example/ex-02-rest/stub/sampleservice"
 	"github.com/clubpay/ronykit/kit/stub"
-	"github.com/goccy/go-json"
 )
 
 func main() {
-	res1 := sampleservice.EchoResponse{}
+	res1 := dto.EchoResponse{}
 	s := stub.New("127.0.0.1")
 	httpCtx := s.REST().
 		SetMethod(http.MethodGet).
@@ -20,7 +21,7 @@ func main() {
 		SetResponseHandler(
 			http.StatusOK,
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(json.UnmarshalNoEscape(r.GetBody(), &res1))
+				return stub.WrapError(json.Unmarshal(r.GetBody(), &res1))
 			},
 		).
 		Run(context.Background())

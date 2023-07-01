@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	stubgen.New("sampleservice", "json").
-		SetFunc(stubgen.GolangStub).
-		MustGenerate(api.SampleDesc)
+	stubgen.New(
+		stubgen.WithTags("json"),
+		stubgen.WithPkgName("sampleservice"),
+		stubgen.WithFolderName("sampleservice"),
+		stubgen.WithStubName("sampleService"),
+	).MustGenerate(api.SampleDesc)
 }

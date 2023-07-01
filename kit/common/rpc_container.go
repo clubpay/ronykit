@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/goccy/go-json"
+	"github.com/clubpay/ronykit/kit/internal/json"
 )
 
 var inPool sync.Pool
@@ -32,11 +32,11 @@ func (e *simpleIncomingJSONRPC) GetID() string {
 }
 
 func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
-	return json.UnmarshalNoEscape(data, e)
+	return json.Unmarshal(data, e)
 }
 
 func (e *simpleIncomingJSONRPC) ExtractMessage(m kit.Message) error {
-	return json.UnmarshalNoEscape(e.Payload, m)
+	return json.Unmarshal(e.Payload, m)
 }
 
 func (e *simpleIncomingJSONRPC) GetHdr(key string) string {
@@ -90,7 +90,7 @@ func (e *simpleOutgoingJSONRPC) InjectMessage(m kit.Message) {
 }
 
 func (e *simpleOutgoingJSONRPC) Marshal() ([]byte, error) {
-	return json.MarshalNoEscape(e)
+	return json.Marshal(e)
 }
 
 func (e *simpleOutgoingJSONRPC) Release() {

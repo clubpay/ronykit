@@ -2,38 +2,56 @@
 
 wd=$(pwd)
 
+echo "Cleaning up [contrib]..."
 cd "$wd"/contrib || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
 
+echo "Cleaning up [kit]..."
 cd "$wd"/kit || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
 
+echo "Cleaning up [redisCluster]..."
 cd "$wd"/std/clusters/rediscluster || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
 
+echo "Cleaning up [fasthttp]..."
 cd "$wd"/std/gateways/fasthttp || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
 
+echo "Cleaning up [fastws]..."
 cd "$wd"/std/gateways/fastws || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
 
+echo "Cleaning up [silverhttp]..."
 cd "$wd"/std/gateways/silverhttp || exit
 go mod tidy
 go fmt ./...
 go vet ./...
-golangci-lint run
+GOWORK=off golangci-lint run
+
+echo "Cleaning up Examples ..."
+cd "$wd"/example || exit
+for f in *; do
+	if [ -d "$f" ]; then
+		cd "$wd/example/$f" || exit
+		go mod tidy
+		go fmt ./...
+		go vet ./...
+		cd "$wd/example" || exit
+	fi
+done

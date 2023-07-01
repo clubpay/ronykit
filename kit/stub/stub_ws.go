@@ -3,7 +3,7 @@ package stub
 import (
 	"context"
 	"fmt"
-	"io"
+	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -24,43 +24,42 @@ type (
 type RPCPreflightHandler func(req *WebsocketRequest)
 
 type WebsocketCtx struct {
-	cfg     wsConfig
-	err     *Error
-	r       *reflector.Reflector
-	l       kit.Logger
-	dumpReq io.Writer
-	dumpRes io.Writer
+	cfg wsConfig
+	r   *reflector.Reflector
+	l   kit.Logger
 
-	pendingL     sync.Mutex
+	pendingMtx   sync.Mutex
 	pending      map[string]chan kit.IncomingRPCContainer
-	lastActivity int64
+	lastActivity uint32
 	disconnect   bool
-	path         string
 
 	// fasthttp entities
-	url string
-	c   *websocket.Conn
+	url  string
+	cMtx sync.Mutex
+	c    *websocket.Conn
 }
 
 func (wCtx *WebsocketCtx) Connect(ctx context.Context, path string) error {
 	path = strings.TrimLeft(path, "/")
-	wCtx.path = path
+	if path != "" {
+		wCtx.url = fmt.Sprintf("%s/%s", wCtx.url, path)
+	}
 
 	return wCtx.connect(ctx)
 }
 
 func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
-	url := wCtx.url
-	if wCtx.path != "" {
-		url = fmt.Sprintf("%s/%s", wCtx.url, wCtx.path)
-	}
-	wCtx.l.Debugf("connect: %s", url)
+	wCtx.l.Debugf("connect: %s", wCtx.url)
 
 	d := wCtx.cfg.dialerBuilder()
-	c, _, err := d.DialContext(ctx, url, wCtx.cfg.upgradeHdr)
+	if f := wCtx.cfg.preDial; f != nil {
+		f(d)
+	}
+	c, rsp, err := d.DialContext(ctx, wCtx.url, wCtx.cfg.upgradeHdr)
 	if err != nil {
 		return err
 	}
+	_ = rsp.Body.Close()
 
 	wCtx.setActivity()
 	c.SetPongHandler(
@@ -74,12 +73,12 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	wCtx.c = c
 
-	// run receiver & watchdog in background
-	go wCtx.receiver(c)
-	go wCtx.watchdog(c)
+	// run receiver & watchdog in the background
+	go wCtx.receiver(c) //nolint:contextcheck
+	go wCtx.watchdog(c) //nolint:contextcheck
 
-	if wCtx.cfg.onConnect != nil {
-		wCtx.cfg.onConnect(wCtx)
+	if f := wCtx.cfg.onConnect; f != nil {
+		f(wCtx)
 	}
 
 	return nil
@@ -92,50 +91,53 @@ func (wCtx *WebsocketCtx) Disconnect() error {
 }
 
 func (wCtx *WebsocketCtx) setActivity() {
-	atomic.StoreInt64(&wCtx.lastActivity, utils.TimeUnix())
+	atomic.StoreUint32(&wCtx.lastActivity, uint32(utils.TimeUnix()))
+}
+
+func (wCtx *WebsocketCtx) getActivity() int64 {
+	return int64(atomic.LoadUint32(&wCtx.lastActivity))
 }
 
 func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
-	wCtx.l.Debugf("watchdog started: %s", wCtx.c.LocalAddr().String())
+	wCtx.l.Debugf("watchdog started: %s", c.LocalAddr().String())
 
 	t := time.NewTicker(wCtx.cfg.pingTime)
 	d := int64(wCtx.cfg.pingTime/time.Second) * 2
-	for {
-		select {
-		case <-t.C:
-			if wCtx.disconnect {
-				wCtx.l.Debugf("going to disconnect: %s", wCtx.c.LocalAddr().String())
+	for range t.C {
+		if wCtx.disconnect {
+			wCtx.l.Debugf("going to disconnect: %s", c.LocalAddr().String())
 
-				_ = wCtx.c.Close()
-
-				return
-			}
-
-			if utils.TimeUnix()-wCtx.lastActivity <= d {
-				_ = wCtx.c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
-				wCtx.l.Debugf("websocket ping sent")
-
-				continue
-			}
-
-			if !wCtx.cfg.autoReconnect {
-				return
-			}
-
-			wCtx.l.Debugf("inactivity detected, reconnecting: %s", wCtx.c.LocalAddr().String())
-			_ = wCtx.c.Close()
-
-			ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
-			err := wCtx.connect(ctx)
-			cf()
-			if err != nil {
-				wCtx.l.Debugf("failed to reconnect: %s", err)
-
-				continue
-			}
+			_ = c.Close()
 
 			return
 		}
+
+		if utils.TimeUnix()-wCtx.getActivity() <= d {
+			wCtx.cMtx.Lock()
+			_ = c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+			wCtx.cMtx.Unlock()
+			wCtx.l.Debugf("websocket ping sent")
+
+			continue
+		}
+
+		if !wCtx.cfg.autoReconnect {
+			return
+		}
+
+		wCtx.l.Errorf("inactivity detected, reconnecting: %s", c.LocalAddr().String())
+		_ = c.Close()
+
+		ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
+		err := wCtx.connect(ctx)
+		cf()
+		if err != nil {
+			wCtx.l.Errorf("failed to reconnect: %s", err)
+
+			continue
+		}
+
+		return
 	}
 }
 
@@ -159,9 +161,9 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 		}
 
 		// if this is a reply message we return it to the pending channel
-		wCtx.pendingL.Lock()
+		wCtx.pendingMtx.Lock()
 		ch, ok := wCtx.pending[rpcIn.GetID()]
-		wCtx.pendingL.Unlock()
+		wCtx.pendingMtx.Unlock()
 
 		if ok {
 			ch <- rpcIn
@@ -174,12 +176,41 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			ctx = tp.Extract(ctx, containerTraceCarrier{in: rpcIn})
 		}
 
-		if h, ok := wCtx.cfg.handlers[rpcIn.GetHdr(wCtx.cfg.predicateKey)]; ok {
-			h(ctx, rpcIn)
-		} else if h = wCtx.cfg.defaultHandler; h != nil {
-			h(ctx, rpcIn)
+		h, ok := wCtx.cfg.handlers[rpcIn.GetHdr(wCtx.cfg.predicateKey)]
+		if !ok {
+			h = wCtx.cfg.defaultHandler
 		}
-		rpcIn.Release()
+
+		if h == nil {
+			rpcIn.Release()
+
+			continue
+		}
+
+		select {
+		default:
+			wCtx.l.Errorf("ratelimit reached, packet dropped")
+		case wCtx.cfg.ratelimitChan <- struct{}{}:
+			wCtx.cfg.handlersWG.Add(1)
+			go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
+				defer wCtx.recoverPanic()
+
+				h(ctx, rpcIn)
+				<-wCtx.cfg.ratelimitChan
+				wCtx.cfg.handlersWG.Done()
+				rpcIn.Release()
+			}(ctx, rpcIn)
+		}
+	}
+}
+
+func (wCtx *WebsocketCtx) recoverPanic() {
+	if r := recover(); r != nil {
+		wCtx.l.Errorf("panic recovered: %v", r)
+
+		if wCtx.cfg.panicRecoverFunc != nil {
+			wCtx.cfg.panicRecoverFunc(r)
+		}
 	}
 }
 
@@ -217,13 +248,25 @@ func (wCtx *WebsocketCtx) BinaryMessage(
 	)
 }
 
+// NetConn returns the underlying net.Conn, ONLY for advanced use cases
+func (wCtx *WebsocketCtx) NetConn() net.Conn {
+	return wCtx.c.NetConn()
+}
+
 type WebsocketRequest struct {
-	Predicate   string
+	// Predicate is the routing key for the message, which will be added to the kit.OutgoingRPCContainer
+	Predicate string
+	// MessageType is the type of the message, either websocket.TextMessage or websocket.BinaryMessage
 	MessageType int
 	ReqMsg      kit.Message
-	ResMsg      kit.Message
-	ReqHdr      Header
-	Callback    RPCMessageHandler
+	// ResMsg is the message that will be used to unmarshal the response.
+	// You should pass a pointer to the struct that you want to unmarshal the response into.
+	ResMsg kit.Message
+	// ReqHdr is the headers that will be added to the kit.OutgoingRPCContainer
+	ReqHdr Header
+	// Callback is the callback that will be called when the response is received.
+	// This MUST BE non-nil otherwise it panics.
+	Callback RPCMessageHandler
 }
 
 func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
@@ -249,7 +292,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 		return err
 	}
 
+	wCtx.cMtx.Lock()
 	err = wCtx.c.WriteMessage(req.MessageType, reqData)
+	wCtx.cMtx.Unlock()
 	if err != nil {
 		return err
 	}
@@ -265,9 +310,9 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	ctx context.Context, id string, res kit.Message, cb RPCMessageHandler,
 ) {
 	resCh := make(chan kit.IncomingRPCContainer, 1)
-	wCtx.pendingL.Lock()
+	wCtx.pendingMtx.Lock()
 	wCtx.pending[id] = resCh
-	wCtx.pendingL.Unlock()
+	wCtx.pendingMtx.Unlock()
 
 	select {
 	case c := <-resCh:
@@ -277,9 +322,9 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	case <-ctx.Done():
 	}
 
-	wCtx.pendingL.Lock()
+	wCtx.pendingMtx.Lock()
 	delete(wCtx.pending, id)
-	wCtx.pendingL.Unlock()
+	wCtx.pendingMtx.Unlock()
 }
 
 type containerTraceCarrier struct {
@@ -294,3 +339,5 @@ func (c containerTraceCarrier) Get(key string) string {
 func (c containerTraceCarrier) Set(key string, value string) {
 	c.out.SetHdr(key, value)
 }
+
+var ErrBadHandshake = websocket.ErrBadHandshake

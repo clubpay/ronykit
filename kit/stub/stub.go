@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -12,6 +13,8 @@ import (
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )
+
+var defaultConcurrency = 1024 * runtime.NumCPU()
 
 type Stub struct {
 	cfg config
@@ -27,7 +30,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		readTimeout:  time.Minute * 5,
 		writeTimeout: time.Minute * 5,
 		dialTimeout:  time.Second * 45,
-		l:            nopLogger{},
+		l:            common.NewNopLogger(),
 	}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -41,7 +44,7 @@ func New(hostPort string, opts ...Option) *Stub {
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
 			TLSConfig: &tls.Config{
-				InsecureSkipVerify: cfg.skipVerifyTLS,
+				InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 			},
 		},
 	}
@@ -83,6 +86,7 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 			pingTime:      time.Second * 30,
 			dialTimeout:   s.cfg.dialTimeout,
 			writeTimeout:  s.cfg.writeTimeout,
+			ratelimitChan: make(chan struct{}, defaultConcurrency),
 			rpcInFactory:  common.SimpleIncomingJSONRPC,
 			rpcOutFactory: common.SimpleOutgoingJSONRPC,
 			dialerBuilder: func() *websocket.Dialer {

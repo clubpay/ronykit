@@ -2,11 +2,16 @@ package stub
 
 import (
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/fasthttp/websocket"
 )
+
+type Dialer = websocket.Dialer
+
+type PreDialHandler func(d *Dialer)
 
 type OnConnectHandler func(ctx *WebsocketCtx)
 
@@ -16,6 +21,8 @@ type wsConfig struct {
 	predicateKey    string
 	rpcInFactory    kit.IncomingRPCFactory
 	rpcOutFactory   kit.OutgoingRPCFactory
+	ratelimitChan   chan struct{}
+	handlersWG      sync.WaitGroup
 	handlers        map[string]RPCContainerHandler
 	defaultHandler  RPCContainerHandler
 	tracePropagator kit.TracePropagator
@@ -27,8 +34,11 @@ type wsConfig struct {
 	dialTimeout   time.Duration
 	writeTimeout  time.Duration
 
+	preDial    func(d *websocket.Dialer)
 	onConnect  OnConnectHandler
 	preflights []RPCPreflightHandler
+
+	panicRecoverFunc func(err any)
 }
 
 func WithUpgradeHeader(key string, values ...string) WebsocketOption {
@@ -74,6 +84,12 @@ func WithOnConnectHandler(f OnConnectHandler) WebsocketOption {
 	}
 }
 
+func WithPreDialHandler(f PreDialHandler) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.preDial = f
+	}
+}
+
 func WithPredicateKey(key string) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.predicateKey = key
@@ -92,12 +108,22 @@ func WithPingTime(t time.Duration) WebsocketOption {
 	}
 }
 
+func WithConcurrency(n int) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.ratelimitChan = make(chan struct{}, n)
+	}
+}
+
+func WithRecoverPanic(f func(err any)) WebsocketOption {
+	return func(cfg *wsConfig) {
+		cfg.panicRecoverFunc = f
+	}
+}
+
 // WithPreflightRPC register one or many handlers to run in sequence before
 // actually making requests.
 func WithPreflightRPC(h ...RPCPreflightHandler) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.preflights = append(cfg.preflights[:0], h...)
-
-		return
 	}
 }

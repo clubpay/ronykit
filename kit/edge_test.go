@@ -24,7 +24,7 @@ func TestRonykit(t *testing.T) {
 
 type testSelector struct{}
 
-func (t testSelector) Query(q string) interface{} {
+func (t testSelector) Query(_ string) any {
 	return nil
 }
 
@@ -78,7 +78,7 @@ func (t *testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, err
 }
 
 func (t *testGateway) Register(
-	serviceName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	_, _ string, _ kit.Encoding, _ kit.RouteSelector, _ kit.Message,
 ) {
 }
 
@@ -161,7 +161,7 @@ func (t *testCluster) Store() kit.ClusterStore {
 	return t
 }
 
-func (t *testCluster) Set(key, value string, ttl time.Duration) error {
+func (t *testCluster) Set(key, value string, _ time.Duration) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -289,7 +289,7 @@ type testRESTSelector struct {
 	path   string
 }
 
-func (t testRESTSelector) Query(q string) interface{} {
+func (t testRESTSelector) Query(q string) any {
 	return nil
 }
 
@@ -311,7 +311,7 @@ type testRPCSelector struct {
 	predicate string
 }
 
-func (t testRPCSelector) Query(q string) interface{} {
+func (t testRPCSelector) Query(_ string) any {
 	return nil
 }
 
@@ -349,8 +349,8 @@ var _ = Describe("EdgeServer/Simple", func() {
 				)
 		}
 		edge = kit.NewServer(
-			kit.RegisterGateway(b),
-			kit.RegisterServiceDesc(serviceDesc.Desc()),
+			kit.WithGateway(b),
+			kit.WithServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -385,7 +385,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 						AddSelector(testSelector{}).
 						AddHandler(
 							func(ctx *kit.Context) {
-								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage))
+								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage)) //nolint:forcetypeassert
 								out := fmt.Sprintf("%s-%s-%s",
 									ctx.GetString("PRE_KEY", ""),
 									in,
@@ -401,13 +401,13 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 				)
 		}
 		edge = kit.NewServer(
-			kit.RegisterGateway(b),
+			kit.WithGateway(b),
 			kit.WithGlobalHandlers(
 				func(ctx *kit.Context) {
 					ctx.Set("PRE_KEY", "PRE_VALUE")
 				},
 			),
-			kit.RegisterServiceDesc(serviceDesc.Desc()),
+			kit.WithServiceDesc(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -476,15 +476,15 @@ var _ = Describe("EdgeServer/Cluster", func() {
 			}
 		}
 		edge1 = kit.NewServer(
-			kit.RegisterGateway(b1),
-			kit.RegisterCluster(c),
-			kit.RegisterServiceDesc(serviceDesc("edge1").Desc()),
+			kit.WithGateway(b1),
+			kit.WithCluster(c),
+			kit.WithServiceDesc(serviceDesc("edge1").Desc()),
 		)
 		edge1.Start(nil)
 		edge2 = kit.NewServer(
-			kit.RegisterGateway(b2),
-			kit.RegisterCluster(c),
-			kit.RegisterServiceDesc(serviceDesc("edge2").Desc()),
+			kit.WithGateway(b2),
+			kit.WithCluster(c),
+			kit.WithServiceDesc(serviceDesc("edge2").Desc()),
 		)
 		edge2.Start(nil)
 	})
@@ -507,8 +507,8 @@ var _ = Describe("EdgeServer/Cluster", func() {
 func BenchmarkServer(b *testing.B) {
 	bundle := &testGateway{}
 	s := kit.NewServer(
-		kit.RegisterGateway(bundle),
-		kit.RegisterService(
+		kit.WithGateway(bundle),
+		kit.WithService(
 			desc.NewService("testService").
 				AddContract(
 					desc.NewContract().

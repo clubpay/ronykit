@@ -121,6 +121,14 @@ func UInt32ToStr(x uint32) string {
 	return strconv.FormatUint(uint64(x), 10)
 }
 
+func Float64ToStr(x float64) string {
+	return strconv.FormatFloat(x, 'f', -1, 64)
+}
+
+func Float32ToStr(x float32) string {
+	return strconv.FormatFloat(float64(x), 'f', -1, 32)
+}
+
 func IntToStr(x int) string {
 	return strconv.FormatUint(uint64(x), 10)
 }
@@ -180,6 +188,14 @@ func S2B(str string) []byte {
 	return StrToByte(str)
 }
 
+func CloneStr(s string) string {
+	return string(S2B(s))
+}
+
+func CloneBytes(b []byte) []byte {
+	return []byte(B2S(b))
+}
+
 // Numeric represents float64 number which is decodable from string, int or float.
 // It's useful when a struct field should be numeric but form of the data being decoded from is unknown or variable.
 type Numeric struct {
@@ -190,7 +206,7 @@ type Numeric struct {
 const defaultPrecision = 2
 
 func (n *Numeric) UnmarshalJSON(bb []byte) error {
-	type medium interface{}
+	type medium any
 	m := new(medium)
 	if err := json.Unmarshal(bb, m); err != nil {
 		return err
@@ -199,6 +215,10 @@ func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	*n = ParseNumeric(*m)
 
 	return nil
+}
+
+func (n Numeric) MarshalJSON() ([]byte, error) {
+	return json.Marshal(n.String())
 }
 
 func (n Numeric) Value() float64 {
@@ -224,7 +244,7 @@ func (n Numeric) WithoutPrecision() Numeric {
 }
 
 // ParseNumeric converts int, string, float to Numeric.
-func ParseNumeric(src interface{}) Numeric {
+func ParseNumeric(src any) Numeric {
 	var number float64
 	switch v := src.(type) {
 	case float64:

@@ -33,10 +33,10 @@ func releaseNode(n *Node) {
 type Node struct {
 	next *Node
 	prev *Node
-	data interface{}
+	data any
 }
 
-func (n Node) GetData() interface{} {
+func (n Node) GetData() any {
 	return n.data
 }
 
@@ -51,7 +51,7 @@ func NewLinkedList() *LinkedList {
 	return &LinkedList{}
 }
 
-func (ll *LinkedList) Append(data interface{}) {
+func (ll *LinkedList) Append(data any) {
 	ll.lock.Lock()
 	ll.size += 1
 	n := acquireNode()
@@ -67,7 +67,7 @@ func (ll *LinkedList) Append(data interface{}) {
 	ll.lock.Unlock()
 }
 
-func (ll *LinkedList) Prepend(data interface{}) {
+func (ll *LinkedList) Prepend(data any) {
 	ll.lock.Lock()
 	ll.size += 1
 	n := acquireNode()
@@ -95,7 +95,7 @@ func (ll *LinkedList) Head() *Node {
 	return ll.head
 }
 
-func (ll *LinkedList) PickHeadData() interface{} {
+func (ll *LinkedList) PickHeadData() any {
 	ll.lock.Lock()
 	if ll.head == nil {
 		ll.lock.Unlock()
@@ -122,7 +122,7 @@ func (ll *LinkedList) Tail() *Node {
 	return ll.tail
 }
 
-func (ll *LinkedList) PickTailData() interface{} {
+func (ll *LinkedList) PickTailData() any {
 	ll.lock.Lock()
 	if ll.tail == nil {
 		ll.lock.Unlock()

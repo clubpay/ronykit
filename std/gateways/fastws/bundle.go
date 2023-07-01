@@ -38,11 +38,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),
 	}
-	gw, err := newGateway(b)
-	if err != nil {
-		return nil, err
-	}
-
+	gw := newGateway(b)
 	b.eh = gw
 
 	for _, opt := range opts {
@@ -62,7 +58,7 @@ func MustNew(opts ...Option) kit.Gateway {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	svcName, contractID string, _ kit.Encoding, sel kit.RouteSelector, input kit.Message,
 ) {
 	rpcSelector, ok := sel.(kit.RPCRouteSelector)
 	if !ok {

@@ -23,7 +23,7 @@ func typ(prefix string, t reflect.Type) string {
 	case reflect.Interface:
 		in := t.Name()
 		if in == "" {
-			in = "interface{}"
+			in = "any"
 		}
 
 		return fmt.Sprintf("%s%s", prefix, in)

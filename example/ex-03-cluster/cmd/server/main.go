@@ -24,18 +24,18 @@ func main() {
 		kit.WithTrace(
 			tracekit.B3("ex03"),
 		),
-		kit.RegisterCluster(
+		kit.WithCluster(
 			rediscluster.MustNew(
 				"ex03",
 				rediscluster.WithRedisURL("redis://localhost:6380"),
 			),
 		),
-		kit.RegisterGateway(
+		kit.WithGateway(
 			fasthttp.MustNew(
 				fasthttp.Listen(fmt.Sprintf(":%d", port)),
 			),
 		),
-		kit.RegisterServiceDesc(serviceDesc.Desc()),
+		kit.WithServiceDesc(serviceDesc.Desc()),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).
