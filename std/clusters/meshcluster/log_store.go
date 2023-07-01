@@ -17,7 +17,7 @@ var (
 	lastIndexKey  = []byte("IDX_L")
 )
 
-type logStore struct {
+type badgerLogStore struct {
 	mtx        utils.SpinLock
 	db         *badger.DB
 	firstIndex uint64
@@ -26,15 +26,15 @@ type logStore struct {
 	viewDB     func(fn func(txn *badger.Txn) error) error
 }
 
-var _ raft.LogStore = (*logStore)(nil)
+var _ raft.LogStore = (*badgerLogStore)(nil)
 
-func newLogStore(path string) (*logStore, error) {
+func newLogStore(path string) (*badgerLogStore, error) {
 	db, err := badger.Open(badger.DefaultOptions(path))
 	if err != nil {
 		return nil, err
 	}
 
-	s := &logStore{
+	s := &badgerLogStore{
 		db:       db,
 		updateDB: updateDB(db),
 		viewDB:   viewDB(db),
@@ -44,7 +44,7 @@ func newLogStore(path string) (*logStore, error) {
 	return s, nil
 }
 
-func (l *logStore) loadFirstAndLastIndex() {
+func (l *badgerLogStore) loadFirstAndLastIndex() {
 	err := l.viewDB(
 		func(txn *badger.Txn) error {
 			// FirstIndex
@@ -87,21 +87,21 @@ func (l *logStore) loadFirstAndLastIndex() {
 	}
 }
 
-func (l *logStore) FirstIndex() (uint64, error) {
+func (l *badgerLogStore) FirstIndex() (uint64, error) {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
 
 	return l.firstIndex, nil
 }
 
-func (l *logStore) LastIndex() (uint64, error) {
+func (l *badgerLogStore) LastIndex() (uint64, error) {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
 
 	return l.lastIndex, nil
 }
 
-func (l *logStore) GetLog(index uint64, log *raft.Log) error {
+func (l *badgerLogStore) GetLog(index uint64, log *raft.Log) error {
 	return l.viewDB(
 		func(txn *badger.Txn) error {
 			key := logKey(index)
@@ -119,7 +119,7 @@ func (l *logStore) GetLog(index uint64, log *raft.Log) error {
 	)
 }
 
-func (l *logStore) StoreLog(log *raft.Log) error {
+func (l *badgerLogStore) StoreLog(log *raft.Log) error {
 	return l.updateDB(
 		func(txn *badger.Txn) error {
 			fi := atomic.LoadUint64(&l.firstIndex)
@@ -164,7 +164,7 @@ func (l *logStore) StoreLog(log *raft.Log) error {
 	)
 }
 
-func (l *logStore) StoreLogs(logs []*raft.Log) error {
+func (l *badgerLogStore) StoreLogs(logs []*raft.Log) error {
 	return l.updateDB(
 		func(txn *badger.Txn) error {
 			fi := atomic.LoadUint64(&l.firstIndex)
@@ -221,7 +221,7 @@ func (l *logStore) StoreLogs(logs []*raft.Log) error {
 	)
 }
 
-func (l *logStore) DeleteRange(min, max uint64) error {
+func (l *badgerLogStore) DeleteRange(min, max uint64) error {
 	return l.updateDB(
 		func(txn *badger.Txn) error {
 			for i := min; i <= max; i++ {
