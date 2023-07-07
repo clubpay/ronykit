@@ -30,6 +30,7 @@ linters:
     - structcheck
     - gocritic
     - exhaustive
+    - depguard
   fast: false
 linters-settings:
   #  decorder:
