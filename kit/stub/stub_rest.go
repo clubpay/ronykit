@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/internal/json"
@@ -31,6 +32,7 @@ type RESTCtx struct {
 	r              *reflector.Reflector
 	dumpReq        io.Writer
 	dumpRes        io.Writer
+	timeout        time.Duration
 
 	// fasthttp entities
 	c    *fasthttp.Client
@@ -120,7 +122,7 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	}
 
 	// execute the request
-	hc.err = WrapError(hc.c.Do(hc.req, hc.res))
+	hc.err = WrapError(hc.c.DoTimeout(hc.req, hc.res, hc.timeout))
 
 	if hc.dumpReq != nil {
 		_, _ = hc.req.WriteTo(hc.dumpReq)

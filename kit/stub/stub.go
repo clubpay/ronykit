@@ -59,6 +59,7 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 		args:     fasthttp.AcquireArgs(),
 		req:      fasthttp.AcquireRequest(),
 		res:      fasthttp.AcquireResponse(),
+		timeout:  s.cfg.readTimeout,
 	}
 
 	if s.cfg.secure {

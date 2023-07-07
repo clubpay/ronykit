@@ -28,6 +28,8 @@ linters:
     - ifshort
     - deadcode
     - structcheck
+    - depguard
+    - tagalign
   fast: true
 linters-settings:
   #  decorder:
