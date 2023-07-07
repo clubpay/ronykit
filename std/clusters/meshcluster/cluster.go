@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -13,13 +14,16 @@ import (
 
 type cluster struct {
 	cfg     config
-	fsm     raft.FSM
+	fsm     fsm
 	r       *raft.Raft
 	addr    raft.ServerAddress
 	members *memberlist.Memberlist
 }
 
-var _ kit.Cluster = (*cluster)(nil)
+var (
+	_ kit.Cluster      = (*cluster)(nil)
+	_ kit.ClusterStore = (*cluster)(nil)
+)
 
 func MustNew(name string, opts ...Option) kit.Cluster {
 	c, err := New(name, opts...)
@@ -74,16 +78,14 @@ func (c *cluster) initGossip() error {
 
 func (c *cluster) initRaft() error {
 	raftCfg := raft.DefaultConfig()
-	logStoreDbPath := filepath.Join(c.cfg.dbPath, "log")
-	_ = os.MkdirAll(logStoreDbPath, 0o644)
-	logStore, err := newLogStore(logStoreDbPath)
+	raftStoreDbPath := filepath.Join(c.cfg.dbPath, "raft")
+	_ = os.MkdirAll(raftStoreDbPath, 0o644)
+	raftStore, err := newBadgerRaftStore(raftStoreDbPath)
 	if err != nil {
 		return err
 	}
-
-	stableStoreDbPath := filepath.Join(c.cfg.dbPath, "stable")
-	_ = os.MkdirAll(stableStoreDbPath, 0o644)
-	stableStore, err := newStableStore(stableStoreDbPath)
+	kvStoreDbPath := filepath.Join(c.cfg.dbPath, "kv")
+	kvStore, err := newBadgerKeyValueStore(kvStoreDbPath)
 	if err != nil {
 		return err
 	}
@@ -100,8 +102,8 @@ func (c *cluster) initRaft() error {
 		return err
 	}
 
-	fsm := &fsm{}
-	r, err := raft.NewRaft(raftCfg, fsm, logStore, stableStore, ssStore, trans)
+	theFSM := newFSM(kvStore)
+	r, err := raft.NewRaft(raftCfg, theFSM, raftStore, raftStore, ssStore, trans)
 	if err != nil {
 		return err
 	}
@@ -141,6 +143,29 @@ func (c *cluster) Subscribers() ([]string, error) {
 }
 
 func (c *cluster) Store() kit.ClusterStore {
+	return c
+}
+
+func (c *cluster) Set(key, value string, ttl time.Duration) error {
+	c.r.VerifyLeader()
+}
+
+func (c *cluster) Delete(key string) error {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (c *cluster) Get(key string) (string, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (c *cluster) Scan(prefix string, cb func(string) bool) error {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (c *cluster) ScanWithValue(prefix string, cb func(string, string) bool) error {
 	// TODO implement me
 	panic("implement me")
 }

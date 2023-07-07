@@ -27,7 +27,7 @@ var basicFunctionality = func() {
 	})
 
 	logStore, err := meshcluster.NewLogStore(dbPath)
-	It("should return badgerLogStore", func() {
+	It("should return badgerRaftStore", func() {
 		Expect(err).To(BeNil())
 		Expect(logStore).ShouldNot(BeNil())
 	})
@@ -69,7 +69,7 @@ var concurrentLogs = func() {
 
 	logStore, err := meshcluster.NewLogStore(dbPath)
 
-	It("should return badgerLogStore", func() {
+	It("should return badgerRaftStore", func() {
 		Expect(err).To(BeNil())
 		Expect(logStore).ShouldNot(BeNil())
 	})

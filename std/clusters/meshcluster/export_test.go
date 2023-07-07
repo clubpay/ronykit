@@ -1,3 +1,3 @@
 package meshcluster
 
-var NewLogStore = newLogStore
+var NewLogStore = newBadgerRaftStore

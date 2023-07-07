@@ -17,7 +17,7 @@ var (
 	lastIndexKey  = []byte("IDX_L")
 )
 
-type badgerLogStore struct {
+type badgerRaftStore struct {
 	mtx        utils.SpinLock
 	db         *badger.DB
 	firstIndex uint64
@@ -26,15 +26,18 @@ type badgerLogStore struct {
 	viewDB     func(fn func(txn *badger.Txn) error) error
 }
 
-var _ raft.LogStore = (*badgerLogStore)(nil)
+var (
+	_ raft.LogStore    = (*badgerRaftStore)(nil)
+	_ raft.StableStore = (*badgerRaftStore)(nil)
+)
 
-func newLogStore(path string) (*badgerLogStore, error) {
+func newBadgerRaftStore(path string) (*badgerRaftStore, error) {
 	db, err := badger.Open(badger.DefaultOptions(path))
 	if err != nil {
 		return nil, err
 	}
 
-	s := &badgerLogStore{
+	s := &badgerRaftStore{
 		db:       db,
 		updateDB: updateDB(db),
 		viewDB:   viewDB(db),
@@ -44,8 +47,8 @@ func newLogStore(path string) (*badgerLogStore, error) {
 	return s, nil
 }
 
-func (l *badgerLogStore) loadFirstAndLastIndex() {
-	err := l.viewDB(
+func (store *badgerRaftStore) loadFirstAndLastIndex() {
+	err := store.viewDB(
 		func(txn *badger.Txn) error {
 			// FirstIndex
 			firstIndexItem, err := txn.Get(firstIndexKey)
@@ -53,7 +56,7 @@ func (l *badgerLogStore) loadFirstAndLastIndex() {
 			case nil:
 				return firstIndexItem.Value(
 					func(val []byte) error {
-						l.firstIndex = binary.BigEndian.Uint64(val)
+						store.firstIndex = binary.BigEndian.Uint64(val)
 
 						return nil
 					},
@@ -69,7 +72,7 @@ func (l *badgerLogStore) loadFirstAndLastIndex() {
 			case nil:
 				return lastIndexItem.Value(
 					func(val []byte) error {
-						l.lastIndex = binary.BigEndian.Uint64(val)
+						store.lastIndex = binary.BigEndian.Uint64(val)
 
 						return nil
 					},
@@ -87,22 +90,22 @@ func (l *badgerLogStore) loadFirstAndLastIndex() {
 	}
 }
 
-func (l *badgerLogStore) FirstIndex() (uint64, error) {
-	l.mtx.Lock()
-	defer l.mtx.Unlock()
+func (store *badgerRaftStore) FirstIndex() (uint64, error) {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
 
-	return l.firstIndex, nil
+	return store.firstIndex, nil
 }
 
-func (l *badgerLogStore) LastIndex() (uint64, error) {
-	l.mtx.Lock()
-	defer l.mtx.Unlock()
+func (store *badgerRaftStore) LastIndex() (uint64, error) {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
 
-	return l.lastIndex, nil
+	return store.lastIndex, nil
 }
 
-func (l *badgerLogStore) GetLog(index uint64, log *raft.Log) error {
-	return l.viewDB(
+func (store *badgerRaftStore) GetLog(index uint64, log *raft.Log) error {
+	return store.viewDB(
 		func(txn *badger.Txn) error {
 			key := logKey(index)
 			item, err := txn.Get(key[:])
@@ -119,11 +122,11 @@ func (l *badgerLogStore) GetLog(index uint64, log *raft.Log) error {
 	)
 }
 
-func (l *badgerLogStore) StoreLog(log *raft.Log) error {
-	return l.updateDB(
+func (store *badgerRaftStore) StoreLog(log *raft.Log) error {
+	return store.updateDB(
 		func(txn *badger.Txn) error {
-			fi := atomic.LoadUint64(&l.firstIndex)
-			li := atomic.LoadUint64(&l.lastIndex)
+			fi := atomic.LoadUint64(&store.firstIndex)
+			li := atomic.LoadUint64(&store.lastIndex)
 			key := logKey(log.Index)
 			logBytes, err := json.Marshal(log)
 			if err != nil {
@@ -136,7 +139,7 @@ func (l *badgerLogStore) StoreLog(log *raft.Log) error {
 			}
 
 			if fi == 0 || log.Index < fi {
-				if !atomic.CompareAndSwapUint64(&l.firstIndex, fi, log.Index) {
+				if !atomic.CompareAndSwapUint64(&store.firstIndex, fi, log.Index) {
 					return badger.ErrConflict
 				}
 
@@ -148,7 +151,7 @@ func (l *badgerLogStore) StoreLog(log *raft.Log) error {
 			}
 
 			if log.Index > li {
-				if !atomic.CompareAndSwapUint64(&l.lastIndex, li, log.Index) {
+				if !atomic.CompareAndSwapUint64(&store.lastIndex, li, log.Index) {
 					return badger.ErrConflict
 				}
 
@@ -164,11 +167,11 @@ func (l *badgerLogStore) StoreLog(log *raft.Log) error {
 	)
 }
 
-func (l *badgerLogStore) StoreLogs(logs []*raft.Log) error {
-	return l.updateDB(
+func (store *badgerRaftStore) StoreLogs(logs []*raft.Log) error {
+	return store.updateDB(
 		func(txn *badger.Txn) error {
-			fi := atomic.LoadUint64(&l.firstIndex)
-			li := atomic.LoadUint64(&l.lastIndex)
+			fi := atomic.LoadUint64(&store.firstIndex)
+			li := atomic.LoadUint64(&store.lastIndex)
 
 			maxIndex := li
 			minIndex := fi
@@ -193,7 +196,7 @@ func (l *badgerLogStore) StoreLogs(logs []*raft.Log) error {
 			}
 
 			if fi == 0 || minIndex < fi {
-				if !atomic.CompareAndSwapUint64(&l.firstIndex, fi, minIndex) {
+				if !atomic.CompareAndSwapUint64(&store.firstIndex, fi, minIndex) {
 					return badger.ErrConflict
 				}
 
@@ -205,7 +208,7 @@ func (l *badgerLogStore) StoreLogs(logs []*raft.Log) error {
 			}
 
 			if maxIndex > li {
-				if !atomic.CompareAndSwapUint64(&l.lastIndex, li, maxIndex) {
+				if !atomic.CompareAndSwapUint64(&store.lastIndex, li, maxIndex) {
 					return badger.ErrConflict
 				}
 
@@ -221,8 +224,8 @@ func (l *badgerLogStore) StoreLogs(logs []*raft.Log) error {
 	)
 }
 
-func (l *badgerLogStore) DeleteRange(min, max uint64) error {
-	return l.updateDB(
+func (store *badgerRaftStore) DeleteRange(min, max uint64) error {
+	return store.updateDB(
 		func(txn *badger.Txn) error {
 			for i := min; i <= max; i++ {
 				key := logKey(i)
@@ -237,6 +240,50 @@ func (l *badgerLogStore) DeleteRange(min, max uint64) error {
 			return nil
 		},
 	)
+}
+
+func (store *badgerRaftStore) Set(key []byte, val []byte) error {
+	return store.updateDB(
+		func(txn *badger.Txn) error {
+			return txn.Set(key, val)
+		},
+	)
+}
+
+func (store *badgerRaftStore) Get(key []byte) ([]byte, error) {
+	var val []byte
+	err := store.viewDB(
+		func(txn *badger.Txn) error {
+			itm, err := txn.Get(key)
+			if err != nil {
+				return err
+			}
+			val, err = itm.ValueCopy(nil)
+
+			return err
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return val, nil
+}
+
+func (store *badgerRaftStore) SetUint64(key []byte, val uint64) error {
+	var b [8]byte
+	binary.BigEndian.PutUint64(b[:], val)
+
+	return store.Set(key, b[:])
+}
+
+func (store *badgerRaftStore) GetUint64(key []byte) (uint64, error) {
+	b, err := store.Get(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return binary.BigEndian.Uint64(b), nil
 }
 
 func logKey(index uint64) [9]byte {
