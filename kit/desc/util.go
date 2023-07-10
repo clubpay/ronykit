@@ -6,6 +6,15 @@ import (
 )
 
 func typ(prefix string, t reflect.Type) string {
+	// we need a hacky fix to handle correctly json.RawMessage and kit.RawMessage in auto-generated code
+	// of the stubs
+	switch t.String() {
+	case "json.RawMessage":
+		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
+	case "kit.RawMessage":
+		return fmt.Sprintf("%s%s", prefix, "kit.Message")
+	}
+
 	//nolint:exhaustive
 	switch t.Kind() {
 	case reflect.Slice:

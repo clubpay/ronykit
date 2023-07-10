@@ -133,3 +133,5 @@ type ErrorMessage interface {
 
 // EmptyMessage is a special kind of Message which is empty.
 type EmptyMessage struct{}
+
+type JSONMessage = json.RawMessage

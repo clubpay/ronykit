@@ -48,6 +48,7 @@ type VeryComplexRequest struct {
 	MapKey2   map[int64]KeyValue `json:"mapKey2"`
 	SliceKey1 []bool             `json:"sliceKey1"`
 	SliceKey2 []*KeyValue        `json:"sliceKey2"`
+	RawKey    kit.JSONMessage    `json:"rawKey"`
 }
 
 // VeryComplexResponse is a data transfer object
