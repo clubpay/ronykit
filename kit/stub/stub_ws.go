@@ -37,6 +37,12 @@ type WebsocketCtx struct {
 	url  string
 	cMtx sync.Mutex
 	c    *websocket.Conn
+
+	// stats
+	writeBytesTotal uint64
+	writeBytes      uint64
+	readBytesTotal  uint64
+	readBytes       uint64
 }
 
 func (wCtx *WebsocketCtx) Connect(ctx context.Context, path string) error {
@@ -70,9 +76,11 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 			return nil
 		},
 	)
-	c.SetCompressionLevel(wCtx.cfg.compressLevel)
+	_ = c.SetCompressionLevel(wCtx.cfg.compressLevel)
 
 	wCtx.c = c
+	wCtx.writeBytes = 0
+	wCtx.readBytes = 0
 
 	// run receiver & watchdog in the background
 	go wCtx.receiver(c) //nolint:contextcheck
@@ -151,6 +159,8 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			return
 		}
 
+		wCtx.readBytesTotal += uint64(len(p))
+		wCtx.readBytes += uint64(len(p))
 		wCtx.setActivity()
 
 		rpcIn := wCtx.cfg.rpcInFactory()
@@ -254,6 +264,29 @@ func (wCtx *WebsocketCtx) NetConn() net.Conn {
 	return wCtx.c.NetConn()
 }
 
+type WebsocketStats struct {
+	// ReadBytes is the total number of bytes read from the current websocket connection
+	ReadBytes uint64
+	// ReadBytesTotal is the total number of bytes read since WebsocketCtx creation
+	ReadBytesTotal uint64
+	// WriteBytes is the total number of bytes written to the current websocket connection
+	WriteBytes uint64
+	// WriteBytesTotal is the total number of bytes written since WebsocketCtx creation
+	WriteBytesTotal uint64
+}
+
+func (wCtx *WebsocketCtx) Stats() WebsocketStats {
+	wCtx.cMtx.Lock()
+	defer wCtx.cMtx.Unlock()
+
+	return WebsocketStats{
+		ReadBytes:       wCtx.readBytes,
+		ReadBytesTotal:  wCtx.readBytesTotal,
+		WriteBytes:      wCtx.writeBytes,
+		WriteBytesTotal: wCtx.writeBytesTotal,
+	}
+}
+
 type WebsocketRequest struct {
 	// Predicate is the routing key for the message, which will be added to the kit.OutgoingRPCContainer
 	Predicate string
@@ -294,6 +327,8 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	}
 
 	wCtx.cMtx.Lock()
+	wCtx.writeBytesTotal += uint64(len(reqData))
+	wCtx.writeBytes += uint64(len(reqData))
 	err = wCtx.c.WriteMessage(req.MessageType, reqData)
 	wCtx.cMtx.Unlock()
 	if err != nil {
