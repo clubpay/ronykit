@@ -70,6 +70,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 			return nil
 		},
 	)
+	c.SetCompressionLevel(wCtx.cfg.compressLevel)
 
 	wCtx.c = c
 
@@ -340,4 +341,7 @@ func (c containerTraceCarrier) Set(key string, value string) {
 	c.out.SetHdr(key, value)
 }
 
-var ErrBadHandshake = websocket.ErrBadHandshake
+var (
+	ErrBadHandshake = websocket.ErrBadHandshake
+	_               = ErrBadHandshake
+)
