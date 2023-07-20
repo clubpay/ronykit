@@ -90,10 +90,10 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx.rawData = msg
 
 	arg, err := n.gw.Dispatch(ctx, msg)
-	switch err { //nolint:errorlint
-	case nil:
+	switch {
+	case err == nil:
 		ctx.execute(arg, n.c[arg.ContractID])
-	case ErrPreflight:
+	case errors.Is(err, ErrPreflight):
 		// If this is a Preflight request, we ignore executing it.
 		// This is a workaround for CORS Preflight requests.
 	default:

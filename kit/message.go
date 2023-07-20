@@ -123,6 +123,16 @@ func (rm *RawMessage) CopyFrom(in []byte) {
 	*rm = append(*rm, in...)
 }
 
+func CastRawMessage[M Message](rawMsg RawMessage) (*M, error) {
+	var m M
+	err := UnmarshalMessage(rawMsg, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
 // ErrorMessage is a special kind of Message which is also an error.
 type ErrorMessage interface {
 	GetCode() int
