@@ -16,6 +16,16 @@ func RPC(predicate string) Selector {
 	}
 }
 
+// RPCs is a shortcut for multiple RPC selectors
+func RPCs(predicate ...string) []Selector {
+	selectors := make([]Selector, 0, len(predicate))
+	for _, p := range predicate {
+		selectors = append(selectors, RPC(p))
+	}
+
+	return selectors
+}
+
 func (r Selector) GetEncoding() kit.Encoding {
 	return r.Encoding
 }

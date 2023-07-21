@@ -3,6 +3,7 @@
 
 ss="github.com/clubpay/ronykit/kit $1"
 rs="github.com/clubpay/ronykit/kit $2"
+wd = $(pwd)
 
 array=( std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster )
 for i in "${array[@]}"
@@ -11,6 +12,9 @@ do
 	echo "update go.mod for [$filename]: $ss -> $rs"
 	sed -i'' -e 's#'"$ss"'#'"$rs"'#g' "$filename"
 	rm "$i"/go.mod-e
+	cd "$i" | exit
+	go mod tidy
+	cd "$wd" | exit
 done
 
 git add .

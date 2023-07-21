@@ -110,18 +110,20 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 }
 
 // AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle specific.
-func (c *Contract) AddSelector(s kit.RouteSelector) *Contract {
-	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
-		Name:     "",
-		Selector: s,
-	})
+func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
+	for _, s := range s {
+		c.RouteSelectors = append(
+			c.RouteSelectors,
+			RouteSelector{Name: "", Selector: s},
+		)
+	}
 
 	return c
 }
 
 // Selector is an alias for AddSelector
-func (c *Contract) Selector(s kit.RouteSelector) *Contract {
-	return c.AddSelector(s)
+func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
+	return c.AddSelector(s...)
 }
 
 // AddNamedSelector adds a kit.RouteSelector for this contract, and assign it a unique name.

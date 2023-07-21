@@ -63,7 +63,7 @@ func (e *Envelope) release() {
 	if !e.reuse {
 		return
 	}
-	
+
 	for k := range e.kv {
 		delete(e.kv, k)
 	}
