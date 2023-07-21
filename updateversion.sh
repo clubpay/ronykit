@@ -3,7 +3,7 @@
 
 ss="github.com/clubpay/ronykit/kit $1"
 rs="github.com/clubpay/ronykit/kit $2"
-wd = $(pwd)
+wd=$(pwd)
 
 array=( std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster )
 for i in "${array[@]}"
