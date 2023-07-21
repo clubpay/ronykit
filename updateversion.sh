@@ -12,9 +12,9 @@ do
 	echo "update go.mod for [$filename]: $ss -> $rs"
 	sed -i'' -e 's#'"$ss"'#'"$rs"'#g' "$filename"
 	rm "$i"/go.mod-e
-	cd "$i" | exit
+	cd "$i" || exit
 	go mod tidy
-	cd "$wd" | exit
+	cd "$wd" || exit
 done
 
 git add .
