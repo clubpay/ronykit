@@ -17,8 +17,8 @@ var sampleService = desc.NewService("SampleService").
 			SetInput(&dto.EchoRequest{}).
 			SetOutput(&dto.EchoResponse{}).
 			AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
-			AddSelector(fasthttp.RPC("echoRequest")).
-			AddSelector(fastws.RPC("echoRequest")).
+			AddSelector(fasthttp.RPCs("echoRequest")...).
+			AddSelector(fastws.RPCs("echoRequest")...).
 			SetHandler(echoHandler),
 	)
 
