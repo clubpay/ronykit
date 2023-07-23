@@ -33,7 +33,7 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 		EnvelopeID:  ctx.In().GetID(),
 		IsREST:      ctx.isREST(),
 		MsgType:     reflect.TypeOf(ctx.In().GetMsg()).String(),
-		Msg:         marshalMessageX(ctx.In().GetMsg()),
+		Msg:         marshalEnvelopeCarrier(ctx.In().GetMsg()),
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
 		Route:       ctx.Route(),
@@ -67,7 +67,7 @@ func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 		EnvelopeID:  utils.B2S(e.id),
 		IsREST:      e.ctx.isREST(),
 		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
-		Msg:         marshalMessageX(e.GetMsg()),
+		Msg:         marshalEnvelopeCarrier(e.GetMsg()),
 		ContractID:  e.ctx.ContractID(),
 		ServiceName: e.ctx.ServiceName(),
 		Route:       e.ctx.Route(),
@@ -126,4 +126,24 @@ func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) 
 		OriginID:  originID,
 		TargetID:  targetID,
 	}
+}
+
+func unmarshalEnvelopeCarrier(data []byte, m Message) {
+	err := jsonMarshaler.Unmarshal(data, m)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func marshalEnvelopeCarrier(m Message) []byte {
+	switch v := m.(type) {
+	case RawMessage:
+		return v
+	}
+	data, err := jsonMarshaler.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+
+	return data
 }

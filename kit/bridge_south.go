@@ -112,7 +112,7 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 	case RawMessage:
 		msg.CopyFrom(carrier.Data.Msg)
 	default:
-		unmarshalMessageX(carrier.Data.Msg, msg)
+		unmarshalEnvelopeCarrier(carrier.Data.Msg, msg)
 	}
 
 	if sb.tp != nil {
@@ -233,7 +233,7 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 					case RawMessage:
 						msg = RawMessage(carrier.Data.Msg)
 					default:
-						unmarshalMessageX(carrier.Data.Msg, msg)
+						unmarshalEnvelopeCarrier(carrier.Data.Msg, msg)
 					}
 
 					ctx.Out().

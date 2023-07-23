@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/binary"
 	"encoding/json"
-	"reflect"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -155,14 +154,11 @@ func StrTruncate(s string, maxSize int) string {
 // Note it may break if string and/or slice header will change
 // in the future go versions.
 func ByteToStr(bts []byte) string {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&bts))
+	if len(bts) == 0 {
+		return ""
+	}
 
-	var s string
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	sh.Data = bh.Data
-	sh.Len = bh.Len
-
-	return s
+	return unsafe.String(unsafe.SliceData(bts), len(bts))
 }
 
 // B2S is alias for ByteToStr.
@@ -174,13 +170,11 @@ func B2S(bts []byte) string {
 // Note it may break if string and/or slice header will change
 // in the future go versions.
 func StrToByte(str string) (b []byte) {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&str))
-	bh.Data = sh.Data
-	bh.Len = sh.Len
-	bh.Cap = sh.Len
+	if len(str) == 0 {
+		return nil
+	}
 
-	return b
+	return unsafe.Slice(unsafe.StringData(str), len(str))
 }
 
 // S2B is alias for StrToByte.

@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/std/gateways/fastws
 
-go 1.19
+go 1.20
 
 require (
 	github.com/clubpay/ronykit/kit v0.10.41
