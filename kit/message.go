@@ -95,12 +95,22 @@ func MarshalMessage(m Message) ([]byte, error) {
 // This is helpful for raw data messages.
 type RawMessage []byte
 
-func (rm *RawMessage) Marshal() ([]byte, error) {
-	return *rm, nil
+func (rm RawMessage) Marshal() ([]byte, error) {
+	return rm, nil
+}
+
+func (rm RawMessage) MarshalJSON() ([]byte, error) {
+	return rm, nil
 }
 
 func (rm *RawMessage) CopyFrom(in []byte) {
 	*rm = append(*rm, in...)
+}
+
+func (rm *RawMessage) Unmarshal(data []byte) error {
+	*rm = append(*rm, data...)
+
+	return nil
 }
 
 func CastRawMessage[M Message](rawMsg RawMessage) (*M, error) {

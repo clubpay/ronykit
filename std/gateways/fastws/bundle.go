@@ -90,7 +90,13 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.ExtractMessage(msg)
+	switch v := msg.(type) {
+	case kit.RawMessage:
+		err = inputMsgContainer.ExtractMessage(&v)
+		msg = v
+	default:
+		err = inputMsgContainer.ExtractMessage(msg)
+	}
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
