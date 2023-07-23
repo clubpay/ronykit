@@ -1,0 +1,29 @@
+//go:build go1.19 || go1.18
+
+package utils
+
+import "unsafe"
+
+// ByteToStr converts byte slice to a string without memory allocation.
+// Note it may break if string and/or slice header will change
+// in the future go versions.
+func ByteToStr(bts []byte) string {
+	return *(*string)(unsafe.Pointer(&bts))
+}
+
+// B2S is alias for ByteToStr.
+func B2S(bts []byte) string {
+	return ByteToStr(bts)
+}
+
+// StrToByte converts string to a byte slice without memory allocation.
+// Note it may break if string and/or slice header will change
+// in the future go versions.
+func StrToByte(str string) (b []byte) {
+	return *(*[]byte)(unsafe.Pointer(&str))
+}
+
+// S2B is alias for StrToByte.
+func S2B(str string) []byte {
+	return StrToByte(str)
+}

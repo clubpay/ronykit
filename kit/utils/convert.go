@@ -1,56 +1,10 @@
 package utils
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"strconv"
 	"strings"
-	"unsafe"
 )
-
-/*
-	Strings Builder helper functions
-*/
-
-func AppendStrInt(sb *strings.Builder, x int) {
-	var b [8]byte
-
-	binary.BigEndian.PutUint64(b[:], uint64(x))
-	sb.Write(b[:])
-}
-
-func AppendStrUInt(sb *strings.Builder, x uint) {
-	var b [8]byte
-
-	binary.BigEndian.PutUint64(b[:], uint64(x))
-	sb.Write(b[:])
-}
-
-func AppendStrInt64(sb *strings.Builder, x int64) {
-	var b [8]byte
-
-	binary.BigEndian.PutUint64(b[:], uint64(x))
-	sb.Write(b[:])
-}
-
-func AppendStrUInt64(sb *strings.Builder, x uint64) {
-	var b [8]byte
-
-	binary.BigEndian.PutUint64(b[:], x)
-	sb.Write(b[:])
-}
-
-func AppendStrInt32(sb *strings.Builder, x int32) {
-	var b [4]byte
-	binary.BigEndian.PutUint32(b[:], uint32(x))
-	sb.Write(b[:])
-}
-
-func AppendStrUInt32(sb *strings.Builder, x uint32) {
-	var b [4]byte
-	binary.BigEndian.PutUint32(b[:], x)
-	sb.Write(b[:])
-}
 
 /*
 	String Conversion helper functions
@@ -148,46 +102,6 @@ func StrTruncate(s string, maxSize int) string {
 	}
 
 	return builder.String()
-}
-
-// ByteToStr converts byte slice to a string without memory allocation.
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func ByteToStr(bts []byte) string {
-	if len(bts) == 0 {
-		return ""
-	}
-
-	return unsafe.String(unsafe.SliceData(bts), len(bts))
-}
-
-// B2S is alias for ByteToStr.
-func B2S(bts []byte) string {
-	return ByteToStr(bts)
-}
-
-// StrToByte converts string to a byte slice without memory allocation.
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func StrToByte(str string) (b []byte) {
-	if len(str) == 0 {
-		return nil
-	}
-
-	return unsafe.Slice(unsafe.StringData(str), len(str))
-}
-
-// S2B is alias for StrToByte.
-func S2B(str string) []byte {
-	return StrToByte(str)
-}
-
-func CloneStr(s string) string {
-	return string(S2B(s))
-}
-
-func CloneBytes(b []byte) []byte {
-	return []byte(B2S(b))
 }
 
 // Numeric represents float64 number which is decodable from string, int or float.
