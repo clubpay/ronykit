@@ -15,5 +15,5 @@ func (jm Marshaler) Marshal(m any) ([]byte, error) {
 }
 
 func (jm Marshaler) Unmarshal(data []byte, m any) error {
-	return json.Unmarshal(data, m)
+	return json.UnmarshalNoEscape(data, m)
 }

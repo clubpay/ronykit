@@ -29,8 +29,7 @@ type paramCaster struct {
 }
 
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
-	m := factory()
-	switch m.(type) {
+	switch factory().(type) {
 	case kit.RawMessage:
 		return func(bag Params, data []byte) (kit.Message, error) {
 			v := factory().(kit.RawMessage) //nolint:forcetypeassert
