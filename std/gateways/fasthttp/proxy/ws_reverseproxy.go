@@ -98,6 +98,7 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			// ctx.WriteString(http.StatusText(http.StatusServiceUnavailable))
 			ctx.Error(err.Error(), fasthttp.StatusServiceUnavailable)
 		}
+
 		return
 	}
 
@@ -182,7 +183,7 @@ func builtinForwardHeaderHandler(ctx *fasthttp.RequestCtx) (forwardHeader http.H
 		forwardHeader.Set("X-Forwarded-Proto", "https")
 	}
 
-	return
+	return forwardHeader
 }
 
 // replicateWebsocketConn to
@@ -204,6 +205,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 			if err = dst.WriteMessage(websocket.CloseMessage, msg); err != nil {
 				errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, err=%v", err)
 			}
+
 			break
 		}
 
@@ -211,6 +213,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 		if err != nil {
 			errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
 			errChan <- err
+
 			break
 		}
 	}
@@ -233,5 +236,6 @@ func wsCopyResponse(dst *fasthttp.Response, src *http.Response) error {
 		return err
 	}
 	dst.SetBody(buf.Bytes())
+
 	return nil
 }

@@ -19,7 +19,7 @@ func (n *nopLogger) Printf(format string, args ...interface{}) {
 	fmt.Printf(format, args...)
 }
 
-func debugF(debug bool, logger __Logger, format string, args ...interface{}) {
+func debugF(debug bool, logger __Logger, format string, args ...any) {
 	if logger == nil || !debug {
 		return
 	}
@@ -27,15 +27,7 @@ func debugF(debug bool, logger __Logger, format string, args ...interface{}) {
 	logger.Printf("[debug] "+format, args...)
 }
 
-//func infoF(logger __Logger, format string, args ...interface{}) {
-//	if logger == nil {
-//		return
-//	}
-//
-//	logger.Printf("[info] "+format, args...)
-//}
-
-func errorF(logger __Logger, format string, args ...interface{}) {
+func errorF(logger __Logger, format string, args ...any) {
 	if logger == nil {
 		return
 	}

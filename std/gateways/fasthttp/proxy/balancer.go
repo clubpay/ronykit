@@ -105,5 +105,6 @@ func nGCD(data []int, n int) int {
 	if n == 1 {
 		return data[0]
 	}
+
 	return gcd(data[n-1], nGCD(data, n-1))
 }

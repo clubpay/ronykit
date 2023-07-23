@@ -12,9 +12,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-const (
-	_fasthttpHostClientName = "reverse-proxy"
-)
+const _fasthttpHostClientName = "reverse-proxy"
 
 // ReverseProxy reverse handler using fasthttp.HostClient
 type ReverseProxy struct {
@@ -87,6 +85,7 @@ func (p *ReverseProxy) init() error {
 		MaxConnDuration:        p.opt.maxConnDuration,
 	}
 	p.clients = append(p.clients, client)
+
 	return nil
 }
 
@@ -99,6 +98,7 @@ func (p *ReverseProxy) getClient() *fasthttp.HostClient {
 	if p.bla != nil {
 		// bla has been opened
 		idx := p.bla.Distribute()
+
 		return p.clients[idx]
 	}
 
@@ -149,11 +149,16 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		}
 
 		res.SetBody([]byte(err.Error()))
+
 		return
 	}
 
 	// deal with response headers
-	debugF(p.opt.debug, p.opt.logger, "rev response headers from proxy, addr = %s, headers = %s", c.Addr, res.Header.String())
+	debugF(
+		p.opt.debug, p.opt.logger,
+		"rev response headers from proxy, addr = %s, headers = %s",
+		c.Addr, res.Header.String(),
+	)
 
 	for _, h := range hopHeaders {
 		res.Header.Del(h)
@@ -174,6 +179,7 @@ func (p *ReverseProxy) SetClient(addr string) *ReverseProxy {
 	for idx := range p.clients {
 		p.clients[idx].Addr = addr
 	}
+
 	return p
 }
 

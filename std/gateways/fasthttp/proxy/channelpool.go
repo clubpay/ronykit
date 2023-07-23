@@ -51,6 +51,7 @@ func NewChanPool(initialCap, maxCap int, factory Factory) (Pool, error) {
 		proxy, err := factory("")
 		if err != nil {
 			proxy.Close()
+
 			return nil, errFactoryNotHelp
 		}
 		pool.reverseProxyChan <- proxy
@@ -64,6 +65,7 @@ func (p *chanPool) getConnsAndFactory() (chan *ReverseProxy, Factory) {
 	p.mutex.RLock()
 	reverseProxyChan, factory := p.reverseProxyChan, p.factory
 	p.mutex.RUnlock()
+
 	return reverseProxyChan, factory
 }
 
@@ -105,12 +107,14 @@ func (p *chanPool) Get(addr string) (*ReverseProxy, error) {
 		if &proxy == nil {
 			return nil, errClosed
 		}
+
 		return proxy.SetClient(addr), nil
 	default:
 		proxy, err := p.factory(addr)
 		if err != nil {
 			return nil, err
 		}
+
 		return proxy, nil
 	}
 }
@@ -127,6 +131,7 @@ func (p *chanPool) Put(proxy *ReverseProxy) error {
 	if p.reverseProxyChan == nil {
 		// pool is closed, close passed connection
 		proxy.Close()
+
 		return nil
 	}
 
@@ -138,6 +143,7 @@ func (p *chanPool) Put(proxy *ReverseProxy) error {
 	default:
 		// pool is full, close passed connection
 		proxy.Close()
+
 		return nil
 	}
 }
@@ -145,5 +151,6 @@ func (p *chanPool) Put(proxy *ReverseProxy) error {
 // Len get chanPool channel length
 func (p *chanPool) Len() int {
 	reverseProxyChan, _ := p.getConnsAndFactory()
+
 	return len(reverseProxyChan)
 }

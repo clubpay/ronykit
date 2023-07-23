@@ -32,7 +32,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	switch factory().(type) {
 	case kit.RawMessage:
 		return func(bag Params, data []byte) (kit.Message, error) {
-			v := factory().(kit.RawMessage) //nolint:forcetypeassert
+			v := kit.RawMessage{}
 			v.CopyFrom(data)
 
 			return v, nil

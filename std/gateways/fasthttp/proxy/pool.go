@@ -6,22 +6,14 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-var (
-	// errClosed is the error resulting if the pool is closed via pool.Close().
-	errClosed = errors.New("pool is closed")
-)
+// errClosed is the error resulting if the pool is closed via pool.Close().
+var errClosed = errors.New("pool is closed")
 
 // Proxier can be HTTP or WebSocket proxier
-// TODO:
 type Proxier interface {
 	ServeHTTP(ctx *fasthttp.RequestCtx)
-	// ?
 	SetClient(addr string) Proxier
-
-	// Reset .
 	Reset()
-
-	// Close .
 	Close()
 }
 
