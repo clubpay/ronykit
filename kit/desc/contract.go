@@ -111,10 +111,10 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 
 // AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle specific.
 func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
-	for _, s := range s {
+	for idx := range s {
 		c.RouteSelectors = append(
 			c.RouteSelectors,
-			RouteSelector{Name: "", Selector: s},
+			RouteSelector{Name: "", Selector: s[idx]},
 		)
 	}
 

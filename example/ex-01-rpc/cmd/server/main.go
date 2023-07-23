@@ -10,6 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	_ "github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
 func main() {
@@ -35,15 +36,15 @@ func main() {
 			// fastws ONLY supports websocket, and if you need to handle websocket and http, you should
 			// use fasthttp instead.
 			//
-			//	fasthttp.MustNew(
-			//		fasthttp.WithWebsocketEndpoint("/ws"),
-			//		fasthttp.WithPredicateKey("cmd"),
-			//		fasthttp.Listen(":80"),
-			//	),
+			// fasthttp.MustNew(
+			// 	fasthttp.WithWebsocketEndpoint("/"),
+			// 	fasthttp.WithPredicateKey("cmd"),
+			// 	fasthttp.Listen(":80"),
+			// ),
 		),
 		kit.WithServiceDesc(sampleService),
 	).
 		Start(context.TODO()).
-		PrintRoutes(os.Stdout).
+		PrintRoutesCompact(os.Stdout).
 		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 }

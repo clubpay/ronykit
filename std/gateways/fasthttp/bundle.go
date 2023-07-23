@@ -14,6 +14,7 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/httpmux"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/reuseport"
@@ -36,8 +37,10 @@ type bundle struct {
 	connPool sync.Pool
 	cors     *cors
 
-	httpMux  *httpmux.Mux
-	compress CompressionLevel
+	reverseProxyPath string
+	reverseProxy     *proxy.ReverseProxy
+	httpMux          *httpmux.Mux
+	compress         CompressionLevel
 
 	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*httpmux.RouteData
@@ -95,14 +98,47 @@ func New(opts ...Option) (kit.Gateway, error) {
 		)
 	}
 
+	var muxHandlers []muxHandler
+	if r.reverseProxy != nil {
+		proxyPath := utils.S2B(r.reverseProxyPath)
+		muxHandlers = append(
+			muxHandlers,
+			func(ctx *fasthttp.RequestCtx) bool {
+				if bytes.EqualFold(ctx.Path(), proxyPath) {
+					r.reverseProxy.ServeHTTP(ctx)
+
+					return true
+				}
+
+				return false
+			},
+		)
+	}
 	if r.wsEndpoint != "" {
 		wsEndpoint := utils.S2B(r.wsEndpoint)
+		muxHandlers = append(
+			muxHandlers,
+			func(ctx *fasthttp.RequestCtx) bool {
+				if ctx.IsGet() && bytes.EqualFold(ctx.Path(), wsEndpoint) {
+					r.wsHandler(ctx)
+
+					return true
+				}
+
+				return false
+			},
+		)
+	}
+
+	if len(muxHandlers) > 0 {
 		r.srv.Handler = func(ctx *fasthttp.RequestCtx) {
-			if ctx.IsGet() && bytes.EqualFold(ctx.Path(), wsEndpoint) {
-				r.wsHandler(ctx)
-			} else {
-				httpHandler(ctx)
+			for _, h := range muxHandlers {
+				if h(ctx) {
+					return
+				}
 			}
+
+			httpHandler(ctx)
 		}
 	} else {
 		r.srv.Handler = httpHandler
@@ -119,6 +155,8 @@ func MustNew(opts ...Option) kit.Gateway {
 
 	return b
 }
+
+type muxHandler func(ctx *fasthttp.RequestCtx) bool
 
 func (b *bundle) Register(
 	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,

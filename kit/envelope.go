@@ -99,14 +99,16 @@ func (e *Envelope) SetHdr(key, value string) *Envelope {
 
 func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
 	e.kvl.Lock()
-	walker.Walk(func(k, v string) bool {
-		e.kv[k] = v
-
-		return true
-	})
+	walker.Walk(e.walkFunc)
 	e.kvl.Unlock()
 
 	return e
+}
+
+func (e *Envelope) walkFunc(k, v string) bool {
+	e.kv[k] = v
+
+	return true
 }
 
 func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {

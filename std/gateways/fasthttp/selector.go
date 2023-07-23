@@ -65,8 +65,8 @@ func RPC(predicate string) Selector {
 // RPCs is a shortcut for multiple RPC selectors
 func RPCs(predicate ...string) []kit.RouteSelector {
 	selectors := make([]kit.RouteSelector, 0, len(predicate))
-	for _, p := range predicate {
-		selectors = append(selectors, RPC(p))
+	for idx := range predicate {
+		selectors = append(selectors, RPC(predicate[idx]))
 	}
 
 	return selectors
