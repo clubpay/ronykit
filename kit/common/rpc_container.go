@@ -38,7 +38,7 @@ func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 func (e *simpleIncomingJSONRPC) ExtractMessage(m kit.Message) error {
 	switch m := m.(type) {
 	case *kit.RawMessage:
-		*m = kit.RawMessage(e.Payload)
+		m.CopyFrom(e.Payload)
 	default:
 		return json.Unmarshal(e.Payload, m)
 	}
