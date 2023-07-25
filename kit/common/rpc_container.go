@@ -36,14 +36,7 @@ func (e *simpleIncomingJSONRPC) Unmarshal(data []byte) error {
 }
 
 func (e *simpleIncomingJSONRPC) ExtractMessage(m kit.Message) error {
-	switch m := m.(type) {
-	case *kit.RawMessage:
-		m.CopyFrom(e.Payload)
-	default:
-		return json.Unmarshal(e.Payload, m)
-	}
-
-	return nil
+	return json.Unmarshal(e.Payload, m)
 }
 
 func (e *simpleIncomingJSONRPC) GetHdr(key string) string {
