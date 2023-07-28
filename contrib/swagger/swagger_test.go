@@ -87,6 +87,14 @@ func (t testService) Desc() *desc.Service {
 				SetInput(&sampleReq{}).
 				SetOutput(&anotherRes{}).
 				SetHandler(nil),
+		).
+		AddContract(
+			desc.NewContract().
+				SetName("sumPOST2").
+				AddSelector(fasthttp.POST("/some/:x/:y/somethingelse")).
+				SetInput(kit.RawMessage{}).
+				SetOutput(kit.RawMessage{}).
+				SetHandler(nil),
 		)
 }
 
@@ -188,5 +196,12 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[2].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
 		Expect(props[3].Name).To(Equal("some"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
+	})
+
+	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {
+		d := swagger.ToSwaggerDefinition(ps.Contracts[2].Responses[0].Message)
+		props := d.Properties.ToOrderedSchemaItems()
+
+		_ = props
 	})
 })

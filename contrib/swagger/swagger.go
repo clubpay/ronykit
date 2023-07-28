@@ -14,6 +14,8 @@ import (
 	"github.com/rbretecher/go-postman-collection"
 )
 
+const kitRawMessage = "RawMessage"
+
 type Generator struct {
 	tagName string
 	title   string
@@ -111,14 +113,21 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	op := spec.NewOperation(opID).
 		WithTags(serviceName).
 		WithProduces(contentType).
-		WithConsumes(contentType).
-		RespondsWith(
+		WithConsumes(contentType)
+	if c.OKResponse().Message.Name == kitRawMessage {
+		op.RespondsWith(
+			http.StatusOK,
+			spec.NewResponse(),
+		)
+	} else {
+		op.RespondsWith(
 			http.StatusOK,
 			spec.NewResponse().
 				WithSchema(
 					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.OKResponse().Message.Name)),
 				),
 		)
+	}
 
 	possibleErrors := map[int][]string{}
 	for _, r := range c.Responses {
@@ -147,28 +156,34 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	case http.MethodDelete:
 		pathItem.Delete = op
 	case http.MethodPost:
-		op.AddParam(
-			spec.BodyParam(
-				c.Request.Message.Name,
-				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
-			),
-		)
+		if c.Request.Message.Name != kitRawMessage {
+			op.AddParam(
+				spec.BodyParam(
+					c.Request.Message.Name,
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+				),
+			)
+		}
 		pathItem.Post = op
 	case http.MethodPut:
-		op.AddParam(
-			spec.BodyParam(
-				c.Request.Message.Name,
-				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
-			),
-		)
+		if c.Request.Message.Name != kitRawMessage {
+			op.AddParam(
+				spec.BodyParam(
+					c.Request.Message.Name,
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+				),
+			)
+		}
 		pathItem.Put = op
 	case http.MethodPatch:
-		op.AddParam(
-			spec.BodyParam(
-				c.Request.Message.Name,
-				spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
-			),
-		)
+		if c.Request.Message.Name != kitRawMessage {
+			op.AddParam(
+				spec.BodyParam(
+					c.Request.Message.Name,
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+				),
+			)
+		}
 		pathItem.Patch = op
 	}
 	swag.Paths.Paths[restPath] = pathItem
