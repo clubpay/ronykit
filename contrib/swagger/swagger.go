@@ -87,6 +87,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	return err
 }
 
+//nolint:cyclop
 func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	if swag.Paths == nil {
 		swag.Paths = &spec.Paths{
