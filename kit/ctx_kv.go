@@ -1,5 +1,7 @@
 package kit
 
+import "context"
+
 func (ctx *Context) setRoute(route string) *Context {
 	ctx.route = append(ctx.route[:0], route...)
 
@@ -33,6 +35,7 @@ func (ctx *Context) ContractID() string {
 func (ctx *Context) Set(key string, val any) *Context {
 	ctx.Lock()
 	ctx.kv[key] = val
+	ctx.ctx = context.WithValue(ctx.ctx, key, val)
 	ctx.Unlock()
 
 	return ctx

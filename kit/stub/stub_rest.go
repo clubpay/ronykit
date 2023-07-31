@@ -111,6 +111,9 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
+	for k, v := range hc.cfg.hdr {
+		hc.req.Header.Set(k, v)
+	}
 
 	if tp := hc.cfg.tp; tp != nil {
 		tp.Inject(ctx, restTraceCarrier{r: &hc.req.Header})
