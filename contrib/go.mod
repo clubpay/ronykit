@@ -7,7 +7,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.6
 	github.com/go-openapi/spec v0.20.9
 	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.9
+	github.com/onsi/gomega v1.27.10
 	github.com/rbretecher/go-postman-collection v0.9.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.16.0
 	go.opentelemetry.io/otel v1.16.0
