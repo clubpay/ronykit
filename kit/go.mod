@@ -8,7 +8,7 @@ require (
 	github.com/goccy/go-reflect v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.9
+	github.com/onsi/gomega v1.27.10
 	github.com/valyala/fasthttp v1.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
