@@ -28,4 +28,5 @@ type RESTConn interface {
 	Form() (*multipart.Form, error)
 	SetStatusCode(code int)
 	Redirect(code int, url string)
+	WalkQueryParams(func(key string, val string) bool)
 }

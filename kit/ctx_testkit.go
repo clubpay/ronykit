@@ -187,6 +187,8 @@ func newTestRESTConn() *testRESTConn {
 	}
 }
 
+func (t *testRESTConn) WalkQueryParams(f func(key string, val string) bool) {}
+
 func (t *testRESTConn) GetHost() string {
 	return t.host
 }
