@@ -187,3 +187,8 @@ func (e *Envelope) Reply() *Envelope {
 	return newEnvelope(e.ctx, e.conn, true).
 		SetID(utils.B2S(e.id))
 }
+
+// IsOutgoing returns `true` if this Envelope is sending from Server to Client.
+func (e *Envelope) IsOutgoing() bool {
+	return e.outgoing
+}

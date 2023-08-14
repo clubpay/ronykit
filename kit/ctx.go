@@ -60,13 +60,19 @@ func newContext(ls *localStore) *Context {
 	}
 }
 
+// ExecuteArg is used by bundle developers, if they want to build a
+// Gateway or Cluster to be used with EdgeServer. If you are the user of
+// the framework, you don't need this.
+// In general ExecuteArg carrys information about the Context that is running,
+// for example it identifies that which Contract from which Service is this Context for.
+// Route identifies which RouteSelector was this request comes from.
 type ExecuteArg struct {
 	ServiceName string
 	ContractID  string
 	Route       string
 }
 
-// Execute the Context with the provided ExecuteArg.
+// execute the Context with the provided ExecuteArg.
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
 		setRoute(arg.Route).
@@ -161,7 +167,7 @@ func (ctx *Context) Context() context.Context {
 }
 
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
-// is a REST connection.
+// is a RESTConn connection.
 func (ctx *Context) SetStatusCode(code int) {
 	ctx.statusCode = code
 
@@ -187,7 +193,13 @@ func (ctx *Context) Conn() Conn {
 }
 
 // RESTConn returns the underlying REST connection. It panics if the underlying connection
-// does not implement RESTConn interface.
+// does not implement RESTConn interface. If you want to be safe when calling this method
+// you can use IsREST method:
+// Example:
+//
+//	 if ctx.IsREST() {
+//			conn := ctx.RESTConn()
+//	 }
 func (ctx *Context) RESTConn() RESTConn {
 	return ctx.conn.(RESTConn) //nolint:forcetypeassert
 }

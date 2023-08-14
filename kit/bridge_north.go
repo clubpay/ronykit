@@ -16,6 +16,8 @@ type GatewayStartConfig struct {
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
+// If you are a bundle developer need to work with interface otherwise you don't need to know
+// much about this interface.
 type Gateway interface {
 	// Start starts the gateway to accept connections.
 	Start(ctx context.Context, cfg GatewayStartConfig) error
