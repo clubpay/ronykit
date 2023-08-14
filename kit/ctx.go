@@ -226,7 +226,7 @@ func (ctx *Context) In() *Envelope {
 // after this Context lifetime. If you need to use it after the Context lifetime,
 // you need to copy it.
 // You should not use this method in your code, ONLY if you need it for debugging.
-func (ctx *Context) InputRawData() []byte {
+func (ctx *Context) InputRawData() RawMessage {
 	return ctx.rawData
 }
 

@@ -107,6 +107,18 @@ func (rm *RawMessage) CopyFrom(in []byte) {
 	*rm = append(*rm, in...)
 }
 
+func (rm *RawMessage) CopyTo(out []byte) {
+	copy(out, *rm)
+}
+
+// Clone copies the underlying byte slice into dst. It is SAFE to
+// pass nil for dst.
+func (rm *RawMessage) Clone(dst []byte) []byte {
+	dst = append(dst, *rm...)
+
+	return dst
+}
+
 func (rm *RawMessage) Unmarshal(data []byte) error {
 	*rm = append(*rm, data...)
 
