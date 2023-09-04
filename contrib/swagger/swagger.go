@@ -200,7 +200,7 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 			op.AddParam(
 				setSwaggerParam(spec.PathParam(p.Name), p),
 			)
-		} else if c.Method == http.MethodGet {
+		} else if c.Method == http.MethodGet || c.Method == http.MethodDelete {
 			op.AddParam(
 				setSwaggerParam(spec.QueryParam(p.Name), p),
 			)
