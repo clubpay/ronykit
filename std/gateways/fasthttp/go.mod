@@ -6,9 +6,9 @@ require (
 	github.com/clubpay/ronykit/kit v0.11.7
 	github.com/fasthttp/websocket v1.5.4
 	github.com/goccy/go-reflect v1.2.0
-	github.com/onsi/ginkgo/v2 v2.12.0
-	github.com/onsi/gomega v1.27.10
-	github.com/valyala/fasthttp v1.49.0
+	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/gomega v1.28.0
+	github.com/valyala/fasthttp v1.50.0
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

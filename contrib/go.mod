@@ -6,12 +6,12 @@ require (
 	github.com/clubpay/ronykit/kit v0.11.7
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.7
 	github.com/go-openapi/spec v0.20.9
-	github.com/onsi/ginkgo/v2 v2.12.0
-	github.com/onsi/gomega v1.27.10
+	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/gomega v1.28.0
 	github.com/rbretecher/go-postman-collection v0.9.0
-	go.opentelemetry.io/contrib/propagators/b3 v1.18.0
-	go.opentelemetry.io/otel v1.17.0
-	go.opentelemetry.io/otel/trace v1.17.0
+	go.opentelemetry.io/contrib/propagators/b3 v1.20.0
+	go.opentelemetry.io/otel v1.19.0
+	go.opentelemetry.io/otel/trace v1.19.0
 )
 
 require (
@@ -37,9 +37,9 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.49.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	go.opentelemetry.io/otel/metric v1.17.0 // indirect
+	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
