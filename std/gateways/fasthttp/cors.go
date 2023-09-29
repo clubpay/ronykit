@@ -8,21 +8,25 @@ import (
 )
 
 type CORSConfig struct {
-	AllowedHeaders []string
-	AllowedMethods []string
-	AllowedOrigins []string
-	ExposedHeaders []string
+	AllowedHeaders    []string
+	AllowedMethods    []string
+	AllowedOrigins    []string
+	ExposedHeaders    []string
+	IgnoreEmptyOrigin bool
 }
 
 type cors struct {
-	headers        string
-	methods        string
-	origins        []string
-	exposedHeaders string
+	headers           string
+	methods           string
+	origins           []string
+	ignoreEmptyOrigin bool
+	exposedHeaders    string
 }
 
 func newCORS(cfg CORSConfig) *cors {
-	c := &cors{}
+	c := &cors{
+		ignoreEmptyOrigin: cfg.IgnoreEmptyOrigin,
+	}
 	if len(cfg.AllowedOrigins) == 0 {
 		c.origins = []string{"*"}
 	} else {
@@ -99,6 +103,10 @@ func (cors *cors) handleWS(ctx *fasthttp.RequestCtx) bool {
 	}
 
 	origin := utils.B2S(ctx.Request.Header.Peek(fasthttp.HeaderOrigin))
+	if origin == "" && cors.ignoreEmptyOrigin {
+		return true
+	}
+
 	if cors.origins[0] == "*" {
 		return true
 	} else {
