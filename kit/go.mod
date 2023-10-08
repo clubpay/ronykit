@@ -3,11 +3,11 @@ module github.com/clubpay/ronykit/kit
 go 1.19
 
 require (
-	github.com/fasthttp/websocket v1.5.4
+	github.com/fasthttp/websocket v1.5.6
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.4.8
-	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.28.0
 	github.com/valyala/fasthttp v1.50.0
 	gopkg.in/yaml.v3 v3.0.1
