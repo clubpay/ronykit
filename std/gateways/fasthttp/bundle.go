@@ -1,7 +1,6 @@
 package fasthttp
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -11,10 +10,9 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
-	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/httpmux"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+	"github.com/fasthttp/router"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/reuseport"
@@ -36,14 +34,15 @@ type bundle struct {
 	listen   string
 	connPool sync.Pool
 	cors     *cors
+	utils    util
 
 	reverseProxyPath string
 	reverseProxy     *proxy.ReverseProxy
-	httpMux          *httpmux.Mux
+	httpRouter       *router.Router
 	compress         CompressionLevel
 
 	wsUpgrade     websocket.FastHTTPUpgrader
-	wsRoutes      map[string]*httpmux.RouteData
+	wsRoutes      map[string]*routeData
 	wsEndpoint    string
 	wsNextID      uint64
 	predicateKey  string
@@ -55,18 +54,14 @@ var _ kit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (kit.Gateway, error) {
 	r := &bundle{
-		httpMux: &httpmux.Mux{
-			RedirectTrailingSlash:  true,
-			RedirectFixedPath:      true,
-			HandleMethodNotAllowed: true,
-			HandleOPTIONS:          true,
-		},
+		httpRouter:    router.New(),
 		compress:      CompressionLevelDefault,
-		wsRoutes:      map[string]*httpmux.RouteData{},
+		wsRoutes:      map[string]*routeData{},
 		srv:           &fasthttp.Server{},
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),
+		utils:         defaultUtil(),
 	}
 
 	r.wsUpgrade.CheckOrigin = func(ctx *fasthttp.RequestCtx) bool {
@@ -76,73 +71,37 @@ func New(opts ...Option) (kit.Gateway, error) {
 		opt(r)
 	}
 
-	httpHandler := r.httpHandler
+	httpHandler := r.httpRouter.Handler
 	switch r.compress {
 	case CompressionLevelDefault:
 		httpHandler = fasthttp.CompressHandlerBrotliLevel(
-			r.httpHandler,
+			r.httpRouter.Handler,
 			fasthttp.CompressBrotliDefaultCompression,
 			fasthttp.CompressDefaultCompression,
 		)
 	case CompressionLevelBestSpeed:
 		httpHandler = fasthttp.CompressHandlerBrotliLevel(
-			r.httpHandler,
+			r.httpRouter.Handler,
 			fasthttp.CompressBrotliBestSpeed,
 			fasthttp.CompressBestSpeed,
 		)
 	case CompressionLevelBestCompression:
 		httpHandler = fasthttp.CompressHandlerBrotliLevel(
-			r.httpHandler,
+			r.httpRouter.Handler,
 			fasthttp.CompressBrotliBestCompression,
 			fasthttp.CompressBestCompression,
 		)
 	}
 
-	var muxHandlers []muxHandler
 	if r.reverseProxy != nil {
-		proxyPath := utils.S2B(r.reverseProxyPath)
-		muxHandlers = append(
-			muxHandlers,
-			func(ctx *fasthttp.RequestCtx) bool {
-				if bytes.EqualFold(ctx.Path(), proxyPath) {
-					r.reverseProxy.ServeHTTP(ctx)
-
-					return true
-				}
-
-				return false
-			},
-		)
+		r.httpRouter.ANY(r.reverseProxyPath, r.reverseProxy.ServeHTTP)
 	}
+
 	if r.wsEndpoint != "" {
-		wsEndpoint := utils.S2B(r.wsEndpoint)
-		muxHandlers = append(
-			muxHandlers,
-			func(ctx *fasthttp.RequestCtx) bool {
-				if ctx.IsGet() && bytes.EqualFold(ctx.Path(), wsEndpoint) {
-					r.wsHandler(ctx)
-
-					return true
-				}
-
-				return false
-			},
-		)
+		r.httpRouter.GET(r.wsEndpoint, r.wsHandler)
 	}
 
-	if len(muxHandlers) > 0 {
-		r.srv.Handler = func(ctx *fasthttp.RequestCtx) {
-			for _, h := range muxHandlers {
-				if h(ctx) {
-					return
-				}
-			}
-
-			httpHandler(ctx)
-		}
-	} else {
-		r.srv.Handler = httpHandler
-	}
+	r.srv.Handler = httpHandler
 
 	return r, nil
 }
@@ -156,7 +115,15 @@ func MustNew(opts ...Option) kit.Gateway {
 	return b
 }
 
-type muxHandler func(ctx *fasthttp.RequestCtx) bool
+type routeData struct {
+	Method      string
+	Path        string
+	Predicate   string
+	ServiceName string
+	ContractID  string
+	Decoder     DecoderFunc
+	Factory     kit.MessageFactoryFunc
+}
 
 func (b *bundle) Register(
 	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
@@ -180,7 +147,7 @@ func (b *bundle) registerRPC(
 		return
 	}
 
-	rd := &httpmux.RouteData{
+	rd := &routeData{
 		ServiceName: svcName,
 		ContractID:  contractID,
 		Predicate:   rpcSelector.GetPredicate(),
@@ -207,27 +174,34 @@ func (b *bundle) registerREST(
 		decoder = reflectDecoder(enc, kit.CreateMessageFactory(input))
 	}
 
-	var methods []string
-	if method := restSelector.GetMethod(); method == MethodWildcard {
-		methods = append(methods,
-			MethodGet, MethodPost, MethodPut, MethodPatch, MethodDelete, MethodOptions,
-			MethodConnect, MethodTrace, MethodHead,
-		)
-	} else {
-		methods = append(methods, method)
-	}
-
-	for _, method := range methods {
-		b.httpMux.Handle(
-			method, restSelector.GetPath(),
-			&httpmux.RouteData{
+	b.httpRouter.Handle(
+		restSelector.GetMethod(), restSelector.GetPath(),
+		b.genHTTPHandler(
+			routeData{
 				ServiceName: svcName,
 				ContractID:  contractID,
-				Method:      method,
+				Method:      restSelector.GetMethod(),
 				Path:        restSelector.GetPath(),
 				Decoder:     decoder,
 			},
-		)
+		),
+	)
+}
+
+func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		c, ok := b.connPool.Get().(*httpConn)
+		if !ok {
+			c = &httpConn{}
+		}
+
+		c.ctx = ctx
+		c.rd = &rd
+		b.d.OnOpen(c)
+		b.d.OnMessage(c, b.writeFunc, ctx.PostBody())
+		b.d.OnClose(c.ConnID())
+
+		b.connPool.Put(c)
 	}
 }
 
@@ -365,31 +339,15 @@ func (b *bundle) writeFunc(conn kit.Conn, e *kit.Envelope) error {
 	}
 }
 
-func (b *bundle) httpHandler(ctx *fasthttp.RequestCtx) {
-	c, ok := b.connPool.Get().(*httpConn)
-	if !ok {
-		c = &httpConn{}
-	}
-
-	c.ctx = ctx
-	b.d.OnOpen(c)
-	b.d.OnMessage(c, b.writeFunc, ctx.PostBody())
-	b.d.OnClose(c.ConnID())
-
-	b.connPool.Put(c)
-}
-
 func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	//nolint:forcetypeassert
 	conn := ctx.Conn().(*httpConn)
-
-	routeData, params, _ := b.httpMux.Lookup(conn.GetMethod(), conn.GetPath())
 
 	// Check CORS rules before even returning errRouteNotFound.
 	// This makes sure that we handle any CORS even for non-routable requests.
 	b.cors.handle(conn)
 
-	if routeData == nil {
+	if conn.rd == nil {
 		if conn.ctx.IsOptions() {
 			return noExecuteArg, kit.ErrPreflight
 		}
@@ -397,32 +355,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		return noExecuteArg, kit.ErrNoHandler
 	}
 
-	// Walk over all the query params
-	conn.ctx.QueryArgs().VisitAll(
-		func(key, value []byte) {
-			params = append(
-				params,
-				httpmux.Param{
-					Key:   utils.B2S(key),
-					Value: utils.B2S(value),
-				},
-			)
-		},
-	)
-
-	conn.ctx.PostArgs().VisitAll(
-		func(key, value []byte) {
-			params = append(
-				params,
-				httpmux.Param{
-					Key:   utils.B2S(key),
-					Value: utils.B2S(value),
-				},
-			)
-		},
-	)
-
-	m, err := routeData.Decoder(params, in)
+	m, err := conn.rd.Decoder(b.genParams(conn.ctx), in)
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
@@ -432,9 +365,9 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		SetMsg(m)
 
 	return kit.ExecuteArg{
-		ServiceName: routeData.ServiceName,
-		ContractID:  routeData.ContractID,
-		Route:       fmt.Sprintf("%s %s", routeData.Method, routeData.Path),
+		ServiceName: conn.rd.ServiceName,
+		ContractID:  conn.rd.ContractID,
+		Route:       fmt.Sprintf("%s %s", conn.rd.Method, conn.rd.Path),
 	}, nil
 }
 

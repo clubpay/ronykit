@@ -7,6 +7,12 @@ import (
 
 type Option func(b *bundle)
 
+func SuperFast() Option {
+	return func(b *bundle) {
+		b.utils = speedUtil()
+	}
+}
+
 func WithServerName(name string) Option {
 	return func(b *bundle) {
 		b.srv.Name = name

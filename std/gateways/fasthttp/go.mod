@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/clubpay/ronykit/kit v0.11.9
+	github.com/fasthttp/router v1.4.21
 	github.com/fasthttp/websocket v1.5.4
 	github.com/goccy/go-reflect v1.2.0
 	github.com/onsi/ginkgo/v2 v2.12.1

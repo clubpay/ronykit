@@ -15,6 +15,7 @@ type httpConn struct {
 	utils.SpinLock
 
 	ctx *fasthttp.RequestCtx
+	rd  *routeData
 }
 
 var _ kit.RESTConn = (*httpConn)(nil)
