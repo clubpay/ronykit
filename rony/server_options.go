@@ -8,6 +8,8 @@ import (
 
 type serverConfig struct {
 	services map[string]*desc.Service
+
+	gatewayOpts []fasthttp.Option
 }
 
 func defaultServerConfig() serverConfig {
@@ -37,11 +39,46 @@ func (cfg *serverConfig) allServices() []kit.ServiceDescriptor {
 	return svcs
 }
 
+func (cfg serverConfig) Gateway() kit.Gateway {
+	return fasthttp.MustNew(cfg.gatewayOpts...)
+}
+
 type ServerOption func(cfg *serverConfig)
 
-func (cfg serverConfig) Gateway() kit.Gateway {
-	return fasthttp.MustNew(
-		fasthttp.Listen(":8080"),
-		fasthttp.WithCORS(fasthttp.CORSConfig{}),
-	)
+type (
+	CORSConfig = fasthttp.CORSConfig
+)
+
+func WithCORS(cors CORSConfig) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithCORS(cors))
+	}
+}
+
+func Listen(addr string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.Listen(addr))
+	}
+}
+
+func WithServerName(name string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithServerName(name))
+	}
+}
+
+type CompressionLevel = fasthttp.CompressionLevel
+
+// Represents compression level that will be used in the middleware
+const (
+	CompressionLevelDisabled        CompressionLevel = -1
+	CompressionLevelDefault         CompressionLevel = 0
+	CompressionLevelBestSpeed       CompressionLevel = 1
+	CompressionLevelBestCompression CompressionLevel = 2
+)
+
+func WithCompression(lvl CompressionLevel) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithCompressionLevel(lvl))
+	}
 }

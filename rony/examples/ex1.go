@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 
@@ -9,7 +10,16 @@ import (
 )
 
 func main() {
-	srv := rony.NewServer()
+	srv := rony.NewServer(
+		rony.Listen(":8080"),
+		rony.WithCORS(
+			rony.CORSConfig{
+				AllowedOrigins: []string{"*"},
+			},
+		),
+		rony.WithServerName("RonyExample"),
+		rony.WithCompression(rony.CompressionLevelBestCompression),
+	)
 
 	setup := rony.Setup[string](
 		srv,
@@ -42,7 +52,7 @@ type EchoResponse struct {
 }
 
 type EchoCounter struct {
-	sync.Mutex
+	mu    sync.Mutex
 	Count int
 }
 
@@ -51,8 +61,8 @@ func (e *EchoCounter) Name() string {
 }
 
 func (e *EchoCounter) Reduce(action string) {
-	e.Lock()
-	defer e.Unlock()
+	e.mu.Lock()
+	defer e.mu.Unlock()
 
 	switch action {
 	case "up":
@@ -62,13 +72,13 @@ func (e *EchoCounter) Reduce(action string) {
 	}
 }
 
-var _ rony.State[string] = (*EchoCounter)(nil)
-
 func echo(
-	ctx *rony.Context[string, *EchoCounter, EchoCounter], in EchoRequest,
+	ctx *rony.Context[string, *EchoCounter], in EchoRequest,
 ) (EchoResponse, rony.Error) {
 	s := ctx.State()
 	s.Reduce("up")
+
+	fmt.Println("Echo", in.Message, s.Count)
 
 	return EchoResponse{Message: in.Message, Count: s.Count}, nil
 }

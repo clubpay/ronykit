@@ -6,10 +6,8 @@ import (
 )
 
 type (
-	Action                         comparable
-	State[A Action]                interface{}
-	StatePtr[O State[A], A Action] interface {
-		*O
+	Action          comparable
+	State[A Action] interface {
 		Name() string
 		Reduce(action A)
 	}
@@ -18,9 +16,9 @@ type (
 )
 
 type Handler[
-	A Action, S State[A], SP StatePtr[S, A],
+	A Action, S State[A],
 	IN, OUT Message,
-] func(ctx *Context[A, SP, S], in IN) (OUT, Error)
+] func(ctx *Context[A, S], in IN) (OUT, Error)
 
 type RESTSelector kit.RESTRouteSelector
 
