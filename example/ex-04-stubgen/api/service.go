@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/clubpay/ronykit/example/ex-04-stubgen/dto"
@@ -18,6 +19,7 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetInput(&dto.VeryComplexRequest{}).
 				SetOutput(&dto.VeryComplexResponse{}).
 				NamedSelector("ComplexDummy", fasthttp.REST(http.MethodPost, "/complexDummy")).
+				NamedSelector("ComplexDummy2", fasthttp.REST(http.MethodPost, "/complexDummy/:key1")).
 				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
@@ -29,6 +31,8 @@ func DummyHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.VeryComplexRequest)
 
+	fmt.Println(req.Key1)
+	ctx.SetStatusCode(http.StatusOK)
 	ctx.In().Reply().
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
