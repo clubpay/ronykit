@@ -71,6 +71,8 @@ func New(opts ...Option) (kit.Gateway, error) {
 		opt(r)
 	}
 
+	r.httpRouter.HandleOPTIONS = true
+	r.httpRouter.GlobalOPTIONS = r.cors.handle
 	httpHandler := r.httpRouter.Handler
 	switch r.compress {
 	case CompressionLevelDefault:
@@ -345,7 +347,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 
 	// Check CORS rules before even returning errRouteNotFound.
 	// This makes sure that we handle any CORS even for non-routable requests.
-	b.cors.handle(conn)
+	b.cors.handle(conn.ctx)
 
 	if conn.rd == nil {
 		if conn.ctx.IsOptions() {
