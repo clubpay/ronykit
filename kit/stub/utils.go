@@ -2,7 +2,6 @@ package stub
 
 import (
 	"strings"
-	"unicode"
 )
 
 // fillParams traverse the `pathPattern` and detect params with format `:name` and
@@ -14,7 +13,7 @@ func fillParams(pathPattern string, f func(key string) string) string {
 
 	for _, r := range pathPattern {
 		if readingMode {
-			if !unicode.IsPunct(r) {
+			if r != '}' {
 				param.WriteRune(r)
 
 				continue
@@ -28,13 +27,15 @@ func fillParams(pathPattern string, f func(key string) string) string {
 			param.Reset()
 			readingMode = false
 		}
-		if !readingMode && r == ':' {
+		if !readingMode && r == '{' {
 			readingMode = true
 
 			continue
 		}
 
-		out.WriteRune(r)
+		if r != '}' {
+			out.WriteRune(r)
+		}
 	}
 
 	if param.Len() > 0 {
