@@ -21,10 +21,10 @@ type Proxier interface {
 // this interface ref to: https://github.com/fatih/pool/blob/master/pool.go
 type Pool interface {
 	// Get returns a new ReverseProxy from the pool.
-	Get(string) (*ReverseProxy, error)
+	Get(route string) (*ReverseProxy, error)
 
 	// Put Reseting the ReverseProxy puts it back to the Pool.
-	Put(*ReverseProxy) error
+	Put(p *ReverseProxy) error
 
 	// Close closes the pool and all its connections. After Close() the pool is
 	// no longer usable.

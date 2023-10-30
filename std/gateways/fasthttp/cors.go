@@ -70,7 +70,6 @@ func (cors *cors) handle(ctx *fasthttp.RequestCtx) {
 	ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
 	ctx.Response.Header.Set(fasthttp.HeaderAccessControlExposeHeaders, cors.exposedHeaders)
 
-	//origin := rc.Get(fasthttp.HeaderOrigin)
 	origin := ctx.Request.Header.Peek(fasthttp.HeaderOrigin)
 	if cors.origins[0] == "*" {
 		ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowOrigin, origin)
