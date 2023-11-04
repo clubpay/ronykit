@@ -10,6 +10,7 @@ you can use [Kit Package](../kit/README.MD) however for most use cases we recomm
 - [Installation](#installation)
 - [Quick start](#quick-start)
   - [State](#state)
+  - [Counter Program with State](#counter-program-with-state)
 
 
 ## Installation
@@ -52,7 +53,7 @@ As you can see, the State is a generic type which has a type parameter named `Ac
 defined to let you define your state in a `Reducer pattern`. Also we recommend that your state also implements sync.Locker interface
 to be thread-safe.
 
-### Echo Program with State
+### Counter Program with State
 Lets first implement our State. We want to have a simple counter which counts the number of requests we received. Our `EchoCounter` state
 has action type of `string` and it supports two actions: `up` and `down`. The `up` action increases the counter and the `down` action
 decreases the counter. The following code shows the implementation of the `EchoCounter` state.
