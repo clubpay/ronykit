@@ -112,6 +112,10 @@ func (e *Envelope) walkFunc(k, v string) bool {
 }
 
 func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
+	if kv == nil {
+		return e
+	}
+
 	e.kvl.Lock()
 	for k, v := range kv {
 		e.kv[k] = v
