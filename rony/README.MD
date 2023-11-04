@@ -62,6 +62,8 @@ decreases the counter. The following code shows the implementation of the `EchoC
 package main
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/clubpay/ronykit/rony"
@@ -77,14 +79,22 @@ func (e *EchoCounter) Name() string {
 	return "EchoCounter"
 }
 
-func (e *EchoCounter) Reduce(action string) {
-	switch action {
+func (e *EchoCounter) Reduce(action string) error {
+	switch strings.ToLower(action) {
 	case "up":
 		e.Count++
 	case "down":
+		if e.Count <= 0 {
+			return fmt.Errorf("count cannot be negative")
+		}
 		e.Count--
+	default:
+		return fmt.Errorf("unknown action: %s", action)
 	}
+
+	return nil
 }
+
 
 ```
 
@@ -118,9 +128,9 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req *CounterRequestDTO) (*C
 	res := &CounterResponseDTO{}
 	err := ctx.ReduceState(
 		req.Action,
-		func(s *EchoCounter) error {
-			if s.Count < 0 {
-				return rony.NewError(fmt.Errorf("count is negative: %d", s.Count)).SetCode(http.StatusBadRequest)
+		func(s *EchoCounter, err error) error {
+			if err != nil {
+				return rony.NewError(err).SetCode(http.StatusBadRequest)
 			}
 
 			res.Count = s.Count

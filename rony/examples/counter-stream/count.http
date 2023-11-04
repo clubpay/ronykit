@@ -1,0 +1,9 @@
+### GET request query params
+GET http://127.0.0.1/count?action=up&count=2
+Accept: application/json
+
+
+### GET request with url params
+GET http://127.0.0.1/count/down?count=1
+Accept: application/json
+

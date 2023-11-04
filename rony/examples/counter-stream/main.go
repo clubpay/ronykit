@@ -15,6 +15,8 @@ func main() {
 	srv := rony.NewServer(
 		rony.Listen(":80"),
 		rony.WithServerName("CounterServer"),
+		rony.WithWebsocketEndpoint("/ws"),
+		rony.WithPredicateKey("cmd"),
 	)
 
 	// Set up the server with the initial state, which is a pointer to EchoCounter
@@ -40,6 +42,23 @@ func main() {
 		setupCtx, count,
 		rony.GET("/count/{action}"),
 		rony.GET("/count"),
+	)
+
+	// Register the count handler for Websocket messages
+	// This way all the following requests are valid:
+	// Websocket /ws
+	// {
+	//   "hdr": {
+	//     "cmd": "count",
+	//   },
+	//   "payload": {
+	//     "action": "up",
+	//     "count": 1
+	//   }
+	// }
+	rony.RegisterStream(
+		setupCtx, countStream,
+		rony.RPC("count"),
 	)
 
 	// Run the server in blocking mode
@@ -70,9 +89,8 @@ func (e *EchoCounter) Reduce(action string) error {
 		if e.Count <= 0 {
 			return fmt.Errorf("count cannot be negative")
 		}
+
 		e.Count--
-	default:
-		return fmt.Errorf("unknown action: %s", action)
 	}
 
 	return nil
@@ -89,7 +107,6 @@ type CounterResponseDTO struct {
 
 func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*CounterResponseDTO, error) {
 	res := &CounterResponseDTO{}
-	fmt.Println(req.Action, req.Count)
 	err := ctx.ReduceState(
 		req.Action,
 		func(s *EchoCounter, err error) error {
@@ -107,4 +124,32 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*Co
 	}
 
 	return res, nil
+}
+
+func countStream(ctx *rony.StreamCtx[*EchoCounter, string, *CounterResponseDTO], req CounterRequestDTO) error {
+	for i := 0; i < req.Count; i++ {
+		res := &CounterResponseDTO{}
+		err := ctx.ReduceState(
+			req.Action,
+			func(s *EchoCounter, err error) error {
+				if err != nil {
+					return rony.NewError(err).SetCode(http.StatusBadRequest)
+				}
+
+				res.Count = s.Count
+
+				return nil
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		ctx.Push(
+			res,
+			rony.WithHdr("type", "counter-response"),
+		)
+	}
+
+	return nil
 }

@@ -16,7 +16,7 @@ func ToInitiateState[S State[A], A Action](s S) InitState[S, A] {
 	}
 }
 
-// SetupContext is a context object which is holding information until the Server
+// SetupContext is a context object holds data until the Server
 // starts.
 // It is used internally to hold state and server configuration.
 type SetupContext[S State[A], A Action] struct {
@@ -59,21 +59,21 @@ func (c *baseCtx[S, A]) State() S {
 // If you need to reduce the state in an atomic fashion, then you should pass a
 // function fn which is guaranteed to be called in a locked state.
 // Although, it only works if S implements sync.Locker interface.
-func (c *baseCtx[S, A]) ReduceState(action A, fn func(s S) error) (err error) {
+func (c *baseCtx[S, A]) ReduceState(action A, fn func(s S, err error) error) (err error) {
 	if c.sl != nil {
 		c.sl.Lock()
-		c.s.Reduce(action)
+		err = c.s.Reduce(action)
 		if fn != nil {
-			err = fn(c.s)
+			err = fn(c.s, err)
 		}
 		c.sl.Unlock()
 
 		return err
 	}
 
-	c.s.Reduce(action)
+	err = c.s.Reduce(action)
 	if fn != nil {
-		err = fn(c.s)
+		err = fn(c.s, err)
 	}
 
 	return err

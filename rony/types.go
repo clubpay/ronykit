@@ -10,7 +10,7 @@ type (
 	Action          comparable
 	State[A Action] interface {
 		Name() string
-		Reduce(action A)
+		Reduce(action A) error
 	}
 )
 
