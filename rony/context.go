@@ -59,24 +59,24 @@ func (c *baseCtx[S, A]) State() S {
 // If you need to reduce the state in an atomic fashion, then you should pass a
 // function fn which is guaranteed to be called in a locked state.
 // Although, it only works if S implements sync.Locker interface.
-func (c *baseCtx[S, A]) ReduceState(action A, fn func(s S)) {
+func (c *baseCtx[S, A]) ReduceState(action A, fn func(s S) error) (err error) {
 	if c.sl != nil {
 		c.sl.Lock()
 		c.s.Reduce(action)
 		if fn != nil {
-			fn(c.s)
+			err = fn(c.s)
 		}
 		c.sl.Unlock()
 
-		return
+		return err
 	}
 
 	c.s.Reduce(action)
 	if fn != nil {
-		fn(c.s)
+		err = fn(c.s)
 	}
 
-	return
+	return err
 }
 
 func (c *baseCtx[S, A]) Conn() kit.Conn {

@@ -19,7 +19,7 @@ type (
 type UnaryHandler[
 	S State[A], A Action,
 	IN, OUT Message,
-] func(ctx *UnaryCtx[S, A], in IN) (OUT, Error)
+] func(ctx *UnaryCtx[S, A], in IN) (*OUT, error)
 
 func RegisterUnary[IN, OUT Message, S State[A], A Action](
 	setupCtx *SetupContext[S, A],
@@ -46,7 +46,10 @@ func RegisterUnary[IN, OUT Message, S State[A], A Action](
 				req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert
 				out, err := h(newUnaryCtx[S, A](ctx, s, sl), *req)
 				if err != nil {
-					ctx.SetStatusCode(err.GetCode())
+					if e, ok := err.(errCode); ok {
+						ctx.SetStatusCode(e.GetCode())
+					}
+
 					ctx.In().Reply().SetMsg(err).Send()
 
 					return

@@ -13,23 +13,6 @@
     <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/clubpay/ronykit?style=for-the-badge">
 </a>
 
-## Contents
-
-- [Kit](#kit)
-	- [Contents](#contents)
-	- [Installation](#installation)
-	- [Quick start](#quick-start)
-	- [Kit Components](#kit-components)
-		- [1. Handler](#1-handler)
-		- [2. Contract](#2-contract)
-		- [3. Service](#3-service)
-		- [4. Gateway](#4-gateway)
-		- [5. Cluster](#5-cluster)
-		- [6. EdgeServer](#6-edgeserver)
-  - [KIT Storage layers](#kit-storage-layers)
-
-
-
 # Kit
 
 RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate
@@ -43,6 +26,17 @@ can build your own Bundles. To have a better understanding of how it is going to
 in [simple-rest-server](../example/ex-02-rest) it shows a very simple hello world app.
 in [mixed-jsonrpc-rest](../example/ex-01-rpc) it shows how you can write your services once but use them with multiple formats like
 REST or RPC.
+
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Kit Components](#kit-components)
+	- [1. Handler](#1-handler)
+	- [2. Contract](#2-contract)
+	- [3. Service](#3-service)
+	- [4. Gateway](#4-gateway)
+	- [5. Cluster](#5-cluster)
+	- [6. EdgeServer](#6-edgeserver)
+- [KIT Storage layers](#kit-storage-layers)
 
 
 ## Installation

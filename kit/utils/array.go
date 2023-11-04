@@ -32,7 +32,8 @@ func Filter[T any](match func(src T) bool, tt []T) []T {
 	return ftt[:len(ftt):len(ftt)]
 }
 
-// Map applies the transformer function to each element of the slice ss. The result is a slice of the same length as ss, where the kth element is transformer(ss[k]).
+// Map applies the transformer function to each element of the slice ss.
+// The result is a slice of the same length as ss, where the kth element is transformer(ss[k]).
 //
 //	type User struct {
 //		Name string
