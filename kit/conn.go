@@ -10,7 +10,7 @@ type Conn interface {
 	ClientIP() string
 	Write(data []byte) (int, error)
 	Stream() bool
-	Walk(func(key string, val string) bool)
+	Walk(fn func(key string, val string) bool)
 	Get(key string) string
 	Set(key string, val string)
 }
@@ -28,5 +28,5 @@ type RESTConn interface {
 	Form() (*multipart.Form, error)
 	SetStatusCode(code int)
 	Redirect(code int, url string)
-	WalkQueryParams(func(key string, val string) bool)
+	WalkQueryParams(fn func(key string, val string) bool)
 }

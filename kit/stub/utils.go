@@ -1,20 +1,23 @@
 package stub
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
-	"unicode"
 )
 
 // fillParams traverse the `pathPattern` and detect params with format `:name` and
 // replace them using the function `f` provides in arguments.
 func fillParams(pathPattern string, f func(key string) string) string {
+	pathPattern = convertLegacyPathFormat(pathPattern)
+
 	out := strings.Builder{}
 	param := strings.Builder{}
 	readingMode := false
 
 	for _, r := range pathPattern {
 		if readingMode {
-			if !unicode.IsPunct(r) {
+			if r != '}' {
 				param.WriteRune(r)
 
 				continue
@@ -28,13 +31,15 @@ func fillParams(pathPattern string, f func(key string) string) string {
 			param.Reset()
 			readingMode = false
 		}
-		if !readingMode && r == ':' {
+		if !readingMode && r == '{' {
 			readingMode = true
 
 			continue
 		}
 
-		out.WriteRune(r)
+		if r != '}' {
+			out.WriteRune(r)
+		}
 	}
 
 	if param.Len() > 0 {
@@ -47,4 +52,15 @@ func fillParams(pathPattern string, f func(key string) string) string {
 	}
 
 	return out.String()
+}
+
+var legacyPathFormatRegEx = regexp.MustCompile(`/:([-_a-zA-Z0-9]*)[^/]`)
+
+func convertLegacyPathFormat(path string) string {
+	return legacyPathFormatRegEx.ReplaceAllStringFunc(
+		path,
+		func(s string) string {
+			return fmt.Sprintf("/{%s}", strings.TrimPrefix(s, "/:"))
+		},
+	)
 }

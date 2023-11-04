@@ -10,19 +10,19 @@ type (
 		Marshal() ([]byte, error)
 	}
 	Unmarshaler interface {
-		Unmarshal([]byte) error
+		Unmarshal(data []byte) error
 	}
 	JSONMarshaler interface {
 		MarshalJSON() ([]byte, error)
 	}
 	JSONUnmarshaler interface {
-		UnmarshalJSON([]byte) error
+		UnmarshalJSON(data []byte) error
 	}
 	ProtoMarshaler interface {
 		MarshalProto() ([]byte, error)
 	}
 	ProtoUnmarshaler interface {
-		UnmarshalProto([]byte) error
+		UnmarshalProto(data []byte) error
 	}
 	// Message is a generic interface for all messages. Message MUST BE serializable.
 	// It could implement one or many of the following interfaces:
