@@ -5,7 +5,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 )
 
 type Server struct {
@@ -59,4 +62,19 @@ func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
 	s.Stop(ctx, signals...)
 
 	return nil
+}
+
+func (s *Server) SwaggerAPI(filename string) error {
+	return swagger.New(s.cfg.name, "v1", "").
+		WithTag("json").
+		WriteSwagToFile(
+			filename,
+			utils.Map(
+				func(src *desc.Service) desc.ServiceDesc {
+					return desc.ServiceDescFunc(func() *desc.Service {
+						return src
+					})
+				}, utils.MapToArray(s.cfg.services),
+			)...,
+		)
 }

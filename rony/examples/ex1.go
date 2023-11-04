@@ -21,22 +21,26 @@ func main() {
 		rony.WithCompression(rony.CompressionLevelBestCompression),
 	)
 
-	setup := rony.Setup[string](
-		srv,
-		func() *EchoCounter {
-			return &EchoCounter{
+	setup := rony.Setup(
+		srv, rony.ToInitiateState[*EchoCounter, string](
+			&EchoCounter{
 				Count: 19,
-			}
-		},
+			},
+		),
 	)
 
-	rony.RegisterHandler(
-		setup,
-		rony.GET("/echo"),
-		echo,
+	rony.RegisterUnary(
+		setup, echo,
+		rony.GET("/echo",
+			rony.RESTName("EchoRequest1"),
+		),
 	)
 
-	err := srv.Run(context.Background(), os.Interrupt, os.Kill)
+	err := srv.SwaggerAPI("_swagger.json")
+	if err != nil {
+		panic(err)
+	}
+	err = srv.Run(context.Background(), os.Interrupt, os.Kill)
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +56,8 @@ type EchoResponse struct {
 }
 
 type EchoCounter struct {
-	mu    sync.Mutex
+	sync.Mutex
+
 	Count int
 }
 
@@ -61,9 +66,6 @@ func (e *EchoCounter) Name() string {
 }
 
 func (e *EchoCounter) Reduce(action string) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
 	switch action {
 	case "up":
 		e.Count++
@@ -73,12 +75,13 @@ func (e *EchoCounter) Reduce(action string) {
 }
 
 func echo(
-	ctx *rony.Context[string, *EchoCounter], in EchoRequest,
+	ctx *rony.Context[*EchoCounter, string], in EchoRequest,
 ) (EchoResponse, rony.Error) {
-	s := ctx.State()
-	s.Reduce("up")
+	res := EchoResponse{Message: in.Message}
+	ctx.ReduceState("up", func(s *EchoCounter) {
+		res.Count = s.Count
+	})
+	fmt.Println("Echo", in.Message, res.Count)
 
-	fmt.Println("Echo", in.Message, s.Count)
-
-	return EchoResponse{Message: in.Message, Count: s.Count}, nil
+	return res, nil
 }

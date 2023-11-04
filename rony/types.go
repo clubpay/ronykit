@@ -5,27 +5,20 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
+// State related types
 type (
 	Action          comparable
 	State[A Action] interface {
 		Name() string
 		Reduce(action A)
 	}
-	Message kit.Message
-	Error   kit.ErrorMessage
 )
 
-type Handler[
-	A Action, S State[A],
-	IN, OUT Message,
-] func(ctx *Context[A, S], in IN) (OUT, Error)
-
-type RESTSelector kit.RESTRouteSelector
-
-var (
-	GET    = fasthttp.GET
-	POST   = fasthttp.POST
-	PUT    = fasthttp.PUT
-	DELETE = fasthttp.DELETE
-	PATCH  = fasthttp.PATCH
+// Alias types
+type (
+	Message    kit.Message
+	Error      kit.ErrorMessage
+	Selector   kit.RouteSelector
+	RESTParams = fasthttp.Params
+	RESTParam  = fasthttp.Param
 )

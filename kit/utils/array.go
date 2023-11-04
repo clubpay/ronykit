@@ -133,3 +133,12 @@ func Paginate[T any](arr []T, pageSize int, fn func(start, end int) error) error
 
 	return nil
 }
+
+func MapToArray[K comparable, V any](s map[K]V) []V {
+	arr := make([]V, 0, len(s))
+	for _, v := range s {
+		arr = append(arr, v)
+	}
+
+	return arr
+}
