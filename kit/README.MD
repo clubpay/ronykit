@@ -13,7 +13,24 @@
     <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/clubpay/ronykit?style=for-the-badge">
 </a>
 
-# RonyKit [Kit]
+## Contents
+
+- [Kit](#kit)
+	- [Contents](#contents)
+	- [Installation](#installation)
+	- [Quick start](#quick-start)
+	- [Kit Components](#kit-components)
+		- [1. Handler](#1-handler)
+		- [2. Contract](#2-contract)
+		- [3. Service](#3-service)
+		- [4. Gateway](#4-gateway)
+		- [5. Cluster](#5-cluster)
+		- [6. EdgeServer](#6-edgeserver)
+  - [KIT Storage layers](#kit-storage-layers)
+
+
+
+# Kit
 
 RonyKit is a library written in Go (Golang), provides the abstraction layer for creating an API server. By defining separate
 components for each task, you are almost free to develop your API server using RPC (Proto/JSON/...), REST, GraphQL or even with your
@@ -27,13 +44,6 @@ in [simple-rest-server](../example/ex-02-rest) it shows a very simple hello worl
 in [mixed-jsonrpc-rest](../example/ex-01-rpc) it shows how you can write your services once but use them with multiple formats like
 REST or RPC.
 
-## Contents
-
-- [RonyKIT](#ronykit)
-	- [Contents](#contents)
-	- [Installation](#installation)
-	- [Quick start](#quick-start)
-	- [Define Services and Contracts](#define-services-and-contracts)
 
 ## Installation
 
@@ -43,7 +53,7 @@ First need to install[Go](https://golang.org/) (**version 1.17+ is required**), 
 RonyKIT.
 
 ```sh
-$ go get -u github.com/clubpay/ronykit/...
+$ go get -u github.com/clubpay/ronykit/kit/...
 ```
 
 ## Quick start
@@ -52,11 +62,9 @@ You can find some sample codes in the [Examples](../example) folder.
 
 ## Define Services and Contracts
 
-In RonyKIT you better to define the description of your services and their contracts using `desc` package,
+In RonyKIT(Kit) you better to define the description of your services and their contracts using `desc` package,
 and it provides you many helper methods. Although you can create your concrete implementations of kit.Service
 and kit.Contract, but we strongly recommend you to use `desc` package.
-
-### Quick Guide
 
 When you develop a handler with Kit package you need to think about the input and output of your API, and define
 these DTOs by defining appropriate structs.
