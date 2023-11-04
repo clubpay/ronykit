@@ -14,7 +14,11 @@ type serverConfig struct {
 }
 
 func defaultServerConfig() serverConfig {
-	return serverConfig{}
+	return serverConfig{
+		gatewayOpts: []fasthttp.Option{
+			fasthttp.WithPredicateKey("cmd"),
+		},
+	}
 }
 
 func (cfg *serverConfig) getService(name string) *desc.Service {
@@ -81,5 +85,23 @@ const (
 func WithCompression(lvl CompressionLevel) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithCompressionLevel(lvl))
+	}
+}
+
+func WithPredicateKey(key string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithPredicateKey(key))
+	}
+}
+
+func WithWebsocketEndpoint(endpoint string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithWebsocketEndpoint(endpoint))
+	}
+}
+
+func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithCustomRPC(in, out))
 	}
 }

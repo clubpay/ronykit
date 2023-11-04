@@ -19,7 +19,7 @@ type (
 type UnaryHandler[
 	S State[A], A Action,
 	IN, OUT Message,
-] func(ctx *Context[S, A], in IN) (OUT, Error)
+] func(ctx *UnaryCtx[S, A], in IN) (OUT, Error)
 
 func RegisterUnary[IN, OUT Message, S State[A], A Action](
 	setupCtx *SetupContext[S, A],
@@ -44,7 +44,7 @@ func RegisterUnary[IN, OUT Message, S State[A], A Action](
 		SetHandler(
 			func(ctx *kit.Context) {
 				req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert
-				out, err := h(newContext[S, A](ctx, s, sl), *req)
+				out, err := h(newUnaryCtx[S, A](ctx, s, sl), *req)
 				if err != nil {
 					ctx.SetStatusCode(err.GetCode())
 					ctx.In().Reply().SetMsg(err).Send()
@@ -72,13 +72,13 @@ func RegisterUnary[IN, OUT Message, S State[A], A Action](
 
 type DecoderFunc func(bag RESTParams, data []byte) (kit.Message, error)
 
-func RESTDecoder(decoder DecoderFunc) UnarySelectorOption {
+func UnaryDecoder(decoder DecoderFunc) UnarySelectorOption {
 	return func(cfg *unary.SelectorConfig) {
 		cfg.Decoder = fasthttp.DecoderFunc(decoder)
 	}
 }
 
-func RESTName(name string) UnarySelectorOption {
+func UnaryName(name string) UnarySelectorOption {
 	return func(cfg *unary.SelectorConfig) {
 		cfg.Name = name
 	}

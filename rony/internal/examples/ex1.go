@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
 
@@ -19,6 +18,7 @@ func main() {
 		),
 		rony.WithServerName("RonyExample"),
 		rony.WithCompression(rony.CompressionLevelBestCompression),
+		rony.WithWebsocketEndpoint("/ws"),
 	)
 
 	setup := rony.Setup(
@@ -32,8 +32,17 @@ func main() {
 	rony.RegisterUnary(
 		setup, echo,
 		rony.GET("/echo",
-			rony.RESTName("EchoRequest1"),
+			rony.UnaryName("EchoWithQueryParam"),
 		),
+		rony.GET("/echo/{message}",
+			rony.UnaryName("EchoWithURLParam"),
+		),
+	)
+
+	rony.RegisterStream(
+		setup, echoN,
+		rony.RPC("echo"),
+		rony.RPC("echoN"),
 	)
 
 	err := srv.SwaggerAPI("_swagger.json")
@@ -47,6 +56,7 @@ func main() {
 }
 
 type EchoRequest struct {
+	Qty     int    `json:"qty"`
 	Message string `json:"message"`
 }
 
@@ -75,13 +85,30 @@ func (e *EchoCounter) Reduce(action string) {
 }
 
 func echo(
-	ctx *rony.Context[*EchoCounter, string], in EchoRequest,
+	ctx *rony.UnaryCtx[*EchoCounter, string], in EchoRequest,
 ) (EchoResponse, rony.Error) {
 	res := EchoResponse{Message: in.Message}
 	ctx.ReduceState("up", func(s *EchoCounter) {
 		res.Count = s.Count
 	})
-	fmt.Println("Echo", in.Message, res.Count)
 
 	return res, nil
+}
+
+func echoN(
+	ctx *rony.StreamCtx[*EchoCounter, string, EchoResponse], in EchoRequest,
+) error {
+	for i := 0; i < in.Qty; i++ {
+		res := EchoResponse{Message: in.Message}
+		ctx.ReduceState("up", func(s *EchoCounter) {
+			res.Count = s.Count
+		})
+
+		ctx.Push(
+			res,
+			rony.WithHdr("Route", ctx.Route()),
+		)
+	}
+
+	return nil
 }

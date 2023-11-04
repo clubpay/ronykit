@@ -78,3 +78,18 @@ func (s *Server) SwaggerAPI(filename string) error {
 			)...,
 		)
 }
+
+func (s *Server) PostmanCollection(filename string) error {
+	return swagger.New(s.cfg.name, "v1", "").
+		WithTag("json").
+		WritePostmanToFile(
+			filename,
+			utils.Map(
+				func(src *desc.Service) desc.ServiceDesc {
+					return desc.ServiceDescFunc(func() *desc.Service {
+						return src
+					})
+				}, utils.MapToArray(s.cfg.services),
+			)...,
+		)
+}
