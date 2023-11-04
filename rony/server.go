@@ -3,7 +3,6 @@ package rony
 import (
 	"context"
 	"os"
-	"sync"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
@@ -14,8 +13,6 @@ import (
 type Server struct {
 	cfg  serverConfig
 	edge *kit.EdgeServer
-
-	setupOnce sync.Once
 }
 
 func NewServer(opts ...ServerOption) *Server {

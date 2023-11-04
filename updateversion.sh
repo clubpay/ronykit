@@ -8,7 +8,7 @@ rs="github.com/clubpay/ronykit/kit $2"
 
 wd=$(pwd)
 
-array=(std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster rony)
+array=(std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster)
 for i in "${array[@]}"
 do
 	filename="$i"/go.mod
