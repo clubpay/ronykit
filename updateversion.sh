@@ -26,8 +26,8 @@ fss="github.com/clubpay/ronykit/std/gateways/fasthttp $1"
 frs="github.com/clubpay/ronykit/std/gateways/fasthttp $2"
 
 # contrib
-css="github.com/clubpay/ronykit/std/gateways/fasthttp $1"
-crs="github.com/clubpay/ronykit/std/gateways/fasthttp $2"
+css="github.com/clubpay/ronykit/contrib $1"
+crs="github.com/clubpay/ronykit/contrib $2"
 
 array2=(contrib rony)
 for i in "${array2[@]}"
