@@ -4,8 +4,8 @@ go 1.20
 
 require (
 	github.com/clubpay/ronykit/contrib v0.11.17
-	github.com/clubpay/ronykit/kit v0.11.18
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.18
+	github.com/clubpay/ronykit/kit v0.11.19
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.19
 )
 
 require (
