@@ -22,3 +22,11 @@ func ValPtrOrNil[T comparable](src T) *T {
 
 	return &src
 }
+
+func Must[T any](src T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return src
+}

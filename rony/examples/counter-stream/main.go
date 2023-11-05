@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony"
 )
 
@@ -23,42 +25,42 @@ func main() {
 	// We can have as many states as we want. But each handler can only work with
 	// one state. In other words, we cannot register one handler with two different
 	// setup contexts.
-	setupCtx := rony.Setup(
+	rony.Setup(
 		srv,
+		"CounterService",
 		rony.ToInitiateState[*EchoCounter, string](
 			&EchoCounter{
 				Count: 0,
 			},
 		),
-	)
-
-	// Register the count handler for both GET /count and GET /count/{action}
-	// This way all the following requests are valid:
-	// 1. GET /count/up&count=1
-	// 2. GET /count/down&count=2
-	// 3. GET /count?action=up&count=1
-	// 4. GET /count?action=down&count=2
-	rony.RegisterUnary(
-		setupCtx, count,
-		rony.GET("/count/{action}"),
-		rony.GET("/count"),
-	)
-
-	// Register the count handler for Websocket messages
-	// This way all the following requests are valid:
-	// Websocket /ws
-	// {
-	//   "hdr": {
-	//     "cmd": "count",
-	//   },
-	//   "payload": {
-	//     "action": "up",
-	//     "count": 1
-	//   }
-	// }
-	rony.RegisterStream(
-		setupCtx, countStream,
-		rony.RPC("count"),
+		rony.WithMiddleware[*EchoCounter, string](printMW),
+		// Register the count handler for both GET /count and GET /count/{action}
+		// This way all the following requests are valid:
+		// 1. GET /count/up&count=1
+		// 2. GET /count/down&count=2
+		// 3. GET /count?action=up&count=1
+		// 4. GET /count?action=down&count=2
+		rony.WithUnary(
+			count,
+			rony.GET("/count/{action}"),
+			rony.GET("/count"),
+		),
+		// Register the count handler for Websocket messages
+		// This way all the following requests are valid:
+		// Websocket /ws
+		// {
+		//   "hdr": {
+		//     "cmd": "count",
+		//   },
+		//   "payload": {
+		//     "action": "up",
+		//     "count": 1
+		//   }
+		// }
+		rony.WithStream(
+			countStream,
+			rony.RPC("count"),
+		),
 	)
 
 	// Run the server in blocking mode
@@ -152,4 +154,20 @@ func countStream(ctx *rony.StreamCtx[*EchoCounter, string, *CounterResponseDTO],
 	}
 
 	return nil
+}
+
+func printMW(ctx *kit.Context) {
+	fmt.Println(fmt.Sprintf(
+		"<- req: REST(%t) %s",
+		ctx.IsREST(),
+		utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
+	))
+	ctx.AddModifier(
+		func(e *kit.Envelope) {
+			fmt.Println(fmt.Sprintf(
+				"-> res: %s",
+				utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
+			))
+		},
+	)
 }

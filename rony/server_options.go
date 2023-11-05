@@ -9,6 +9,7 @@ import (
 type serverConfig struct {
 	name     string
 	services map[string]*desc.Service
+	mw       []kit.HandlerFunc
 
 	gatewayOpts []fasthttp.Option
 }

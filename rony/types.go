@@ -5,15 +5,6 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
-// State related types
-type (
-	Action          comparable
-	State[A Action] interface {
-		Name() string
-		Reduce(action A) error
-	}
-)
-
 // Alias types
 type (
 	Message    kit.Message

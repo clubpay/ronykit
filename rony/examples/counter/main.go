@@ -21,25 +21,25 @@ func main() {
 	// We can have as many states as we want. But each handler can only work with
 	// one state. In other words, we cannot register one handler with two different
 	// setup contexts.
-	setupCtx := rony.Setup(
+	rony.Setup(
 		srv,
+		"CounterService",
 		rony.ToInitiateState[*EchoCounter, string](
 			&EchoCounter{
 				Count: 0,
 			},
 		),
-	)
-
-	// Register the count handler for both GET /count and GET /count/{action}
-	// This way all the following requests are valid:
-	// 1. GET /count/up&count=1
-	// 2. GET /count/down&count=2
-	// 3. GET /count?action=up&count=1
-	// 4. GET /count?action=down&count=2
-	rony.RegisterUnary(
-		setupCtx, count,
-		rony.GET("/count/{action}"),
-		rony.GET("/count"),
+		// Register the count handler for both GET /count and GET /count/{action}
+		// This way all the following requests are valid:
+		// 1. GET /count/up&count=1
+		// 2. GET /count/down&count=2
+		// 3. GET /count?action=up&count=1
+		// 4. GET /count?action=down&count=2
+		rony.WithUnary(
+			count,
+			rony.GET("/count/{action}"),
+			rony.GET("/count"),
+		),
 	)
 
 	// Run the server in blocking mode

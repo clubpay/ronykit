@@ -7,3 +7,23 @@ Accept: application/json
 GET http://127.0.0.1/count/down?count=1
 Accept: application/json
 
+
+### Request with client messages
+// It is possible to specify client messages in request body. Use '===' to separate messages.
+// Add '=== wait-for-server' above a message to send it after a server response is received.
+// To wait for N responses, add '=== wait-for-server' N times.
+WEBSOCKET ws://127.0.0.1/ws
+Content-Type: application/json // We use it for highlighting
+
+===
+{
+	"hdr": {
+      "cmd": "count"
+    },
+   "payload": {
+      "action": "up",
+      "count": 2
+   }
+}
+=== wait-for-server
+=== wait-for-server
