@@ -1,6 +1,8 @@
 package rony
 
 import (
+	"time"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
@@ -11,6 +13,7 @@ type serverConfig struct {
 	services map[string]*desc.Service
 	mw       []kit.HandlerFunc
 
+	edgeOpts    []kit.Option
 	gatewayOpts []fasthttp.Option
 }
 
@@ -104,5 +107,35 @@ func WithWebsocketEndpoint(endpoint string) ServerOption {
 func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithCustomRPC(in, out))
+	}
+}
+
+func WithTracer(tracer kit.Tracer) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithTrace(tracer))
+	}
+}
+
+func WithLogger(logger kit.Logger) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithLogger(logger))
+	}
+}
+
+func WithPrefork() ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithPrefork())
+	}
+}
+
+func WithShutdownTimeout(timeout time.Duration) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithShutdownTimeout(timeout))
+	}
+}
+
+func WithGlobalHandlers(handlers ...kit.HandlerFunc) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithGlobalHandlers(handlers...))
 	}
 }

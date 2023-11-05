@@ -29,10 +29,13 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 func (s *Server) initEdge() error {
-	s.edge = kit.NewServer(
+	opts := []kit.Option{
 		kit.WithGateway(s.cfg.Gateway()),
 		kit.WithServiceDesc(s.cfg.allServices()...),
-	)
+	}
+	opts = append(opts, s.cfg.edgeOpts...)
+
+	s.edge = kit.NewServer(opts...)
 
 	return nil
 }
