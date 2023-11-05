@@ -83,8 +83,6 @@ func Setup[S State[A], A Action](
 	for _, o := range opt {
 		o(ctx)
 	}
-
-	return
 }
 
 // WithUnary is a SetupOption to set up unary handler.
