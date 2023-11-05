@@ -37,7 +37,7 @@ func main() {
 			// use fasthttp instead.
 			//
 			fasthttp.MustNew(
-				//fasthttp.WithWebsocketEndpoint("/ws"),
+				fasthttp.WithWebsocketEndpoint("/ws"),
 				fasthttp.WithPredicateKey("cmd"),
 				fasthttp.Listen(":80"),
 			),

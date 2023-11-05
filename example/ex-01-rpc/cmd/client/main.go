@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	wsCtx := stub.New("127.0.0.1:80",
+	wsCtx := stub.New(
+		"127.0.0.1:80",
 		stub.WithDialTimeout(time.Second*3),
 	).
 		Websocket(
@@ -29,7 +30,7 @@ func main() {
 						},
 						&dto.EchoResponse{},
 						func(ctx context.Context, msg kit.Message, hdr stub.Header, err error) {
-							res := msg.(*dto.EchoResponse)
+							res := msg.(*dto.EchoResponse) //nolint:forcetypeassert
 							fmt.Println("Received response:", res.Ok, res.RandomID)
 						},
 					)
@@ -43,8 +44,7 @@ func main() {
 	ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 	defer cf()
 
-	err := wsCtx.Connect(ctx, "/")
-	if err != nil {
+	if err := wsCtx.Connect(ctx, "/"); err != nil {
 		panic(err)
 	}
 
