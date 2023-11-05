@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 )
 
 // BaseCtx is a base context object used by UnaryCtx and StreamCtx
@@ -13,6 +14,16 @@ type BaseCtx[S State[A], A Action] struct {
 	ctx *kit.Context
 	s   S
 	sl  sync.Locker
+}
+
+func newBaseCtx[S State[A], A Action](
+	ctx *kit.Context, s *S, sl sync.Locker,
+) *BaseCtx[S, A] {
+	return &BaseCtx[S, A]{
+		ctx: ctx,
+		s:   *s,
+		sl:  sl,
+	}
 }
 
 func (c *BaseCtx[S, A]) State() S {
@@ -80,11 +91,7 @@ func newUnaryCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *UnaryCtx[S, A] {
 	return &UnaryCtx[S, A]{
-		BaseCtx[S, A]{
-			ctx: ctx,
-			s:   *s,
-			sl:  sl,
-		},
+		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
 	}
 }
 
@@ -108,11 +115,7 @@ func newStreamCtx[S State[A], A Action, M Message](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *StreamCtx[S, A, M] {
 	return &StreamCtx[S, A, M]{
-		BaseCtx[S, A]{
-			ctx: ctx,
-			s:   *s,
-			sl:  sl,
-		},
+		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
 	}
 }
 

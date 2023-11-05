@@ -48,6 +48,8 @@ type SetupContext[S State[A], A Action] struct {
 	s    *S
 	name string
 	cfg  *serverConfig
+
+	mw []StatelessMiddleware
 }
 
 type SetupOption[S State[A], A Action] func(ctx *SetupContext[S, A])
@@ -116,10 +118,17 @@ func WithStream[S State[A], A Action, IN, OUT Message](
 	}
 }
 
-func WithMiddleware[S State[A], A Action](
-	h ...StatelessMiddleware,
+func WithMiddleware[S State[A], A Action, M Middleware[S, A]](
+	m ...M,
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
-		registerStatelessMiddleware[S, A](ctx, h...)
+		for _, m := range m {
+			switch mw := any(m).(type) {
+			case StatefulMiddleware[S, A]:
+				registerStatefulMiddleware[S, A](ctx, mw)
+			case StatelessMiddleware:
+				registerStatelessMiddleware[S, A](ctx, mw)
+			}
+		}
 	}
 }

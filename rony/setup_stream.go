@@ -36,8 +36,8 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	// since Setup function guarantees that S is a pointer to a struct,
 	sl, _ := any(*s).(sync.Locker)
 
-	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.cfg.mw)+1)
-	handlers = append(handlers, setupCtx.cfg.mw...)
+	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
+	handlers = append(handlers, setupCtx.mw...)
 	handlers = append(handlers,
 		func(ctx *kit.Context) {
 			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert

@@ -16,13 +16,13 @@ const (
 type (
 	// ErrHandlerFunc is called when an error happens in internal layers.
 	// NOTICE: ctx could be nil, make sure you do nil-check before calling its methods.
-	ErrHandlerFunc func(ctx *Context, err error)
+	ErrHandlerFunc = func(ctx *Context, err error)
 	// HandlerFunc is a function that will execute code in its context. If there is another handler
 	// set in the path, by calling ctx.Next you can move forward and then run the rest of the code in
 	// your handler.
-	HandlerFunc        func(ctx *Context)
+	HandlerFunc        = func(ctx *Context)
 	HandlerFuncChain   []HandlerFunc
-	LimitedHandlerFunc func(ctx *LimitedContext)
+	LimitedHandlerFunc = func(ctx *LimitedContext)
 )
 
 type Context struct {

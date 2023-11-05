@@ -166,7 +166,7 @@ func printMW(ctx *kit.Context) {
 		func(e *kit.Envelope) {
 			fmt.Println(fmt.Sprintf(
 				"-> res: %s",
-				utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
+				utils.B2S(utils.Must(kit.MarshalMessage(e.GetMsg()))),
 			))
 		},
 	)
