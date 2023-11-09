@@ -79,6 +79,13 @@ func (c *BaseCtx[S, A]) StopExecution() {
 	c.ctx.StopExecution()
 }
 
+// KitCtx returns the underlying kit.Context. This is useful when we need to
+// pass the context into inner layers of our application when we need to have
+// access to more generic functionalities.
+func (c *BaseCtx[S, A]) KitCtx() *kit.Context {
+	return c.ctx
+}
+
 /*
 	UnaryCtx
 */

@@ -2,6 +2,9 @@ package rony
 
 import (
 	"reflect"
+
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
 )
 
 // State related types
@@ -12,8 +15,12 @@ type (
 		Reduce(action A) error
 	}
 
+	// EMPTY is a special State that does nothing. This is a utility object when we don't
+	// to have a shared state in our service.
 	EMPTY struct{}
-	NOP   struct{}
+	// NOP is a special Action that does nothing. This is a utility object when we use
+	// EMPTY state.
+	NOP struct{}
 )
 
 func (e EMPTY) Name() string {
@@ -115,6 +122,23 @@ func WithStream[S State[A], A Action, IN, OUT Message](
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerStream[IN, OUT, S, A](ctx, h, opt...)
+	}
+}
+
+// WithContract is a SetupOption to set up a legacy desc.Contract directly.
+// This method is useful when you are migrating your old code to rony.
+func WithContract[S State[A], A Action](
+	contract *desc.Contract,
+) SetupOption[S, A] {
+	return func(setupCtx *SetupContext[S, A]) {
+		handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+len(contract.Handlers))
+		handlers = append(
+			append(handlers, setupCtx.mw...),
+			contract.Handlers...,
+		)
+		contract.SetHandler(handlers...)
+
+		setupCtx.cfg.getService(setupCtx.name).AddContract(contract)
 	}
 }
 
