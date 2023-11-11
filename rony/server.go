@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -54,6 +53,8 @@ func (s *Server) Stop(ctx context.Context, signals ...os.Signal) {
 	s.edge.Shutdown(ctx, signals...)
 }
 
+// Run the service in blocking mode. If you need more control over the
+// lifecycle of the service, you can use the Start and Stop methods.
 func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
 	if err := s.Start(ctx); err != nil {
 		return err
@@ -64,32 +65,13 @@ func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
 	return nil
 }
 
-func (s *Server) SwaggerAPI(filename string) error {
-	return swagger.New(s.cfg.name, "v1", "").
-		WithTag("json").
-		WriteSwagToFile(
-			filename,
-			utils.Map(
-				func(src *desc.Service) desc.ServiceDesc {
-					return desc.ServiceDescFunc(func() *desc.Service {
-						return src
-					})
-				}, utils.MapToArray(s.cfg.services),
-			)...,
-		)
-}
-
-func (s *Server) PostmanCollection(filename string) error {
-	return swagger.New(s.cfg.name, "v1", "").
-		WithTag("json").
-		WritePostmanToFile(
-			filename,
-			utils.Map(
-				func(src *desc.Service) desc.ServiceDesc {
-					return desc.ServiceDescFunc(func() *desc.Service {
-						return src
-					})
-				}, utils.MapToArray(s.cfg.services),
-			)...,
-		)
+// ExportDesc returns all services descriptions.
+func (s *Server) ExportDesc() []desc.ServiceDesc {
+	return utils.Map(
+		func(src *desc.Service) desc.ServiceDesc {
+			return desc.ServiceDescFunc(func() *desc.Service {
+				return src
+			})
+		}, utils.MapToArray(s.cfg.services),
+	)
 }

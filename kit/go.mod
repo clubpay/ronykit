@@ -6,7 +6,7 @@ require (
 	github.com/fasthttp/websocket v1.5.6
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
-	github.com/jedib0t/go-pretty/v6 v6.4.8
+	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.28.0
 	github.com/valyala/fasthttp v1.50.0
