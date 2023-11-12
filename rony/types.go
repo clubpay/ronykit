@@ -7,10 +7,11 @@ import (
 
 // Alias types
 type (
-	Message    kit.Message
-	Selector   kit.RouteSelector
-	RESTParams = fasthttp.Params
-	RESTParam  = fasthttp.Param
+	Message          kit.Message
+	Selector         kit.RouteSelector
+	RESTParams       = fasthttp.Params
+	RESTParam        = fasthttp.Param
+	NodeSelectorFunc = kit.EdgeSelectorFunc
 )
 
 type errCode interface {

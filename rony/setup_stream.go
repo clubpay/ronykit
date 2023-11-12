@@ -54,6 +54,10 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 		SetName(reflect.TypeOf(h).Name()).
 		SetHandler(handlers...)
 
+	if setupCtx.nodeSel != nil {
+		c.SetCoordinator(setupCtx.nodeSel)
+	}
+
 	cfg := stream.GenConfig(opt...)
 	for _, s := range cfg.Selectors {
 		c.AddNamedSelector(s.Name, s.Selector)

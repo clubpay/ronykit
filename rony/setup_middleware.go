@@ -31,7 +31,8 @@ func registerStatefulMiddleware[S State[A], A Action](
 	sl, _ := any(*s).(sync.Locker)
 
 	for _, m := range h {
-		setupCtx.mw = append(setupCtx.mw,
+		setupCtx.mw = append(
+			setupCtx.mw,
 			func(ctx *kit.Context) {
 				m(newBaseCtx[S, A](ctx, s, sl))
 			},

@@ -52,9 +52,10 @@ func EmptyState() InitState[EMPTY, NOP] {
 // starts.
 // It is used internally to hold state and server configuration.
 type SetupContext[S State[A], A Action] struct {
-	s    *S
-	name string
-	cfg  *serverConfig
+	s       *S
+	name    string
+	cfg     *serverConfig
+	nodeSel NodeSelectorFunc
 
 	mw []StatelessMiddleware
 }
@@ -154,5 +155,11 @@ func WithMiddleware[S State[A], A Action, M Middleware[S, A]](
 				registerStatelessMiddleware[S, A](ctx, mw)
 			}
 		}
+	}
+}
+
+func WithCoordinator[S State[A], A Action](sel NodeSelectorFunc) SetupOption[S, A] {
+	return func(ctx *SetupContext[S, A]) {
+		ctx.nodeSel = sel
 	}
 }
