@@ -3,10 +3,10 @@ github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHG
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/clubpay/ronykit/kit v0.11.22 h1:Oh63Ml9k9uol+OGw+ZtR/7DIgGNW3TmbsjYOrcjeWeM=
-github.com/clubpay/ronykit/kit v0.11.22/go.mod h1:dUib8cjWB9AHOUExNF1LyRLu5SZofKKCgQRuoJftums=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.22 h1:3PsAw/3WVNopx/cuSRjd9q/qithyT1ZYHNsvlYyArTQ=
-github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.22/go.mod h1:bQvyglwCOuloMIUVfBIqhHzOa0JNHKnYBvikUwv9KVY=
+github.com/clubpay/ronykit/kit v0.11.23 h1:NDkLY3EGCwmD1h0x2hTfX5lkSVX8cFNpatPVB86sQws=
+github.com/clubpay/ronykit/kit v0.11.23/go.mod h1:7u2IxmdVsVJ9nVphe+3knHCpYKFTsOYoxt70afR2/9U=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.23 h1:ZzXrH5cQFPespdh9FDT8ExL/ubIkTEl9tJivC8nzANc=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.23/go.mod h1:yB6I6Gjb8CqjnDHSUOtMFygYySoAH2RjiMwfSxB36E4=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -43,8 +43,8 @@ github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeN
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 h1:yAJXTCF9TqKcTiHJAE8dj7HMvPfh66eeA2JYW7eFpSE=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
-github.com/jedib0t/go-pretty/v6 v6.4.8 h1:HiNzyMSEpsBaduKhmK+CwcpulEeBrTmxutz4oX/oWkg=
-github.com/jedib0t/go-pretty/v6 v6.4.8/go.mod h1:Ndk3ase2CkQbXLLNf5QDHoYb6J9WtVfmHZu9n8rk2xs=
+github.com/jedib0t/go-pretty/v6 v6.4.9 h1:vZ6bjGg2eBSrJn365qlxGcaWu09Id+LHtrfDWlB2Usc=
+github.com/jedib0t/go-pretty/v6 v6.4.9/go.mod h1:Ndk3ase2CkQbXLLNf5QDHoYb6J9WtVfmHZu9n8rk2xs=
 github.com/josharian/intern v1.0.0 h1:vlS4z54oSdjm0bgjRigI+G1HpF+tI+9rE5LLzOg8HmY=
 github.com/josharian/intern v1.0.0/go.mod h1:5DoeVV0s6jJacbCEi61lwdGj/aVlrQvzHFFd8Hwg//Y=
 github.com/klauspost/compress v1.17.1 h1:NE3C767s2ak2bweCZo3+rdP4U/HoyVXLv/X9f2gPS5g=
