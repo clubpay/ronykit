@@ -86,6 +86,40 @@ func (c *BaseCtx[S, A]) KitCtx() *kit.Context {
 	return c.ctx
 }
 
+func (c *BaseCtx[S, A]) Set(key string, value any) {
+	c.ctx.Set(key, value)
+}
+
+func (c *BaseCtx[S, A]) Get(key string) any {
+	return c.ctx.Get(key)
+}
+
+func (c *BaseCtx[S, A]) Walk(f func(key string, val any) bool) {
+	c.ctx.Walk(f)
+}
+
+func (c *BaseCtx[S, A]) Exists(key string) bool {
+	return c.ctx.Exists(key)
+}
+
+func (c *BaseCtx[S, A]) GetInputHeader(key string) string {
+	return c.ctx.In().GetHdr(key)
+}
+
+// GetInHdr is shorthand for GetInputHeader
+func (c *BaseCtx[S, A]) GetInHdr(key string) string {
+	return c.GetInputHeader(key)
+}
+
+func (c *BaseCtx[S, A]) WalkInputHeader(f func(key string, val string) bool) {
+	c.ctx.In().WalkHdr(f)
+}
+
+// WalkInHdr is shorthand for WalkInputHeader
+func (c *BaseCtx[S, A]) WalkInHdr(f func(key string, val string) bool) {
+	c.WalkInputHeader(f)
+}
+
 /*
 	UnaryCtx
 */
@@ -102,12 +136,33 @@ func newUnaryCtx[S State[A], A Action](
 	}
 }
 
+// RESTConn returns the underlying RESTConn if the connection is RESTConn.
 func (c *UnaryCtx[S, A]) RESTConn() (kit.RESTConn, bool) {
 	if c.ctx.IsREST() {
 		return c.ctx.RESTConn(), true
 	}
 
 	return nil, false
+}
+
+// SetOutputHeader sets the output header
+func (c *UnaryCtx[S, A]) SetOutputHeader(key, value string) {
+	c.ctx.PresetHdr(key, value)
+}
+
+// SetOutHdr is shorthand for SetOutputHeader
+func (c *UnaryCtx[S, A]) SetOutHdr(key, value string) {
+	c.SetOutputHeader(key, value)
+}
+
+// SetOutputHeaderMap sets the output header map
+func (c *UnaryCtx[S, A]) SetOutputHeaderMap(kv map[string]string) {
+	c.ctx.PresetHdrMap(kv)
+}
+
+// SetOutHdrMap is shorthand for SetOutputHeaderMap
+func (c *UnaryCtx[S, A]) SetOutHdrMap(kv map[string]string) {
+	c.SetOutputHeaderMap(kv)
 }
 
 /*
