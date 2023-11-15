@@ -17,7 +17,7 @@ func TestSingleFlight(t *testing.T) {
 		return "hello", nil
 	}
 
-	sf := utils.SingleFlight(fn)
+	sf := utils.SingleFlight[string]()
 
 	wg := sync.WaitGroup{}
 	for j := 0; j < 10; j++ {

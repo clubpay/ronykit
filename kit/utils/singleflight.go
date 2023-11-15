@@ -82,7 +82,7 @@ type SingleFlightCall[T any] func(fn func() (T, error)) (T, error)
 // time. If a duplicate comes in, the duplicate caller waits for the
 // original to complete and receives the same results.
 // The return value shared indicates whether v was given to multiple cal
-func SingleFlight[T any](_ func() (T, error)) SingleFlightCall[T] {
+func SingleFlight[T any]() SingleFlightCall[T] {
 	mu := sync.Mutex{}
 	var (
 		c     *call
