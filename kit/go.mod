@@ -9,7 +9,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.28.0
-	github.com/valyala/fasthttp v1.50.0
+	github.com/valyala/fasthttp v1.51.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
