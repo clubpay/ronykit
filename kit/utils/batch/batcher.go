@@ -57,11 +57,11 @@ func (fp *MultiBatcher[IN, OUT]) getBatcher(tagID string) *Batcher[IN, OUT] {
 }
 
 func (fp *MultiBatcher[IN, OUT]) Enter(targetID string, entry Entry[IN, OUT]) {
-	fp.getBatcher(targetID).enter(entry)
+	fp.getBatcher(targetID).Enter(entry)
 }
 
 func (fp *MultiBatcher[IN, OUT]) EnterAndWait(targetID string, entry Entry[IN, OUT]) {
-	fp.getBatcher(targetID).enterAndWait(entry)
+	fp.getBatcher(targetID).EnterAndWait(entry)
 }
 
 type Batcher[IN, OUT any] struct {
@@ -109,16 +109,17 @@ func (f *Batcher[IN, OUT]) startWorker() {
 		f:  f,
 		bs: int(f.batchSize),
 	}
+
 	go w.run()
 }
 
-func (f *Batcher[IN, OUT]) enter(entry Entry[IN, OUT]) {
+func (f *Batcher[IN, OUT]) Enter(entry Entry[IN, OUT]) {
 	f.entryChan <- entry
 	f.startWorker()
 }
 
-func (f *Batcher[IN, OUT]) enterAndWait(entry Entry[IN, OUT]) {
-	f.enter(entry)
+func (f *Batcher[IN, OUT]) EnterAndWait(entry Entry[IN, OUT]) {
+	f.Enter(entry)
 	entry.wait()
 }
 
