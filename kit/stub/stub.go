@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"runtime"
 	"time"
 
@@ -48,6 +49,31 @@ func New(hostPort string, opts ...Option) *Stub {
 			},
 		},
 	}
+}
+
+func HTTP(rawURL string, opts ...Option) (*RESTCtx, error) {
+	u, err := url.ParseRequestURI(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	switch u.Scheme {
+	default:
+		return nil, fmt.Errorf("unsupported scheme: %s", u.Scheme)
+	case "http":
+	case "https":
+		opts = append(opts, Secure())
+	}
+
+	s := New(u.Host, opts...).REST()
+	s.SetPath(u.Path)
+	for k, v := range u.Query() {
+		for _, vv := range v {
+			s.AppendQuery(k, vv)
+		}
+	}
+
+	return s, nil
 }
 
 func (s *Stub) REST(opt ...RESTOption) *RESTCtx {

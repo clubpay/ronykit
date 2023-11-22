@@ -95,6 +95,12 @@ func (hc *RESTCtx) SetQuery(key, value string) *RESTCtx {
 	return hc
 }
 
+func (hc *RESTCtx) AppendQuery(key, value string) *RESTCtx {
+	hc.args.Add(key, value)
+
+	return hc
+}
+
 func (hc *RESTCtx) SetQueryMap(kv map[string]string) *RESTCtx {
 	for k, v := range kv {
 		hc.args.Set(k, v)
