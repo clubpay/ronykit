@@ -55,3 +55,34 @@ var _ = Describe("Stub Basic Functionality", func() {
 		Expect(httpCtx.Err()).To(BeNil())
 	})
 })
+
+var _ = Describe("Stub from URL", func() {
+	ctx := context.Background()
+
+	It("should unmarshal response from json", func() {
+		httpCtx, err := stub.HTTP("https://ipinfo.io/json?someKey=someValue")
+		Expect(err).To(BeNil())
+		httpCtx.
+			SetMethod(http.MethodGet).
+			DefaultResponseHandler(
+				func(_ context.Context, r stub.RESTResponse) *stub.Error {
+					switch r.StatusCode() {
+					case http.StatusOK:
+						v := &ipInfoResponse{}
+						Expect(json.Unmarshal(r.GetBody(), v)).To(Succeed())
+						Expect(v.Readme).To(Not(BeEmpty()))
+						Expect(v.IP).To(Not(BeEmpty()))
+					default:
+						Skip("we got error from ipinfo.io")
+					}
+
+					return nil
+				},
+			).
+			SetHeader("SomeKey", "SomeValue").
+			Run(ctx)
+		defer httpCtx.Release()
+
+		Expect(httpCtx.Err()).To(BeNil())
+	})
+})

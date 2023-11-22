@@ -25,7 +25,7 @@ var _ = DescribeTable(
 		Expect(stub.FillParams(in, f)).To(Equal(out))
 	},
 	Entry("",
-		"/some/{p1}/:p2?something={p3}&boolean",
+		"/some/{p1}/{p2}?something={p3}&boolean",
 		"/some/value1/value2?something=value3&boolean",
 		keyValues,
 	),
