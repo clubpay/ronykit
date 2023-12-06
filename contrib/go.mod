@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/clubpay/ronykit/kit v0.11.25
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.25
-	github.com/go-openapi/spec v0.20.9
-	github.com/onsi/ginkgo/v2 v2.13.1
+	github.com/go-openapi/spec v0.20.11
+	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
 	github.com/rbretecher/go-postman-collection v0.9.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.21.1

@@ -44,6 +44,7 @@ func New(hostPort string, opts ...Option) *Stub {
 			Name:         cfg.name,
 			ReadTimeout:  cfg.readTimeout,
 			WriteTimeout: cfg.writeTimeout,
+			Dial:         cfg.dialFunc,
 			TLSConfig: &tls.Config{
 				InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 			},
@@ -107,6 +108,7 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 }
 
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
+	proxyFunc := s.cfg.httpProxyConfig.ProxyFunc()
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
 			autoReconnect: true,
@@ -118,7 +120,9 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 			rpcOutFactory: common.SimpleOutgoingJSONRPC,
 			dialerBuilder: func() *websocket.Dialer {
 				return &websocket.Dialer{
-					Proxy:            http.ProxyFromEnvironment,
+					Proxy: func(req *http.Request) (*url.URL, error) {
+						return proxyFunc(req.URL)
+					},
 					HandshakeTimeout: s.cfg.dialTimeout,
 				}
 			},
