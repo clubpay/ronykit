@@ -108,7 +108,13 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 }
 
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
-	proxyFunc := s.cfg.httpProxyConfig.ProxyFunc()
+	var proxyFunc func(req *http.Request) (*url.URL, error)
+	if s.cfg.httpProxyConfig != nil {
+		fn := s.cfg.httpProxyConfig.ProxyFunc()
+		proxyFunc = func(req *http.Request) (*url.URL, error) {
+			return fn(req.URL)
+		}
+	}
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
 			autoReconnect: true,
@@ -120,9 +126,7 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 			rpcOutFactory: common.SimpleOutgoingJSONRPC,
 			dialerBuilder: func() *websocket.Dialer {
 				return &websocket.Dialer{
-					Proxy: func(req *http.Request) (*url.URL, error) {
-						return proxyFunc(req.URL)
-					},
+					Proxy:            proxyFunc,
 					HandshakeTimeout: s.cfg.dialTimeout,
 				}
 			},
