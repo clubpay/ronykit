@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
 	"github.com/fasthttp/router"
 	"github.com/fasthttp/websocket"
@@ -219,12 +220,13 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 }
 
 func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
-	_ = b.wsUpgrade.Upgrade(ctx,
+	_ = b.wsUpgrade.Upgrade(
+		ctx,
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
 				kv:       map[string]string{},
 				id:       atomic.AddUint64(&b.wsNextID, 1),
-				clientIP: conn.RemoteAddr().String(),
+				clientIP: realip.FromRequest(ctx),
 				c:        conn,
 			}
 			b.d.OnOpen(wsc)
