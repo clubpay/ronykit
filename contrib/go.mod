@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/contrib
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.28
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.28
+	github.com/clubpay/ronykit/kit v0.11.29
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.29
 	github.com/go-openapi/spec v0.20.11
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
