@@ -21,7 +21,7 @@ type Stub struct {
 	cfg config
 	r   *reflector.Reflector
 
-	httpC fasthttp.Client
+	httpC *fasthttp.Client
 }
 
 func New(hostPort string, opts ...Option) *Stub {
@@ -37,18 +37,23 @@ func New(hostPort string, opts ...Option) *Stub {
 		opt(&cfg)
 	}
 
-	return &Stub{
-		cfg: cfg,
-		r:   reflector.New(),
-		httpC: fasthttp.Client{
-			Name:         cfg.name,
-			ReadTimeout:  cfg.readTimeout,
-			WriteTimeout: cfg.writeTimeout,
-			Dial:         cfg.dialFunc,
-			TLSConfig: &tls.Config{
-				InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
-			},
+	httpC := &fasthttp.Client{
+		Name:         cfg.name,
+		ReadTimeout:  cfg.readTimeout,
+		WriteTimeout: cfg.writeTimeout,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 		},
+	}
+
+	if cfg.dialFunc != nil {
+		httpC.Dial = cfg.dialFunc
+	}
+
+	return &Stub{
+		cfg:   cfg,
+		r:     reflector.New(),
+		httpC: httpC,
 	}
 }
 
@@ -79,7 +84,7 @@ func HTTP(rawURL string, opts ...Option) (*RESTCtx, error) {
 
 func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 	ctx := &RESTCtx{
-		c:        &s.httpC,
+		c:        s.httpC,
 		r:        s.r,
 		handlers: map[int]RESTResponseHandler{},
 		uri:      fasthttp.AcquireURI(),
@@ -108,28 +113,29 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 }
 
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
-	var proxyFunc func(req *http.Request) (*url.URL, error)
-	if s.cfg.httpProxyConfig != nil {
-		fn := s.cfg.httpProxyConfig.ProxyFunc()
-		proxyFunc = func(req *http.Request) (*url.URL, error) {
-			return fn(req.URL)
+	defaultProxy := http.ProxyFromEnvironment
+	if s.cfg.proxy != nil {
+		defaultProxy = func(req *http.Request) (*url.URL, error) {
+			return s.cfg.proxy.ProxyFunc()(req.URL)
+		}
+	}
+
+	defaultDialerBuilder := func() *websocket.Dialer {
+		return &websocket.Dialer{
+			Proxy:            defaultProxy,
+			HandshakeTimeout: s.cfg.dialTimeout,
 		}
 	}
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
-			autoReconnect: true,
-			pingTime:      time.Second * 30,
-			dialTimeout:   s.cfg.dialTimeout,
-			writeTimeout:  s.cfg.writeTimeout,
-			ratelimitChan: make(chan struct{}, defaultConcurrency),
-			rpcInFactory:  common.SimpleIncomingJSONRPC,
-			rpcOutFactory: common.SimpleOutgoingJSONRPC,
-			dialerBuilder: func() *websocket.Dialer {
-				return &websocket.Dialer{
-					Proxy:            proxyFunc,
-					HandshakeTimeout: s.cfg.dialTimeout,
-				}
-			},
+			autoReconnect:   true,
+			pingTime:        time.Second * 30,
+			dialTimeout:     s.cfg.dialTimeout,
+			writeTimeout:    s.cfg.writeTimeout,
+			ratelimitChan:   make(chan struct{}, defaultConcurrency),
+			rpcInFactory:    common.SimpleIncomingJSONRPC,
+			rpcOutFactory:   common.SimpleOutgoingJSONRPC,
+			dialerBuilder:   defaultDialerBuilder,
 			tracePropagator: s.cfg.tp,
 		},
 		r:       s.r,

@@ -1,9 +1,7 @@
 package stub
 
 import (
-	"fmt"
 	"io"
-	"strings"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -25,7 +23,7 @@ type config struct {
 	tp            kit.TracePropagator
 
 	readTimeout, writeTimeout, dialTimeout time.Duration
-	httpProxyConfig                        *httpproxy.Config
+	proxy                                  *httpproxy.Config
 	dialFunc                               fasthttp.DialFunc
 }
 
@@ -87,29 +85,25 @@ func WithTracePropagator(tp kit.TracePropagator) Option {
 // WithHTTPProxy returns an Option that sets the dialer to the provided HTTP proxy.
 // example formats:
 //
-//	http://localhost:9050
-//	http://username:password@localhost:9050
-//	https://localhost:9050
-func WithHTTPProxy(url string, timeout time.Duration) Option {
+//	localhost:9050
+//	username:password@localhost:9050
+//	localhost:9050
+func WithHTTPProxy(proxyURL string, timeout time.Duration) Option {
 	return func(cfg *config) {
-		cfg.httpProxyConfig = httpproxy.FromEnvironment()
-		switch {
-		default:
-			panic(fmt.Errorf("unsupported proxy scheme: %s", url))
-		case strings.HasPrefix(url, "https://"):
-			cfg.httpProxyConfig.HTTPSProxy = url
-		case strings.HasPrefix(url, "http://"):
-			cfg.httpProxyConfig.HTTPProxy = url
-		}
-
-		cfg.dialFunc = fasthttpproxy.FasthttpHTTPDialerTimeout(url, timeout)
+		cfg.proxy = httpproxy.FromEnvironment()
+		cfg.proxy.HTTPProxy = proxyURL
+		cfg.proxy.HTTPSProxy = proxyURL
+		cfg.dialFunc = fasthttpproxy.FasthttpHTTPDialerTimeout(proxyURL, timeout)
 	}
 }
 
 // WithSocksProxy returns an Option that sets the dialer to the provided SOCKS5 proxy.
-// example format: socks5://localhost:9050
-func WithSocksProxy(url string) Option {
+// example format: localhost:9050
+func WithSocksProxy(proxyURL string) Option {
 	return func(cfg *config) {
-		cfg.dialFunc = fasthttpproxy.FasthttpSocksDialer(url)
+		cfg.proxy = httpproxy.FromEnvironment()
+		cfg.proxy.HTTPProxy = proxyURL
+		cfg.proxy.HTTPSProxy = proxyURL
+		cfg.dialFunc = fasthttpproxy.FasthttpSocksDialer(proxyURL)
 	}
 }
