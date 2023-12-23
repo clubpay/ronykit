@@ -105,6 +105,10 @@ func REST(method, path string, opt ...UnarySelectorOption) UnaryOption {
 	}
 }
 
+func ALL(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("*", path, opt...)
+}
+
 func GET(path string, opt ...UnarySelectorOption) UnaryOption {
 	return REST("GET", path, opt...)
 }
