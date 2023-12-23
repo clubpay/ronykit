@@ -27,8 +27,9 @@ type MultiBatcher[IN, OUT any] struct {
 	pool        map[string]*Batcher[IN, OUT]
 }
 
-// NewMulti creates a pool of Batcher funcs. By calling Enter or EnterAndWait you add
-// the item into the Batcher which is identified by 'tagID'.
+// NewMulti creates a pool of Batcher functions.
+// By calling Enter or EnterAndWait you add the item into the Batcher which
+// is identified by 'tagID'.
 func NewMulti[IN, OUT any](f Func[IN, OUT], opt ...Option) *MultiBatcher[IN, OUT] {
 	cfg := defaultConfig
 	for _, o := range opt {

@@ -78,11 +78,23 @@ func Float64ToStr(x float64) string {
 	return strconv.FormatFloat(x, 'f', -1, 64)
 }
 
+func F64ToStr(x float64) string {
+	return Float64ToStr(x)
+}
+
 func Float32ToStr(x float32) string {
 	return strconv.FormatFloat(float64(x), 'f', -1, 32)
 }
 
+func F32ToStr(x float32) string {
+	return Float32ToStr(x)
+}
+
 func IntToStr(x int) string {
+	return strconv.FormatUint(uint64(x), 10)
+}
+
+func UIntToStr(x uint) string {
 	return strconv.FormatUint(uint64(x), 10)
 }
 

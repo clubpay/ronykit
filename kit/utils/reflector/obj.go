@@ -46,6 +46,7 @@ func (fields Fields) Get(m kit.Message, fieldName string) any {
 	fi := fields[fieldName]
 	mVal := reflect.Indirect(reflect.ValueOf(m)).Field(fi.idx)
 	switch fi.Kind() {
+	default:
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return mVal.Int()
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
