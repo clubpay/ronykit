@@ -135,6 +135,7 @@ func Paginate[T any](arr []T, pageSize int, fn func(start, end int) error) error
 	return nil
 }
 
+// MapToArray converts a map's values to a slice.
 func MapToArray[K comparable, V any](s map[K]V) []V {
 	arr := make([]V, 0, len(s))
 	for _, v := range s {
@@ -142,4 +143,65 @@ func MapToArray[K comparable, V any](s map[K]V) []V {
 	}
 
 	return arr
+}
+
+// ArrayToMap converts a slice to a map with the index as the key.
+func ArrayToMap[V any](s []V) map[int]V {
+	m := make(map[int]V, len(s))
+	for idx, v := range s {
+		m[idx] = v
+	}
+
+	return m
+}
+
+func Contains[T comparable](s []T, v T) bool {
+	for _, vv := range s {
+		if vv == v {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ContainsAny[T comparable](s []T, v []T) bool {
+	for _, vv := range v {
+		if Contains(s, vv) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ContainsAll[T comparable](s []T, v []T) bool {
+	for _, vv := range v {
+		if !Contains(s, vv) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// First returns the first value found in the map for the given keys.
+func First[K, V comparable](in map[K]V, keys ...K) (V, bool) {
+	var zero V
+	for _, k := range keys {
+		if v, ok := in[k]; ok {
+			return v, true
+		}
+	}
+
+	return zero, false
+}
+
+func FirstOr[K, V comparable](def V, in map[K]V, keys ...K) V {
+	v, ok := First(in, keys...)
+	if ok {
+		return v
+	}
+
+	return def
 }
