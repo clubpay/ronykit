@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"fmt"
 	"strings"
 	"unsafe"
 
@@ -120,34 +121,14 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	rVal := reflect.ValueOf(factory())
 	if rVal.Kind() != reflect.Ptr {
-		panic("x must be a pointer to struct")
+		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
 	}
 	rVal = rVal.Elem()
 	if rVal.Kind() != reflect.Struct {
-		panic("x must be a pointer to struct")
+		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
 	}
 
-	var pcs []paramCaster
-
-	for i := 0; i < rVal.NumField(); i++ {
-		f := rVal.Type().Field(i)
-		if tagValue := f.Tag.Get(tagKey); tagValue != "" {
-			valueParts := strings.Split(tagValue, ",")
-			if len(valueParts) == 1 {
-				valueParts = append(valueParts, "")
-			}
-
-			pcs = append(
-				pcs,
-				paramCaster{
-					offset: f.Offset,
-					name:   valueParts[0],
-					opt:    valueParts[1],
-					typ:    f.Type,
-				},
-			)
-		}
-	}
+	pcs := extractFields(rVal, tagKey)
 
 	return func(bag Params, data []byte) (kit.Message, error) {
 		var (
@@ -171,6 +152,8 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pcs[idx].offset)
 
 			switch pcs[idx].typ.Kind() {
+			default:
+				// simply ignore
 			case reflect.Int64:
 				*(*int64)(ptr) = utils.StrToInt64(x)
 			case reflect.Int32:
@@ -179,10 +162,21 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 				*(*uint64)(ptr) = utils.StrToUInt64(x)
 			case reflect.Uint32:
 				*(*uint32)(ptr) = utils.StrToUInt32(x)
+			case reflect.Float64:
+				*(*float64)(ptr) = utils.StrToFloat64(x)
+			case reflect.Float32:
+				*(*float32)(ptr) = utils.StrToFloat32(x)
 			case reflect.Int:
 				*(*int)(ptr) = utils.StrToInt(x)
 			case reflect.Uint:
 				*(*uint)(ptr) = utils.StrToUInt(x)
+			case reflect.Slice:
+				switch pcs[idx].typ.Elem().Kind() {
+				default:
+					// simply ignore
+				case reflect.Uint8:
+					*(*[]byte)(ptr) = utils.S2B(x)
+				}
 			case reflect.String:
 				*(*string)(ptr) = string(utils.S2B(x))
 			case reflect.Bool:
@@ -194,4 +188,33 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 		return v.(kit.Message), nil //nolint:forcetypeassert
 	}
+}
+
+func extractFields(rVal reflect.Value, tagKey string) []paramCaster {
+	var pcs []paramCaster
+	for i := 0; i < rVal.NumField(); i++ {
+		f := rVal.Type().Field(i)
+		if f.Type.Kind() == reflect.Struct && f.Anonymous {
+			pcs = append(pcs, extractFields(rVal.Field(i), tagKey)...)
+		} else {
+			if tagValue := f.Tag.Get(tagKey); tagValue != "" {
+				valueParts := strings.Split(tagValue, ",")
+				if len(valueParts) == 1 {
+					valueParts = append(valueParts, "")
+				}
+
+				pcs = append(
+					pcs,
+					paramCaster{
+						offset: f.Offset,
+						name:   valueParts[0],
+						opt:    valueParts[1],
+						typ:    f.Type,
+					},
+				)
+			}
+		}
+	}
+
+	return pcs
 }

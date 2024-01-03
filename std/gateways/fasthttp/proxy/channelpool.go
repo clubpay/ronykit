@@ -14,17 +14,17 @@ var (
 	errInvalidCapacitySetting = errors.New("invalid capacity settings")
 )
 
-// Pool interface impelement based on channel
+// Pool interface implement based on a channel
 // there is a channel to contain ReverseProxy object,
-// and provide Get and Put method to handle with RevsereProxy
+// and provide Get and Put method to handle with ReverseProxy
 type chanPool struct {
-	// mutex makes the chanPool woking with goroutine safely
+	// mutex makes the chanPool working with goroutine safely
 	mutex sync.RWMutex
 
 	// reverseProxyChan chan of getting the *ReverseProxy and putting it back
 	reverseProxyChan chan *ReverseProxy
 
-	// factory is factory method to generate ReverseProxy
+	// factory is a factory method to generate ReverseProxy
 	// this can be customized
 	factory Factory
 }
@@ -69,7 +69,7 @@ func (p *chanPool) getConnsAndFactory() (chan *ReverseProxy, Factory) {
 	return reverseProxyChan, factory
 }
 
-// Close close the pool
+// Close the pool
 func (p *chanPool) Close() {
 	p.mutex.Lock()
 	reverseProxyChan := p.reverseProxyChan
