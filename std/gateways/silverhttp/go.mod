@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/silverhttp
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.29
+	github.com/clubpay/ronykit/kit v0.11.30
 	github.com/go-www/silverlining v1.3.1
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.4.0
@@ -24,9 +24,9 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

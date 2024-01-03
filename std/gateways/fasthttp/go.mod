@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/fasthttp
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.29
+	github.com/clubpay/ronykit/kit v0.11.30
 	github.com/fasthttp/router v1.4.22
 	github.com/fasthttp/websocket v1.5.7
 	github.com/goccy/go-reflect v1.2.0
@@ -21,7 +21,7 @@ require (
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
