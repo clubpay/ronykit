@@ -73,7 +73,7 @@ func WithShutdownTimeout(d time.Duration) Option {
 // Internal errors are usually wrapped and could be checked for better error handling.
 // You can check with errors.Is function to see if the error is one of the following:
 // ErrDispatchFailed, ErrWriteToClosedConn, ErrNoHandler
-// ErrDecodeIncomingMessageFailed,, ErrEncodeOutgoingMessageFailed
+// ErrDecodeIncomingMessageFailed, ErrEncodeOutgoingMessageFailed
 func WithErrorHandler(h ErrHandlerFunc) Option {
 	return func(s *edgeConfig) {
 		s.errHandler = h
@@ -95,7 +95,7 @@ func WithTrace(tp Tracer) Option {
 
 // WithConnDelegate registers the delegate to receive callbacks on connection open/close events.
 // This delegate could be useful to add metrics based on the connections, or any other advanced
-// scenarios. For most use cases this is not necessary.
+// scenarios. For most use cases, this is not necessary.
 func WithConnDelegate(d ConnDelegate) Option {
 	return func(s *edgeConfig) {
 		s.connDelegate = d

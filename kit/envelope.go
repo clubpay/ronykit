@@ -99,17 +99,23 @@ func (e *Envelope) SetHdr(key, value string) *Envelope {
 
 func (e *Envelope) SetHdrWalker(walker Walker) *Envelope {
 	e.kvl.Lock()
-	walker.Walk(func(k, v string) bool {
-		e.kv[k] = v
-
-		return true
-	})
+	walker.Walk(e.walkFunc)
 	e.kvl.Unlock()
 
 	return e
 }
 
+func (e *Envelope) walkFunc(k, v string) bool {
+	e.kv[k] = v
+
+	return true
+}
+
 func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
+	if kv == nil {
+		return e
+	}
+
 	e.kvl.Lock()
 	for k, v := range kv {
 		e.kv[k] = v
@@ -184,4 +190,9 @@ func (e *Envelope) Send() {
 func (e *Envelope) Reply() *Envelope {
 	return newEnvelope(e.ctx, e.conn, true).
 		SetID(utils.B2S(e.id))
+}
+
+// IsOutgoing returns `true` if this Envelope is sending from Server to Client.
+func (e *Envelope) IsOutgoing() bool {
+	return e.outgoing
 }

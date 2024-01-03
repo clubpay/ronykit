@@ -46,3 +46,7 @@ func Wrap(top, down error) error {
 		down: down,
 	}
 }
+
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}

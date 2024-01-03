@@ -43,7 +43,7 @@ type OutgoingRPCContainer interface {
 type OutgoingRPCFactory func() OutgoingRPCContainer
 
 // Encoding defines the encoding of the messages which will be sent/received. Gateway implementor needs
-// to call correct method based on the encoding value.
+// to call the correct method based on the encoding value.
 type Encoding struct {
 	tag string
 }

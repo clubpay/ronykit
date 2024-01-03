@@ -51,9 +51,11 @@ var _ = Describe("Reflector", func() {
 /*
 Benchmark results:
 
-BenchmarkReflector/unsafe-16            	18662281      60.08 ns/op    5 B/op    1 allocs/op.
-BenchmarkReflector/unsafeRegistered-16      77882029      15.52 ns/op    5 B/op    1 allocs/op.
-BenchmarkReflector/reflect-16               30601716      35.86 ns/op   24 B/op    3 allocs/op.
+cpu: Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz
+BenchmarkReflector/unsafe-16            				15217726      78.51 ns/op     0 B/op   0 allocs/op
+BenchmarkReflector/unsafeRegistered-16          97216087      11.58 ns/op     0 B/op   0 allocs/op
+BenchmarkReflector/reflect-16                   30267793      37.32 ns/op    16 B/op   2 allocs/op
+BenchmarkReflector/ccyReflect-16                58138024      22.71 ns/op     8 B/op   1 allocs/op
 */
 func BenchmarkReflector(b *testing.B) {
 	benchs := []struct {

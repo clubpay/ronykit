@@ -1,7 +1,10 @@
 package fasthttp
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/clubpay/ronykit/kit"
 )
@@ -22,8 +25,21 @@ var (
 	_ kit.RPCRouteSelector  = (*Selector)(nil)
 )
 
+var legacyPathFormatRegEx = regexp.MustCompile(`/:([-_a-zA-Z0-9]*)[^/]`)
+
+func convertLegacyPathFormat(path string) string {
+	return legacyPathFormatRegEx.ReplaceAllStringFunc(
+		path,
+		func(s string) string {
+			return fmt.Sprintf("/{%s}", strings.TrimPrefix(s, "/:"))
+		},
+	)
+}
+
 // REST returns a Selector which acts on http requests.
 func REST(method, path string) Selector {
+	path = convertLegacyPathFormat(path)
+
 	return Selector{
 		Method: method,
 		Path:   path,
@@ -60,6 +76,16 @@ func RPC(predicate string) Selector {
 	return Selector{
 		Predicate: predicate,
 	}
+}
+
+// RPCs is a shortcut for multiple RPC selectors
+func RPCs(predicate ...string) []kit.RouteSelector {
+	selectors := make([]kit.RouteSelector, 0, len(predicate))
+	for idx := range predicate {
+		selectors = append(selectors, RPC(predicate[idx]))
+	}
+
+	return selectors
 }
 
 func (r Selector) GetEncoding() kit.Encoding {

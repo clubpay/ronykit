@@ -8,21 +8,25 @@ import (
 )
 
 type CORSConfig struct {
-	AllowedHeaders []string
-	AllowedMethods []string
-	AllowedOrigins []string
-	ExposedHeaders []string
+	AllowedHeaders    []string
+	AllowedMethods    []string
+	AllowedOrigins    []string
+	ExposedHeaders    []string
+	IgnoreEmptyOrigin bool
 }
 
 type cors struct {
-	headers        string
-	methods        string
-	origins        []string
-	exposedHeaders string
+	headers           string
+	methods           string
+	origins           []string
+	ignoreEmptyOrigin bool
+	exposedHeaders    string
 }
 
 func newCORS(cfg CORSConfig) *cors {
-	c := &cors{}
+	c := &cors{
+		ignoreEmptyOrigin: cfg.IgnoreEmptyOrigin,
+	}
 	if len(cfg.AllowedOrigins) == 0 {
 		c.origins = []string{"*"}
 	} else {
@@ -57,39 +61,39 @@ func (cors *cors) preflightCheck(rc *httpConn) {
 	rc.ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestMethod)
 }
 
-func (cors *cors) handle(rc *httpConn) {
+func (cors *cors) handle(ctx *fasthttp.RequestCtx) {
 	if cors == nil {
 		return
 	}
 
 	// ByPass cors (Cross Origin Resource Sharing) check
-	rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
-	rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlExposeHeaders, cors.exposedHeaders)
+	ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
+	ctx.Response.Header.Set(fasthttp.HeaderAccessControlExposeHeaders, cors.exposedHeaders)
 
-	origin := rc.Get(fasthttp.HeaderOrigin)
+	origin := ctx.Request.Header.Peek(fasthttp.HeaderOrigin)
 	if cors.origins[0] == "*" {
-		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
+		ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowOrigin, origin)
 	} else {
 		for _, allowedOrigin := range cors.origins {
-			if strings.EqualFold(origin, allowedOrigin) {
-				rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowOrigin, origin)
+			if strings.EqualFold(utils.B2S(origin), allowedOrigin) {
+				ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowOrigin, origin)
 			}
 		}
 	}
 
-	if rc.ctx.IsOptions() {
-		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestMethod)
-		rc.ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestHeaders)
-		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlRequestMethod, cors.methods)
-		reqHeaders := rc.ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestHeaders)
+	if ctx.IsOptions() {
+		ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestMethod)
+		ctx.Response.Header.Add("Vary", fasthttp.HeaderAccessControlRequestHeaders)
+		ctx.Response.Header.Set(fasthttp.HeaderAccessControlRequestMethod, cors.methods)
+		reqHeaders := ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestHeaders)
 		if len(reqHeaders) > 0 {
-			rc.ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowHeaders, reqHeaders)
+			ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowHeaders, reqHeaders)
 		} else {
-			rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowHeaders, cors.headers)
+			ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowHeaders, cors.headers)
 		}
 
-		rc.ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowMethods, cors.methods)
-		rc.ctx.SetStatusCode(fasthttp.StatusNoContent)
+		ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowMethods, cors.methods)
+		ctx.SetStatusCode(fasthttp.StatusNoContent)
 	}
 }
 
@@ -99,6 +103,10 @@ func (cors *cors) handleWS(ctx *fasthttp.RequestCtx) bool {
 	}
 
 	origin := utils.B2S(ctx.Request.Header.Peek(fasthttp.HeaderOrigin))
+	if origin == "" && cors.ignoreEmptyOrigin {
+		return true
+	}
+
 	if cors.origins[0] == "*" {
 		return true
 	} else {

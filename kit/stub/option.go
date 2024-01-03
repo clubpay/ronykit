@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpproxy"
+	"golang.org/x/net/http/httpproxy"
 )
 
 type Option func(cfg *config)
@@ -20,6 +23,8 @@ type config struct {
 	tp            kit.TracePropagator
 
 	readTimeout, writeTimeout, dialTimeout time.Duration
+	proxy                                  *httpproxy.Config
+	dialFunc                               fasthttp.DialFunc
 }
 
 func Secure() Option {
@@ -74,5 +79,31 @@ func DumpTo(w io.Writer) Option {
 func WithTracePropagator(tp kit.TracePropagator) Option {
 	return func(cfg *config) {
 		cfg.tp = tp
+	}
+}
+
+// WithHTTPProxy returns an Option that sets the dialer to the provided HTTP proxy.
+// example formats:
+//
+//	localhost:9050
+//	username:password@localhost:9050
+//	localhost:9050
+func WithHTTPProxy(proxyURL string, timeout time.Duration) Option {
+	return func(cfg *config) {
+		cfg.proxy = httpproxy.FromEnvironment()
+		cfg.proxy.HTTPProxy = proxyURL
+		cfg.proxy.HTTPSProxy = proxyURL
+		cfg.dialFunc = fasthttpproxy.FasthttpHTTPDialerTimeout(proxyURL, timeout)
+	}
+}
+
+// WithSocksProxy returns an Option that sets the dialer to the provided SOCKS5 proxy.
+// example format: localhost:9050
+func WithSocksProxy(proxyURL string) Option {
+	return func(cfg *config) {
+		cfg.proxy = httpproxy.FromEnvironment()
+		cfg.proxy.HTTPProxy = proxyURL
+		cfg.proxy.HTTPSProxy = proxyURL
+		cfg.dialFunc = fasthttpproxy.FasthttpSocksDialer(proxyURL)
 	}
 }

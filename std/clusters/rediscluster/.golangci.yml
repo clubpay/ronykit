@@ -28,6 +28,7 @@ linters:
     - ifshort
     - deadcode
     - structcheck
+    - depguard
   fast: false
 linters-settings:
   #  decorder:

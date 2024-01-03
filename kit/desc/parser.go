@@ -137,6 +137,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 
 		pp.Embedded = f.Anonymous
 		pp.Kind = parseKind(ft)
+		pp.Type = ft.String()
 		switch pp.Kind {
 		case Map:
 			if ft.Key().Kind() != reflect.String {
@@ -384,6 +385,7 @@ type ParsedField struct {
 	Tag         ParsedStructTag
 	SampleValue string
 	Optional    bool
+	Type        string
 	Kind        Kind
 	Embedded    bool
 

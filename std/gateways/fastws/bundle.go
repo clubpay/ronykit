@@ -38,8 +38,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),
 	}
-	gw := newGateway(b)
-	b.eh = gw
+	b.eh = newGateway(b)
 
 	for _, opt := range opts {
 		opt(b)
@@ -90,7 +89,13 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	}
 
 	msg := routeData.Factory()
-	err = inputMsgContainer.ExtractMessage(msg)
+	switch v := msg.(type) {
+	case kit.RawMessage:
+		err = inputMsgContainer.ExtractMessage(&v)
+		msg = v
+	default:
+		err = inputMsgContainer.ExtractMessage(msg)
+	}
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}

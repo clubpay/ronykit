@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/internal/json"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -15,6 +16,7 @@ type customStruct struct {
 	Obj2        customInterface `json:"obj2"`
 	PtrParam3   *string         `json:"ptrParam3"`
 	PtrSubParam *customStruct   `json:"prtSubParam"`
+	RawJSON     json.RawMessage `json:"rawJSON"`
 }
 
 type customSubStruct struct {

@@ -10,19 +10,19 @@ type (
 		Marshal() ([]byte, error)
 	}
 	Unmarshaler interface {
-		Unmarshal([]byte) error
+		Unmarshal(data []byte) error
 	}
 	JSONMarshaler interface {
 		MarshalJSON() ([]byte, error)
 	}
 	JSONUnmarshaler interface {
-		UnmarshalJSON([]byte) error
+		UnmarshalJSON(data []byte) error
 	}
 	ProtoMarshaler interface {
 		MarshalProto() ([]byte, error)
 	}
 	ProtoUnmarshaler interface {
-		UnmarshalProto([]byte) error
+		UnmarshalProto(data []byte) error
 	}
 	// Message is a generic interface for all messages. Message MUST BE serializable.
 	// It could implement one or many of the following interfaces:
@@ -82,13 +82,6 @@ func UnmarshalMessage(data []byte, m Message) error {
 	return defaultMessageMarshaler.Unmarshal(data, m)
 }
 
-func unmarshalMessageX(data []byte, m Message) {
-	err := jsonMarshaler.Unmarshal(data, m)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func MarshalMessage(m Message) ([]byte, error) {
 	switch v := m.(type) {
 	case RawMessage:
@@ -98,29 +91,54 @@ func MarshalMessage(m Message) ([]byte, error) {
 	}
 }
 
-func marshalMessageX(m Message) []byte {
-	switch v := m.(type) {
-	case RawMessage:
-		return v
-	}
-	data, err := jsonMarshaler.Marshal(m)
-	if err != nil {
-		panic(err)
-	}
-
-	return data
-}
-
 // RawMessage is a byte slice which could be used as a Message.
 // This is helpful for raw data messages.
 type RawMessage []byte
 
-func (rm *RawMessage) Marshal() ([]byte, error) {
-	return *rm, nil
+func (rm RawMessage) Marshal() ([]byte, error) {
+	return rm, nil
+}
+
+func (rm RawMessage) MarshalJSON() ([]byte, error) {
+	return rm, nil
 }
 
 func (rm *RawMessage) CopyFrom(in []byte) {
 	*rm = append(*rm, in...)
+}
+
+func (rm *RawMessage) CopyTo(out []byte) {
+	copy(out, *rm)
+}
+
+// Clone copies the underlying byte slice into dst. It is SAFE to
+// pass nil for dst.
+func (rm *RawMessage) Clone(dst []byte) []byte {
+	dst = append(dst, *rm...)
+
+	return dst
+}
+
+func (rm *RawMessage) Unmarshal(data []byte) error {
+	*rm = append(*rm, data...)
+
+	return nil
+}
+
+func (rm *RawMessage) UnmarshalJSON(data []byte) error {
+	*rm = append(*rm, data...)
+
+	return nil
+}
+
+func CastRawMessage[M Message](rawMsg RawMessage) (*M, error) {
+	var m M
+	err := UnmarshalMessage(rawMsg, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
 }
 
 // ErrorMessage is a special kind of Message which is also an error.
@@ -133,3 +151,5 @@ type ErrorMessage interface {
 
 // EmptyMessage is a special kind of Message which is empty.
 type EmptyMessage struct{}
+
+type JSONMessage = json.RawMessage

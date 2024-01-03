@@ -23,21 +23,25 @@ const (
 )
 
 type CORSConfig struct {
-	AllowedHeaders []string
-	AllowedMethods []string
-	AllowedOrigins []string
-	ExposedHeaders []string
+	AllowedHeaders    []string
+	AllowedMethods    []string
+	AllowedOrigins    []string
+	ExposedHeaders    []string
+	IgnoreEmptyOrigin bool
 }
 
 type cors struct {
-	headers        string
-	methods        string
-	origins        []string
-	exposedHeaders string
+	headers           string
+	methods           string
+	origins           []string
+	exposedHeaders    string
+	ignoreEmptyOrigin bool
 }
 
 func newCORS(cfg CORSConfig) *cors {
-	c := &cors{}
+	c := &cors{
+		ignoreEmptyOrigin: cfg.IgnoreEmptyOrigin,
+	}
 	if len(cfg.AllowedOrigins) == 0 {
 		c.origins = []string{"*"}
 	} else {
@@ -120,6 +124,10 @@ func (cors *cors) handleWS(ctx *silverlining.Context) bool {
 	}
 
 	origin, _ := ctx.RequestHeaders().Get(HeaderOrigin)
+	if origin == "" && cors.ignoreEmptyOrigin {
+		return true
+	}
+
 	if cors.origins[0] == "*" {
 		return true
 	} else {

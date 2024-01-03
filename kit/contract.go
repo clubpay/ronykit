@@ -69,7 +69,7 @@ type Contract interface {
 // ContractWrapper is like an interceptor which can add Pre- and Post- handlers to all
 // the Contracts of the Contract.
 type ContractWrapper interface {
-	Wrap(Contract) Contract
+	Wrap(c Contract) Contract
 }
 
 // ContractWrapperFunc implements ContractWrapper interface.

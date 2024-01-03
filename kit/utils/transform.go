@@ -19,7 +19,7 @@ var uppercaseAcronym = map[string]string{
 }
 
 // Converts a string to CamelCase
-func toCamelInitCase(s string, initCase bool) string { //nolint:gocognit
+func toCamelInitCase(s string, initCase bool) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return s

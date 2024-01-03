@@ -15,6 +15,7 @@ type httpConn struct {
 	utils.SpinLock
 
 	ctx *fasthttp.RequestCtx
+	rd  *routeData
 }
 
 var _ kit.RESTConn = (*httpConn)(nil)
@@ -22,6 +23,19 @@ var _ kit.RESTConn = (*httpConn)(nil)
 func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
 	c.ctx.Request.Header.VisitAll(
+		func(key, value []byte) {
+			if stopCall {
+				return
+			}
+
+			stopCall = !f(utils.B2S(key), utils.B2S(value))
+		},
+	)
+}
+
+func (c *httpConn) WalkQueryParams(f func(key string, val string) bool) {
+	stopCall := false
+	c.ctx.QueryArgs().VisitAll(
 		func(key, value []byte) {
 			if stopCall {
 				return

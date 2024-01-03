@@ -122,7 +122,8 @@ func (b *bundle) registerREST(
 
 	var methods []string
 	if method := restSelector.GetMethod(); method == MethodWildcard {
-		methods = append(methods,
+		methods = append(
+			methods,
 			MethodGet, MethodPost, MethodPut, MethodPatch, MethodDelete, MethodOptions,
 			MethodConnect, MethodTrace, MethodHead,
 		)

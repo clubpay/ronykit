@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"runtime"
 	"time"
 
@@ -20,7 +21,7 @@ type Stub struct {
 	cfg config
 	r   *reflector.Reflector
 
-	httpC fasthttp.Client
+	httpC *fasthttp.Client
 }
 
 func New(hostPort string, opts ...Option) *Stub {
@@ -36,29 +37,61 @@ func New(hostPort string, opts ...Option) *Stub {
 		opt(&cfg)
 	}
 
-	return &Stub{
-		cfg: cfg,
-		r:   reflector.New(),
-		httpC: fasthttp.Client{
-			Name:         cfg.name,
-			ReadTimeout:  cfg.readTimeout,
-			WriteTimeout: cfg.writeTimeout,
-			TLSConfig: &tls.Config{
-				InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
-			},
+	httpC := &fasthttp.Client{
+		Name:         cfg.name,
+		ReadTimeout:  cfg.readTimeout,
+		WriteTimeout: cfg.writeTimeout,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 		},
 	}
+
+	if cfg.dialFunc != nil {
+		httpC.Dial = cfg.dialFunc
+	}
+
+	return &Stub{
+		cfg:   cfg,
+		r:     reflector.New(),
+		httpC: httpC,
+	}
+}
+
+func HTTP(rawURL string, opts ...Option) (*RESTCtx, error) {
+	u, err := url.ParseRequestURI(rawURL)
+	if err != nil {
+		return nil, err
+	}
+
+	switch u.Scheme {
+	default:
+		return nil, fmt.Errorf("unsupported scheme: %s", u.Scheme)
+	case "http":
+	case "https":
+		opts = append(opts, Secure())
+	}
+
+	s := New(u.Host, opts...).REST()
+	s.SetPath(u.Path)
+	for k, v := range u.Query() {
+		for _, vv := range v {
+			s.AppendQuery(k, vv)
+		}
+	}
+
+	return s, nil
 }
 
 func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 	ctx := &RESTCtx{
-		c:        &s.httpC,
+		c:        s.httpC,
 		r:        s.r,
 		handlers: map[int]RESTResponseHandler{},
 		uri:      fasthttp.AcquireURI(),
 		args:     fasthttp.AcquireArgs(),
 		req:      fasthttp.AcquireRequest(),
 		res:      fasthttp.AcquireResponse(),
+		timeout:  s.cfg.readTimeout,
 	}
 
 	if s.cfg.secure {
@@ -80,21 +113,29 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 }
 
 func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
+	defaultProxy := http.ProxyFromEnvironment
+	if s.cfg.proxy != nil {
+		defaultProxy = func(req *http.Request) (*url.URL, error) {
+			return s.cfg.proxy.ProxyFunc()(req.URL)
+		}
+	}
+
+	defaultDialerBuilder := func() *websocket.Dialer {
+		return &websocket.Dialer{
+			Proxy:            defaultProxy,
+			HandshakeTimeout: s.cfg.dialTimeout,
+		}
+	}
 	ctx := &WebsocketCtx{
 		cfg: wsConfig{
-			autoReconnect: true,
-			pingTime:      time.Second * 30,
-			dialTimeout:   s.cfg.dialTimeout,
-			writeTimeout:  s.cfg.writeTimeout,
-			ratelimitChan: make(chan struct{}, defaultConcurrency),
-			rpcInFactory:  common.SimpleIncomingJSONRPC,
-			rpcOutFactory: common.SimpleOutgoingJSONRPC,
-			dialerBuilder: func() *websocket.Dialer {
-				return &websocket.Dialer{
-					Proxy:            http.ProxyFromEnvironment,
-					HandshakeTimeout: s.cfg.dialTimeout,
-				}
-			},
+			autoReconnect:   true,
+			pingTime:        time.Second * 30,
+			dialTimeout:     s.cfg.dialTimeout,
+			writeTimeout:    s.cfg.writeTimeout,
+			ratelimitChan:   make(chan struct{}, defaultConcurrency),
+			rpcInFactory:    common.SimpleIncomingJSONRPC,
+			rpcOutFactory:   common.SimpleOutgoingJSONRPC,
+			dialerBuilder:   defaultDialerBuilder,
 			tracePropagator: s.cfg.tp,
 		},
 		r:       s.r,

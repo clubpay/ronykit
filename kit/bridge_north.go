@@ -16,6 +16,8 @@ type GatewayStartConfig struct {
 // Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
 // between your server and the clients you are free to implement your own Gateway.
+// If you are a bundle developer need to work with interface otherwise you don't need to know
+// much about this interface.
 type Gateway interface {
 	// Start starts the gateway to accept connections.
 	Start(ctx context.Context, cfg GatewayStartConfig) error
@@ -90,10 +92,10 @@ func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
 	ctx.rawData = msg
 
 	arg, err := n.gw.Dispatch(ctx, msg)
-	switch err { //nolint:errorlint
-	case nil:
+	switch {
+	case err == nil:
 		ctx.execute(arg, n.c[arg.ContractID])
-	case ErrPreflight:
+	case errors.Is(err, ErrPreflight):
 		// If this is a Preflight request, we ignore executing it.
 		// This is a workaround for CORS Preflight requests.
 	default:

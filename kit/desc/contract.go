@@ -110,22 +110,24 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 }
 
 // AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle specific.
-func (c *Contract) AddSelector(s kit.RouteSelector) *Contract {
-	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
-		Name:     "",
-		Selector: s,
-	})
+func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
+	for idx := range s {
+		c.RouteSelectors = append(
+			c.RouteSelectors,
+			RouteSelector{Name: "", Selector: s[idx]},
+		)
+	}
 
 	return c
 }
 
 // Selector is an alias for AddSelector
-func (c *Contract) Selector(s kit.RouteSelector) *Contract {
-	return c.AddSelector(s)
+func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
+	return c.AddSelector(s...)
 }
 
-// AddNamedSelector adds a kit.RouteSelector for this contract, and assign it a unique name.
-// In case of you need to use auto-generated stub.Stub for your service/contract this name will
+// AddNamedSelector adds a kit.RouteSelector for this contract, and assigns it a unique name.
+// In case you need to use auto-generated stub.Stub for your service/contract this name will
 // be used in the generated code.
 func (c *Contract) AddNamedSelector(name string, s kit.RouteSelector) *Contract {
 	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
@@ -183,7 +185,7 @@ func (c *Contract) SetHandler(h ...kit.HandlerFunc) *Contract {
 	return c
 }
 
-// contractImpl is simple implementation of kit.Contract interface.
+// contractImpl is a simple implementation of kit.Contract interface.
 type contractImpl struct {
 	id             string
 	routeSelector  kit.RouteSelector

@@ -32,7 +32,7 @@ var _ = Describe("Desc", func() {
 		Expect(d.DTOs["customSubStruct"].Fields[3].Tags).To(HaveLen(1))
 		Expect(d.DTOs["customSubStruct"].Fields[3].IsDTO).To(BeFalse())
 
-		Expect(d.DTOs["customStruct"].Fields).To(HaveLen(5))
+		Expect(d.DTOs["customStruct"].Fields).To(HaveLen(6))
 		Expect(d.DTOs["customStruct"].Fields[0].Name).To(Equal("Param1"))
 		Expect(d.DTOs["customStruct"].Fields[0].Tags).To(HaveLen(1))
 		Expect(d.DTOs["customStruct"].Fields[0].Type).To(Equal("string"))
@@ -48,5 +48,8 @@ var _ = Describe("Desc", func() {
 		Expect(d.DTOs["customStruct"].Fields[4].Name).To(Equal("PtrSubParam"))
 		Expect(d.DTOs["customStruct"].Fields[4].Tags).To(HaveLen(1))
 		Expect(d.DTOs["customStruct"].Fields[4].Type).To(Equal("*customStruct"))
+		Expect(d.DTOs["customStruct"].Fields[5].Name).To(Equal("RawJSON"))
+		Expect(d.DTOs["customStruct"].Fields[5].Tags).To(HaveLen(1))
+		Expect(d.DTOs["customStruct"].Fields[5].Type).To(Equal("kit.JSONMessage"))
 	})
 })

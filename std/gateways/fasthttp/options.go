@@ -1,8 +1,17 @@
 package fasthttp
 
-import "github.com/clubpay/ronykit/kit"
+import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+)
 
 type Option func(b *bundle)
+
+func SuperFast() Option {
+	return func(b *bundle) {
+		b.utils = speedUtil()
+	}
+}
 
 func WithServerName(name string) Option {
 	return func(b *bundle) {
@@ -45,6 +54,21 @@ func WithPredicateKey(key string) Option {
 func WithWebsocketEndpoint(endpoint string) Option {
 	return func(b *bundle) {
 		b.wsEndpoint = endpoint
+	}
+}
+
+func WithReverseProxy(path string, opt ...proxy.Option) Option {
+	return func(b *bundle) {
+		var err error
+		b.reverseProxy, err = proxy.NewReverseProxyWith(opt...)
+		if err != nil {
+			panic(err)
+		}
+		if path == "" {
+			path = "/"
+		}
+
+		b.reverseProxyPath = path
 	}
 }
 

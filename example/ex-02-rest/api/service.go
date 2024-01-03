@@ -54,6 +54,7 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
 				Selector(fasthttp.REST(http.MethodPost, "/raw_echo")).
+				Selector(fasthttp.RPC("rawEcho")).
 				SetHandler(RawEchoHandler),
 		)
 }
@@ -78,6 +79,7 @@ func RawEchoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(kit.RawMessage)
 
+	fmt.Println("RawEchoHandler", string(req))
 	ctx.In().Reply().SetMsg(req).Send()
 
 	return

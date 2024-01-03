@@ -1,0 +1,9 @@
+### GET request query params
+GET http://127.0.0.1/echo?id={{$random.uuid}}&timestamp={{$timestamp}}
+Accept: application/json
+
+
+### GET request with url params
+GET http://127.0.0.1/echo/{{$random.uuid}}?timestamp={{$timestamp}}
+Accept: application/json
+

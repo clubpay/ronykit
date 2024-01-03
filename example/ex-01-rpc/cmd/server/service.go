@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
@@ -17,8 +18,8 @@ var sampleService = desc.NewService("SampleService").
 			SetInput(&dto.EchoRequest{}).
 			SetOutput(&dto.EchoResponse{}).
 			AddSelector(fasthttp.REST(http.MethodGet, "/echo/:randomID")).
-			AddSelector(fasthttp.RPC("echoRequest")).
-			AddSelector(fastws.RPC("echoRequest")).
+			AddSelector(fasthttp.RPCs("echoRequest")...).
+			AddSelector(fastws.RPCs("echoRequest")...).
 			SetHandler(echoHandler),
 	)
 
@@ -26,6 +27,7 @@ func echoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
+	fmt.Println("got request: ", req)
 	ctx.In().Reply().
 		SetHdr("cmd", ctx.In().GetHdr("cmd")).
 		SetMsg(

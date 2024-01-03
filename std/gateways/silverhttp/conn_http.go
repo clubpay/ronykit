@@ -28,6 +28,17 @@ func (c *httpConn) Walk(f func(key string, val string) bool) {
 	}
 }
 
+func (c *httpConn) WalkQueryParams(f func(key string, val string) bool) {
+	stopCall := false
+	for _, h := range c.ctx.QueryParams() {
+		if !stopCall {
+			if !f(utils.B2S(h.Key), utils.B2S(h.Value)) {
+				stopCall = true
+			}
+		}
+	}
+}
+
 func (c *httpConn) Get(key string) string {
 	v, ok := c.ctx.RequestHeaders().GetBytes(utils.S2B(key))
 	if ok {

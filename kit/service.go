@@ -16,7 +16,7 @@ type Service interface {
 // ServiceWrapper lets you add customizations to your service. A specific case of it is serviceInterceptor
 // which can add Pre- and Post-handlers to all the Contracts of the Service.
 type ServiceWrapper interface {
-	Wrap(Service) Service
+	Wrap(s Service) Service
 }
 
 type ServiceWrapperFunc func(Service) Service

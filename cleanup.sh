@@ -16,6 +16,13 @@ go fmt ./...
 go vet ./...
 GOWORK=off golangci-lint run
 
+echo "Cleaning up [rony]..."
+cd "$wd"/rony || exit
+go mod tidy
+go fmt ./...
+go vet ./...
+GOWORK=off golangci-lint run
+
 echo "Cleaning up [redisCluster]..."
 cd "$wd"/std/clusters/rediscluster || exit
 go mod tidy

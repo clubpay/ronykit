@@ -16,19 +16,18 @@ const (
 type (
 	// ErrHandlerFunc is called when an error happens in internal layers.
 	// NOTICE: ctx could be nil, make sure you do nil-check before calling its methods.
-	ErrHandlerFunc func(ctx *Context, err error)
+	ErrHandlerFunc = func(ctx *Context, err error)
 	// HandlerFunc is a function that will execute code in its context. If there is another handler
 	// set in the path, by calling ctx.Next you can move forward and then run the rest of the code in
 	// your handler.
-	HandlerFunc        func(ctx *Context)
+	HandlerFunc        = func(ctx *Context)
 	HandlerFuncChain   []HandlerFunc
-	LimitedHandlerFunc func(ctx *LimitedContext)
+	LimitedHandlerFunc = func(ctx *LimitedContext)
 )
 
 type Context struct {
 	utils.SpinLock
 	ctx       context.Context //nolint:containedctx
-	cf        func()
 	sb        *southBridge
 	ls        *localStore
 	forwarded bool
@@ -60,13 +59,19 @@ func newContext(ls *localStore) *Context {
 	}
 }
 
+// ExecuteArg is used by bundle developers, if they want to build a
+// Gateway or Cluster to be used with EdgeServer. If you are the user of
+// the framework, you don't need this.
+// In general ExecuteArg carrys information about the Context that is running,
+// for example it identifies that which Contract from which Service is this Context for.
+// Route identifies which RouteSelector was this request comes from.
 type ExecuteArg struct {
 	ServiceName string
 	ContractID  string
 	Route       string
 }
 
-// Execute the Context with the provided ExecuteArg.
+// execute the Context with the provided ExecuteArg.
 func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.
 		setRoute(arg.Route).
@@ -147,13 +152,12 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 	ctx.ctx = userCtx
 }
 
-// Context returns a context.WithCancel which can be used a reference context for
+// Context returns a context.Background which can be used a reference context for
 // other context-aware function calls.
-// This context will be canceled at the end of Context lifetime.
 func (ctx *Context) Context() context.Context {
 	ctx.Lock()
 	if ctx.ctx == nil {
-		ctx.ctx, ctx.cf = context.WithCancel(context.Background())
+		ctx.ctx = context.Background()
 	}
 	ctx.Unlock()
 
@@ -161,7 +165,7 @@ func (ctx *Context) Context() context.Context {
 }
 
 // SetStatusCode set the connection status. It **ONLY** works if the underlying connection
-// is a REST connection.
+// is a RESTConn connection.
 func (ctx *Context) SetStatusCode(code int) {
 	ctx.statusCode = code
 
@@ -187,7 +191,13 @@ func (ctx *Context) Conn() Conn {
 }
 
 // RESTConn returns the underlying REST connection. It panics if the underlying connection
-// does not implement RESTConn interface.
+// does not implement RESTConn interface. If you want to be safe when calling this method
+// you can use IsREST method:
+// Example:
+//
+//	 if ctx.IsREST() {
+//			conn := ctx.RESTConn()
+//	 }
 func (ctx *Context) RESTConn() RESTConn {
 	return ctx.conn.(RESTConn) //nolint:forcetypeassert
 }
@@ -226,7 +236,7 @@ func (ctx *Context) In() *Envelope {
 // after this Context lifetime. If you need to use it after the Context lifetime,
 // you need to copy it.
 // You should not use this method in your code, ONLY if you need it for debugging.
-func (ctx *Context) InputRawData() []byte {
+func (ctx *Context) InputRawData() RawMessage {
 	return ctx.rawData
 }
 
@@ -284,10 +294,6 @@ func (ctx *Context) reset() {
 	ctx.handlerIndex = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
-	if ctx.cf != nil {
-		ctx.cf()
-		ctx.cf = nil
-	}
 	ctx.ctx = nil
 }
 

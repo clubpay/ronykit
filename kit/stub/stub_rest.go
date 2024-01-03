@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/internal/json"
@@ -31,6 +32,7 @@ type RESTCtx struct {
 	r              *reflector.Reflector
 	dumpReq        io.Writer
 	dumpRes        io.Writer
+	timeout        time.Duration
 
 	// fasthttp entities
 	c    *fasthttp.Client
@@ -93,8 +95,30 @@ func (hc *RESTCtx) SetQuery(key, value string) *RESTCtx {
 	return hc
 }
 
+func (hc *RESTCtx) AppendQuery(key, value string) *RESTCtx {
+	hc.args.Add(key, value)
+
+	return hc
+}
+
+func (hc *RESTCtx) SetQueryMap(kv map[string]string) *RESTCtx {
+	for k, v := range kv {
+		hc.args.Set(k, v)
+	}
+
+	return hc
+}
+
 func (hc *RESTCtx) SetHeader(key, value string) *RESTCtx {
 	hc.req.Header.Set(key, value)
+
+	return hc
+}
+
+func (hc *RESTCtx) SetHeaderMap(kv map[string]string) *RESTCtx {
+	for k, v := range kv {
+		hc.req.Header.Set(k, v)
+	}
 
 	return hc
 }
@@ -105,10 +129,40 @@ func (hc *RESTCtx) SetBody(body []byte) *RESTCtx {
 	return hc
 }
 
+// SetBodyErr is a helper method, which is useful when we want to pass the marshaler function
+// directly without checking the error, before passing it to the SetBody method.
+// example:
+//
+//	restCtx.SetBodyErr(json.Marshal(m))
+//
+// Is equivalent to:
+//
+//	b, err := json.Marshal(m)
+//	if err != nil {
+//		// handle err
+//	}
+//	restCtx.SetBody(b)
+func (hc *RESTCtx) SetBodyErr(body []byte, err error) *RESTCtx {
+	if err != nil {
+		hc.err = WrapError(err)
+
+		return hc
+	}
+
+	return hc.SetBody(body)
+}
+
 func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
+	if hc.err != nil {
+		return hc
+	}
+
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
+	for k, v := range hc.cfg.hdr {
+		hc.req.Header.Set(k, v)
+	}
 
 	if tp := hc.cfg.tp; tp != nil {
 		tp.Inject(ctx, restTraceCarrier{r: &hc.req.Header})
@@ -120,7 +174,7 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	}
 
 	// execute the request
-	hc.err = WrapError(hc.c.Do(hc.req, hc.res))
+	hc.err = WrapError(hc.c.DoTimeout(hc.req, hc.res, hc.timeout))
 
 	if hc.dumpReq != nil {
 		_, _ = hc.req.WriteTo(hc.dumpReq)
@@ -177,6 +231,20 @@ func (hc *RESTCtx) GetBody() []byte {
 	}
 
 	return hc.res.Body()
+}
+
+// ReadResponseBody reads the response body to the provided writer.
+// It MUST be called after Run or AutoRun.
+func (hc *RESTCtx) ReadResponseBody(w io.Writer) *RESTCtx {
+	if hc.err != nil {
+		return hc
+	}
+
+	if _, err := w.Write(hc.res.Body()); err != nil {
+		hc.err = WrapError(err)
+	}
+
+	return hc
 }
 
 // CopyBody copies the body to `dst`. It creates a new slice and returns it if dst is nil.

@@ -1,6 +1,7 @@
 package stub
 
 import (
+	"compress/flate"
 	"net/http"
 	"sync"
 	"time"
@@ -33,6 +34,7 @@ type wsConfig struct {
 	pingTime      time.Duration
 	dialTimeout   time.Duration
 	writeTimeout  time.Duration
+	compressLevel int
 
 	preDial    func(d *websocket.Dialer)
 	onConnect  OnConnectHandler
@@ -125,5 +127,22 @@ func WithRecoverPanic(f func(err any)) WebsocketOption {
 func WithPreflightRPC(h ...RPCPreflightHandler) WebsocketOption {
 	return func(cfg *wsConfig) {
 		cfg.preflights = append(cfg.preflights[:0], h...)
+	}
+}
+
+type CompressionLevel int
+
+const (
+	CompressionBestSpeed       CompressionLevel = flate.BestSpeed
+	CompressionBestCompression CompressionLevel = flate.BestCompression
+)
+
+func WithCompression(c CompressionLevel) WebsocketOption {
+	return func(cfg *wsConfig) {
+		switch c {
+		default:
+		case CompressionBestSpeed, CompressionBestCompression:
+			cfg.compressLevel = int(c)
+		}
 	}
 }

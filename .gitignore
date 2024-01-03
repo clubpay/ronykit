@@ -119,5 +119,4 @@ Temporary Items
 
 _*
 *.pprof
-go.work
 go.work.sum

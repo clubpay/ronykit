@@ -207,7 +207,7 @@ func (s *EdgeServer) startChild(ctx context.Context) {
 	s.startup(ctx)
 }
 
-// watchParent watches parent process
+// watchParent watches the parent process
 func (s *EdgeServer) watchParent() {
 	if runtime.GOOS == "windows" {
 		// finds parent process,

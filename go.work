@@ -1,0 +1,16 @@
+go 1.19
+
+use (
+	./contrib
+	./example/ex-01-rpc
+	./example/ex-02-rest
+	./example/ex-03-cluster
+	./example/ex-04-stubgen
+	./kit
+	./rony
+	./std/clusters/rediscluster
+	./std/clusters/meshcluster
+	./std/gateways/fasthttp
+	./std/gateways/fastws
+	./std/gateways/silverhttp
+)

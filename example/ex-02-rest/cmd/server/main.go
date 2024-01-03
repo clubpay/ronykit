@@ -6,6 +6,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 	"runtime/debug"
 	"syscall"
 
@@ -15,13 +16,15 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(4)
+
 	go func() {
 		_ = http.ListenAndServe(":1234", nil)
 	}()
 
 	// Create, start and wait for shutdown signal of the server.
 	defer kit.NewServer(
-		kit.WithPrefork(),
+		// kit.WithPrefork(),
 		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
 			fmt.Println(err, string(debug.Stack()))
 		}),
@@ -39,6 +42,6 @@ func main() {
 		),
 	).
 		Start(context.TODO()).
-		PrintRoutes(os.Stdout).
+		PrintRoutesCompact(os.Stdout).
 		Shutdown(context.TODO(), syscall.SIGHUP)
 }
