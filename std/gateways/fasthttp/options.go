@@ -79,6 +79,12 @@ func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option
 	}
 }
 
+func WithDisableHeaderNamesNormalizing() Option {
+	return func(b *bundle) {
+		b.srv.DisableHeaderNamesNormalizing = true
+	}
+}
+
 // CompressionLevel is numeric representation of compression level
 type CompressionLevel int
 
