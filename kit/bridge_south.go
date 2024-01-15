@@ -246,6 +246,9 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 		)
 
 		ctx.Error(err)
+
+		// We should stop executing next handlers, since our request has been executed on
+		// a remote machine
 		ctx.StopExecution()
 	}
 }

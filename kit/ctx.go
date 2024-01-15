@@ -127,6 +127,7 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 	you allow the processing flow to continue and pass control to the subsequent middleware functions
 	in the chain.
 */
+
 func (ctx *Context) Next() {
 	ctx.handlerIndex++
 	for ctx.handlerIndex <= len(ctx.handlers) {
@@ -252,7 +253,7 @@ func (ctx *Context) OutTo(c Conn) *Envelope {
 	return newEnvelope(ctx, c, true)
 }
 
-// Error is useful for some kind of errors which you are not going to return it to the connection,
+// Error is useful for some kind of errors that you are not going to return it to the connection,
 // or you want to use its side effect for logging, monitoring, etc. This will call your ErrHandlerFunc.
 // The boolean result indicates if 'err' was an actual error.
 func (ctx *Context) Error(err error) bool {
@@ -295,12 +296,6 @@ func (ctx *Context) reset() {
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
 	ctx.ctx = nil
-}
-
-func (ctx *Context) isREST() bool {
-	_, ok := ctx.Conn().(RESTConn)
-
-	return ok
 }
 
 type ctxPool struct {

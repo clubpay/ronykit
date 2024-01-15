@@ -13,17 +13,17 @@ type GatewayStartConfig struct {
 	ReusePort bool
 }
 
-// Gateway is main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
+// Gateway is the main component of the EdgeServer. Without Gateway, the EdgeServer is not functional. You can use
 // some standard bundles in std/bundle path. However, if you need special handling of communication
-// between your server and the clients you are free to implement your own Gateway.
-// If you are a bundle developer need to work with interface otherwise you don't need to know
+// between your server and clients, you are free to implement your own Gateway.
+// If you are a bundle developer need to work with interface otherwise, you don't need to know
 // much about this interface.
 type Gateway interface {
 	// Start starts the gateway to accept connections.
 	Start(ctx context.Context, cfg GatewayStartConfig) error
 	// Shutdown shuts down the gateway gracefully.
 	Shutdown(ctx context.Context) error
-	// Register registers the route in the Bundle. This is how Bundle get information
+	// Register registers the route in the Bundle. This is how Bundle gets information
 	// about the services and their contracts.
 	Register(
 		serviceName, contractID string, enc Encoding, sel RouteSelector, input Message,
@@ -36,7 +36,7 @@ type Gateway interface {
 	Subscribe(d GatewayDelegate)
 	// Dispatch receives the messages from external clients and runs the execFunc with appropriate
 	// arguments. The user of the Gateway does not need to implement this. If you are using some
-	// standard bundles like std/gateway/fasthttp or std/gateway/fastws then all the implementation
+	// standard bundles like std/gateway/fasthttp or std/gateway/fastws, then all the implementation
 	// is taken care of.
 	Dispatch(ctx *Context, in []byte) (ExecuteArg, error)
 }
