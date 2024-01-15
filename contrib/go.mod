@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/clubpay/ronykit/kit v0.11.33
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.33
-	github.com/go-openapi/spec v0.20.12
+	github.com/go-openapi/spec v0.20.14
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
 	github.com/rbretecher/go-postman-collection v0.9.0
@@ -20,9 +20,9 @@ require (
 	github.com/fasthttp/websocket v1.5.7 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/jsonpointer v0.20.1 // indirect
-	github.com/go-openapi/jsonreference v0.20.3 // indirect
-	github.com/go-openapi/swag v0.22.5 // indirect
+	github.com/go-openapi/jsonpointer v0.20.2 // indirect
+	github.com/go-openapi/jsonreference v0.20.4 // indirect
+	github.com/go-openapi/swag v0.22.6 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
