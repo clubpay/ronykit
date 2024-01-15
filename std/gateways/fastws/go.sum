@@ -1,6 +1,6 @@
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
-github.com/clubpay/ronykit/kit v0.11.31 h1:5qlE4UUO8ohfCzNjDcFhRrtOKdx2b/AHYktftPHI1t0=
-github.com/clubpay/ronykit/kit v0.11.31/go.mod h1:NkgsJ+04j1YSB/qM0cU/3Y6gprRabLIh6+TYgFtr8eo=
+github.com/clubpay/ronykit/kit v0.11.32 h1:qW6FpZpDD9k64GcP3K/p8EZ6XaXZ1TFMVMfBODJilW8=
+github.com/clubpay/ronykit/kit v0.11.32/go.mod h1:NkgsJ+04j1YSB/qM0cU/3Y6gprRabLIh6+TYgFtr8eo=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
