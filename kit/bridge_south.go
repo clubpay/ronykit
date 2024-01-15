@@ -236,6 +236,10 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 						unmarshalEnvelopeCarrier(carrier.Data.Msg, msg)
 					}
 
+					for k, v := range carrier.Data.ConnHdr {
+						ctx.Conn().Set(k, v)
+					}
+
 					ctx.Out().
 						SetID(carrier.Data.EnvelopeID).
 						SetHdrMap(carrier.Data.Hdr).

@@ -205,3 +205,9 @@ func FirstOr[K, V comparable](def V, in map[K]V, keys ...K) V {
 
 	return def
 }
+
+func ForEach[V any](in []V, fn func(*V)) {
+	for idx := range in {
+		fn(&in[idx])
+	}
+}

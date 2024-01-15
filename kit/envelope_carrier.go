@@ -81,6 +81,12 @@ func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 		return true
 	})
 
+	e.conn.Walk(func(key string, val string) bool {
+		ec.Data.ConnHdr[key] = val
+
+		return true
+	})
+
 	return ec
 }
 
