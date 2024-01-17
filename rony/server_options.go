@@ -136,3 +136,9 @@ func WithGlobalHandlers(handlers ...kit.HandlerFunc) ServerOption {
 		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithGlobalHandlers(handlers...))
 	}
 }
+
+func WithDisableHeaderNamesNormalizing() ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithDisableHeaderNamesNormalizing())
+	}
+}

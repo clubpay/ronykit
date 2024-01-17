@@ -32,6 +32,10 @@ func (ctx *LimitedContext) Conn() Conn {
 	return ctx.ctx.conn
 }
 
+func (ctx *LimitedContext) IsREST() bool {
+	return ctx.ctx.IsREST()
+}
+
 // SetHdr sets the common header key-value pairs, so in Out method we do not need to
 // repeatedly set those. If you only want to set the header for an envelope, you can
 // use Envelope.SetHdr method instead.

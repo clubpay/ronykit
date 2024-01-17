@@ -31,7 +31,7 @@ type envelopeCarrier struct {
 func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 	ec.Data = &carrierData{
 		EnvelopeID:  ctx.In().GetID(),
-		IsREST:      ctx.isREST(),
+		IsREST:      ctx.IsREST(),
 		MsgType:     reflect.TypeOf(ctx.In().GetMsg()).String(),
 		Msg:         marshalEnvelopeCarrier(ctx.In().GetMsg()),
 		ContractID:  ctx.ContractID(),
@@ -65,7 +65,7 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 	ec.Data = &carrierData{
 		EnvelopeID:  utils.B2S(e.id),
-		IsREST:      e.ctx.isREST(),
+		IsREST:      e.ctx.IsREST(),
 		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
 		Msg:         marshalEnvelopeCarrier(e.GetMsg()),
 		ContractID:  e.ctx.ContractID(),
@@ -77,6 +77,12 @@ func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 
 	e.WalkHdr(func(key string, val string) bool {
 		ec.Data.Hdr[key] = val
+
+		return true
+	})
+
+	e.conn.Walk(func(key string, val string) bool {
+		ec.Data.ConnHdr[key] = val
 
 		return true
 	})
