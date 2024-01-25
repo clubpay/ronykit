@@ -288,6 +288,8 @@ func (wCtx *WebsocketCtx) Stats() WebsocketStats {
 }
 
 type WebsocketRequest struct {
+	// ID is optional, if you don't set it, a random string will be generated
+	ID string
 	// Predicate is the routing key for the message, which will be added to the kit.OutgoingRPCContainer
 	Predicate string
 	// MessageType is the type of the message, either websocket.TextMessage or websocket.BinaryMessage
@@ -295,14 +297,19 @@ type WebsocketRequest struct {
 	ReqMsg      kit.Message
 	// ResMsg is the message that will be used to unmarshal the response.
 	// You should pass a pointer to the struct that you want to unmarshal the response into.
+	// If Callback is nil, then this field will be ignored.
 	ResMsg kit.Message
 	// ReqHdr is the headers that will be added to the kit.OutgoingRPCContainer
 	ReqHdr Header
 	// Callback is the callback that will be called when the response is received.
-	// This MUST BE non-nil otherwise it panics.
+	// If this is nil, the response will be ignored. However, the response will be caught by
+	// the default handler if it is set.
 	Callback RPCMessageHandler
 }
 
+// Do send a message to the websocket server and waits for the response. If the callback
+// is not nil, then make sure you provide a context with deadline or timeout, otherwise
+// you will leak goroutines.
 func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	// run preflights
 	for _, pre := range wCtx.cfg.preflights {
@@ -310,7 +317,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	}
 
 	outC := wCtx.cfg.rpcOutFactory()
-	id := utils.RandomDigit(10)
+	if req.ID == "" {
+		req.ID = utils.RandomDigit(10)
+	}
 	outC.InjectMessage(req.ReqMsg)
 	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)
 	if tp := wCtx.cfg.tracePropagator; tp != nil {
@@ -319,7 +328,7 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	for k, v := range req.ReqHdr {
 		outC.SetHdr(k, v)
 	}
-	outC.SetID(id)
+	outC.SetID(req.ID)
 
 	reqData, err := outC.Marshal()
 	if err != nil {
@@ -337,7 +346,9 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 
 	outC.Release()
 
-	go wCtx.waitForMessage(ctx, id, req.ResMsg, req.Callback)
+	if req.Callback != nil {
+		go wCtx.waitForMessage(ctx, req.ID, req.ResMsg, req.Callback)
+	}
 
 	return nil
 }
