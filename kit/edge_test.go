@@ -269,7 +269,7 @@ func (t testConn) Get(key string) string {
 	return t.kv[key]
 }
 
-func (t testConn) Set(key string, val string) {
+func (t *testConn) Set(key string, val string) {
 	t.kv[key] = val
 }
 
@@ -496,8 +496,10 @@ var _ = Describe("EdgeServer/Cluster", func() {
 	DescribeTable("should echo back the message",
 		func(msg []byte) {
 			c := newTestConn(utils.RandomUint64(0), "", false)
+			c.Set("X-Hdr1", "edge1")
 			b1.Send(c, msg)
 			Expect(c.ReadString()).To(BeEquivalentTo("edge2"))
+			Expect(c.Get("X-Hdr1")).To(BeEquivalentTo("edge1"))
 		},
 		Entry("a raw string", kit.RawMessage("Hello this is a simple message")),
 		Entry("a ToJSON string", kit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),

@@ -56,6 +56,7 @@ func newContext(ls *localStore) *Context {
 		kv:         make(map[string]any, 4),
 		hdr:        make(map[string]string, 4),
 		statusCode: http.StatusOK,
+		ctx:        context.Background(),
 	}
 }
 
@@ -156,12 +157,6 @@ func (ctx *Context) SetUserContext(userCtx context.Context) {
 // Context returns a context.Background which can be used a reference context for
 // other context-aware function calls.
 func (ctx *Context) Context() context.Context {
-	ctx.Lock()
-	if ctx.ctx == nil {
-		ctx.ctx = context.Background()
-	}
-	ctx.Unlock()
-
 	return ctx.ctx
 }
 
@@ -295,7 +290,7 @@ func (ctx *Context) reset() {
 	ctx.handlerIndex = 0
 	ctx.handlers = ctx.handlers[:0]
 	ctx.modifiers = ctx.modifiers[:0]
-	ctx.ctx = nil
+	ctx.ctx = context.Background()
 }
 
 type ctxPool struct {
