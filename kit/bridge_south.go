@@ -229,7 +229,15 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 					target,
 				).FillWithContext(ctx),
 				OutCallback: func(carrier *envelopeCarrier) {
-					msg := sb.msgFactories[carrier.Data.MsgType]()
+					if carrier.Data == nil {
+						return
+					}
+					f, ok := sb.msgFactories[carrier.Data.MsgType]
+					if !ok {
+						return
+					}
+
+					msg := f()
 					switch msg.(type) {
 					case RawMessage:
 						msg = RawMessage(carrier.Data.Msg)
