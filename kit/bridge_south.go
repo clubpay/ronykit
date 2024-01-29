@@ -120,6 +120,10 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 		ctx.SetUserContext(sb.tp.Extract(ctx.Context(), carrier.Data))
 	}
 
+	for k, v := range carrier.Data.ConnHdr {
+		ctx.Conn().Set(k, v)
+	}
+
 	ctx.in.
 		SetID(carrier.Data.EnvelopeID).
 		SetHdrMap(carrier.Data.Hdr).

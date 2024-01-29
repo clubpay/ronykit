@@ -1,0 +1,13 @@
+### Send POST request with json body
+POST http://localhost:82/set
+Content-Type: application/json
+Sample-Header: sampleValue
+
+{
+  "key": "x1",
+  "value": "content1"
+}
+
+### Send GET request
+GET http://localhost:83/get/x1
+Content-Type: application/json
