@@ -48,11 +48,13 @@ type FlatMessage struct {
 }
 
 type NestedMessage struct {
-	A  string                 `json:"a"`
-	B  FlatMessage            `json:"b"`
-	BA []FlatMessage          `json:"ba,omitempty"`
-	BM map[string]FlatMessage `json:"bm"`
-	C  *FlatMessage           `json:"c"`
+	A    string                  `json:"a"`
+	B    FlatMessage             `json:"b"`
+	BA   []FlatMessage           `json:"ba,omitempty"`
+	BM   map[string]FlatMessage  `json:"bm"`
+	C    *FlatMessage            `json:"c"`
+	PA   []*FlatMessage          `json:"pa"`
+	PMap map[string]*FlatMessage `json:"pmap"`
 }
 
 var _ = Describe("DescParser", func() {
@@ -79,7 +81,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Method).To(Equal("GET"))
 		Expect(contract0.GroupName).To(Equal("c1"))
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(5))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(6))
 
@@ -91,7 +93,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract1.GroupName).To(Equal("c1"))
 
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(5))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
 		Expect(contract0.Request.Message.Fields[0].Kind).To(Equal(desc.String))
 		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
@@ -104,6 +106,12 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Fields[4].Optional).To(BeTrue())
 		Expect(contract0.Request.Message.FieldByName("ba").Kind).To(Equal(desc.Array))
 		Expect(contract0.Request.Message.FieldByGoName("BA").Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Kind).To(Equal(desc.Array))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Kind).To(Equal(desc.Map))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Message.Name).To(Equal("FlatMessage"))
 
 		b := contract0.Request.Message.Fields[1]
 		Expect(b.Name).To(Equal("b"))

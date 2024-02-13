@@ -26,11 +26,12 @@ type subRes struct {
 }
 
 type sampleRes struct {
-	Out1 int      `json:"out1"`
-	Out2 string   `json:"out2"`
-	Sub  subRes   `json:"sub"`
-	Subs []subRes `json:"subs"`
-	XSub *subRes  `json:"xSub"`
+	Out1  int       `json:"out1"`
+	Out2  string    `json:"out2"`
+	Sub   subRes    `json:"sub"`
+	Subs  []subRes  `json:"subs,omitempty"`
+	XSub  *subRes   `json:"xSub"`
+	Subs2 []*subRes `json:"subs2,omitempty"`
 }
 
 type sampleError struct {
@@ -135,6 +136,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		// 		Sub  subRes   `json:"sub"`
 		// 		Subs []subRes `json:"subs,omitempty"`
 		// 		XSub *subRes  `json:"xSub"`
+		//		Subs2 []*subRes `json:"subs2,omitempty"`
 		// }
 
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
@@ -167,9 +169,12 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[3].Name).To(Equal("subs"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
 		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
-		Expect(props[4].Name).To(Equal("xSub"))
-		Expect(props[4].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
-		Expect(props[4].SchemaProps.Description).To(Equal("[Optional]"))
+		Expect(props[4].Name).To(Equal("subs2"))
+		Expect(props[4].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[4].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[5].Name).To(Equal("xSub"))
+		Expect(props[5].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[5].SchemaProps.Description).To(Equal("[Optional]"))
 	})
 
 	It("Check Request for Contract[1].Response (anotherRes)", func() {

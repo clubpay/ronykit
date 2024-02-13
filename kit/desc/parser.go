@@ -141,6 +141,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		pp.Type = ft.String()
 		switch pp.Kind {
 		case Map:
+			// we only support maps with string keys
 			if ft.Key().Kind() != reflect.String {
 				continue
 			}
@@ -153,15 +154,16 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 			keepGoing := true
 			for keepGoing {
 				ft = ft.Elem()
-				kind := parseKind(ft)
-				pe.Kind = kind
-				switch kind {
+				pe.Kind = parseKind(ft)
+				switch pe.Kind {
 				case Map, Array:
 					pe.Element = &ParsedElement{}
 					pe = pe.Element
 				case Object:
-					pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
-					pe.Message = &pm
+					if ft.Kind() == reflect.Ptr {
+						ft = ft.Elem()
+					}
+					pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
 					keepGoing = false
 				default:
 					keepGoing = false
@@ -173,8 +175,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 			} else if ps.isVisited(ft.Name()) {
 				panic(fmt.Sprintf("infinite recursion detected: %s.%s", mt.Name(), ft.Name()))
 			} else {
-				pm := ps.parseMessage(reflect.New(ft).Interface(), enc)
-				pp.Message = &pm
+				pp.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
 			}
 
 		case None:
