@@ -133,7 +133,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		// 		Out1 int      `json:"out1"`
 		// 		Out2 string   `json:"out2"`
 		// 		Sub  subRes   `json:"sub"`
-		// 		Subs []subRes `json:"subs"`
+		// 		Subs []subRes `json:"subs,omitempty"`
 		// 		XSub *subRes  `json:"xSub"`
 		// }
 

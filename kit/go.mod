@@ -6,11 +6,11 @@ require (
 	github.com/fasthttp/websocket v1.5.7
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
-	github.com/jedib0t/go-pretty/v6 v6.5.3
+	github.com/jedib0t/go-pretty/v6 v6.5.4
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.31.1
-	github.com/valyala/fasthttp v1.51.0
-	golang.org/x/net v0.20.0
+	github.com/valyala/fasthttp v1.52.0
+	golang.org/x/net v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

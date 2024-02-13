@@ -50,7 +50,7 @@ type FlatMessage struct {
 type NestedMessage struct {
 	A  string                 `json:"a"`
 	B  FlatMessage            `json:"b"`
-	BA []FlatMessage          `json:"ba"`
+	BA []FlatMessage          `json:"ba,omitempty"`
 	BM map[string]FlatMessage `json:"bm"`
 	C  *FlatMessage           `json:"c"`
 }
@@ -102,6 +102,8 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Fields[4].Kind).To(Equal(desc.Object))
 		Expect(contract0.Request.Message.Fields[4].Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Request.Message.Fields[4].Optional).To(BeTrue())
+		Expect(contract0.Request.Message.FieldByName("ba").Kind).To(Equal(desc.Array))
+		Expect(contract0.Request.Message.FieldByGoName("BA").Element.Kind).To(Equal(desc.Object))
 
 		b := contract0.Request.Message.Fields[1]
 		Expect(b.Name).To(Equal("b"))

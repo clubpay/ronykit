@@ -125,8 +125,9 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		f := mt.Field(i)
 		ptn := getParsedStructTag(f.Tag, tagName)
 		pp := ParsedField{
-			Name: ptn.Name,
-			Tag:  ptn,
+			GoName: f.Name,
+			Name:   ptn.Name,
+			Tag:    ptn,
 		}
 
 		ft := f.Type
@@ -380,7 +381,28 @@ func (pm ParsedMessage) String() string {
 	return sb.String()
 }
 
+func (pm ParsedMessage) FieldByName(name string) *ParsedField {
+	for _, f := range pm.Fields {
+		if f.Name == name {
+			return &f
+		}
+	}
+
+	return nil
+}
+
+func (pm ParsedMessage) FieldByGoName(name string) *ParsedField {
+	for _, f := range pm.Fields {
+		if f.GoName == name {
+			return &f
+		}
+	}
+
+	return nil
+}
+
 type ParsedField struct {
+	GoName      string
 	Name        string
 	Tag         ParsedStructTag
 	SampleValue string
@@ -448,6 +470,7 @@ func parseKind(t reflect.Type) Kind {
 	}
 
 	switch t.Kind() {
+	default:
 	case reflect.Bool:
 		return Bool
 	case reflect.String:
