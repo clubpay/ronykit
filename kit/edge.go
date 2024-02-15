@@ -131,6 +131,7 @@ func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 		inProgressMtx: utils.SpinLock{},
 		inProgress:    map[string]chan *envelopeCarrier{},
 		msgFactories:  map[string]MessageFactoryFunc{},
+		l:             s.l,
 	}
 
 	// Subscribe the southBridge, which is a ClusterDelegate, to connect southBridge with the Cluster
@@ -611,6 +612,8 @@ type localStore struct {
 	kvl sync.RWMutex
 	kv  map[string]any
 }
+
+var _ Store = (*localStore)(nil)
 
 func (ls *localStore) Get(key string) any {
 	ls.kvl.RLock()

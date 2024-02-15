@@ -11,6 +11,7 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/fasthttp/router v1.4.22 // indirect
 	github.com/fasthttp/websocket v1.5.7 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.5.4 // indirect

@@ -12,4 +12,5 @@ use (
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/silverhttp
+	./testenv
 )

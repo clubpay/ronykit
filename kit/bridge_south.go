@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 	"sync"
-	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -21,21 +20,11 @@ type Cluster interface {
 	Publish(id string, data []byte) error
 	// Subscribers return the list of the instance ids.
 	Subscribers() ([]string, error)
-	// Store returns a shared key-value store between all instances.
-	Store() ClusterStore
 }
 
-type ClusterStore interface {
-	// Set creates/updates a key-value pair in the cluster
-	Set(key, value string, ttl time.Duration) error
-	// Delete deletes the key-value pair from the cluster
-	Delete(key string) error
-	// Get returns the value bind to the key
-	Get(key string) (string, error)
-	// Scan scans through the keys which have the prefix.
-	// If callback returns `false`, then the scan is aborted.
-	Scan(prefix string, cb func(string) bool) error
-	ScanWithValue(prefix string, cb func(string, string) bool) error
+type ClusterWithStore interface {
+	// Store returns a shared key-value store between all instances.
+	Store() ClusterStore
 }
 
 type ClusterDelegate interface {
@@ -51,6 +40,7 @@ type southBridge struct {
 	c  map[string]Contract
 	cb Cluster
 	tp TracePropagator
+	l  Logger
 
 	inProgressMtx utils.SpinLock
 	inProgress    map[string]chan *envelopeCarrier
@@ -156,6 +146,7 @@ func (sb *southBridge) onOutgoingMessage(ctx *Context, carrier *envelopeCarrier)
 	sb.inProgressMtx.Lock()
 	ch, ok := sb.inProgress[carrier.SessionID]
 	sb.inProgressMtx.Unlock()
+
 	if ok {
 		select {
 		case ch <- carrier:

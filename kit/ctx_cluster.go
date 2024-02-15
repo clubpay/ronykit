@@ -7,12 +7,18 @@ var ErrClusterNotSet = errors.New("cluster is not set")
 // ClusterStore returns a key-value store which is shared between different instances of the cluster.
 //
 // NOTE: If you don't set any Cluster for your EdgeServer, then this method will panic.
+// NOTE: If the cluster doesn't support key-value store, then this method will return nil.
 func (ctx *Context) ClusterStore() ClusterStore {
 	if ctx.sb == nil {
 		panic(ErrClusterNotSet)
 	}
 
-	return ctx.sb.cb.Store()
+	s, ok := ctx.sb.cb.(ClusterWithStore)
+	if ok {
+		return s.Store()
+	}
+
+	return nil
 }
 
 // HasCluster returns true if the cluster is set for this EdgeServer.

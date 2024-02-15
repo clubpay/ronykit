@@ -19,7 +19,7 @@ type cluster struct {
 	msgChan      <-chan *redis.Message
 	id           string
 	d            kit.ClusterDelegate
-	shutdownChan <-chan struct{}
+	shutdownChan chan struct{}
 	prefix       string
 	idleTime     time.Duration
 	gcPeriod     time.Duration
@@ -32,9 +32,10 @@ var (
 
 func New(name string, opts ...Option) (kit.Cluster, error) {
 	c := &cluster{
-		prefix:   name,
-		idleTime: time.Minute * 10,
-		gcPeriod: time.Minute,
+		prefix:       name,
+		idleTime:     time.Minute * 10,
+		gcPeriod:     time.Minute,
+		shutdownChan: make(chan struct{}, 1),
 	}
 	for _, o := range opts {
 		o(c)
@@ -84,7 +85,10 @@ func (c *cluster) Start(_ context.Context) error {
 	go func() {
 		for {
 			select {
-			case msg := <-c.msgChan:
+			case msg, ok := <-c.msgChan:
+				if !ok {
+					return
+				}
 				_ = c.d.OnMessage(utils.S2B(msg.Payload)) //nolint:errcheck
 			case <-c.shutdownChan:
 				_ = c.ps.Close()
@@ -98,6 +102,8 @@ func (c *cluster) Start(_ context.Context) error {
 }
 
 func (c *cluster) Shutdown(ctx context.Context) error {
+	c.shutdownChan <- struct{}{}
+
 	return c.rc.HDel(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id).Err()
 }
 

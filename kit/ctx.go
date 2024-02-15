@@ -105,8 +105,17 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 	}
 
 	// FixME: this can block forever
-	for c := range ch {
-		arg.OutCallback(c)
+LOOP:
+	for {
+		select {
+		case <-ctx.ctx.Done():
+			return ctx.ctx.Err()
+		case c, ok := <-ch:
+			if !ok {
+				break LOOP
+			}
+			arg.OutCallback(c)
+		}
 	}
 
 	return nil

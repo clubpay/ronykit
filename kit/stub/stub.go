@@ -38,9 +38,10 @@ func New(hostPort string, opts ...Option) *Stub {
 	}
 
 	httpC := &fasthttp.Client{
-		Name:         cfg.name,
-		ReadTimeout:  cfg.readTimeout,
-		WriteTimeout: cfg.writeTimeout,
+		Name:                          cfg.name,
+		ReadTimeout:                   cfg.readTimeout,
+		WriteTimeout:                  cfg.writeTimeout,
+		DisableHeaderNamesNormalizing: true,
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
 		},
