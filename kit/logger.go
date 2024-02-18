@@ -5,14 +5,14 @@ type Logger interface {
 	Errorf(format string, args ...any)
 }
 
-type nopLogger struct{}
+type NOPLogger struct{}
 
-var _ Logger = (*nopLogger)(nil)
+var _ Logger = (*NOPLogger)(nil)
 
-func (n nopLogger) Error(_ ...any) {}
+func (n NOPLogger) Error(_ ...any) {}
 
-func (n nopLogger) Errorf(_ string, _ ...any) {}
+func (n NOPLogger) Errorf(_ string, _ ...any) {}
 
-func (n nopLogger) Debug(_ ...any) {}
+func (n NOPLogger) Debug(_ ...any) {}
 
-func (n nopLogger) Debugf(_ string, _ ...any) {}
+func (n NOPLogger) Debugf(_ string, _ ...any) {}

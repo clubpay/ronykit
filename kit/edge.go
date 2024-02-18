@@ -52,7 +52,7 @@ func NewServer(opts ...Option) *EdgeServer {
 		},
 	}
 	cfg := &edgeConfig{
-		logger:     nopLogger{},
+		logger:     NOPLogger{},
 		errHandler: func(ctx *Context, err error) {},
 	}
 	for _, opt := range opts {

@@ -2,7 +2,11 @@ package kit
 
 import "github.com/clubpay/ronykit/kit/errors"
 
-var ErrClusterNotSet = errors.New("cluster is not set")
+var (
+	ErrClusterNotSet          = errors.New("cluster is not set")
+	ErrClusterMemberNotFound  = errors.New("cluster member not found")
+	ErrClusterMemberNotActive = errors.New("cluster member not active")
+)
 
 // ClusterStore returns a key-value store which is shared between different instances of the cluster.
 //

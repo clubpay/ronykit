@@ -80,7 +80,9 @@ func (c *cluster) gc() {
 	}
 }
 
-func (c *cluster) Start(_ context.Context) error {
+func (c *cluster) Start(ctx context.Context) error {
+	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, c.id))
+	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
 	c.msgChan = c.ps.Channel()
 	go func() {
 		for {
@@ -108,10 +110,7 @@ func (c *cluster) Shutdown(ctx context.Context) error {
 }
 
 func (c *cluster) Subscribe(id string, d kit.ClusterDelegate) {
-	ctx := context.Background()
 	c.id = id
-	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, id))
-	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), id, utils.TimeUnix())
 	c.d = d
 }
 

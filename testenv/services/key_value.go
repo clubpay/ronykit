@@ -8,6 +8,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
@@ -38,7 +39,7 @@ var SimpleKeyValueService kit.ServiceDescriptor = desc.NewService("simpleKeyValu
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
 					req, _ := ctx.In().GetMsg().(*SetRequest)
-					err := ctx.ClusterStore().Set(req.Key, ctx.ClusterID(), 0)
+					err := sharedKV.Set(ctx, req.Key, ctx.ClusterID(), 0)
 					if err != nil {
 						ctx.SetStatusCode(500)
 
@@ -93,7 +94,7 @@ func keyValueCoordinator(ctx *kit.LimitedContext) (string, error) {
 		key = ctx.In().GetMsg().(*GetRequest).Key //nolint:forcetypeassert
 	}
 
-	return ctx.ClusterStore().Get(key)
+	return sharedKV.Get(ctx, key)
 }
 
 func contextMW(t time.Duration) kit.HandlerFunc {
@@ -103,4 +104,42 @@ func contextMW(t time.Duration) kit.HandlerFunc {
 		ctx.Next()
 		cf()
 	}
+}
+
+type testClusterStore struct {
+	mtx      utils.SpinLock
+	sharedKV map[string]string
+}
+
+func (t *testClusterStore) Set(ctx *kit.Context, key, value string, ttl time.Duration) error {
+	cs := ctx.ClusterStore()
+	if cs != nil {
+		return cs.Set(key, value, ttl)
+	}
+
+	t.mtx.Lock()
+	t.sharedKV[key] = value
+	t.mtx.Unlock()
+
+	return nil
+}
+
+func (t *testClusterStore) Get(ctx *kit.LimitedContext, key string) (string, error) {
+	cs := ctx.ClusterStore()
+	if cs != nil {
+		return cs.Get(key)
+	}
+
+	t.mtx.Lock()
+	value, ok := t.sharedKV[key]
+	t.mtx.Unlock()
+	if !ok {
+		return "", fmt.Errorf("key not found")
+	}
+
+	return value, nil
+}
+
+var sharedKV = testClusterStore{
+	sharedKV: make(map[string]string),
 }

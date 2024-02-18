@@ -211,3 +211,11 @@ func ForEach[V any](in []V, fn func(*V)) {
 		fn(&in[idx])
 	}
 }
+
+func AddUnique[T comparable](s []T, v T) []T {
+	if Contains(s, v) {
+		return s
+	}
+
+	return append(s, v)
+}

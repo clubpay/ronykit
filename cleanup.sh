@@ -30,6 +30,13 @@ go fmt ./...
 go vet ./...
 GOWORK=off golangci-lint run
 
+echo "Cleaning up [p2pCluster]..."
+cd "$wd"/std/clusters/p2pcluster || exit
+go mod tidy
+go fmt ./...
+go vet ./...
+GOWORK=off golangci-lint run
+
 echo "Cleaning up [fasthttp]..."
 cd "$wd"/std/gateways/fasthttp || exit
 go mod tidy

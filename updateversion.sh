@@ -8,7 +8,7 @@ wd=$(pwd)
 git tag -a kit/"$2" -m "$2"
 git push --tags
 
-array1=(std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster)
+array1=(std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp std/clusters/rediscluster std/clusters/p2pcluster)
 for i in "${array1[@]}"
 do
 	filename="$i"/go.mod
