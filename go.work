@@ -6,6 +6,10 @@ use (
 	./example/ex-02-rest
 	./example/ex-03-cluster
 	./example/ex-04-stubgen
+	./example/ex-05-counter
+	./example/ex-06-counter-stream
+	./example/ex-08-echo
+	./example/ex-09-mw
 	./kit
 	./rony
 	./std/clusters/rediscluster

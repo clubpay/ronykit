@@ -65,8 +65,6 @@ func SetKeyHandler(ctx *kit.Context) {
 				Success: true,
 			},
 		).Send()
-
-	return
 }
 
 func GetKeyHandler(ctx *kit.Context) {
@@ -83,6 +81,4 @@ func GetKeyHandler(ctx *kit.Context) {
 				Value: v,
 			},
 		).Send()
-
-	return
 }

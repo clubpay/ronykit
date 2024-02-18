@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/example/ex-03-cluster
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/contrib v0.11.35
-	github.com/clubpay/ronykit/kit v0.11.35
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.11.35
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.35
+	github.com/clubpay/ronykit/contrib v0.11.40
+	github.com/clubpay/ronykit/kit v0.11.40
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.11.40
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.40
 	github.com/orlangure/gnomock v0.30.0
 )
 

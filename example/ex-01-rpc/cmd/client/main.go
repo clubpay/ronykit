@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
@@ -49,7 +50,7 @@ func main() {
 	}
 
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Kill, os.Interrupt)
+	signal.Notify(ch, syscall.SIGTERM, os.Interrupt)
 	<-ch
 	_ = wsCtx.Disconnect()
 }

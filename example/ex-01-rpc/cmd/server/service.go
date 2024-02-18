@@ -36,6 +36,4 @@ func echoHandler(ctx *kit.Context) {
 				Ok:       req.Ok,
 			},
 		).Send()
-
-	return
 }

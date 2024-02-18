@@ -42,6 +42,4 @@ func DummyHandler(ctx *kit.Context) {
 				MapKey1: req.MapKey1,
 			},
 		).Send()
-
-	return
 }

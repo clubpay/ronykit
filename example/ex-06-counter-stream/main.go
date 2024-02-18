@@ -157,17 +157,17 @@ func countStream(ctx *rony.StreamCtx[*EchoCounter, string, *CounterResponseDTO],
 }
 
 func printMW(ctx *kit.Context) {
-	fmt.Println(fmt.Sprintf(
-		"<- req: REST(%t) %s",
+	fmt.Printf(
+		"<- req: REST(%t) %s\n",
 		ctx.IsREST(),
 		utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
-	))
+	)
 	ctx.AddModifier(
 		func(e *kit.Envelope) {
-			fmt.Println(fmt.Sprintf(
-				"-> res: %s",
+			fmt.Printf(
+				"-> res: %s\n",
 				utils.B2S(utils.Must(kit.MarshalMessage(e.GetMsg()))),
-			))
+			)
 		},
 	)
 }

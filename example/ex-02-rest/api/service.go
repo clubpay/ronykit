@@ -71,8 +71,6 @@ func EchoHandler(ctx *kit.Context) {
 				Ok:       req.Ok,
 			},
 		).Send()
-
-	return
 }
 
 func RawEchoHandler(ctx *kit.Context) {
@@ -81,8 +79,6 @@ func RawEchoHandler(ctx *kit.Context) {
 
 	fmt.Println("RawEchoHandler", string(req))
 	ctx.In().Reply().SetMsg(req).Send()
-
-	return
 }
 
 func SumHandler(ctx *kit.Context) {
@@ -97,8 +93,6 @@ func SumHandler(ctx *kit.Context) {
 				Val:            req.Val1 + req.Val2,
 			},
 		).Send()
-
-	return
 }
 
 func SumRedirectHandler(ctx *kit.Context) {
@@ -129,11 +123,7 @@ func SumRedirectHandler(ctx *kit.Context) {
 		ctx.In().Reply().
 			SetMsg(dto.Err(http.StatusBadRequest, "Unsupported method")).
 			Send()
-
-		return
 	}
-
-	return
 }
 
 func Redirect(ctx *kit.Context) {
