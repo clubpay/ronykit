@@ -35,7 +35,6 @@ type cluster struct {
 	topicsMtx           utils.SpinLock
 	topics              map[string]*pubsub.Topic
 	myTopicCancelFunc   context.CancelFunc
-	myTopic             *pubsub.Topic
 }
 
 var (
