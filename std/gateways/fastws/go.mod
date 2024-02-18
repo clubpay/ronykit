@@ -3,13 +3,12 @@ module github.com/clubpay/ronykit/std/gateways/fastws
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.38
+	github.com/clubpay/ronykit/kit v0.11.39
 	github.com/gobwas/ws v1.3.2
 	github.com/panjf2000/gnet/v2 v2.3.4
 )
 
 require (
-	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect

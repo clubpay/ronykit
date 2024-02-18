@@ -3,14 +3,13 @@ module github.com/clubpay/ronykit/std/clusters/rediscluster
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.38
+	github.com/clubpay/ronykit/kit v0.11.39
 	github.com/redis/go-redis/v9 v9.4.0
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.5.4 // indirect
