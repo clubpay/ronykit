@@ -1,4 +1,6 @@
-go 1.19
+go 1.21
+
+toolchain go1.21.7
 
 use (
 	./contrib
@@ -12,8 +14,8 @@ use (
 	./example/ex-09-mw
 	./kit
 	./rony
-	./std/clusters/rediscluster
 	./std/clusters/p2pcluster
+	./std/clusters/rediscluster
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/silverhttp
