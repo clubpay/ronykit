@@ -145,11 +145,30 @@ func MapToArray[K comparable, V any](s map[K]V) []V {
 	return arr
 }
 
+// MapKeysToArray converts a map's keys to a slice.
+func MapKeysToArray[K comparable, V any](s map[K]V) []K {
+	arr := make([]K, 0, len(s))
+	for k := range s {
+		arr = append(arr, k)
+	}
+
+	return arr
+}
+
 // ArrayToMap converts a slice to a map with the index as the key.
 func ArrayToMap[V any](s []V) map[int]V {
 	m := make(map[int]V, len(s))
 	for idx, v := range s {
 		m[idx] = v
+	}
+
+	return m
+}
+
+func ArrayToSet[T comparable](s []T) map[T]struct{} {
+	m := make(map[T]struct{}, len(s))
+	for _, v := range s {
+		m[v] = struct{}{}
 	}
 
 	return m
