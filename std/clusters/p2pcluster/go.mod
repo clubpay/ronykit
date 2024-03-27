@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/clusters/p2pcluster
 go 1.21
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.41
+	github.com/clubpay/ronykit/kit v0.11.42
 	github.com/libp2p/go-libp2p v0.32.2
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
 )
@@ -83,7 +83,6 @@ require (
 	github.com/raulk/go-watchdog v1.3.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/fx v1.20.1 // indirect
 	go.uber.org/mock v0.3.0 // indirect
