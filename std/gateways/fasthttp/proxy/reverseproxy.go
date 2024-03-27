@@ -116,21 +116,7 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		req.Header.Add("X-Forwarded-For", ip)
 	}
 
-	// to save all response header
-	// resHeaders := make(map[string]string)
-	// res.Header.VisitAll(func(k, v []byte) {
-	// 	key := string(k)
-	// 	value := string(v)
-	// 	if val, ok := resHeaders[key]; ok {
-	// 		resHeaders[key] = val + "," + value
-	// 	}
-	// 	resHeaders[key] = value
-	// })
-
 	for _, h := range hopHeaders {
-		// if h == "Te" && hv == "trailers" {
-		// 	continue
-		// }
 		req.Header.Del(h)
 	}
 

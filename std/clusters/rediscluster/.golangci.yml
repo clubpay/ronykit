@@ -29,6 +29,7 @@ linters:
     - deadcode
     - structcheck
     - depguard
+    - perfsprint
   fast: false
 linters-settings:
   #  decorder:

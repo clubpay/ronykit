@@ -131,7 +131,6 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			}
 		}
 	})
-
 	if err != nil {
 		errorF(w.option.logger, "websocketproxy: couldn't upgrade %s", err)
 	}

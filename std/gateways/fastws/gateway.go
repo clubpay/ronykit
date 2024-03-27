@@ -143,7 +143,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 			return gnet.Close
 		}
 		if hdr.OpCode.IsControl() {
-			wsc.r.OnIntermediate = func(header ws.Header, reader io.Reader) error {
+			wsc.r.OnIntermediate = func(header ws.Header, _ io.Reader) error {
 				return wsutil.ControlHandler{
 					Src:                 wsc.r,
 					Dst:                 wsc.c,

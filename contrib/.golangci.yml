@@ -31,6 +31,7 @@ linters:
     - gocritic
     - exhaustive
     - depguard
+    - perfsprint
   fast: false
 linters-settings:
   #  decorder:
