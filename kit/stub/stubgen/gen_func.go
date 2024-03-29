@@ -6,6 +6,10 @@ import (
 	"github.com/clubpay/ronykit/kit/internal/tpl"
 )
 
+// GenFunc is the function which generates the final code. For example to generate
+// golang code use GolangStub
+type GenFunc func(in Input) (string, error)
+
 func GolangStub(in Input) (string, error) {
 	sb := &strings.Builder{}
 

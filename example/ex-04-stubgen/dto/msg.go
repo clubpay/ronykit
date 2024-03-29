@@ -2,7 +2,13 @@ package dto
 
 import "encoding/json"
 
+type SimpleHdr struct {
+	Key1 string `json:"sKey1"`
+	Key2 int    `json:"sKey2"`
+}
+
 type VeryComplexRequest struct {
+	SimpleHdr
 	Key1      string             `json:"key1"`
 	Key1Ptr   *string            `json:"key1Ptr"`
 	MapKey1   map[string]int     `json:"mapKey1"`

@@ -16,10 +16,6 @@ type Input struct {
 	Pkg  string
 }
 
-// GenFunc is the function which generates the final code. For example to generate
-// golang code use GolangStub
-type GenFunc func(in Input) (string, error)
-
 type Generator struct {
 	cfg genConfig
 }

@@ -35,6 +35,7 @@ var funcMaps = map[string]any{
 	},
 	"strJoin":         strings.Join,
 	"strSplit":        strings.Split,
+	"strReplace":      strings.ReplaceAll,
 	"toUpper":         strings.ToUpper,
 	"toLower":         strings.ToLower,
 	"toTitle":         strings.ToTitle,
@@ -47,5 +48,10 @@ var funcMaps = map[string]any{
 	"randomID":        utils.RandomID,
 	"randomDigit":     utils.RandomDigit,
 	"randomInt":       utils.RandomInt64,
-	"goType":          GoType,
+
+	"goType":              goType,
+	"tsType":              tsType,
+	"tsReplacePathParams": tsReplacePathParams,
+	"strAppend":           strAppend,
+	"strEmptySlice":       strEmptySlice,
 }

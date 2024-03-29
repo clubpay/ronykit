@@ -18,8 +18,18 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.VeryComplexRequest{}).
 				SetOutput(&dto.VeryComplexResponse{}).
-				NamedSelector("ComplexDummy", fasthttp.REST(http.MethodPost, "/complexDummy")).
-				NamedSelector("ComplexDummy2", fasthttp.REST(http.MethodPost, "/complexDummy/:key1")).
+				NamedSelector("ComplexDummy", fasthttp.POST("/complexDummy")).
+				NamedSelector("ComplexDummy2", fasthttp.POST("/complexDummy/:key1")).
+				AddModifier(func(envelope *kit.Envelope) {
+					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
+				}).
+				SetHandler(DummyHandler),
+		).
+		AddContract(
+			desc.NewContract().
+				SetInput(&dto.VeryComplexRequest{}).
+				SetOutput(&dto.VeryComplexResponse{}).
+				NamedSelector("GetComplexDummy", fasthttp.GET("/complexDummy/:key1/xs/:sKey1")).
 				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
