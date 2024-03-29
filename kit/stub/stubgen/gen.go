@@ -7,20 +7,8 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/internal/tpl"
 	"github.com/clubpay/ronykit/kit/utils"
 )
-
-func GolangStub(in Input) (string, error) {
-	sb := &strings.Builder{}
-
-	err := tpl.GoStub.Execute(sb, in)
-	if err != nil {
-		return "", err
-	}
-
-	return sb.String(), nil
-}
 
 type Input struct {
 	desc.Stub
@@ -58,10 +46,9 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 		stubs = append(stubs, stubDesc)
 	}
 
-	mergedStub := desc.MergeStubs(stubs...)
 	rawContent, err := g.cfg.genFunc(
 		Input{
-			Stub: *mergedStub,
+			Stub: utils.PtrVal(desc.MergeStubs(stubs...)),
 			Name: g.cfg.stubName,
 			Pkg:  g.cfg.pkgName,
 		},
@@ -74,7 +61,7 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	_ = os.Mkdir(dirPath, os.ModePerm)
 
 	return os.WriteFile(
-		fmt.Sprintf("%s/stub.go", dirPath),
+		fmt.Sprintf("%s/stub.%s", dirPath, strings.TrimLeft(g.cfg.fileExtension, ".")),
 		utils.S2B(rawContent),
 		os.ModePerm,
 	)

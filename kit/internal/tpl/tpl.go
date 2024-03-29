@@ -13,10 +13,15 @@ var (
 	//go:embed go/stub.gotmpl
 	goFileStub string
 	GoStub     *template.Template
+
+	//go:embed ts/stub.tstmpl
+	tsFileStub string
+	TsStub     *template.Template
 )
 
 func init() {
 	GoStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(goFileStub))
+	TsStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(tsFileStub))
 }
 
 var funcMaps = map[string]any{
@@ -42,4 +47,5 @@ var funcMaps = map[string]any{
 	"randomID":        utils.RandomID,
 	"randomDigit":     utils.RandomDigit,
 	"randomInt":       utils.RandomInt64,
+	"goType":          GoType,
 }

@@ -14,4 +14,12 @@ func main() {
 		stubgen.WithFolderName("sampleservice"),
 		stubgen.WithStubName("sampleService"),
 	).MustGenerate(api.SampleDesc)
+
+	//stubgen.New(
+	//	stubgen.WithGenFunc(stubgen.TypeScriptStub, ".ts"),
+	//	stubgen.WithTags("json"),
+	//	stubgen.WithPkgName("sampleservice"),
+	//	stubgen.WithFolderName("sampleservicets"),
+	//	stubgen.WithStubName("sampleService"),
+	//).MustGenerate(api.SampleDesc)
 }

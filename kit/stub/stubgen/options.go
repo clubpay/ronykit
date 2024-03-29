@@ -15,18 +15,21 @@ type genConfig struct {
 	// outputDir is the directory where the generated code will be placed.
 	// final path will be outputDir/folderName
 	// default is current directory
-	outputDir string
-	tags      []string
+	outputDir     string
+	fileExtension string
+	tags          []string
 }
 
 var defaultConfig = genConfig{
-	genFunc:   GolangStub,
-	outputDir: ".", // current directory
+	genFunc:       GolangStub,
+	fileExtension: ".go",
+	outputDir:     ".", // current directory
 }
 
-func WithGenFunc(gf GenFunc) Option {
+func WithGenFunc(gf GenFunc, ext string) Option {
 	return func(c *genConfig) {
 		c.genFunc = gf
+		c.fileExtension = ext
 	}
 }
 

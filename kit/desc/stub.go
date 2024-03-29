@@ -15,6 +15,7 @@ type DTO struct {
 	// Name is the name of this DTO struct
 	Name   string
 	Type   string
+	RType  reflect.Type
 	IsErr  bool
 	Fields []DTOField
 }
@@ -41,7 +42,7 @@ func (dto DTO) ItemField() string {
 	var fn string
 	for _, f := range dto.Fields {
 		x := strings.ToLower(f.Name)
-		if f.Type != "string" {
+		if f.RType.Kind() != reflect.String {
 			continue
 		}
 		if x == "item" || x == "items" {
@@ -59,6 +60,8 @@ func (dto DTO) ItemField() string {
 type DTOField struct {
 	// Name of this field
 	Name string
+	// RType is the reflected type of this field for handling more complex cases
+	RType reflect.Type
 	// Type of this field and if this type is slice or map then it might have one or two
 	// subtypes
 	Type     string
@@ -68,6 +71,7 @@ type DTOField struct {
 	// If Embedded is TRUE then for sure IsDTO must be TRUE
 	Embedded bool
 	IsDTO    bool
+	IsPtr    bool
 	Tags     []DTOFieldTag
 }
 
@@ -149,6 +153,7 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 
 	dto := DTO{
 		Name:  mTyp.Name(),
+		RType: mTyp,
 		Type:  typ("", mTyp),
 		IsErr: isErr,
 	}
@@ -174,6 +179,8 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 		fe := extractElem(ft)
 		dtoF := DTOField{
 			Name:     ft.Name,
+			RType:    ft.Type,
+			IsPtr:    ft.Type.Kind() == reflect.Ptr,
 			Type:     typ("", ft.Type),
 			Embedded: ft.Anonymous,
 		}
@@ -247,8 +254,7 @@ Loop:
 	}
 	if k == reflect.Slice {
 		switch t.Elem().Kind() {
-		case reflect.Struct:
-			return t.Elem()
+		default:
 		case reflect.Ptr:
 			t = t.Elem()
 			k = t.Kind()
