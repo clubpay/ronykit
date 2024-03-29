@@ -84,6 +84,8 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 			tsTypeRecursive("", t.Key(), ""),
 			tsTypeRecursive("", t.Elem(), ""),
 		)
+	case reflect.Interface:
+		return fmt.Sprintf("%s%s%s", prefix, "any", postfix)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:

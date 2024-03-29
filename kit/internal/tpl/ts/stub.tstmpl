@@ -18,9 +18,9 @@
 	{{- range .Fields -}}
 		{{- if .IsDTO }}
 			{{- if .Embedded }} {{continue}} {{end}}
-			{{(index .Tags 0).Value}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
+			{{index (strSplit (.GetTag "json") ",") 0}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
 		{{- else }}
-			{{(index .Tags 0).Value}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
+			{{index (strSplit (.GetTag "json") ",") 0}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
 		{{- end }}
 	{{- end }}
 	}

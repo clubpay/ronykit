@@ -75,6 +75,16 @@ type DTOField struct {
 	Tags     []DTOFieldTag
 }
 
+func (x DTOField) GetTag(name string) string {
+	for _, t := range x.Tags {
+		if t.Name == name {
+			return t.Value
+		}
+	}
+
+	return ""
+}
+
 // DTOFieldTag represents description of a tag of the DTOField
 type DTOFieldTag struct {
 	Name  string

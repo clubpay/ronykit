@@ -24,10 +24,10 @@ type KeyValue struct {
 }
 
 type VeryComplexResponse struct {
-	Key1      string              `json:"key1"`
-	Key1Ptr   *string             `json:"key1Ptr"`
-	MapKey1   map[string]int      `json:"mapKey1"`
-	MapKey2   map[int64]*KeyValue `json:"mapKey2"`
+	Key1      string              `json:"key1,omitempty"`
+	Key1Ptr   *string             `json:"key1Ptr,omitempty"`
+	MapKey1   map[string]int      `json:"mapKey1,omitempty"`
+	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty"`
 	SliceKey1 []byte              `json:"sliceKey1"`
 	SliceKey2 []KeyValue          `json:"sliceKey2"`
 }
