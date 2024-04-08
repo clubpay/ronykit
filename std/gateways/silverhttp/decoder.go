@@ -30,6 +30,7 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
+//nolint:gocognit
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	switch factory().(type) {
 	case kit.MultipartFormMessage:

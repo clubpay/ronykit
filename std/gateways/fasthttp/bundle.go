@@ -453,6 +453,7 @@ func getMultipartFormBoundary(contentType []byte) []byte {
 			if n = bytes.IndexByte(b, ';'); n < 0 {
 				return nil
 			}
+
 			continue
 		}
 
@@ -467,7 +468,9 @@ func getMultipartFormBoundary(contentType []byte) []byte {
 		if len(b) > 1 && b[0] == '"' && b[len(b)-1] == '"' {
 			b = b[1 : len(b)-1]
 		}
+
 		return b
 	}
+
 	return nil
 }
