@@ -9,9 +9,9 @@ require (
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
 	github.com/rbretecher/go-postman-collection v0.9.0
-	go.opentelemetry.io/contrib/propagators/b3 v1.24.0
-	go.opentelemetry.io/otel v1.24.0
-	go.opentelemetry.io/otel/trace v1.24.0
+	go.opentelemetry.io/contrib/propagators/b3 v1.25.0
+	go.opentelemetry.io/otel v1.25.0
+	go.opentelemetry.io/otel/trace v1.25.0
 )
 
 require (

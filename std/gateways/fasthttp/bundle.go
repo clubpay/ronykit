@@ -1,8 +1,10 @@
 package fasthttp
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"mime/multipart"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -10,6 +12,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
@@ -169,7 +172,7 @@ func (b *bundle) registerREST(
 	}
 
 	if restSelector.GetMethod() == "" || restSelector.GetPath() == "" {
-		return
+		panic("REST selector MUST have method and path")
 	}
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)
@@ -268,6 +271,22 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 
 	msg := routeData.Factory()
 	switch v := msg.(type) {
+	case kit.MultipartFormMessage:
+		x := kit.RawMessage{}
+		err = inputMsgContainer.ExtractMessage(&x)
+		if err != nil {
+			return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		}
+
+		frm, err := multipart.NewReader(
+			bytes.NewReader(x),
+			utils.B2S(getMultipartFormBoundary(utils.S2B(inputMsgContainer.GetHdr("Content-Type")))),
+		).ReadForm(int64(b.srv.MaxRequestBodySize))
+		if err != nil {
+			return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
+		}
+
+		v.SetForm(frm)
 	case kit.RawMessage:
 		err = inputMsgContainer.ExtractMessage(&v)
 		msg = v
@@ -359,7 +378,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		return noExecuteArg, kit.ErrNoHandler
 	}
 
-	m, err := conn.rd.Decoder(b.genParams(conn.ctx), in)
+	m, err := conn.rd.Decoder(conn.ctx, in)
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
@@ -406,4 +425,49 @@ func (b *bundle) Shutdown(_ context.Context) error {
 
 func (b *bundle) Subscribe(d kit.GatewayDelegate) {
 	b.d = d
+}
+
+var (
+	strMultipartFormData = []byte("multipart/form-data")
+	strBoundary          = []byte("boundary")
+)
+
+func getMultipartFormBoundary(contentType []byte) []byte {
+	b := contentType
+	if !bytes.HasPrefix(b, strMultipartFormData) {
+		return nil
+	}
+	b = b[len(strMultipartFormData):]
+	if len(b) == 0 || b[0] != ';' {
+		return nil
+	}
+
+	var n int
+	for len(b) > 0 {
+		n++
+		for len(b) > n && b[n] == ' ' {
+			n++
+		}
+		b = b[n:]
+		if !bytes.HasPrefix(b, strBoundary) {
+			if n = bytes.IndexByte(b, ';'); n < 0 {
+				return nil
+			}
+			continue
+		}
+
+		b = b[len(strBoundary):]
+		if len(b) == 0 || b[0] != '=' {
+			return nil
+		}
+		b = b[1:]
+		if n = bytes.IndexByte(b, ';'); n >= 0 {
+			b = b[:n]
+		}
+		if len(b) > 1 && b[0] == '"' && b[len(b)-1] == '"' {
+			b = b[1 : len(b)-1]
+		}
+		return b
+	}
+	return nil
 }

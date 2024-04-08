@@ -34,9 +34,9 @@ func (ps Params) ByName(name string) string {
 	return ""
 }
 
-type DecoderFunc func(bag Params, data []byte) (kit.Message, error)
+type DecoderFunc func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error)
 
-func (b *bundle) genParams(ctx *fasthttp.RequestCtx) Params {
+func genParams(ctx *fasthttp.RequestCtx) Params {
 	var params Params
 	ctx.VisitUserValues(
 		func(key []byte, value any) {
@@ -61,6 +61,7 @@ func (b *bundle) genParams(ctx *fasthttp.RequestCtx) Params {
 			}
 		},
 	)
+
 	// Walk over all the query params
 	ctx.QueryArgs().VisitAll(
 		func(key, value []byte) {
@@ -104,8 +105,19 @@ type paramCaster struct {
 
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	switch factory().(type) {
+	case kit.MultipartFormMessage:
+		return func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
+			v := kit.MultipartFormMessage{}
+			frm, err := reqCtx.MultipartForm()
+			if err != nil {
+				return nil, err
+			}
+			v.SetForm(frm)
+
+			return v, nil
+		}
 	case kit.RawMessage:
-		return func(bag Params, data []byte) (kit.Message, error) {
+		return func(_ *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
 			v := kit.RawMessage{}
 			v.CopyFrom(data)
 
@@ -130,7 +142,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	pcs := extractFields(rVal, tagKey)
 
-	return func(bag Params, data []byte) (kit.Message, error) {
+	return func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()
 			err error
@@ -143,6 +155,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 			}
 		}
 
+		bag := genParams(reqCtx)
 		for idx := range pcs {
 			x := bag.ByName(pcs[idx].name)
 			if x == "" {

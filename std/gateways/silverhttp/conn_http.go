@@ -1,8 +1,6 @@
 package silverhttp
 
 import (
-	"mime/multipart"
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/realip"
@@ -90,15 +88,6 @@ func (c *httpConn) GetMethod() string {
 
 func (c *httpConn) GetPath() string {
 	return utils.B2S(c.ctx.Path())
-}
-
-func (c *httpConn) Form() (*multipart.Form, error) {
-	r, err := c.ctx.MultipartReader()
-	if err != nil {
-		return nil, err
-	}
-
-	return r.ReadForm(maxMimeFormSize)
 }
 
 func (c *httpConn) Redirect(statusCode int, url string) {

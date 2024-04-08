@@ -1,8 +1,6 @@
 package fasthttp
 
 import (
-	"mime/multipart"
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
@@ -92,10 +90,6 @@ func (c *httpConn) GetMethod() string {
 
 func (c *httpConn) GetPath() string {
 	return utils.B2S(c.ctx.URI().Path())
-}
-
-func (c *httpConn) Form() (*multipart.Form, error) {
-	return c.ctx.MultipartForm()
 }
 
 func (c *httpConn) Redirect(statusCode int, url string) {

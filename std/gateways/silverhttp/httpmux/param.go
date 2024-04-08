@@ -3,6 +3,7 @@ package httpmux
 import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/go-www/silverlining"
 )
 
 // Param is a single URL parameter, consisting of a key and a value.
@@ -28,4 +29,4 @@ func (ps Params) ByName(name string) string {
 	return ""
 }
 
-type DecoderFunc func(bag Params, data []byte) (kit.Message, error)
+type DecoderFunc func(ctx *silverlining.Context, bag Params, data []byte) (kit.Message, error)

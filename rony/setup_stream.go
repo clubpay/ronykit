@@ -67,22 +67,10 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 }
 
 /*
-	StreamSelectorOption
-*/
-
-func StreamDecoder(decoder DecoderFunc) StreamSelectorOption {
-	return func(cfg *stream.SelectorConfig) {
-		cfg.Decoder = fasthttp.DecoderFunc(decoder)
-	}
-}
-
-/*
 	StreamOption
 */
 
 // RPC is a StreamOption to set up RPC handler.
-// Possible options are:
-// - StreamDecoder: to set up a custom decoder
 func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
 	return func(cfg *stream.Config) {
 		sCfg := stream.GenSelectorConfig(opt...)

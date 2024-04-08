@@ -1,9 +1,5 @@
 package kit
 
-import (
-	"mime/multipart"
-)
-
 // Conn represents a connection between EdgeServer and client.
 type Conn interface {
 	ConnID() uint64
@@ -25,7 +21,6 @@ type RESTConn interface {
 	GetRequestURI() string
 	// GetPath returns uri without Method, Host and Query parameters.
 	GetPath() string
-	Form() (*multipart.Form, error)
 	SetStatusCode(code int)
 	Redirect(code int, url string)
 	WalkQueryParams(fn func(key string, val string) bool)

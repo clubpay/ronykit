@@ -78,14 +78,6 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	UnarySelectorOption
 */
 
-type DecoderFunc func(bag RESTParams, data []byte) (kit.Message, error)
-
-func UnaryDecoder(decoder DecoderFunc) UnarySelectorOption {
-	return func(cfg *unary.SelectorConfig) {
-		cfg.Decoder = fasthttp.DecoderFunc(decoder)
-	}
-}
-
 func UnaryName(name string) UnarySelectorOption {
 	return func(cfg *unary.SelectorConfig) {
 		cfg.Name = name

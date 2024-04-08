@@ -8,12 +8,13 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
+	"github.com/go-www/silverlining"
 	"github.com/goccy/go-reflect"
 )
 
 type (
 	Params      = httpmux.Params
-	DecoderFunc = func(bag Params, data []byte) (kit.Message, error)
+	DecoderFunc = func(ctx *silverlining.Context, bag Params, data []byte) (kit.Message, error)
 )
 
 // emptyInterface is the header for an interface{} value.
@@ -31,8 +32,25 @@ type paramCaster struct {
 
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	switch factory().(type) {
+	case kit.MultipartFormMessage:
+		return func(ctx *silverlining.Context, _ Params, data []byte) (kit.Message, error) {
+			r, err := ctx.MultipartReader()
+			if err != nil {
+				return nil, err
+			}
+
+			frm, err := r.ReadForm(maxMimeFormSize)
+			if err != nil {
+				return nil, err
+			}
+
+			v := kit.MultipartFormMessage{}
+			v.SetForm(frm)
+
+			return v, nil
+		}
 	case kit.RawMessage:
-		return func(bag Params, data []byte) (kit.Message, error) {
+		return func(_ *silverlining.Context, bag Params, data []byte) (kit.Message, error) {
 			v := kit.RawMessage{}
 			v.CopyFrom(data)
 
@@ -57,7 +75,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	pcs := extractFields(rVal, tagKey)
 
-	return func(bag Params, data []byte) (kit.Message, error) {
+	return func(ctx *silverlining.Context, bag Params, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()
 			err error

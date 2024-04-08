@@ -1,6 +1,8 @@
 package kit
 
 import (
+	"mime/multipart"
+
 	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/goccy/go-reflect"
 )
@@ -93,6 +95,9 @@ func MarshalMessage(m Message) ([]byte, error) {
 
 // RawMessage is a byte slice which could be used as a Message.
 // This is helpful for raw data messages.
+// Example:
+//
+//	SetInput(kit.RawMessage)
 type RawMessage []byte
 
 func (rm RawMessage) Marshal() ([]byte, error) {
@@ -153,3 +158,22 @@ type ErrorMessage interface {
 type EmptyMessage struct{}
 
 type JSONMessage = json.RawMessage
+
+// MultipartFormMessage is a message type for multipart form data.
+// This is like RawMessage a special kind of message. When you define
+// them in Descriptor, your MUST NOT pass address of them like normal
+// messages.
+// Example:
+//
+//	SetInput(kit.MultipartFormMessage)
+type MultipartFormMessage struct {
+	frm *multipart.Form
+}
+
+func (mfm *MultipartFormMessage) SetForm(frm *multipart.Form) {
+	mfm.frm = frm
+}
+
+func (mfm *MultipartFormMessage) GetForm() *multipart.Form {
+	return mfm.frm
+}

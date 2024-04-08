@@ -206,7 +206,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		)
 	}
 
-	m, err := routeData.Decoder(params, in)
+	m, err := routeData.Decoder(conn.ctx, params, in)
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}

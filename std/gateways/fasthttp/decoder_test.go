@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/valyala/fasthttp"
 )
 
 type message struct {
@@ -42,10 +43,11 @@ func BenchmarkDecoder(b *testing.B) {
 			Y: 10,
 		},
 	})
-	p := Params{}
+
+	reqCtx := &fasthttp.RequestCtx{}
 	d := reflectDecoder(kit.JSON, kit.CreateMessageFactory(&message{}))
 	for i := 0; i < b.N; i++ {
-		msg, err := d(p, b1)
+		msg, err := d(reqCtx, b1)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -67,16 +69,15 @@ func BenchmarkDecoder(b *testing.B) {
 func TestDecoder(t *testing.T) {
 	dec := reflectDecoder(kit.JSON, kit.CreateMessageFactory(&message{}))
 
-	params := Params{
-		{Key: "a", Value: "valueA"},
-		{Key: "b", Value: "1"},
-		{Key: "c", Value: "valueC"},
-		{Key: "d", Value: "valueD"},
-		{Key: "x", Value: "valueX"},
-		{Key: "y", Value: "2"},
-	}
+	reqCtx := &fasthttp.RequestCtx{}
+	reqCtx.SetUserValue("a", "valueA")
+	reqCtx.SetUserValue("b", "1")
+	reqCtx.SetUserValue("c", "valueC")
+	reqCtx.SetUserValue("d", "valueD")
+	reqCtx.SetUserValue("x", "valueX")
+	reqCtx.SetUserValue("y", "2")
 
-	m, err := dec(params, nil)
+	m, err := dec(reqCtx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
