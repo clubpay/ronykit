@@ -10,17 +10,13 @@ import (
 
 	"ronykit/testenv/services"
 
-	"github.com/clubpay/ronykit/std/clusters/p2pcluster"
-
-	"github.com/redis/go-redis/v9"
-
-	"github.com/clubpay/ronykit/kit/utils"
-
-	"github.com/clubpay/ronykit/std/gateways/fasthttp"
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/std/clusters/p2pcluster"
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/redis/go-redis/v9"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )

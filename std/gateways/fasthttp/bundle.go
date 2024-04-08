@@ -172,7 +172,7 @@ func (b *bundle) registerREST(
 	}
 
 	if restSelector.GetMethod() == "" || restSelector.GetPath() == "" {
-		panic("REST selector MUST have method and path")
+		return
 	}
 
 	decoder, ok := restSelector.Query(queryDecoder).(DecoderFunc)

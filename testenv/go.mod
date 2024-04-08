@@ -5,10 +5,10 @@ go 1.21
 toolchain go1.21.7
 
 require (
-	github.com/clubpay/ronykit/kit v0.11.40
-	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.11.40
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.11.38
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.11.38
+	github.com/clubpay/ronykit/kit v0.12.4
+	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.12.4
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.12.4
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.12.4
 	github.com/orlangure/gnomock v0.30.0
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/smartystreets/goconvey v1.8.1
@@ -92,7 +92,6 @@ require (
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/onsi/ginkgo/v2 v2.17.1 // indirect
-	github.com/onsi/gomega v1.32.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runtime-spec v1.1.0 // indirect
@@ -111,7 +110,6 @@ require (
 	github.com/savsgio/gotils v0.0.0-20240303185622-093b76447511 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.52.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
