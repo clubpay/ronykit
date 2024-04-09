@@ -50,6 +50,10 @@ func CreateMessageFactory(in Message) MessageFactoryFunc {
 		return func() Message {
 			return RawMessage{}
 		}
+	case reflect.Indirect(reflect.ValueOf(in)).Type() == reflect.TypeOf(MultipartFormMessage{}):
+		return func() Message {
+			return MultipartFormMessage{}
+		}
 	}
 
 	var ff MessageFactoryFunc

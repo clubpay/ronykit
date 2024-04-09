@@ -56,6 +56,13 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				Selector(fasthttp.REST(http.MethodPost, "/raw_echo")).
 				Selector(fasthttp.RPC("rawEcho")).
 				SetHandler(RawEchoHandler),
+		).
+		AddContract(
+			desc.NewContract().
+				SetInput(kit.MultipartFormMessage{}).
+				SetOutput(kit.RawMessage{}).
+				Selector(fasthttp.REST(http.MethodPost, "/upload")).
+				SetHandler(UploadHandler),
 		)
 }
 
@@ -131,4 +138,17 @@ func Redirect(ctx *kit.Context) {
 
 	rc := ctx.Conn().(kit.RESTConn) //nolint:forcetypeassert
 	rc.Redirect(http.StatusTemporaryRedirect, req.URL)
+}
+
+func UploadHandler(ctx *kit.Context) {
+	//nolint:forcetypeassert
+	req := ctx.In().GetMsg().(kit.MultipartFormMessage)
+
+	frm := req.GetForm()
+	fmt.Println(frm.File)
+
+	ctx.In().Reply().
+		SetHdr("Content-Type", "application/json").
+		SetMsg(kit.RawMessage{}).
+		Send()
 }
