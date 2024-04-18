@@ -61,7 +61,7 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(kit.MultipartFormMessage{}).
 				SetOutput(kit.RawMessage{}).
-				Selector(fasthttp.REST(http.MethodPost, "/upload")).
+				NamedSelector("Upload", fasthttp.REST(http.MethodPost, "/upload")).
 				SetHandler(UploadHandler),
 		)
 }

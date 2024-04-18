@@ -34,9 +34,11 @@ func (ps Params) ByName(name string) string {
 	return ""
 }
 
-type DecoderFunc func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error)
+type RequestCtx = fasthttp.RequestCtx
 
-func genParams(ctx *fasthttp.RequestCtx) Params {
+type DecoderFunc func(reqCtx *RequestCtx, data []byte) (kit.Message, error)
+
+func GetParams(ctx *RequestCtx) Params {
 	var params Params
 	ctx.VisitUserValues(
 		func(key []byte, value any) {
@@ -106,9 +108,9 @@ type paramCaster struct {
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	switch factory().(type) {
 	case kit.MultipartFormMessage:
-		return func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
+		return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 			v := kit.MultipartFormMessage{}
-			frm, err := reqCtx.MultipartForm()
+			frm, err := reqCtx.Request.MultipartForm()
 			if err != nil {
 				return nil, err
 			}
@@ -117,7 +119,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 			return v, nil
 		}
 	case kit.RawMessage:
-		return func(_ *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
+		return func(_ *RequestCtx, data []byte) (kit.Message, error) {
 			v := kit.RawMessage{}
 			v.CopyFrom(data)
 
@@ -142,7 +144,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	pcs := extractFields(rVal, tagKey)
 
-	return func(reqCtx *fasthttp.RequestCtx, data []byte) (kit.Message, error) {
+	return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()
 			err error
@@ -155,7 +157,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 			}
 		}
 
-		bag := genParams(reqCtx)
+		bag := GetParams(reqCtx)
 		for idx := range pcs {
 			x := bag.ByName(pcs[idx].name)
 			if x == "" {
