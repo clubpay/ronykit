@@ -13,7 +13,7 @@ import (
 )
 
 type sampleReq struct {
-	X  string     `json:"x,int"`
+	X  string     `json:"x,int" swag:"enum:1,2,3"`
 	Y  string     `json:"y,omitempty"`
 	Z  int64      `json:"z" swag:"deprecated;optional"`
 	W  []string   `json:"w"`
@@ -92,7 +92,7 @@ func (t testService) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetName("sumPOST2").
-				AddSelector(fasthttp.POST("/some/:x/:y/somethingelse")).
+				AddSelector(fasthttp.POST("/some/:x/:y/something-else")).
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
 				SetHandler(nil),

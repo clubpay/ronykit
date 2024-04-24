@@ -10,6 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/go-openapi/spec"
 	"github.com/rbretecher/go-postman-collection"
 )
@@ -301,10 +302,10 @@ Loop:
 		goto Loop
 	}
 
-	enum := make([]any, 0, len(p.Tag.PossibleValues))
-	for _, v := range p.Tag.PossibleValues {
-		enum = append(enum, v)
-	}
+	enum := utils.Map(
+		func(v string) any { return v },
+		p.Tag.PossibleValues,
+	)
 	if len(enum) > 0 {
 		wrapFuncChain = wrapFuncChain.Add(
 			func(schema *spec.Schema) *spec.Schema {
@@ -479,7 +480,17 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 		p.Description = "Deprecated"
 	}
 
-	switch pp.Kind {
+	kind := pp.Kind
+	switch kind {
+	case desc.Array:
+		kind = pp.Element.Kind
+	}
+
+	switch kind {
+	default:
+		p.Typed("object", "")
+	case desc.Array:
+		p.Typed("array", "")
 	case desc.Bool:
 		p.Typed("boolean", "")
 	case desc.Integer:
@@ -492,6 +503,15 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 		p.Typed("object", "")
 	case desc.String:
 		p.Typed("string", "")
+	}
+
+	if len(pp.Tag.PossibleValues) > 0 {
+		p.WithEnum(
+			utils.Map(
+				func(src string) any { return src },
+				pp.Tag.PossibleValues,
+			)...,
+		)
 	}
 
 	return p

@@ -235,13 +235,13 @@ func (s *EdgeServer) watchParent() {
 
 func (s *EdgeServer) startParent(_ context.Context) {
 	// create variables
-	max := runtime.GOMAXPROCS(0)
+	maxProc := runtime.GOMAXPROCS(0)
 
-	childs := make(map[int]*exec.Cmd)
-	childChan := make(chan child, max)
+	children := make(map[int]*exec.Cmd)
+	childChan := make(chan child, maxProc)
 
 	// launch child processes
-	for i := 0; i < max; i++ {
+	for i := 0; i < maxProc; i++ {
 		/* #nosec G204 */
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
 		cmd.Stdout = os.Stdout
@@ -258,7 +258,7 @@ func (s *EdgeServer) startParent(_ context.Context) {
 
 		// store child process
 		pid := cmd.Process.Pid
-		childs[pid] = cmd
+		children[pid] = cmd
 
 		// notify master if child crashes
 		go func() {
@@ -269,8 +269,8 @@ func (s *EdgeServer) startParent(_ context.Context) {
 	ch := <-childChan
 	s.l.Debugf("detect child's exit. pid=%d, err=%v", ch.pid, ch.err)
 
-	// if any child exited then we terminate all childs and exit program.
-	for _, proc := range childs {
+	// if any child exited then we terminate all children and exit program.
+	for _, proc := range children {
 		_ = proc.Process.Kill()
 	}
 
