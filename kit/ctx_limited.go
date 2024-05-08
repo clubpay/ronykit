@@ -1,6 +1,9 @@
 package kit
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // LimitedContext is a wrapper around Context, which limit the capabilities of the original Context.
 // This is useful in cases where we need to pass the Context, but we do not want to give access to all
@@ -73,4 +76,8 @@ func (ctx *LimitedContext) ClusterStore() ClusterStore {
 
 func (ctx *LimitedContext) SetUserContext(userCtx context.Context) {
 	ctx.ctx.SetUserContext(userCtx)
+}
+
+func (ctx *LimitedContext) SetRemoteExecutionTimeout(timeout time.Duration) {
+	ctx.ctx.rxt = timeout
 }

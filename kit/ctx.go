@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/clubpay/ronykit/kit/utils"
 )
@@ -31,6 +32,7 @@ type Context struct {
 	sb        *southBridge
 	ls        *localStore
 	forwarded bool
+	rxt       time.Duration // remote execution timeout
 
 	serviceName []byte
 	contractID  []byte
@@ -104,10 +106,20 @@ func (ctx *Context) executeRemote(arg executeRemoteArg) error {
 		return err
 	}
 
-	// FixME: this can block forever
+	var (
+		cancelFn context.CancelFunc
+		rxCtx    = context.Background()
+	)
+
+	if ctx.rxt > 0 {
+		rxCtx, cancelFn = context.WithTimeout(rxCtx, ctx.rxt)
+		defer cancelFn()
+	}
 LOOP:
 	for {
 		select {
+		case <-rxCtx.Done():
+			return rxCtx.Err()
 		case <-ctx.ctx.Done():
 			return ctx.ctx.Err()
 		case c, ok := <-ch:
