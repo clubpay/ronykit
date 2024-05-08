@@ -99,9 +99,10 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 	ctx.forwarded = true
 
 	msg := sb.msgFactories[carrier.Data.MsgType]()
-	switch msg := msg.(type) {
+	switch v := msg.(type) {
 	case RawMessage:
-		msg.CopyFrom(carrier.Data.Msg)
+		v.CopyFrom(carrier.Data.Msg)
+		msg = v
 	default:
 		unmarshalEnvelopeCarrier(carrier.Data.Msg, msg)
 	}
