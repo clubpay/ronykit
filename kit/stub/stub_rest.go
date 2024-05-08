@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/valyala/fasthttp"
@@ -33,6 +32,7 @@ type RESTCtx struct {
 	dumpReq        io.Writer
 	dumpRes        io.Writer
 	timeout        time.Duration
+	codec          kit.MessageCodec
 
 	// fasthttp entities
 	c    *fasthttp.Client
@@ -403,10 +403,8 @@ func (hc *RESTCtx) AutoRun(
 	default:
 		var reqBody []byte
 		switch enc {
-		case kit.JSON:
-			reqBody, _ = json.Marshal(m)
 		default:
-			reqBody, _ = kit.MarshalMessage(m)
+			reqBody, _ = hc.codec.Marshal(m)
 		}
 		hc.SetBody(reqBody)
 	}

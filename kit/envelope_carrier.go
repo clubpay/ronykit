@@ -1,7 +1,8 @@
 package kit
 
 import (
-	"github.com/clubpay/ronykit/kit/internal/json"
+	"encoding/json"
+
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/goccy/go-reflect"
 )
@@ -135,7 +136,7 @@ func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) 
 }
 
 func unmarshalEnvelopeCarrier(data []byte, m Message) {
-	err := jsonMarshaler.Unmarshal(data, m)
+	err := json.Unmarshal(data, m)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +147,7 @@ func marshalEnvelopeCarrier(m Message) []byte {
 	case RawMessage:
 		return v
 	}
-	data, err := jsonMarshaler.Marshal(m)
+	data, err := json.Marshal(m)
 	if err != nil {
 		panic(err)
 	}

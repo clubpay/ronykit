@@ -3,7 +3,7 @@ package kit
 import (
 	"mime/multipart"
 
-	"github.com/clubpay/ronykit/kit/internal/json"
+	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
 
@@ -70,22 +70,33 @@ func CreateMessageFactory(in Message) MessageFactoryFunc {
 	return ff
 }
 
-type MessageMarshaler interface {
+type MessageCodec interface {
 	Marshal(m any) ([]byte, error)
 	Unmarshal(data []byte, m any) error
 }
 
-func SetCustomMarshaler(mm MessageMarshaler) {
-	defaultMessageMarshaler = mm
+type stdCodec struct{}
+
+func (jm stdCodec) Marshal(m any) ([]byte, error) {
+	return json.MarshalNoEscape(m)
 }
 
-var (
-	jsonMarshaler                            = json.NewMarshaler()
-	defaultMessageMarshaler MessageMarshaler = jsonMarshaler
-)
+func (jm stdCodec) Unmarshal(data []byte, m any) error {
+	return json.UnmarshalNoEscape(data, m)
+}
+
+func SetCustomCodec(mm MessageCodec) {
+	defaultMessageCodec = mm
+}
+
+func GetMessageCodec() MessageCodec {
+	return defaultMessageCodec
+}
+
+var defaultMessageCodec MessageCodec = stdCodec{}
 
 func UnmarshalMessage(data []byte, m Message) error {
-	return defaultMessageMarshaler.Unmarshal(data, m)
+	return defaultMessageCodec.Unmarshal(data, m)
 }
 
 func MarshalMessage(m Message) ([]byte, error) {
@@ -93,7 +104,7 @@ func MarshalMessage(m Message) ([]byte, error) {
 	case RawMessage:
 		return v, nil
 	default:
-		return defaultMessageMarshaler.Marshal(m)
+		return defaultMessageCodec.Marshal(m)
 	}
 }
 

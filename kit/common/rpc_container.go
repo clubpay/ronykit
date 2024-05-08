@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/internal/json"
+	"github.com/goccy/go-json"
 )
 
 var inPool sync.Pool

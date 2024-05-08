@@ -25,6 +25,7 @@ type config struct {
 	readTimeout, writeTimeout, dialTimeout time.Duration
 	proxy                                  *httpproxy.Config
 	dialFunc                               fasthttp.DialFunc
+	codec                                  kit.MessageCodec
 }
 
 func Secure() Option {
@@ -60,6 +61,12 @@ func WithWriteTimeout(timeout time.Duration) Option {
 func WithDialTimeout(timeout time.Duration) Option {
 	return func(cfg *config) {
 		cfg.dialTimeout = timeout
+	}
+}
+
+func WithMessageCodec(c kit.MessageCodec) Option {
+	return func(cfg *config) {
+		cfg.codec = c
 	}
 }
 

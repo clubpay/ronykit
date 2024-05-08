@@ -1,10 +1,10 @@
 package desc_test
 
 import (
+	"encoding/json"
 	"reflect"
 
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/internal/json"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

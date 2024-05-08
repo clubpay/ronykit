@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/clubpay/ronykit/kit/internal/json"
+	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -38,7 +38,7 @@ var _ = Describe("Stub Basic Functionality", func() {
 					switch r.StatusCode() {
 					case http.StatusOK:
 						v := &ipInfoResponse{}
-						Expect(json.Unmarshal(r.GetBody(), v)).To(Succeed())
+						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
 						Expect(v.Readme).To(Not(BeEmpty()))
 						Expect(v.IP).To(Not(BeEmpty()))
 					default:
@@ -69,7 +69,7 @@ var _ = Describe("Stub from URL", func() {
 					switch r.StatusCode() {
 					case http.StatusOK:
 						v := &ipInfoResponse{}
-						Expect(json.Unmarshal(r.GetBody(), v)).To(Succeed())
+						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
 						Expect(v.Readme).To(Not(BeEmpty()))
 						Expect(v.IP).To(Not(BeEmpty()))
 					default:

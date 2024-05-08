@@ -32,6 +32,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		writeTimeout: time.Minute * 5,
 		dialTimeout:  time.Second * 45,
 		l:            common.NewNopLogger(),
+		codec:        kit.GetMessageCodec(),
 	}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -93,6 +94,7 @@ func (s *Stub) REST(opt ...RESTOption) *RESTCtx {
 		req:      fasthttp.AcquireRequest(),
 		res:      fasthttp.AcquireResponse(),
 		timeout:  s.cfg.readTimeout,
+		codec:    s.cfg.codec,
 	}
 
 	if s.cfg.secure {

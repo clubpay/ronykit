@@ -2,6 +2,7 @@ package swagger_test
 
 import (
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
@@ -210,3 +211,15 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		_ = props
 	})
 })
+
+func BenchmarkSwagger(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ps := desc.Parse(testService{})
+		ps.Messages()
+		err := swagger.New("title", "v1.0.0", "").
+			WriteSwagTo(io.Discard, testService{})
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}

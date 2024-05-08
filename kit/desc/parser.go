@@ -1,13 +1,13 @@
 package desc
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/internal/json"
 	"github.com/clubpay/ronykit/kit/utils"
 )
 

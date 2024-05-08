@@ -1,3 +1,5 @@
 package stub
 
-var FillParams = fillParams
+var (
+	FillParams = fillParams
+)
