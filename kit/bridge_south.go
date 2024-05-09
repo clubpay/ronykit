@@ -2,6 +2,7 @@ package kit
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 
@@ -65,7 +66,7 @@ func (sb *southBridge) Shutdown(ctx context.Context) error {
 func (sb *southBridge) OnMessage(data []byte) {
 	carrier := &envelopeCarrier{}
 	if err := carrier.FromJSON(data); err != nil {
-		sb.eh(nil, err)
+		sb.eh(nil, fmt.Errorf("failed to decode envelope carrier: %w", err))
 
 		return
 	}

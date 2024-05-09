@@ -91,7 +91,7 @@ func (c *cluster) Start(ctx context.Context) error {
 				if !ok {
 					return
 				}
-				go c.d.OnMessage(utils.S2B(msg.Payload)) //nolint:errcheck
+				go c.d.OnMessage(utils.S2B(msg.Payload))
 			case <-c.shutdownChan:
 				_ = c.ps.Close()
 

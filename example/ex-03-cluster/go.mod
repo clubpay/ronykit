@@ -5,10 +5,10 @@ go 1.21
 toolchain go1.21.7
 
 require (
-	github.com/clubpay/ronykit/contrib v0.14.0
-	github.com/clubpay/ronykit/kit v0.14.0
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.14.0
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.0
+	github.com/clubpay/ronykit/contrib v0.14.1
+	github.com/clubpay/ronykit/kit v0.14.1
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.14.1
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.1
 	github.com/orlangure/gnomock v0.30.0
 )
 
