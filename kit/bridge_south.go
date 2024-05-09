@@ -66,6 +66,7 @@ func (sb *southBridge) OnMessage(data []byte) {
 	carrier := &envelopeCarrier{}
 	if err := carrier.FromJSON(data); err != nil {
 		sb.eh(nil, err)
+
 		return
 	}
 
