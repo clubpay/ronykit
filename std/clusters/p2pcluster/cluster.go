@@ -180,7 +180,7 @@ func (c *cluster) startMyTopic(ctx context.Context) error {
 				continue
 			}
 
-			_ = c.d.OnMessage(msg.GetData())
+			go c.d.OnMessage(msg.GetData())
 		}
 	}()
 

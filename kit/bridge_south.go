@@ -28,7 +28,7 @@ type ClusterWithStore interface {
 }
 
 type ClusterDelegate interface {
-	OnMessage(data []byte) error
+	OnMessage(data []byte)
 }
 
 // southBridge is a container component that connects EdgeServers using Cluster.
@@ -62,10 +62,11 @@ func (sb *southBridge) Shutdown(ctx context.Context) error {
 	return sb.cb.Shutdown(ctx)
 }
 
-func (sb *southBridge) OnMessage(data []byte) error {
+func (sb *southBridge) OnMessage(data []byte) {
 	carrier := &envelopeCarrier{}
 	if err := carrier.FromJSON(data); err != nil {
-		return err
+		sb.eh(nil, err)
+		return
 	}
 
 	sb.wg.Add(1)
@@ -91,8 +92,6 @@ func (sb *southBridge) OnMessage(data []byte) error {
 
 	sb.releaseCtx(ctx)
 	sb.wg.Done()
-
-	return nil
 }
 
 func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier) {
