@@ -5,10 +5,10 @@ go 1.21
 toolchain go1.21.7
 
 require (
-	github.com/clubpay/ronykit/kit v0.12.4
-	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.12.4
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.12.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.12.4
+	github.com/clubpay/ronykit/kit v0.14.0
+	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.14.0
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.14.0
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.0
 	github.com/orlangure/gnomock v0.30.0
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/smartystreets/goconvey v1.8.1
