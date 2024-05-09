@@ -3,13 +3,13 @@ module github.com/clubpay/ronykit/example/ex-09-mw
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.12.7
-	github.com/clubpay/ronykit/rony v0.12.7
+	github.com/clubpay/ronykit/kit v0.14.0
+	github.com/clubpay/ronykit/rony v0.14.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.12.7 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.0 // indirect
 	github.com/fasthttp/router v1.4.22 // indirect
 	github.com/fasthttp/websocket v1.5.8 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
