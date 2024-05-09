@@ -99,7 +99,7 @@ func newTestCluster() *testCluster {
 			d, ok := t.delegates[x.id]
 			t.mtx.Unlock()
 			if ok {
-				_ = d.OnMessage(x.data)
+				d.OnMessage(x.data)
 			}
 		}
 	}()

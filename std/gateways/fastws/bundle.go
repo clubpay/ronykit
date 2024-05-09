@@ -135,7 +135,7 @@ func (b *bundle) Shutdown(ctx context.Context) error {
 	ctx, cf := context.WithTimeout(ctx, time.Minute)
 	defer cf()
 
-	err := gnet.Stop(ctx, b.listen)
+	err := gnet.Stop(ctx, b.listen) //nolint:staticcheck
 	if err != nil {
 		return err
 	}
