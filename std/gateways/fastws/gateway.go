@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/gobwas/ws"
@@ -33,27 +32,6 @@ func newGateway(b *bundle) *gateway {
 	}
 
 	return gw
-}
-
-func (gw *gateway) writeFunc(conn kit.Conn, e *kit.Envelope) error {
-	outC := gw.b.rpcOutFactory()
-	outC.InjectMessage(e.GetMsg())
-	outC.SetID(e.GetID())
-	e.WalkHdr(func(key string, val string) bool {
-		outC.SetHdr(key, val)
-
-		return true
-	})
-
-	data, err := outC.Marshal()
-	if err != nil {
-		return errors.Wrap(kit.ErrEncodeOutgoingMessageFailed, err)
-	}
-
-	_, err = conn.Write(data)
-	outC.Release()
-
-	return err
 }
 
 func (gw *gateway) reactFunc(wsc kit.Conn, payload *buf.Bytes, n int) {

@@ -313,35 +313,6 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 	}, nil
 }
 
-func (b *bundle) writeFunc(conn kit.Conn, e *kit.Envelope) error {
-	switch c := conn.(type) {
-	case *wsConn:
-		outC := b.rpcOutFactory()
-		outC.InjectMessage(e.GetMsg())
-		outC.SetID(e.GetID())
-		e.WalkHdr(
-			func(key string, val string) bool {
-				outC.SetHdr(key, val)
-
-				return true
-			},
-		)
-
-		data, err := outC.Marshal()
-		if err != nil {
-			return err
-		}
-
-		_, err = c.Write(data)
-		outC.Release()
-
-		return err
-
-	default:
-		panic("BUG!! incorrect connection")
-	}
-}
-
 func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	//nolint:forcetypeassert
 	conn := ctx.Conn().(*httpConn)
