@@ -57,7 +57,7 @@ func (gw *gateway) writeFunc(conn kit.Conn, e *kit.Envelope) error {
 }
 
 func (gw *gateway) reactFunc(wsc kit.Conn, payload *buf.Bytes, n int) {
-	gw.b.d.OnMessage(wsc, gw.writeFunc, (*payload.Bytes())[:n])
+	gw.b.d.OnMessage(wsc, (*payload.Bytes())[:n])
 	payload.Release()
 }
 
@@ -80,7 +80,7 @@ func (gw *gateway) OnBoot(_ gnet.Engine) (action gnet.Action) {
 func (gw *gateway) OnShutdown(_ gnet.Engine) {}
 
 func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
-	wsc := newWebsocketConn(atomic.AddUint64(&gw.nextID, 1), c)
+	wsc := newWebsocketConn(atomic.AddUint64(&gw.nextID, 1), c, gw.b.rpcOutFactory)
 	c.SetContext(wsc.id)
 
 	gw.Lock()

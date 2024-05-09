@@ -180,7 +180,7 @@ func (e *Envelope) Send() {
 	}
 
 	// Use WriteFunc to write the Envelope into the connection
-	e.ctx.Error(e.ctx.wf(e.conn, e))
+	e.ctx.Error(e.conn.WriteEnvelope(e))
 
 	// Release the envelope
 	e.release()

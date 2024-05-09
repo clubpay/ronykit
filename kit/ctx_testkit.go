@@ -60,15 +60,6 @@ func (testCtx *TestContext) Run(stream bool) error {
 	ctx.in.
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.wf = func(conn Conn, e *Envelope) error {
-		e.dontReuse()
-		tc := conn.(*testConn) //nolint:forcetypeassert
-		tc.Lock()
-		tc.out = append(tc.out, e)
-		tc.Unlock()
-
-		return nil
-	}
 	ctx.handlers = append(ctx.handlers, testCtx.handlers...)
 	ctx.Next()
 
@@ -85,15 +76,6 @@ func (testCtx *TestContext) RunREST() error {
 	ctx.in.
 		SetMsg(testCtx.inMsg).
 		SetHdrMap(testCtx.inHdr)
-	ctx.wf = func(conn Conn, e *Envelope) error {
-		e.dontReuse()
-		tc := conn.(*testRESTConn) //nolint:forcetypeassert
-		tc.Lock()
-		tc.out = append(tc.out, e)
-		tc.Unlock()
-
-		return nil
-	}
 	ctx.handlers = append(ctx.handlers, testCtx.handlers...)
 	ctx.Next()
 
@@ -128,6 +110,15 @@ func (t *testConn) ClientIP() string {
 
 func (t *testConn) Write(_ []byte) (int, error) {
 	return 0, nil
+}
+
+func (t *testConn) WriteEnvelope(e *Envelope) error {
+	e.dontReuse()
+	t.Lock()
+	t.out = append(t.out, e)
+	t.Unlock()
+
+	return nil
 }
 
 func (t *testConn) Stream() bool {

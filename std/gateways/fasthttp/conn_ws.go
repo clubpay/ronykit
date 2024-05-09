@@ -8,10 +8,11 @@ import (
 
 type wsConn struct {
 	utils.SpinLock
-	kv       map[string]string
-	id       uint64
-	clientIP string
-	c        *websocket.Conn
+	kv            map[string]string
+	id            uint64
+	clientIP      string
+	c             *websocket.Conn
+	rpcOutFactory kit.OutgoingRPCFactory
 }
 
 var _ kit.Conn = (*wsConn)(nil)
@@ -45,6 +46,29 @@ func (w *wsConn) Write(data []byte) (int, error) {
 	}
 
 	return len(data), nil
+}
+
+func (w *wsConn) WriteEnvelope(e *kit.Envelope) error {
+	outC := w.rpcOutFactory()
+	outC.InjectMessage(e.GetMsg())
+	outC.SetID(e.GetID())
+	e.WalkHdr(
+		func(key string, val string) bool {
+			outC.SetHdr(key, val)
+
+			return true
+		},
+	)
+
+	data, err := outC.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(data)
+	outC.Release()
+
+	return err
 }
 
 func (w *wsConn) Stream() bool {

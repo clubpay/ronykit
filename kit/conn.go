@@ -5,6 +5,7 @@ type Conn interface {
 	ConnID() uint64
 	ClientIP() string
 	Write(data []byte) (int, error)
+	WriteEnvelope(e *Envelope) error
 	Stream() bool
 	Walk(fn func(key string, val string) bool)
 	Get(key string) string

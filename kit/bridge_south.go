@@ -75,9 +75,9 @@ func (sb *southBridge) OnMessage(data []byte) error {
 		sessionID: carrier.SessionID,
 		serverID:  sb.id,
 		kv:        map[string]string{},
+		wf:        sb.writeFunc,
 	}
 	ctx := sb.acquireCtx(conn)
-	ctx.wf = sb.writeFunc
 	ctx.sb = sb
 
 	switch carrier.Kind {
@@ -262,12 +262,7 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	}
 }
 
-func (sb *southBridge) writeFunc(conn Conn, e *Envelope) error {
-	c, ok := conn.(*clusterConn)
-	if !ok {
-		return ErrWritingToClusterConnection
-	}
-
+func (sb *southBridge) writeFunc(c *clusterConn, e *Envelope) error {
 	ec := newEnvelopeCarrier(
 		outgoingCarrier,
 		c.sessionID,
@@ -295,6 +290,7 @@ type clusterConn struct {
 
 	kvMtx sync.Mutex
 	kv    map[string]string
+	wf    func(c *clusterConn, e *Envelope) error
 }
 
 var _ Conn = (*clusterConn)(nil)
@@ -309,6 +305,10 @@ func (c *clusterConn) ClientIP() string {
 
 func (c *clusterConn) Write(_ []byte) (int, error) {
 	return 0, ErrWritingToClusterConnection
+}
+
+func (c *clusterConn) WriteEnvelope(e *Envelope) error {
+	return c.wf(c, e)
 }
 
 func (c *clusterConn) Stream() bool {

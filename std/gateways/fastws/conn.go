@@ -1,6 +1,8 @@
 package fastws
 
 import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -16,15 +18,22 @@ type wsConn struct {
 	r             *wsutil.Reader
 	w             *wsutil.Writer
 	handshakeDone bool
+	rpcOutFactory kit.OutgoingRPCFactory
 }
 
-func newWebsocketConn(id uint64, c gnet.Conn) *wsConn {
+var _ kit.Conn = (*wsConn)(nil)
+
+func newWebsocketConn(
+	id uint64, c gnet.Conn,
+	rpcOutFactory kit.OutgoingRPCFactory,
+) *wsConn {
 	wsc := &wsConn{
-		w:  wsutil.NewWriter(c, ws.StateServerSide, ws.OpText),
-		r:  wsutil.NewReader(c, ws.StateServerSide),
-		id: id,
-		kv: map[string]string{},
-		c:  c,
+		w:             wsutil.NewWriter(c, ws.StateServerSide, ws.OpText),
+		r:             wsutil.NewReader(c, ws.StateServerSide),
+		id:            id,
+		kv:            map[string]string{},
+		c:             c,
+		rpcOutFactory: rpcOutFactory,
 	}
 
 	return wsc
@@ -59,6 +68,27 @@ func (c *wsConn) Write(data []byte) (int, error) {
 	err = c.w.Flush()
 
 	return n, err
+}
+
+func (c *wsConn) WriteEnvelope(e *kit.Envelope) error {
+	outC := c.rpcOutFactory()
+	outC.InjectMessage(e.GetMsg())
+	outC.SetID(e.GetID())
+	e.WalkHdr(func(key string, val string) bool {
+		outC.SetHdr(key, val)
+
+		return true
+	})
+
+	data, err := outC.Marshal()
+	if err != nil {
+		return errors.Wrap(kit.ErrEncodeOutgoingMessageFailed, err)
+	}
+
+	_, err = c.Write(data)
+	outC.Release()
+
+	return err
 }
 
 func (c *wsConn) Stream() bool {

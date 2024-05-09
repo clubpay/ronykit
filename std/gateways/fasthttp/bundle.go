@@ -204,7 +204,7 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 		c.ctx = ctx
 		c.rd = &rd
 		b.d.OnOpen(c)
-		b.d.OnMessage(c, b.writeFunc, ctx.PostBody())
+		b.d.OnMessage(c, ctx.PostBody())
 		b.d.OnClose(c.ConnID())
 
 		b.connPool.Put(c)
@@ -227,10 +227,11 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 		ctx,
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
-				kv:       map[string]string{},
-				id:       atomic.AddUint64(&b.wsNextID, 1),
-				clientIP: realip.FromRequest(ctx),
-				c:        conn,
+				kv:            map[string]string{},
+				id:            atomic.AddUint64(&b.wsNextID, 1),
+				clientIP:      realip.FromRequest(ctx),
+				c:             conn,
+				rpcOutFactory: b.rpcOutFactory,
 			}
 			b.d.OnOpen(wsc)
 			for {
@@ -249,7 +250,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
-	b.d.OnMessage(wsc, b.writeFunc, *buf.Bytes())
+	b.d.OnMessage(wsc, *buf.Bytes())
 	buf.Release()
 }
 
@@ -335,28 +336,7 @@ func (b *bundle) writeFunc(conn kit.Conn, e *kit.Envelope) error {
 		outC.Release()
 
 		return err
-	case *httpConn:
-		var (
-			data []byte
-			err  error
-		)
 
-		data, err = kit.MarshalMessage(e.GetMsg())
-		if err != nil {
-			return err
-		}
-
-		e.WalkHdr(
-			func(key string, val string) bool {
-				c.ctx.Response.Header.Set(key, val)
-
-				return true
-			},
-		)
-
-		c.ctx.SetBody(data)
-
-		return nil
 	default:
 		panic("BUG!! incorrect connection")
 	}

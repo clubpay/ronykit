@@ -43,7 +43,6 @@ type Context struct {
 	hdr        map[string]string
 	conn       Conn
 	in         *Envelope
-	wf         WriteFunc
 	modifiers  []ModifierFunc
 	err        error
 	statusCode int

@@ -171,7 +171,7 @@ func (b *bundle) httpHandler(ctx *silverlining.Context) {
 
 	c.ctx = ctx
 	b.d.OnOpen(c)
-	b.d.OnMessage(c, b.httpWriteFunc, httpBody)
+	b.d.OnMessage(c, httpBody)
 	b.d.OnClose(c.ConnID())
 
 	b.connPool.Put(c)
@@ -220,35 +220,4 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		ContractID:  routeData.ContractID,
 		Route:       fmt.Sprintf("%s %s", routeData.Method, routeData.Path),
 	}, nil
-}
-
-func (b *bundle) httpWriteFunc(c kit.Conn, e *kit.Envelope) error {
-	rc, ok := c.(*httpConn)
-	if !ok {
-		panic("BUG!! incorrect connection")
-	}
-
-	var (
-		data []byte
-		err  error
-	)
-
-	data, err = kit.MarshalMessage(e.GetMsg())
-	if err != nil {
-		return err
-	}
-
-	resHdr := rc.ctx.ResponseHeaders()
-	e.WalkHdr(
-		func(key string, val string) bool {
-			resHdr.Set(key, val)
-
-			return true
-		},
-	)
-
-	rc.ctx.SetContentLength(len(data))
-	_, err = rc.ctx.Write(data)
-
-	return err
 }

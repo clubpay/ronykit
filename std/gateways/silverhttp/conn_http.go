@@ -70,6 +70,32 @@ func (c *httpConn) Write(data []byte) (int, error) {
 	return len(data), err
 }
 
+func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
+	var (
+		data []byte
+		err  error
+	)
+
+	data, err = kit.MarshalMessage(e.GetMsg())
+	if err != nil {
+		return err
+	}
+
+	resHdr := c.ctx.ResponseHeaders()
+	e.WalkHdr(
+		func(key string, val string) bool {
+			resHdr.Set(key, val)
+
+			return true
+		},
+	)
+
+	c.ctx.SetContentLength(len(data))
+	_, err = c.ctx.Write(data)
+
+	return err
+}
+
 func (c *httpConn) Stream() bool {
 	return false
 }

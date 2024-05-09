@@ -39,20 +39,7 @@ type testGateway struct {
 var _ kit.Gateway = (*testGateway)(nil)
 
 func (t *testGateway) Send(c *testConn, msg []byte) {
-	t.d.OnMessage(
-		c,
-		func(conn kit.Conn, e *kit.Envelope) error {
-			b, err := kit.MarshalMessage(e.GetMsg())
-			if err != nil {
-				return err
-			}
-
-			_, err = conn.Write(b)
-
-			return err
-		},
-		msg,
-	)
+	t.d.OnMessage(c, msg)
 }
 
 func (t *testGateway) Start(_ context.Context, _ kit.GatewayStartConfig) error {
@@ -239,6 +226,16 @@ func (t testConn) ClientIP() string {
 
 func (t testConn) Write(data []byte) (int, error) {
 	return t.buf.Write(data)
+}
+
+func (t *testConn) WriteEnvelope(e *kit.Envelope) error {
+	b, err := kit.MarshalMessage(e.GetMsg())
+	if err != nil {
+		return err
+	}
+	_, err = t.buf.Write(b)
+
+	return err
 }
 
 func (t testConn) Read() ([]byte, error) {

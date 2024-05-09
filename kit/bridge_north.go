@@ -45,7 +45,7 @@ type Gateway interface {
 type GatewayDelegate interface {
 	ConnDelegate
 	// OnMessage must be called whenever a new message arrives.
-	OnMessage(c Conn, wf WriteFunc, msg []byte)
+	OnMessage(c Conn, msg []byte)
 }
 
 type ConnDelegate interface {
@@ -84,10 +84,9 @@ func (n *northBridge) OnClose(connID uint64) {
 	n.cd.OnClose(connID)
 }
 
-func (n *northBridge) OnMessage(conn Conn, wf WriteFunc, msg []byte) {
+func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 	n.wg.Add(1)
 	ctx := n.acquireCtx(conn)
-	ctx.wf = wf
 	ctx.sb = n.sb
 	ctx.rawData = msg
 
