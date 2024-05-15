@@ -102,12 +102,13 @@ this.serverURL = serverURL.replace(/\/$/, '');
 	export function use{{$methodName}}(
 	stub: {{$serviceName}}Stub,
 	req: {{.Request.Name}},
+	reqHeader?: HeadersInit,
 	options?: Partial<SWRConfiguration<{{.Response.Name}}>>
 	) {
 	return useSWR(
 	[req, '{{$methodName}}'],
 	(req) => {
-	return stub.{{lowerCamelCase $methodName}}(req[0])
+	return stub.{{lowerCamelCase $methodName}}(req[0], reqHeader)
 	},
 	options
 	)
