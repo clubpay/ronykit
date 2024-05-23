@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/example/ex-06-counter-stream
 
-go 1.20
+go 1.22
 
 require (
 	github.com/clubpay/ronykit/kit v0.14.3

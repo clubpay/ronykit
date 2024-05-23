@@ -24,7 +24,7 @@ func main() {
 	rony.Setup(
 		srv,
 		"CounterService",
-		rony.ToInitiateState[*EchoCounter, string](
+		rony.ToInitiateState(
 			&EchoCounter{
 				Count: 0,
 			},

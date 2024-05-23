@@ -26,7 +26,7 @@ func main() {
 		rony.EmptyState(),
 		// Register the echo handler for both GET /echo and GET /echo/{id}
 		// This way all the following requests are valid:
-		rony.WithMiddleware[rony.EMPTY, rony.NOP](printMW),
+		rony.WithMiddleware[rony.EMPTY](printMW),
 		rony.WithUnary(
 			echo,
 			rony.GET("/echo/{id}"),

@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/rony
 
-go 1.20
+go 1.22
 
 require (
 	github.com/clubpay/ronykit/kit v0.14.3

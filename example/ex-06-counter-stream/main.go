@@ -28,12 +28,12 @@ func main() {
 	rony.Setup(
 		srv,
 		"CounterService",
-		rony.ToInitiateState[*EchoCounter, string](
+		rony.ToInitiateState(
 			&EchoCounter{
 				Count: 0,
 			},
 		),
-		rony.WithMiddleware[*EchoCounter, string](printMW),
+		rony.WithMiddleware[*EchoCounter](printMW),
 		// Register the count handler for both GET /count and GET /count/{action}
 		// This way all the following requests are valid:
 		// 1. GET /count/up&count=1
