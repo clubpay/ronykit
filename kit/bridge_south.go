@@ -304,10 +304,6 @@ func (c *clusterConn) ClientIP() string {
 	return c.clientIP
 }
 
-func (c *clusterConn) Write(_ []byte) (int, error) {
-	return 0, ErrWritingToClusterConnection
-}
-
 func (c *clusterConn) WriteEnvelope(e *Envelope) error {
 	return c.wf(c, e)
 }
