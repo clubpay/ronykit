@@ -22,7 +22,7 @@ type wsConfig struct {
 	predicateKey    string
 	rpcInFactory    kit.IncomingRPCFactory
 	rpcOutFactory   kit.OutgoingRPCFactory
-	ratelimitChan   chan struct{}
+	rateLimitChan   chan struct{}
 	handlersWG      sync.WaitGroup
 	handlers        map[string]RPCContainerHandler
 	defaultHandler  RPCContainerHandler
@@ -112,7 +112,7 @@ func WithPingTime(t time.Duration) WebsocketOption {
 
 func WithConcurrency(n int) WebsocketOption {
 	return func(cfg *wsConfig) {
-		cfg.ratelimitChan = make(chan struct{}, n)
+		cfg.rateLimitChan = make(chan struct{}, n)
 	}
 }
 

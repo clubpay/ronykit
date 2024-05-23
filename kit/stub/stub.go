@@ -135,7 +135,7 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 			pingTime:        time.Second * 30,
 			dialTimeout:     s.cfg.dialTimeout,
 			writeTimeout:    s.cfg.writeTimeout,
-			ratelimitChan:   make(chan struct{}, defaultConcurrency),
+			rateLimitChan:   make(chan struct{}, defaultConcurrency),
 			rpcInFactory:    common.SimpleIncomingJSONRPC,
 			rpcOutFactory:   common.SimpleOutgoingJSONRPC,
 			dialerBuilder:   defaultDialerBuilder,

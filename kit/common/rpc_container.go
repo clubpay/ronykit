@@ -7,7 +7,7 @@ import (
 	"github.com/goccy/go-json"
 )
 
-var inPool sync.Pool
+var inSimplePool sync.Pool
 
 // simpleIncomingJSONRPC implements kit.IncomingRPCContainer
 type simpleIncomingJSONRPC struct {
@@ -17,7 +17,7 @@ type simpleIncomingJSONRPC struct {
 }
 
 func SimpleIncomingJSONRPC() kit.IncomingRPCContainer {
-	v, ok := inPool.Get().(*simpleIncomingJSONRPC)
+	v, ok := inSimplePool.Get().(*simpleIncomingJSONRPC)
 	if !ok {
 		v = &simpleIncomingJSONRPC{
 			Header: make(map[string]string, 4),
@@ -54,10 +54,10 @@ func (e *simpleIncomingJSONRPC) Release() {
 	e.Payload = e.Payload[:0]
 	e.ID = e.ID[:0]
 
-	inPool.Put(e)
+	inSimplePool.Put(e)
 }
 
-var outPool = sync.Pool{}
+var outSimplePool = sync.Pool{}
 
 // simpleOutgoingJSONRPC implements kit.OutgoingRPCContainer
 type simpleOutgoingJSONRPC struct {
@@ -67,7 +67,7 @@ type simpleOutgoingJSONRPC struct {
 }
 
 func SimpleOutgoingJSONRPC() kit.OutgoingRPCContainer {
-	v, ok := outPool.Get().(*simpleOutgoingJSONRPC)
+	v, ok := outSimplePool.Get().(*simpleOutgoingJSONRPC)
 	if !ok {
 		v = &simpleOutgoingJSONRPC{
 			Header: make(map[string]string, 4),
@@ -100,5 +100,5 @@ func (e *simpleOutgoingJSONRPC) Release() {
 	e.Payload = nil
 	e.ID = e.ID[:0]
 
-	outPool.Put(e)
+	outSimplePool.Put(e)
 }

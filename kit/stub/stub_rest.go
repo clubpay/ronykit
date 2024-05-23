@@ -355,6 +355,7 @@ func (hc *RESTCtx) AutoRun(
 	ctx context.Context, route string, enc kit.Encoding, m kit.Message,
 ) *RESTCtx {
 	switch enc.Tag() {
+	default:
 	case kit.JSON.Tag():
 		hc.SetHeader("Content-Type", "application/json")
 	case kit.Proto.Tag():

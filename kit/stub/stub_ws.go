@@ -201,13 +201,13 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 		select {
 		default:
 			wCtx.l.Errorf("ratelimit reached, packet dropped")
-		case wCtx.cfg.ratelimitChan <- struct{}{}:
+		case wCtx.cfg.rateLimitChan <- struct{}{}:
 			wCtx.cfg.handlersWG.Add(1)
 			go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
 				defer wCtx.recoverPanic()
 
 				h(ctx, rpcIn)
-				<-wCtx.cfg.ratelimitChan
+				<-wCtx.cfg.rateLimitChan
 				wCtx.cfg.handlersWG.Done()
 				rpcIn.Release()
 			}(ctx, rpcIn)
