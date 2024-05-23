@@ -7,7 +7,7 @@ require (
 	github.com/fasthttp/router v1.5.0
 	github.com/fasthttp/websocket v1.5.8
 	github.com/goccy/go-reflect v1.2.0
-	github.com/valyala/fasthttp v1.53.0
+	github.com/valyala/fasthttp v1.54.0
 )
 
 require (

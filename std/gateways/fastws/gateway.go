@@ -111,48 +111,46 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		hdr ws.Header
 	)
 
-	for {
-		hdr, err = wsc.r.NextFrame()
-		if err != nil {
-			if builtinErr.Is(err, io.EOF) {
-				return gnet.None
-			}
-
-			return gnet.Close
-		}
-		if hdr.OpCode.IsControl() {
-			wsc.r.OnIntermediate = func(header ws.Header, _ io.Reader) error {
-				return wsutil.ControlHandler{
-					Src:                 wsc.r,
-					Dst:                 wsc.c,
-					State:               wsc.r.State,
-					DisableSrcCiphering: true,
-				}.Handle(header)
-			}
-			if err := wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
-				return gnet.Close
-			}
-
-			continue
-		}
-		if hdr.OpCode&(ws.OpText|ws.OpBinary) == 0 {
-			if err := wsc.r.Discard(); err != nil {
-				return gnet.Close
-			}
-
-			continue
+	hdr, err = wsc.r.NextFrame()
+	if err != nil {
+		if builtinErr.Is(err, io.EOF) {
+			return gnet.None
 		}
 
-		break
+		return gnet.Close
 	}
 
-	payloadBuffer := buf.GetLen(int(hdr.Length))
-	n, err := wsc.r.Read(*payloadBuffer.Bytes())
-	if err != nil && !builtinErr.Is(err, io.EOF) {
-		return gnet.None
+	var p []byte
+	if hdr.Fin {
+		// No more frames will be read. Use fixed sized buffer to read payload.
+		p = make([]byte, hdr.Length)
+		// It is not possible to receive io.EOF here because Reader does not
+		// return EOF if frame payload was successfully fetched.
+		_, err = io.ReadFull(wsc.r, p)
+	} else {
+		// Frame is fragmented, thus use io.ReadAll behavior.
+		var buff bytes.Buffer
+		_, err = buff.ReadFrom(wsc.r)
+		p = buff.Bytes()
+	}
+	if err != nil {
+		return gnet.Close
 	}
 
-	go gw.reactFunc(wsc, payloadBuffer, n)
+	wsc.msgs = append(wsc.msgs, wsutil.Message{OpCode: hdr.OpCode, Payload: p})
+
+	for _, msg := range wsc.msgs {
+		if msg.OpCode&(ws.OpText|ws.OpBinary) == 0 {
+			continue
+		}
+
+		payloadBuffer := buf.GetLen(len(msg.Payload))
+		payloadBuffer.CopyFrom(msg.Payload)
+
+		go gw.reactFunc(wsc, payloadBuffer, len(msg.Payload))
+	}
+
+	wsc.msgs = wsc.msgs[:0]
 
 	return gnet.None
 }

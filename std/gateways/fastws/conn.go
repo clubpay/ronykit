@@ -1,6 +1,8 @@
 package fastws
 
 import (
+	"io"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -19,6 +21,7 @@ type wsConn struct {
 	w             *wsutil.Writer
 	handshakeDone bool
 	rpcOutFactory kit.OutgoingRPCFactory
+	msgs          []wsutil.Message
 }
 
 var _ kit.Conn = (*wsConn)(nil)
@@ -29,11 +32,34 @@ func newWebsocketConn(
 ) *wsConn {
 	wsc := &wsConn{
 		w:             wsutil.NewWriter(c, ws.StateServerSide, ws.OpText),
-		r:             wsutil.NewReader(c, ws.StateServerSide),
 		id:            id,
 		kv:            map[string]string{},
 		c:             c,
 		rpcOutFactory: rpcOutFactory,
+	}
+
+	wsc.r = &wsutil.Reader{
+		Source:    c,
+		State:     ws.StateServerSide,
+		CheckUTF8: true,
+		OnIntermediate: func(hdr ws.Header, src io.Reader) error {
+			if hdr.OpCode.IsControl() {
+				return wsutil.ControlHandler{
+					Src:                 wsc.r,
+					Dst:                 wsc.c,
+					State:               wsc.r.State,
+					DisableSrcCiphering: true,
+				}.Handle(hdr)
+			}
+
+			bts, err := io.ReadAll(src)
+			if err != nil {
+				return err
+			}
+			wsc.msgs = append(wsc.msgs, wsutil.Message{OpCode: hdr.OpCode, Payload: bts})
+
+			return nil
+		},
 	}
 
 	return wsc
