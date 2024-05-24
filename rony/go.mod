@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/rony
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/kit v0.14.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.4
+	github.com/clubpay/ronykit/kit v0.14.5
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.5
 )
 
 require (
