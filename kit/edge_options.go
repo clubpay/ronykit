@@ -5,6 +5,7 @@ import "time"
 type edgeConfig struct {
 	logger          Logger
 	prefork         bool
+	reusePort       bool
 	shutdownTimeout time.Duration
 	gateways        []Gateway
 	cluster         Cluster
@@ -99,5 +100,13 @@ func WithTrace(tp Tracer) Option {
 func WithConnDelegate(d ConnDelegate) Option {
 	return func(s *edgeConfig) {
 		s.connDelegate = d
+	}
+}
+
+// ReusePort asks Gateway to listen in REUSE_PORT mode.
+// default this is false
+func ReusePort(t bool) Option {
+	return func(s *edgeConfig) {
+		s.reusePort = t
 	}
 }

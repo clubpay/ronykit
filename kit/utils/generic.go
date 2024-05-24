@@ -48,3 +48,9 @@ func OkOr[T any](v T, err error, fallback T) T {
 
 	return v
 }
+
+func TryCast[T any](v any) T {
+	t, _ := v.(T)
+
+	return t
+}

@@ -13,7 +13,6 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/gobwas/ws"
-	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet/v2"
 )
 
@@ -88,6 +87,8 @@ func (gw *gateway) OnClose(c gnet.Conn, _ error) (action gnet.Action) {
 func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	wsc := gw.getConnWrap(c)
 	if wsc == nil {
+		gw.b.l.Debugf("did not find ws conn for connID(%d)", utils.TryCast[int64](c.Context()))
+
 		return gnet.Close
 	}
 
@@ -96,6 +97,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		_, err := sp.Upgrade(wsc.c)
 		if err != nil {
 			wsc.Close()
+			gw.b.l.Debugf("faild to upgrade websocket connID(%d): %v", utils.TryCast[int64](c.Context()), err)
 
 			return gnet.Close
 		}
@@ -111,46 +113,69 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		hdr ws.Header
 	)
 
-	hdr, err = wsc.r.NextFrame()
-	if err != nil {
-		if builtinErr.Is(err, io.EOF) {
+	for {
+		hdr, err = wsc.r.NextFrame()
+		if err != nil {
+			if builtinErr.Is(err, io.EOF) {
+				return gnet.None
+			}
+			gw.b.l.Debugf("failed to read next frame of connID(%d): %v", utils.TryCast[int64](c.Context()), err)
+
+			return gnet.Close
+		}
+
+		if hdr.OpCode.IsControl() {
+			if err = wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
+				gw.b.l.Debugf(
+					"failed to handle control message of connID(%d), opCode(%d): %v",
+					utils.TryCast[int64](c.Context()), hdr.OpCode, err,
+				)
+
+				return gnet.Close
+			}
+
+			if err = wsc.r.Discard(); err != nil {
+				gw.b.l.Debugf(
+					"failed to discard on control message connID(%d): %v",
+					utils.TryCast[int64](c.Context()), err,
+				)
+
+				return gnet.Close
+			}
+
 			return gnet.None
 		}
 
-		return gnet.Close
+		if hdr.OpCode&(ws.OpText|ws.OpBinary) != hdr.OpCode {
+			if err = wsc.r.Discard(); err != nil {
+				return gnet.Close
+			}
+
+			continue
+		}
+
+		break
 	}
 
-	var p []byte
+	var pBuff *buf.Bytes
 	if hdr.Fin {
 		// No more frames will be read. Use fixed sized buffer to read payload.
-		p = make([]byte, hdr.Length)
 		// It is not possible to receive io.EOF here because Reader does not
 		// return EOF if frame payload was successfully fetched.
-		_, err = io.ReadFull(wsc.r, p)
+		pBuff = buf.GetLen(int(hdr.Length))
+		_, err = io.ReadFull(wsc.r, *pBuff.Bytes())
 	} else {
-		// Frame is fragmented, thus use io.ReadAll behavior.
-		var buff bytes.Buffer
+		// create a default buffer cap, since we don't know the exact size of payload
+		pBuff = buf.GetCap(8192)
+		buff := bytes.NewBuffer(*pBuff.Bytes())
 		_, err = buff.ReadFrom(wsc.r)
-		p = buff.Bytes()
+		pBuff.SetBytes(utils.ValPtr(buff.Bytes()))
 	}
 	if err != nil {
 		return gnet.Close
 	}
 
-	wsc.msgs = append(wsc.msgs, wsutil.Message{OpCode: hdr.OpCode, Payload: p})
-
-	for _, msg := range wsc.msgs {
-		if msg.OpCode&(ws.OpText|ws.OpBinary) == 0 {
-			continue
-		}
-
-		payloadBuffer := buf.GetLen(len(msg.Payload))
-		payloadBuffer.CopyFrom(msg.Payload)
-
-		go gw.reactFunc(wsc, payloadBuffer, len(msg.Payload))
-	}
-
-	wsc.msgs = wsc.msgs[:0]
+	go gw.reactFunc(wsc, pBuff, pBuff.Len())
 
 	return gnet.None
 }

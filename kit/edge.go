@@ -38,6 +38,7 @@ type EdgeServer struct {
 
 	// configs
 	prefork         bool
+	reusePort       bool
 	shutdownTimeout time.Duration
 
 	// local store
@@ -61,6 +62,7 @@ func NewServer(opts ...Option) *EdgeServer {
 
 	s.l = cfg.logger
 	s.prefork = cfg.prefork
+	s.reusePort = cfg.reusePort
 	s.eh = cfg.errHandler
 	s.gh = cfg.globalHandlers
 	s.cd = cfg.connDelegate
@@ -288,7 +290,7 @@ func (s *EdgeServer) startup(ctx context.Context) {
 		err := s.nb[idx].gw.Start(
 			ctx,
 			GatewayStartConfig{
-				ReusePort: s.prefork,
+				ReusePort: s.prefork || s.reusePort,
 			},
 		)
 		if err != nil {
