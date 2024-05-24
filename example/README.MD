@@ -1,6 +1,6 @@
 # Examples
-This directory contains some examples to show how to use the ronykit library. The first four
-examples use the `kit` package directly and the rest use the `rony` package.
 
-Examples are short and simple to understand. They are not meant to be used in production, they just
-show how to use the library.
+This directory houses several examples showcasing the usage of the ronykit library. The initial four examples
+utilize the `kit` package directly, while the subsequent ones utilize the `rony` package. These examples are
+designed to be concise and straightforward, aimed at illustrating how to utilize the library's functionalities.
+They are not intended for production use but rather serve as instructional aids.
