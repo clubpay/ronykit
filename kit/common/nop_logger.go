@@ -2,18 +2,18 @@ package common
 
 import "github.com/clubpay/ronykit/kit"
 
-type NOPLogger struct{}
+type nopLogger struct{}
 
-func NewNopLogger() NOPLogger {
-	return NOPLogger{}
+func NewNopLogger() kit.Logger {
+	return nopLogger{}
 }
 
-var _ kit.Logger = (*NOPLogger)(nil)
+var _ kit.Logger = (*nopLogger)(nil)
 
-func (n NOPLogger) Debug(_ ...any) {}
+func (n nopLogger) Debug(_ ...any) {}
 
-func (n NOPLogger) Debugf(_ string, _ ...any) {}
+func (n nopLogger) Debugf(_ string, _ ...any) {}
 
-func (n NOPLogger) Error(_ ...any) {}
+func (n nopLogger) Error(_ ...any) {}
 
-func (n NOPLogger) Errorf(_ string, _ ...any) {}
+func (n nopLogger) Errorf(_ string, _ ...any) {}

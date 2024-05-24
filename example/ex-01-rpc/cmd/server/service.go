@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
 )
@@ -27,13 +27,14 @@ func echoHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.EchoRequest)
 
-	fmt.Println("got request: ", req)
+	// fmt.Println("got request: ", req)
 	ctx.In().Reply().
 		SetHdr("cmd", ctx.In().GetHdr("cmd")).
 		SetMsg(
 			&dto.EchoResponse{
 				RandomID: req.RandomID,
 				Ok:       req.Ok,
+				Ts:       utils.NanoTime(),
 			},
 		).Send()
 }

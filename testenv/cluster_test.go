@@ -10,6 +10,8 @@ import (
 
 	"ronykit/testenv/services"
 
+	"github.com/clubpay/ronykit/kit/common"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/stub"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -50,7 +52,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceDescriptor
 						rediscluster.WithRedisClient(utils.Must(getRedis())),
 					),
 				),
-				kit.WithLogger(&stdLogger{}),
+				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
 						fmt.Println("EdgeError: ", err)
@@ -90,11 +92,11 @@ func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceDescriptor) 
 				kit.WithCluster(
 					p2pcluster.New(
 						"testCluster",
-						p2pcluster.WithLogger(&stdLogger{}),
+						p2pcluster.WithLogger(common.NewStdLogger()),
 						p2pcluster.WithBroadcastInterval(time.Second),
 					),
 				),
-				kit.WithLogger(&stdLogger{}),
+				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
 						fmt.Println("EdgeError: ", err)

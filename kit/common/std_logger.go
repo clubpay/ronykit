@@ -1,4 +1,4 @@
-package testenv
+package common
 
 import (
 	"fmt"
@@ -7,6 +7,10 @@ import (
 )
 
 type stdLogger struct{}
+
+func NewStdLogger() kit.Logger {
+	return stdLogger{}
+}
 
 var _ kit.Logger = (*stdLogger)(nil)
 

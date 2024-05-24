@@ -9,7 +9,9 @@ import (
 	"runtime"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/std/gateways/fastws"
 	_ "github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
@@ -28,18 +30,20 @@ func main() {
 			},
 		),
 		kit.WithGateway(
-			//fastws.MustNew(
-			//	fastws.Listen("tcp4://0.0.0.0:80"),
-			//	fastws.WithPredicateKey("cmd"),
-			//),
+			fastws.MustNew(
+				fastws.WithLogger(common.NewStdLogger()),
+				fastws.Listen("tcp4://0.0.0.0:80"),
+				fastws.WithPredicateKey("cmd"),
+			),
 			// We can use fastws Gateway if we have millions of connections which are not very active.
 			// fastws ONLY supports websocket, and if you need to handle websocket and http, you should
 			// use fasthttp instead.
 			//
 			fasthttp.MustNew(
-				fasthttp.WithWebsocketEndpoint("/ws"),
+				fasthttp.WithLogger(common.NewStdLogger()),
+				fasthttp.WithWebsocketEndpoint("/"),
 				fasthttp.WithPredicateKey("cmd"),
-				fasthttp.Listen(":80"),
+				fasthttp.Listen(":81"),
 			),
 		),
 		kit.WithServiceDesc(sampleService),

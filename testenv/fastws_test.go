@@ -8,6 +8,8 @@ import (
 
 	"ronykit/testenv/services"
 
+	"github.com/clubpay/ronykit/kit/common"
+
 	"github.com/clubpay/ronykit/kit/utils"
 
 	"github.com/clubpay/ronykit/std/gateways/fastws"
@@ -38,7 +40,7 @@ func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceDescriptor) fx.Opti
 		func(lc fx.Lifecycle) {
 			edge := kit.NewServer(
 				kit.ReusePort(true),
-				kit.WithLogger(&stdLogger{}),
+				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
 						fmt.Println("EdgeError: ", err)
@@ -48,7 +50,7 @@ func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceDescriptor) fx.Opti
 					fastws.MustNew(
 						fastws.WithPredicateKey("cmd"),
 						fastws.Listen(fmt.Sprintf("tcp4://0.0.0.0:%d", port)),
-						fastws.WithLogger(&stdLogger{}),
+						fastws.WithLogger(common.NewStdLogger()),
 					),
 				),
 				kit.WithServiceDesc(desc...),

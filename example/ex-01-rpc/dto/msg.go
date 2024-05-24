@@ -8,6 +8,7 @@ type EchoRequest struct {
 type EchoResponse struct {
 	RandomID int64 `json:"randomID"`
 	Ok       bool  `json:"ok"`
+	Ts       int64 `json:"ts"`
 }
 
 type SumRequest struct {
