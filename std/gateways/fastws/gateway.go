@@ -87,7 +87,7 @@ func (gw *gateway) OnClose(c gnet.Conn, _ error) (action gnet.Action) {
 func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	wsc := gw.getConnWrap(c)
 	if wsc == nil {
-		gw.b.l.Debugf("did not find ws conn for connID(%d)", utils.TryCast[int64](c.Context()))
+		gw.b.l.Debugf("did not find ws conn for connID(%d)", utils.TryCast[uint64](c.Context()))
 
 		return gnet.Close
 	}
@@ -97,7 +97,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		_, err := sp.Upgrade(wsc.c)
 		if err != nil {
 			wsc.Close()
-			gw.b.l.Debugf("faild to upgrade websocket connID(%d): %v", utils.TryCast[int64](c.Context()), err)
+			gw.b.l.Debugf("faild to upgrade websocket connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
 
 			return gnet.Close
 		}

@@ -23,7 +23,9 @@ import (
 func TestFastWS(t *testing.T) {
 	Convey("Kit with FastWS", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			"Edger Server With Huge Websocket Payload": fastwsWithHugePayload,
+			"Edge Server With Huge Websocket Payload": fastwsWithHugePayload,
+			//"Edge Server With Ping and Small Payload": fastwsWithPingAndSmallPayload,
+			//"Edge Server With Ping Only":              fastwsWithPingOnly,
 		}
 		for title, fn := range testCases {
 			Convey(title,
@@ -89,7 +91,48 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 
 		wsCtx := stub.New(
 			"localhost:8082",
-			//stub.WithLogger(&stdLogger{}),
+			// stub.WithLogger(common.NewStdLogger()),
+		).
+			Websocket(
+				stub.WithPredicateKey("cmd"),
+				stub.WithPingTime(time.Second),
+			)
+		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
+
+		for i := 0; i < 10; i++ {
+			req := &services.EchoRequest{Input: utils.RandomID(8192)}
+			res := &services.EchoResponse{}
+			err := wsCtx.BinaryMessage(
+				ctx, "echo", req, res,
+				func(ctx context.Context, msg kit.Message, hdr stub.Header, err error) {
+					c.So(err, ShouldBeNil)
+					c.So(msg.(*services.EchoResponse).Output, ShouldEqual, req.Input) //nolint:forcetypeassert
+				},
+			)
+			_ = err
+			//_, _ = c.Println("Error: ", err)
+			// c.So(err, ShouldBeNil)
+			time.Sleep(time.Second * 2)
+		}
+	}
+}
+
+func fastwsWithPingAndSmallPayload(t *testing.T, opt fx.Option) func(c C) {
+	ctx := context.Background()
+
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		time.Sleep(time.Second * 2)
+
+		wsCtx := stub.New(
+			"localhost:8082",
+			stub.WithLogger(common.NewStdLogger()),
 		).
 			Websocket(
 				stub.WithPredicateKey("cmd"),
@@ -110,5 +153,34 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 			c.So(err, ShouldBeNil)
 			time.Sleep(time.Second)
 		}
+	}
+}
+
+func fastwsWithPingOnly(t *testing.T, opt fx.Option) func(c C) {
+	ctx := context.Background()
+
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		time.Sleep(time.Second * 2)
+
+		wsCtx := stub.New(
+			"localhost:8082",
+			stub.WithLogger(common.NewStdLogger()),
+		).
+			Websocket(
+				stub.WithPredicateKey("cmd"),
+				stub.WithPingTime(time.Second),
+			)
+		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
+
+		_, _ = c.Println("waiting for 10sec ...")
+		time.Sleep(time.Second * 10)
+
 	}
 }

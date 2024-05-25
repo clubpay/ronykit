@@ -120,6 +120,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 		opts := []gnet.Option{
 			gnet.WithMulticore(true),
 			gnet.WithReusePort(cfg.ReusePort),
+			gnet.WithReuseAddr(cfg.ReusePort),
 		}
 
 		err := gnet.Run(b.eh, b.listen, opts...)
