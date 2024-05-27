@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
 )
 
@@ -26,6 +27,7 @@ type bundle struct {
 	routes        map[string]*routeData
 	rpcInFactory  kit.IncomingRPCFactory
 	rpcOutFactory kit.OutgoingRPCFactory
+	writeMode     ws.OpCode
 }
 
 var _ kit.Gateway = (*bundle)(nil)
@@ -37,6 +39,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),
+		writeMode:     ws.OpText,
 	}
 	b.eh = newGateway(b)
 

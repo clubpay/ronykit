@@ -24,8 +24,8 @@ func TestFastWS(t *testing.T) {
 	Convey("Kit with FastWS", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
 			"Edge Server With Huge Websocket Payload": fastwsWithHugePayload,
-			//"Edge Server With Ping and Small Payload": fastwsWithPingAndSmallPayload,
-			//"Edge Server With Ping Only":              fastwsWithPingOnly,
+			"Edge Server With Ping and Small Payload": fastwsWithPingAndSmallPayload,
+			"Edge Server With Ping Only":              fastwsWithPingOnly,
 		}
 		for title, fn := range testCases {
 			Convey(title,
@@ -100,7 +100,7 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
 
 		for i := 0; i < 10; i++ {
-			req := &services.EchoRequest{Input: utils.RandomID(8192)}
+			req := &services.EchoRequest{Input: utils.RandomID(10000)}
 			res := &services.EchoResponse{}
 			err := wsCtx.BinaryMessage(
 				ctx, "echo", req, res,
@@ -109,9 +109,7 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 					c.So(msg.(*services.EchoResponse).Output, ShouldEqual, req.Input) //nolint:forcetypeassert
 				},
 			)
-			_ = err
-			//_, _ = c.Println("Error: ", err)
-			// c.So(err, ShouldBeNil)
+			c.So(err, ShouldBeNil)
 			time.Sleep(time.Second * 2)
 		}
 	}
@@ -141,7 +139,7 @@ func fastwsWithPingAndSmallPayload(t *testing.T, opt fx.Option) func(c C) {
 		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
 
 		for i := 0; i < 10; i++ {
-			req := &services.EchoRequest{Input: utils.RandomID(1024)}
+			req := &services.EchoRequest{Input: utils.RandomID(32)}
 			res := &services.EchoResponse{}
 			err := wsCtx.BinaryMessage(
 				ctx, "echo", req, res,

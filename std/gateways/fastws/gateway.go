@@ -2,16 +2,13 @@ package fastws
 
 import (
 	"bytes"
-	builtinErr "errors"
 	"io"
 	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
 )
@@ -33,11 +30,6 @@ func newGateway(b *bundle) *gateway {
 	return gw
 }
 
-func (gw *gateway) reactFunc(wsc kit.Conn, payload *buf.Bytes, n int) {
-	gw.b.d.OnMessage(wsc, (*payload.Bytes())[:n])
-	payload.Release()
-}
-
 func (gw *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 	connID, ok := conn.Context().(uint64)
 	if !ok {
@@ -57,7 +49,13 @@ func (gw *gateway) OnBoot(_ gnet.Engine) (action gnet.Action) {
 func (gw *gateway) OnShutdown(_ gnet.Engine) {}
 
 func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
-	wsc := newWebsocketConn(atomic.AddUint64(&gw.nextID, 1), c, gw.b.rpcOutFactory)
+	wsc := newWebsocketConn(
+		atomic.AddUint64(&gw.nextID, 1),
+		c,
+		gw.b.rpcOutFactory,
+		gw.b.writeMode,
+		gw.b.l,
+	)
 	c.SetContext(wsc.id)
 
 	gw.Lock()
@@ -92,90 +90,30 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		return gnet.Close
 	}
 
-	if !wsc.handshakeDone {
-		sp := acquireSwitchProtocol()
-		_, err := sp.Upgrade(wsc.c)
+	if !wsc.isUpgraded() {
+		err := wsc.upgrade(c)
 		if err != nil {
-			wsc.Close()
 			gw.b.l.Debugf("faild to upgrade websocket connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
 
 			return gnet.Close
 		}
-		releaseSwitchProtocol(sp)
-
-		wsc.handshakeDone = true
 
 		return gnet.None
 	}
 
-	var (
-		err error
-		hdr ws.Header
-	)
-
-	for {
-		hdr, err = wsc.r.NextFrame()
-		if err != nil {
-			if builtinErr.Is(err, io.EOF) {
-				return gnet.None
-			}
-			gw.b.l.Debugf("failed to read next frame of connID(%d): %v", utils.TryCast[int64](c.Context()), err)
-
-			return gnet.Close
-		}
-
-		if hdr.OpCode.IsControl() {
-			if err = wsc.r.OnIntermediate(hdr, wsc.r); err != nil {
-				gw.b.l.Debugf(
-					"failed to handle control message of connID(%d), opCode(%d): %v",
-					utils.TryCast[int64](c.Context()), hdr.OpCode, err,
-				)
-
-				return gnet.Close
-			}
-
-			if err = wsc.r.Discard(); err != nil {
-				gw.b.l.Debugf(
-					"failed to discard on control message connID(%d): %v",
-					utils.TryCast[int64](c.Context()), err,
-				)
-
-				return gnet.Close
-			}
-
-			return gnet.None
-		}
-
-		if hdr.OpCode&(ws.OpText|ws.OpBinary) != hdr.OpCode {
-			if err = wsc.r.Discard(); err != nil {
-				return gnet.Close
-			}
-
-			continue
-		}
-
-		break
-	}
-
-	var pBuff *buf.Bytes
-	if hdr.Fin {
-		// No more frames will be read. Use fixed sized buffer to read payload.
-		// It is not possible to receive io.EOF here because Reader does not
-		// return EOF if frame payload was successfully fetched.
-		pBuff = buf.GetLen(int(hdr.Length))
-		_, err = io.ReadFull(wsc.r, *pBuff.Bytes())
-	} else {
-		// create a default buffer cap, since we don't know the exact size of payload
-		pBuff = buf.GetCap(8192)
-		buff := bytes.NewBuffer(*pBuff.Bytes())
-		_, err = buff.ReadFrom(wsc.r)
-		pBuff.SetBytes(utils.ValPtr(buff.Bytes()))
-	}
+	err := wsc.readBuffer(c)
 	if err != nil {
+		gw.b.l.Debugf("faild to read buffer websocket connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
+
 		return gnet.Close
 	}
 
-	go gw.reactFunc(wsc, pBuff, pBuff.Len())
+	err = wsc.executeMessages(c, gw.b.d)
+	if err != nil {
+		gw.b.l.Debugf("failed to execute message connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
+
+		return gnet.Close
+	}
 
 	return gnet.None
 }

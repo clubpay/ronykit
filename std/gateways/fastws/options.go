@@ -1,6 +1,9 @@
 package fastws
 
-import "github.com/clubpay/ronykit/kit"
+import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/gobwas/ws"
+)
 
 type Option func(b *bundle)
 
@@ -29,5 +32,20 @@ func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option
 	return func(b *bundle) {
 		b.rpcInFactory = in
 		b.rpcOutFactory = out
+	}
+}
+
+// WithWebsocketTextMode sets the write mode of the websocket to text opCode
+// This is the default behavior
+func WithWebsocketTextMode() Option {
+	return func(b *bundle) {
+		b.writeMode = ws.OpText
+	}
+}
+
+// WithWebsocketBinaryMode sets the write mode of the websocket to binary opCode
+func WithWebsocketBinaryMode() Option {
+	return func(b *bundle) {
+		b.writeMode = ws.OpBinary
 	}
 }
