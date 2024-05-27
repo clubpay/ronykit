@@ -1,13 +1,17 @@
 package dto
 
 type EchoRequest struct {
-	RandomID int64 `json:"randomID"`
-	Ok       bool  `json:"ok"`
+	RandomID         int64   `json:"randomID"`
+	Ok               bool    `json:"ok"`
+	OptionalStrField *string `json:"optionalField"`
+	OptionalIntField *int64  `json:"optionalIntField"`
 }
 
 type EchoResponse struct {
-	RandomID int64 `json:"randomID"`
-	Ok       bool  `json:"ok"`
+	RandomID         int64   `json:"randomID"`
+	Ok               bool    `json:"ok"`
+	OptionalStrField *string `json:"optionalField"`
+	OptionalIntField *int64  `json:"optionalIntField"`
 }
 
 type SumRequest struct {

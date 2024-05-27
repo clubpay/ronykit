@@ -74,8 +74,10 @@ func EchoHandler(ctx *kit.Context) {
 		SetHdr("Content-Type", "application/json").
 		SetMsg(
 			&dto.EchoResponse{
-				RandomID: req.RandomID,
-				Ok:       req.Ok,
+				RandomID:         req.RandomID,
+				Ok:               req.Ok,
+				OptionalStrField: req.OptionalStrField,
+				OptionalIntField: req.OptionalIntField,
 			},
 		).Send()
 }

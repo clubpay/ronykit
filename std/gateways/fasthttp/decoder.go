@@ -168,7 +168,34 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 			switch pcs[idx].typ.Kind() {
 			default:
+			// simply ignore
+			case reflect.Ptr:
+				switch pcs[idx].typ.Elem().Kind() {
+				default:
 				// simply ignore
+				case reflect.Bool:
+					if strings.ToLower(x) == "true" {
+						*(**bool)(ptr) = utils.ValPtr(true)
+					}
+				case reflect.String:
+					*(**string)(ptr) = utils.ValPtr(x)
+				case reflect.Int64:
+					*(**int64)(ptr) = utils.ValPtr(utils.StrToInt64(x))
+				case reflect.Int32:
+					*(**int32)(ptr) = utils.ValPtr(utils.StrToInt32(x))
+				case reflect.Uint64:
+					*(**uint64)(ptr) = utils.ValPtr(utils.StrToUInt64(x))
+				case reflect.Uint32:
+					*(**uint32)(ptr) = utils.ValPtr(utils.StrToUInt32(x))
+				case reflect.Float64:
+					*(**float64)(ptr) = utils.ValPtr(utils.StrToFloat64(x))
+				case reflect.Float32:
+					*(**float32)(ptr) = utils.ValPtr(utils.StrToFloat32(x))
+				case reflect.Int:
+					*(**int)(ptr) = utils.ValPtr(utils.StrToInt(x))
+				case reflect.Uint:
+					*(**uint)(ptr) = utils.ValPtr(utils.StrToUInt(x))
+				}
 			case reflect.Int64:
 				*(*int64)(ptr) = utils.StrToInt64(x)
 			case reflect.Int32:
