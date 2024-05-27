@@ -37,7 +37,7 @@ var _ kit.Conn = (*wsConn)(nil)
 func newWebsocketConn(
 	id uint64, c gnet.Conn,
 	rpcOutFactory kit.OutgoingRPCFactory,
-	writeMode ws.OpCode, l kit.Logger,
+	writeMode ws.OpCode,
 ) *wsConn {
 	wsc := &wsConn{
 		w:             wsutil.NewWriter(c, ws.StateServerSide, writeMode),
@@ -116,7 +116,10 @@ func (wsc *wsConn) nextHeader() error {
 	}
 
 	skipN := preLen - tmp.Len()
-	_, _ = wsc.readBuff.Discard(skipN)
+	_, err = wsc.readBuff.Discard(skipN)
+	if err != nil {
+		return err
+	}
 
 	wsc.currHead = &head
 
@@ -204,7 +207,6 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 }
 
 func (wsc *wsConn) execMessage(d kit.GatewayDelegate, msgBuff *buf.Bytes) {
-
 	d.OnMessage(wsc, *msgBuff.Bytes())
 	msgBuff.Release()
 }

@@ -54,7 +54,6 @@ func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 		c,
 		gw.b.rpcOutFactory,
 		gw.b.writeMode,
-		gw.b.l,
 	)
 	c.SetContext(wsc.id)
 
