@@ -61,6 +61,9 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 				if strings.HasPrefix(p, ":") {
 					pc.PathParams = append(pc.PathParams, p[1:])
 				}
+				if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
+					pc.PathParams = append(pc.PathParams, p[1:len(p)-1])
+				}
 			}
 		case kit.RPCRouteSelector:
 			pc.Type = RPC
