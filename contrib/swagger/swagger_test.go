@@ -13,7 +13,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type embedded struct {
+	Embedded string `json:"embedded"`
+	Others   string `json:"others"`
+}
+
 type sampleReq struct {
+	embedded
 	X  string     `json:"x,int" swag:"enum:1,2,3"`
 	Y  string     `json:"y,omitempty"`
 	Z  int64      `json:"z" swag:"deprecated;optional"`
@@ -93,7 +99,7 @@ func (t testService) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetName("sumPOST2").
-				AddSelector(fasthttp.POST("/some/:x/:y/something-else")).
+				AddSelector(fasthttp.POST("/some/something-else")).
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
 				SetHandler(nil),
@@ -142,20 +148,24 @@ var _ = Describe("ToSwaggerDefinition", func() {
 
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
-		Expect(props[0].Name).To(Equal("tt"))
-		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[0].SchemaProps.Items.Schema.Type[0]).To(Equal("array"))
-		Expect(props[0].SchemaProps.Items.Schema.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[1].Name).To(Equal("w"))
-		Expect(props[1].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[1].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[2].Name).To(Equal("x"))
-		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[3].Name).To(Equal("y"))
-		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[4].Name).To(Equal("z"))
-		Expect(props[4].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[4].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
+		Expect(props[0].Name).To(Equal("embedded"))
+		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[1].Name).To(Equal("others"))
+		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[2].Name).To(Equal("tt"))
+		Expect(props[2].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[2].SchemaProps.Items.Schema.Type[0]).To(Equal("array"))
+		Expect(props[2].SchemaProps.Items.Schema.Items.Schema.Type[0]).To(Equal("string"))
+		Expect(props[3].Name).To(Equal("w"))
+		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[3].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
+		Expect(props[4].Name).To(Equal("x"))
+		Expect(props[4].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[5].Name).To(Equal("y"))
+		Expect(props[5].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[6].Name).To(Equal("z"))
+		Expect(props[6].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[6].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {

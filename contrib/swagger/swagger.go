@@ -196,7 +196,15 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 		return
 	}
 
-	for _, p := range c.Request.Message.Fields {
+	var fields []desc.ParsedField
+	for _, f := range c.Request.Message.Fields {
+		if f.Embedded {
+			fields = append(fields, f.Message.Fields...)
+		} else {
+			fields = append(fields, f)
+		}
+	}
+	for _, p := range fields {
 		if c.IsPathParam(p.Name) {
 			op.AddParam(
 				setSwaggerParam(spec.PathParam(p.Name), p),
