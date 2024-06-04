@@ -101,6 +101,7 @@ func (bb Bytes) Cap() int {
 }
 
 func (bb *Bytes) Release() {
+	bb.Reset()
 	bb.p.put(bb)
 }
 
