@@ -10,12 +10,6 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
-type Input struct {
-	desc.Stub
-	Name string
-	Pkg  string
-}
-
 type Generator struct {
 	cfg genConfig
 }
@@ -32,23 +26,9 @@ func New(opt ...Option) *Generator {
 }
 
 func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
-	stubs := make([]*desc.Stub, 0, len(descs))
-	for _, serviceDesc := range descs {
-		stubDesc, err := serviceDesc.Desc().Stub(g.cfg.tags...)
-		if err != nil {
-			return err
-		}
-
-		stubs = append(stubs, stubDesc)
-	}
-
-	rawContent, err := g.cfg.genFunc(
-		Input{
-			Stub: utils.PtrVal(desc.MergeStubs(stubs...)),
-			Name: g.cfg.stubName,
-			Pkg:  g.cfg.pkgName,
-		},
-	)
+	in := NewInput(g.cfg.stubName, g.cfg.pkgName, descs...)
+	in.AddTags(g.cfg.tags...)
+	rawContent, err := g.cfg.genFunc(in)
 	if err != nil {
 		return err
 	}

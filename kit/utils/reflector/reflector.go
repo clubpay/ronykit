@@ -72,7 +72,7 @@ func destruct(mType reflect.Type, tags ...string) *Reflected {
 		}
 
 		switch ft.Type.Kind() {
-		case reflect.Map, reflect.Slice, reflect.Ptr,
+		case reflect.Map, reflect.Slice, reflect.Pointer,
 			reflect.Interface, reflect.Array, reflect.Chan,
 			reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
 		default:

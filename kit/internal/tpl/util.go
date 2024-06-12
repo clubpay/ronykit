@@ -33,7 +33,7 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 		prefix += fmt.Sprintf("[%d]", t.Len())
 
 		return goTypeRecursive(prefix, t.Elem())
-	case reflect.Ptr:
+	case reflect.Pointer:
 		prefix += "*"
 
 		return goTypeRecursive(prefix, t.Elem())
@@ -77,7 +77,7 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 		postfix += fmt.Sprintf("[%d]", t.Len())
 
 		return tsTypeRecursive(prefix, t.Elem(), postfix)
-	case reflect.Ptr:
+	case reflect.Pointer:
 		return tsTypeRecursive(prefix, t.Elem(), postfix)
 	case reflect.Struct:
 		return fmt.Sprintf("%s%s%s", prefix, t.Name(), postfix)

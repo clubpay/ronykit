@@ -27,7 +27,7 @@ func typ(prefix string, t reflect.Type) string {
 		prefix += fmt.Sprintf("[%d]", t.Len())
 
 		return typ(prefix, t.Elem())
-	case reflect.Ptr:
+	case reflect.Pointer:
 		prefix += "*"
 
 		return typ(prefix, t.Elem())

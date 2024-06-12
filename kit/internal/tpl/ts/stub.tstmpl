@@ -3,12 +3,9 @@
 */}}
 {{ define "dto" }}
 	// {{.Name}} is a data transfer object
-	{{- range .Comments -}}
-		// {{.}}
-	{{ end -}}
-	{{$extends := strEmptySlice }}
+	{{- $extends := strEmptySlice }}
 	{{- range .Fields -}}
-		{{- if and .IsDTO .Embedded }}{{$extends = strAppend $extends .Name}}{{end}}
+		{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
 	{{- end }}
 	{{- if gt (len $extends) 0 }}
 		export interface {{.Name}} extends {{strJoin $extends ", "}} {
@@ -16,12 +13,8 @@
 		export interface {{.Name}} {
 	{{- end }}
 	{{- range .Fields -}}
-		{{- if .IsDTO }}
 			{{- if .Embedded }} {{continue}} {{end}}
-			{{index (strSplit (.GetTag "json") ",") 0}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
-		{{- else }}
-			{{index (strSplit (.GetTag "json") ",") 0}}{{ if .IsPtr}}?{{end}}: {{tsType .RType}}
-		{{- end }}
+			{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
 	{{- end }}
 	}
 {{- end }}
@@ -31,7 +24,7 @@
 
 import useSWR, { SWRConfiguration } from 'swr'
 
-{{ range $dtoName, $dto := .DTOs -}}
+{{ range $dtoName, $dto := .Messages -}}
 	{{ template "dto" $dto }}
 {{- end }}
 
@@ -48,11 +41,11 @@ this.serverURL = serverURL.replace(/\/$/, '');
 {{/*
 			Generating the REST methods
 */}}
-{{- range .RESTs -}}
+{{- range .RESTMethods -}}
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" }}
 		// @ts-ignore
-		async {{lowerCamelCase $methodName}}(req: {{.Request.Name}}, headers?: HeadersInit): Promise<{{.Response.Name}}> {
+		async {{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
 		{{- if eq (toLower .Method) "get" }}
 			const keys = Object.keys(req);
 			const keyValuePairs = keys.map(key => {
@@ -96,14 +89,14 @@ this.serverURL = serverURL.replace(/\/$/, '');
 } // end of {{$serviceName}}Stub
 
 {{/* Generating React Hooks */}}
-{{- range .RESTs -}}
+{{- range .RESTMethods -}}
 {{$methodName := .Name}}
 {{- if ne $methodName "" }}
 	export function use{{$methodName}}(
 	stub: {{$serviceName}}Stub,
-	req: {{.Request.Name}},
+	req: {{.Request.Message.Name}},
 	reqHeader?: HeadersInit,
-	options?: Partial<SWRConfiguration<{{.Response.Name}}>>
+	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>
 	) {
 	return useSWR(
 	[req, '{{$methodName}}'],

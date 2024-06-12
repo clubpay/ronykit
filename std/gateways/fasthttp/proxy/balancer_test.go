@@ -51,8 +51,6 @@ func Test_balancer(t *testing.T) {
 		idx := bla.Distribute()
 		count[idx]++
 	}
-
-	t.Log(count)
 }
 
 func Test_balancer_concurrent(t *testing.T) {

@@ -1,8 +1,6 @@
 package desc_test
 
 import (
-	"reflect"
-
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	. "github.com/onsi/ginkgo/v2"
@@ -238,8 +236,10 @@ var _ = Describe("RawMessage and MultipartForm", func() {
 		Expect(contract0.GroupName).To(Equal("rawRequest"))
 		Expect(contract0.Request.Message.Name).To(Equal("RawMessage"))
 		Expect(contract0.Request.Message.Fields).To(HaveLen(0))
+		Expect(contract0.Request.Message.Kind).To(Equal(desc.KitRawMessage))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
 		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(0))
+		Expect(contract0.Responses[0].Message.Kind).To(Equal(desc.KitRawMessage))
 
 		Expect(contract1.Name).To(Equal("s2"))
 		Expect(contract1.Type).To(Equal(desc.REST))
@@ -249,20 +249,9 @@ var _ = Describe("RawMessage and MultipartForm", func() {
 		Expect(contract1.GroupName).To(Equal("multipartFormRequest"))
 		Expect(contract1.Request.Message.Name).To(Equal("MultipartFormMessage"))
 		Expect(contract1.Request.Message.Fields).To(HaveLen(0))
+		Expect(contract1.Request.Message.Kind).To(Equal(desc.KitMultipartFormMessage))
 		Expect(contract1.Responses[0].Message.Name).To(Equal("RawMessage"))
 		Expect(contract1.Responses[0].Message.Fields).To(HaveLen(0))
-
-		s, err := d.Stub("json")
-		Expect(err).To(BeNil())
-		Expect(s.RESTs).To(HaveLen(2))
-		Expect(s.DTOs).To(HaveLen(2))
-		Expect(s.RESTs[0].Request.Name).To(Equal("RawMessage"))
-		Expect(s.RESTs[0].Request.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
-		Expect(s.RESTs[0].Response.Name).To(Equal("RawMessage"))
-		Expect(s.RESTs[0].Response.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
-		Expect(s.RESTs[1].Request.Name).To(Equal("MultipartFormMessage"))
-		Expect(s.RESTs[1].Request.Type).To(Equal(reflect.TypeOf(kit.MultipartFormMessage{}).String()))
-		Expect(s.RESTs[1].Response.Name).To(Equal("RawMessage"))
-		Expect(s.RESTs[1].Response.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
+		Expect(contract1.Responses[0].Message.Kind).To(Equal(desc.KitRawMessage))
 	})
 })

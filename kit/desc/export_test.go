@@ -1,12 +1,5 @@
 package desc
 
-import "reflect"
-
 var (
-	TypeOf  = typ
-	NewStub = newStub
+	TypeOf = typ
 )
-
-func (d *Stub) AddDTO(mTyp reflect.Type, isErr bool) error {
-	return d.addDTO(mTyp, isErr)
-}

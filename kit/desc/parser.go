@@ -103,17 +103,18 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 
 func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
 	mt := reflect.TypeOf(m)
-	if mt.Kind() == reflect.Ptr {
+	if mt.Kind() == reflect.Pointer {
 		mt = mt.Elem()
 	}
 
 	pm := ParsedMessage{
-		original: m,
-		Name:     mt.Name(),
-		Kind:     parseKind(mt),
-		RKind:    mt.Kind(),
-		Type:     typ("", mt),
-		RType:    mt,
+		original:       m,
+		Name:           mt.Name(),
+		Kind:           parseKind(mt),
+		RKind:          mt.Kind(),
+		Type:           typ("", mt),
+		RType:          mt,
+		ImplementError: mt.Implements(reflect.TypeOf((*kit.ErrorMessage)(nil)).Elem()),
 	}
 
 	switch {
@@ -137,21 +138,15 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
 		ft := f.Type
-		var optional bool
-		if ft.Kind() == reflect.Ptr {
-			optional = true
-			ft = ft.Elem()
-		}
-
 		ptn := getParsedStructTag(f.Tag, tagName)
 
 		fields = append(
 			fields,
 			ParsedField{
 				GoName:   f.Name,
-				Name:     ptn.Name,
+				Name:     ptn.Value,
 				Tag:      ptn,
-				Optional: optional,
+				Optional: ft.Kind() == reflect.Pointer,
 				Embedded: f.Anonymous,
 				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
 			},
@@ -187,7 +182,7 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 		} else if ps.isVisited(ft.Name()) {
 			panic(fmt.Sprintf("infinite recursion detected: %s", ft.Name()))
 		} else {
-			if ft.Kind() == reflect.Ptr {
+			if ft.Kind() == reflect.Pointer {
 				ft = ft.Elem()
 			}
 			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
@@ -301,22 +296,23 @@ const (
 	Object                  Kind = "object"
 	Map                     Kind = "map"
 	Array                   Kind = "array"
-	kitRawMessage           Kind = "kitRawMessage"
-	kitMultipartFormMessage Kind = "kitMultipartFormMessage"
+	KitRawMessage           Kind = "kitRawMessage"
+	KitMultipartFormMessage Kind = "kitMultipartFormMessage"
 )
 
 type ParsedMessage struct {
-	original kit.Message
-	Name     string
-	Kind     Kind
-	RKind    reflect.Kind
-	Type     string
-	RType    reflect.Type
-	Fields   []ParsedField
+	original       kit.Message
+	Name           string
+	Kind           Kind
+	RKind          reflect.Kind
+	Type           string
+	RType          reflect.Type
+	Fields         []ParsedField
+	ImplementError bool
 }
 
 func (pm ParsedMessage) IsSpecial() bool {
-	return pm.Kind == kitRawMessage || pm.Kind == kitMultipartFormMessage
+	return pm.Kind == KitRawMessage || pm.Kind == KitMultipartFormMessage
 }
 
 func (pm ParsedMessage) JSON() string {
@@ -348,6 +344,42 @@ func (pm ParsedMessage) String() string {
 	sb.WriteString("]")
 
 	return sb.String()
+}
+
+func (pm ParsedMessage) CodeField() string {
+	var fn string
+	for _, f := range pm.Fields {
+		x := strings.ToLower(f.GoName)
+		if f.Element.Type != "int" {
+			continue
+		}
+		if x == "code" {
+			return f.GoName
+		}
+		if strings.HasPrefix(f.GoName, "code") {
+			fn = f.GoName
+		}
+	}
+
+	return fn
+}
+
+func (pm ParsedMessage) ItemField() string {
+	var fn string
+	for _, f := range pm.Fields {
+		x := strings.ToLower(f.GoName)
+		if f.Element.RType.Kind() != reflect.String {
+			continue
+		}
+		if x == "item" || x == "items" {
+			return f.GoName
+		}
+		if strings.HasPrefix(f.GoName, "item") {
+			fn = f.GoName
+		}
+	}
+
+	return fn
 }
 
 func (pm ParsedMessage) FieldByName(name string) *ParsedField {
@@ -427,6 +459,7 @@ func ParseService(svc *Service) ParsedService {
 	}
 
 	for _, c := range svc.Contracts {
+		c.PossibleErrors = append(c.PossibleErrors, svc.PossibleErrors...)
 		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)
 	}
 
@@ -434,7 +467,7 @@ func ParseService(svc *Service) ParsedService {
 }
 
 func parseKind(t reflect.Type) Kind {
-	for t.Kind() == reflect.Ptr {
+	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 
@@ -442,9 +475,9 @@ func parseKind(t reflect.Type) Kind {
 	switch t {
 	default:
 	case reflect.TypeOf(kit.MultipartFormMessage{}):
-		return kitMultipartFormMessage
+		return KitMultipartFormMessage
 	case reflect.TypeOf(kit.RawMessage{}):
-		return kitRawMessage
+		return KitRawMessage
 	}
 
 	switch t.Kind() {
@@ -479,23 +512,43 @@ const (
 )
 
 type ParsedStructTag struct {
+	original       reflect.StructTag
 	Name           string
+	Value          string
 	Optional       bool
 	PossibleValues []string
 	Deprecated     bool
 }
 
+func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
+	tags := make(map[string]string)
+	for _, k := range keys {
+		v, ok := pst.original.Lookup(k)
+		if ok {
+			tags[k] = v
+		}
+	}
+
+	return tags
+}
+
+func (pst ParsedStructTag) Get(key string) string {
+	return pst.original.Get(key)
+}
+
 func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
-	pst := ParsedStructTag{}
+	pst := ParsedStructTag{
+		original: tag,
+		Name:     name,
+	}
 	nameTag := tag.Get(name)
 	if nameTag == "" {
 		return pst
 	}
 
 	// This is a hack to remove omitempty from tags
-	fNameParts := strings.Split(nameTag, swagValueSep)
-	if len(fNameParts) > 0 {
-		pst.Name = strings.TrimSpace(fNameParts[0])
+	if fNameParts := strings.Split(nameTag, swagValueSep); len(fNameParts) > 0 {
+		pst.Value = strings.TrimSpace(fNameParts[0])
 	}
 
 	swagTag := tag.Get(swagTagKey)

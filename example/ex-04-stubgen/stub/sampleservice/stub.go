@@ -61,10 +61,10 @@ type VeryComplexRequest struct {
 
 // VeryComplexResponse is a data transfer object
 type VeryComplexResponse struct {
-	Key1      string              `json:"key1,omitempty"`
-	Key1Ptr   *string             `json:"key1Ptr,omitempty"`
-	MapKey1   map[string]int      `json:"mapKey1,omitempty"`
-	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty"`
+	Key1      string              `json:"key1"`
+	Key1Ptr   *string             `json:"key1Ptr"`
+	MapKey1   map[string]int      `json:"mapKey1"`
+	MapKey2   map[int64]*KeyValue `json:"mapKey2"`
 	SliceKey1 []uint8             `json:"sliceKey1"`
 	SliceKey2 []KeyValue          `json:"sliceKey2"`
 }
@@ -129,7 +129,7 @@ func (s sampleServiceStub) ComplexDummy(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/complexDummy", kit.JSON, req)
+		AutoRun(ctx, "/complexDummy", kit.CustomEncoding(""), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -167,7 +167,7 @@ func (s sampleServiceStub) ComplexDummy2(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/complexDummy/{key1}", kit.JSON, req)
+		AutoRun(ctx, "/complexDummy/{key1}", kit.CustomEncoding(""), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -205,7 +205,7 @@ func (s sampleServiceStub) GetComplexDummy(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/complexDummy/{key1}/xs/{sKey1}", kit.JSON, req)
+		AutoRun(ctx, "/complexDummy/{key1}/xs/{sKey1}", kit.CustomEncoding(""), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {

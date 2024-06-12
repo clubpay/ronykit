@@ -8,9 +8,9 @@ import (
 
 // GenFunc is the function which generates the final code. For example to generate
 // golang code use GolangStub
-type GenFunc func(in Input) (string, error)
+type GenFunc func(in *Input) (string, error)
 
-func GolangStub(in Input) (string, error) {
+func GolangStub(in *Input) (string, error) {
 	sb := &strings.Builder{}
 
 	err := tpl.GoStub.Execute(sb, in)
@@ -21,7 +21,7 @@ func GolangStub(in Input) (string, error) {
 	return sb.String(), nil
 }
 
-func TypeScriptStub(in Input) (string, error) {
+func TypeScriptStub(in *Input) (string, error) {
 	sb := &strings.Builder{}
 
 	err := tpl.TsStub.Execute(sb, in)
