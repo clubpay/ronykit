@@ -108,10 +108,20 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 	}
 
 	pm := ParsedMessage{
-		Name: mt.Name(),
+		original: m,
+		Name:     mt.Name(),
+		Kind:     parseKind(mt),
+		RKind:    mt.Kind(),
+		Type:     typ("", mt),
+		RType:    mt,
 	}
 
-	if mt.Kind() != reflect.Struct {
+	switch {
+	case mt == reflect.TypeOf(kit.RawMessage{}):
+		return pm
+	case mt == reflect.TypeOf(kit.MultipartFormMessage{}):
+		return pm
+	case mt.Kind() != reflect.Struct:
 		return pm
 	}
 
@@ -126,72 +136,65 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 	var fields []ParsedField
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
-		ptn := getParsedStructTag(f.Tag, tagName)
-		pp := ParsedField{
-			GoName: f.Name,
-			Name:   ptn.Name,
-			Tag:    ptn,
-		}
-
 		ft := f.Type
+		var optional bool
 		if ft.Kind() == reflect.Ptr {
-			pp.Optional = true
+			optional = true
 			ft = ft.Elem()
 		}
 
-		pp.Embedded = f.Anonymous
-		pp.Kind = parseKind(ft)
-		pp.Type = ft.String()
-		switch pp.Kind {
-		case Map:
-			// we only support maps with string keys
-			if ft.Key().Kind() != reflect.String {
-				continue
-			}
+		ptn := getParsedStructTag(f.Tag, tagName)
 
-			fallthrough
-		case Array:
-			pe := &ParsedElement{}
-			pp.Element = pe
-
-			keepGoing := true
-			for keepGoing {
-				ft = ft.Elem()
-				pe.Kind = parseKind(ft)
-				switch pe.Kind {
-				case Map, Array:
-					pe.Element = &ParsedElement{}
-					pe = pe.Element
-				case Object:
-					if ft.Kind() == reflect.Ptr {
-						ft = ft.Elem()
-					}
-					pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
-					keepGoing = false
-				default:
-					keepGoing = false
-				}
-			}
-		case Object:
-			if ps.isParsed(ft.Name()) {
-				pp.Message = ps.parsed[ft.Name()]
-			} else if ps.isVisited(ft.Name()) {
-				panic(fmt.Sprintf("infinite recursion detected: %s.%s", mt.Name(), ft.Name()))
-			} else {
-				pp.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
-			}
-
-		case None:
-			continue
-		}
-
-		fields = append(fields, pp)
+		fields = append(
+			fields,
+			ParsedField{
+				GoName:   f.Name,
+				Name:     ptn.Name,
+				Tag:      ptn,
+				Optional: optional,
+				Embedded: f.Anonymous,
+				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
+			},
+		)
 	}
 
 	pm.Fields = fields
 	ps.parsed[mt.Name()] = &pm
 
 	return pm
+}
+
+func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedElement {
+	kind := parseKind(ft)
+	pe := ParsedElement{
+		Kind:  kind,
+		RKind: ft.Kind(),
+		Type:  typ("", ft),
+		RType: ft,
+	}
+	switch kind {
+	case Map:
+		// we only support maps with string keys
+		pe.Key = utils.ValPtr(ps.parseElement(ft.Key(), enc))
+		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
+
+	case Array:
+		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
+
+	case Object:
+		if ps.isParsed(ft.Name()) {
+			pe.Message = ps.parsed[ft.Name()]
+		} else if ps.isVisited(ft.Name()) {
+			panic(fmt.Sprintf("infinite recursion detected: %s", ft.Name()))
+		} else {
+			if ft.Kind() == reflect.Ptr {
+				ft = ft.Elem()
+			}
+			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
+		}
+	}
+
+	return pe
 }
 
 func (ps *ParsedService) isParsed(name string) bool {
@@ -289,75 +292,37 @@ func (pr ParsedResponse) IsError() bool {
 type Kind string
 
 const (
-	None    Kind = ""
-	Bool    Kind = "boolean"
-	String  Kind = "string"
-	Integer Kind = "integer"
-	Float   Kind = "float"
-	Byte    Kind = "byte"
-	Object  Kind = "object"
-	Map     Kind = "map"
-	Array   Kind = "array"
+	None                    Kind = ""
+	Bool                    Kind = "boolean"
+	String                  Kind = "string"
+	Integer                 Kind = "integer"
+	Float                   Kind = "float"
+	Byte                    Kind = "byte"
+	Object                  Kind = "object"
+	Map                     Kind = "map"
+	Array                   Kind = "array"
+	kitRawMessage           Kind = "kitRawMessage"
+	kitMultipartFormMessage Kind = "kitMultipartFormMessage"
 )
 
 type ParsedMessage struct {
-	Name   string
-	Kind   Kind
-	Fields []ParsedField
+	original kit.Message
+	Name     string
+	Kind     Kind
+	RKind    reflect.Kind
+	Type     string
+	RType    reflect.Type
+	Fields   []ParsedField
+}
+
+func (pm ParsedMessage) IsSpecial() bool {
+	return pm.Kind == kitRawMessage || pm.Kind == kitMultipartFormMessage
 }
 
 func (pm ParsedMessage) JSON() string {
-	m := map[string]any{}
-	for _, p := range pm.Fields {
-		switch p.Kind {
-		default:
-			m[p.Name] = p.Kind
-		case Object:
-			m[p.Name] = json.RawMessage(p.Message.JSON())
-		case Map:
-			var inner any
-			switch p.Element.Kind {
-			default:
-				inner = p.Element.Kind
-			case Object:
-				inner = json.RawMessage(p.Element.Message.JSON())
-			case Integer, Float, Byte:
-				inner = 0
-			case Array:
-				inner = []any{p.Element.Element.Kind}
-			case Map:
-				inner = map[string]any{
-					"keyName": p.Element.Element.Kind,
-				}
-			}
-			m[p.Name] = map[string]any{
-				"keyName": inner,
-			}
-		case Array:
-			var inner any
-			switch p.Element.Kind {
-			default:
-				inner = p.Element.Kind
-			case Object:
-				inner = json.RawMessage(p.Element.Message.JSON())
-			case Integer, Float, Byte:
-				inner = 0
-			case Array:
-				inner = []any{p.Element.Element.Kind}
-			case Map:
-				inner = map[string]any{
-					"keyName": p.Element.Element.Kind,
-				}
-			}
-			m[p.Name] = []any{inner}
-		case Integer, Float, Byte:
-			m[p.Name] = 0
-		}
-	}
+	mJSON, _ := json.MarshalIndent(pm, "", "  ")
 
-	d, _ := json.MarshalIndent(m, "", "  ")
-
-	return string(d)
+	return utils.B2S(mJSON)
 }
 
 func (pm ParsedMessage) String() string {
@@ -370,9 +335,9 @@ func (pm ParsedMessage) String() string {
 		}
 		sb.WriteString(p.Name)
 		sb.WriteString(":")
-		sb.WriteString(string(p.Kind))
+		sb.WriteString(string(p.Element.Kind))
 
-		switch p.Kind {
+		switch p.Element.Kind {
 		case Map, Array:
 			sb.WriteString(":")
 			sb.WriteString(p.Element.String())
@@ -411,21 +376,21 @@ type ParsedField struct {
 	Tag         ParsedStructTag
 	SampleValue string
 	Optional    bool
-	Type        string
-	Kind        Kind
 	Embedded    bool
 
-	// Kind == Object
-	// Message is the parsed message if the kind is Object.
-	Message *ParsedMessage
-	// Kind == Array || Kind == Map
 	Element *ParsedElement
 }
 
 type ParsedElement struct {
-	Kind    Kind
-	Element *ParsedElement
-	Message *ParsedMessage
+	Kind  Kind
+	RKind reflect.Kind
+	Type  string
+	RType reflect.Type
+
+	// Message is the parsed message if the kind is Object.
+	Message *ParsedMessage // only if Kind == Object
+	Element *ParsedElement // if Kind == Array ||  Map
+	Key     *ParsedElement // only if Kind == Map
 }
 
 func (pf ParsedElement) String() string {
@@ -471,6 +436,15 @@ func ParseService(svc *Service) ParsedService {
 func parseKind(t reflect.Type) Kind {
 	for t.Kind() == reflect.Ptr {
 		t = t.Elem()
+	}
+
+	// Handle special messages
+	switch t {
+	default:
+	case reflect.TypeOf(kit.MultipartFormMessage{}):
+		return kitMultipartFormMessage
+	case reflect.TypeOf(kit.RawMessage{}):
+		return kitRawMessage
 	}
 
 	switch t.Kind() {

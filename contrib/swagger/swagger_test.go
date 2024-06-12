@@ -20,11 +20,15 @@ type embedded struct {
 
 type sampleReq struct {
 	embedded
-	X  string     `json:"x,int" swag:"enum:1,2,3"`
-	Y  string     `json:"y,omitempty"`
-	Z  int64      `json:"z" swag:"deprecated;optional"`
-	W  []string   `json:"w"`
-	TT [][]string `json:"tt"`
+	TT  [][]string        `json:"tt"`
+	X   string            `json:"x,int" swag:"enum:1,2,3"`
+	Y   string            `json:"y,omitempty"`
+	Z   int64             `json:"z" swag:"deprecated;optional"`
+	W   []string          `json:"w"`
+	MS  map[string]subRes `json:"ms"`
+	MSS map[string]string `json:"mss"`
+	MIS map[int]string    `json:"mis"`
+	MII map[int]int       `json:"mii"`
 }
 
 type subRes struct {
@@ -136,6 +140,10 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		//  	Z  int64      `json:"z"`
 		//  	W  []string   `json:"w"`
 		//  	TT [][]string `json:"tt"`
+		//		MS  map[string]subRes `json:"ms"`
+		//		MSS map[string]string `json:"mss"`
+		//		MIS map[int]string    `json:"mis"`
+		//		MII map[int]int       `json:"mii"`
 		// }
 		// type sampleRes struct {
 		// 		Out1 int      `json:"out1"`
@@ -148,24 +156,24 @@ var _ = Describe("ToSwaggerDefinition", func() {
 
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
-		Expect(props[0].Name).To(Equal("embedded"))
+		Expect(props[0].Name).To(Equal("others"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[1].Name).To(Equal("others"))
+		Expect(props[1].Name).To(Equal("embedded"))
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
 		Expect(props[2].Name).To(Equal("tt"))
 		Expect(props[2].SchemaProps.Type[0]).To(Equal("array"))
 		Expect(props[2].SchemaProps.Items.Schema.Type[0]).To(Equal("array"))
 		Expect(props[2].SchemaProps.Items.Schema.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[3].Name).To(Equal("w"))
-		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[3].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[4].Name).To(Equal("x"))
+		Expect(props[3].Name).To(Equal("x"))
+		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[4].Name).To(Equal("y"))
 		Expect(props[4].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[5].Name).To(Equal("y"))
-		Expect(props[5].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[6].Name).To(Equal("z"))
-		Expect(props[6].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[6].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
+		Expect(props[5].Name).To(Equal("z"))
+		Expect(props[5].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[5].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
+		Expect(props[6].Name).To(Equal("w"))
+		Expect(props[6].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[6].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {
@@ -180,12 +188,12 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[3].Name).To(Equal("subs"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
 		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
-		Expect(props[4].Name).To(Equal("subs2"))
-		Expect(props[4].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[4].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
-		Expect(props[5].Name).To(Equal("xSub"))
-		Expect(props[5].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
-		Expect(props[5].SchemaProps.Description).To(Equal("[Optional]"))
+		Expect(props[4].Name).To(Equal("xSub"))
+		Expect(props[4].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[4].SchemaProps.Description).To(Equal("[Optional]"))
+		Expect(props[5].Name).To(Equal("subs2"))
+		Expect(props[5].SchemaProps.Type[0]).To(Equal("array"))
+		Expect(props[5].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
 	})
 
 	It("Check Request for Contract[1].Response (anotherRes)", func() {
@@ -204,14 +212,14 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[0].Name).To(Equal("another"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("array"))
 		Expect(props[0].SchemaProps.Items.Schema.Type[0]).To(Equal("integer"))
-		Expect(props[1].Name).To(Equal("out1"))
-		Expect(props[1].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[1].Description).To(Equal("[Deprecated]"))
-		Expect(props[2].Name).To(Equal("out2"))
-		Expect(props[2].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[2].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
-		Expect(props[3].Name).To(Equal("some"))
+		Expect(props[1].Name).To(Equal("some"))
+		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[2].Name).To(Equal("out1"))
+		Expect(props[2].SchemaProps.Type[0]).To(Equal("integer"))
+		Expect(props[2].Description).To(Equal("[Deprecated]"))
+		Expect(props[3].Name).To(Equal("out2"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
+		Expect(props[3].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
 	})
 
 	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {

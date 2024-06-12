@@ -18,7 +18,9 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 	case "json.RawMessage":
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
 	case "kit.RawMessage":
-		return fmt.Sprintf("%s%s", prefix, "kit.Message")
+		return fmt.Sprintf("%s%s", prefix, "kit.RawMessage")
+	case "kit.MultipartFormMessage":
+		return fmt.Sprintf("%s%s", prefix, "kit.MultipartFormMessage")
 	}
 
 	//nolint:exhaustive

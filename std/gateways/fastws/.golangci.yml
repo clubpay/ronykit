@@ -14,21 +14,12 @@ linters:
     - nonamedreturns
     - testpackage
     - tagliatelle
-    - scopelint
-    - exhaustivestruct
-    - exhaustruct
-    - maligned
     - wrapcheck
     - varnamelen
     - ireturn
-    - varcheck
-    - nosnakecase
-    - interfacer
-    - golint
-    - ifshort
-    - deadcode
-    - structcheck
     - depguard
+    - exhaustruct
+    - mnd
   fast: false
 linters-settings:
   #  decorder:

@@ -168,12 +168,18 @@ func (d *Stub) addDTO(mTyp reflect.Type, isErr bool) error {
 		IsErr: isErr,
 	}
 
-	if mTyp == reflect.TypeOf(kit.RawMessage{}) {
-		return nil
-	}
+	switch {
+	default:
+	case mTyp == reflect.TypeOf(kit.RawMessage{}):
+		d.DTOs[dto.Name] = dto
 
-	// We don't support non-struct DTOs
-	if mTyp.Kind() != reflect.Struct {
+		return nil
+	case mTyp == reflect.TypeOf(kit.MultipartFormMessage{}):
+		d.DTOs[dto.Name] = dto
+
+		return nil
+	case mTyp.Kind() != reflect.Struct:
+		// We don't support non-struct DTOs
 		return errUnsupportedType(mTyp.Kind().String())
 	}
 

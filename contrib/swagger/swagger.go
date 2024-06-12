@@ -15,8 +15,6 @@ import (
 	"github.com/rbretecher/go-postman-collection"
 )
 
-const kitRawMessage = "RawMessage"
-
 type Generator struct {
 	tagName string
 	title   string
@@ -116,7 +114,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		WithTags(serviceName).
 		WithProduces(contentType).
 		WithConsumes(contentType)
-	if c.OKResponse().Message.Name == kitRawMessage {
+	if c.OKResponse().Message.IsSpecial() {
 		op.RespondsWith(
 			http.StatusOK,
 			spec.NewResponse(),
@@ -158,7 +156,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	case http.MethodDelete:
 		pathItem.Delete = op
 	case http.MethodPost:
-		if c.Request.Message.Name != kitRawMessage {
+		if !c.Request.Message.IsSpecial() {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
@@ -168,7 +166,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		}
 		pathItem.Post = op
 	case http.MethodPut:
-		if c.Request.Message.Name != kitRawMessage {
+		if !c.Request.Message.IsSpecial() {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
@@ -178,7 +176,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		}
 		pathItem.Put = op
 	case http.MethodPatch:
-		if c.Request.Message.Name != kitRawMessage {
+		if !c.Request.Message.IsSpecial() {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
@@ -199,7 +197,7 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 	var fields []desc.ParsedField
 	for _, f := range c.Request.Message.Fields {
 		if f.Embedded {
-			fields = append(fields, f.Message.Fields...)
+			fields = append(fields, f.Element.Message.Fields...)
 		} else {
 			fields = append(fields, f)
 		}
@@ -248,6 +246,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 		fields.PushFront(f)
 	}
 
+	idx := 0
 	for fields.Back() != nil {
 		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
 
@@ -255,29 +254,40 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 
 		switch kind {
 		default:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+			setProperty(&def, name, wrapFuncChain.Apply(spec.StringProperty()), idx)
 		case desc.Object:
 			if p.Embedded {
-				for _, f := range p.Message.Fields {
+				for _, f := range p.Element.Message.Fields {
 					fields.PushBack(f)
 				}
 			} else {
-				def.SetProperty(p.Name, wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))))
+				setProperty(
+					&def, p.Name,
+					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))),
+					idx,
+				)
 			}
 		case desc.String:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.StringProperty()))
+			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.StringProperty()), idx)
 		case desc.Float:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Float64Property()))
+			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.Float64Property()), idx)
 		case desc.Integer:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int64Property()))
+			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.Int64Property()), idx)
 		case desc.Bool:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.BoolProperty()))
+			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.BoolProperty()), idx)
 		case desc.Byte:
-			def.SetProperty(p.Name, wrapFuncChain.Apply(spec.Int8Property()))
+			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.Int8Property()), idx)
 		}
+
+		idx++
 	}
 
 	return def
+}
+
+func setProperty(def *spec.Schema, name string, prop spec.Schema, idx int) {
+	prop.AddExtension("x-order", float64(idx))
+	def.SetProperty(name, prop)
 }
 
 func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
@@ -286,8 +296,8 @@ func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
 		name          string
 	)
 
-	msg := p.Message
-	kind := p.Kind
+	msg := p.Element.Message
+	kind := p.Element.Kind
 	elem := p.Element
 Loop:
 	switch kind {
@@ -296,15 +306,15 @@ Loop:
 		name = msg.Name
 	case desc.Map:
 		wrapFuncChain = wrapFuncChain.Add(spec.MapProperty)
-		kind = elem.Kind
-		msg = elem.Message
+		kind = elem.Element.Kind
+		msg = elem.Element.Message
 		elem = elem.Element
 
 		goto Loop
 	case desc.Array:
 		wrapFuncChain = wrapFuncChain.Add(spec.ArrayProperty)
-		kind = elem.Kind
-		msg = elem.Message
+		kind = elem.Element.Kind
+		msg = elem.Element.Message
 		elem = elem.Element
 
 		goto Loop
@@ -411,7 +421,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 		}
 		for _, p := range c.Request.Message.Fields {
 			if p.Name == pp {
-				v.Type = string(p.Kind)
+				v.Type = string(p.Element.Kind)
 				v.Value = p.SampleValue
 
 				break
@@ -488,7 +498,7 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 		p.Description = "Deprecated"
 	}
 
-	kind := pp.Kind
+	kind := pp.Element.Kind
 	switch kind {
 	case desc.Array:
 		kind = pp.Element.Kind

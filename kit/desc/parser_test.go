@@ -1,6 +1,8 @@
 package desc_test
 
 import (
+	"reflect"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	. "github.com/onsi/ginkgo/v2"
@@ -68,7 +70,7 @@ var _ = Describe("DescParser", func() {
 				Out(&FlatMessage{}),
 		)
 
-	It("should parse the description", func() {
+	It("should parse the descriptor", func() {
 		pd := desc.ParseService(d)
 		contract0 := pd.Contracts[0]
 		contract1 := pd.Contracts[1]
@@ -83,7 +85,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
 		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(6))
+		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(7))
 
 		Expect(contract1.Name).To(Equal("s2"))
 		Expect(contract1.Type).To(Equal(desc.REST))
@@ -95,57 +97,85 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
 		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
-		Expect(contract0.Request.Message.Fields[0].Kind).To(Equal(desc.String))
+		Expect(contract0.Request.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
-		Expect(contract0.Request.Message.Fields[1].Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[1].Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[1].Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[1].Element.Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Request.Message.Fields[1].Optional).To(BeFalse())
+		Expect(contract0.Request.Message.Fields[2].Name).To(Equal("ba"))
+		Expect(contract0.Request.Message.Fields[2].Element.Kind).To(Equal(desc.Array))
+		Expect(contract0.Request.Message.Fields[2].Element.Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[2].Element.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[2].Optional).To(BeFalse())
+		Expect(contract0.Request.Message.Fields[3].Name).To(Equal("bm"))
+		Expect(contract0.Request.Message.Fields[3].Element.Kind).To(Equal(desc.Map))
+		Expect(contract0.Request.Message.Fields[3].Element.Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[3].Element.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[3].Optional).To(BeFalse())
 		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("c"))
-		Expect(contract0.Request.Message.Fields[4].Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[4].Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.Fields[4].Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[4].Element.Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Request.Message.Fields[4].Optional).To(BeTrue())
-		Expect(contract0.Request.Message.FieldByName("ba").Kind).To(Equal(desc.Array))
-		Expect(contract0.Request.Message.FieldByGoName("BA").Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Kind).To(Equal(desc.Array))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Kind).To(Equal(desc.Map))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.FieldByName("ba").Element.Kind).To(Equal(desc.Array))
+		Expect(contract0.Request.Message.FieldByGoName("BA").Element.Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Kind).To(Equal(desc.Array))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Kind).To(Equal(desc.Map))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Element.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Element.Message.Name).To(Equal("FlatMessage"))
 
 		b := contract0.Request.Message.Fields[1]
 		Expect(b.Name).To(Equal("b"))
-		Expect(b.Kind).To(Equal(desc.Object))
-		Expect(b.Message.Name).To(Equal("FlatMessage"))
-		Expect(b.Message.Fields).To(HaveLen(6))
-		Expect(b.Message.Fields[0].Name).To(Equal("a"))
-		Expect(b.Message.Fields[0].Kind).To(Equal(desc.String))
+		Expect(b.Element.Kind).To(Equal(desc.Object))
+		Expect(b.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(b.Element.Message.Fields).To(HaveLen(7))
+		Expect(b.Element.Message.Fields[0].Name).To(Equal("a"))
+		Expect(b.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
 		ba := contract0.Request.Message.Fields[2]
 		Expect(ba.Name).To(Equal("ba"))
-		Expect(ba.Kind).To(Equal(desc.Array))
-		Expect(ba.Message).To(BeNil())
-		Expect(ba.Element.Kind).To(Equal(desc.Object))
-		Expect(ba.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(ba.Element.Message.Fields).To(HaveLen(6))
-		Expect(ba.Element.Message.Fields[0].Name).To(Equal("a"))
-		Expect(ba.Element.Message.Fields[0].Kind).To(Equal(desc.String))
+		Expect(ba.Element.Kind).To(Equal(desc.Array))
+		Expect(ba.Element.Message).To(BeNil())
+		Expect(ba.Element.Element.Kind).To(Equal(desc.Object))
+		Expect(ba.Element.Element.Message.Name).To(Equal("FlatMessage"))
+		Expect(ba.Element.Element.Message.Fields).To(HaveLen(7))
+		Expect(ba.Element.Element.Message.Fields[0].Name).To(Equal("a"))
+		Expect(ba.Element.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
-		g := contract0.Responses[0].Message.Fields[4]
+		g := contract0.Responses[0].Message.Fields[5]
 		Expect(g.Name).To(Equal("g"))
-		Expect(g.Kind).To(Equal(desc.Array))
 		Expect(g.Element.Kind).To(Equal(desc.Array))
-		Expect(g.Element.Element.Kind).To(Equal(desc.String))
+		Expect(g.Element.Element.Kind).To(Equal(desc.Array))
+		Expect(g.Element.Element.Element.Kind).To(Equal(desc.String))
+		Expect(g.Element.Element.Element.Message).To(BeNil())
 		Expect(g.Element.Element.Message).To(BeNil())
-		Expect(g.Element.Message).To(BeNil())
 
-		m := contract0.Responses[0].Message.Fields[5]
+		m := contract0.Responses[0].Message.Fields[6]
 		Expect(m.Name).To(Equal("m"))
-		Expect(m.Kind).To(Equal(desc.Map))
 		Expect(m.Element.Kind).To(Equal(desc.Map))
-		Expect(m.Element.Message).To(BeNil())
-		Expect(m.Element.Element.Kind).To(Equal(desc.String))
+		Expect(m.Element.Element.Kind).To(Equal(desc.Map))
 		Expect(m.Element.Element.Message).To(BeNil())
+		Expect(m.Element.Element.Element.Kind).To(Equal(desc.String))
+		Expect(m.Element.Element.Element.Message).To(BeNil())
+
+		f := contract0.Responses[0].Message.Fields[2]
+		Expect(f.Name).To(Equal("c"))
+		Expect(f.Element.Kind).To(Equal(desc.Map))
+		Expect(f.Element.Element.Kind).To(Equal(desc.String))
+		Expect(f.Element.Message).To(BeNil())
+		Expect(f.Optional).To(BeFalse())
+		Expect(f.Element.Message).To(BeNil())
+		Expect(f.Element.Type).To(Equal("map[string]string"))
+
+		f3 := contract0.Responses[0].Message.Fields[3]
+		Expect(f3.Name).To(Equal("d"))
+		Expect(f3.Element.Kind).To(Equal(desc.Map))
+		Expect(f3.Element.Element.Kind).To(Equal(desc.Integer))
+		Expect(f3.Element.Message).To(BeNil())
+		Expect(f3.Optional).To(BeFalse())
+		Expect(f3.Element.Message).To(BeNil())
+		Expect(f3.Element.Type).To(Equal("map[string]int64"))
 	})
 })
 
@@ -174,5 +204,65 @@ var _ = Describe("ParseMessage.JSON()", func() {
 		Expect(ps.Contracts[0].Request.Headers[0].Name).To(Equal("hdr1"))
 		Expect(ps.Contracts[0].Request.Headers[1].Required).To(BeFalse())
 		Expect(ps.Contracts[0].Request.Headers[1].Name).To(Equal("optionalHdr1"))
+	})
+})
+
+var _ = Describe("RawMessage and MultipartForm", func() {
+	d := desc.NewService("sample").
+		AddContract(
+			desc.NewContract().
+				SetName("rawRequest").
+				NamedSelector("s1", newREST(kit.JSON, "/raw1", "POST")).
+				In(kit.RawMessage{}).
+				Out(kit.RawMessage{}),
+		).
+		AddContract(
+			desc.NewContract().
+				SetName("multipartFormRequest").
+				NamedSelector("s2", newREST(kit.JSON, "/multipart/form", "POST")).
+				In(kit.MultipartFormMessage{}).
+				Out(kit.RawMessage{}),
+		)
+
+	It("should parse the descriptor", func() {
+		pd := desc.ParseService(d)
+		contract0 := pd.Contracts[0]
+		contract1 := pd.Contracts[1]
+		Expect(pd.Contracts).To(HaveLen(2))
+
+		Expect(contract0.Name).To(Equal("s1"))
+		Expect(contract0.Type).To(Equal(desc.REST))
+		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
+		Expect(contract0.Path).To(Equal("/raw1"))
+		Expect(contract0.Method).To(Equal("POST"))
+		Expect(contract0.GroupName).To(Equal("rawRequest"))
+		Expect(contract0.Request.Message.Name).To(Equal("RawMessage"))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(0))
+		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
+		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(0))
+
+		Expect(contract1.Name).To(Equal("s2"))
+		Expect(contract1.Type).To(Equal(desc.REST))
+		Expect(contract1.Encoding).To(Equal(kit.JSON.Tag()))
+		Expect(contract1.Path).To(Equal("/multipart/form"))
+		Expect(contract1.Method).To(Equal("POST"))
+		Expect(contract1.GroupName).To(Equal("multipartFormRequest"))
+		Expect(contract1.Request.Message.Name).To(Equal("MultipartFormMessage"))
+		Expect(contract1.Request.Message.Fields).To(HaveLen(0))
+		Expect(contract1.Responses[0].Message.Name).To(Equal("RawMessage"))
+		Expect(contract1.Responses[0].Message.Fields).To(HaveLen(0))
+
+		s, err := d.Stub("json")
+		Expect(err).To(BeNil())
+		Expect(s.RESTs).To(HaveLen(2))
+		Expect(s.DTOs).To(HaveLen(2))
+		Expect(s.RESTs[0].Request.Name).To(Equal("RawMessage"))
+		Expect(s.RESTs[0].Request.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
+		Expect(s.RESTs[0].Response.Name).To(Equal("RawMessage"))
+		Expect(s.RESTs[0].Response.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
+		Expect(s.RESTs[1].Request.Name).To(Equal("MultipartFormMessage"))
+		Expect(s.RESTs[1].Request.Type).To(Equal(reflect.TypeOf(kit.MultipartFormMessage{}).String()))
+		Expect(s.RESTs[1].Response.Name).To(Equal("RawMessage"))
+		Expect(s.RESTs[1].Response.Type).To(Equal(reflect.TypeOf(kit.RawMessage{}).String()))
 	})
 })

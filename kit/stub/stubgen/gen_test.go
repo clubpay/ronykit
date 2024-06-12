@@ -1,6 +1,7 @@
 package stubgen
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit/desc"
@@ -20,12 +21,14 @@ var _ = Describe("GolangGenerator", func() {
 				Stub: desc.Stub{
 					DTOs: map[string]desc.DTO{
 						"Struct1": {
-							Name: "Struct1",
-							Type: "struct",
+							Name:  "Struct1",
+							RType: reflect.TypeOf(struct{}{}),
+							Type:  "struct",
 							Fields: []desc.DTOField{
 								{
-									Name: "Param1",
-									Type: "string",
+									Name:  "Param1",
+									RType: reflect.TypeOf(*new(string)),
+									Type:  "string",
 									Tags: []desc.DTOFieldTag{
 										{
 											Name:  "json",
@@ -34,8 +37,9 @@ var _ = Describe("GolangGenerator", func() {
 									},
 								},
 								{
-									Name: "Param2",
-									Type: "*int",
+									Name:  "Param2",
+									RType: reflect.TypeOf(new(int)),
+									Type:  "*int",
 									Tags: []desc.DTOFieldTag{
 										{
 											Name:  "json",
@@ -63,12 +67,14 @@ var _ = Describe("GolangGenerator", func() {
 								"Something1",
 								"Something2",
 							},
-							Name: "Struct1",
-							Type: "struct",
+							Name:  "Struct1",
+							RType: reflect.TypeOf(struct{}{}),
+							Type:  "struct",
 							Fields: []desc.DTOField{
 								{
-									Name: "Param1",
-									Type: "string",
+									Name:  "Param1",
+									RType: reflect.TypeOf(*new(string)),
+									Type:  "string",
 									Tags: []desc.DTOFieldTag{
 										{
 											Name:  "json",
@@ -77,8 +83,9 @@ var _ = Describe("GolangGenerator", func() {
 									},
 								},
 								{
-									Name: "Param2",
-									Type: "*int",
+									Name:  "Param2",
+									RType: reflect.TypeOf(new(int)),
+									Type:  "*int",
 									Tags: []desc.DTOFieldTag{
 										{
 											Name:  "json",

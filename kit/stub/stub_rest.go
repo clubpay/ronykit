@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -125,6 +126,20 @@ func (hc *RESTCtx) SetHeaderMap(kv map[string]string) *RESTCtx {
 
 func (hc *RESTCtx) SetBody(body []byte) *RESTCtx {
 	hc.req.SetBody(body)
+
+	return hc
+}
+
+// SetMultipartForm sets the body of the request to a multipart form. It will reset
+// any previous data that was set by SetBody method.
+func (hc *RESTCtx) SetMultipartForm(frm *multipart.Form, boundary string) *RESTCtx {
+	hc.req.ResetBody()
+	err := fasthttp.WriteMultipartForm(hc.req.BodyWriter(), frm, boundary)
+	if err != nil {
+		hc.err = WrapError(err)
+
+		return hc
+	}
 
 	return hc
 }
