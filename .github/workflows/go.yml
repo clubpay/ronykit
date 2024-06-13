@@ -10,23 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.20', '1.21' ]
+        go: [ '1.21', '1.22' ]
     name: Set up Go ${{ matrix.go }}
     steps:
       - uses: actions/checkout@v4
-      - name: Test
-        uses: actions/setup-go@v4
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+      - name: Run Tests
         run: |
-          go work init
-          go work use ./kit
-          go work use ./std/gateways/fasthttp
-          go work use ./std/gateways/fastws
-          go work use ./std/gateways/silverhttp
-          go work use ./std/clusters/rediscluster
-          go work use ./contrib
-          go work sync
           go test -v -race -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
             ./kit/... \
             ./std/gateways/fasthttp/... \
@@ -35,8 +27,9 @@ jobs:
             ./std/clusters/rediscluster/...
 
       - name: Codecov KIT
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.out
+          files: ./coverage.xml
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
