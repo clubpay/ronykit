@@ -169,7 +169,6 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 	}
 	switch kind {
 	case Map:
-		// we only support maps with string keys
 		pe.Key = utils.ValPtr(ps.parseElement(ft.Key(), enc))
 		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
 
@@ -512,18 +511,19 @@ const (
 )
 
 type ParsedStructTag struct {
-	original       reflect.StructTag
+	Raw            reflect.StructTag
 	Name           string
 	Value          string
 	Optional       bool
 	PossibleValues []string
 	Deprecated     bool
+	OmitEmpty      bool
 }
 
 func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
 	tags := make(map[string]string)
 	for _, k := range keys {
-		v, ok := pst.original.Lookup(k)
+		v, ok := pst.Raw.Lookup(k)
 		if ok {
 			tags[k] = v
 		}
@@ -533,13 +533,13 @@ func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
 }
 
 func (pst ParsedStructTag) Get(key string) string {
-	return pst.original.Get(key)
+	return pst.Raw.Get(key)
 }
 
 func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	pst := ParsedStructTag{
-		original: tag,
-		Name:     name,
+		Raw:  tag,
+		Name: name,
 	}
 	nameTag := tag.Get(name)
 	if nameTag == "" {
@@ -549,6 +549,9 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	// This is a hack to remove omitempty from tags
 	if fNameParts := strings.Split(nameTag, swagValueSep); len(fNameParts) > 0 {
 		pst.Value = strings.TrimSpace(fNameParts[0])
+		if len(fNameParts) > 1 && fNameParts[1] == "omitempty" {
+			pst.OmitEmpty = true
+		}
 	}
 
 	swagTag := tag.Get(swagTagKey)

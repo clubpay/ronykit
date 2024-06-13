@@ -49,8 +49,22 @@ func OkOr[T any](v T, err error, fallback T) T {
 	return v
 }
 
+// TryCast tries to cast the input value to the target type. If the cast fails, it
+// returns the zero value of the target type.
 func TryCast[T any](v any) T {
 	t, _ := v.(T)
 
 	return t
+}
+
+// Coalesce returns the first non-zero value from the input list.
+func Coalesce[T comparable](in ...T) T {
+	var zero T
+	for _, v := range in {
+		if v != zero {
+			return v
+		}
+	}
+
+	return zero
 }

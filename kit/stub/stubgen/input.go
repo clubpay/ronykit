@@ -45,7 +45,7 @@ func (in *Input) addContract(c desc.ParsedContract) {
 			Name:      c.Name,
 			Method:    c.Method,
 			Path:      c.Path,
-			Encoding:  c.Encoding,
+			Encoding:  utils.Coalesce(c.Encoding, "json"),
 			Request:   c.Request,
 			Responses: c.Responses,
 		})
@@ -56,7 +56,7 @@ func (in *Input) addContract(c desc.ParsedContract) {
 			Predicate: c.Predicate,
 			Request:   c.Request,
 			Responses: c.Responses,
-			Encoding:  c.Encoding,
+			Encoding:  utils.Coalesce(c.Encoding, "json"),
 		})
 	}
 }

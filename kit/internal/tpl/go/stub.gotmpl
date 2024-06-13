@@ -5,25 +5,25 @@
 {{ define "dto" }}
 	// {{.Name}} is a data transfer object
 	type {{.Name}} struct {
-		{{- range .Fields -}}
-			{{- if .Embedded }}
-				{{.GoName}}
-			{{- else }}
-				{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}}"`{{- end }}
-			{{- end }}
+	{{- range .Fields -}}
+		{{- if .Embedded }}
+			{{.GoName}}
+		{{- else }}
+			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty -}},omitempty{{- end -}}"`{{- end }}
 		{{- end }}
+	{{- end }}
 	}
 	{{ if .ImplementError }}
-	{{- if ne .CodeField ""}}
-	func (x {{.Name}}) GetCode() int {
-		return x.{{.CodeField}}
-	}
-	{{- end }}
-	{{ if ne .ItemField ""}}
-	func (x {{.Name}}) GetItem() string {
-		return x.{{.ItemField}}
-	}
-	{{- end }}
+		{{- if ne .CodeField ""}}
+			func (x {{.Name}}) GetCode() int {
+			return x.{{.CodeField}}
+			}
+		{{- end }}
+		{{ if ne .ItemField ""}}
+			func (x {{.Name}}) GetItem() string {
+			return x.{{.ItemField}}
+			}
+		{{- end }}
 	{{- end }}
 {{ end }}
 
@@ -36,12 +36,12 @@
 package {{.Pkg}}
 
 import (
-	"context"
-	"fmt"
+"context"
+"fmt"
 
-	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
+"github.com/clubpay/ronykit/kit"
+"github.com/clubpay/ronykit/kit/stub"
+"github.com/clubpay/ronykit/kit/utils/reflector"
 )
 
 {{/* We use this to make sure fmt import is not complained by the compiler */}}
@@ -51,7 +51,7 @@ var _ fmt.Stringer
 {{$tags := strQuote .Tags}}
 func init() {
 {{- range $dtoName, $dto := .Messages }}
-reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
+	reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
 {{- end }}
 }
 
@@ -60,7 +60,7 @@ reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
 			beginning of the template file.
 */}}
 {{ range $dtoName, $dto := .Messages }}
-{{ template "dto" $dto }}
+	{{ template "dto" $dto }}
 {{ end }}
 
 {{/*
@@ -68,32 +68,32 @@ reflector.Register(&{{$dtoName}}{}, {{strJoin $tags ","}})
 */}}
 {{$serviceName := .Name}}
 type I{{$serviceName}}Stub interface {
-	{{ range .RESTMethods }}
+{{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" -}}
-	{{$methodName}}(
+		{{$methodName}}(
 		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-	) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
+		) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
 	{{- end -}}
-	{{- end }}
+{{- end }}
 }
 
 // {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
 // Implements I{{$serviceName}}Stub
 type {{$serviceName}}Stub struct {
-    hostPort string
-    secure bool
-    verifyTLS bool
+hostPort string
+secure bool
+verifyTLS bool
 
-		s *stub.Stub
+s *stub.Stub
 }
 
 func New{{$serviceName}}Stub(hostPort string, opts ...stub.Option) *{{$serviceName}}Stub {
-    s := &{{$serviceName}}Stub{
-			s: stub.New(hostPort, opts...),
-		}
+s := &{{$serviceName}}Stub{
+s: stub.New(hostPort, opts...),
+}
 
-    return s
+return s
 }
 
 var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
@@ -102,48 +102,48 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 			Generating the REST methods
 */}}
 {{ range .RESTMethods }}
-{{$methodName := .Name}}
-{{- if ne $methodName "" }}
-func (s {{$serviceName}}Stub) {{$methodName}}(
-	ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
-	res := &{{.GetOKResponse.Message.Name}}{}
-	httpCtx := s.s.REST(opt...).
+	{{$methodName := .Name}}
+	{{- if ne $methodName "" }}
+		func (s {{$serviceName}}Stub) {{$methodName}}(
+		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
+		) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
+		res := &{{.GetOKResponse.Message.Name}}{}
+		httpCtx := s.s.REST(opt...).
 		SetMethod("{{.Method}}").
 		{{ range $idx, $errDto := .GetErrors }}
-		SetResponseHandler(
+			SetResponseHandler(
 			{{ $errDto.ErrCode }},
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				res := &{{$errDto.Message.Name}}{}
-				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
-				if err != nil {
-					return err
-				}
+			res := &{{$errDto.Message.Name}}{}
+			err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			if err != nil {
+			return err
+			}
 
-				return stub.NewErrorWithMsg(res)
+			return stub.NewErrorWithMsg(res)
 			},
-		).
+			).
 		{{- end }}
 		SetOKHandler(
-			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
-			},
+		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+		return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+		},
 		).
 		DefaultResponseHandler(
-			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.NewError(r.StatusCode(), string(r.GetBody()))
-			},
+		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+		return stub.NewError(r.StatusCode(), string(r.GetBody()))
+		},
 		).
 		AutoRun(ctx, "{{.Path}}", kit.CustomEncoding("{{.Encoding}}"), req)
-	defer httpCtx.Release()
+		defer httpCtx.Release()
 
-	if err := httpCtx.Err(); err != nil {
+		if err := httpCtx.Err(); err != nil {
 		return nil, err
-	}
+		}
 
-	return res, nil
-}
-{{ end }}
+		return res, nil
+		}
+	{{ end }}
 {{- end }}
 
 
@@ -152,16 +152,16 @@ func (s {{$serviceName}}Stub) {{$methodName}}(
 type MockOption func(*{{$serviceName}}StubMock)
 
 {{ range .RESTMethods }}
-{{$methodName := .Name}}
-{{- if ne $methodName "" }}
-func Mock{{$methodName}}(
-	f func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error),
-) MockOption {
-	return func(sm *{{$serviceName}}StubMock) {
-			sm.{{toLower $methodName}} = f
-	}
-}
-{{ end }}
+	{{$methodName := .Name}}
+	{{- if ne $methodName "" }}
+		func Mock{{$methodName}}(
+		f func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error),
+		) MockOption {
+		return func(sm *{{$serviceName}}StubMock) {
+		sm.{{toLower $methodName}} = f
+		}
+		}
+	{{ end }}
 {{- end }}
 
 
@@ -171,33 +171,33 @@ type {{$serviceName}}StubMock struct {
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" -}}
-	{{toLower $methodName}} func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
+		{{toLower $methodName}} func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
 	{{- end -}}
 {{- end }}
 }
 
 func New{{$serviceName}}StubMock(opts ...MockOption) *{{$serviceName}}StubMock {
-    s := &{{$serviceName}}StubMock{}
-		for _, o := range opts {
-			o(s)
-		}
+s := &{{$serviceName}}StubMock{}
+for _, o := range opts {
+o(s)
+}
 
-    return s
+return s
 }
 
 var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 
 {{ range .RESTMethods }}
-{{$methodName := .Name}}
-{{- if ne $methodName "" }}
-func (s {{$serviceName}}StubMock) {{$methodName}}(
-	ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
-	if s.{{toLower $methodName}} == nil {
+	{{$methodName := .Name}}
+	{{- if ne $methodName "" }}
+		func (s {{$serviceName}}StubMock) {{$methodName}}(
+		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
+		) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
+		if s.{{toLower $methodName}} == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
-	}
+		}
 
-	return s.{{toLower $methodName}}(ctx, req, opt...)
-}
-{{ end }}
+		return s.{{toLower $methodName}}(ctx, req, opt...)
+		}
+	{{ end }}
 {{- end }}
