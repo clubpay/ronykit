@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/stub"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
+	"github.com/clubpay/ronykit/stub"
 )
 
 var _ fmt.Stringer
@@ -213,12 +213,6 @@ func (s sampleServiceStub) GetComplexDummy(
 	}
 
 	return res, nil
-}
-
-func OnGetComplexDummy(ws *stub.WebsocketCtx, req *VeryComplexRequest) (*VeryComplexResponse, error) {
-	req := &VeryComplexRequest{}
-	ws.
-
 }
 
 type MockOption func(*sampleServiceStubMock)

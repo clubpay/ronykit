@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/example/ex-01-rpc
 go 1.20
 
 require (
-	github.com/clubpay/ronykit v0.7.3
-	github.com/clubpay/ronykit/kit v0.14.6
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.6
-	github.com/clubpay/ronykit/std/gateways/fastws v0.14.6
+	github.com/clubpay/ronykit/kit v0.15.0
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.15.0
+	github.com/clubpay/ronykit/std/gateways/fastws v0.15.0
+	github.com/clubpay/ronykit/stub v0.15.0
 )
 
 require (
@@ -29,9 +29,10 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

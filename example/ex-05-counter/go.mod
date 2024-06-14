@@ -1,24 +1,26 @@
 module github.com/clubpay/ronykit/example/ex-05-counter
 
-go 1.20
+go 1.22
 
-require github.com/clubpay/ronykit/rony v0.14.3
+toolchain go1.22.3
+
+require github.com/clubpay/ronykit/rony v0.15.0
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/clubpay/ronykit/kit v0.14.3 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.3 // indirect
+	github.com/clubpay/ronykit/kit v0.15.0 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.15.0 // indirect
 	github.com/fasthttp/router v1.5.0 // indirect
-	github.com/fasthttp/websocket v1.5.8 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/fasthttp/websocket v1.5.9 // indirect
+	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect
-	github.com/klauspost/compress v1.17.7 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240303185622-093b76447511 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.52.0 // indirect
+	github.com/valyala/fasthttp v1.54.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect

@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/clubpay/ronykit/example/ex-04-stubgen/api"
-	"github.com/clubpay/ronykit/stubbgen"
+	"github.com/clubpay/ronykit/stub/stubgen"
 )
 
 func main() {
