@@ -15,8 +15,7 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fastws"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/clubpay/ronykit/stub "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
 

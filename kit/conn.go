@@ -1,5 +1,7 @@
 package kit
 
+import "io"
+
 // Conn represents a connection between EdgeServer and client.
 type Conn interface {
 	ConnID() uint64
@@ -24,4 +26,9 @@ type RESTConn interface {
 	SetStatusCode(code int)
 	Redirect(code int, url string)
 	WalkQueryParams(fn func(key string, val string) bool)
+}
+
+type RPCConn interface {
+	Conn
+	io.Writer
 }

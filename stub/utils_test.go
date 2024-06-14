@@ -1,7 +1,7 @@
 package stub_test
 
 import (
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

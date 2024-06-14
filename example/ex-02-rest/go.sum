@@ -8,6 +8,8 @@ github.com/cloudwego/base64x v0.1.4 h1:jwCgWpFanWmN8xoIUHa2rtzmkd5J2plF/dnLS6Xd/
 github.com/cloudwego/base64x v0.1.4/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
 github.com/cloudwego/iasm v0.2.0/go.mod h1:8rXZaNYT2n95jn+zTI1sDr+IgcD2GVs0nlbbQPiEFhY=
+github.com/clubpay/ronykit v0.7.3 h1:Q8H/VVOoHvPyg0aEC61Pt6SKHjYELhnD7uyioHe0/s8=
+github.com/clubpay/ronykit v0.7.3/go.mod h1:tkwJK3UtgFpf688cQlE+gypnrI1CDA1bOAqyrNNHoxk=
 github.com/clubpay/ronykit/kit v0.14.3 h1:yn9SPxJZLXlshQtQKACbWGyDfUi30zzFP6GKNG04He0=
 github.com/clubpay/ronykit/kit v0.14.3/go.mod h1:5GlJkudFSdiMk3xxTS6bsx3WlgGvqHtDAirP8LP6ZN0=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.3 h1:tG5k/1yTVhEfv21RKpcIHFdYA/HS/ltauxvTExy4BH0=
@@ -71,7 +73,6 @@ golang.org/x/net v0.25.0/go.mod h1:JkAGAh7GEvH74S6FOH42FLoXpXbE/aqXSrIQjXgsiwM=
 golang.org/x/sys v0.20.0 h1:Od9JTbYCk261bKm4M/mw7AklTlFYIa0bIp9BgSm1S8Y=
 golang.org/x/sys v0.20.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/text v0.15.0 h1:h1V/4gjBv8v9cjcR6+AR5+/cIYK5N/WAgiv4xlsEtAk=
-golang.org/x/text v0.15.0/go.mod h1:18ZOQIKpY8NJVqYksKHtTdi31H5itFRjB5/qKTNYzSU=
 golang.org/x/tools v0.20.0 h1:hz/CVckiOxybQvFw6h7b/q80NTr9IUQb4s1IIzW7KNY=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=

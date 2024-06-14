@@ -29,7 +29,7 @@ frs="github.com/clubpay/ronykit/std/gateways/fasthttp $2"
 css="github.com/clubpay/ronykit/contrib $1"
 crs="github.com/clubpay/ronykit/contrib $2"
 
-array2=(contrib rony)
+array2=(contrib rony stub)
 for i in "${array2[@]}"
 do
 	filename="$i"/go.mod

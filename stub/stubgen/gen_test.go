@@ -7,7 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/stub/stubgen"
+	"github.com/clubpay/ronykit/stub/stubgen"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

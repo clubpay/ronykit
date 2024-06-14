@@ -12,7 +12,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/clusters/p2pcluster"
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"

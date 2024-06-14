@@ -3,6 +3,7 @@ module github.com/clubpay/ronykit/example/ex-01-rpc
 go 1.20
 
 require (
+	github.com/clubpay/ronykit v0.7.3
 	github.com/clubpay/ronykit/kit v0.14.6
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.6
 	github.com/clubpay/ronykit/std/gateways/fastws v0.14.6
@@ -31,7 +32,6 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

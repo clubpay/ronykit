@@ -32,7 +32,10 @@ type wsConn struct {
 	w             *wsutil.Writer
 }
 
-var _ kit.Conn = (*wsConn)(nil)
+var (
+	_ kit.Conn    = (*wsConn)(nil)
+	_ kit.RPCConn = (*wsConn)(nil)
+)
 
 func newWebsocketConn(
 	id uint64, c gnet.Conn,

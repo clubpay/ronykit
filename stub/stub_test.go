@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

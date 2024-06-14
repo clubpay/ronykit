@@ -12,7 +12,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 )
 
 func main() {
@@ -43,7 +43,7 @@ import (
 	"context"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 )
 
 type ErrorMessage struct {

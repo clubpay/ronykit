@@ -66,6 +66,7 @@ func (testCtx *TestContext) Run(stream bool) error {
 	return testCtx.expectFunc(conn.out...)
 }
 
+// RunREST simulates a REST request.
 func (testCtx *TestContext) RunREST() error {
 	ctx := newContext(&testCtx.ls)
 	conn := newTestRESTConn()

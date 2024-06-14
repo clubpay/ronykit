@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
+	"github.com/clubpay/ronykit/stub"
 )
 
 var _ fmt.Stringer

@@ -10,7 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 )
 
 func main() {

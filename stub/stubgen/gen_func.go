@@ -3,7 +3,7 @@ package stubgen
 import (
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/internal/tpl"
+	"github.com/clubpay/ronykit/stub/internal/tpl"
 )
 
 // GenFunc is the function which generates the final code. For example to generate

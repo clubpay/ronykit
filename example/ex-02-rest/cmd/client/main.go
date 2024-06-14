@@ -8,7 +8,7 @@ import (
 
 	"github.com/clubpay/ronykit/example/ex-02-rest/dto"
 	"github.com/clubpay/ronykit/example/ex-02-rest/stub/sampleservice"
-	"github.com/clubpay/ronykit/kit/stub"
+	"github.com/clubpay/ronykit/stub"
 )
 
 func main() {

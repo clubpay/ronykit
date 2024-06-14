@@ -1,4 +1,4 @@
-go 1.22
+go 1.22.3
 
 use (
 	./contrib
@@ -17,5 +17,6 @@ use (
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/silverhttp
+	./stub
 	./testenv
 )

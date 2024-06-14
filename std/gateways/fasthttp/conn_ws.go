@@ -15,7 +15,10 @@ type wsConn struct {
 	rpcOutFactory kit.OutgoingRPCFactory
 }
 
-var _ kit.Conn = (*wsConn)(nil)
+var (
+	_ kit.Conn    = (*wsConn)(nil)
+	_ kit.RPCConn = (*wsConn)(nil)
+)
 
 func (w *wsConn) Close() {
 	w.Lock()
