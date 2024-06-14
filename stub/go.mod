@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/stub
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.14.14
+	github.com/clubpay/ronykit/kit v0.15.0
 	github.com/fasthttp/websocket v1.5.9
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
