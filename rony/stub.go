@@ -11,7 +11,9 @@ func GenerateStub[S State[A], A Action](
 	genFunc stubgen.GenFunc, ext string,
 	opt ...SetupOption[S, A],
 ) error {
-	ctx := SetupContext[S, A]{}
+	ctx := SetupContext[S, A]{
+		cfg: &serverConfig{},
+	}
 	for _, o := range opt {
 		o(&ctx)
 	}
