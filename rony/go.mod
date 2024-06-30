@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/rony
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/contrib v0.16.1
-	github.com/clubpay/ronykit/kit v0.16.1
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.1
+	github.com/clubpay/ronykit/contrib v0.16.2
+	github.com/clubpay/ronykit/kit v0.16.2
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.2
 	github.com/clubpay/ronykit/stub v0.16.0
 )
 
