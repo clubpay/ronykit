@@ -12,6 +12,19 @@ memory usage, you can directly utilize the `kit` package, which forms the core o
 - For more information about the `rony` package, please visit [rony](./rony/README.MD).
 - For more information about the `kit` package, please visit [kit](./kit/README.MD).
 
+# Quick Start
+To get started with RonyKIT, you can use the following command to install the `ronyup` cli tool:
+
+```shell
+go install github.com/clubpay/ronykit/ronyup@latest
+```
+
+After installing the `ronyup` tool, you can create a new project using the `ronyup setup` command, below is an example:
+
+```shell
+ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
+```
+
 # RonyKIT Standard Packages
 
 This repository contains all projects related to RonyKIT. The central package, which is the core of the RonyKIT framework, is [kit](./kit), with standard modules located in the /std folders.
