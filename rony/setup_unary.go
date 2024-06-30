@@ -1,7 +1,6 @@
 package rony
 
 import (
-	"reflect"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
@@ -59,7 +58,6 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	c := desc.NewContract().
 		In(&in).
 		Out(&out).
-		SetName(reflect.TypeOf(h).Name()).
 		SetHandler(handlers...)
 
 	if setupCtx.nodeSel != nil {

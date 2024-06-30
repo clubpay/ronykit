@@ -11,7 +11,6 @@ import (
 type serverConfig struct {
 	serverName  string
 	version     string
-	desc        string
 	services    map[string]*desc.Service
 	edgeOpts    []kit.Option
 	gatewayOpts []fasthttp.Option

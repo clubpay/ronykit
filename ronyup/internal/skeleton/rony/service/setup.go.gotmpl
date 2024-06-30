@@ -16,15 +16,18 @@ func Setup() rony.SetupOption[*state.Counter, state.Action] {
 		// 4. GET /count?action=down&count=2
 		rony.WithUnary(
 			endpoint.Count,
-			rony.GET("/count/{action}"),
+			rony.GET("/count/{action}", rony.UnaryName("Count")),
 			rony.GET("/count"),
 		),
 		// Register the count reset handler for both GET /reset and POST /reset
 		rony.WithUnary(
 			endpoint.Reset,
-			rony.GET("/reset"),
+			rony.GET("/reset", rony.UnaryName("Reset")),
 			rony.POST("/reset"),
 		),
 	)
 }
 
+
+//go:generate go run {{.ModulePath}}/cmd/gen-stub/main.go
+func init() {}

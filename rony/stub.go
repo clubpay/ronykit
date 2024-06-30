@@ -1,6 +1,9 @@
 package rony
 
-import "github.com/clubpay/ronykit/stub/stubgen"
+import (
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/stub/stubgen"
+)
 
 // GenerateStub generates a stub file for the given service description.
 // The generated file will be placed in the `outputDir/folderName` directory.
@@ -11,8 +14,11 @@ func GenerateStub[S State[A], A Action](
 	genFunc stubgen.GenFunc, ext string,
 	opt ...SetupOption[S, A],
 ) error {
+	var s S
 	ctx := SetupContext[S, A]{
-		cfg: &serverConfig{},
+		s:    utils.ValPtr(ToInitiateState(s)()),
+		name: name,
+		cfg:  &serverConfig{},
 	}
 	for _, o := range opt {
 		o(&ctx)

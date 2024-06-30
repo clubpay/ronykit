@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/example/ex-08-echo
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/kit v0.16.0
+	github.com/clubpay/ronykit/kit v0.16.2
 	github.com/clubpay/ronykit/rony v0.16.0
 )
 

@@ -1,0 +1,18 @@
+package main
+
+import (
+	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/stub/stubgen"
+	"{{ .ModulePath }}/service"
+)
+
+func main() {
+	err := rony.GenerateStub(
+		"Counter", "counter", "./stub", "counterc",
+		stubgen.GolangStub, ".go",
+		service.Setup(),
+	)
+	if err != nil {
+		panic(err)
+	}
+}
