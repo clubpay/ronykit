@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/clubpay/ronykit/rony"
-	"github.com/clubpay/ronykit/stub/stubgen"
 	"{{ .ModulePath }}/service/endpoint"
 	"{{ .ModulePath }}/service/state"
 )
@@ -29,11 +28,3 @@ func Setup() rony.SetupOption[*state.Counter, state.Action] {
 	)
 }
 
-//go:generate go run {{.ModulePath}}/cmd/gen-stub/main.go
-func GenerateStub() error {
-	return rony.GenerateStub(
-		"CounterStub", "counter", ".", "counterc",
-		stubgen.GolangStub, ".go",
-		Setup(),
-	)
-}
