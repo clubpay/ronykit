@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 )
 
 type Generator struct {
@@ -34,11 +33,11 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	}
 
 	dirPath := filepath.Join(g.cfg.outputDir, g.cfg.folderName)
-	_ = os.Mkdir(dirPath, os.ModePerm)
+	_ = os.MkdirAll(dirPath, os.ModePerm)
 
 	return os.WriteFile(
 		fmt.Sprintf("%s/stub.%s", dirPath, strings.TrimLeft(g.cfg.fileExtension, ".")),
-		utils.S2B(rawContent),
+		[]byte(rawContent),
 		os.ModePerm,
 	)
 }
