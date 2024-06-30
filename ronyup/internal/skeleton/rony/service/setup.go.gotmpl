@@ -1,0 +1,29 @@
+package service
+
+import (
+	"github.com/clubpay/ronykit/rony"
+	"{{ .ModulePath }}/service/endpoint"
+	"{{ .ModulePath }}/service/state"
+)
+
+func Setup() rony.SetupOption[*state.Counter, state.Action] {
+	return rony.SetupOptionGroup(
+		// Register the count handler for both GET /count and GET /count/{action}
+		// This way all the following requests are valid:
+		// 1. GET /count/up&count=1
+		// 2. GET /count/down&count=2
+		// 3. GET /count?action=up&count=1
+		// 4. GET /count?action=down&count=2
+		rony.WithUnary(
+			endpoint.Count,
+			rony.GET("/count/{action}"),
+			rony.GET("/count"),
+		),
+		// Register the count reset handler for both GET /reset and POST /reset
+		rony.WithUnary(
+			endpoint.Reset,
+			rony.GET("/reset"),
+			rony.POST("/reset"),
+		),
+	)
+}

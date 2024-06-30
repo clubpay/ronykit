@@ -1,12 +1,15 @@
 package swagger
 
 import (
+	"bytes"
 	"container/list"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
@@ -84,6 +87,20 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	_, err = w.Write(swaggerJSON)
 
 	return err
+}
+
+func (sg *Generator) SwaggerUI(svc ...desc.ServiceDesc) (fs.FS, error) {
+	content := bytes.NewBuffer(nil)
+	err := sg.WriteSwagTo(content, svc...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &customFS{
+		fs:          swaggerFS,
+		swaggerJSON: content.Bytes(),
+		t:           time.Now(),
+	}, nil
 }
 
 //nolint:cyclop

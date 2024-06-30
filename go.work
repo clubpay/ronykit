@@ -12,6 +12,7 @@ use (
 	./example/ex-09-mw
 	./kit
 	./rony
+	./ronyup
 	./std/clusters/p2pcluster
 	./std/clusters/rediscluster
 	./std/gateways/fasthttp

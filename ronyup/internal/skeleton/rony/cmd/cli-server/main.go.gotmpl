@@ -1,0 +1,46 @@
+package main
+
+import (
+	"context"
+	"os"
+
+	"{{ .ModulePath }}/global"
+	"{{ .ModulePath }}/service"
+	"{{ .ModulePath }}/service/state"
+
+	"github.com/clubpay/ronykit/rony"
+)
+
+func main() {
+	srv := rony.NewServer(
+		rony.Listen(":80"),
+		rony.WithServerName("CounterServer"),
+		rony.WithWebsocketEndpoint("/ws"),
+		rony.WithPredicateKey("cmd"),
+		rony.WithAPIDocs("/api-docs"),
+	)
+
+	// Set up the server with the initial state, which is a pointer to EchoCounter
+	// We can have as many states as we want. But each handler can only work with
+	// one state. In other words, we cannot register one handler with two different
+	// setup contexts.
+	rony.Setup(
+		srv,
+		global.ProjectName,
+		rony.ToInitiateState(
+			&state.Counter{
+				Count: 0,
+			},
+		),
+		service.Setup(),
+	)
+
+	// Run the server in blocking mode
+	err := srv.Run(
+		context.Background(),
+		os.Kill, os.Interrupt,
+	)
+	if err != nil {
+		panic(err)
+	}
+}

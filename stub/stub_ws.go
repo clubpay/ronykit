@@ -307,6 +307,11 @@ type WebsocketRequest struct {
 	Callback RPCMessageHandler
 }
 
+const (
+	WebsocketText   = websocket.TextMessage
+	WebsocketBinary = websocket.BinaryMessage
+)
+
 // Do send a message to the websocket server and waits for the response. If the callback
 // is not nil, then make sure you provide a context with deadline or timeout, otherwise
 // you will leak goroutines.

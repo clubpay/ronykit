@@ -62,6 +62,16 @@ type SetupContext[S State[A], A Action] struct {
 
 type SetupOption[S State[A], A Action] func(ctx *SetupContext[S, A])
 
+// SetupOptionGroup is a helper function to group multiple SetupOptions together and pass
+// them as a single SetupOption.
+func SetupOptionGroup[S State[A], A Action](opt ...SetupOption[S, A]) SetupOption[S, A] {
+	return func(ctx *SetupContext[S, A]) {
+		for _, o := range opt {
+			o(ctx)
+		}
+	}
+}
+
 // Setup is a helper function to set up server and services.
 // S **MUST** implement State[A] and also **MUST** be a pointer to a struct, otherwise this function panics
 // Possible options are:

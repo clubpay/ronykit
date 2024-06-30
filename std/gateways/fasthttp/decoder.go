@@ -144,6 +144,10 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	pcs := extractFields(rVal, tagKey)
 
+	return genDecoderFunc(factory, pcs...)
+}
+
+func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc {
 	return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()

@@ -9,9 +9,14 @@ import (
 )
 
 type serverConfig struct {
+	serverName  string
+	version     string
+	desc        string
 	services    map[string]*desc.Service
 	edgeOpts    []kit.Option
 	gatewayOpts []fasthttp.Option
+
+	serveDocsPath string
 }
 
 func defaultServerConfig() serverConfig {
@@ -45,6 +50,17 @@ func (cfg *serverConfig) allServices() []kit.ServiceDescriptor {
 	return svcs
 }
 
+func (cfg *serverConfig) allServiceDesc() []desc.ServiceDesc {
+	svcs := make([]desc.ServiceDesc, 0, len(cfg.services))
+
+	for idx := range cfg.services {
+		svcs = append(svcs, desc.ServiceDescFunc(func() *desc.Service { return cfg.services[idx] }))
+	}
+
+	return svcs
+
+}
+
 func (cfg serverConfig) Gateway() kit.Gateway {
 	return fasthttp.MustNew(cfg.gatewayOpts...)
 }
@@ -69,7 +85,14 @@ func Listen(addr string) ServerOption {
 
 func WithServerName(name string) ServerOption {
 	return func(cfg *serverConfig) {
+		cfg.serverName = name
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithServerName(name))
+	}
+}
+
+func WithVersion(version string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.version = version
 	}
 }
 
@@ -140,5 +163,11 @@ func WithGlobalHandlers(handlers ...kit.HandlerFunc) ServerOption {
 func WithDisableHeaderNamesNormalizing() ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithDisableHeaderNamesNormalizing())
+	}
+}
+
+func WithAPIDocs(path string) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.serveDocsPath = path
 	}
 }

@@ -30,7 +30,6 @@ type paramCaster struct {
 	typ    reflect.Type
 }
 
-//nolint:gocognit
 func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFunc {
 	switch factory().(type) {
 	case kit.MultipartFormMessage:
@@ -76,6 +75,10 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 	pcs := extractFields(rVal, tagKey)
 
+	return genDecoder(factory, pcs...)
+}
+
+func genDecoder(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc {
 	return func(ctx *silverlining.Context, bag Params, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()

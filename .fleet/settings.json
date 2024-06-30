@@ -1,4 +1,22 @@
 {
 	"editor.guides": [],
-	"go.imports.params": ""
+	"go.imports.params": "",
+	"plugins": [
+		{
+			"type": "add",
+			"pluginName": "fleet.go"
+		},
+		{
+			"type": "add",
+			"pluginName": "fleet.json"
+		},
+		{
+			"type": "add",
+			"pluginName": "fleet.markdown"
+		},
+		{
+			"type": "add",
+			"pluginName": "fleet.shell"
+		}
+	]
 }

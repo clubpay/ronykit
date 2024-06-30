@@ -1,8 +1,12 @@
 package fasthttp
 
 import (
+	"fmt"
+	"io/fs"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+	"github.com/valyala/fasthttp"
 )
 
 type Option func(b *bundle)
@@ -82,6 +86,19 @@ func WithCustomRPC(in kit.IncomingRPCFactory, out kit.OutgoingRPCFactory) Option
 func WithDisableHeaderNamesNormalizing() Option {
 	return func(b *bundle) {
 		b.srv.DisableHeaderNamesNormalizing = true
+	}
+}
+
+func WithServeFS(path string, root string, fs fs.FS) Option {
+	return func(b *bundle) {
+		b.httpRouter.ServeFilesCustom(
+			fmt.Sprintf("%s/{filepath:*}", path),
+			&fasthttp.FS{
+				FS:         fs,
+				Root:       root,
+				IndexNames: []string{"index.html", "index.htm"},
+			},
+		)
 	}
 }
 

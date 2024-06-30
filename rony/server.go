@@ -4,9 +4,11 @@ import (
 	"context"
 	"os"
 
+	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
 type Server struct {
@@ -28,10 +30,20 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 func (s *Server) initEdge() error {
+	if s.cfg.serveDocsPath != "" {
+		swaggerFS, err := swagger.New(s.cfg.serverName, s.cfg.version, "").
+			SwaggerUI(s.cfg.allServiceDesc()...)
+		if err != nil {
+			return err
+		}
+		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", swaggerFS))
+	}
+
 	opts := []kit.Option{
 		kit.WithGateway(s.cfg.Gateway()),
 		kit.WithServiceDesc(s.cfg.allServices()...),
 	}
+
 	opts = append(opts, s.cfg.edgeOpts...)
 
 	s.edge = kit.NewServer(opts...)

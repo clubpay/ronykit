@@ -1,7 +1,6 @@
 package stubgen_test
 
 import (
-	"fmt"
 	"go/format"
 	"testing"
 
@@ -88,6 +87,6 @@ var _ = Describe("GolangGenerator", func() {
 		Expect(err).To(BeNil())
 		formattedCode, err := format.Source([]byte(code))
 		Expect(err).To(BeNil())
-		fmt.Println(string(formattedCode))
+		_ = formattedCode
 	})
 })
