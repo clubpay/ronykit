@@ -45,6 +45,10 @@ update_version() {
   css="github.com/clubpay/ronykit/contrib $1"
   crs="github.com/clubpay/ronykit/contrib $2"
 
+  # stub
+  sss="github.com/clubpay/ronykit/stub $1"
+  srs="github.com/clubpay/ronykit/stub $2"
+
   array2=(contrib rony stub)
   for i in "${array2[@]}"
   do
@@ -55,6 +59,8 @@ update_version() {
   	sed -i'' -e 's#'"$fss"'#'"$frs"'#g' "$filename"
   	echo "update go.mod for [$filename]: $css -> $crs"
     sed -i'' -e 's#'"$css"'#'"$crs"'#g' "$filename"
+    echo "update go.mod for [$filename]: $sss -> $srs"
+    sed -i'' -e 's#'"$sss"'#'"$srs"'#g' "$filename"
   	rm "$i"/go.mod-e
   	cd "$i" || exit
   	go mod tidy

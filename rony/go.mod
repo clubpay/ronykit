@@ -6,7 +6,7 @@ require (
 	github.com/clubpay/ronykit/contrib v0.16.3
 	github.com/clubpay/ronykit/kit v0.16.3
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.3
-	github.com/clubpay/ronykit/stub v0.16.0
+	github.com/clubpay/ronykit/stub v0.16.3
 )
 
 require (
