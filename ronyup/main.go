@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ronyup/cmd/setup"
+	"github.com/clubpay/ronykit/ronyup/cmd/setup"
 
 	"github.com/spf13/cobra"
 )

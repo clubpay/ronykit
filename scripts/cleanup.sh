@@ -4,7 +4,7 @@ wd=$(pwd)
 
 
 array1=(
-	contrib kit rony stub
+	contrib kit rony stub ronyup
 	std/gateways/fasthttp
 	std/gateways/fastws
 	std/gateways/silverhttp

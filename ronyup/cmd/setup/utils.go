@@ -14,9 +14,6 @@ func isEmptyDir(name string) bool {
 		_ = f.Close()
 	}(f)
 	_, err = f.Readdirnames(1)
-	if err == io.EOF {
-		return true
-	}
 
-	return false
+	return err == io.EOF
 }

@@ -9,8 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"ronyup/internal"
-
+	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/jessevdk/go-flags"
 	"github.com/spf13/cobra"
 )
