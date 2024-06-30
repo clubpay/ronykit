@@ -6,6 +6,8 @@ github.com/clubpay/ronykit/kit v0.16.0 h1:89nrRSXVc0FaLNcHzShRZqtaRrk7hFjE5TVgkO
 github.com/clubpay/ronykit/kit v0.16.0/go.mod h1:JmRsAjBYhNsrU7iaQM9oVw5OSIQpMET+VDKx1suUPbk=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.0 h1:+hw9yPt/b2vgnAE1UaXKrvHdT23Gd0xm7rtIMJNK3Bg=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.0/go.mod h1:BdeIyy2GIYbNlz8QUr/z17+rNwMAXtxJop6AR0QZhvY=
+github.com/clubpay/ronykit/stub v0.16.0 h1:elxm5/GmWevgZy77wSc61NcmlEeTiFEI1xaIQmRBnhE=
+github.com/clubpay/ronykit/stub v0.16.0/go.mod h1:XS9NvlW26riWRYs1z2H8yVahQq4TtolQoZmeWP+Z9nc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
