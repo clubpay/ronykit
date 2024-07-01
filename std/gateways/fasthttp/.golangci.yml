@@ -21,23 +21,6 @@ linters:
     - mnd
   fast: true
 linters-settings:
-  #  decorder:
-  #    # Required order of `type`, `const`, `var` and `func` declarations inside a file.
-  #    # Default: types before constants before variables before functions.
-  #    dec-order:
-  #      - type
-  #      - const
-  #      - var
-  #      - func
-  #    # If true, order of declarations is not checked at all.
-  #    # Default: true (disabled)
-  #    disable-dec-order-check: false
-  #    # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
-  #    # Default: true (disabled)
-  disable-init-func-first-check: false
-  #    # If true, multiple global `type`, `const` and `var` declarations are allowed.
-  #    # Default: true (disabled)
-  #    disable-dec-num-check: false
   errcheck:
     # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
     # Such cases aren't reported by default.
@@ -47,5 +30,15 @@ linters-settings:
     # Such cases aren't reported by default.
     # Default: false
     check-blank: true
+  depguard:
+    rules:
+      whilelist:
+        list-mode: lax
+        files:
+          - $all
+          - "!*_test.go"
+        deny:
+          - pkg: "io/ioutil"
+            desc: "io/ioutil is deprecated, use io instead"
 
 

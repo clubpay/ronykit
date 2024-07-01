@@ -192,10 +192,10 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	hc.err = WrapError(hc.c.DoTimeout(hc.req, hc.res, hc.timeout))
 
 	if hc.dumpReq != nil {
-		_, _ = hc.req.WriteTo(hc.dumpReq)
+		_, _ = hc.req.WriteTo(hc.dumpReq) //nolint:errcheck
 	}
 	if hc.dumpRes != nil {
-		_, _ = hc.res.WriteTo(hc.dumpRes)
+		_, _ = hc.res.WriteTo(hc.dumpRes) //nolint:errcheck
 	}
 
 	// run the response handler if is set
@@ -402,7 +402,7 @@ func (hc *RESTCtx) AutoRun(
 	switch utils.B2S(hc.req.Header.Method()) {
 	case http.MethodGet:
 		fields.WalkFields(
-			func(key string, f reflector.FieldInfo) {
+			func(key string, _ reflector.FieldInfo) {
 				_, ok := usedParams[key]
 				if ok {
 					return
@@ -417,11 +417,7 @@ func (hc *RESTCtx) AutoRun(
 			},
 		)
 	default:
-		var reqBody []byte
-		switch enc {
-		default:
-			reqBody, _ = hc.codec.Marshal(m)
-		}
+		reqBody, _ := hc.codec.Marshal(m) //nolint:errcheck
 		hc.SetBody(reqBody)
 	}
 

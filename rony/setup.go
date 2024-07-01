@@ -27,7 +27,7 @@ func (e EMPTY) Name() string {
 	return "EMPTY"
 }
 
-func (EMPTY) Reduce(action NOP) error {
+func (EMPTY) Reduce(_ NOP) error {
 	return nil
 }
 

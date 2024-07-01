@@ -34,13 +34,13 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	s := setupCtx.s
 	// we create the locker pointer to improve runtime performance, also
 	// since Setup function guarantees that S is a pointer to a struct,
-	sl, _ := any(*s).(sync.Locker)
+	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
 
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)
 	handlers = append(handlers,
 		func(ctx *kit.Context) {
-			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert
+			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
 			err := h(newStreamCtx[S, A, OUT](ctx, s, sl), *req)
 			if err != nil {
 				ctx.Error(err)

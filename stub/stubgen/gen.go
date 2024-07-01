@@ -33,7 +33,7 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	}
 
 	dirPath := filepath.Join(g.cfg.outputDir, g.cfg.folderName)
-	_ = os.MkdirAll(dirPath, os.ModePerm)
+	_ = os.MkdirAll(dirPath, os.ModePerm) //nolint:errcheck
 
 	return os.WriteFile(
 		fmt.Sprintf("%s/stub.%s", dirPath, strings.TrimLeft(g.cfg.fileExtension, ".")),

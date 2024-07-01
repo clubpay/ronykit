@@ -21,6 +21,8 @@ linters:
     - depguard
     - perfsprint
     - mnd
+    - execinquery
+    - gosec
   fast: false
 linters-settings:
   errcheck:
@@ -32,6 +34,8 @@ linters-settings:
     # Such cases aren't reported by default.
     # Default: false
     check-blank: true
+  cyclop:
+    max-complexity: 15
   depguard:
     rules:
       whilelist:

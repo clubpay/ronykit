@@ -31,7 +31,7 @@ func GolangStub(in *Input) (string, error) {
 func TypeScriptStub(in *Input) (string, error) {
 	sb := &strings.Builder{}
 
-	err := tpl.TsStub.Execute(sb, in)
+	err := tpl.TSStub.Execute(sb, in)
 	if err != nil {
 		return "", err
 	}

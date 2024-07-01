@@ -69,14 +69,17 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	wCtx.setActivity()
 	c.SetPongHandler(
-		func(appData string) error {
+		func(_ string) error {
 			wCtx.l.Debugf("websocket pong received")
 			wCtx.setActivity()
 
 			return nil
 		},
 	)
-	_ = c.SetCompressionLevel(wCtx.cfg.compressLevel)
+	err = c.SetCompressionLevel(wCtx.cfg.compressLevel)
+	if err != nil {
+		return err
+	}
 
 	wCtx.c = c
 	wCtx.writeBytes = 0
@@ -123,7 +126,10 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 
 		if utils.TimeUnix()-wCtx.getActivity() <= d {
 			wCtx.cMtx.Lock()
-			_ = c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+			err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+			if err != nil {
+				wCtx.l.Errorf("failed to send ping: %v", err)
+			}
 			wCtx.cMtx.Unlock()
 			wCtx.l.Debugf("websocket ping sent")
 

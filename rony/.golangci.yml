@@ -21,6 +21,7 @@ linters:
     - depguard
     - perfsprint
     - mnd
+    - execinquery
   fast: false
 linters-settings:
   errcheck:

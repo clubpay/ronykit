@@ -28,7 +28,7 @@ func registerStatefulMiddleware[S State[A], A Action](
 	s := setupCtx.s
 	// we create the locker pointer to improve runtime performance, also
 	// since Setup function guarantees that S is a pointer to a struct,
-	sl, _ := any(*s).(sync.Locker)
+	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
 
 	for _, m := range h {
 		setupCtx.mw = append(

@@ -33,4 +33,15 @@ linters-settings:
     check-blank: true
   cyclop:
     max-complexity: 15
+  depguard:
+    rules:
+      whilelist:
+        list-mode: lax
+        files:
+          - $all
+          - "!*_test.go"
+        deny:
+          - pkg: "io/ioutil"
+            desc: "io/ioutil is deprecated, use io instead"
+
 
