@@ -3,14 +3,15 @@ module github.com/clubpay/ronykit/example/ex-08-echo
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/kit v0.16.2
-	github.com/clubpay/ronykit/rony v0.16.0
+	github.com/clubpay/ronykit/kit v0.16.4
+	github.com/clubpay/ronykit/rony v0.16.4
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/clubpay/ronykit/contrib v0.16.0 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.0 // indirect
+	github.com/clubpay/ronykit/contrib v0.16.4 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.4 // indirect
+	github.com/clubpay/ronykit/stub v0.16.4 // indirect
 	github.com/fasthttp/router v1.5.1 // indirect
 	github.com/fasthttp/websocket v1.5.9 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect

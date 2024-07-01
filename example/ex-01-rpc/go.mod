@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/example/ex-01-rpc
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.15.0
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.15.0
-	github.com/clubpay/ronykit/std/gateways/fastws v0.15.0
-	github.com/clubpay/ronykit/stub v0.15.0
+	github.com/clubpay/ronykit/kit v0.16.4
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.4
+	github.com/clubpay/ronykit/std/gateways/fastws v0.16.4
+	github.com/clubpay/ronykit/stub v0.16.4
 )
 
 require (
