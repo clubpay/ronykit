@@ -8,14 +8,12 @@ import (
 
 	"ronykit/testenv/services"
 
-	"github.com/clubpay/ronykit/kit/common"
-
-	"github.com/clubpay/ronykit/kit/utils"
-
-	"github.com/clubpay/ronykit/std/gateways/fastws"
-
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/stub "github.com/smartystreets/goconvey/convey"
+	"github.com/clubpay/ronykit/kit/common"
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/stub"
+	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
 
@@ -36,7 +34,7 @@ func TestFastWS(t *testing.T) {
 	})
 }
 
-func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceDescriptor) fx.Option {
+func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceBuilder) fx.Option {
 	return fx.Invoke(
 		func(lc fx.Lifecycle) {
 			edge := kit.NewServer(
@@ -54,7 +52,7 @@ func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceDescriptor) fx.Opti
 						fastws.WithLogger(common.NewStdLogger()),
 					),
 				),
-				kit.WithServiceDesc(desc...),
+				kit.WithServiceBuilder(desc...),
 			)
 
 			lc.Append(

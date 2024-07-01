@@ -46,7 +46,7 @@ func main() {
 				fasthttp.Listen(":81"),
 			),
 		),
-		kit.WithServiceDesc(sampleService),
+		kit.WithServiceBuilder(sampleService),
 	).
 		Start(context.TODO()).
 		PrintRoutesCompact(os.Stdout).

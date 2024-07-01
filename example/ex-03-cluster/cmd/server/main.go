@@ -70,7 +70,7 @@ func main() {
 				fasthttp.Listen(fmt.Sprintf(":%d", port)),
 			),
 		),
-		kit.WithServiceDesc(serviceDesc.Desc()),
+		kit.WithServiceBuilder(serviceDesc.Desc()),
 	).
 		Start(context.TODO()).
 		PrintRoutes(os.Stdout).

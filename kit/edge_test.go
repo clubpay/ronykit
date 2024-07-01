@@ -347,7 +347,7 @@ var _ = Describe("EdgeServer/Simple", func() {
 		}
 		edge = kit.NewServer(
 			kit.WithGateway(b),
-			kit.WithServiceDesc(serviceDesc.Desc()),
+			kit.WithServiceBuilder(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -404,7 +404,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 					ctx.Set("PRE_KEY", "PRE_VALUE")
 				},
 			),
-			kit.WithServiceDesc(serviceDesc.Desc()),
+			kit.WithServiceBuilder(serviceDesc.Desc()),
 		)
 		edge.Start(nil)
 	})
@@ -475,13 +475,13 @@ var _ = Describe("EdgeServer/Cluster", func() {
 		edge1 = kit.NewServer(
 			kit.WithGateway(b1),
 			kit.WithCluster(c),
-			kit.WithServiceDesc(serviceDesc("edge1").Desc()),
+			kit.WithServiceBuilder(serviceDesc("edge1").Desc()),
 		)
 		edge1.Start(nil)
 		edge2 = kit.NewServer(
 			kit.WithGateway(b2),
 			kit.WithCluster(c),
-			kit.WithServiceDesc(serviceDesc("edge2").Desc()),
+			kit.WithServiceBuilder(serviceDesc("edge2").Desc()),
 		)
 		edge2.Start(nil)
 	})

@@ -40,8 +40,8 @@ func (cfg *serverConfig) getService(name string) *desc.Service {
 	return svc
 }
 
-func (cfg *serverConfig) allServices() []kit.ServiceDescriptor {
-	svcs := make([]kit.ServiceDescriptor, 0, len(cfg.services))
+func (cfg *serverConfig) allServiceBuilders() []kit.ServiceBuilder {
+	svcs := make([]kit.ServiceBuilder, 0, len(cfg.services))
 	for _, svc := range cfg.services {
 		svcs = append(svcs, svc)
 	}

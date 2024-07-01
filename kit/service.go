@@ -1,7 +1,12 @@
 package kit
 
+// Deprecated: Use ServiceBuilder instead.
 type ServiceDescriptor interface {
 	Generate() Service
+}
+
+type ServiceBuilder interface {
+	Build() Service
 }
 
 // Service defines a set of RPC handlers which usually they are related to one service.

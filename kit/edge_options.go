@@ -52,10 +52,19 @@ func WithService(service ...Service) Option {
 }
 
 // WithServiceDesc lets you register a ServiceDescriptor in constructor of the EdgeServer.
+// Deprecated: Use WithServiceBuilder instead.
 func WithServiceDesc(desc ...ServiceDescriptor) Option {
 	return func(s *edgeConfig) {
 		for _, d := range desc {
 			s.services = append(s.services, d.Generate())
+		}
+	}
+}
+
+func WithServiceBuilder(builder ...ServiceBuilder) Option {
+	return func(s *edgeConfig) {
+		for _, b := range builder {
+			s.services = append(s.services, b.Build())
 		}
 	}
 }

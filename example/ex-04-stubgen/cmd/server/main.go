@@ -49,7 +49,7 @@ func main() {
 				fasthttp.WithPredicateKey("cmd"),
 			),
 		),
-		kit.WithServiceDesc(
+		kit.WithServiceBuilder(
 			api.SampleDesc.Desc(),
 		),
 	).

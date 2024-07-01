@@ -41,7 +41,7 @@ func (s *Server) initEdge() error {
 
 	opts := []kit.Option{
 		kit.WithGateway(s.cfg.Gateway()),
-		kit.WithServiceDesc(s.cfg.allServices()...),
+		kit.WithServiceBuilder(s.cfg.allServiceBuilders()...),
 	}
 
 	opts = append(opts, s.cfg.edgeOpts...)

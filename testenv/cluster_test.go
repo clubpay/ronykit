@@ -12,11 +12,11 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
-	"github.com/clubpay/ronykit/stub"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/clusters/p2pcluster"
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/stub"
 	"github.com/redis/go-redis/v9"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -41,7 +41,7 @@ func TestKitWithCluster(t *testing.T) {
 	})
 }
 
-func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceDescriptor) fx.Option {
+func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceBuilder) fx.Option {
 	return fx.Invoke(
 		func(lc fx.Lifecycle, _ *redis.Client) {
 			edge := kit.NewServer(
@@ -63,7 +63,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceDescriptor
 						fasthttp.Listen(fmt.Sprintf(":%d", port)),
 					),
 				),
-				kit.WithServiceDesc(desc...),
+				kit.WithServiceBuilder(desc...),
 			)
 
 			lc.Append(
@@ -84,7 +84,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceDescriptor
 	)
 }
 
-func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceDescriptor) fx.Option {
+func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceBuilder) fx.Option {
 	return fx.Invoke(
 		func(lc fx.Lifecycle, _ *redis.Client) {
 			edge := kit.NewServer(
@@ -107,7 +107,7 @@ func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceDescriptor) 
 						fasthttp.Listen(fmt.Sprintf(":%d", port)),
 					),
 				),
-				kit.WithServiceDesc(desc...),
+				kit.WithServiceBuilder(desc...),
 			)
 
 			lc.Append(

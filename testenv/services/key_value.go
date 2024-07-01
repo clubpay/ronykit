@@ -26,7 +26,7 @@ type KeyValue struct {
 	Value string `json:"value"`
 }
 
-var SimpleKeyValueService kit.ServiceDescriptor = desc.NewService("simpleKeyValueService").
+var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueService").
 	AddContract(
 		desc.NewContract().
 			SetCoordinator(keyValueCoordinator).

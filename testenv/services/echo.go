@@ -16,7 +16,7 @@ type EchoResponse struct {
 	Output string `json:"output"`
 }
 
-var EchoService kit.ServiceDescriptor = desc.NewService("EchoService").
+var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 	AddContract(
 		desc.NewContract().
 			SetInput(&EchoRequest{}).
