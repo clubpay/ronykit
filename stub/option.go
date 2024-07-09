@@ -1,6 +1,7 @@
 package stub
 
 import (
+	"crypto/x509"
 	"io"
 	"time"
 
@@ -17,6 +18,7 @@ type config struct {
 	hostPort      string
 	secure        bool
 	skipVerifyTLS bool
+	rootCAs       *x509.CertPool
 	dumpReq       io.Writer
 	dumpRes       io.Writer
 	l             kit.Logger
@@ -112,5 +114,27 @@ func WithSocksProxy(proxyURL string) Option {
 		cfg.proxy.HTTPProxy = proxyURL
 		cfg.proxy.HTTPSProxy = proxyURL
 		cfg.dialFunc = fasthttpproxy.FasthttpSocksDialer(proxyURL)
+	}
+}
+
+func AddRootCA(certs ...*x509.Certificate) Option {
+	return func(cfg *config) {
+		for _, cert := range certs {
+			cfg.rootCAs.AddCert(cert)
+		}
+	}
+}
+
+func AddRootCAFromPEM(pemCerts ...[]byte) Option {
+	return func(cfg *config) {
+		for _, cert := range pemCerts {
+			cfg.rootCAs.AppendCertsFromPEM(cert)
+		}
+	}
+}
+
+func WithCertificatePool(certPool *x509.CertPool) Option {
+	return func(cfg *config) {
+		cfg.rootCAs = certPool
 	}
 }

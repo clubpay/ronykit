@@ -2,6 +2,7 @@ package stub
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -25,6 +26,11 @@ type Stub struct {
 }
 
 func New(hostPort string, opts ...Option) *Stub {
+	rootCAs, err := x509.SystemCertPool()
+	if err != nil {
+		rootCAs = x509.NewCertPool()
+	}
+
 	cfg := config{
 		name:         "RonyKIT Client",
 		hostPort:     hostPort,
@@ -33,6 +39,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		dialTimeout:  time.Second * 45,
 		l:            common.NewNopLogger(),
 		codec:        kit.GetMessageCodec(),
+		rootCAs:      rootCAs,
 	}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -45,6 +52,7 @@ func New(hostPort string, opts ...Option) *Stub {
 		DisableHeaderNamesNormalizing: true,
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
+			RootCAs:            rootCAs,
 		},
 	}
 
@@ -127,6 +135,10 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 		return &websocket.Dialer{
 			Proxy:            defaultProxy,
 			HandshakeTimeout: s.cfg.dialTimeout,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: s.cfg.skipVerifyTLS, //nolint:gosec
+				RootCAs:            s.cfg.rootCAs,
+			},
 		}
 	}
 	ctx := &WebsocketCtx{
