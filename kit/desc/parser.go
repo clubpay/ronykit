@@ -315,7 +315,7 @@ func (pm ParsedMessage) IsSpecial() bool {
 }
 
 func (pm ParsedMessage) JSON() string {
-	mJSON, _ := json.MarshalIndent(pm, "", "  ")
+	mJSON, _ := json.MarshalIndent(pm.original, "", "  ")
 
 	return utils.B2S(mJSON)
 }
