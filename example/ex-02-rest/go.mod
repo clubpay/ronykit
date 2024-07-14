@@ -16,6 +16,7 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/fasthttp/router v1.5.1 // indirect
 	github.com/fasthttp/websocket v1.5.9 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect

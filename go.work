@@ -1,6 +1,9 @@
 go 1.22.3
 
+toolchain go1.22.5
+
 use (
+	./async
 	./contrib
 	./example/ex-01-rpc
 	./example/ex-02-rest

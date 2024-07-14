@@ -16,6 +16,7 @@ require (
 	github.com/clubpay/ronykit/stub v0.16.4 // indirect
 	github.com/fasthttp/router v1.5.1 // indirect
 	github.com/fasthttp/websocket v1.5.9 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
