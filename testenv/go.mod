@@ -3,14 +3,16 @@ module ronykit/testenv
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/kit v0.14.3
-	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.14.3
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.14.3
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.14.3
+	github.com/clubpay/ronykit/kit v0.16.6
+	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.16.6
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.16.6
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.6
+	github.com/clubpay/ronykit/std/gateways/fastws v0.16.6
+	github.com/clubpay/ronykit/stub v0.16.6
 	github.com/orlangure/gnomock v0.30.0
-	github.com/redis/go-redis/v9 v9.5.1
+	github.com/redis/go-redis/v9 v9.5.4
 	github.com/smartystreets/goconvey v1.8.1
-	go.uber.org/fx v1.21.1
+	go.uber.org/fx v1.22.1
 )
 
 require (
@@ -35,10 +37,11 @@ require (
 	github.com/fasthttp/websocket v1.5.9 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-redis/redis/v7 v7.4.1 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
+	github.com/gobwas/httphead v0.1.0 // indirect
+	github.com/gobwas/pool v0.2.1 // indirect
+	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -92,6 +95,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runtime-spec v1.2.0 // indirect
+	github.com/panjf2000/gnet/v2 v2.5.2 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pion/datachannel v1.5.6 // indirect
 	github.com/pion/dtls/v2 v2.2.11 // indirect
@@ -140,6 +144,7 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 )

@@ -14,15 +14,15 @@ import (
 const KeepTTL = -1
 
 type cluster struct {
-	rc           *redis.Client
-	ps           *redis.PubSub
-	msgChan      <-chan *redis.Message
-	id           string
-	d            kit.ClusterDelegate
-	shutdownChan chan struct{}
-	prefix       string
-	idleTime     time.Duration
-	gcPeriod     time.Duration
+	rc         *redis.Client
+	ps         *redis.PubSub
+	msgChan    <-chan *redis.Message
+	id         string
+	d          kit.ClusterDelegate
+	shutdownFn context.CancelFunc
+	prefix     string
+	idleTime   time.Duration
+	gcPeriod   time.Duration
 }
 
 var (
@@ -32,16 +32,13 @@ var (
 
 func New(name string, opts ...Option) (kit.Cluster, error) {
 	c := &cluster{
-		prefix:       name,
-		idleTime:     time.Minute * 10,
-		gcPeriod:     time.Minute,
-		shutdownChan: make(chan struct{}, 1),
+		prefix:   name,
+		idleTime: time.Minute * 10,
+		gcPeriod: time.Minute,
 	}
 	for _, o := range opts {
 		o(c)
 	}
-
-	go c.gc()
 
 	return c, nil
 }
@@ -55,44 +52,42 @@ func MustNew(name string, opts ...Option) kit.Cluster {
 	return c
 }
 
-func (c *cluster) gc() {
+func (c *cluster) gc(ctx context.Context) {
 	key := fmt.Sprintf("%s:gc", c.prefix)
 	instancesKey := fmt.Sprintf("%s:instances", c.prefix)
-	ctx := context.Background()
 	idleSec := int64(c.idleTime / time.Second)
-	for {
-		if c.id != "" {
-			c.rc.HSet(ctx, instancesKey, c.id, utils.TimeUnix())
-		}
 
-		time.Sleep(c.gcPeriod)
-
-		ok, _ := c.rc.SetNX(context.Background(), key, "running", c.idleTime).Result() //nolint:errcheck
-		if ok {
-			members, _ := c.rc.HGetAll(ctx, instancesKey).Result() //nolint:errcheck
-			now := utils.TimeUnix()
-			for k, v := range members {
-				if now-utils.StrToInt64(v) > idleSec {
-					c.rc.HDel(ctx, instancesKey, k)
-				}
-			}
-		}
-	}
+	_ = luaGC.Run(
+		ctx, c.rc,
+		[]string{
+			key,
+			instancesKey,
+		},
+		c.id,
+		idleSec,
+		utils.TimeUnix(),
+	).Err()
 }
 
 func (c *cluster) Start(ctx context.Context) error {
+	runCtx, cf := context.WithCancel(context.Background())
+	c.shutdownFn = cf
+
 	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, c.id))
 	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
 	c.msgChan = c.ps.Channel()
+	gcTimer := time.NewTimer(c.gcPeriod)
 	go func() {
 		for {
 			select {
+			case <-gcTimer.C:
+				c.gc(runCtx)
 			case msg, ok := <-c.msgChan:
 				if !ok {
 					return
 				}
 				go c.d.OnMessage(utils.S2B(msg.Payload))
-			case <-c.shutdownChan:
+			case <-runCtx.Done():
 				_ = c.ps.Close()
 
 				return
@@ -104,7 +99,7 @@ func (c *cluster) Start(ctx context.Context) error {
 }
 
 func (c *cluster) Shutdown(ctx context.Context) error {
-	c.shutdownChan <- struct{}{}
+	c.shutdownFn()
 
 	return c.rc.HDel(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id).Err()
 }

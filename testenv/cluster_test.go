@@ -26,7 +26,7 @@ func TestKitWithCluster(t *testing.T) {
 	Convey("Kit with Cluster", t, func(c C) {
 		testCases := map[string]fx.Option{
 			"KeyValue Store - With Redis": fx.Options(
-				fx.Invoke(invokeRedisMonitor),
+				// fx.Invoke(invokeRedisMonitor),
 				invokeEdgeServerWithRedis("edge1", 8082, services.SimpleKeyValueService),
 				invokeEdgeServerWithRedis("edge2", 8083, services.SimpleKeyValueService),
 			),
@@ -49,6 +49,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceBuilder) f
 					rediscluster.MustNew(
 						"testCluster",
 						rediscluster.WithRedisClient(utils.Must(getRedis())),
+						rediscluster.WithGCPeriod(time.Second*3),
 					),
 				),
 				kit.WithLogger(common.NewStdLogger()),
@@ -142,9 +143,9 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 		time.Sleep(time.Second * 15)
 
 		// Set Key to instance 1
-		restCtx := stub.New("localhost:8082").REST()
+
 		resp := &services.KeyValue{}
-		err := restCtx.
+		err := stub.New("localhost:8082").REST().
 			SetMethod("POST").
 			DefaultResponseHandler(
 				func(ctx context.Context, r stub.RESTResponse) *stub.Error {
@@ -160,8 +161,7 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 		c.So(resp.Value, ShouldEqual, "testValue")
 
 		// Get Key from instance 2
-		restCtx = stub.New("localhost:8083").REST()
-		err = restCtx.
+		err = stub.New("localhost:8083").REST().
 			SetMethod("GET").
 			SetHeader("Conn-Hdr-In", "MyValue").
 			SetHeader("Envelope-Hdr-In", "EnvelopeValue").

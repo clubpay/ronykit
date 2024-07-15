@@ -88,7 +88,7 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 
 		wsCtx := stub.New(
 			"localhost:8082",
-			// stub.WithLogger(common.NewStdLogger()),
+			stub.WithLogger(common.NewStdLogger()),
 		).
 			Websocket(
 				stub.WithPredicateKey("cmd"),

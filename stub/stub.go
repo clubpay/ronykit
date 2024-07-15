@@ -3,6 +3,7 @@ package stub
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -75,7 +76,7 @@ func HTTP(rawURL string, opts ...Option) (*RESTCtx, error) {
 
 	switch u.Scheme {
 	default:
-		return nil, fmt.Errorf("unsupported scheme: %s", u.Scheme)
+		return nil, errUnsupportedScheme
 	case "http":
 	case "https":
 		opts = append(opts, Secure())
@@ -170,3 +171,5 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 
 	return ctx
 }
+
+var errUnsupportedScheme = errors.New("unsupported scheme")

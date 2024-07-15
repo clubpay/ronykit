@@ -1,6 +1,10 @@
 package rediscluster
 
-import "github.com/redis/go-redis/v9"
+import (
+	"time"
+
+	"github.com/redis/go-redis/v9"
+)
 
 type Option func(c *cluster)
 
@@ -24,5 +28,11 @@ func WithRedisURL(url string) Option {
 		}
 
 		c.rc = redis.NewClient(opt)
+	}
+}
+
+func WithGCPeriod(d time.Duration) Option {
+	return func(c *cluster) {
+		c.gcPeriod = d
 	}
 }

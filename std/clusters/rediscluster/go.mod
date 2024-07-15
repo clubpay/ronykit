@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/clubpay/ronykit/kit v0.16.6
-	github.com/redis/go-redis/v9 v9.5.1
+	github.com/redis/go-redis/v9 v9.5.4
 )
 
 require (

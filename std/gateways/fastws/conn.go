@@ -200,8 +200,9 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 		}
 
 		if wsc.currHead.Fin {
-			go wsc.execMessage(d, wsc.msgBuff)
+			msgBuff := wsc.msgBuff
 			wsc.msgBuff = buf.GetCap(wsc.msgBuff.Cap())
+			go wsc.execMessage(d, msgBuff)
 		}
 
 		// reset the current head
