@@ -1,4 +1,7 @@
 # Kit
+[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/kit.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/kit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/kit)](https://goreportcard.com/report/github.com/clubpay/ronykit/kit)
+
 
 RonyKit is a Go (Golang) library that provides an abstraction layer for creating API servers. By defining separate components
 for each task, you can develop your API server using RPC (Proto/JSON/...), REST, GraphQL, or even custom protocols.

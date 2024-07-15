@@ -1,7 +1,9 @@
 # STUB
+[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/stub.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/stub)
+[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/stub)](https://goreportcard.com/report/github.com/clubpay/ronykit/stub)
 
 This package provides a set of utilities and helper methods to call a REST or RPC (over websocket)
-By using this package many of the boilerplate codes are not necessary anymore.
+By using this package, many of the boilerplate codes are not necessary anymore.
 
 REST example:
 

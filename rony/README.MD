@@ -1,4 +1,6 @@
 # Rony
+[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/rony.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/rony)
+[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/rony)](https://goreportcard.com/report/github.com/clubpay/ronykit/rony)
 
 Rony is a framework for developing high-performance API servers. It is designed to be simple and flexible,
 leveraging the power of Go generics to provide an easy-to-use and robust codebase that helps detect common
