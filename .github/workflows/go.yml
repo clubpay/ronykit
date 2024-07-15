@@ -21,10 +21,14 @@ jobs:
         run: |
           go test -v -race -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
             ./kit/... \
+            ./rony/... \
+            ./stub/... \
             ./std/gateways/fasthttp/... \
             ./std/gateways/fastws/... \
             ./std/gateways/silverhttp/... \
-            ./std/clusters/rediscluster/...
+            ./std/clusters/rediscluster/... \
+            ./std/clusters/p2pcluster/... \
+            ./testenv/...
 
       - name: Codecov KIT
         uses: codecov/codecov-action@v4
