@@ -207,3 +207,17 @@ RonyKIT provides four storage layers:
 | Connection | Per connection, useful for WebSocket data that persists until the connection is active                                 |
 | Local      | Shared between different contracts and services, stored in the server's local memory                                   |
 | Cluster    | Shared between different instances of the EdgeServer, enabled ONLY if a Cluster bundle is attached                     |ß
+
+# KIT Standard Implementations
+
+This repository contains all implementations of the KIT gateways and clusters.
+In `kit` you can mix and match the Gateway and Cluster that suits your needs best, but if you want a simple
+batteries included framework, just use [rony](../rony/README.MD) package instead.
+
+| Package      | Bundle Type | Version | Description                                                                                                                          |
+|--------------|-------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
+| fasthttp     | Gateway     | v0.16.6 | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
+| fastws       | Gateway     | v0.16.6 | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
+| silverhttp   | Gateway     | v0.16.6 | The Gateway bundle implemented using the new super-fast HTTP server [silverlining](https://github.com/go-www/silverlining)           |
+| rediscluster | Cluster     | v0.16.6 | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
+| p2pcluster   | Cluster     | v0.16.6 | The Cluster bundle implemented using [p2p](https://github.com/libp2p/go-libp2p)                                                      |

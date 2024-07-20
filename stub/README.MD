@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/stub)](https://goreportcard.com/report/github.com/clubpay/ronykit/stub)
 
 This package provides a set of utilities and helper methods to call a REST or RPC (over websocket)
-By using this package, many of the boilerplate codes are not necessary anymore.
+Many of the boilerplate codes are not necessary anymore when you use `stub` and it provides many handy features.
 
 REST example:
 

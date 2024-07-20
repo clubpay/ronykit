@@ -13,18 +13,21 @@ the `rony` package.
 	- [State](#state)
 	- [Counter Program with State](#counter-program-with-state)
 
-## Installation
-
-To install the Rony package, you need to install Go and set up your Go workspace first.
-
-First, install [Go](https://golang.org/) (version 1.19+ is required). Then use the following command to install RonyKIT:
-
-```sh
-$ go get -u github.com/clubpay/ronykit/rony/...
-```
 
 ## Quick Start
+To get started with RonyKIT, you can use the following command to install the `ronyup` cli tool:
 
+```shell
+go install github.com/clubpay/ronykit/ronyup@latest
+```
+
+After installing the `ronyup` tool, you can create a new project using the `ronyup setup` command, below is an example:
+
+```shell
+ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
+```
+
+## Getting Started
 ### State
 
 When developing API servers, you often have a common state that can be shared between several of your

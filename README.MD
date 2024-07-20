@@ -9,31 +9,8 @@ intuitive framework, leveraging Go Generics to offer a clean and user-friendly A
 the RonyKIT framework. However, if you require greater control over your API server and have concerns about performance and
 memory usage, you can directly utilize the `kit` package, which forms the core of the RonyKIT framework.
 
-- For more information about the `rony` package, please visit [rony](./rony/README.MD).
-- For more information about the `kit` package, please visit [kit](./kit/README.MD).
+- For more information about the `rony` package, visit [rony](./rony/README.MD).
+- For more information about the `kit` package, visit [kit](./kit/README.MD).
+- For more information about the `stub` package, visit [stub](./stub/README.MD).
 
-# Quick Start
-To get started with RonyKIT, you can use the following command to install the `ronyup` cli tool:
 
-```shell
-go install github.com/clubpay/ronykit/ronyup@latest
-```
-
-After installing the `ronyup` tool, you can create a new project using the `ronyup setup` command, below is an example:
-
-```shell
-ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
-```
-
-# RonyKIT Standard Packages
-
-This repository contains all projects related to RonyKIT. The central package, which is the core of the RonyKIT framework, is [kit](./kit), with standard modules located in the /std folders.
-
-| Package      | Bundle Type | Version | Description                                                                                                                          |
-|--------------|-------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
-| KIT          | -           | v0.16.6 | The main package of the RonyKIT framework                                                                                            |
-| fasthttp     | Gateway     | v0.16.6 | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
-| fastws       | Gateway     | v0.16.6 | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
-| silverhttp   | Gateway     | v0.16.6 | The Gateway bundle implemented using the new super-fast HTTP server [silverlining](https://github.com/go-www/silverlining)           |
-| rediscluster | Cluster     | v0.16.6 | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
-| p2pcluster   | Cluster     | v0.16.6 | The Cluster bundle implemented using [p2p](https://github.com/libp2p/go-libp2p)                                                      |
