@@ -2,6 +2,7 @@ package p2pcluster
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"time"
@@ -176,28 +177,84 @@ func (c *cluster) startMyTopic(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		for {
-			msg, err := sub.Next(ctx)
-			if err != nil {
-				if errors.Is(err, context.Canceled) {
-					return
-				}
+	var (
+		inputChan   = make(chan psMsg, 1024)
+		orderedChan = make(chan psMsg, 1024)
+	)
 
-				c.log.Errorf("[p2pCluster] failed to receive message from topic[%s]: %v", topic, err)
-
-				continue
-			}
-
-			if msg.ReceivedFrom == c.host.ID() {
-				continue
-			}
-
-			go c.d.OnMessage(msg.GetData())
-		}
-	}()
+	go c.receiveMessage(ctx, sub, inputChan, orderedChan)
+	go c.handleMessage(orderedChan)
+	go c.tryOrderMessage(inputChan, orderedChan)
 
 	return nil
+}
+
+func (c *cluster) receiveMessage(
+	ctx context.Context, sub *pubsub.Subscription,
+	inputChan, orderedChan chan psMsg,
+) {
+	for {
+		msg, err := sub.Next(ctx)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				close(inputChan)
+				close(orderedChan)
+
+				return
+			}
+
+			c.log.Errorf("[p2pCluster] failed to receive message from topic[%s]: %v", sub.Topic(), err)
+
+			continue
+		}
+
+		if msg.ReceivedFrom == c.host.ID() {
+			continue
+		}
+
+		inputChan <- psMsg{m: msg}
+	}
+}
+
+func (c *cluster) handleMessage(orderedChan chan psMsg) {
+	for msg := range orderedChan {
+		c.d.OnMessage(msg.m.GetData())
+	}
+}
+
+func (c *cluster) tryOrderMessage(inputChan, orderedChan chan psMsg) {
+	var lastSeq uint64
+	debounceTime := time.Millisecond * 100
+	for msg := range inputChan {
+		seq := binary.BigEndian.Uint64(msg.m.GetSeqno())
+		if lastSeq == 0 || seq == lastSeq+1 {
+			orderedChan <- msg
+			lastSeq = seq
+
+			continue
+		}
+
+		if seq < lastSeq {
+			orderedChan <- msg
+
+			continue
+		}
+
+		if msg.debounced > 1 {
+			orderedChan <- msg
+			if seq > lastSeq {
+				lastSeq = seq
+			}
+
+			continue
+		}
+
+		go func(msg psMsg) {
+			time.Sleep(time.Duration(msg.debounced) * debounceTime)
+			msg.debounced++
+			inputChan <- msg
+		}(msg)
+	}
 }
 
 func (c *cluster) getTopic(id string) *pubsub.Topic {
@@ -256,4 +313,9 @@ func (c *cluster) HandlePeerFound(pi peer.AddrInfo) {
 	if err != nil {
 		c.log.Errorf("[p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)
 	}
+}
+
+type psMsg struct {
+	m         *pubsub.Message
+	debounced int
 }

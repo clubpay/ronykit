@@ -85,53 +85,6 @@ func (ctx *Context) execute(arg ExecuteArg, c Contract) {
 	ctx.Next()
 }
 
-type executeRemoteArg struct {
-	Target      string
-	In          *envelopeCarrier
-	OutCallback func(carrier *envelopeCarrier)
-}
-
-func (ctx *Context) executeRemote(arg executeRemoteArg) error {
-	if ctx.sb == nil {
-		return ErrSouthBridgeDisabled
-	}
-
-	ch, err := ctx.sb.sendMessage(
-		arg.In.SessionID,
-		arg.Target,
-		arg.In.ToJSON(),
-	)
-	if err != nil {
-		return err
-	}
-
-	var (
-		cancelFn context.CancelFunc
-		rxCtx    = context.Background()
-	)
-
-	if ctx.rxt > 0 {
-		rxCtx, cancelFn = context.WithTimeout(rxCtx, ctx.rxt)
-		defer cancelFn()
-	}
-LOOP:
-	for {
-		select {
-		case <-rxCtx.Done():
-			return rxCtx.Err()
-		case <-ctx.ctx.Done():
-			return ctx.ctx.Err()
-		case c, ok := <-ch:
-			if !ok {
-				break LOOP
-			}
-			arg.OutCallback(c)
-		}
-	}
-
-	return nil
-}
-
 // Next sets the next handler which will be called after the current handler.
 /*
 	Here's a brief explanation of the Next() method:
@@ -148,7 +101,6 @@ LOOP:
 	you allow the processing flow to continue and pass control to the subsequent middleware functions
 	in the chain.
 */
-
 func (ctx *Context) Next() {
 	ctx.handlerIndex++
 	for ctx.handlerIndex <= len(ctx.handlers) {

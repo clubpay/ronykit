@@ -86,7 +86,7 @@ func (c *cluster) Start(ctx context.Context) error {
 				if !ok {
 					return
 				}
-				go c.d.OnMessage(utils.S2B(msg.Payload))
+				c.d.OnMessage(utils.S2B(msg.Payload))
 			case <-runCtx.Done():
 				_ = c.ps.Close()
 
