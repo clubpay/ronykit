@@ -147,8 +147,6 @@ func (sb *southBridge) onIncomingMessage(ctx *Context, carrier *envelopeCarrier)
 func (sb *southBridge) onOutgoingMessage(ctx *Context, carrier *envelopeCarrier) {
 	sb.inProgressMtx.Lock()
 	ch, ok := sb.inProgress[carrier.SessionID]
-	sb.inProgressMtx.Unlock()
-
 	if ok {
 		select {
 		case ch <- carrier:
@@ -156,6 +154,7 @@ func (sb *southBridge) onOutgoingMessage(ctx *Context, carrier *envelopeCarrier)
 			sb.eh(ctx, ErrWritingToClusterConnection)
 		}
 	}
+	sb.inProgressMtx.Unlock()
 }
 
 func (sb *southBridge) onEOF(carrier *envelopeCarrier) {

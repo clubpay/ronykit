@@ -2,6 +2,7 @@ package p2pcluster
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -138,6 +139,12 @@ func (c *cluster) startBroadcast(ctx context.Context) error {
 		for {
 			msg, err := broadcastSub.Next(ctx)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					c.log.Debugf("[p2pCluster] broadcast stopped")
+
+					return
+				}
+
 				c.log.Errorf("[p2pCluster] failed to receive broadcast message: %v", err)
 				time.Sleep(time.Second)
 
@@ -173,6 +180,12 @@ func (c *cluster) startMyTopic(ctx context.Context) error {
 		for {
 			msg, err := sub.Next(ctx)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+
+				c.log.Errorf("[p2pCluster] failed to receive message from topic[%s]: %v", topic, err)
+
 				continue
 			}
 

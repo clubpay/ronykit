@@ -67,14 +67,8 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 
 						return
 					}
-					ctx.Conn().Walk(func(key string, val string) bool {
-						fmt.Println("Conn:", key, val)
-
-						return true
-					})
 
 					ctx.Conn().Set("Conn-Hdr-Out", ctx.Conn().Get("Conn-Hdr-In"))
-
 					ctx.Out().
 						SetHdr("Envelope-Hdr-Out", ctx.In().GetHdr("Envelope-Hdr-In")).
 						SetMsg(&KeyValue{Key: req.Key, Value: value.(string)}). //nolint:forcetypeassert
