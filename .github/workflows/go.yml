@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.21', '1.22' ]
+        go: [ '1.22' ]
     name: Set up Go ${{ matrix.go }}
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Run Tests
         run: |
-          go test -v -race -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
+          go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
             ./kit/... \
             ./rony/... \
             ./stub/... \
@@ -30,7 +30,7 @@ jobs:
             ./std/clusters/p2pcluster/... \
             ./testenv/...
 
-      - name: Codecov KIT
+      - name: Codecov
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml

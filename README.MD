@@ -1,4 +1,5 @@
 # RonyKIT
+[![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)
 
 RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a complete API/Edge server.
 With the RonyKIT framework, you can create API handlers that support both RPC and REST style APIs without the need to rewrite the

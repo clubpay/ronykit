@@ -1,0 +1,30 @@
+comment:
+  layout:  "header, diff, flags, components"
+
+component_management:
+  individual_components:
+    - component_id: framework
+      name: Framework
+      paths:
+        - kit/**
+        - rony/**
+        - stub/**
+        - testenv/**
+      statuses: # the core component has its own statuses
+        - type: project
+          target: auto
+    - component_id: stdlib
+      name: Standard Libraries
+      paths:
+        - std/gateways/**
+        - std/clusters/**
+      statuses: # the core component has its own statuses
+        - type: project
+          target: auto
+    - component_id: contrib
+      name: Contributions
+      paths:
+        - contrib/**
+      statuses: # the core component has its own statuses
+        - type: project
+          target: auto
