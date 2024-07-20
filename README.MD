@@ -1,5 +1,6 @@
 # RonyKIT
 [![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield)
 
 RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a complete API/Edge server.
 With the RonyKIT framework, you can create API handlers that support both RPC and REST style APIs without the need to rewrite the
@@ -15,3 +16,7 @@ memory usage, you can directly utilize the `kit` package, which forms the core o
 - For more information about the `stub` package, visit [stub](./stub/README.MD).
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_large)
