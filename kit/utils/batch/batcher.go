@@ -18,7 +18,7 @@ import (
 
 type NA = struct{}
 
-type Func[IN, OUT any] func(targetID string, entries []Entry[IN, OUT])
+type Func[IN, OUT any] func(tagID string, entries []Entry[IN, OUT])
 
 type MultiBatcher[IN, OUT any] struct {
 	cfg         config
@@ -66,7 +66,7 @@ func (fp *MultiBatcher[IN, OUT]) EnterAndWait(targetID string, entry Entry[IN, O
 }
 
 type Batcher[IN, OUT any] struct {
-	utils.SpinLock
+	spin utils.SpinLock
 
 	readyWorkers int32
 	batchSize    int32
@@ -76,6 +76,9 @@ type Batcher[IN, OUT any] struct {
 	tagID        string
 }
 
+// NewBatcher construct a new Batcher with tagID. `tagID` is the value that will be passed to
+// Func on every batch. This lets you define the same batch func with multiple Batcher objects; MultiBatcher
+// is using `tagID` internally to handle different batches of entries in parallel.
 func NewBatcher[IN, OUT any](f Func[IN, OUT], tagID string, opt ...Option) *Batcher[IN, OUT] {
 	cfg := defaultConfig
 	for _, o := range opt {
@@ -97,14 +100,14 @@ func newBatcher[IN, OUT any](f Func[IN, OUT], tagID string, cfg config) *Batcher
 }
 
 func (f *Batcher[IN, OUT]) startWorker() {
-	f.Lock()
+	f.spin.Lock()
 	if atomic.AddInt32(&f.readyWorkers, -1) < 0 {
 		atomic.AddInt32(&f.readyWorkers, 1)
-		f.Unlock()
+		f.spin.Unlock()
 
 		return
 	}
-	f.Unlock()
+	f.spin.Unlock()
 
 	w := &worker[IN, OUT]{
 		f:  f,
@@ -156,15 +159,15 @@ func (w *worker[IN, OUT]) run() {
 				continue
 			}
 		}
-		w.f.Lock()
+		w.f.spin.Lock()
 		if len(el) == 0 {
 			// clean up and shutdown the worker
 			atomic.AddInt32(&w.f.readyWorkers, 1)
-			w.f.Unlock()
+			w.f.spin.Unlock()
 
 			break
 		}
-		w.f.Unlock()
+		w.f.spin.Unlock()
 		w.f.flusherFunc(w.f.tagID, el)
 		for idx := range el {
 			el[idx].done()

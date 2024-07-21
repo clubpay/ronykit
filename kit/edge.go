@@ -131,7 +131,7 @@ func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 		cb:            cb,
 		tp:            s.t,
 		inProgressMtx: utils.SpinLock{},
-		inProgress:    map[string]chan *envelopeCarrier{},
+		inProgress:    map[string]*clusterConn{},
 		msgFactories:  map[string]MessageFactoryFunc{},
 		l:             s.l,
 	}

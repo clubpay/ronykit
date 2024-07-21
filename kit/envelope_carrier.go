@@ -15,16 +15,16 @@ const (
 	eofCarrier
 )
 
-// envelopeCarrier is a serializable message which is used by Cluster component of the
+// envelopeCarrier is a serializable message which is used by the Cluster component of the
 // EdgeServer to send information from one instance to another instance.
 type envelopeCarrier struct {
 	// SessionID is a unique identifier for each remote-execution session.
 	SessionID string `json:"id"`
-	// Kind identifies what type of the data this carrier has
+	// Kind identifies the purpose of the message
 	Kind carrierKind `json:"kind"`
-	// OriginID the instance's id of the sender of this message
+	// OriginID the sender's id of the message
 	OriginID string `json:"originID"`
-	// TargetID the instance's id of the receiver of this message
+	// TargetID the receiver's id of the message
 	TargetID string       `json:"targetID"`
 	Data     *carrierData `json:"data"`
 }

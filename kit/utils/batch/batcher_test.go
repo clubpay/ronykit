@@ -135,3 +135,38 @@ var _ = Describe("Flusher With Callback", func() {
 		Expect(sum).To(Equal(total * (total - 1) / 2))
 	})
 })
+
+func ExampleBatcher() {
+	averageAll := func(targetID string, entries []batch.Entry[float64, float64]) {
+		var (
+			sum float64
+			n   int
+		)
+		for _, entry := range entries {
+			sum += entry.Value()
+			n++
+		}
+		avg := sum / float64(n)
+
+		for _, e := range entries {
+			e.Callback(avg)
+		}
+	}
+	b := batch.NewBatcher(
+		averageAll, "tag1",
+		batch.WithBatchSize(10),
+		batch.WithMinWaitTime(time.Second),
+	)
+	wg := sync.WaitGroup{}
+	for i := 0.0; i < 10.0; i++ {
+		wg.Add(1)
+		go func(i float64) {
+			t := time.Now()
+			b.EnterAndWait(
+				batch.NewEntry(i, func(out float64) { fmt.Println("duration:", time.Now().Sub(t), "avg:", out) }),
+			)
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+}

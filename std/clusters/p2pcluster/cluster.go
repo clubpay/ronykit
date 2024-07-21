@@ -1,12 +1,16 @@
 package p2pcluster
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/batch"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -138,6 +142,12 @@ func (c *cluster) startBroadcast(ctx context.Context) error {
 		for {
 			msg, err := broadcastSub.Next(ctx)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					c.log.Debugf("[p2pCluster] broadcast stopped")
+
+					return
+				}
+
 				c.log.Errorf("[p2pCluster] failed to receive broadcast message: %v", err)
 				time.Sleep(time.Second)
 
@@ -169,22 +179,71 @@ func (c *cluster) startMyTopic(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		for {
-			msg, err := sub.Next(ctx)
-			if err != nil {
-				continue
-			}
+	inputChan := make(chan *pubsub.Message, 1024)
+	batcher := batch.NewMulti(
+		genSortMessages(inputChan),
+		batch.WithMaxWorkers(1),
+		batch.WithMinWaitTime(time.Millisecond*25),
+	)
 
-			if msg.ReceivedFrom == c.host.ID() {
-				continue
-			}
-
-			go c.d.OnMessage(msg.GetData())
-		}
-	}()
+	go c.receiveMessage(ctx, sub, batcher)
+	go c.handleMessage(ctx, inputChan)
 
 	return nil
+}
+
+func (c *cluster) receiveMessage(
+	ctx context.Context, sub *pubsub.Subscription,
+	b *batch.MultiBatcher[*pubsub.Message, batch.NA],
+) {
+	for {
+		msg, err := sub.Next(ctx)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+
+			c.log.Errorf("[p2pCluster] failed to receive message from topic[%s]: %v", sub.Topic(), err)
+
+			continue
+		}
+
+		if msg.ReceivedFrom == c.host.ID() {
+			continue
+		}
+
+		b.Enter(
+			msg.GetFrom().String(),
+			batch.NewEntry[*pubsub.Message, batch.NA](msg, nil),
+		)
+	}
+}
+
+func (c *cluster) handleMessage(ctx context.Context, inputChan chan *pubsub.Message) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-inputChan:
+			c.d.OnMessage(msg.GetData())
+		}
+	}
+}
+
+func genSortMessages(
+	inputChan chan *pubsub.Message,
+) func(tagID string, entries []batch.Entry[*pubsub.Message, batch.NA]) {
+	return func(tagID string, entries []batch.Entry[*pubsub.Message, batch.NA]) {
+		sort.Slice(
+			entries, func(i, j int) bool {
+				return bytes.Compare(entries[i].Value().GetSeqno(), entries[j].Value().GetSeqno()) < 1
+			},
+		)
+
+		for _, entry := range entries {
+			inputChan <- entry.Value()
+		}
+	}
 }
 
 func (c *cluster) getTopic(id string) *pubsub.Topic {
@@ -243,4 +302,9 @@ func (c *cluster) HandlePeerFound(pi peer.AddrInfo) {
 	if err != nil {
 		c.log.Errorf("[p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)
 	}
+}
+
+type psMsg struct {
+	m         *pubsub.Message
+	debounced int
 }

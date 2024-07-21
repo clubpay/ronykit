@@ -140,44 +140,52 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 			),
 		)
 
-		time.Sleep(time.Second * 15)
+		time.Sleep(time.Second * 5)
+		hosts := []string{"localhost:8082", "localhost:8083"}
+		for range 500 {
+			key := "K_" + utils.RandomID(10)
+			value := "V_" + utils.RandomID(10)
+			setHostIndex := utils.RandomInt(len(hosts))
+			setHost := hosts[setHostIndex]
+			getHost := hosts[(setHostIndex+1)%len(hosts)]
+			// Set Key to instance 1
+			resp := &services.KeyValue{}
+			err := stub.New(setHost).REST().
+				SetMethod("POST").
+				DefaultResponseHandler(
+					func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+						c.So(r.StatusCode(), ShouldEqual, http.StatusOK)
 
-		// Set Key to instance 1
+						return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
+					},
+				).
+				AutoRun(ctx, "/set-key", kit.JSON, &services.SetRequest{Key: key, Value: value}).
+				Error()
+			c.So(err, ShouldBeNil)
+			c.So(resp.Key, ShouldEqual, key)
+			c.So(resp.Value, ShouldEqual, value)
 
-		resp := &services.KeyValue{}
-		err := stub.New("localhost:8082").REST().
-			SetMethod("POST").
-			DefaultResponseHandler(
-				func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-					c.So(r.StatusCode(), ShouldEqual, http.StatusOK)
+			// Get Key from instance 2
+			connHdrIn := utils.RandomID(12)
+			envelopeHdrIn := utils.RandomID(12)
+			err = stub.New(getHost).REST().
+				SetMethod("GET").
+				SetHeader("Conn-Hdr-In", connHdrIn).
+				SetHeader("Envelope-Hdr-In", envelopeHdrIn).
+				DefaultResponseHandler(
+					func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+						c.So(r.GetHeader("Conn-Hdr-Out"), ShouldEqual, connHdrIn)
+						c.So(r.GetHeader("Envelope-Hdr-Out"), ShouldEqual, envelopeHdrIn)
+						c.So(r.StatusCode(), ShouldEqual, http.StatusOK)
 
-					return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
-				},
-			).
-			AutoRun(ctx, "/set-key", kit.JSON, &services.SetRequest{Key: "test", Value: "testValue"}).
-			Error()
-		c.So(err, ShouldBeNil)
-		c.So(resp.Key, ShouldEqual, "test")
-		c.So(resp.Value, ShouldEqual, "testValue")
-
-		// Get Key from instance 2
-		err = stub.New("localhost:8083").REST().
-			SetMethod("GET").
-			SetHeader("Conn-Hdr-In", "MyValue").
-			SetHeader("Envelope-Hdr-In", "EnvelopeValue").
-			DefaultResponseHandler(
-				func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-					c.So(r.GetHeader("Conn-Hdr-Out"), ShouldEqual, "MyValue")
-					c.So(r.GetHeader("Envelope-Hdr-Out"), ShouldEqual, "EnvelopeValue")
-					c.So(r.StatusCode(), ShouldEqual, http.StatusOK)
-
-					return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
-				},
-			).
-			AutoRun(ctx, "/get-key/{key}", kit.JSON, &services.GetRequest{Key: "test"}).
-			Error()
-		c.So(err, ShouldBeNil)
-		c.So(resp.Key, ShouldEqual, "test")
-		c.So(resp.Value, ShouldEqual, "testValue")
+						return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
+					},
+				).
+				AutoRun(ctx, "/get-key/{key}", kit.JSON, &services.GetRequest{Key: key}).
+				Error()
+			c.So(err, ShouldBeNil)
+			c.So(resp.Key, ShouldEqual, key)
+			c.So(resp.Value, ShouldEqual, value)
+		}
 	}
 }
