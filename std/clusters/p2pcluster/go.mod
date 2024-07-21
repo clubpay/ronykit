@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/clusters/p2pcluster
 go 1.21
 
 require (
-	github.com/clubpay/ronykit/kit v0.16.6
+	github.com/clubpay/ronykit/kit v0.17.0
 	github.com/libp2p/go-libp2p v0.35.4
 	github.com/libp2p/go-libp2p-pubsub v0.11.0
 )
@@ -21,7 +21,6 @@ require (
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect

@@ -1,8 +1,7 @@
-github.com/clubpay/ronykit/kit v0.16.6 h1:N9CU1o+cPq4gKJgr8eJOVWaY6DrW7kJ4DLVLlVWUGF0=
-github.com/clubpay/ronykit/kit v0.16.6/go.mod h1:JmRsAjBYhNsrU7iaQM9oVw5OSIQpMET+VDKx1suUPbk=
+github.com/clubpay/ronykit/kit v0.17.0 h1:jptGDfKa4ddSIgt5DWZQsGY+8DoEs3Ofbu6ji402FVg=
+github.com/clubpay/ronykit/kit v0.17.0/go.mod h1:umLE+JFL9Hz9HL16lXslontP8dapR1Q0tVUNW34xhqA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
-github.com/go-logr/logr v1.4.2/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=
