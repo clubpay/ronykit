@@ -55,6 +55,12 @@ func (hc *RESTCtx) SetPath(path string) *RESTCtx {
 	return hc
 }
 
+func (hc *RESTCtx) SetPathF(format string, args ...any) *RESTCtx {
+	hc.uri.SetPath(fmt.Sprintf(format, args...))
+
+	return hc
+}
+
 func (hc *RESTCtx) GET(path string) *RESTCtx {
 	hc.SetMethod(http.MethodGet)
 	hc.SetPath(path)
@@ -413,7 +419,12 @@ func (hc *RESTCtx) AutoRun(
 					return
 				}
 
-				hc.SetQuery(key, fmt.Sprintf("%v", v))
+				switch v := v.(type) {
+				default:
+					hc.SetQuery(key, fmt.Sprintf("%v", v))
+				case []byte:
+					hc.SetQuery(key, string(v))
+				}
 			},
 		)
 	default:

@@ -42,7 +42,9 @@ type Contract struct {
 }
 
 func NewContract() *Contract {
-	return &Contract{}
+	return &Contract{
+		Encoding: kit.JSON,
+	}
 }
 
 // SetName sets the name of the Contract c, it MUST be unique per Service. However, it

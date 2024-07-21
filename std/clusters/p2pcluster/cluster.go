@@ -303,8 +303,3 @@ func (c *cluster) HandlePeerFound(pi peer.AddrInfo) {
 		c.log.Errorf("[p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)
 	}
 }
-
-type psMsg struct {
-	m         *pubsub.Message
-	debounced int
-}

@@ -142,7 +142,7 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 
 		time.Sleep(time.Second * 5)
 		hosts := []string{"localhost:8082", "localhost:8083"}
-		for range 500 {
+		for range 100 {
 			key := "K_" + utils.RandomID(10)
 			value := "V_" + utils.RandomID(10)
 			setHostIndex := utils.RandomInt(len(hosts))

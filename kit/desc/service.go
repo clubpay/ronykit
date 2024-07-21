@@ -30,6 +30,7 @@ var (
 func NewService(name string) *Service {
 	return &Service{
 		Name:          name,
+		Encoding:      kit.JSON,
 		contractNames: map[string]struct{}{},
 	}
 }
@@ -118,8 +119,8 @@ func (s *Service) Build() kit.Service {
 
 	var index int64
 	for _, c := range s.Contracts {
-		reflector.Register(c.Input)
-		reflector.Register(c.Output)
+		reflector.Register(c.Input, s.Encoding.Tag(), c.Encoding.Tag())
+		reflector.Register(c.Output, s.Encoding.Tag(), c.Encoding.Tag())
 
 		index++
 		contractID := fmt.Sprintf("%s.%d", svc.name, index)
