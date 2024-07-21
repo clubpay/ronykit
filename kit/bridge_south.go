@@ -119,7 +119,32 @@ func (sb *southBridge) createSenderConn(
 	sb.inProgress[carrier.SessionID] = conn
 	sb.inProgressMtx.Unlock()
 
-	go conn.run()
+	go func(c *clusterConn) {
+		for {
+			select {
+			case <-c.ctx.Done():
+				return
+			case carrier, ok := <-c.carrierChan:
+				if !ok {
+					c.cf()
+
+					return
+				}
+				switch carrier.Kind {
+				default:
+					panic("invalid carrier kind")
+				case outgoingCarrier:
+					c.callbackFn(carrier)
+				case eofCarrier:
+					sb.inProgressMtx.Lock()
+					delete(sb.inProgress, c.sessionID)
+					sb.inProgressMtx.Unlock()
+
+					close(c.carrierChan)
+				}
+			}
+		}
+	}(conn)
 
 	return conn
 }
@@ -336,28 +361,6 @@ type clusterConn struct {
 	cf          context.CancelFunc
 	callbackFn  func(carrier *envelopeCarrier)
 	carrierChan chan *envelopeCarrier
-}
-
-func (c *clusterConn) run() {
-	for {
-		select {
-		case <-c.ctx.Done():
-		case carrier, ok := <-c.carrierChan:
-			if !ok {
-				c.cf()
-
-				return
-			}
-			switch carrier.Kind {
-			default:
-				panic("invalid carrier kind")
-			case outgoingCarrier:
-				c.callbackFn(carrier)
-			case eofCarrier:
-				close(c.carrierChan)
-			}
-		}
-	}
 }
 
 func (c *clusterConn) ConnID() uint64 {

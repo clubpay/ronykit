@@ -1,14 +1,16 @@
 package p2pcluster
 
 import (
+	"bytes"
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/batch"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -177,29 +179,27 @@ func (c *cluster) startMyTopic(ctx context.Context) error {
 		return err
 	}
 
-	var (
-		inputChan   = make(chan psMsg, 1024)
-		orderedChan = make(chan psMsg, 1024)
+	inputChan := make(chan *pubsub.Message, 1024)
+	batcher := batch.NewMulti(
+		genSortMessages(inputChan),
+		batch.WithMaxWorkers(1),
+		batch.WithMinWaitTime(time.Millisecond*25),
 	)
 
-	go c.receiveMessage(ctx, sub, inputChan, orderedChan)
-	go c.handleMessage(orderedChan)
-	go c.tryOrderMessage(inputChan, orderedChan)
+	go c.receiveMessage(ctx, sub, batcher)
+	go c.handleMessage(ctx, inputChan)
 
 	return nil
 }
 
 func (c *cluster) receiveMessage(
 	ctx context.Context, sub *pubsub.Subscription,
-	inputChan, orderedChan chan psMsg,
+	b *batch.MultiBatcher[*pubsub.Message, batch.NA],
 ) {
 	for {
 		msg, err := sub.Next(ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				close(inputChan)
-				close(orderedChan)
-
 				return
 			}
 
@@ -212,48 +212,37 @@ func (c *cluster) receiveMessage(
 			continue
 		}
 
-		inputChan <- psMsg{m: msg}
+		b.Enter(
+			msg.GetFrom().String(),
+			batch.NewEntry[*pubsub.Message, batch.NA](msg, nil),
+		)
 	}
 }
 
-func (c *cluster) handleMessage(orderedChan chan psMsg) {
-	for msg := range orderedChan {
-		c.d.OnMessage(msg.m.GetData())
+func (c *cluster) handleMessage(ctx context.Context, inputChan chan *pubsub.Message) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-inputChan:
+			c.d.OnMessage(msg.GetData())
+		}
 	}
 }
 
-func (c *cluster) tryOrderMessage(inputChan, orderedChan chan psMsg) {
-	var lastSeq uint64
-	debounceTime := time.Millisecond * 100
-	for msg := range inputChan {
-		seq := binary.BigEndian.Uint64(msg.m.GetSeqno())
-		if lastSeq == 0 || seq == lastSeq+1 {
-			orderedChan <- msg
-			lastSeq = seq
+func genSortMessages(
+	inputChan chan *pubsub.Message,
+) func(tagID string, entries []batch.Entry[*pubsub.Message, batch.NA]) {
+	return func(tagID string, entries []batch.Entry[*pubsub.Message, batch.NA]) {
+		sort.Slice(
+			entries, func(i, j int) bool {
+				return bytes.Compare(entries[i].Value().GetSeqno(), entries[j].Value().GetSeqno()) < 1
+			},
+		)
 
-			continue
+		for _, entry := range entries {
+			inputChan <- entry.Value()
 		}
-
-		if seq < lastSeq {
-			orderedChan <- msg
-
-			continue
-		}
-
-		if msg.debounced > 1 {
-			orderedChan <- msg
-			if seq > lastSeq {
-				lastSeq = seq
-			}
-
-			continue
-		}
-
-		go func(msg psMsg) {
-			time.Sleep(time.Duration(msg.debounced) * debounceTime)
-			msg.debounced++
-			inputChan <- msg
-		}(msg)
 	}
 }
 
