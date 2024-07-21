@@ -27,11 +27,13 @@ type testMessage struct {
 type testEmbed1 struct {
 	YY int64  `json:"yy" otherTag:"yyOther"`
 	MM string `json:"mM" otherTag:"mMOther"`
+	Y  int64  `json:"y"`
 }
 
 type testEmbed2 struct {
 	YYY int64  `json:"yyy" otherTag:"yyyOther"`
 	MMM string `json:"mMM" otherTag:"mMMOther"`
+	Y   int64  `json:"y"`
 }
 
 var _ = Describe("Reflector", func() {
@@ -40,19 +42,24 @@ var _ = Describe("Reflector", func() {
 		testEmbed1: testEmbed1{
 			YY: 123,
 			MM: "mM",
+			Y:  11,
 		},
 		testEmbed2: testEmbed2{
 			YYY: 1234,
 			MMM: "mMM",
+			Y:   12,
 		},
 		X: "xValue",
 		Y: 10,
 		z: "zValue",
-		M: nil,
+		M: map[string]string{
+			"x": "100",
+		},
 	}
 	rObj := r.Load(m, "json")
 
 	It("Load by Struct Fields", func() {
+		Expect(m.Y).To(Equal(int64(10)))
 		obj := rObj.Obj()
 		Expect(obj.GetInt64(m, "YY")).To(Equal(int64(123)))
 		Expect(obj.GetString(m, "MM")).To(Equal("mM"))
@@ -61,11 +68,14 @@ var _ = Describe("Reflector", func() {
 		Expect(obj.GetStringDefault(m, "X", "")).To(Equal(m.X))
 		Expect(obj.GetInt64Default(m, "Y", 0)).To(Equal(m.Y))
 		Expect(obj.GetStringDefault(m, "z", "")).To(BeEmpty())
+		Expect(obj.Get(m, "M")).To(Equal(map[string]string{"x": "100"}))
+		Expect(obj.GetInt64(m, "Y")).To(Equal(int64(10)))
 	})
 
 	It("Load by ToJSON tag", func() {
 		byTag, ok := rObj.ByTag("json")
 		Expect(ok).To(BeTrue())
+		Expect(byTag.GetInt64Default(m, "y", 0)).To(Equal(int64(11)))
 		Expect(byTag.GetStringDefault(m, "xTag", "")).To(Equal(m.X))
 		Expect(byTag.GetInt64Default(m, "yTag", 0)).To(Equal(m.Y))
 		Expect(byTag.GetInt64Default(m, "yy", 0)).To(Equal(m.YY))

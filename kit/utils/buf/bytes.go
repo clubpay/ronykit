@@ -64,24 +64,24 @@ func (bb *Bytes) CopyFromWithOffset(data []byte, offset int) {
 	copy(bb.b[offset:], data)
 }
 
-func (bb *Bytes) CopyFrom(data []byte) {
-	copy(bb.b, data)
+func (bb *Bytes) CopyFrom(src []byte) {
+	copy(bb.b, src)
 }
 
-func (bb *Bytes) CopyTo(data []byte) []byte {
-	copy(data, bb.b)
+func (bb *Bytes) CopyTo(dst []byte) []byte {
+	copy(dst, bb.b)
 
-	return data
+	return dst
 }
 
-func (bb *Bytes) AppendFrom(data []byte) {
-	bb.b = append(bb.b, data...)
+func (bb *Bytes) AppendFrom(src []byte) {
+	bb.b = append(bb.b, src...)
 }
 
-func (bb *Bytes) AppendTo(data []byte) []byte {
-	data = append(data, bb.b...)
+func (bb *Bytes) AppendTo(dst []byte) []byte {
+	dst = append(dst, bb.b...)
 
-	return data
+	return dst
 }
 
 func (bb *Bytes) AppendByte(b byte) {

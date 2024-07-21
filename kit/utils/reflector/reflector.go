@@ -97,7 +97,10 @@ func destruct(mType reflect.Type, tags ...string) *Reflected {
 				fi.unsafe = true
 			}
 
-			r.obj[fi.name] = fi
+			if _, ok := r.obj[fi.name]; !ok {
+				r.obj[fi.name] = fi
+			}
+
 			if fi.f.Anonymous {
 				ll.PushFront(destructInput{t: ft.Type, offset: ft.Offset, indexes: idx})
 
@@ -116,7 +119,9 @@ func destruct(mType reflect.Type, tags ...string) *Reflected {
 				if r.byTag[t] == nil {
 					r.byTag[t] = Fields{}
 				}
-				r.byTag[t][v] = fi
+				if _, ok := r.byTag[t][v]; !ok {
+					r.byTag[t][v] = fi
+				}
 			}
 		}
 	}
