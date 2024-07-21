@@ -8,7 +8,7 @@ type Error struct {
 	err  error
 }
 
-var _ kit.ErrorMessage = (*Error)(nil)
+var _ kit.ErrorMessage = (*Error)(nil) //nolint:errcheck
 
 func NewError(err error) Error {
 	return Error{

@@ -57,7 +57,7 @@ func (c *cluster) gc(ctx context.Context) {
 	instancesKey := fmt.Sprintf("%s:instances", c.prefix)
 	idleSec := int64(c.idleTime / time.Second)
 
-	_ = luaGC.Run(
+	_ = luaGC.Run( //nolint:errcheck
 		ctx, c.rc,
 		[]string{
 			key,
@@ -69,14 +69,15 @@ func (c *cluster) gc(ctx context.Context) {
 	).Err()
 }
 
-func (c *cluster) Start(ctx context.Context) error {
-	runCtx, cf := context.WithCancel(context.Background())
-	c.shutdownFn = cf
-
+func (c *cluster) Start(ctx context.Context) error { //nolint:contextcheck
 	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, c.id))
 	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
 	c.msgChan = c.ps.Channel()
 	gcTimer := time.NewTimer(c.gcPeriod)
+
+	runCtx, cf := context.WithCancel(context.Background())
+	c.shutdownFn = cf
+
 	go func() {
 		for {
 			select {
