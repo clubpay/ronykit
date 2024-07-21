@@ -1,6 +1,7 @@
 package reflector
 
 import (
+	"container/list"
 	"fmt"
 	"reflect"
 	"strings"
@@ -27,11 +28,15 @@ func New() *Reflector {
 	}
 }
 
-// Register registers the message then reflector will be much faster. You should call
+// Register registers the message, then reflector will be much faster. You should call
 // it concurrently.
 func Register(m kit.Message, tags ...string) {
 	if m == nil {
 		return
+	}
+
+	if len(tags) == 0 {
+		tags = []string{"json", "proto", "msg"}
 	}
 
 	mVal, err := getValue(m)
@@ -51,6 +56,12 @@ func getValue(m kit.Message) (reflect.Value, error) {
 	return mVal, nil
 }
 
+type destructInput struct {
+	t       reflect.Type
+	offset  uintptr
+	indexes []int
+}
+
 func destruct(mType reflect.Type, tags ...string) *Reflected {
 	r := &Reflected{
 		obj:   Fields{},
@@ -58,41 +69,55 @@ func destruct(mType reflect.Type, tags ...string) *Reflected {
 		typ:   mType,
 	}
 
-	for i := 0; i < mType.NumField(); i++ {
-		ft := mType.Field(i)
-		if ft.PkgPath != "" {
-			continue
-		}
-		fi := FieldInfo{
-			idx:    i,
-			f:      ft,
-			name:   ft.Name,
-			offset: ft.Offset,
-			typ:    ft.Type,
-		}
+	ll := list.New()
+	ll.PushFront(destructInput{t: mType, offset: 0})
 
-		switch ft.Type.Kind() {
-		case reflect.Map, reflect.Slice, reflect.Pointer,
-			reflect.Interface, reflect.Array, reflect.Chan,
-			reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
-		default:
-			fi.unsafe = true
-		}
-
-		r.obj[fi.name] = fi
-		for _, t := range tags {
-			v, ok := ft.Tag.Lookup(t)
-			if !ok {
+	for ll.Len() > 0 {
+		mt := ll.Remove(ll.Back()).(destructInput) //nolint:forcetypeassert
+		for i := 0; i < mt.t.NumField(); i++ {
+			ft := mt.t.Field(i)
+			if ft.PkgPath != "" && !ft.Anonymous {
 				continue
 			}
-			idx := strings.IndexFunc(v, unicode.IsPunct)
-			if idx != -1 {
-				v = v[:idx]
+
+			idx := append(mt.indexes, i)
+			fi := FieldInfo{
+				idx:    idx,
+				f:      ft,
+				name:   ft.Name,
+				offset: mt.offset + ft.Offset,
+				typ:    ft.Type,
 			}
-			if r.byTag[t] == nil {
-				r.byTag[t] = Fields{}
+
+			switch ft.Type.Kind() {
+			case reflect.Map, reflect.Slice, reflect.Pointer,
+				reflect.Interface, reflect.Array, reflect.Chan,
+				reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
+			default:
+				fi.unsafe = true
 			}
-			r.byTag[t][v] = fi
+
+			r.obj[fi.name] = fi
+			if fi.f.Anonymous {
+				ll.PushFront(destructInput{t: ft.Type, offset: ft.Offset, indexes: idx})
+
+				continue
+			}
+
+			for _, t := range tags {
+				v, ok := ft.Tag.Lookup(t)
+				if !ok {
+					continue
+				}
+				idx := strings.IndexFunc(v, unicode.IsPunct)
+				if idx != -1 {
+					v = v[:idx]
+				}
+				if r.byTag[t] == nil {
+					r.byTag[t] = Fields{}
+				}
+				r.byTag[t][v] = fi
+			}
 		}
 	}
 
