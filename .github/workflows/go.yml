@@ -33,7 +33,7 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage.xml
+          files: ./coverage.out
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
