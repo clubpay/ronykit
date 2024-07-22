@@ -20,8 +20,9 @@ import (
 func TestDecoder(t *testing.T) {
 	Convey("Decoder", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			"Stub with Run":     stubWithRun,
-			"Stub with AutoRun": stubWithAutoRun,
+			"Stub with Run":       stubWithRun,
+			"Stub with AutoRun 1": stubWithAutoRun1,
+			"Stub Wtih AutoRun 2": stubWithAutoRun2,
 		}
 		for title, fn := range testCases {
 			Convey(title,
@@ -81,7 +82,7 @@ func stubWithRun(t *testing.T, opt fx.Option) func(c C) {
 	}
 }
 
-func stubWithAutoRun(t *testing.T, opt fx.Option) func(c C) {
+func stubWithAutoRun1(t *testing.T, opt fx.Option) func(c C) {
 	ctx := context.Background()
 
 	return func(c C) {
@@ -118,6 +119,51 @@ func stubWithAutoRun(t *testing.T, opt fx.Option) func(c C) {
 			c.So(err, ShouldBeNil)
 			c.So(resp.X, ShouldEqual, req.X)
 			c.So(resp.XP, ShouldEqual, req.XP)
+			c.So(resp.Y, ShouldEqual, req.Y)
+			c.So(resp.Z, ShouldEqual, req.Z)
+			fmt.Println(string(resp.A), string(req.A))
+			c.So(resp.A, ShouldEqual, req.A)
+		}
+	}
+}
+
+func stubWithAutoRun2(t *testing.T, opt fx.Option) func(c C) {
+	ctx := context.Background()
+
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		for range 1 {
+			// Set Key to instance 1
+			req := &services.EchoRequest{
+				Embedded: services.Embedded{
+					X:  utils.RandomID(10),
+					XP: utils.RandomID(10),
+					Y:  rand.Int63(),
+					Z:  rand.Float64(),
+					A:  utils.S2B(utils.RandomID(10)),
+				},
+			}
+			resp := &services.EchoResponse{}
+			err := stub.New("localhost:8082").REST().
+				SetMethod("GET").
+				DefaultResponseHandler(
+					func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+						c.So(r.StatusCode(), ShouldEqual, http.StatusOK)
+
+						return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
+					},
+				).
+				AutoRun(ctx, "/echo/{xpx}", kit.JSON, req).
+				Error()
+			c.So(err, ShouldBeNil)
+			c.So(resp.X, ShouldEqual, req.X)
+			c.So(resp.XP, ShouldEqual, "_")
 			c.So(resp.Y, ShouldEqual, req.Y)
 			c.So(resp.Z, ShouldEqual, req.Z)
 			fmt.Println(string(resp.A), string(req.A))

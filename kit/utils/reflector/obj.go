@@ -45,6 +45,9 @@ type Fields map[string]FieldInfo
 
 func (fields Fields) Get(m kit.Message, fieldName string) any {
 	fi := fields[fieldName]
+	if len(fi.idx) == 0 {
+		return nil
+	}
 	mVal := reflect.Indirect(reflect.ValueOf(m)).Field(fi.idx[0])
 	if len(fi.idx) > 1 {
 		for _, idx := range fi.idx[1:] {
