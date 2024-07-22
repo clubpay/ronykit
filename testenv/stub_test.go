@@ -11,68 +11,29 @@ import (
 	"ronykit/testenv/services"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/stub"
-	"github.com/redis/go-redis/v9"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
 
 func TestDecoder(t *testing.T) {
 	Convey("Decoder", t, func(c C) {
-		testCases := map[string]fx.Option{
-			"Test Get with Embedded": fx.Options(
-				// fx.Invoke(invokeRedisMonitor),
-				invokeEdgeServer("edge", 8082, services.EchoService),
-			),
+		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
+			"Stub with Run":     stubWithRun,
+			"Stub with AutoRun": stubWithAutoRun,
 		}
-		for title, opts := range testCases {
-			Convey(title+" Run", echoWithGetQueryParams1(t, opts))
-			Convey(title+" AutoRun", echoWithGetQueryParams2(t, opts))
+		for title, fn := range testCases {
+			Convey(title,
+				fn(
+					t, invokeEdgeServerFastHttp("edge", 8082, services.EchoService),
+				),
+			)
 		}
 	})
 }
 
-func invokeEdgeServer(_ string, port int, desc ...kit.ServiceBuilder) fx.Option {
-	return fx.Invoke(
-		func(lc fx.Lifecycle, _ *redis.Client) {
-			edge := kit.NewServer(
-				kit.WithLogger(common.NewStdLogger()),
-				kit.WithErrorHandler(
-					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
-					},
-				),
-				kit.WithGateway(
-					fasthttp.MustNew(
-						fasthttp.WithDisableHeaderNamesNormalizing(),
-						fasthttp.Listen(fmt.Sprintf(":%d", port)),
-					),
-				),
-				kit.WithServiceBuilder(desc...),
-			)
-
-			lc.Append(
-				fx.Hook{
-					OnStart: func(ctx context.Context) error {
-						edge.Start(ctx)
-
-						return nil
-					},
-					OnStop: func(ctx context.Context) error {
-						edge.Shutdown(ctx)
-
-						return nil
-					},
-				},
-			)
-		},
-	)
-}
-
-func echoWithGetQueryParams1(t *testing.T, opt fx.Option) func(c C) {
+func stubWithRun(t *testing.T, opt fx.Option) func(c C) {
 	ctx := context.Background()
 
 	return func(c C) {
@@ -120,7 +81,7 @@ func echoWithGetQueryParams1(t *testing.T, opt fx.Option) func(c C) {
 	}
 }
 
-func echoWithGetQueryParams2(t *testing.T, opt fx.Option) func(c C) {
+func stubWithAutoRun(t *testing.T, opt fx.Option) func(c C) {
 	ctx := context.Background()
 
 	return func(c C) {

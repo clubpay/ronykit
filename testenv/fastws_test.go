@@ -2,7 +2,6 @@ package testenv
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/std/gateways/fastws"
 	"github.com/clubpay/ronykit/stub"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -32,45 +30,6 @@ func TestFastWS(t *testing.T) {
 			)
 		}
 	})
-}
-
-func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceBuilder) fx.Option {
-	return fx.Invoke(
-		func(lc fx.Lifecycle) {
-			edge := kit.NewServer(
-				kit.ReusePort(true),
-				kit.WithLogger(common.NewStdLogger()),
-				kit.WithErrorHandler(
-					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
-					},
-				),
-				kit.WithGateway(
-					fastws.MustNew(
-						fastws.WithPredicateKey("cmd"),
-						fastws.Listen(fmt.Sprintf("tcp4://0.0.0.0:%d", port)),
-						fastws.WithLogger(common.NewStdLogger()),
-					),
-				),
-				kit.WithServiceBuilder(desc...),
-			)
-
-			lc.Append(
-				fx.Hook{
-					OnStart: func(ctx context.Context) error {
-						edge.Start(ctx)
-
-						return nil
-					},
-					OnStop: func(ctx context.Context) error {
-						edge.Shutdown(ctx)
-
-						return nil
-					},
-				},
-			)
-		},
-	)
 }
 
 func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
