@@ -97,13 +97,13 @@ func (sb *southBridge) OnMessage(data []byte) {
 func (sb *southBridge) createSenderConn(
 	carrier *envelopeCarrier, timeout time.Duration, callbackFn func(*envelopeCarrier),
 ) *clusterConn {
-	rxCtx, cancelFn := context.WithCancel(context.Background())
+	ctx, cancelFn := context.WithCancel(context.Background())
 	if timeout > 0 {
-		rxCtx, cancelFn = context.WithTimeout(rxCtx, timeout)
+		ctx, cancelFn = context.WithTimeout(ctx, timeout)
 	}
 
 	conn := &clusterConn{
-		ctx:         rxCtx,
+		ctx:         ctx,
 		cf:          cancelFn,
 		callbackFn:  callbackFn,
 		cluster:     sb.cb,
@@ -253,6 +253,8 @@ func (sb *southBridge) wrapWithCoordinator(c Contract) Contract {
 
 func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	return func(ctx *Context) {
+		// if it is already a forwarded request, we should forward it again.
+		// This is required to avoid infinite loops.
 		if ctx.forwarded {
 			return
 		}
@@ -287,6 +289,7 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 			ctx.Error(conn.Err())
 		case <-ctx.ctx.Done():
 			ctx.Error(ctx.ctx.Err())
+			conn.cf()
 		}
 
 		// We should stop executing next handlers, since our request has been executed on
