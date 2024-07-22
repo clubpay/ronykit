@@ -216,8 +216,8 @@ batteries included framework, just use [rony](../rony/README.MD) package instead
 
 | Package      | Bundle Type | Version | Description                                                                                                                          |
 |--------------|-------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
-| fasthttp     | Gateway     | v0.16.6 | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
-| fastws       | Gateway     | v0.16.6 | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
-| silverhttp   | Gateway     | v0.16.6 | The Gateway bundle implemented using the new super-fast HTTP server [silverlining](https://github.com/go-www/silverlining)           |
-| rediscluster | Cluster     | v0.16.6 | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
-| p2pcluster   | Cluster     | v0.16.6 | The Cluster bundle implemented using [p2p](https://github.com/libp2p/go-libp2p)                                                      |
+| fasthttp     | Gateway     | v0.17.1 | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
+| fastws       | Gateway     | v0.17.1 | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
+| silverhttp   | Gateway     | v0.17.1 | The Gateway bundle implemented using the new super-fast HTTP server [silverlining](https://github.com/go-www/silverlining)           |
+| rediscluster | Cluster     | v0.17.1 | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
+| p2pcluster   | Cluster     | v0.17.1 | The Cluster bundle implemented using [p2p](https://github.com/libp2p/go-libp2p)                                                      |
