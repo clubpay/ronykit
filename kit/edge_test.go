@@ -522,7 +522,7 @@ func BenchmarkServer(b *testing.B) {
 							},
 						),
 				).
-				Generate(),
+				Build(),
 		),
 	).Start(nil)
 	defer s.Shutdown(nil)

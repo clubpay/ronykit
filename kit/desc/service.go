@@ -22,10 +22,7 @@ type Service struct {
 	contractNames map[string]struct{}
 }
 
-var (
-	_ kit.ServiceDescriptor = (*Service)(nil)
-	_ kit.ServiceBuilder    = (*Service)(nil)
-)
+var _ kit.ServiceBuilder = (*Service)(nil)
 
 func NewService(name string) *Service {
 	return &Service{
@@ -102,12 +99,6 @@ func (s *Service) AddError(err kit.ErrorMessage) *Service {
 	)
 
 	return s
-}
-
-// Generate generates the kit.Service
-// Deprecated: Use Build instead.
-func (s *Service) Generate() kit.Service {
-	return s.Build()
 }
 
 // Build generates the kit.Service

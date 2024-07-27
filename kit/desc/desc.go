@@ -6,6 +6,7 @@ type ServiceDesc interface {
 	Desc() *Service
 }
 
+// ServiceDescFunc is helper utility to convert function to a ServiceDesc interface
 type ServiceDescFunc func() *Service
 
 func (f ServiceDescFunc) Desc() *Service {
@@ -18,6 +19,6 @@ type Error struct {
 	Message kit.Message
 }
 
-func GenerateService(desc ServiceDesc) kit.Service {
-	return desc.Desc().Generate()
+func BuildService(desc ServiceDesc) kit.Service {
+	return desc.Desc().Build()
 }

@@ -1,4 +1,4 @@
-#!/bin/zsh
+
 
 wd=$(pwd)
 
@@ -21,10 +21,12 @@ array1=(
 )
 for i in "${array1[@]}"
 do
-	echo "Cleaning up [$i]..."
+	echo "Running tests for [$i]..."
 	cd "$wd"/"$i" || exit
-	go mod tidy
-  go fmt ./...
-  go vet ./...
-  GOWORK=off golangci-lint run
+  gotestsum --hide-summary=output --format pkgname-and-test-fails \
+  					--format-hide-empty-pkg --max-fails 1 \
+  					-- -covermode=atomic -coverprofile=coverage.out ./...
+  go tool cover -func=coverage.out -o=coverage.out
 done
+
+

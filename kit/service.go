@@ -1,10 +1,5 @@
 package kit
 
-// Deprecated: Use ServiceBuilder instead.
-type ServiceDescriptor interface {
-	Generate() Service
-}
-
 type ServiceBuilder interface {
 	Build() Service
 }

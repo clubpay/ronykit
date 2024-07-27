@@ -95,7 +95,7 @@ func (in *Input) AddMessage(msg ...desc.ParsedMessage) {
 	}
 }
 
-// RESTMethod represents description of a Contract with kit.RESTRouteSelector.
+// RESTMethod represents the description of a Contract with kit.RESTRouteSelector.
 type RESTMethod struct {
 	Name      string
 	Method    string
@@ -121,7 +121,7 @@ func (rm *RESTMethod) GetErrors() []desc.ParsedResponse {
 	)
 }
 
-// RPCMethod represents description of a Contract with kit.RPCRouteSelector
+// RPCMethod represents the description of a Contract with kit.RPCRouteSelector
 type RPCMethod struct {
 	Name      string
 	Predicate string
