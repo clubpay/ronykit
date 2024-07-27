@@ -2,6 +2,7 @@ package async
 
 import (
 	"context"
+	"fmt"
 )
 
 type Queue struct {
@@ -25,34 +26,44 @@ func (q *Queue) register(srv *Engine) error {
 		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case e := <-env:
-				t, ok := q.e.tasks[e.TaskName]
-				if !ok {
-					q.e.captureErr(err)
-
-					continue
-				}
-
-				go q.runTask(ctx, t, e)
-
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
+	go q.jobFunc(ctx, env)
 
 	return nil
 }
 
-func (q *Queue) runTask(ctx context.Context, t task, e TaskEnvelope) {
+func (q *Queue) jobFunc(ctx context.Context, env <-chan TaskEnvelope) {
+	rateLimitChan := make(chan struct{}, q.workers)
+	for {
+		select {
+		case e := <-env:
+			t, ok := q.e.tasks[e.TaskName]
+			if !ok {
+				q.e.captureErr(fmt.Errorf("task %s not found : %v", e.TaskName, ErrTaskNotRegistered))
+
+				continue
+			}
+
+			rateLimitChan <- struct{}{}
+			go q.runTask(ctx, rateLimitChan, t, e)
+
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (q *Queue) runTask(
+	ctx context.Context,
+	rateLimitChan chan struct{},
+	t task,
+	e TaskEnvelope,
+) {
 	err := t.handle(ctx, e)
 	if err != nil {
 		// put in the retry list
 		q.e.captureErr(err)
 	}
+	<-rateLimitChan
 }
 
 func (q *Queue) unregister(_ *Engine) {

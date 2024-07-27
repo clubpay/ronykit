@@ -1,6 +1,9 @@
 package desc
 
-import "github.com/clubpay/ronykit/kit"
+import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
+)
 
 type ServiceDesc interface {
 	Desc() *Service
@@ -21,4 +24,11 @@ type Error struct {
 
 func BuildService(desc ServiceDesc) kit.Service {
 	return desc.Desc().Build()
+}
+
+func ToDesc(svc ...*Service) []ServiceDesc {
+	return utils.Map(
+		func(src *Service) ServiceDesc {
+			return ServiceDescFunc(func() *Service { return src })
+		}, svc)
 }

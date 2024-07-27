@@ -98,6 +98,22 @@ func (sg *Generator) SwaggerUI(svc ...desc.ServiceDesc) (fs.FS, error) {
 
 	return &customFS{
 		fs:          swaggerFS,
+		folderName:  "swagger-ui",
+		swaggerJSON: content.Bytes(),
+		t:           time.Now(),
+	}, nil
+}
+
+func (sg *Generator) ReDocUI(svc ...desc.ServiceDesc) (fs.FS, error) {
+	content := bytes.NewBuffer(nil)
+	err := sg.WriteSwagTo(content, svc...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &customFS{
+		fs:          redocFS,
+		folderName:  "redoc-ui",
 		swaggerJSON: content.Bytes(),
 		t:           time.Now(),
 	}, nil

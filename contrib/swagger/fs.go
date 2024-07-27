@@ -9,13 +9,18 @@ import (
 	"time"
 )
 
-//go:embed internal/swagger-ui
-var swaggerFS embed.FS
+var (
+	//go:embed internal/swagger-ui
+	swaggerFS embed.FS
+	//go:embed internal/redoc-ui
+	redocFS embed.FS
+)
 
 var _ fs.FS = (*customFS)(nil)
 
 type customFS struct {
 	fs          embed.FS
+	folderName  string
 	swaggerJSON []byte
 	t           time.Time
 }
@@ -28,7 +33,7 @@ func (c customFS) Open(name string) (fs.File, error) {
 		}, nil
 	}
 
-	return c.fs.Open(filepath.Join("internal/swagger-ui", name))
+	return c.fs.Open(filepath.Join("internal", c.folderName, name))
 }
 
 var (
