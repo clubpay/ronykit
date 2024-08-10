@@ -147,6 +147,11 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		WithTags(serviceName).
 		WithProduces(contentType).
 		WithConsumes(contentType)
+
+	if c.Deprecated {
+		op.Deprecate()
+	}
+
 	if c.OKResponse().Message.IsSpecial() {
 		op.RespondsWith(
 			http.StatusOK,
@@ -445,6 +450,10 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 	)
 	if c.Encoding == "" {
 		c.Encoding = "json"
+	}
+
+	if c.Deprecated {
+		itm.Description = "[Deprecated] " + itm.Description
 	}
 
 	for _, pp := range c.PathParams {

@@ -45,10 +45,11 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 			name = c.Name
 		}
 		pc := ParsedContract{
-			Index:     idx,
-			GroupName: c.Name,
-			Name:      name,
-			Encoding:  s.Selector.GetEncoding().Tag(),
+			Index:      idx,
+			GroupName:  c.Name,
+			Name:       name,
+			Deprecated: s.Deprecated,
+			Encoding:   s.Selector.GetEncoding().Tag(),
 		}
 
 		switch r := s.Selector.(type) {
@@ -211,10 +212,11 @@ const (
 )
 
 type ParsedContract struct {
-	Index     int
-	GroupName string
-	Name      string
-	Encoding  string
+	Index      int
+	GroupName  string
+	Name       string
+	Encoding   string
+	Deprecated bool
 
 	Type       ContractType
 	Path       string
