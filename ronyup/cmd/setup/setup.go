@@ -67,14 +67,14 @@ func createDestination() error {
 		return err
 	}
 
-	_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck
+	_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck,gofumpt
 	if !isEmptyDir(dstPath) {
 		if !opt.Force {
 			return fmt.Errorf("%s directory is not empty, use -f to force", dstPath)
 		}
 
-		_ = os.RemoveAll(dstPath)      //nolint:errcheck
-		_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck
+		_ = os.RemoveAll(dstPath)      //nolint:errcheck,gofumpt
+		_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck,gofumpt
 	}
 
 	return nil

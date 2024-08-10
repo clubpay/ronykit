@@ -22,6 +22,8 @@ linters:
     - perfsprint
     - mnd
     - execinquery
+    - forbidigo
+    - gosec
   fast: false
 linters-settings:
   errcheck:

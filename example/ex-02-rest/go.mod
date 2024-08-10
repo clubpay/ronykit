@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/bytedance/sonic v1.11.7
-	github.com/clubpay/ronykit/kit v0.16.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.4
-	github.com/clubpay/ronykit/stub v0.16.4
+	github.com/clubpay/ronykit/kit v0.17.4
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.4
+	github.com/clubpay/ronykit/stub v0.17.4
 )
 
 require (
@@ -22,8 +22,6 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.0 // indirect
-	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

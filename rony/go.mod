@@ -24,8 +24,6 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.0 // indirect
-	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect

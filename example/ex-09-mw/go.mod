@@ -5,15 +5,15 @@ go 1.22
 toolchain go1.22.3
 
 require (
-	github.com/clubpay/ronykit/kit v0.16.4
-	github.com/clubpay/ronykit/rony v0.16.4
+	github.com/clubpay/ronykit/kit v0.17.4
+	github.com/clubpay/ronykit/rony v0.17.4
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/clubpay/ronykit/contrib v0.16.4 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.4 // indirect
-	github.com/clubpay/ronykit/stub v0.16.4 // indirect
+	github.com/clubpay/ronykit/contrib v0.17.4 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.4 // indirect
+	github.com/clubpay/ronykit/stub v0.17.4 // indirect
 	github.com/fasthttp/router v1.5.1 // indirect
 	github.com/fasthttp/websocket v1.5.10 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
@@ -27,8 +27,6 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.0 // indirect
-	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect

@@ -5,10 +5,10 @@ go 1.21
 toolchain go1.21.7
 
 require (
-	github.com/clubpay/ronykit/contrib v0.16.4
-	github.com/clubpay/ronykit/kit v0.16.4
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.16.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.16.4
+	github.com/clubpay/ronykit/contrib v0.17.4
+	github.com/clubpay/ronykit/kit v0.17.4
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.17.4
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.4
 	github.com/orlangure/gnomock v0.30.0
 )
 
@@ -36,8 +36,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.0 // indirect
-	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
