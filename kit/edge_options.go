@@ -30,14 +30,14 @@ func WithPrefork() Option {
 	}
 }
 
-// WithGateway lets you register a bundle in constructor of the EdgeServer.
+// WithGateway lets you register a bundle in the constructor of the EdgeServer.
 func WithGateway(gw ...Gateway) Option {
 	return func(s *edgeConfig) {
 		s.gateways = append(s.gateways, gw...)
 	}
 }
 
-// WithCluster lets you register a cluster in constructor of the EdgeServer.
+// WithCluster lets you register a cluster in the constructor of the EdgeServer.
 func WithCluster(cb Cluster) Option {
 	return func(s *edgeConfig) {
 		s.cluster = cb

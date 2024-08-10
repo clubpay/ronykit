@@ -13,15 +13,15 @@ type Conn interface {
 	Set(key string, val string)
 }
 
-// RESTConn could be implemented by Gateway, so in Dispatcher user can check if Conn also implements
-// RESTConn then it has more information about the RESTConn request.
+// RESTConn implemented by Gateway, so in Dispatcher user can check if Conn also implements
+// RESTConn, then it has more information about the RESTConn request.
 type RESTConn interface {
 	Conn
 	GetMethod() string
 	GetHost() string
 	// GetRequestURI returns uri without Method and Host
 	GetRequestURI() string
-	// GetPath returns uri without Method, Host and Query parameters.
+	// GetPath returns uri without Method, Host, and Query parameters.
 	GetPath() string
 	SetStatusCode(code int)
 	Redirect(code int, url string)

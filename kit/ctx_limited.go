@@ -25,7 +25,7 @@ func (ctx *LimitedContext) Context() context.Context {
 	return ctx.ctx.Context()
 }
 
-// In returns the incoming Envelope which contains the client's request.
+// In returns the incoming Envelope, which contains the client's request.
 func (ctx *LimitedContext) In() *Envelope {
 	return ctx.ctx.In()
 }

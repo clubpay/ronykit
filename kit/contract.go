@@ -2,8 +2,8 @@ package kit
 
 // RouteSelector holds information about how this Contract is going to be selected. Each
 // Gateway may need different information to route the request to the right Contract.
-// RouteSelector is actually a base interface and Gateway implementors usually implement
-// either RESTRouteSelector, RPCRouteSelector or both. It is an interface that provides methods
+// RouteSelector is actually a base interface, and Gateway implementors usually implement
+// either RESTRouteSelector, RPCRouteSelector, or both. It is an interface that provides methods
 // for querying and getting the encoding of a routing object. Implementations of RouteSelector are
 // used by Gateway to handle different types of request routing based on the method and protocol. The
 // Query method is for searching specific routes with a query string, and GetEncoding is for
@@ -24,8 +24,8 @@ type RESTRouteSelector interface {
 	GetPath() string
 }
 
-// RPCRouteSelector defines the RouteSelector which could be used in RPC operations.
-// Gateway implementation which handle RPC requests could check the selector if it supports RPC.
+// RPCRouteSelector defines the RouteSelector, which could be used in RPC operations.
+// Gateway implementation that handles RPC requests could check the selector if it supports RPC.
 // It is an interface that extends RouteSelector with a method specific to RPC operations. It is primarily
 // used by RPC-based gateways for routing RPC requests to the appropriate contract. Implementations of this
 // interface should provide their own GetPredicate method, which returns a string representing a predicate
@@ -45,12 +45,12 @@ type RPCRouteSelector interface {
 type EdgeSelectorFunc func(ctx *LimitedContext) (string, error)
 
 // Contract defines the set of Handlers based on the Query. Query is different per bundles,
-// hence, this is the implementor's task to make sure return correct value based on 'q'.
-// In other words, Contract 'r' must return valid response for 'q's required by Gateway 'gw' in
+// hence, this is the implementor's task to make sure return the correct value based on 'q'.
+// In other words, Contract 'r' must return a valid response for 'q's required by Gateway 'gw' in
 // order to be usable by Gateway 'gw' otherwise it panics.
 type Contract interface {
 	// ID identifies the contract. This MUST be unique per Service. This MUST NOT be a runtime
-	// random number. Since this is used in RemoteExecute method of ClusterMember to execute the
+	// random number. Since this is used in the RemoteExecute method of ClusterMember to execute the
 	// right set of handlers on remote EdgeServer.
 	ID() string
 	// RouteSelector returns a RouteSelector function which selects this Contract based on the
@@ -80,7 +80,7 @@ func (sw ContractWrapperFunc) Wrap(svc Contract) Contract {
 }
 
 // WrapContract wraps a contract, this is useful for adding middlewares to the contract.
-// Some middlewares like OpenTelemetry, Logger, ... could be added to the contract using
+// Some middlewares like OpenTelemetry, Logger, and so on could be added to the contract using
 // this function.
 func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 	for _, w := range wrappers {
@@ -90,7 +90,7 @@ func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 	return c
 }
 
-// contractWrap implements Contract interface and is useful when we need to wrap another
+// contractWrap implements the Contract interface and is useful when we need to wrap another
 // contract.
 type contractWrap struct {
 	Contract

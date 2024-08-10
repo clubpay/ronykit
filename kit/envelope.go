@@ -19,8 +19,8 @@ type EnvelopeHdr map[string]string
 type ModifierFunc func(envelope *Envelope)
 
 // Envelope is an envelope around Message in RonyKIT. Envelopes are created internally
-// by the RonyKIT framework, and provide the abstraction which Bundle implementations could
-// take advantage of. For example in std/fasthttp Envelope headers translate from/to http
+// by the RonyKIT framework and provide the abstraction which Bundle implementations could
+// take advantage of. For example, in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope struct {
 	id   []byte
@@ -30,10 +30,10 @@ type Envelope struct {
 	kv   EnvelopeHdr
 	m    Message
 
-	// outgoing identity the Envelope if it is able to send
+	// outgoing identity of the Envelope if it is able to send
 	outgoing bool
 
-	// reuse identifies if Envelope is going to be reused by pushing to the pool.
+	// reuse identifies if the Envelope is going to be reused by pushing to the pool.
 	reuse bool
 	p     *sync.Pool
 }
