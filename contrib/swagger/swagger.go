@@ -578,7 +578,7 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 }
 
 // fixPathForSwag converts the ronykit mux format urls to swagger url format.
-// e.g. /some/path/:x1 --> /some/path/{x1}
+// for example, /some/path/:x1 --> /some/path/{x1}
 func fixPathForSwag(path string) string {
 	sb := strings.Builder{}
 	for idx, p := range strings.Split(path, "/") {

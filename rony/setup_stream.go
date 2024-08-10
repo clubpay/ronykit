@@ -60,7 +60,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 
 	cfg := stream.GenConfig(opt...)
 	for _, s := range cfg.Selectors {
-		c.NamedSelector(s.Name, s.Selector)
+		c.AddRoute(desc.Route(s.Name, s.Selector))
 	}
 
 	setupCtx.cfg.getService(setupCtx.name).AddContract(c)
@@ -70,7 +70,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	StreamOption
 */
 
-// RPC is a StreamOption to set up RPC handler.
+// RPC is a StreamOption to set up an RPC handler.
 func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
 	return func(cfg *stream.Config) {
 		sCfg := stream.GenSelectorConfig(opt...)

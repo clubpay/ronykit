@@ -66,7 +66,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 
 	cfg := unary.GenConfig(opt...)
 	for _, s := range cfg.Selectors {
-		c.NamedSelector(s.Name, s.Selector)
+		c.AddRoute(desc.Route(s.Name, s.Selector))
 	}
 
 	setupCtx.cfg.getService(setupCtx.name).AddContract(c)

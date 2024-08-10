@@ -31,6 +31,10 @@ func TimeUnix() int64 {
 	return atomic.LoadInt64(&timeInSec)
 }
 
+func TimeUnixAdd(unixTime int64, d time.Duration) int64 {
+	return int64(time.Duration(unixTime) + d/time.Second)
+}
+
 func TimeUnixSubtract(unixTime int64, d time.Duration) int64 {
 	return int64(time.Duration(unixTime) - d/time.Second)
 }

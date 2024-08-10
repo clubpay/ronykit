@@ -23,9 +23,9 @@ github.com/mattn/go-runewidth v0.0.15 h1:UNAjwbU9l54TA3KzvqLGxwWjHmMgBUVhBiTjelZ
 github.com/mattn/go-runewidth v0.0.15/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/onsi/ginkgo/v2 v2.20.0 h1:PE84V2mHqoT1sglvHc8ZdQtPcwmvvt29WLEEO3xmdZw=
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
-github.com/panjf2000/ants/v2 v2.9.0 h1:SztCLkVxBRigbg+vt0S5QvF5vxAbxbKt09/YfAJ0tEo=
-github.com/panjf2000/gnet/v2 v2.5.2 h1:ctslzTSO77beWighLbLL9zsO7wmh5pYkomuWctO9+MY=
-github.com/panjf2000/gnet/v2 v2.5.2/go.mod h1:cm9AIICvZSrQllpQG5u5st56VMJCAWbB9/qdNKlrpKM=
+github.com/panjf2000/ants/v2 v2.10.0 h1:zhRg1pQUtkyRiOFo2Sbqwjp0GfBNo9cUY2/Grpx1p+8=
+github.com/panjf2000/gnet/v2 v2.5.7 h1:EGGIfLYEVAp2l5WSYT2XddSjpQ642PjwphbWhcJ0WBY=
+github.com/panjf2000/gnet/v2 v2.5.7/go.mod h1:ppopMJ8VrDbJu8kDsqFQTgNmpMS8Le5CmPxISf+Sauk=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.3 h1:utMvzDsuh3suAEnhH0RdHmoPbU648o6CvXxTx4SBMOw=

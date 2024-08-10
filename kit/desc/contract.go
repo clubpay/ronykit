@@ -1,6 +1,9 @@
 package desc
 
-import "github.com/clubpay/ronykit/kit"
+import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
+)
 
 type Header struct {
 	Name     string
@@ -125,6 +128,7 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 	return c
 }
 
+// AddRoute adds a kit.RouteSelector for this contract.
 func (c *Contract) AddRoute(r ...RouteSelector) *Contract {
 	c.RouteSelectors = append(c.RouteSelectors, r...)
 
@@ -134,42 +138,42 @@ func (c *Contract) AddRoute(r ...RouteSelector) *Contract {
 // AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle-specific.
 // Deprecated: use AddRoute instead
 func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
-	return c.Selector(s...)
+	return c.AddRoute(
+		utils.Map(
+			func(src kit.RouteSelector) RouteSelector {
+				return Route("", src)
+			}, s,
+		)...,
+	)
 }
 
 // Selector is an alias for AddSelector
 // Deprecated: use AddRoute instead
 func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
-	for idx := range s {
-		c.RouteSelectors = append(
-			c.RouteSelectors,
-			RouteSelector{Name: "", Selector: s[idx]},
-		)
-	}
-
-	return c
+	return c.AddRoute(
+		utils.Map(
+			func(src kit.RouteSelector) RouteSelector {
+				return Route("", src)
+			}, s,
+		)...,
+	)
 }
 
-// AddNamedSelector adds a kit.RouteSelector for this contract, and assigns it a unique name.
+// AddNamedSelector adds a kit.RouteSelector for this contract and assigns it a unique name.
 // In case you need to use auto-generated stub.Stub for your service/contract, this name will
 // be used in the generated code.
 // Deprecated: use AddRoute instead
 func (c *Contract) AddNamedSelector(name string, s kit.RouteSelector) *Contract {
-	return c.NamedSelector(name, s)
+	return c.AddRoute(Route(name, s))
 }
 
 // NamedSelector is an alias for AddNamedSelector
 // Deprecated: use AddRoute instead
 func (c *Contract) NamedSelector(name string, s kit.RouteSelector) *Contract {
-	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
-		Name:     name,
-		Selector: s,
-	})
-
-	return c
+	return c.AddRoute(Route(name, s))
 }
 
-// SetCoordinator sets a kit.EdgeSelectorFunc for this contract, to coordinate requests to
+// SetCoordinator sets a kit.EdgeSelectorFunc for this contract to coordinate requests to
 // right kit.EdgeServer instance.
 func (c *Contract) SetCoordinator(f kit.EdgeSelectorFunc) *Contract {
 	c.EdgeSelector = f

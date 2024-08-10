@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/clubpay/ronykit/kit v0.17.5
-	github.com/fasthttp/router v1.5.1
+	github.com/fasthttp/router v1.5.2
 	github.com/fasthttp/websocket v1.5.10
 	github.com/goccy/go-reflect v1.2.0
 	github.com/valyala/fasthttp v1.55.0
