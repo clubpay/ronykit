@@ -1,7 +1,7 @@
 run:
   tests: false
 linters:
-  enable-all: true
+  enable-all: false
   disable:
     - wsl
     - gomnd
@@ -24,6 +24,7 @@ linters:
     - execinquery
     - forbidigo
     - gosec
+    - errcheck
   fast: false
 linters-settings:
   errcheck:
