@@ -1,5 +1,5 @@
-github.com/clubpay/ronykit/kit v0.17.3 h1:wWSSDRKNEN0Q/Yf60MMigkvKKAIzZ7yM5k2mjsxcUHg=
-github.com/clubpay/ronykit/kit v0.17.3/go.mod h1:umLE+JFL9Hz9HL16lXslontP8dapR1Q0tVUNW34xhqA=
+github.com/clubpay/ronykit/kit v0.17.4 h1:5x6NjKPxi0YlUYBDuAtG2+DhF8e8YMp3vE6m8CJ9ffU=
+github.com/clubpay/ronykit/kit v0.17.4/go.mod h1:9+S5d7KeS0aKRRjQdyo1NNgA55ypP1rTmws2HZC1J00=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
@@ -22,9 +22,7 @@ github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/mattn/go-runewidth v0.0.15 h1:UNAjwbU9l54TA3KzvqLGxwWjHmMgBUVhBiTjelZgg3U=
 github.com/mattn/go-runewidth v0.0.15/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/onsi/ginkgo/v2 v2.20.0 h1:PE84V2mHqoT1sglvHc8ZdQtPcwmvvt29WLEEO3xmdZw=
-github.com/onsi/ginkgo/v2 v2.20.0/go.mod h1:lG9ey2Z29hR41WMVthyJBGUBcBhGOtoPF2VFMvBXFCI=
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
-github.com/onsi/gomega v1.34.1/go.mod h1:kU1QgUvBDLXBJq618Xvm2LUX6rSAfRaFRTcdOeDLwwY=
 github.com/panjf2000/ants/v2 v2.9.0 h1:SztCLkVxBRigbg+vt0S5QvF5vxAbxbKt09/YfAJ0tEo=
 github.com/panjf2000/gnet/v2 v2.5.2 h1:ctslzTSO77beWighLbLL9zsO7wmh5pYkomuWctO9+MY=
 github.com/panjf2000/gnet/v2 v2.5.2/go.mod h1:cm9AIICvZSrQllpQG5u5st56VMJCAWbB9/qdNKlrpKM=

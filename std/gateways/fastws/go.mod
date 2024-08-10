@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/gateways/fastws
 go 1.20
 
 require (
-	github.com/clubpay/ronykit/kit v0.17.3
+	github.com/clubpay/ronykit/kit v0.17.4
 	github.com/gobwas/ws v1.4.0
 	github.com/panjf2000/gnet/v2 v2.5.2
 )
@@ -15,8 +15,6 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/onsi/ginkgo/v2 v2.20.0 // indirect
-	github.com/onsi/gomega v1.34.1 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
