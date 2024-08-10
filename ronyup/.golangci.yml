@@ -21,7 +21,6 @@ linters:
     - depguard
     - perfsprint
     - mnd
-    - execinquery
     - forbidigo
     - gosec
     - errcheck
