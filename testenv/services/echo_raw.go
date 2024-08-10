@@ -16,8 +16,8 @@ var EchoRawService kit.ServiceBuilder = desc.NewService("EchoRawService").
 		desc.NewContract().
 			SetInput(&kit.RawMessage{}).
 			SetOutput(&kit.RawMessage{}).
-			Selector(fastws.RPC("echo")).
-			Selector(fasthttp.GET("/echo")).
+			AddRoute(desc.Route("", fastws.RPC("echo"))).
+			AddRoute(desc.Route("", fasthttp.GET("/echo"))).
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {

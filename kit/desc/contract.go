@@ -22,8 +22,22 @@ func RequiredHeader(name string) Header {
 }
 
 type RouteSelector struct {
-	Name     string
-	Selector kit.RouteSelector
+	Name       string
+	Selector   kit.RouteSelector
+	Deprecated bool
+}
+
+func (rs RouteSelector) Deprecate() RouteSelector {
+	rs.Deprecated = true
+
+	return rs
+}
+
+func Route(name string, selector kit.RouteSelector) RouteSelector {
+	return RouteSelector{
+		Name:     name,
+		Selector: selector,
+	}
 }
 
 // Contract is the description of the kit.Contract you are going to create.
@@ -111,8 +125,21 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 	return c
 }
 
-// AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle specific.
+func (c *Contract) AddRoute(r ...RouteSelector) *Contract {
+	c.RouteSelectors = append(c.RouteSelectors, r...)
+
+	return c
+}
+
+// AddSelector adds a kit.RouteSelector for this contract. Selectors are bundle-specific.
+// Deprecated: use AddRoute instead
 func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
+	return c.Selector(s...)
+}
+
+// Selector is an alias for AddSelector
+// Deprecated: use AddRoute instead
+func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
 	for idx := range s {
 		c.RouteSelectors = append(
 			c.RouteSelectors,
@@ -123,26 +150,23 @@ func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
 	return c
 }
 
-// Selector is an alias for AddSelector
-func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
-	return c.AddSelector(s...)
+// AddNamedSelector adds a kit.RouteSelector for this contract, and assigns it a unique name.
+// In case you need to use auto-generated stub.Stub for your service/contract, this name will
+// be used in the generated code.
+// Deprecated: use AddRoute instead
+func (c *Contract) AddNamedSelector(name string, s kit.RouteSelector) *Contract {
+	return c.NamedSelector(name, s)
 }
 
-// AddNamedSelector adds a kit.RouteSelector for this contract, and assigns it a unique name.
-// In case you need to use auto-generated stub.Stub for your service/contract this name will
-// be used in the generated code.
-func (c *Contract) AddNamedSelector(name string, s kit.RouteSelector) *Contract {
+// NamedSelector is an alias for AddNamedSelector
+// Deprecated: use AddRoute instead
+func (c *Contract) NamedSelector(name string, s kit.RouteSelector) *Contract {
 	c.RouteSelectors = append(c.RouteSelectors, RouteSelector{
 		Name:     name,
 		Selector: s,
 	})
 
 	return c
-}
-
-// NamedSelector is an alias for AddNamedSelector
-func (c *Contract) NamedSelector(name string, s kit.RouteSelector) *Contract {
-	return c.AddNamedSelector(name, s)
 }
 
 // SetCoordinator sets a kit.EdgeSelectorFunc for this contract, to coordinate requests to

@@ -32,8 +32,8 @@ var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 		desc.NewContract().
 			SetInput(&EchoRequest{}).
 			SetOutput(&EchoResponse{}).
-			Selector(fastws.RPC("echo")).
-			Selector(fasthttp.GET("/echo/{xp}")).
+			AddRoute(desc.Route("", fastws.RPC("echo"))).
+			AddRoute(desc.Route("", fasthttp.GET("/echo/{xp}"))).
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {

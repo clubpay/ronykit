@@ -62,8 +62,8 @@ var _ = Describe("DescParser", func() {
 		AddContract(
 			desc.NewContract().
 				SetName("c1").
-				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
-				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+				AddRoute(desc.Route("s2", newREST(kit.JSON, "/path2", "POST"))).
 				In(&NestedMessage{}).
 				Out(&FlatMessage{}),
 		)
@@ -188,8 +188,8 @@ var _ = Describe("ParseMessage.JSON()", func() {
 					desc.OptionalHeader("optionalHdr1"),
 				).
 				SetName("c1").
-				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
-				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+				AddRoute(desc.Route("s2", newREST(kit.JSON, "/path2", "POST"))).
 				In(&NestedMessage{}).
 				Out(&FlatMessage{}),
 		)
@@ -212,14 +212,14 @@ var _ = Describe("RawMessage and MultipartForm", func() {
 		AddContract(
 			desc.NewContract().
 				SetName("rawRequest").
-				NamedSelector("s1", newREST(kit.JSON, "/raw1", "POST")).
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/raw1", "POST"))).
 				In(kit.RawMessage{}).
 				Out(kit.RawMessage{}),
 		).
 		AddContract(
 			desc.NewContract().
 				SetName("multipartFormRequest").
-				NamedSelector("s2", newREST(kit.JSON, "/multipart/form", "POST")).
+				AddRoute(desc.Route("s2", newREST(kit.JSON, "/multipart/form", "POST"))).
 				In(kit.MultipartFormMessage{}).
 				Out(kit.RawMessage{}),
 		)

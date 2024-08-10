@@ -56,7 +56,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 			SetCoordinator(keyValueCoordinator).
 			SetInput(&GetRequest{}).
 			SetOutput(&KeyValue{}).
-			Selector(fasthttp.GET("/get-key/{key}")).
+			AddRoute(desc.Route("", fasthttp.GET("/get-key/{key}"))).
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {

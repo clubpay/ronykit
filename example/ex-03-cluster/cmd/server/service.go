@@ -26,13 +26,13 @@ var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetCoordinator(coordinator).
 				SetInput(&dto.SetKeyRequest{}).
 				SetOutput(&dto.SetKeyResponse{}).
-				AddSelector(fasthttp.POST("/set")).
+				AddRoute(desc.Route("", fasthttp.POST("/set"))).
 				SetHandler(SetKeyHandler),
 			desc.NewContract().
 				SetCoordinator(coordinator).
 				SetInput(&dto.GetKeyRequest{}).
 				SetOutput(&dto.Key{}).
-				AddSelector(fasthttp.GET("/get/:key")).
+				AddRoute(desc.Route("", fasthttp.GET("/get/:key"))).
 				SetHandler(GetKeyHandler),
 		)
 }

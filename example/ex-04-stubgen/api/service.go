@@ -18,9 +18,9 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.VeryComplexRequest{}).
 				SetOutput(&dto.VeryComplexResponse{}).
-				NamedSelector("ComplexDummy", fasthttp.POST("/complexDummy")).
-				NamedSelector("ComplexDummy2", fasthttp.POST("/complexDummy/:key1")).
-				NamedSelector("ComplexDummy3", fasthttp.RPC("complexDummy")).
+				AddRoute(desc.Route("ComplexDummy", fasthttp.POST("/complexDummy"))).
+				AddRoute(desc.Route("ComplexDummy2", fasthttp.POST("/complexDummy/:key1"))).
+				AddRoute(desc.Route("ComplexDummy3", fasthttp.RPC("complexDummy"))).
 				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
@@ -30,8 +30,8 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.VeryComplexRequest{}).
 				SetOutput(&dto.VeryComplexResponse{}).
-				NamedSelector("GetComplexDummy", fasthttp.GET("/complexDummy/:key1/xs/:sKey1")).
-				NamedSelector("GetComplexDummy2", fasthttp.RPC("getComplexDummy")).
+				AddRoute(desc.Route("GetComplexDummy", fasthttp.GET("/complexDummy/:key1/xs/:sKey1"))).
+				AddRoute(desc.Route("GetComplexDummy2", fasthttp.RPC("getComplexDummy"))).
 				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).

@@ -333,7 +333,7 @@ var _ = Describe("EdgeServer/Simple", func() {
 					desc.NewContract().
 						SetInput(&kit.RawMessage{}).
 						SetOutput(&kit.RawMessage{}).
-						AddSelector(testSelector{}).
+						AddRoute(desc.Route("", testSelector{})).
 						AddHandler(
 							func(ctx *kit.Context) {
 								ctx.Out().
@@ -379,7 +379,7 @@ var _ = Describe("EdgeServer/GlobalHandlers", func() {
 					desc.NewContract().
 						SetInput(&kit.RawMessage{}).
 						SetOutput(&kit.RawMessage{}).
-						AddSelector(testSelector{}).
+						AddRoute(desc.Route("", testSelector{})).
 						AddHandler(
 							func(ctx *kit.Context) {
 								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage)) //nolint:forcetypeassert
@@ -443,7 +443,7 @@ var _ = Describe("EdgeServer/Cluster", func() {
 						desc.NewContract().
 							SetInput(kit.RawMessage{}).
 							SetOutput(kit.RawMessage{}).
-							AddSelector(testSelector{}).
+							AddRoute(desc.Route("", testSelector{})).
 							SetCoordinator(
 								func(ctx *kit.LimitedContext) (string, error) {
 									members, err := ctx.ClusterMembers()
@@ -511,7 +511,7 @@ func BenchmarkServer(b *testing.B) {
 			desc.NewService("testService").
 				AddContract(
 					desc.NewContract().
-						AddSelector(testSelector{}).
+						AddRoute(desc.Route("", testSelector{})).
 						AddHandler(
 							func(ctx *kit.Context) {
 								ctx.Out().

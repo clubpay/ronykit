@@ -18,9 +18,9 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.EchoRequest{}).
 				SetOutput(&dto.EchoResponse{}).
-				NamedSelector("EchoGET", fasthttp.REST(http.MethodGet, "/echo/:randomID")).
-				NamedSelector("EchoPOST", fasthttp.REST(http.MethodPost, "/echo-post")).
-				NamedSelector("EchoRPC", fasthttp.RPC("echoRequest")).
+				AddRoute(desc.Route("EchoGET", fasthttp.REST(http.MethodGet, "/echo/:randomID"))).
+				AddRoute(desc.Route("EchoPOST", fasthttp.REST(http.MethodPost, "/echo-post"))).
+				AddRoute(desc.Route("EchoRPC", fasthttp.RPC("echoRequest"))).
 				AddModifier(func(envelope *kit.Envelope) {
 					envelope.SetHdr("X-Custom-Header", "justForTestingModifier")
 				}).
@@ -31,37 +31,37 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 				SetName("Sum").
 				SetInput(&dto.SumRequest{}).
 				SetOutput(&dto.SumResponse{}).
-				NamedSelector("Sum1", fasthttp.REST(http.MethodGet, "/sum/:val1/:val2")).
-				NamedSelector("Sum2", fasthttp.REST(http.MethodPost, "/sum")).
+				AddRoute(desc.Route("Sum1", fasthttp.REST(http.MethodGet, "/sum/:val1/:val2"))).
+				AddRoute(desc.Route("Sum2", fasthttp.REST(http.MethodPost, "/sum"))).
 				SetHandler(SumHandler),
 		).
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.SumRequest{}).
 				SetOutput(&dto.SumResponse{}).
-				NamedSelector("SumRedirect", fasthttp.REST(http.MethodGet, "/sum-redirect/:val1/:val2")).
-				Selector(fasthttp.REST(http.MethodPost, "/sum-redirect")).
+				AddRoute(desc.Route("SumRedirect", fasthttp.REST(http.MethodGet, "/sum-redirect/:val1/:val2"))).
+				AddRoute(desc.Route("", fasthttp.REST(http.MethodPost, "/sum-redirect"))).
 				SetHandler(SumRedirectHandler),
 		).
 		AddContract(
 			desc.NewContract().
 				SetInput(&dto.RedirectRequest{}).
-				Selector(fasthttp.REST(http.MethodGet, "/redirect")).
+				AddRoute(desc.Route("", fasthttp.REST(http.MethodGet, "/redirect"))).
 				SetHandler(Redirect),
 		).
 		AddContract(
 			desc.NewContract().
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
-				Selector(fasthttp.REST(http.MethodPost, "/raw_echo")).
-				Selector(fasthttp.RPC("rawEcho")).
+				AddRoute(desc.Route("", fasthttp.REST(http.MethodPost, "/raw_echo"))).
+				AddRoute(desc.Route("", fasthttp.RPC("rawEcho"))).
 				SetHandler(RawEchoHandler),
 		).
 		AddContract(
 			desc.NewContract().
 				SetInput(kit.MultipartFormMessage{}).
 				SetOutput(kit.RawMessage{}).
-				NamedSelector("Upload", fasthttp.REST(http.MethodPost, "/upload")).
+				AddRoute(desc.Route("Upload", fasthttp.REST(http.MethodPost, "/upload"))).
 				SetHandler(UploadHandler),
 		)
 }

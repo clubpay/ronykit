@@ -74,7 +74,7 @@ var _ = Describe("GolangGenerator", func() {
 				AddContract(
 					desc.NewContract().
 						SetName("c1").
-						AddNamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
+						AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
 						SetInput(&ComplexRequest{}).
 						SetOutput(&ComplexResponse{}).
 						SetHandler(nil),

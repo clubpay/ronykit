@@ -10,40 +10,48 @@ import (
 	"text/template"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
-	"github.com/jessevdk/go-flags"
 	"github.com/spf13/cobra"
 )
 
-type Options struct {
-	DestinationDir string            `short:"d" long:"dst" default:"." description:"destination directory for the setup"`
-	Force          bool              `short:"f" long:"force" description:"clean destination directory before setup"`
-	ModulePath     string            `short:"m" long:"module" description:"module path"`
-	ProjectName    string            `short:"p" long:"project" description:"project name"`
-	Template       string            `short:"t" long:"template" default:"rony" description:"possible values: rony | kit"`
-	Custom         map[string]string `short:"c" long:"custom" description:"custom values for the template"`
+var opt = struct {
+	DestinationDir string
+	Force          bool
+	ModulePath     string
+	ProjectName    string
+	Template       string
+	Custom         map[string]string
+}{}
+
+func init() {
+	flagSet := Cmd.Flags()
+	flagSet.StringVarP(&opt.DestinationDir, "dst", "d", ".", "destination directory for the setup")
+	flagSet.BoolVarP(&opt.Force, "force", "f", false, "clean destination directory before setup")
+	flagSet.StringVarP(&opt.ModulePath, "module", "m", "github.com/your/repo", "module path")
+	flagSet.StringVarP(&opt.ProjectName, "project", "p", "MyProject", "project name")
+	flagSet.StringVarP(&opt.Template, "template", "t", "", "possible values: rony | kit")
+	flagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
 }
 
 var Cmd = &cobra.Command{
 	Use:                "setup",
 	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var opt Options
-		_, err := flags.ParseArgs(&opt, os.Args)
+		err := cmd.ParseFlags(args)
 		if err != nil {
 			return err
 		}
 
-		err = createDestination(opt)
+		err = createDestination()
 		if err != nil {
 			return err
 		}
 
-		err = copyTemplate(opt)
+		err = copyTemplate()
 		if err != nil {
 			return err
 		}
 
-		err = initGo(opt)
+		err = initGo()
 		if err != nil {
 			return err
 		}
@@ -52,27 +60,27 @@ var Cmd = &cobra.Command{
 	},
 }
 
-func createDestination(opt Options) error {
+func createDestination() error {
 	// get the absolute path to the output directory
 	dstPath, err := filepath.Abs(opt.DestinationDir)
 	if err != nil {
 		return err
 	}
 
-	_ = os.MkdirAll(dstPath, 0755)
+	_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck
 	if !isEmptyDir(dstPath) {
 		if !opt.Force {
 			return fmt.Errorf("%s directory is not empty, use -f to force", dstPath)
 		}
 
-		_ = os.RemoveAll(dstPath)
+		_ = os.RemoveAll(dstPath)      //nolint:errcheck
+		_ = os.MkdirAll(dstPath, 0755) //nolint:errcheck
 	}
-	_ = os.MkdirAll(dstPath, 0755)
 
 	return nil
 }
 
-func copyTemplate(opt Options) error {
+func copyTemplate() error {
 	return fs.WalkDir(
 		internal.Skeleton,
 		fmt.Sprintf("skeleton/%s", opt.Template),
@@ -121,7 +129,7 @@ func copyTemplate(opt Options) error {
 	)
 }
 
-func initGo(opt Options) error {
+func initGo() error {
 	fmt.Println("Initializing go module", opt.ModulePath)
 	cmd := exec.Command("go", "mod", "init", opt.ModulePath)
 	cmd.Dir = opt.DestinationDir

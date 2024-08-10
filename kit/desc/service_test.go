@@ -17,8 +17,8 @@ var _ = Describe("Service - 1", func() {
 			desc.NewContract().
 				SetName("c1").
 				SetEncoding(kit.MSG).
-				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
-				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+				AddRoute(desc.Route("s2", newREST(kit.JSON, "/path2", "POST"))).
 				In(&NestedMessage{}).
 				Out(&FlatMessage{}).
 				SetHandler(func(ctx *kit.Context) {}),
@@ -45,8 +45,8 @@ var _ = Describe("Service - 2", func() {
 			desc.NewContract().
 				SetName("c1").
 				AddError(&testError{code: 401, item: "SOME_ANOTHER_BUG"}).
-				NamedSelector("s1", newREST(kit.JSON, "/path1", "GET")).
-				NamedSelector("s2", newREST(kit.JSON, "/path2", "POST")).
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+				AddRoute(desc.Route("s2", newREST(kit.JSON, "/path2", "POST"))).
 				In(&NestedMessage{}).
 				Out(&FlatMessage{}).
 				SetHandler(func(ctx *kit.Context) {}),

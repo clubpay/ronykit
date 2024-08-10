@@ -62,7 +62,7 @@ type destructInput struct {
 	indexes []int
 }
 
-func destruct(mType reflect.Type, tags ...string) *Reflected {
+func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 	r := &Reflected{
 		obj:   Fields{},
 		byTag: map[string]Fields{},

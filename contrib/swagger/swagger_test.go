@@ -79,10 +79,7 @@ func (t testService) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetName("sumGET").
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodGet,
-					Path:   "/some/:x/:y",
-				}).
+				AddRoute(desc.Route("", fasthttp.GET("/some/:x/:y"))).
 				SetInput(&sampleReq{}).
 				SetOutput(&sampleRes{}).
 				AddError(&sampleError{404, "ITEM1"}).
@@ -92,10 +89,7 @@ func (t testService) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetName("sumPOST").
-				AddSelector(fasthttp.Selector{
-					Method: fasthttp.MethodPost,
-					Path:   "/some/:x/:y",
-				}).
+				AddRoute(desc.Route("", fasthttp.POST("/some/:x/:y"))).
 				SetInput(&sampleReq{}).
 				SetOutput(&anotherRes{}).
 				SetHandler(nil),
@@ -103,7 +97,7 @@ func (t testService) Desc() *desc.Service {
 		AddContract(
 			desc.NewContract().
 				SetName("sumPOST2").
-				AddSelector(fasthttp.POST("/some/something-else")).
+				AddRoute(desc.Route("", fasthttp.POST("/some/something-else"))).
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
 				SetHandler(nil),
