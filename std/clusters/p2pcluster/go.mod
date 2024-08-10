@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/std/clusters/p2pcluster
 go 1.21
 
 require (
-	github.com/clubpay/ronykit/kit v0.17.4
+	github.com/clubpay/ronykit/kit v0.17.5
 	github.com/libp2p/go-libp2p v0.35.4
 	github.com/libp2p/go-libp2p-pubsub v0.11.0
 )
