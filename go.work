@@ -1,6 +1,4 @@
-go 1.22.3
-
-toolchain go1.22.5
+go 1.22.5
 
 use (
 	./async
@@ -13,6 +11,7 @@ use (
 	./example/ex-06-counter-stream
 	./example/ex-08-echo
 	./example/ex-09-mw
+	./example/ex-10-async
 	./kit
 	./rony
 	./ronyup

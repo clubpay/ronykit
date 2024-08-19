@@ -44,6 +44,7 @@ type bundle struct {
 	reverseProxy     *proxy.ReverseProxy
 	httpRouter       *router.Router
 	compress         CompressionLevel
+	autoDecompress   bool
 
 	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*routeData
@@ -204,7 +205,17 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 		c.ctx = ctx
 		c.rd = &rd
 		b.d.OnOpen(c)
-		b.d.OnMessage(c, ctx.PostBody())
+		if b.autoDecompress {
+			body, err := ctx.Request.BodyUncompressed()
+			if err != nil {
+				b.l.Errorf("could not uncompress the body: %v", err)
+			} else {
+				b.d.OnMessage(c, body)
+			}
+		} else {
+			b.d.OnMessage(c, ctx.PostBody())
+		}
+
 		b.d.OnClose(c.ConnID())
 
 		b.connPool.Put(c)

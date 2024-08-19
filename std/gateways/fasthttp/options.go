@@ -113,8 +113,18 @@ const (
 	CompressionLevelBestCompression CompressionLevel = 2
 )
 
+// WithCompressionLevel will enable compressing response body based on the Accept-Encoding header
+// of the client request
 func WithCompressionLevel(level CompressionLevel) Option {
 	return func(b *bundle) {
 		b.compress = level
+	}
+}
+
+// WithAutoDecompressRequests if set TRUE, it automatically decompresses the request body based on the
+// Content-Encoding header.
+func WithAutoDecompressRequests(t bool) Option {
+	return func(b *bundle) {
+		b.autoDecompress = t
 	}
 }

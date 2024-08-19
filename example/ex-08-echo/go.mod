@@ -12,7 +12,7 @@ require (
 	github.com/clubpay/ronykit/contrib v0.17.4 // indirect
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.4 // indirect
 	github.com/clubpay/ronykit/stub v0.17.4 // indirect
-	github.com/fasthttp/router v1.5.1 // indirect
+	github.com/fasthttp/router v1.5.2 // indirect
 	github.com/fasthttp/websocket v1.5.10 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
@@ -31,6 +31,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
+	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
