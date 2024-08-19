@@ -1,7 +1,6 @@
 package stub
 
 import (
-	"compress/flate"
 	"context"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
-	"github.com/klauspost/compress/gzip"
 	"github.com/valyala/fasthttp"
 )
 
@@ -144,16 +142,12 @@ func (hc *RESTCtx) SetBody(body []byte) *RESTCtx {
 	return hc
 }
 
-func (hc *RESTCtx) SetGunZipBody(body []byte) *RESTCtx {
-	w := gzip.NewWriter(hc.req.BodyWriter())
-	_, err := w.Write(body)
-	if err != nil {
-		hc.err = WrapError(err)
+func (hc *RESTCtx) GetBodyWriter() io.Writer {
+	return hc.req.BodyWriter()
+}
 
-		return hc
-	}
-
-	err = w.Flush()
+func (hc *RESTCtx) SetGZipBody(body []byte) *RESTCtx {
+	_, err := fasthttp.WriteGzip(hc.req.BodyWriter(), body)
 	if err != nil {
 		hc.err = WrapError(err)
 
@@ -166,20 +160,7 @@ func (hc *RESTCtx) SetGunZipBody(body []byte) *RESTCtx {
 }
 
 func (hc *RESTCtx) SetDeflateBody(body []byte) *RESTCtx {
-	w, err := flate.NewWriter(hc.req.BodyWriter(), flate.BestCompression)
-	if err != nil {
-		hc.err = WrapError(err)
-
-		return hc
-	}
-	_, err = w.Write(body)
-	if err != nil {
-		hc.err = WrapError(err)
-
-		return hc
-	}
-
-	err = w.Flush()
+	_, err := fasthttp.WriteDeflate(hc.req.BodyWriter(), body)
 	if err != nil {
 		hc.err = WrapError(err)
 
