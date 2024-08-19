@@ -1,6 +1,7 @@
 package stub
 
 import (
+	"compress/flate"
 	"context"
 	"fmt"
 	"io"
@@ -159,8 +160,44 @@ func (hc *RESTCtx) SetGZipBody(body []byte) *RESTCtx {
 	return hc
 }
 
+type RequestCompressionLevel int
+
+const (
+	CompressNoCompression      RequestCompressionLevel = flate.NoCompression
+	CompressBestSpeed          RequestCompressionLevel = flate.BestSpeed
+	CompressBestCompression    RequestCompressionLevel = flate.BestCompression
+	CompressDefaultCompression RequestCompressionLevel = 6
+	CompressHuffmanOnly        RequestCompressionLevel = -2
+)
+
+func (hc *RESTCtx) SetGZipBodyWithLevel(body []byte, lvl RequestCompressionLevel) *RESTCtx {
+	_, err := fasthttp.WriteGzipLevel(hc.req.BodyWriter(), body, int(lvl))
+	if err != nil {
+		hc.err = WrapError(err)
+
+		return hc
+	}
+
+	hc.SetHeader(fasthttp.HeaderContentEncoding, "gzip")
+
+	return hc
+}
+
 func (hc *RESTCtx) SetDeflateBody(body []byte) *RESTCtx {
 	_, err := fasthttp.WriteDeflate(hc.req.BodyWriter(), body)
+	if err != nil {
+		hc.err = WrapError(err)
+
+		return hc
+	}
+
+	hc.SetHeader(fasthttp.HeaderContentEncoding, "deflate")
+
+	return hc
+}
+
+func (hc *RESTCtx) SetDeflateBodyWithLevel(body []byte, lvl RequestCompressionLevel) *RESTCtx {
+	_, err := fasthttp.WriteDeflateLevel(hc.req.BodyWriter(), body, int(lvl))
 	if err != nil {
 		hc.err = WrapError(err)
 
