@@ -206,7 +206,7 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 		c.rd = &rd
 		b.d.OnOpen(c)
 		if b.autoDecompress {
-			body, err := ctx.Request.BodyUncompressed()
+			body, err := c.getBodyUncompressed()
 			if err != nil {
 				b.l.Errorf("could not uncompress the body: %v", err)
 			} else {
@@ -218,6 +218,7 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 
 		b.d.OnClose(c.ConnID())
 
+		c.bb.Reset()
 		b.connPool.Put(c)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
+	"github.com/valyala/bytebufferpool"
 	"github.com/valyala/fasthttp"
 )
 
@@ -12,6 +13,7 @@ var strLocation = []byte(fasthttp.HeaderLocation)
 type httpConn struct {
 	utils.SpinLock
 
+	bb  bytebufferpool.ByteBuffer
 	ctx *fasthttp.RequestCtx
 	rd  *routeData
 }
@@ -122,4 +124,35 @@ func (c *httpConn) Redirect(statusCode int, url string) {
 	c.ctx.Response.Header.SetCanonical(strLocation, u.FullURI())
 	c.ctx.Response.SetStatusCode(statusCode)
 	fasthttp.ReleaseURI(u)
+}
+
+func (c *httpConn) getBodyUncompressed() ([]byte, error) {
+	switch string(c.ctx.Request.Header.ContentEncoding()) {
+	default:
+		return nil, fasthttp.ErrContentEncodingUnsupported
+	case "":
+		return c.ctx.PostBody(), nil
+	case "deflate":
+		_, err := fasthttp.WriteInflate(&c.bb, c.ctx.Request.Body())
+		if err != nil {
+			return nil, err
+		}
+	case "gzip":
+		_, err := fasthttp.WriteGunzip(&c.bb, c.ctx.Request.Body())
+		if err != nil {
+			return nil, err
+		}
+	case "br":
+		_, err := fasthttp.WriteUnbrotli(&c.bb, c.ctx.Request.Body())
+		if err != nil {
+			return nil, err
+		}
+	case "zstd":
+		_, err := fasthttp.WriteUnzstd(&c.bb, c.ctx.Request.Body())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return c.bb.B, nil
 }
