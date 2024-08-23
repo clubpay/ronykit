@@ -5,11 +5,11 @@ go 1.21
 toolchain go1.22.5
 
 require (
-	github.com/clubpay/ronykit/contrib v0.17.4
-	github.com/clubpay/ronykit/kit v0.17.4
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.4
-	github.com/clubpay/ronykit/std/gateways/fastws v0.17.4
-	github.com/clubpay/ronykit/stub v0.16.4
+	github.com/clubpay/ronykit/contrib v0.17.9
+	github.com/clubpay/ronykit/kit v0.17.9
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.9
+	github.com/clubpay/ronykit/std/gateways/fastws v0.17.9
+	github.com/clubpay/ronykit/stub v0.17.9
 )
 
 require (
@@ -39,7 +39,6 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect

@@ -163,7 +163,6 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 			return
 		}
 	}
-
 }
 
 func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {

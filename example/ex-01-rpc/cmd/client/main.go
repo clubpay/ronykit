@@ -52,5 +52,5 @@ func main() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, os.Interrupt)
 	<-ch
-	_ = wsCtx.Disconnect()
+	wsCtx.Disconnect()
 }
