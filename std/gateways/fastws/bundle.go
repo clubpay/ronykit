@@ -121,7 +121,8 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	go func() {
 		opts := []gnet.Option{
-			gnet.WithMulticore(true),
+			gnet.
+				gnet.WithMulticore(true),
 			gnet.WithReusePort(cfg.ReusePort),
 			gnet.WithReuseAddr(cfg.ReusePort),
 		}

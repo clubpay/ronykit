@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -124,8 +125,10 @@ func invokeEdgeServerFastHttp(_ string, port int, desc ...kit.ServiceBuilder) fx
 				),
 				kit.WithGateway(
 					fasthttp.MustNew(
-						fasthttp.WithDisableHeaderNamesNormalizing(),
 						fasthttp.Listen(fmt.Sprintf(":%d", port)),
+						fasthttp.WithWebsocketEndpoint("/agent/ws"),
+						fasthttp.WithPredicateKey("cmd"),
+						fasthttp.WithLogger(common.NewStdLogger()),
 					),
 				),
 				kit.WithServiceBuilder(desc...),
@@ -134,6 +137,7 @@ func invokeEdgeServerFastHttp(_ string, port int, desc ...kit.ServiceBuilder) fx
 			lc.Append(
 				fx.Hook{
 					OnStart: func(ctx context.Context) error {
+						edge.PrintRoutesCompact(os.Stdout)
 						edge.Start(ctx)
 
 						return nil
@@ -288,4 +292,14 @@ func Prepare(t *testing.T, c C, option ...fx.Option) {
 	opts = append(opts, option...)
 
 	c.Reset(fxtest.New(t, opts...).RequireStart().RequireStop)
+}
+
+type kitLogger struct{}
+
+func (k kitLogger) Debugf(format string, args ...any) {
+	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...))
+}
+
+func (k kitLogger) Errorf(format string, args ...any) {
+	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...))
 }

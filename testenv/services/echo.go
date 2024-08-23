@@ -33,6 +33,7 @@ var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 			SetInput(&EchoRequest{}).
 			SetOutput(&EchoResponse{}).
 			AddRoute(desc.Route("", fastws.RPC("echo"))).
+			AddRoute(desc.Route("", fasthttp.RPC("echo"))).
 			AddRoute(desc.Route("", fasthttp.GET("/echo/{xp}"))).
 			SetHandler(
 				contextMW(10*time.Second),

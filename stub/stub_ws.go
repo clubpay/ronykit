@@ -28,14 +28,15 @@ type WebsocketCtx struct {
 	r   *reflector.Reflector
 	l   kit.Logger
 
-	pendingMtx   sync.Mutex
-	pending      map[string]chan kit.IncomingRPCContainer
-	lastActivity uint32
-	disconnect   bool
+	pendingMtx     sync.Mutex
+	pending        map[string]chan kit.IncomingRPCContainer
+	lastActivity   uint32
+	disconnectChan chan struct{}
 
 	// fasthttp entities
 	url  string
 	cMtx sync.Mutex
+	wg   sync.WaitGroup
 	c    *websocket.Conn
 
 	// stats
@@ -86,6 +87,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	wCtx.readBytes = 0
 
 	// run receiver & watchdog in the background
+	wCtx.wg.Add(2)
 	go wCtx.receiver(c) //nolint:contextcheck
 	go wCtx.watchdog(c) //nolint:contextcheck
 
@@ -96,10 +98,15 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	return nil
 }
 
-func (wCtx *WebsocketCtx) Disconnect() error {
-	wCtx.disconnect = true
+func (wCtx *WebsocketCtx) Disconnect() {
+	wCtx.disconnectChan <- struct{}{}
+	wCtx.wg.Wait()
+}
 
-	return wCtx.c.Close()
+func (wCtx *WebsocketCtx) Reconnect(ctx context.Context) error {
+	wCtx.Disconnect()
+
+	return wCtx.connect(ctx)
 }
 
 func (wCtx *WebsocketCtx) setActivity() {
@@ -111,52 +118,57 @@ func (wCtx *WebsocketCtx) getActivity() int64 {
 }
 
 func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
+	defer wCtx.wg.Done()
+
 	wCtx.l.Debugf("watchdog started: %s", c.LocalAddr().String())
 
 	t := time.NewTicker(wCtx.cfg.pingTime)
 	d := int64(wCtx.cfg.pingTime/time.Second) * 2
-	for range t.C {
-		if wCtx.disconnect {
-			wCtx.l.Debugf("going to disconnect: %s", c.LocalAddr().String())
-
+	for {
+		select {
+		case <-wCtx.disconnectChan:
 			_ = c.Close()
 
 			return
-		}
 
-		if utils.TimeUnix()-wCtx.getActivity() <= d {
-			wCtx.cMtx.Lock()
-			err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
-			if err != nil {
-				wCtx.l.Errorf("failed to send ping: %v", err)
+		case <-t.C:
+			if utils.TimeUnix()-wCtx.getActivity() <= d {
+				wCtx.cMtx.Lock()
+				err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
+				if err != nil {
+					wCtx.l.Errorf("failed to send ping: %v", err)
+				}
+				wCtx.cMtx.Unlock()
+				wCtx.l.Debugf("websocket ping sent")
+
+				continue
 			}
-			wCtx.cMtx.Unlock()
-			wCtx.l.Debugf("websocket ping sent")
 
-			continue
-		}
+			if !wCtx.cfg.autoReconnect {
+				return
+			}
 
-		if !wCtx.cfg.autoReconnect {
+			wCtx.l.Errorf("inactivity detected, reconnecting: %s", c.LocalAddr().String())
+			_ = c.Close()
+
+			ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
+			err := wCtx.connect(ctx)
+			cf()
+			if err != nil {
+				wCtx.l.Errorf("failed to reconnect: %s", err)
+
+				continue
+			}
+
 			return
 		}
-
-		wCtx.l.Errorf("inactivity detected, reconnecting: %s", c.LocalAddr().String())
-		_ = c.Close()
-
-		ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
-		err := wCtx.connect(ctx)
-		cf()
-		if err != nil {
-			wCtx.l.Errorf("failed to reconnect: %s", err)
-
-			continue
-		}
-
-		return
 	}
+
 }
 
 func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
+	defer wCtx.wg.Done()
+
 	for {
 		_, p, err := c.ReadMessage()
 		if err != nil || len(p) == 0 {

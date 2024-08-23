@@ -22,7 +22,7 @@ func TestDecoder(t *testing.T) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
 			"Stub with Run":       stubWithRun,
 			"Stub with AutoRun 1": stubWithAutoRun1,
-			"Stub Wtih AutoRun 2": stubWithAutoRun2,
+			"Stub With AutoRun 2": stubWithAutoRun2,
 		}
 		for title, fn := range testCases {
 			Convey(title,
@@ -168,6 +168,76 @@ func stubWithAutoRun2(t *testing.T, opt fx.Option) func(c C) {
 			c.So(resp.Z, ShouldEqual, req.Z)
 			fmt.Println(string(resp.A), string(req.A))
 			c.So(resp.A, ShouldEqual, req.A)
+		}
+	}
+}
+
+func TestWebsocket(t *testing.T) {
+	Convey("Websocket", t, func(c C) {
+		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
+			"Websocket Stub [Connect, Reconnect, Disconnect]": stubWebsocket,
+		}
+		for title, fn := range testCases {
+			Convey(title+"FastHTTP",
+				fn(
+					t, invokeEdgeServerFastHttp("edge", 8082, services.EchoService),
+				),
+			)
+			Convey(title+":FastWS",
+				fn(
+					t, invokeEdgeServerWithFastWS(8082, services.EchoService),
+				),
+			)
+		}
+	})
+}
+
+func stubWebsocket(t *testing.T, opt fx.Option) func(c C) {
+	ctx := context.Background()
+
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		for range 200 {
+			X := utils.RandomID(10)
+			XP := utils.RandomID(10)
+
+			// Set Key to instance 1
+			resp := &services.EchoResponse{}
+			wsCtx := stub.New("127.0.0.1:8082").
+				Websocket(
+					stub.WithPredicateKey("cmd"),
+				)
+
+			err := wsCtx.Connect(ctx, "/agent/ws")
+			c.So(err, ShouldBeNil)
+
+			err = wsCtx.Reconnect(ctx)
+			c.So(err, ShouldBeNil)
+
+			err = wsCtx.TextMessage(
+				ctx, "echo",
+				&services.EchoRequest{
+					Embedded: services.Embedded{
+						X: X,
+					},
+					Input: XP,
+				},
+				resp,
+				func(ctx context.Context, msg kit.Message, hdr stub.Header, err error) {
+					c.So(err, ShouldBeNil)
+					c.So(resp.X, ShouldEqual, X)
+					c.So(resp.XP, ShouldEqual, XP)
+				},
+			)
+			c.So(err, ShouldBeNil)
+
+			wsCtx.Disconnect()
 		}
 	}
 }

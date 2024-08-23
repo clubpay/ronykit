@@ -154,9 +154,10 @@ func (s *Stub) Websocket(opts ...WebsocketOption) *WebsocketCtx {
 			dialerBuilder:   defaultDialerBuilder,
 			tracePropagator: s.cfg.tp,
 		},
-		r:       s.r,
-		l:       s.cfg.l,
-		pending: make(map[string]chan kit.IncomingRPCContainer, 1024),
+		r:              s.r,
+		l:              s.cfg.l,
+		pending:        make(map[string]chan kit.IncomingRPCContainer, 1024),
+		disconnectChan: make(chan struct{}, 1),
 	}
 
 	for _, o := range opts {
