@@ -5,11 +5,11 @@ go 1.21
 toolchain go1.22.5
 
 require (
-	github.com/clubpay/ronykit/contrib v0.17.9
-	github.com/clubpay/ronykit/kit v0.17.9
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.9
-	github.com/clubpay/ronykit/std/gateways/fastws v0.17.9
-	github.com/clubpay/ronykit/stub v0.17.9
+	github.com/clubpay/ronykit/contrib v0.17.10
+	github.com/clubpay/ronykit/kit v0.17.10
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.10
+	github.com/clubpay/ronykit/std/gateways/fastws v0.17.10
+	github.com/clubpay/ronykit/stub v0.17.10
 )
 
 require (
