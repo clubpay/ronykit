@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/stub/internal/tpl"
 )
 
 type Generator struct {
@@ -47,3 +48,7 @@ func (g *Generator) MustGenerate(desc ...desc.ServiceDesc) {
 		panic(err)
 	}
 }
+
+// AuxFunctions are a set of helper functions that could be used in
+// your template
+var AuxFunctions = tpl.FuncMaps

@@ -20,11 +20,11 @@ var (
 )
 
 func init() {
-	GoStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(goFileStub))
-	TSStub = template.Must(template.New("stub").Funcs(funcMaps).Parse(tsFileStub))
+	GoStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(goFileStub))
+	TSStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(tsFileStub))
 }
 
-var funcMaps = map[string]any{
+var FuncMaps = map[string]any{
 	"strQuote": func(elems []string) []string {
 		out := make([]string, len(elems))
 		for i, e := range elems {
