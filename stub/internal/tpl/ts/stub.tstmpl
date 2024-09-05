@@ -48,7 +48,9 @@ this.serverURL = serverURL.replace(/\/$/, '');
 		async {{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
 		{{- if eq (toLower .Method) "get" }}
 			const keys = Object.keys(req);
-			const keyValuePairs = keys.map(key => {
+			const keyValuePairs = keys
+				.filter((key) => (req as any)[key] !== undefined)
+				.map(key => {
 			return encodeURIComponent(key) + '=' + encodeURIComponent((req as any)[key]);
 			}).join('&');
 			const queryParams =  (keyValuePairs.length > 0) ? `?${keyValuePairs}`: ""

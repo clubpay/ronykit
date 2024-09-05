@@ -179,14 +179,10 @@ func TestWebsocket(t *testing.T) {
 		}
 		for title, fn := range testCases {
 			Convey(title+"FastHTTP",
-				fn(
-					t, invokeEdgeServerFastHttp("edge", 8082, services.EchoService),
-				),
+				fn(t, invokeEdgeServerFastHttp("edge", 8082, services.EchoService)),
 			)
 			Convey(title+":FastWS",
-				fn(
-					t, invokeEdgeServerWithFastWS(8082, services.EchoService),
-				),
+				fn(t, invokeEdgeServerWithFastWS(8082, services.EchoService)),
 			)
 		}
 	})
@@ -238,6 +234,57 @@ func stubWebsocket(t *testing.T, opt fx.Option) func(c C) {
 			c.So(err, ShouldBeNil)
 
 			wsCtx.Disconnect()
+		}
+	}
+}
+
+func TestHttp(t *testing.T) {
+	Convey("HTTP", t, func(c C) {
+		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
+			"Compressed": stubHttpCompressed,
+		}
+		for title, fn := range testCases {
+			Convey(title+"FastHTTP",
+				fn(t, invokeEdgeServerFastHttp("edge", 8082, services.EchoService)),
+			)
+		}
+	})
+}
+
+func stubHttpCompressed(t *testing.T, opt fx.Option) func(c C) {
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		for range 200 {
+			X := utils.RandomID(10)
+			XP := utils.RandomID(10)
+			s := stub.New("127.0.0.1:8082")
+
+			err := s.REST().
+				SetDeflateBody(
+					utils.Ok(json.Marshal(&services.EchoRequest{
+						Embedded: services.Embedded{
+							X: X,
+						},
+						Input: XP,
+					})),
+				).
+				DefaultResponseHandler(func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+					resp := &services.EchoResponse{}
+					err := json.Unmarshal(r.GetBody(), resp)
+					c.So(err, ShouldBeNil)
+					c.So(resp.X, ShouldEqual, X)
+					c.So(resp.XP, ShouldEqual, XP)
+
+					return nil
+				}).
+				Error()
+			c.So(err, ShouldBeNil)
 		}
 	}
 }

@@ -35,7 +35,7 @@ linters-settings:
     max-complexity: 15
   depguard:
     rules:
-      whilelist:
+      whitelist:
         list-mode: lax
         files:
           - $all
