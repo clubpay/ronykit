@@ -18,6 +18,9 @@ type genConfig struct {
 	outputDir     string
 	fileExtension string
 	tags          []string
+	// extraOptions are key-values that could be injected to the template for customized
+	// outputs.
+	extraOptions map[string]string
 }
 
 var defaultConfig = genConfig{
@@ -60,5 +63,11 @@ func WithTags(tags ...string) Option {
 func WithStubName(name string) Option {
 	return func(c *genConfig) {
 		c.stubName = name
+	}
+}
+
+func WithExtraOptions(opt map[string]string) Option {
+	return func(c *genConfig) {
+		c.extraOptions = opt
 	}
 }

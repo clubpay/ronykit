@@ -1,6 +1,7 @@
 package stubgen_test
 
 import (
+	"fmt"
 	"go/format"
 	"testing"
 
@@ -88,5 +89,31 @@ var _ = Describe("GolangGenerator", func() {
 		formattedCode, err := format.Source([]byte(code))
 		Expect(err).To(BeNil())
 		_ = formattedCode
+	})
+})
+
+var _ = Describe("TypeScriptGenerator", func() {
+	It("generate dto code in typescript (no comment)", func() {
+		svc := desc.ServiceDescFunc(func() *desc.Service {
+			return desc.NewService("testService").
+				AddContract(
+					desc.NewContract().
+						SetName("c1").
+						AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+						SetInput(&ComplexRequest{}).
+						SetOutput(&ComplexResponse{}).
+						SetHandler(nil),
+				)
+		})
+
+		in := stubgen.NewInput("test", "test", svc)
+		in.AddTags("json")
+		in.AddExtraOptions(map[string]string{
+			"withHook": "yes",
+		})
+
+		code, err := stubgen.TypeScriptStub(in)
+		Expect(err).To(BeNil())
+		fmt.Println(string(code))
 	})
 })

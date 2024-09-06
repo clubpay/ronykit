@@ -28,6 +28,8 @@ func New(opt ...Option) *Generator {
 func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	in := NewInput(g.cfg.stubName, g.cfg.pkgName, descs...)
 	in.AddTags(g.cfg.tags...)
+	in.AddExtraOptions(g.cfg.extraOptions)
+
 	rawContent, err := g.cfg.genFunc(in)
 	if err != nil {
 		return err

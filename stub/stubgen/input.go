@@ -7,18 +7,20 @@ import (
 )
 
 type Input struct {
-	tags        []string
-	restMethods []RESTMethod
-	rpcMethods  []RPCMethod
-	messages    map[string]desc.ParsedMessage
-	name        string
-	pkg         string
+	tags         []string
+	restMethods  []RESTMethod
+	rpcMethods   []RPCMethod
+	messages     map[string]desc.ParsedMessage
+	name         string
+	pkg          string
+	extraOptions map[string]string
 }
 
 func NewInput(name, pkg string, descs ...desc.ServiceDesc) *Input {
 	in := &Input{
-		pkg:  pkg,
-		name: name,
+		pkg:          pkg,
+		name:         name,
+		extraOptions: map[string]string{},
 	}
 	for _, serviceDesc := range descs {
 		ps := desc.Parse(serviceDesc)
@@ -93,6 +95,22 @@ func (in *Input) AddMessage(msg ...desc.ParsedMessage) {
 	for _, m := range msg {
 		in.messages[m.Name] = m
 	}
+}
+
+func (in *Input) AddExtraOptions(opt map[string]string) {
+	if opt == nil {
+		return
+	}
+
+	in.extraOptions = opt
+}
+
+func (in *Input) ExtraOptions() map[string]string {
+	return in.extraOptions
+}
+
+func (in *Input) GetOption(name string) string {
+	return in.extraOptions[name]
 }
 
 // RESTMethod represents the description of a Contract with kit.RESTRouteSelector.
