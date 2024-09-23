@@ -2,6 +2,7 @@ package rony
 
 import (
 	"context"
+	"io"
 	"os"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
@@ -63,6 +64,10 @@ func (s *Server) Start(ctx context.Context) error {
 
 func (s *Server) Stop(ctx context.Context, signals ...os.Signal) {
 	s.edge.Shutdown(ctx, signals...)
+}
+
+func (s *Server) PrintRoutes(w io.Writer) {
+	s.edge.PrintRoutes(w)
 }
 
 // Run the service in blocking mode. If you need more control over the
