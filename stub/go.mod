@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/stub
 go 1.19
 
 require (
-	github.com/clubpay/ronykit/kit v0.17.12
+	github.com/clubpay/ronykit/kit v0.17.13
 	github.com/fasthttp/websocket v1.5.10
 	github.com/onsi/ginkgo/v2 v2.20.0
 	github.com/onsi/gomega v1.34.1
@@ -19,9 +19,8 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.6.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
