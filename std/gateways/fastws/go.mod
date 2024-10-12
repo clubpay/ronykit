@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/clubpay/ronykit/kit v0.17.12
 	github.com/gobwas/ws v1.4.0
-	github.com/panjf2000/gnet/v2 v2.5.7
+	github.com/panjf2000/gnet/v2 v2.5.9
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
