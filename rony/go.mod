@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/rony
 go 1.22
 
 require (
-	github.com/clubpay/ronykit/contrib v0.17.13
-	github.com/clubpay/ronykit/kit v0.17.13
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.13
-	github.com/clubpay/ronykit/stub v0.17.13
+	github.com/clubpay/ronykit/contrib v0.17.14
+	github.com/clubpay/ronykit/kit v0.17.14
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.14
+	github.com/clubpay/ronykit/stub v0.17.14
 )
 
 require (
@@ -19,7 +19,7 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.6.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -28,9 +28,9 @@ require (
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.55.0 // indirect
+	github.com/valyala/fasthttp v1.56.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
