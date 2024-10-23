@@ -22,6 +22,9 @@ var (
 
 func (w *wsConn) Close() {
 	w.Lock()
+	if w.c != nil {
+		_ = w.c.Close()
+	}
 	w.c = nil
 	w.Unlock()
 }

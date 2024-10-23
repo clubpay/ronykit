@@ -124,7 +124,7 @@ func WithUnary[S State[A], A Action, IN, OUT Message](
 	}
 }
 
-// WithStream is a SetupOption to set up stream handler.
+// WithStream is a SetupOption to set up a stream handler.
 // Possible options are:
 // - RPC: to set up RPC handler
 func WithStream[S State[A], A Action, IN, OUT Message](

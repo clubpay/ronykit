@@ -286,3 +286,5 @@ func (wsc *wsConn) Set(key string, val string) {
 	wsc.kv[key] = val
 	wsc.Unlock()
 }
+
+func (wsc *wsConn) Close() {}

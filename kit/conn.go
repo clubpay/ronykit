@@ -31,4 +31,5 @@ type RESTConn interface {
 type RPCConn interface {
 	Conn
 	io.Writer
+	Close()
 }
