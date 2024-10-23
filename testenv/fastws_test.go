@@ -18,10 +18,10 @@ import (
 func TestFastWS(t *testing.T) {
 	Convey("Kit with FastWS", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			//"Edge Server With Huge Websocket Payload": fastwsWithHugePayload,
-			//"Edge Server With Ping and Small Payload": fastwsWithPingAndSmallPayload,
-			//"Edge Server With Ping Only":              fastwsWithPingOnly,
-			"Edge Server With Close": fastwsWithClose,
+			"Edge Server With Huge Websocket Payload": fastwsWithHugePayload,
+			"Edge Server With Ping and Small Payload": fastwsWithPingAndSmallPayload,
+			"Edge Server With Ping Only":              fastwsWithPingOnly,
+			"Edge Server With Close":                  fastwsWithClose,
 		}
 		for title, fn := range testCases {
 			Convey(title,
