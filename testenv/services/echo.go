@@ -27,6 +27,14 @@ type Embedded struct {
 	A  []byte  `json:"a"`
 }
 
+type CloseRequest struct {
+	Close bool `json:"close"`
+}
+
+type CloseResponse struct {
+	Close bool `json:"close"`
+}
+
 var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 	AddContract(
 		desc.NewContract().
@@ -49,4 +57,26 @@ var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 						).
 						Send()
 				}),
-	)
+	).
+	AddContract(
+		desc.NewContract().
+			SetInput(&CloseRequest{}).
+			SetOutput(&CloseResponse{}).
+			AddRoute(desc.Route("", fastws.RPC("close"))).
+			AddRoute(desc.Route("", fasthttp.RPC("close"))).
+			SetHandler(
+				contextMW(10*time.Second),
+				func(ctx *kit.Context) {
+					conn, ok := ctx.Conn().(kit.RPCConn)
+					if ok {
+						conn.Close()
+					}
+
+					ctx.Out().
+						SetMsg(
+							&CloseResponse{
+								Close: ok,
+							},
+						).
+						Send()
+				}))

@@ -30,6 +30,7 @@ type wsConn struct {
 	msgBuff       *buf.Bytes
 	currHead      *ws.Header
 	w             *wsutil.Writer
+	c             gnet.Conn
 }
 
 var (
@@ -43,6 +44,7 @@ func newWebsocketConn(
 	writeMode ws.OpCode,
 ) *wsConn {
 	wsc := &wsConn{
+		c:             c,
 		w:             wsutil.NewWriter(c, ws.StateServerSide, writeMode),
 		id:            id,
 		kv:            map[string]string{},
@@ -287,4 +289,8 @@ func (wsc *wsConn) Set(key string, val string) {
 	wsc.Unlock()
 }
 
-func (wsc *wsConn) Close() {}
+func (wsc *wsConn) Close() {
+	if wsc.c != nil {
+		_ = wsc.c.Close()
+	}
+}

@@ -1,6 +1,8 @@
 package fasthttp
 
 import (
+	"time"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/fasthttp/websocket"
@@ -22,9 +24,7 @@ var (
 
 func (w *wsConn) Close() {
 	w.Lock()
-	if w.c != nil {
-		_ = w.c.Close()
-	}
+	_ = w.c.SetReadDeadline(time.Now())
 	w.c = nil
 	w.Unlock()
 }
