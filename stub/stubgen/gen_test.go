@@ -1,8 +1,6 @@
 package stubgen_test
 
 import (
-	"fmt"
-	"go/format"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
@@ -82,13 +80,10 @@ var _ = Describe("GolangGenerator", func() {
 				)
 		})
 
-		in := stubgen.NewInput("test", "test", svc)
+		in := stubgen.NewInput("test", svc)
 		in.AddTags("json")
-		code, err := stubgen.GolangStub(in)
+		_, err := stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "test"}).Generate(in)
 		Expect(err).To(BeNil())
-		formattedCode, err := format.Source([]byte(code))
-		Expect(err).To(BeNil())
-		_ = formattedCode
 	})
 })
 
@@ -106,14 +101,13 @@ var _ = Describe("TypeScriptGenerator", func() {
 				)
 		})
 
-		in := stubgen.NewInput("test", "test", svc)
+		in := stubgen.NewInput("test", svc)
 		in.AddTags("json")
 		in.AddExtraOptions(map[string]string{
 			"withHook": "yes",
 		})
 
-		code, err := stubgen.TypeScriptStub(in)
+		_, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{}).Generate(in)
 		Expect(err).To(BeNil())
-		fmt.Println(string(code))
 	})
 })
