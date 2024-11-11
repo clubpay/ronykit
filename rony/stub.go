@@ -10,8 +10,8 @@ import (
 // The package name of the generated file will be `pkgName`.
 // The struct holding the stub functions will be named `name`.
 func GenerateStub[S State[A], A Action](
-	name, folderName, outputDir, pkgName string,
-	genFunc stubgen.GenFunc, ext string,
+	name, folderName, outputDir string,
+	genEngine stubgen.GenEngine,
 	opt ...SetupOption[S, A],
 ) error {
 	var s S
@@ -25,10 +25,9 @@ func GenerateStub[S State[A], A Action](
 	}
 
 	return stubgen.New(
+		stubgen.WithGenEngine(genEngine),
 		stubgen.WithStubName(name),
 		stubgen.WithFolderName(folderName),
 		stubgen.WithOutputDir(outputDir),
-		stubgen.WithPkgName(pkgName),
-		stubgen.WithGenFunc(genFunc, ext),
 	).Generate(ctx.cfg.allServiceDesc()...)
 }

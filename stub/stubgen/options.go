@@ -3,71 +3,56 @@ package stubgen
 type Option func(*genConfig)
 
 type genConfig struct {
-	genFunc GenFunc
-	// stubName is name of the stub that will be generated.
+	genEngine GenEngine
+	// stubName is the name of the stub that will be generated.
 	stubName string
-	// pkgName is name of the package the is generated.
-	// It is useful in languages that need package name like go
-	pkgName string
-	// folderName is name of the folder that will be created and generated
+	// folderName is the name of the folder that will be created, and generated
 	// code will be placed in it.
 	folderName string
 	// outputDir is the directory where the generated code will be placed.
-	// final path will be outputDir/folderName
-	// default is current directory
-	outputDir     string
-	fileExtension string
-	tags          []string
-	// extraOptions are key-values that could be injected to the template for customized
-	// outputs.
-	extraOptions map[string]string
+	// the final path will be outputDir/folderName
+	// default is the current directory
+	outputDir string
+	tags      []string
 }
 
 var defaultConfig = genConfig{
-	genFunc:       GolangStub,
-	fileExtension: ".go",
-	outputDir:     ".", // current directory
+	outputDir: ".", // current directory
 }
 
-func WithGenFunc(gf GenFunc, ext string) Option {
+func WithGenEngine(gf GenEngine) Option {
 	return func(c *genConfig) {
-		c.genFunc = gf
-		c.fileExtension = ext
+		c.genEngine = gf
 	}
 }
 
-func WithPkgName(name string) Option {
-	return func(c *genConfig) {
-		c.pkgName = name
-	}
-}
-
+// WithFolderName sets the folder name where the generated code will be placed.
 func WithFolderName(name string) Option {
 	return func(c *genConfig) {
 		c.folderName = name
 	}
 }
 
+// WithOutputDir sets the directory where the generated code will be placed.
+// The final path will be outputDir/folderName.
+//
+//	Default is the current directory.
 func WithOutputDir(dir string) Option {
 	return func(c *genConfig) {
 		c.outputDir = dir
 	}
 }
 
+// WithTags sets the tags for the generated code option.
 func WithTags(tags ...string) Option {
 	return func(c *genConfig) {
 		c.tags = tags
 	}
 }
 
+// WithStubName sets the name of the stub that will be generated.
 func WithStubName(name string) Option {
 	return func(c *genConfig) {
 		c.stubName = name
-	}
-}
-
-func WithExtraOptions(opt map[string]string) Option {
-	return func(c *genConfig) {
-		c.extraOptions = opt
 	}
 }

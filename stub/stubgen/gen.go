@@ -4,11 +4,28 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/stub/internal/tpl"
 )
+
+type GeneratedFile struct {
+	SubFolder string
+	Filename  string
+	Data      []byte
+}
+
+type GenEngine interface {
+	Generate(in *Input) ([]GeneratedFile, error)
+}
+
+type GenFunc func(in *Input) ([]GeneratedFile, error)
+
+func (f GenFunc) Generate(in *Input) ([]GeneratedFile, error) {
+	return f(in)
+}
+
+var _ GenEngine = GenFunc(nil)
 
 type Generator struct {
 	cfg genConfig
@@ -26,11 +43,10 @@ func New(opt ...Option) *Generator {
 }
 
 func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
-	in := NewInput(g.cfg.stubName, g.cfg.pkgName, descs...)
+	in := NewInput(g.cfg.stubName, descs...)
 	in.AddTags(g.cfg.tags...)
-	in.AddExtraOptions(g.cfg.extraOptions)
 
-	rawContent, err := g.cfg.genFunc(in)
+	files, err := g.cfg.genEngine.Generate(in)
 	if err != nil {
 		return err
 	}
@@ -38,11 +54,18 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 	dirPath := filepath.Join(g.cfg.outputDir, g.cfg.folderName)
 	_ = os.MkdirAll(dirPath, os.ModePerm) //nolint:errcheck
 
-	return os.WriteFile(
-		fmt.Sprintf("%s/stub.%s", dirPath, strings.TrimLeft(g.cfg.fileExtension, ".")),
-		[]byte(rawContent),
-		os.ModePerm,
-	)
+	for _, file := range files {
+		err = os.WriteFile(
+			fmt.Sprintf("%s/%s", dirPath, file.Filename),
+			file.Data,
+			os.ModePerm,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (g *Generator) MustGenerate(desc ...desc.ServiceDesc) {

@@ -16,13 +16,12 @@ type Input struct {
 	extraOptions map[string]string
 }
 
-func NewInput(name, pkg string, descs ...desc.ServiceDesc) *Input {
+func NewInput(name string, services ...desc.ServiceDesc) *Input {
 	in := &Input{
-		pkg:          pkg,
 		name:         name,
 		extraOptions: map[string]string{},
 	}
-	for _, serviceDesc := range descs {
+	for _, serviceDesc := range services {
 		ps := desc.Parse(serviceDesc)
 		in.AddMessage(ps.Messages()...)
 		for _, c := range ps.Contracts {
@@ -85,6 +84,10 @@ func (in *Input) Name() string {
 
 func (in *Input) Pkg() string {
 	return in.pkg
+}
+
+func (in *Input) SetPkg(pkg string) {
+	in.pkg = pkg
 }
 
 func (in *Input) AddMessage(msg ...desc.ParsedMessage) {

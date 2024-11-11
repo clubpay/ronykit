@@ -16,12 +16,16 @@ var (
 
 	//go:embed ts/stub.tstmpl
 	tsFileStub string
-	TSStub     *template.Template
+	//go:embed ts/swr.hooks.tstmpl
+	tsFileSWRHooks string
+	TSStub         *template.Template
+	TSSWRHooks     *template.Template
 )
 
 func init() {
 	GoStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(goFileStub))
 	TSStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(tsFileStub))
+	TSSWRHooks = template.Must(template.New("swrHooks").Funcs(FuncMaps).Parse(tsFileSWRHooks))
 }
 
 var FuncMaps = map[string]any{
