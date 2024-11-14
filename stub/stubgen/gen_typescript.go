@@ -2,7 +2,6 @@ package stubgen
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -77,9 +76,6 @@ func runPrettier(gf GeneratedFile) GeneratedFile {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(out.String())
-		fmt.Println(errBuf.String())
-
 		return gf
 	}
 

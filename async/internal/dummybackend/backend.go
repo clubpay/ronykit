@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"context"
 
-	async "github.com/clubpay/ronykit/job"
+	"github.com/clubpay/ronykit/async"
 	"github.com/clubpay/ronykit/kit/utils"
 )
 

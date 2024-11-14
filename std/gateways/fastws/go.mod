@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/clubpay/ronykit/kit v0.17.19
 	github.com/gobwas/ws v1.4.0
-	github.com/panjf2000/gnet/v2 v2.5.9
+	github.com/panjf2000/gnet/v2 v2.6.1
 )
 
 require (
@@ -15,6 +15,7 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.6.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/panjf2000/ants/v2 v2.10.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
