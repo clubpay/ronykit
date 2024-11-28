@@ -2,6 +2,7 @@ package stub
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -188,7 +189,7 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			continue
 		}
 
-		// if this is a reply message we return it to the pending channel
+		// if this is a reply message, we return it to the pending channel
 		wCtx.pendingMtx.Lock()
 		ch, ok := wCtx.pending[rpcIn.GetID()]
 		wCtx.pendingMtx.Unlock()
@@ -322,6 +323,9 @@ type WebsocketRequest struct {
 	// If this is nil, the response will be ignored. However, the response will be caught by
 	// the default handler if it is set.
 	Callback RPCMessageHandler
+	// Timeout if is set, then the callback will be called with ErrTimeout, in case of we didn't
+	// receive the response in time.
+	Timeout time.Duration
 }
 
 const (
@@ -369,7 +373,7 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	outC.Release()
 
 	if req.Callback != nil {
-		go wCtx.waitForMessage(ctx, req.ID, req.ResMsg, req.Callback)
+		go wCtx.waitForMessage(ctx, req.ID, req.ResMsg, req.Callback, req.Timeout)
 	}
 
 	return nil
@@ -377,11 +381,18 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 
 func (wCtx *WebsocketCtx) waitForMessage(
 	ctx context.Context, id string, res kit.Message, cb RPCMessageHandler,
+	timeout time.Duration,
 ) {
 	resCh := make(chan kit.IncomingRPCContainer, 1)
 	wCtx.pendingMtx.Lock()
 	wCtx.pending[id] = resCh
 	wCtx.pendingMtx.Unlock()
+
+	if timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
 
 	select {
 	case c := <-resCh:
@@ -389,6 +400,7 @@ func (wCtx *WebsocketCtx) waitForMessage(
 		cb(ctx, res, c.GetHdrMap(), err)
 
 	case <-ctx.Done():
+		cb(ctx, res, nil, ErrTimeout)
 	}
 
 	wCtx.pendingMtx.Lock()
@@ -412,4 +424,5 @@ func (c containerTraceCarrier) Set(key string, value string) {
 var (
 	ErrBadHandshake = websocket.ErrBadHandshake
 	_               = ErrBadHandshake
+	ErrTimeout      = errors.New("timeout")
 )

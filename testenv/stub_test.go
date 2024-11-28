@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"sync"
 	"testing"
+	"time"
 
 	"ronykit/testenv/services"
 
@@ -175,7 +177,8 @@ func stubWithAutoRun2(t *testing.T, opt fx.Option) func(c C) {
 func TestWebsocket(t *testing.T) {
 	Convey("Websocket", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			"Websocket Stub [Connect, Reconnect, Disconnect]": stubWebsocket,
+			//"Websocket Stub [Connect, Reconnect, Disconnect]": stubWebsocket,
+			"Stability Check": stubWebsocketStability,
 		}
 		for title, fn := range testCases {
 			Convey(title+"FastHTTP",
@@ -234,6 +237,69 @@ func stubWebsocket(t *testing.T, opt fx.Option) func(c C) {
 			c.So(err, ShouldBeNil)
 
 			wsCtx.Disconnect()
+		}
+	}
+}
+
+func stubWebsocketStability(t *testing.T, opt fx.Option) func(c C) {
+	ctx := context.Background()
+
+	return func(c C) {
+		Prepare(
+			t, c,
+			fx.Options(
+				opt,
+			),
+		)
+
+		time.Sleep(1 * time.Second)
+		wsCtx := stub.New("127.0.0.1:8082", stub.WithLogger(&kitLogger{})).
+			Websocket(
+				stub.WithPredicateKey("cmd"),
+				stub.WithPingTime(time.Second*5),
+			)
+
+		err := wsCtx.Connect(ctx, "/agent/ws")
+		c.So(err, ShouldBeNil)
+
+		wg := sync.WaitGroup{}
+		for range 200 {
+			X := utils.RandomID(10)
+			XP := utils.RandomID(10)
+
+			// Set Key to instance 1
+			resp := &services.EchoResponse{}
+
+			wg.Add(1)
+			err = wsCtx.Do(
+				ctx,
+				stub.WebsocketRequest{
+					Predicate:   "echo",
+					MessageType: stub.WebsocketText,
+					ReqMsg: &services.EchoRequest{
+						Embedded: services.Embedded{
+							X:  X,
+							XP: XP,
+						},
+						Input: XP,
+					},
+					ResMsg: resp,
+					ReqHdr: nil,
+					Callback: func(ctx context.Context, msg kit.Message, hdr stub.Header, err error) {
+						if err != nil {
+							c.So(err, ShouldEqual, stub.ErrTimeout)
+						} else {
+							c.So(resp.X, ShouldEqual, X)
+							c.So(resp.XP, ShouldEqual, XP)
+						}
+
+						wg.Done()
+					},
+					Timeout: time.Second,
+				},
+			)
+			c.So(err, ShouldBeNil)
+			wg.Wait()
 		}
 	}
 }

@@ -25,8 +25,8 @@ github.com/onsi/ginkgo/v2 v2.20.0 h1:PE84V2mHqoT1sglvHc8ZdQtPcwmvvt29WLEEO3xmdZw
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
 github.com/panjf2000/ants/v2 v2.10.0 h1:zhRg1pQUtkyRiOFo2Sbqwjp0GfBNo9cUY2/Grpx1p+8=
 github.com/panjf2000/ants/v2 v2.10.0/go.mod h1:7ZxyxsqE4vvW0M7LSD8aI3cKwgFhBHbxnlN8mDqHa1I=
-github.com/panjf2000/gnet/v2 v2.6.1 h1:IPkv4ZHwdPSqdKve6A4v0PsbieeK6gooIhFfk5GFBgo=
-github.com/panjf2000/gnet/v2 v2.6.1/go.mod h1:HpNv+iQrIOeil1eyhdnKDlui7jivyMf0K3xwaeHKnh8=
+github.com/panjf2000/gnet/v2 v2.6.2 h1:f6WOlfiaMtblK5RvuiXiAraDlawS0RvoI2LSE4ZaAWc=
+github.com/panjf2000/gnet/v2 v2.6.2/go.mod h1:HpNv+iQrIOeil1eyhdnKDlui7jivyMf0K3xwaeHKnh8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=

@@ -48,7 +48,7 @@ var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 				func(ctx *kit.Context) {
 					req, _ := ctx.In().GetMsg().(*EchoRequest)
 
-					ctx.Out().
+					ctx.In().Reply().
 						SetMsg(
 							&EchoResponse{
 								Embedded: req.Embedded,
