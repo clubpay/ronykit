@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// KeepTTL is used in Set method of the ClusterStore interface.
+// KeepTTL can be used in `Set` method of the ClusterStore interface.
 const KeepTTL = -1
 
 type cluster struct {
@@ -118,30 +118,43 @@ func (c *cluster) Store() kit.ClusterStore {
 	return c
 }
 
-func (c *cluster) Set(key, value string, ttl time.Duration) error {
+func (c *cluster) Set(ctx context.Context, key, value string, ttl time.Duration) error {
 	return c.rc.Set(
-		context.Background(),
+		ctx,
 		fmt.Sprintf("%s:kv:%s", c.prefix, key), value,
 		ttl,
 	).Err()
 }
 
-func (c *cluster) Delete(key string) error {
+func (c *cluster) SetMulti(ctx context.Context, m map[string]string, ttl time.Duration) error {
+	pipe := c.rc.Pipeline()
+	for k, v := range m {
+		pipe.Set(
+			ctx,
+			fmt.Sprintf("%s:kv:%s", c.prefix, k), v,
+			ttl,
+		)
+	}
+	_, err := pipe.Exec(ctx)
+
+	return err
+}
+
+func (c *cluster) Delete(ctx context.Context, key string) error {
 	return c.rc.Del(
-		context.Background(),
+		ctx,
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),
 	).Err()
 }
 
-func (c *cluster) Get(key string) (string, error) {
+func (c *cluster) Get(ctx context.Context, key string) (string, error) {
 	return c.rc.Get(
-		context.Background(),
+		ctx,
 		fmt.Sprintf("%s:kv:%s", c.prefix, key),
 	).Result()
 }
 
-func (c *cluster) Scan(prefix string, cb func(string) bool) error {
-	ctx := context.Background()
+func (c *cluster) Scan(ctx context.Context, prefix string, cb func(string) bool) error {
 	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
 
 	for iter.Next(ctx) {
@@ -153,8 +166,7 @@ func (c *cluster) Scan(prefix string, cb func(string) bool) error {
 	return nil
 }
 
-func (c *cluster) ScanWithValue(prefix string, cb func(string, string) bool) error {
-	ctx := context.Background()
+func (c *cluster) ScanWithValue(ctx context.Context, prefix string, cb func(string, string) bool) error {
 	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
 
 	for iter.Next(ctx) {

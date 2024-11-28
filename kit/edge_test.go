@@ -148,7 +148,7 @@ func (t *testCluster) Store() kit.ClusterStore {
 	return t
 }
 
-func (t *testCluster) Set(key, value string, _ time.Duration) error {
+func (t *testCluster) Set(ctx context.Context, key, value string, _ time.Duration) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -158,7 +158,19 @@ func (t *testCluster) Set(key, value string, _ time.Duration) error {
 	return nil
 }
 
-func (t *testCluster) Delete(key string) error {
+func (t *testCluster) SetMulti(ctx context.Context, kv map[string]string, ttl time.Duration) error {
+	if t.kv == nil {
+		t.kv = map[string]string{}
+	}
+
+	for k, v := range kv {
+		t.kv[k] = v
+	}
+
+	return nil
+}
+
+func (t *testCluster) Delete(ctx context.Context, key string) error {
 	if t.kv == nil {
 		t.kv = map[string]string{}
 	}
@@ -168,11 +180,11 @@ func (t *testCluster) Delete(key string) error {
 	return nil
 }
 
-func (t *testCluster) Get(key string) (string, error) {
+func (t *testCluster) Get(ctx context.Context, key string) (string, error) {
 	return t.kv[key], nil
 }
 
-func (t *testCluster) Scan(prefix string, cb func(key string) bool) error {
+func (t *testCluster) Scan(ctx context.Context, prefix string, cb func(key string) bool) error {
 	for k := range t.kv {
 		if strings.HasPrefix(k, prefix) {
 			if !cb(k) {
@@ -184,7 +196,7 @@ func (t *testCluster) Scan(prefix string, cb func(key string) bool) error {
 	return nil
 }
 
-func (t *testCluster) ScanWithValue(prefix string, cb func(string, string) bool) error {
+func (t *testCluster) ScanWithValue(ctx context.Context, prefix string, cb func(string, string) bool) error {
 	for k, v := range t.kv {
 		if strings.HasPrefix(k, prefix) {
 			if !cb(k, v) {
