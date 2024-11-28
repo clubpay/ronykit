@@ -1,5 +1,5 @@
-github.com/clubpay/ronykit/kit v0.17.20 h1:ndgQGK3E3zxSwVbOM4cLBIijfJ8pDfXMmJBz/TuUAAk=
-github.com/clubpay/ronykit/kit v0.17.20/go.mod h1:CmkwWBo83JY5T9w+9L6HOFPpVm68qEjolEhIuFOH0/s=
+github.com/clubpay/ronykit/kit v0.17.21 h1:8smJsSLIJp602r3aZED7nDneyZC4G/WXMcyB7Gi1DGE=
+github.com/clubpay/ronykit/kit v0.17.21/go.mod h1:CmkwWBo83JY5T9w+9L6HOFPpVm68qEjolEhIuFOH0/s=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
