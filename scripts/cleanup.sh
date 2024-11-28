@@ -26,5 +26,5 @@ do
 	go mod tidy
   go fmt ./...
   go vet ./...
-  GOWORK=off golangci-lint run
+  GOWORK=off golangci-lint run --path-prefix "$i" --fix
 done
