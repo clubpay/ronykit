@@ -190,7 +190,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" }}
-		func (s {{$serviceName}}StubMock) {{$methodName}}(
+		func (s *{{$serviceName}}StubMock) {{$methodName}}(
 		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
 		) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
 		if s.{{toLower $methodName}} == nil {
@@ -198,6 +198,14 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		}
 
 		return s.{{toLower $methodName}}(ctx, req, opt...)
+		}
+
+		func (s *{{$serviceName}}StubMock) Set{{$methodName}}(
+			f func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error),
+		) *{{$serviceName}}StubMock {
+			s.{{toLower $methodName}} = f
+
+			return s
 		}
 	{{ end }}
 {{- end }}

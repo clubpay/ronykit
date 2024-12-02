@@ -42,7 +42,6 @@ export class sampleServiceStub {
 		this.serverURL = serverURL.replace(/\/$/, "");
 	}
 
-
 	// @ts-ignore
 	async complexDummy(
 		req: VeryComplexRequest,

@@ -260,7 +260,7 @@ func NewsampleServiceStubMock(opts ...MockOption) *sampleServiceStubMock {
 
 var _ IsampleServiceStub = (*sampleServiceStubMock)(nil)
 
-func (s sampleServiceStubMock) ComplexDummy(
+func (s *sampleServiceStubMock) ComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.complexdummy == nil {
@@ -270,7 +270,15 @@ func (s sampleServiceStubMock) ComplexDummy(
 	return s.complexdummy(ctx, req, opt...)
 }
 
-func (s sampleServiceStubMock) ComplexDummy2(
+func (s *sampleServiceStubMock) SetComplexDummy(
+	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+) *sampleServiceStubMock {
+	s.complexdummy = f
+
+	return s
+}
+
+func (s *sampleServiceStubMock) ComplexDummy2(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.complexdummy2 == nil {
@@ -280,7 +288,15 @@ func (s sampleServiceStubMock) ComplexDummy2(
 	return s.complexdummy2(ctx, req, opt...)
 }
 
-func (s sampleServiceStubMock) GetComplexDummy(
+func (s *sampleServiceStubMock) SetComplexDummy2(
+	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+) *sampleServiceStubMock {
+	s.complexdummy2 = f
+
+	return s
+}
+
+func (s *sampleServiceStubMock) GetComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.getcomplexdummy == nil {
@@ -288,4 +304,12 @@ func (s sampleServiceStubMock) GetComplexDummy(
 	}
 
 	return s.getcomplexdummy(ctx, req, opt...)
+}
+
+func (s *sampleServiceStubMock) SetGetComplexDummy(
+	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+) *sampleServiceStubMock {
+	s.getcomplexdummy = f
+
+	return s
 }
