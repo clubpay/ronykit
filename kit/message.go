@@ -1,6 +1,7 @@
 package kit
 
 import (
+	"io"
 	"mime/multipart"
 
 	"github.com/goccy/go-json"
@@ -71,11 +72,24 @@ func CreateMessageFactory(in Message) MessageFactoryFunc {
 }
 
 type MessageCodec interface {
+	Encode(m Message, w io.Writer) error
 	Marshal(m any) ([]byte, error)
+	Decode(m Message, r io.Reader) error
 	Unmarshal(data []byte, m any) error
 }
 
 type stdCodec struct{}
+
+// Encode marshal the Message m into the Writer w.
+// NOTE: this method will add one extra \n at the end of the output, which is different from
+// the output of Marshal method.
+func (stdCodec) Encode(m Message, w io.Writer) error {
+	return json.NewEncoder(w).EncodeWithOption(m)
+}
+
+func (stdCodec) Decode(m Message, r io.Reader) error {
+	return json.NewDecoder(r).Decode(m)
+}
 
 func (jm stdCodec) Marshal(m any) ([]byte, error) {
 	return json.MarshalNoEscape(m)
@@ -106,6 +120,21 @@ func MarshalMessage(m Message) ([]byte, error) {
 	default:
 		return defaultMessageCodec.Marshal(m)
 	}
+}
+
+func EncodeMessage(m Message, w io.Writer) error {
+	switch v := m.(type) {
+	case RawMessage:
+		_, err := w.Write(v)
+
+		return err
+	default:
+		return defaultMessageCodec.Encode(v, w)
+	}
+}
+
+func DecodeMessage(m Message, r io.Reader) error {
+	return defaultMessageCodec.Decode(m, r)
 }
 
 // RawMessage is a byte slice which could be used as a Message.

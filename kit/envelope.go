@@ -14,7 +14,7 @@ type Walker interface {
 
 type EnvelopeHdr map[string]string
 
-// ModifierFunc is a function which can modify the outgoing Envelope before sending it to the
+// ModifierFunc is a function that can modify the outgoing Envelope before sending it to the
 // client. ModifierFunc only applies to outgoing envelopes.
 type ModifierFunc func(envelope *Envelope)
 
@@ -23,12 +23,13 @@ type ModifierFunc func(envelope *Envelope)
 // take advantage of. For example, in std/fasthttp Envelope headers translate from/to http
 // request/response headers.
 type Envelope struct {
-	id   []byte
-	ctx  *Context
-	conn Conn
-	kvl  utils.SpinLock
-	kv   EnvelopeHdr
-	m    Message
+	id       []byte
+	ctx      *Context
+	conn     Conn
+	kvl      utils.SpinLock
+	kv       EnvelopeHdr
+	m        Message
+	sizeHint int
 
 	// outgoing identity of the Envelope if it is able to send
 	outgoing bool
@@ -195,4 +196,20 @@ func (e *Envelope) Reply() *Envelope {
 // IsOutgoing returns `true` if this Envelope is sending from Server to Client.
 func (e *Envelope) IsOutgoing() bool {
 	return e.outgoing
+}
+
+var EnvelopeSizeHintDefault = 1 << 10 // 1KB
+
+func (e *Envelope) SetSizeHint(size int) *Envelope {
+	e.sizeHint = size
+
+	return e
+}
+
+func (e *Envelope) SizeHint() int {
+	if e.sizeHint == 0 {
+		return EnvelopeSizeHintDefault
+	}
+
+	return e.sizeHint
 }

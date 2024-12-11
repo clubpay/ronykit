@@ -3,6 +3,7 @@ package silverhttp
 import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/realip"
 	"github.com/go-www/silverlining"
 )
@@ -71,12 +72,8 @@ func (c *httpConn) Write(data []byte) (int, error) {
 }
 
 func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
-	var (
-		data []byte
-		err  error
-	)
-
-	data, err = kit.MarshalMessage(e.GetMsg())
+	dataBuf := buf.GetCap(e.SizeHint())
+	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {
 		return err
 	}
@@ -90,8 +87,8 @@ func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
 		},
 	)
 
-	c.ctx.SetContentLength(len(data))
-	_, err = c.ctx.Write(data)
+	c.ctx.SetContentLength(dataBuf.Len())
+	_, err = c.ctx.Write(utils.PtrVal(dataBuf.Bytes()))
 
 	return err
 }

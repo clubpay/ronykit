@@ -3,6 +3,7 @@ package fasthttp
 import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/valyala/bytebufferpool"
 	"github.com/valyala/fasthttp"
@@ -73,12 +74,8 @@ func (c *httpConn) Write(data []byte) (int, error) {
 }
 
 func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
-	var (
-		data []byte
-		err  error
-	)
-
-	data, err = kit.MarshalMessage(e.GetMsg())
+	dataBuf := buf.GetCap(e.SizeHint())
+	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {
 		return err
 	}
@@ -91,7 +88,8 @@ func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
 		},
 	)
 
-	c.ctx.SetBody(data)
+	c.ctx.Response.SetBody(utils.PtrVal(dataBuf.Bytes()))
+	dataBuf.Release()
 
 	return nil
 }
