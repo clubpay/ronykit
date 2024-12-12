@@ -127,7 +127,7 @@ func (c *cluster) startBroadcast(ctx context.Context) error {
 		for {
 			err = broadcastTopic.Publish(ctx, []byte(c.id))
 			if err != nil {
-				c.log.Errorf("[p2pCluster] failed to broadcast: %v", err)
+				c.log.Errorf("[Cluster][p2pCluster] failed to broadcast: %v", err)
 			}
 
 			select {
@@ -148,7 +148,7 @@ func (c *cluster) startBroadcast(ctx context.Context) error {
 					return
 				}
 
-				c.log.Errorf("[p2pCluster] failed to receive broadcast message: %v", err)
+				c.log.Errorf("[Cluster][p2pCluster] failed to receive broadcast message: %v", err)
 				time.Sleep(time.Second)
 
 				continue
@@ -203,7 +203,7 @@ func (c *cluster) receiveMessage(
 				return
 			}
 
-			c.log.Errorf("[p2pCluster] failed to receive message from topic[%s]: %v", sub.Topic(), err)
+			c.log.Errorf("[Cluster][p2pCluster] failed to receive message from topic[%s]: %v", sub.Topic(), err)
 
 			continue
 		}
@@ -297,9 +297,9 @@ func (c *cluster) Subscribers() ([]string, error) {
 }
 
 func (c *cluster) HandlePeerFound(pi peer.AddrInfo) {
-	c.log.Debugf("[p2pCluster] found peer: %s", pi.String())
+	c.log.Debugf("[Cluster][p2pCluster] found peer: %s", pi.String())
 	err := c.host.Connect(context.Background(), pi)
 	if err != nil {
-		c.log.Errorf("[p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)
+		c.log.Errorf("[Cluster][p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)
 	}
 }

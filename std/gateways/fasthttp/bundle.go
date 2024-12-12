@@ -208,7 +208,7 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 		if b.autoDecompress {
 			body, err := c.getBodyUncompressed()
 			if err != nil {
-				b.l.Errorf("could not uncompress the body: %v", err)
+				b.l.Errorf("[Gateway][fasthttp] could not uncompress the body: %v", err)
 			} else {
 				b.d.OnMessage(c, body)
 			}
@@ -374,7 +374,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	go func() {
 		err = b.srv.Serve(ln)
 		if err != nil {
-			b.l.Errorf("got error on serving: %v", err)
+			b.l.Errorf("[Gateway][fasthttp] got error on serving: %v", err)
 			panic(err)
 		}
 	}()

@@ -198,8 +198,6 @@ func (e *Envelope) IsOutgoing() bool {
 	return e.outgoing
 }
 
-var EnvelopeSizeHintDefault = 1 << 10 // 1KB
-
 func (e *Envelope) SetSizeHint(size int) *Envelope {
 	e.sizeHint = size
 
@@ -208,7 +206,7 @@ func (e *Envelope) SetSizeHint(size int) *Envelope {
 
 func (e *Envelope) SizeHint() int {
 	if e.sizeHint == 0 {
-		return EnvelopeSizeHintDefault
+		return CodeDefaultBufferSize
 	}
 
 	return e.sizeHint

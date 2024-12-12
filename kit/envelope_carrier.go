@@ -111,12 +111,6 @@ func (c carrierData) Set(key string, value string) {
 	c.ConnHdr[key] = value
 }
 
-func (ec *envelopeCarrier) ToJSON() []byte {
-	data, _ := json.Marshal(ec)
-
-	return data
-}
-
 func (ec *envelopeCarrier) FromJSON(data []byte) error {
 	err := json.Unmarshal(data, ec)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/kit/utils/buf"
 )
 
 type Cluster interface {
@@ -209,29 +210,38 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 		sb.c[carrier.Data.ContractID],
 	)
 
-	err := sb.cb.Publish(
+	ec := newEnvelopeCarrier(
+		eofCarrier,
+		carrier.SessionID,
+		sb.id,
 		carrier.OriginID,
-		newEnvelopeCarrier(
-			eofCarrier,
-			carrier.SessionID,
-			sb.id,
-			carrier.OriginID,
-		).ToJSON(),
 	)
+
+	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
+		sb.eh(ctx, err)
+	} else if err = sb.cb.Publish(carrier.OriginID, *ecBuf.Bytes()); err != nil {
 		sb.eh(ctx, err)
 	}
 
+	ecBuf.Release()
 	sb.releaseCtx(ctx)
 }
 
 func (sb *southBridge) sendMessage(carrier *envelopeCarrier) error {
-	err := sb.cb.Publish(carrier.TargetID, carrier.ToJSON())
+	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	err := defaultMessageCodec.Encode(carrier, ecBuf)
+	if err == nil {
+		err = sb.cb.Publish(carrier.TargetID, *ecBuf.Bytes())
+	}
 	if err != nil {
 		sb.inProgressMtx.Lock()
 		delete(sb.inProgress, carrier.SessionID)
 		sb.inProgressMtx.Unlock()
 	}
+
+	ecBuf.Release()
 
 	return err
 }
@@ -341,7 +351,21 @@ func (sb *southBridge) writeFunc(c *clusterConn, e *Envelope) error {
 		sb.tp.Inject(e.ctx.ctx, ec.Data)
 	}
 
-	return c.cluster.Publish(c.originID, ec.ToJSON())
+	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	err := defaultMessageCodec.Encode(ec, ecBuf)
+	if err != nil {
+		return err
+	}
+
+	err = c.cluster.Publish(c.originID, *ecBuf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	// NOTE: for extra safety will only re-use if there was no error
+	ecBuf.Release()
+
+	return nil
 }
 
 var _ Conn = (*clusterConn)(nil)

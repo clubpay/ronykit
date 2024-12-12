@@ -137,10 +137,10 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 				wCtx.cMtx.Lock()
 				err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
 				if err != nil {
-					wCtx.l.Errorf("failed to send ping: %v", err)
+					wCtx.l.Errorf("[Stub][Websocket] failed to send ping: %v", err)
 				}
 				wCtx.cMtx.Unlock()
-				wCtx.l.Debugf("websocket ping sent")
+				wCtx.l.Debugf("[Stub][Websocket] websocket ping sent")
 
 				continue
 			}
@@ -149,14 +149,14 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 				return
 			}
 
-			wCtx.l.Errorf("inactivity detected, reconnecting: %s", c.LocalAddr().String())
+			wCtx.l.Errorf("[Stub][Websocket] inactivity detected, reconnecting: %s", c.LocalAddr().String())
 			_ = c.Close()
 
 			ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
 			err := wCtx.connect(ctx)
 			cf()
 			if err != nil {
-				wCtx.l.Errorf("failed to reconnect: %s", err)
+				wCtx.l.Errorf("[Stub][Websocket] failed to reconnect: %s", err)
 
 				continue
 			}
@@ -218,7 +218,7 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 
 		select {
 		default:
-			wCtx.l.Errorf("ratelimit reached, packet dropped")
+			wCtx.l.Errorf("[Stub][Websocket] ratelimit reached, packet dropped")
 		case wCtx.cfg.rateLimitChan <- struct{}{}:
 			wCtx.cfg.handlersWG.Add(1)
 			go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
@@ -235,7 +235,7 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 
 func (wCtx *WebsocketCtx) recoverPanic() {
 	if r := recover(); r != nil {
-		wCtx.l.Errorf("panic recovered: %v", r)
+		wCtx.l.Errorf("[Stub][Websocket] panic recovered: %v", r)
 
 		if wCtx.cfg.panicRecoverFunc != nil {
 			wCtx.cfg.panicRecoverFunc(r)

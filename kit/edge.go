@@ -294,7 +294,7 @@ func (s *EdgeServer) startup(ctx context.Context) {
 			},
 		)
 		if err != nil {
-			s.l.Errorf("got error on starting gateway: %v", err)
+			s.l.Errorf("[EdgeServer] got error on starting gateway: %v", err)
 			panic(err)
 		}
 	}
@@ -307,7 +307,7 @@ func (s *EdgeServer) startup(ctx context.Context) {
 		}
 		err := s.sb.Start(ctx)
 		if err != nil {
-			s.l.Errorf("got error on starting cluster: %v", err)
+			s.l.Errorf("[EdgeServer] got error on starting cluster: %v", err)
 			panic(err)
 		}
 	}
@@ -345,14 +345,14 @@ func (s *EdgeServer) shutdown(ctx context.Context) {
 	for idx := range s.nb {
 		err := s.nb[idx].gw.Shutdown(ctx)
 		if err != nil {
-			s.l.Errorf("got error on shutdown gateway: %v", err)
+			s.l.Errorf("[EdgeServer] got error on shutdown gateway: %v", err)
 		}
 	}
 
 	if s.sb != nil {
 		err := s.sb.Shutdown(ctx)
 		if err != nil {
-			s.l.Errorf("got error on shutdown cluster: %v", err)
+			s.l.Errorf("[EdgeServer] got error on shutdown cluster: %v", err)
 		}
 	}
 

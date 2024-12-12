@@ -85,7 +85,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	go func() {
 		err = b.srv.Serve(ln)
 		if err != nil {
-			b.l.Errorf("got error on serving: %v", err)
+			b.l.Errorf("[Gateway][silverhttp] got error on serving: %v", err)
 			panic(err)
 		}
 	}()
