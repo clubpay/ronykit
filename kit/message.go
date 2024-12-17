@@ -71,7 +71,7 @@ func CreateMessageFactory(in Message) MessageFactoryFunc {
 	return ff
 }
 
-var CodeDefaultBufferSize = 1 << 10 // 1KB
+var CodecDefaultBufferSize = 1 << 10 // 1KB
 
 type MessageCodec interface {
 	Encode(m Message, w io.Writer) error

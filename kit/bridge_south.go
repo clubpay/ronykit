@@ -217,7 +217,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 		carrier.OriginID,
 	)
 
-	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	ecBuf := buf.GetCap(CodecDefaultBufferSize)
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		sb.eh(ctx, err)
@@ -230,7 +230,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 }
 
 func (sb *southBridge) sendMessage(carrier *envelopeCarrier) error {
-	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	ecBuf := buf.GetCap(CodecDefaultBufferSize)
 	err := defaultMessageCodec.Encode(carrier, ecBuf)
 	if err == nil {
 		err = sb.cb.Publish(carrier.TargetID, *ecBuf.Bytes())
@@ -351,7 +351,7 @@ func (sb *southBridge) writeFunc(c *clusterConn, e *Envelope) error {
 		sb.tp.Inject(e.ctx.ctx, ec.Data)
 	}
 
-	ecBuf := buf.GetCap(CodeDefaultBufferSize)
+	ecBuf := buf.GetCap(CodecDefaultBufferSize)
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		return err

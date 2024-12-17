@@ -206,7 +206,7 @@ func (e *Envelope) SetSizeHint(size int) *Envelope {
 
 func (e *Envelope) SizeHint() int {
 	if e.sizeHint == 0 {
-		return CodeDefaultBufferSize
+		return CodecDefaultBufferSize
 	}
 
 	return e.sizeHint
