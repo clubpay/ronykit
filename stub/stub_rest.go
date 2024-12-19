@@ -327,6 +327,14 @@ func (hc *RESTCtx) GetBody() []byte {
 	return hc.res.Body()
 }
 
+func (hc *RESTCtx) GetUncompressedBody() ([]byte, error) {
+	if hc.err != nil {
+		return nil, hc.err
+	}
+
+	return hc.res.BodyUncompressed()
+}
+
 // ReadResponseBody reads the response body to the provided writer.
 // It MUST be called after Run or AutoRun.
 func (hc *RESTCtx) ReadResponseBody(w io.Writer) *RESTCtx {
@@ -335,6 +343,25 @@ func (hc *RESTCtx) ReadResponseBody(w io.Writer) *RESTCtx {
 	}
 
 	if _, err := w.Write(hc.res.Body()); err != nil {
+		hc.err = WrapError(err)
+	}
+
+	return hc
+}
+
+func (hc *RESTCtx) ReadUncompressedResponseBody(w io.Writer) *RESTCtx {
+	if hc.err != nil {
+		return hc
+	}
+
+	body, err := hc.res.BodyUncompressed()
+	if err != nil {
+		hc.err = WrapError(err)
+
+		return hc
+	}
+
+	if _, err := w.Write(body); err != nil {
 		hc.err = WrapError(err)
 	}
 
