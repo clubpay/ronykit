@@ -98,6 +98,7 @@ var _ Conn = (*testConn)(nil)
 func newTestConn() *testConn {
 	return &testConn{
 		id: utils.RandomUint64(0),
+		kv: map[string]string{},
 	}
 }
 
