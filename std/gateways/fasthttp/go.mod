@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.22.5
 
 require (
-	github.com/clubpay/ronykit/kit v0.18.3
+	github.com/clubpay/ronykit/kit v0.18.4
 	github.com/fasthttp/router v1.5.2
 	github.com/fasthttp/websocket v1.5.10
 	github.com/goccy/go-reflect v1.2.0
