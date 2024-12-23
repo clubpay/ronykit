@@ -50,7 +50,7 @@ this.serverURL = serverURL.replace(/\/$/, '');
 		{{- if eq (toLower .Method) "get" }}
 			const keys = Object.keys(req);
 			const keyValuePairs = keys
-				.filter((key) => (req as any)[key] !== undefined)
+				.filter((key) => ((req as any)[key] !== undefined && (req as any)[key] !== null)
 				.map(key => {
 			return encodeURIComponent(key) + '=' + encodeURIComponent((req as any)[key]);
 			}).join('&');
