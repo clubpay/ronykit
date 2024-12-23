@@ -147,7 +147,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 				GoName:   f.Name,
 				Name:     ptn.Value,
 				Tag:      ptn,
-				Optional: ft.Kind() == reflect.Pointer,
+				Optional: ft.Kind() == reflect.Pointer || ft.Kind() == reflect.Slice || ft.Kind() == reflect.Map,
 				Embedded: f.Anonymous,
 				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
 			},

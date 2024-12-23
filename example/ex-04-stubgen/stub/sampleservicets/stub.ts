@@ -18,21 +18,22 @@ export interface SimpleHdr {
 // VeryComplexRequest is a data transfer object
 export interface VeryComplexRequest extends SimpleHdr {
 	key1: string;
-	key1Ptr?: string;
-	mapKey1: { [key: string]: number };
-	mapKey2: { [key: number]: KeyValue };
-	sliceKey1: boolean[];
-	sliceKey2: KeyValue[];
-	rawKey: any;
+	key1Ptr: string | null;
+	key2Ptr?: number;
+	mapKey1: { [key: string]: number } | null;
+	mapKey2: { [key: number]: KeyValue } | null;
+	sliceKey1: boolean[] | null;
+	sliceKey2: KeyValue[] | null;
+	rawKey: any | null;
 }
 // VeryComplexResponse is a data transfer object
 export interface VeryComplexResponse {
-	key1: string;
+	key1?: string;
 	key1Ptr?: string;
-	mapKey1: { [key: string]: number };
-	mapKey2: { [key: number]: KeyValue };
-	sliceKey1: number[];
-	sliceKey2: KeyValue[];
+	mapKey1?: { [key: string]: number };
+	mapKey2?: { [key: number]: KeyValue };
+	sliceKey1: number[] | null;
+	sliceKey2: KeyValue[] | null;
 }
 
 export class sampleServiceStub {

@@ -14,7 +14,7 @@
 	{{- end }}
 	{{- range .Fields -}}
 			{{- if .Embedded }} {{continue}} {{end}}
-			{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
+			{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Tag.OmitEmpty}}?{{end}}: {{tsType .Element.RType}}{{ if (and .Optional (not .Tag.OmitEmpty)) }}| null{{end}}
 	{{- end }}
 	}
 {{- end }}
