@@ -2,6 +2,10 @@ package kit
 
 import "context"
 
+var (
+	kitCtxKey = struct{}{}
+)
+
 func (ctx *Context) setRoute(route string) *Context {
 	ctx.route = append(ctx.route[:0], route...)
 
@@ -30,6 +34,30 @@ func (ctx *Context) setContractID(contractID string) *Context {
 
 func (ctx *Context) ContractID() string {
 	return string(ctx.contractID)
+}
+
+// ContextWithValue is a helper function that helps us to update the kit.Context even if we don't
+// have direct access to it. For example, we passed the ctx.Context() to one of the underlying
+// functions in our code, and we need to set some key, which might be needed in one of our
+// middlewares.
+// In this case instead of:
+//
+//	ctx = context.WithValue(ctx, "myKey", "myValue")
+//
+// You can use this helper function:
+//
+//	ctx = kit.ContextWithValue(ctx, "myKey", "myValue")
+//
+// then later in your middleware you would access the key by simply doing:
+//
+//	ctx.Get("myKey")
+func ContextWithValue(ctx context.Context, key string, value any) context.Context {
+	kitCtx, ok := ctx.Value(kitCtxKey).(*Context)
+	if !ok {
+		return context.WithValue(ctx, key, value)
+	}
+
+	return kitCtx.Set(key, value).Context()
 }
 
 func (ctx *Context) Set(key string, val any) *Context {

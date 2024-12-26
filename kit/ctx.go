@@ -26,6 +26,32 @@ type (
 	LimitedHandlerFunc = func(ctx *LimitedContext)
 )
 
+type ctxPool struct {
+	sync.Pool
+	ls *localStore
+	th HandlerFunc // trace handler
+}
+
+func (p *ctxPool) acquireCtx(c Conn) *Context {
+	ctx, ok := p.Pool.Get().(*Context)
+	if !ok {
+		ctx = newContext(p.ls)
+	}
+
+	ctx.conn = c
+	ctx.in = newEnvelope(ctx, c, false)
+	if p.th != nil {
+		ctx.handlers = append(ctx.handlers, p.th)
+	}
+
+	return ctx
+}
+
+func (p *ctxPool) releaseCtx(ctx *Context) {
+	ctx.reset()
+	p.Pool.Put(ctx)
+}
+
 type Context struct {
 	utils.SpinLock
 	ctx       context.Context //nolint:containedctx
@@ -52,13 +78,36 @@ type Context struct {
 }
 
 func newContext(ls *localStore) *Context {
-	return &Context{
+	kitCtx := &Context{
 		ls:         ls,
 		kv:         make(map[string]any, 4),
 		hdr:        make(map[string]string, 4),
 		statusCode: http.StatusOK,
-		ctx:        context.Background(),
 	}
+	kitCtx.ctx = context.WithValue(context.Background(), kitCtxKey, kitCtx)
+
+	return kitCtx
+}
+
+func (ctx *Context) reset() {
+	for k := range ctx.kv {
+		delete(ctx.kv, k)
+	}
+	for k := range ctx.hdr {
+		delete(ctx.hdr, k)
+	}
+
+	ctx.forwarded = false
+	ctx.serviceName = ctx.serviceName[:0]
+	ctx.contractID = ctx.contractID[:0]
+	ctx.route = ctx.route[:0]
+
+	ctx.in.release()
+	ctx.statusCode = http.StatusOK
+	ctx.handlerIndex = 0
+	ctx.handlers = ctx.handlers[:0]
+	ctx.modifiers = ctx.modifiers[:0]
+	ctx.ctx = context.WithValue(context.Background(), kitCtxKey, ctx)
 }
 
 // ExecuteArg is used by bundle developers, if they want to build a
@@ -123,7 +172,7 @@ func (ctx *Context) AddModifier(modifiers ...ModifierFunc) {
 }
 
 func (ctx *Context) SetUserContext(userCtx context.Context) {
-	ctx.ctx = userCtx
+	ctx.ctx = context.WithValue(userCtx, kitCtxKey, ctx)
 }
 
 // Context returns a context.Background which can be used a reference context for
@@ -242,51 +291,4 @@ func (ctx *Context) HasError() bool {
 // capabilities of the Context to some other function/method.
 func (ctx *Context) Limited() *LimitedContext {
 	return newLimitedContext(ctx)
-}
-
-func (ctx *Context) reset() {
-	for k := range ctx.kv {
-		delete(ctx.kv, k)
-	}
-	for k := range ctx.hdr {
-		delete(ctx.hdr, k)
-	}
-
-	ctx.forwarded = false
-	ctx.serviceName = ctx.serviceName[:0]
-	ctx.contractID = ctx.contractID[:0]
-	ctx.route = ctx.route[:0]
-
-	ctx.in.release()
-	ctx.statusCode = http.StatusOK
-	ctx.handlerIndex = 0
-	ctx.handlers = ctx.handlers[:0]
-	ctx.modifiers = ctx.modifiers[:0]
-	ctx.ctx = context.Background()
-}
-
-type ctxPool struct {
-	sync.Pool
-	ls *localStore
-	th HandlerFunc // trace handler
-}
-
-func (p *ctxPool) acquireCtx(c Conn) *Context {
-	ctx, ok := p.Pool.Get().(*Context)
-	if !ok {
-		ctx = newContext(p.ls)
-	}
-
-	ctx.conn = c
-	ctx.in = newEnvelope(ctx, c, false)
-	if p.th != nil {
-		ctx.handlers = append(ctx.handlers, p.th)
-	}
-
-	return ctx
-}
-
-func (p *ctxPool) releaseCtx(ctx *Context) {
-	ctx.reset()
-	p.Pool.Put(ctx)
 }

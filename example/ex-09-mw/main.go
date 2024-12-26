@@ -81,6 +81,8 @@ func echo(ctx *rony.UnaryCtx[*Counter, rony.NOP], req EchoRequestDTO) (*EchoResp
 
 	_ = ctx.ReduceState(rony.NOP{}, nil)
 
+	kit.ContextWithValue(ctx.Context(), "MyKey", "Hi")
+
 	return res, nil
 }
 
@@ -92,6 +94,9 @@ func printMW(ctx *kit.Context) {
 			fmt.Println("res", utils.B2S(utils.Must(kit.MarshalMessage(envelope.GetMsg()))))
 		},
 	)
+	ctx.Next()
+
+	fmt.Println(ctx.Get("MyKey"))
 }
 
 // printState is a stateful middleware that prints the state of the counter
