@@ -330,6 +330,7 @@ func (sb *southBridge) genCallback(ctx *Context) func(carrier *envelopeCarrier) 
 			ctx.Conn().Set(k, v)
 		}
 
+		ctx.SetStatusCode(carrier.Data.StatusCode)
 		ctx.Out().
 			SetID(carrier.Data.EnvelopeID).
 			SetHdrMap(carrier.Data.Hdr).

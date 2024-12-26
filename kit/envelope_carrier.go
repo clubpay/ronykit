@@ -67,6 +67,7 @@ func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 	ec.Data = &carrierData{
 		EnvelopeID:  utils.B2S(e.id),
 		IsREST:      e.ctx.IsREST(),
+		StatusCode:  e.ctx.GetStatusCode(),
 		MsgType:     reflect.TypeOf(e.GetMsg()).String(),
 		Msg:         marshalEnvelopeCarrier(e.GetMsg()),
 		ContractID:  e.ctx.ContractID(),
@@ -95,6 +96,7 @@ type carrierData struct {
 	EnvelopeID  string            `json:"envelopID,omitempty"`
 	ConnHdr     map[string]string `json:"connHdr,omitempty"`
 	IsREST      bool              `json:"isREST,omitempty"`
+	StatusCode  int               `json:"status,omitempty"`
 	Hdr         map[string]string `json:"hdr,omitempty"`
 	MsgType     string            `json:"msgType,omitempty"`
 	Msg         []byte            `json:"msg,omitempty"`
