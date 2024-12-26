@@ -2,9 +2,7 @@ package kit
 
 import "context"
 
-var (
-	kitCtxKey = struct{}{}
-)
+var kitCtxKey = struct{}{}
 
 func (ctx *Context) setRoute(route string) *Context {
 	ctx.route = append(ctx.route[:0], route...)
