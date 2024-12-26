@@ -1,5 +1,5 @@
-github.com/clubpay/ronykit/kit v0.18.8 h1:PYAo9Ve3y8I1nzl3wGQZ0vtJHWXK+xwdVPSiojBsPZo=
-github.com/clubpay/ronykit/kit v0.18.8/go.mod h1:CmkwWBo83JY5T9w+9L6HOFPpVm68qEjolEhIuFOH0/s=
+github.com/clubpay/ronykit/kit v0.18.9 h1:F3OSwwsMViLhnY+hGdK3yWKzDZa4JP2yfAjVutp0r6c=
+github.com/clubpay/ronykit/kit v0.18.9/go.mod h1:CmkwWBo83JY5T9w+9L6HOFPpVm68qEjolEhIuFOH0/s=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -25,8 +25,8 @@ github.com/onsi/ginkgo/v2 v2.20.0 h1:PE84V2mHqoT1sglvHc8ZdQtPcwmvvt29WLEEO3xmdZw
 github.com/onsi/gomega v1.34.1 h1:EUMJIKUjM8sKjYbtxQI9A4z2o+rruxnzNvpknOXie6k=
 github.com/panjf2000/ants/v2 v2.10.0 h1:zhRg1pQUtkyRiOFo2Sbqwjp0GfBNo9cUY2/Grpx1p+8=
 github.com/panjf2000/ants/v2 v2.10.0/go.mod h1:7ZxyxsqE4vvW0M7LSD8aI3cKwgFhBHbxnlN8mDqHa1I=
-github.com/panjf2000/gnet/v2 v2.6.2 h1:f6WOlfiaMtblK5RvuiXiAraDlawS0RvoI2LSE4ZaAWc=
-github.com/panjf2000/gnet/v2 v2.6.2/go.mod h1:HpNv+iQrIOeil1eyhdnKDlui7jivyMf0K3xwaeHKnh8=
+github.com/panjf2000/gnet/v2 v2.6.3 h1:+Lw6FUAvgtc51bcs3w5bNQOsx8iVv5nEWVJUL4lhjsA=
+github.com/panjf2000/gnet/v2 v2.6.3/go.mod h1:HpNv+iQrIOeil1eyhdnKDlui7jivyMf0K3xwaeHKnh8=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=

@@ -5,12 +5,12 @@ go 1.21
 toolchain go1.22.5
 
 require (
-	github.com/clubpay/ronykit/kit v0.18.8
-	github.com/fasthttp/router v1.5.2
-	github.com/fasthttp/websocket v1.5.10
+	github.com/clubpay/ronykit/kit v0.18.9
+	github.com/fasthttp/router v1.5.3
+	github.com/fasthttp/websocket v1.5.11
 	github.com/goccy/go-reflect v1.2.0
 	github.com/valyala/bytebufferpool v1.0.0
-	github.com/valyala/fasthttp v1.57.0
+	github.com/valyala/fasthttp v1.58.0
 )
 
 require (
@@ -22,7 +22,7 @@ require (
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/net v0.31.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
