@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"hash/crc32"
+	"net/http"
 	"sync"
 
 	"github.com/clubpay/ronykit/example/ex-03-cluster/dto"
@@ -31,7 +33,7 @@ var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetCoordinator(coordinator).
 				SetInput(&dto.GetKeyRequest{}).
-				SetOutput(&dto.Key{}).
+				SetOutput(dto.Key{}).
 				AddRoute(desc.Route("", fasthttp.GET("/get/:key"))).
 				SetHandler(GetKeyHandler),
 		)
@@ -47,6 +49,11 @@ func coordinator(ctx *kit.LimitedContext) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Println(
+		"node", ctx.ClusterID(),
+		"target", members[crc32.ChecksumIEEE(utils.S2B(key))%uint32(len(members))],
+	)
 
 	return members[crc32.ChecksumIEEE(utils.S2B(key))%uint32(len(members))], nil
 }
@@ -74,6 +81,7 @@ func GetKeyHandler(ctx *kit.Context) {
 	v := kv[req.Key]
 	kvl.Unlock()
 
+	ctx.SetStatusCode(http.StatusBadRequest)
 	ctx.In().Reply().
 		SetHdr("ClusterID", ctx.ClusterID()).
 		SetMsg(
@@ -81,4 +89,5 @@ func GetKeyHandler(ctx *kit.Context) {
 				Value: v,
 			},
 		).Send()
+	ctx.StopExecution()
 }

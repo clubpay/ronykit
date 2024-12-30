@@ -132,7 +132,7 @@ func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) 
 }
 
 func unmarshalEnvelopeCarrier(data []byte, m Message) {
-	err := json.Unmarshal(data, m)
+	err := UnmarshalMessage(data, m)
 	if err != nil {
 		panic(err)
 	}
@@ -143,7 +143,8 @@ func marshalEnvelopeCarrier(m Message) []byte {
 	case RawMessage:
 		return v
 	}
-	data, err := json.Marshal(m)
+
+	data, err := MarshalMessage(m)
 	if err != nil {
 		panic(err)
 	}

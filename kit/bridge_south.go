@@ -308,22 +308,12 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	}
 }
 
+var rawMsgFactory = CreateMessageFactory(RawMessage{})
+
 func (sb *southBridge) genCallback(ctx *Context) func(carrier *envelopeCarrier) {
 	return func(carrier *envelopeCarrier) {
 		if carrier.Data == nil {
 			return
-		}
-		f, ok := sb.msgFactories[carrier.Data.MsgType]
-		if !ok {
-			return
-		}
-
-		msg := f()
-		switch msg.(type) {
-		case RawMessage:
-			msg = RawMessage(carrier.Data.Msg)
-		default:
-			unmarshalEnvelopeCarrier(carrier.Data.Msg, msg)
 		}
 
 		for k, v := range carrier.Data.ConnHdr {
@@ -334,7 +324,7 @@ func (sb *southBridge) genCallback(ctx *Context) func(carrier *envelopeCarrier) 
 		ctx.Out().
 			SetID(carrier.Data.EnvelopeID).
 			SetHdrMap(carrier.Data.Hdr).
-			SetMsg(msg).
+			SetMsg(RawMessage(carrier.Data.Msg)).
 			Send()
 	}
 }

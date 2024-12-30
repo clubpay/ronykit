@@ -59,6 +59,9 @@ func main() {
 		kit.WithTrace(
 			tracekit.B3("ex03"),
 		),
+		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
+			fmt.Println("error:", err)
+		}),
 		kit.WithCluster(
 			rediscluster.MustNew(
 				"ex03",

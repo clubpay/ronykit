@@ -9,5 +9,5 @@ Sample-Header: sampleValue
 }
 
 ### Send GET request
-GET http://localhost:83/get/x1
+GET http://localhost:82/get/x1
 Content-Type: application/json
