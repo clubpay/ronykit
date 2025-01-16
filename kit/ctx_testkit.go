@@ -1,20 +1,28 @@
 package kit
 
 import (
+	"errors"
 	"mime/multipart"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
+var (
+	ErrExpectationsDontMatch = errors.New("expectations don't match")
+	ErrUnexpectedEnvelope    = errors.New("unexpected envelope")
+)
+
 // TestContext is useful for writing end-to-end tests for your Contract handlers.
 type TestContext struct {
-	ls         localStore
-	handlers   HandlerFuncChain
-	inMsg      Message
-	inHdr      EnvelopeHdr
-	clientIP   string
-	expectFunc func(...*Envelope) error
+	ls       localStore
+	handlers HandlerFuncChain
+	inMsg    Message
+	inHdr    EnvelopeHdr
+	clientIP string
+
+	expectFunc   []func(e *Envelope) error
+	receiverFunc func(...*Envelope) error
 }
 
 func NewTestContext() *TestContext {
@@ -45,33 +53,53 @@ func (testCtx *TestContext) Input(m Message, hdr EnvelopeHdr) *TestContext {
 }
 
 func (testCtx *TestContext) Receiver(f func(out ...*Envelope) error) *TestContext {
-	testCtx.expectFunc = f
+	testCtx.receiverFunc = f
 
 	return testCtx
 }
 
+func (testCtx *TestContext) Expect(f func(e *Envelope) error) *TestContext {
+	testCtx.expectFunc = append(testCtx.expectFunc, f)
+
+	return testCtx
+}
+
+func Expect[IN, OUT, ERR Message](ctx *TestContext, in IN, out *OUT, err *ERR) error {
+	return ctx.
+		Input(in, EnvelopeHdr{}).
+		Expect(func(e *Envelope) error {
+			switch e.GetMsg().(type) {
+			default:
+				return ErrUnexpectedEnvelope
+			case OUT:
+				*out, _ = e.GetMsg().(OUT)
+			case ERR:
+				*err, _ = e.GetMsg().(ERR)
+			}
+
+			return nil
+		}).RunREST()
+}
+
 func (testCtx *TestContext) Run(stream bool) error {
-	ctx := newContext(&testCtx.ls)
 	conn := newTestConn()
 	conn.clientIP = testCtx.clientIP
 	conn.stream = stream
-	ctx.conn = conn
-	ctx.in = newEnvelope(ctx, conn, false)
-	ctx.in.
-		SetMsg(testCtx.inMsg).
-		SetHdrMap(testCtx.inHdr)
-	ctx.handlers = append(ctx.handlers, testCtx.handlers...)
-	ctx.Next()
 
-	return testCtx.expectFunc(conn.out...)
+	return testCtx.run(conn)
 }
 
 // RunREST simulates a REST request.
 func (testCtx *TestContext) RunREST() error {
-	ctx := newContext(&testCtx.ls)
 	conn := newTestRESTConn()
 	conn.clientIP = testCtx.clientIP
 	conn.stream = false
+
+	return testCtx.run(conn)
+}
+
+func (testCtx *TestContext) run(conn Conn) error {
+	ctx := newContext(&testCtx.ls)
 	ctx.conn = conn
 	ctx.in = newEnvelope(ctx, conn, false)
 	ctx.in.
@@ -80,7 +108,32 @@ func (testCtx *TestContext) RunREST() error {
 	ctx.handlers = append(ctx.handlers, testCtx.handlers...)
 	ctx.Next()
 
-	return testCtx.expectFunc(conn.out...)
+	var out []*Envelope
+	switch conn := conn.(type) {
+	default:
+		panic("BUG! unknown conn type")
+	case *testRESTConn:
+		out = conn.out
+	case *testConn:
+		out = conn.out
+	}
+
+	if testCtx.receiverFunc != nil {
+		return testCtx.receiverFunc(out...)
+	}
+
+	if len(testCtx.expectFunc) > len(out) {
+		return ErrExpectationsDontMatch
+	}
+
+	for idx, o := range out {
+		err := testCtx.expectFunc[idx](o)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type testConn struct {

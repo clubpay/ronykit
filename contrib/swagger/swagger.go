@@ -473,7 +473,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 	}
 
 	var queryParams []*postman.QueryParam
-	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == "GET" {
+	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == http.MethodGet {
 		for _, p := range c.Request.Message.Fields {
 			found := false
 			for _, pp := range c.PathParams {

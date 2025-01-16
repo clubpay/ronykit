@@ -10,10 +10,12 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.17.10
 	github.com/clubpay/ronykit/std/gateways/fastws v0.17.10
 	github.com/clubpay/ronykit/stub v0.17.10
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/router v1.5.2 // indirect
 	github.com/fasthttp/websocket v1.5.10 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
@@ -31,6 +33,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/panjf2000/gnet/v2 v2.5.7 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect

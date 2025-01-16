@@ -4,7 +4,6 @@ linters:
   enable-all: true
   disable:
     - wsl
-    - gomnd
     - gochecknoglobals
     - paralleltest
     - gochecknoinits
@@ -22,6 +21,7 @@ linters:
     - exhaustive
     - depguard
     - perfsprint
+    - recvcheck
   fast: false
 linters-settings:
   #  decorder:

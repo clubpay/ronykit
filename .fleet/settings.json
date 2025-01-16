@@ -1,6 +1,4 @@
 {
-	"editor.guides": [],
-	"go.imports.params": "",
 	"plugins": [
 		{
 			"type": "add",
@@ -18,5 +16,6 @@
 			"type": "add",
 			"pluginName": "fleet.shell"
 		}
-	]
+	],
+	"backend.maxHeapSizeMb": 8192
 }

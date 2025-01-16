@@ -59,7 +59,7 @@ func (cfg *serverConfig) allServiceDesc() []desc.ServiceDesc {
 	return svcs
 }
 
-func (cfg serverConfig) Gateway() kit.Gateway {
+func (cfg *serverConfig) Gateway() kit.Gateway {
 	return fasthttp.MustNew(cfg.gatewayOpts...)
 }
 
