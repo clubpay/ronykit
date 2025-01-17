@@ -14,7 +14,7 @@ func TestFlow(t *testing.T) {
 		sdk, err := flow.NewSDK(
 			flow.Config{
 				Namespace: "kitTest",
-				HostPort:  "127.0.0.1:7333",
+				HostPort:  temporalHostPort,
 			},
 		)
 		c.So(err, ShouldBeNil)

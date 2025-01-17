@@ -11,11 +11,11 @@ use (
 	./example/ex-08-echo
 	./example/ex-09-mw
 	./iq
-	./flow
+	//./flow
 	./kit
 	./rony
 	./ronyup
-	//./std/clusters/p2pcluster
+	./std/clusters/p2pcluster
 	./std/clusters/rediscluster
 	./std/gateways/fasthttp
 	./std/gateways/fastws

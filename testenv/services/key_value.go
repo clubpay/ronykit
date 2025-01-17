@@ -104,7 +104,7 @@ type testClusterStore struct {
 func (t *testClusterStore) Set(ctx *kit.Context, key, value string, ttl time.Duration) error {
 	cs := ctx.ClusterStore()
 	if cs != nil {
-		return cs.Set(key, value, ttl)
+		return cs.Set(ctx.Context(), key, value, ttl)
 	}
 
 	t.mtx.Lock()
@@ -117,7 +117,7 @@ func (t *testClusterStore) Set(ctx *kit.Context, key, value string, ttl time.Dur
 func (t *testClusterStore) Get(ctx *kit.LimitedContext, key string) (string, error) {
 	cs := ctx.ClusterStore()
 	if cs != nil {
-		return cs.Get(key)
+		return cs.Get(ctx.Context(), key)
 	}
 
 	t.mtx.Lock()

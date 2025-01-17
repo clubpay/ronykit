@@ -4,12 +4,12 @@ wd=$(pwd)
 
 
 array1=(
-	contrib kit rony stub ronyup flow
+	contrib kit rony stub ronyup
 	std/gateways/fasthttp
 	std/gateways/fastws
 	std/gateways/silverhttp
 	std/clusters/rediscluster
-#	std/clusters/p2pcluster
+	std/clusters/p2pcluster
 #	example/ex-01-rpc
 #	example/ex-02-rest
 #	example/ex-03-cluster
