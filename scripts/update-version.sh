@@ -49,7 +49,7 @@ update_version() {
   sss="github.com/clubpay/ronykit/stub $1"
   srs="github.com/clubpay/ronykit/stub $2"
 
-  array2=(contrib rony stub async)
+  array2=(contrib rony stub)
   for i in "${array2[@]}"
   do
   	filename="$i"/go.mod
