@@ -1,5 +1,7 @@
 package utils
 
+import "encoding/json"
+
 // PtrVal returns the value of the pointer src. It is a dereference operation.
 func PtrVal[T any](src *T) T {
 	if src == nil {
@@ -67,4 +69,12 @@ func Coalesce[T comparable](in ...T) T {
 	}
 
 	return zero
+}
+
+// ToMap Converts any type to a map[string]interface{}.
+func ToMap(s any) map[string]any {
+	m := make(map[string]interface{})
+	_ = json.Unmarshal(Ok(json.Marshal(s)), &m)
+
+	return m
 }
