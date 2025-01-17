@@ -8,7 +8,7 @@ import (
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	"go.uber.org/fx"
+	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type Config struct {
@@ -18,7 +18,6 @@ type Config struct {
 }
 
 type SDK struct {
-	app    *fx.App
 	nsCli  client.NamespaceClient
 	cli    client.Client
 	replay worker.WorkflowReplayer
@@ -58,8 +57,8 @@ func (sdk *SDK) invoke() error {
 		_ = sdk.nsCli.Register(
 			context.Background(),
 			&workflowservice.RegisterNamespaceRequest{
-				Namespace: sdk.namespace,
-				//WorkflowExecutionRetentionPeriod: &durationpb.Duration{Seconds: 72 * 3600},
+				Namespace:                        sdk.namespace,
+				WorkflowExecutionRetentionPeriod: &durationpb.Duration{Seconds: 72 * 3600},
 			},
 		)
 	}
@@ -111,7 +110,7 @@ func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Durati
 	if res.Config == nil {
 		res.Config = &namespace.NamespaceConfig{}
 	}
-	//res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
+	res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
 
 	return sdk.nsCli.Update(
 		ctx,

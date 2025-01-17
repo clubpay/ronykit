@@ -19,6 +19,7 @@ array1=(
 	example/ex-08-echo
 	example/ex-09-mw
 )
+
 for i in "${array1[@]}"
 do
 	echo "Cleaning up [$i]..."
@@ -28,3 +29,5 @@ do
   go vet ./...
   GOWORK=off golangci-lint run --path-prefix "$i" --fix
 done
+
+
