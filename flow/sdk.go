@@ -47,7 +47,7 @@ func NewSDK(
 	return sdk, nil
 }
 
-func (sdk *SDK) invoke(lc fx.Lifecycle) error {
+func (sdk *SDK) invoke() error {
 	var err error
 	sdk.nsCli, err = client.NewNamespaceClient(client.Options{
 		HostPort: sdk.hostport,
@@ -81,19 +81,6 @@ func (sdk *SDK) invoke(lc fx.Lifecycle) error {
 		sdk.taskQ,
 		worker.Options{
 			DisableRegistrationAliasing: true,
-		},
-	)
-
-	lc.Append(
-		fx.Hook{
-			OnStart: func(_ context.Context) error {
-				return sdk.w.Start()
-			},
-			OnStop: func(_ context.Context) error {
-				sdk.w.Stop()
-
-				return nil
-			},
 		},
 	)
 
