@@ -2,7 +2,7 @@ module github.com/clubpay/ronykit/flow
 
 go 1.22.0
 
-toolchain go1.22.5
+toolchain go1.22.11
 
 require (
 	github.com/clubpay/ronykit/kit v0.18.17
