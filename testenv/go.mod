@@ -182,3 +182,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
+
+replace (
+	google.golang.org/genproto v0.0.0-20190306203927-b5d61aea6440 => google.golang.org/genproto v0.0.0-20250115164207-1a7da9e5054f
+)

@@ -96,8 +96,7 @@ func invokeTemporal(lc fx.Lifecycle) error {
 		gnomock.WithUseLocalImagesFirst(),
 		gnomock.WithEntrypoint(
 			"temporal", "server", "start-dev",
-			"-n", "business",
-			"-n", "subscription",
+			"-n", "kitTest",
 			"--ip", "0.0.0.0",
 		),
 		// gnomock.WithLogWriter(os.Stdout),

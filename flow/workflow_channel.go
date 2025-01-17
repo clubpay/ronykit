@@ -6,18 +6,16 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func NewChannel[REQ, RES, T any](ctx *WorkflowContext[REQ, RES], fn func() T) (T, error) {
-	reqEncoded := workflow.SideEffect(
-		ctx.Context(),
-		func(wctx workflow.Context) any {
-			return fn()
-		},
-	)
+func NewChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES]) Channel[T] {
+	return Channel[T]{
+		ch: workflow.NewChannel(ctx.Context()),
+	}
+}
 
-	var out T
-	err := reqEncoded.Get(&out)
-
-	return out, err
+func NewBufferedChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES], size int) Channel[T] {
+	return Channel[T]{
+		ch: workflow.NewBufferedChannel(ctx.Context(), size),
+	}
 }
 
 type Channel[T any] struct {
@@ -56,8 +54,10 @@ func (ch Channel[T]) Name() string { return ch.ch.Name() }
 // Note, values should not be reused for extraction here because merging on
 // top of existing values may result in unexpected behavior similar to
 // json.Unmarshal.
-func (ch Channel[T]) Receive(ctx Context, valuePtr *T) (more bool) {
-	return ch.ch.Receive(ctx, valuePtr)
+func (ch Channel[T]) Receive(ctx Context) (value T, more bool) {
+	more = ch.ch.Receive(ctx, &value)
+
+	return
 }
 
 // ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
@@ -74,8 +74,10 @@ func (ch Channel[T]) Receive(ctx Context, valuePtr *T) (more bool) {
 // Note, values should not be reused for extraction here because merging on
 // top of existing values may result in unexpected behavior similar to
 // json.Unmarshal.
-func (ch Channel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration, valuePtr *T) (ok, more bool) {
-	return ch.ch.ReceiveWithTimeout(ctx, timeout, valuePtr)
+func (ch Channel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration) (value T, ok, more bool) {
+	ok, more = ch.ch.ReceiveWithTimeout(ctx, timeout, &value)
+
+	return
 }
 
 // ReceiveAsync try to receive from Channel without blocking. If there is data available from the Channel, it
@@ -84,8 +86,10 @@ func (ch Channel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration, valu
 // Note, values should not be reused for extraction here because merging on
 // top of existing values may result in unexpected behavior similar to
 // json.Unmarshal.
-func (ch Channel[T]) ReceiveAsync(valuePtr *T) (ok bool) {
-	return ch.ch.ReceiveAsync(valuePtr)
+func (ch Channel[T]) ReceiveAsync() (value T, ok bool) {
+	ok = ch.ch.ReceiveAsync(&value)
+
+	return
 }
 
 // ReceiveAsyncWithMoreFlag is same as ReceiveAsync with extra return value more to indicate if there could be
@@ -94,8 +98,10 @@ func (ch Channel[T]) ReceiveAsync(valuePtr *T) (ok bool) {
 // Note, values should not be reused for extraction here because merging on
 // top of existing values may result in unexpected behavior similar to
 // json.Unmarshal.
-func (ch Channel[T]) ReceiveAsyncWithMoreFlag(valuePtr *T) (ok bool, more bool) {
-	return ch.ch.ReceiveAsyncWithMoreFlag(valuePtr)
+func (ch Channel[T]) ReceiveAsyncWithMoreFlag() (value T, ok bool, more bool) {
+	ok, more = ch.ch.ReceiveAsyncWithMoreFlag(&value)
+
+	return
 }
 
 // Len returns the number of buffered messages plus the number of blocked Send calls.
