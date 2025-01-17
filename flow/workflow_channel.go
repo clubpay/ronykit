@@ -12,9 +12,21 @@ func NewChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES]) Channel[T] {
 	}
 }
 
+func NewNamedChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES], name string) Channel[T] {
+	return Channel[T]{
+		ch: workflow.NewNamedChannel(ctx.Context(), name),
+	}
+}
+
 func NewBufferedChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES], size int) Channel[T] {
 	return Channel[T]{
 		ch: workflow.NewBufferedChannel(ctx.Context(), size),
+	}
+}
+
+func NewNamedBufferedChannel[T, REQ, RES any](ctx *WorkflowContext[REQ, RES], name string, size int) Channel[T] {
+	return Channel[T]{
+		ch: workflow.NewNamedBufferedChannel(ctx.Context(), name, size),
 	}
 }
 

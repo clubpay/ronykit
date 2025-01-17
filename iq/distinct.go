@@ -22,34 +22,6 @@ func (q Query[T]) Distinct() Query[T] {
 	}
 }
 
-//// Distinct method returns distinct elements from a collection. The result is an
-//// ordered collection that contains no duplicate values.
-////
-//// NOTE: Distinct method on OrderedQuery[T] type has better performance than
-//// Distinct method on Query[T] type.
-//func (oq OrderedQuery[T]) Distinct() OrderedQuery[T] {
-//	return OrderedQuery[T]{
-//		orders: oq.orders,
-//		Query[T]: Query[T]{
-//			Iterate: func() Iterator {
-//				next := oq.Iterate()
-//				var prev interface{}
-//
-//				return func() (item interface{}, ok bool) {
-//					for item, ok = next(); ok; item, ok = next() {
-//						if item != prev {
-//							prev = item
-//							return
-//						}
-//					}
-//
-//					return
-//				}
-//			},
-//		},
-//	}
-//}
-
 // DistinctBy method returns distinct elements from a collection. This method
 // executes a selector function for each element to determine a value to compare.
 // The result is an unordered collection that contains no duplicate values.

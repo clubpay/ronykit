@@ -14,6 +14,8 @@ intuitive framework, leveraging Go Generics to offer a clean and user-friendly A
 the RonyKIT framework. However, if you require greater control over your API server and have concerns about performance and
 memory usage, you can directly utilize the `kit` package, which forms the core of the RonyKIT framework.
 
+![Architect](./docs/architect.png)
+
 - For more information about the `rony` package, visit [rony](./rony/README.MD).
 - For more information about the `kit` package, visit [kit](./kit/README.MD).
 - For more information about the `stub` package, visit [stub](./stub/README.MD).
