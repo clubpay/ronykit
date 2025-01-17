@@ -10,6 +10,16 @@ import (
 
 type ActivityFunc[REQ, RES any] func(ctx *ActivityContext[REQ, RES], req REQ) (*RES, error)
 
+func NewActivity[REQ, RES, InitArg any](
+	name string,
+	factory func(initArg InitArg) ActivityFunc[REQ, RES],
+) Activity[REQ, RES, InitArg] {
+	return Activity[REQ, RES, InitArg]{
+		Name:    name,
+		Factory: factory,
+	}
+}
+
 type Activity[REQ, RES, InitArg any] struct {
 	sdk     *SDK
 	Name    string

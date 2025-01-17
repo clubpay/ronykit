@@ -9,11 +9,12 @@ import (
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/fx"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
 type Config struct {
-	HostPort string
+	HostPort  string
+	Namespace string
+	TaskQueue string
 }
 
 type SDK struct {
@@ -28,13 +29,10 @@ type SDK struct {
 	hostport  string
 }
 
-func NewSDK(
-	cfg Config, namespace, taskQ string,
-) (*SDK, error) {
-
+func NewSDK(cfg Config) (*SDK, error) {
 	sdk := &SDK{
-		taskQ:     taskQ,
-		namespace: namespace,
+		taskQ:     cfg.TaskQueue,
+		namespace: cfg.Namespace,
 		hostport:  cfg.HostPort,
 		replay:    worker.NewWorkflowReplayer(),
 	}
@@ -60,8 +58,8 @@ func (sdk *SDK) invoke() error {
 		_ = sdk.nsCli.Register(
 			context.Background(),
 			&workflowservice.RegisterNamespaceRequest{
-				Namespace:                        sdk.namespace,
-				WorkflowExecutionRetentionPeriod: &durationpb.Duration{Seconds: 72 * 3600},
+				Namespace: sdk.namespace,
+				//WorkflowExecutionRetentionPeriod: &durationpb.Duration{Seconds: 72 * 3600},
 			},
 		)
 	}
@@ -113,7 +111,7 @@ func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Durati
 	if res.Config == nil {
 		res.Config = &namespace.NamespaceConfig{}
 	}
-	res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
+	//res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
 
 	return sdk.nsCli.Update(
 		ctx,

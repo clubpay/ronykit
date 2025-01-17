@@ -15,6 +15,16 @@ import (
 
 type WorkflowFunc[REQ, RES any] func(ctx *WorkflowContext[REQ, RES], req REQ) (*RES, error)
 
+func NewWorkflow[REQ, RES, InitArg any](
+	name string,
+	factory func(initArg InitArg) WorkflowFunc[REQ, RES],
+) Workflow[REQ, RES, InitArg] {
+	return Workflow[REQ, RES, InitArg]{
+		Name:    name,
+		Factory: factory,
+	}
+}
+
 type Workflow[REQ, RES, InitArg any] struct {
 	sdk     *SDK
 	Name    string
