@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -23,7 +24,11 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-var redisDSN string
+var (
+	redisDSN         string
+	temporalHostPort string
+	TemporalUI       string
+)
 
 func getRedis() (*redis.Client, error) {
 	opt, err := redis.ParseURL(redisDSN)
@@ -84,6 +89,57 @@ func provideRedis(lc fx.Lifecycle) (*redis.Client, error) {
 	}
 
 	return cli, nil
+}
+
+func invokeTemporal(lc fx.Lifecycle) error {
+	options := []gnomock.Option{
+		gnomock.WithUseLocalImagesFirst(),
+		gnomock.WithEntrypoint(
+			"temporal", "server", "start-dev",
+			"-n", "business",
+			"-n", "subscription",
+			"--ip", "0.0.0.0",
+		),
+		// gnomock.WithLogWriter(os.Stdout),
+		gnomock.WithHealthCheck(
+			func(ctx context.Context, container *gnomock.Container) error {
+				timeout := time.Second * 3
+				conn, err := net.DialTimeout("tcp", container.DefaultAddress(), timeout)
+				if err != nil {
+					return err
+				}
+				_ = conn.Close()
+
+				return nil
+			}),
+	}
+
+	c, err := gnomock.StartCustom(
+		"temporalio/server",
+		gnomock.NamedPorts{
+			gnomock.DefaultPort: gnomock.TCP(7233),
+			"ui":                gnomock.TCP(8233),
+		},
+		options...,
+	)
+	if err != nil {
+		return err
+	}
+	temporalHostPort = c.DefaultAddress()
+	TemporalUI = fmt.Sprintf("http://%s", c.Address("ui"))
+	lc.Append(
+		fx.Hook{
+			OnStop: func(ctx context.Context) error {
+				err = gnomock.Stop(c)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		})
+
+	return nil
 }
 
 func invokeRedisMonitor(lc fx.Lifecycle, _ *redis.Client) {
@@ -287,6 +343,7 @@ func Prepare(t *testing.T, c C, option ...fx.Option) {
 		fx.StopTimeout(time.Minute * 5),
 		fx.NopLogger,
 		fx.Provide(provideRedis),
+		fx.Invoke(invokeTemporal),
 	}
 
 	opts = append(opts, option...)

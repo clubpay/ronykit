@@ -15,7 +15,7 @@ use (
 	./kit
 	./rony
 	./ronyup
-	./std/clusters/p2pcluster
+	//./std/clusters/p2pcluster
 	./std/clusters/rediscluster
 	./std/gateways/fasthttp
 	./std/gateways/fastws

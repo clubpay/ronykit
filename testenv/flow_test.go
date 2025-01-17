@@ -1,6 +1,7 @@
 package testenv
 
 import (
+	"context"
 	"testing"
 
 	"github.com/clubpay/ronykit/flow"
@@ -19,6 +20,14 @@ func TestFlow(t *testing.T) {
 		c.So(err, ShouldBeNil)
 
 		WFSelect.Init(sdk, "hello")
+
+		ctx := context.Background()
+		wr, err := WFSelect.Execute(ctx, "Req1", flow.ExecuteWorkflowOptions{})
+		c.So(err, ShouldBeNil)
+
+		res, err := wr.Get(ctx)
+		c.So(err, ShouldBeNil)
+		c.So(*res, ShouldEqual, "hi")
 
 	})
 }
