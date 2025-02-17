@@ -50,12 +50,30 @@ func (err Error) Error() string {
 	return fmt.Sprintf("ERR(%d): %s", err.code, err.item)
 }
 
+func (err *Error) SetMsg(msg kit.Message) *Error {
+	err.msg = msg
+
+	return err
+}
+
 func (err Error) Msg() kit.Message {
 	return err.msg
 }
 
+func (err *Error) SetCode(code int) *Error {
+	err.code = code
+
+	return err
+}
+
 func (err Error) Code() int {
 	return err.code
+}
+
+func (err *Error) SetItem(item string) *Error {
+	err.item = item
+
+	return err
 }
 
 func (err Error) Item() string {
