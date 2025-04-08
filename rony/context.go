@@ -128,6 +128,9 @@ type UnaryCtx[S State[A], A Action] struct {
 	BaseCtx[S, A]
 }
 
+// SUnaryCtx is alias for simple unary context when we don't need State
+type SUnaryCtx = UnaryCtx[EMPTY, NOP]
+
 func newUnaryCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *UnaryCtx[S, A] {
@@ -172,6 +175,9 @@ func (c *UnaryCtx[S, A]) SetOutHdrMap(kv map[string]string) {
 type StreamCtx[S State[A], A Action, M Message] struct {
 	BaseCtx[S, A]
 }
+
+// SStreamCtx is alias for StreamCtx when we don't need State
+type SStreamCtx[M Message] = StreamCtx[EMPTY, NOP, M]
 
 func newStreamCtx[S State[A], A Action, M Message](
 	ctx *kit.Context, s *S, sl sync.Locker,

@@ -102,11 +102,11 @@ func genDecoder(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc 
 
 			switch pcs[idx].typ.Kind() {
 			default:
-			// simply ignore
+			// ignore
 			case reflect.Ptr:
 				switch pcs[idx].typ.Elem().Kind() {
 				default:
-				// simply ignore
+				// ignore
 				case reflect.Bool:
 					if strings.ToLower(x) == "true" {
 						*(**bool)(ptr) = utils.ValPtr(true)
@@ -149,7 +149,7 @@ func genDecoder(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc 
 			case reflect.Slice:
 				switch pcs[idx].typ.Elem().Kind() {
 				default:
-					// simply ignore
+					// ignore
 				case reflect.Uint8:
 					*(*[]byte)(ptr) = utils.S2B(x)
 				}
