@@ -13,18 +13,10 @@ const (
 	catchAll
 )
 
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-
-	return b
-}
-
 func longestCommonPrefix(a, b string) int {
 	i := 0
-	max := min(len(a), len(b))
-	for i < max && a[i] == b[i] {
+	maxV := min(len(a), len(b))
+	for i < maxV && a[i] == b[i] {
 		i++
 	}
 
@@ -108,7 +100,7 @@ func (n *node) incrementChildPrio(pos int) int {
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
 //
-//nolint:gocognit
+//nolint:gocognit,cyclop
 func (n *node) addRoute(path string, handle *RouteData) {
 	fullPath := path
 	n.priority++
@@ -540,9 +532,9 @@ walk: // Outer loop for walking the tree
 					// Runes are up to 4 byte long,
 					// -4 would definitely be another rune.
 					var off int
-					for max := min(npLen, 3); off < max; off++ {
+					for maxV := min(npLen, 3); off < maxV; off++ {
 						if i := npLen - off; utf8.RuneStart(oldPath[i]) {
-							// read rune from cached path
+							// read rune from the cached path
 							rv, _ = utf8.DecodeRuneInString(oldPath[i:])
 
 							break

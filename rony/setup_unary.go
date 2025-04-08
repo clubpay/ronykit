@@ -8,6 +8,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony/internal/options/unary"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
@@ -161,7 +162,7 @@ func CreateKitHandler[IN, OUT Message, S State[A], A Action](
 		if deRefIN {
 			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
 		} else {
-			req = ctx.In().GetMsg().(IN)
+			req = ctx.In().GetMsg().(IN) //nolint:forcetypeassert,errcheck
 		}
 
 		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)
@@ -192,7 +193,7 @@ func CreateRawKitHandler[IN Message, S State[A], A Action](
 		if deRefIN {
 			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
 		} else {
-			req = ctx.In().GetMsg().(IN)
+			req = ctx.In().GetMsg().(IN) //nolint:forcetypeassert,errcheck
 		}
 
 		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)

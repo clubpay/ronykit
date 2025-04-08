@@ -1,43 +1,111 @@
+version: "2"
 run:
   tests: false
 linters:
-  enable-all: true
+  default: all
   disable:
-    - wsl
-    - gochecknoglobals
-    - paralleltest
-    - gochecknoinits
+    - asasalint
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - depguard
+    - durationcheck
+    - err113
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exhaustruct
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
     - funlen
+    - ginkgolinter
+    - gochecknoglobals
+    - gochecknoinits
+    - gochecksumtype
+    - gocritic
     - godot
     - godox
-    - nonamedreturns
-    - testpackage
-    - tagliatelle
-    - wrapcheck
-    - varnamelen
+    - gosec
+    - gosmopolitan
+    - govet
+    - iface
+    - importas
+    - intrange
     - ireturn
-    - depguard
+    - loggercheck
+    - makezero
+    - mirror
     - mnd
-  fast: true
-linters-settings:
-  errcheck:
-    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-type-assertions: true
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-blank: true
-  depguard:
-    rules:
-      whilelist:
-        list-mode: lax
-        files:
-          - $all
-          - "!*_test.go"
-        deny:
-          - pkg: "io/ioutil"
-            desc: "io/ioutil is deprecated, use io instead"
-
-
+    - musttag
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - noctx
+    - nonamedreturns
+    - paralleltest
+    - perfsprint
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagliatelle
+    - testifylint
+    - testpackage
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usetesting
+    - varnamelen
+    - wastedassign
+    - wrapcheck
+    - wsl
+    - zerologlint
+  settings:
+    depguard:
+      rules:
+        whilelist:
+          list-mode: lax
+          files:
+            - $all
+            - '!*_test.go'
+          deny:
+            - pkg: io/ioutil
+              desc: io/ioutil is deprecated, use io instead
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

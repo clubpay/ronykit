@@ -115,11 +115,11 @@ var defaultPool = NewBytesPool(32, 1<<20)
 
 // NewBytesPool creates new BytesPool that reuses objects which size is in logarithmic range
 // [min, max].
-func NewBytesPool(min, max int) *BytesPool {
+func NewBytesPool(minSize, maxSize int) *BytesPool {
 	p := &BytesPool{
 		pool: make(map[int]*sync.Pool),
 	}
-	logarithmicRange(min, max, func(n int) {
+	logarithmicRange(minSize, maxSize, func(n int) {
 		p.pool[n] = &sync.Pool{}
 	})
 
@@ -190,16 +190,16 @@ func (p *BytesPool) put(bb *Bytes) {
 
 // logarithmicRange iterates from ceil to power of two min to max,
 // calling cb on each iteration.
-func logarithmicRange(min, max int, cb func(int)) {
-	if min == 0 {
-		min = 1
+func logarithmicRange(minSize, maxSize int, cb func(int)) {
+	if minSize == 0 {
+		minSize = 1
 	}
-	for n := ceilToPowerOfTwo(min); n <= max; n <<= 1 {
+	for n := ceilToPowerOfTwo(minSize); n <= maxSize; n <<= 1 {
 		cb(n)
 	}
 }
 
-// ceilToPowerOfTwo returns the least power of two integer value greater than
+// ceilToPowerOfTwo returns the least power of two integer values greater than
 // or equal to n.
 func ceilToPowerOfTwo(n int) int {
 	if n&maxIntHeadBit != 0 && n > maxIntHeadBit {

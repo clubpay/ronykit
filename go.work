@@ -1,4 +1,4 @@
-go 1.22.7
+go 1.24.0
 
 use (
 	./contrib
@@ -10,8 +10,8 @@ use (
 	./example/ex-06-counter-stream
 	./example/ex-08-echo
 	./example/ex-09-mw
-	./iq
 	./flow
+	./iq
 	./kit
 	./rony
 	./ronyup

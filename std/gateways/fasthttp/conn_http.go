@@ -124,6 +124,7 @@ func (c *httpConn) Redirect(statusCode int, url string) {
 	fasthttp.ReleaseURI(u)
 }
 
+//nolint:cyclop
 func (c *httpConn) getBodyUncompressed() ([]byte, error) {
 	switch string(c.ctx.Request.Header.ContentEncoding()) {
 	default:

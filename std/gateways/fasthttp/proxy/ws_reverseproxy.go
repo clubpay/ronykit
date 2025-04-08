@@ -45,6 +45,8 @@ func NewWSReverseProxyWith(options ...OptionWS) (*WSReverseProxy, error) {
 }
 
 // ServeHTTP WSReverseProxy to serve
+//
+//nolint:cyclop
 func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	if websocket.FastHTTPIsWebSocketUpgrade(ctx) {
 		debugF(w.option.debug, w.option.logger, "websocketproxy: got websocket request")

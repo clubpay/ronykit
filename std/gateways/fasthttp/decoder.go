@@ -147,6 +147,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	return genDecoderFunc(factory, pcs...)
 }
 
+//nolint:cyclop
 func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc {
 	return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 		var (

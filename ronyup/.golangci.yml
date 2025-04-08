@@ -1,49 +1,57 @@
+version: "2"
 run:
   tests: false
 linters:
-  enable-all: false
   disable:
-    - wsl
-    - gochecknoglobals
-    - paralleltest
-    - gochecknoinits
+    - depguard
+    - errcheck
+    - exhaustruct
+    - forbidigo
     - funlen
+    - gochecknoglobals
+    - gochecknoinits
     - godot
     - godox
-    - nonamedreturns
-    - testpackage
-    - tagliatelle
-    - exhaustruct
-    - wrapcheck
-    - varnamelen
-    - ireturn
-    - depguard
-    - perfsprint
-    - mnd
-    - forbidigo
     - gosec
-    - errcheck
-  fast: false
-linters-settings:
-  errcheck:
-    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-type-assertions: true
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-blank: true
-  depguard:
-    rules:
-      whilelist:
-        list-mode: lax
-        files:
-          - $all
-          - "!*_test.go"
-        deny:
-          - pkg: "io/ioutil"
-            desc: "io/ioutil is deprecated, use io instead"
-
-
-
+    - ireturn
+    - mnd
+    - nonamedreturns
+    - paralleltest
+    - perfsprint
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wrapcheck
+    - wsl
+  settings:
+    depguard:
+      rules:
+        whilelist:
+          list-mode: lax
+          files:
+            - $all
+            - '!*_test.go'
+          deny:
+            - pkg: io/ioutil
+              desc: io/ioutil is deprecated, use io instead
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ronaksoft/ronykit/kit"
+	"github.com/clubpay/ronykit/kit"
 )
 
 func goType(t reflect.Type) string {
@@ -21,8 +21,7 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 	if t.PkgPath() == reflect.TypeOf(kit.RawMessage{}).PkgPath() {
 		return fmt.Sprintf("%s%s%s", prefix, "kit.", t.Name())
 	}
-	switch t.String() {
-	case "json.RawMessage":
+	if t.String() == "json.RawMessage" {
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
 	}
 

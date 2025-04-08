@@ -19,6 +19,8 @@ var uppercaseAcronym = map[string]string{
 }
 
 // Converts a string to CamelCase
+//
+//nolint:cyclop
 func toCamelInitCase(s string, initCase bool) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -103,7 +105,14 @@ func ToDelimited(s string, delimiter uint8) string {
 // (in this case `delimiter = '.'; screaming = true`)
 // or delimited.snake.case
 // (in this case `delimiter = '.'; screaming = false`)
-func ToScreamingDelimited(s string, delimiter uint8, ignore uint8, screaming bool) string { //nolint:gocognit,gocyclo
+//
+//nolint:gocognit,cyclop,gocyclo
+func ToScreamingDelimited(
+	s string,
+	delimiter uint8,
+	ignore uint8,
+	screaming bool,
+) string {
 	n := strings.Builder{}
 	n.Grow(len(s) + 2) // nominal 2 bytes of extra space for inserted delimiters
 	start := true

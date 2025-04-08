@@ -395,6 +395,7 @@ var (
 	strBoundary          = []byte("boundary")
 )
 
+//nolint:cyclop
 func getMultipartFormBoundary(contentType []byte) []byte {
 	b := contentType
 	if !bytes.HasPrefix(b, strMultipartFormData) {

@@ -1,48 +1,61 @@
+version: "2"
 run:
   tests: false
 linters:
-  enable-all: true
+  default: all
   disable:
-    - wsl
-    - gochecknoglobals
-    - paralleltest
-    - gochecknoinits
-    - funlen
-    - godot
-    - godox
-    - nonamedreturns
-    - testpackage
-    - tagliatelle
-    - wrapcheck
-    - varnamelen
-    - ireturn
     - depguard
     - exhaustruct
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - godot
+    - godox
+    - ireturn
     - mnd
-  fast: false
-linters-settings:
-  errcheck:
-    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-type-assertions: true
-    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`.
-    # Such cases aren't reported by default.
-    # Default: false
-    check-blank: true
-  cyclop:
-    # The maximal code complexity to report.
-    # Default: 10
-    max-complexity: 15
-  depguard:
-    rules:
-      whilelist:
-        list-mode: lax
-        files:
-          - $all
-          - "!*_test.go"
-        deny:
-          - pkg: "io/ioutil"
-            desc: "io/ioutil is deprecated, use io instead"
-
-
+    - nonamedreturns
+    - paralleltest
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wrapcheck
+    - wsl
+  settings:
+    cyclop:
+      max-complexity: 15
+    depguard:
+      rules:
+        whilelist:
+          list-mode: lax
+          files:
+            - $all
+            - '!*_test.go'
+          deny:
+            - pkg: io/ioutil
+              desc: io/ioutil is deprecated, use io instead
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
