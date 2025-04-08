@@ -31,10 +31,13 @@ var (
 )
 
 func New(name string, opts ...Option) (kit.Cluster, error) {
+	const defaultIdleTime = time.Minute * 10
+	const defaultGCPeriod = time.Minute
+
 	c := &cluster{
 		prefix:   name,
-		idleTime: time.Minute * 10,
-		gcPeriod: time.Minute,
+		idleTime: defaultIdleTime,
+		gcPeriod: defaultGCPeriod,
 	}
 	for _, o := range opts {
 		o(c)
@@ -155,7 +158,8 @@ func (c *cluster) Get(ctx context.Context, key string) (string, error) {
 }
 
 func (c *cluster) Scan(ctx context.Context, prefix string, cb func(string) bool) error {
-	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
+	const scanSize = 512
+	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), scanSize).Iterator()
 
 	for iter.Next(ctx) {
 		if !cb(iter.Val()) {
@@ -167,7 +171,8 @@ func (c *cluster) Scan(ctx context.Context, prefix string, cb func(string) bool)
 }
 
 func (c *cluster) ScanWithValue(ctx context.Context, prefix string, cb func(string, string) bool) error {
-	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), 512).Iterator()
+	const scanSize = 512
+	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), scanSize).Iterator()
 
 	for iter.Next(ctx) {
 		v, err := c.rc.Get(ctx, iter.Val()).Result()

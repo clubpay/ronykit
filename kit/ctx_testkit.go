@@ -2,7 +2,6 @@ package kit
 
 import (
 	"errors"
-	"mime/multipart"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit/utils"
@@ -249,10 +248,6 @@ func (t *testRESTConn) GetMethod() string {
 
 func (t *testRESTConn) GetPath() string {
 	return t.path
-}
-
-func (t *testRESTConn) Form() (*multipart.Form, error) {
-	panic("not implemented")
 }
 
 func (t *testRESTConn) SetStatusCode(code int) {

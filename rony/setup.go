@@ -23,6 +23,8 @@ type (
 	NOP struct{}
 )
 
+var _ State[NOP] = EMPTY{}
+
 func (e EMPTY) Name() string {
 	return "EMPTY"
 }
@@ -121,6 +123,15 @@ func WithUnary[S State[A], A Action, IN, OUT Message](
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerUnary[IN, OUT, S, A](ctx, h, opt...)
+	}
+}
+
+func WithRawUnary[S State[A], A Action, IN Message](
+	h RawUnaryHandler[S, A, IN],
+	opt ...UnaryOption,
+) SetupOption[S, A] {
+	return func(ctx *SetupContext[S, A]) {
+		registerRawUnary[IN, S, A](ctx, h, opt...)
 	}
 }
 

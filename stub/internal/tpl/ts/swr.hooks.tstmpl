@@ -2,21 +2,21 @@
 		This is a template block to generate a DTO struct
 */}}
 {{ define "dto" }}
-	// {{.Name}} is a data transfer object
-	{{- $extends := strEmptySlice }}
-	{{- range .Fields -}}
-		{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
-	{{- end }}
-	{{- if gt (len $extends) 0 }}
-		export interface {{.Name}} extends {{strJoin $extends ", "}} {
-	{{- else }}
-		export interface {{.Name}} {
-	{{- end }}
-	{{- range .Fields -}}
-			{{- if .Embedded }} {{continue}} {{end}}
-			{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
-	{{- end }}
-	}
+// {{.Name}} is a data transfer object
+{{- $extends := strEmptySlice }}
+{{- range .Fields -}}
+{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
+{{- end }}
+{{- if gt (len $extends) 0 }}
+export interface {{.Name}} extends {{strJoin $extends ", "}} {
+{{- else }}
+export interface {{.Name}} {
+{{- end }}
+{{- range .Fields -}}
+{{- if .Embedded }} {{continue}} {{end}}
+{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
+{{- end }}
+}
 {{- end }}
 
 {{/* Generate the DTO interfaces */}}
@@ -28,7 +28,7 @@
 // @ts-ignore
 import useSWR, { SWRConfiguration } from 'swr'
 import {
-	{{$serviceName}}Stub
+{{$serviceName}}Stub
 {{ range $dtoName, $dto := .Messages -}}
 , {{  $dtoName }}
 {{- end }}
@@ -39,20 +39,20 @@ import {
 {{/* Generating React Hooks */}}
 {{- range .RESTMethods -}}
 {{$methodName := .Name}}
-{{- if ne $methodName "" }}
-	export function use{{$methodName}}(
-	stub: {{$serviceName}}Stub,
-	req: {{.Request.Message.Name}},
-	reqHeader?: HeadersInit,
-	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>
-	) {
-	return useSWR(
-	[req, '{{$methodName}}'],
-	(req) => {
-	return stub.{{lowerCamelCase $methodName}}(req[0], reqHeader)
-	},
-	options
-	)
-	}
+{{- if and (ne $methodName "") (not .Request.Message.IsSpecial) }}
+export function use{{$methodName}}(
+stub: {{$serviceName}}Stub,
+req: {{.Request.Message.Name}},
+reqHeader?: HeadersInit,
+options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>
+) {
+return useSWR(
+[req, '{{$methodName}}'],
+(req) => {
+return stub.{{lowerCamelCase $methodName}}(req[0], reqHeader)
+},
+options
+)
+}
 {{- end}}
 {{- end}}

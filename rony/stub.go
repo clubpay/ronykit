@@ -18,7 +18,7 @@ func GenerateStub[S State[A], A Action](
 	ctx := SetupContext[S, A]{
 		s:    utils.ValPtr(ToInitiateState(s)()),
 		name: name,
-		cfg:  &serverConfig{},
+		cfg:  utils.ValPtr(defaultServerConfig()),
 	}
 	for _, o := range opt {
 		o(&ctx)
@@ -26,7 +26,7 @@ func GenerateStub[S State[A], A Action](
 
 	return stubgen.New(
 		stubgen.WithGenEngine(genEngine),
-		stubgen.WithStubName(name),
+		stubgen.WithStubName(utils.ToCamel(name)),
 		stubgen.WithFolderName(folderName),
 		stubgen.WithOutputDir(outputDir),
 	).Generate(ctx.cfg.allServiceDesc()...)

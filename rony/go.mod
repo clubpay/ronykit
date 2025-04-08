@@ -1,8 +1,6 @@
 module github.com/clubpay/ronykit/rony
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.24.0
 
 require (
 	github.com/clubpay/ronykit/contrib v0.18.19
@@ -14,7 +12,7 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/fasthttp/router v1.5.3 // indirect
-	github.com/fasthttp/websocket v1.5.11 // indirect
+	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect

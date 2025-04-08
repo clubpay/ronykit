@@ -1,6 +1,9 @@
 package rony
 
 import (
+	"reflect"
+	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
@@ -20,6 +23,11 @@ type UnaryHandler[
 	IN, OUT Message,
 ] func(ctx *UnaryCtx[S, A], in IN) (*OUT, error)
 
+type RawUnaryHandler[
+	S State[A], A Action,
+	IN Message,
+] func(ctx *UnaryCtx[S, A], in IN) (kit.RawMessage, error)
+
 func registerUnary[IN, OUT Message, S State[A], A Action](
 	setupCtx *SetupContext[S, A],
 	h UnaryHandler[S, A, IN, OUT],
@@ -37,26 +45,18 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)
-	handlers = append(handlers,
-		func(ctx *kit.Context) {
-			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
-			out, err := h(newUnaryCtx[S, A](ctx, s, sl), *req)
-			if err != nil {
-				if e, ok := err.(errCode); ok {
-					ctx.SetStatusCode(e.GetCode())
-				}
 
-				ctx.In().Reply().SetMsg(err).Send()
+	c := desc.NewContract()
+	switch reflect.TypeOf(in) {
+	default:
+		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, true))
+		c.In(&in)
+	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
+		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, false))
+		c.In(in)
+	}
 
-				return
-			}
-
-			ctx.Out().SetMsg(out).Send()
-		},
-	)
-
-	c := desc.NewContract().
-		In(&in).
+	c.
 		Out(&out).
 		SetHandler(handlers...)
 
@@ -64,12 +64,150 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 		c.SetCoordinator(setupCtx.nodeSel)
 	}
 
+	// Using reflection to get the name of the passed UnaryHandler function
+	handlerName := ""
+	hValue := reflect.ValueOf(h)
+	if hValue.Kind() == reflect.Func {
+		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")
+		handlerName = parts[len(parts)-1]
+	}
+
 	cfg := unary.GenConfig(opt...)
-	for _, s := range cfg.Selectors {
+	for idx, s := range cfg.Selectors {
+		if s.Name == "" {
+			if idx == 0 {
+				s.Name = utils.ToCamel(handlerName)
+			} else {
+				s.Name = utils.ToCamel(handlerName) + utils.IntToStr(idx+1)
+			}
+		}
+
 		c.AddRoute(desc.Route(s.Name, s.Selector))
 	}
 
 	setupCtx.cfg.getService(setupCtx.name).AddContract(c)
+}
+
+func registerRawUnary[IN Message, S State[A], A Action](
+	setupCtx *SetupContext[S, A],
+	h RawUnaryHandler[S, A, IN],
+	opt ...UnaryOption,
+) {
+	var (
+		in  IN
+		out kit.RawMessage
+	)
+
+	s := setupCtx.s
+	// we create the locker pointer to improve runtime performance, also
+	// since Setup function guarantees that S is a pointer to a struct,
+	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
+
+	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
+	handlers = append(handlers, setupCtx.mw...)
+
+	c := desc.NewContract()
+	switch reflect.TypeOf(in) {
+	default:
+		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, true))
+		c.In(&in)
+	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
+		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, false))
+		c.In(in)
+	}
+
+	c.
+		Out(out).
+		SetHandler(handlers...)
+
+	if setupCtx.nodeSel != nil {
+		c.SetCoordinator(setupCtx.nodeSel)
+	}
+
+	// Using reflection to get the name of the passed UnaryHandler function
+	handlerName := ""
+	hValue := reflect.ValueOf(h)
+	if hValue.Kind() == reflect.Func {
+		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")
+		handlerName = parts[len(parts)-1]
+	}
+
+	cfg := unary.GenConfig(opt...)
+	for idx, s := range cfg.Selectors {
+		if s.Name == "" {
+			if idx == 0 {
+				s.Name = utils.ToCamel(handlerName)
+			} else {
+				s.Name = utils.ToCamel(handlerName) + utils.IntToStr(idx+1)
+			}
+		}
+
+		c.AddRoute(desc.Route(s.Name, s.Selector))
+	}
+
+	setupCtx.cfg.getService(setupCtx.name).AddContract(c)
+}
+
+func CreateKitHandler[IN, OUT Message, S State[A], A Action](
+	h UnaryHandler[S, A, IN, OUT], s *S, sl sync.Locker,
+	deRefIN bool,
+) kit.HandlerFunc {
+	return func(ctx *kit.Context) {
+		var (
+			err error
+			req IN
+			out *OUT
+		)
+		if deRefIN {
+			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
+		} else {
+			req = ctx.In().GetMsg().(IN)
+		}
+
+		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)
+		if err != nil {
+			if e, ok := err.(errCode); ok {
+				ctx.SetStatusCode(e.GetCode())
+			}
+
+			ctx.In().Reply().SetMsg(err).Send()
+
+			return
+		}
+
+		ctx.Out().SetMsg(out).Send()
+	}
+}
+
+func CreateRawKitHandler[IN Message, S State[A], A Action](
+	h RawUnaryHandler[S, A, IN], s *S, sl sync.Locker,
+	deRefIN bool,
+) kit.HandlerFunc {
+	return func(ctx *kit.Context) {
+		var (
+			err error
+			req IN
+			out kit.RawMessage
+		)
+		if deRefIN {
+			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
+		} else {
+			req = ctx.In().GetMsg().(IN)
+		}
+
+		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)
+		if err != nil {
+			if e, ok := err.(errCode); ok {
+				ctx.SetStatusCode(e.GetCode())
+			}
+
+			ctx.In().Reply().SetMsg(err).Send()
+
+			return
+		}
+
+		ctx.Out().SetMsg(out).Send()
+	}
 }
 
 /*

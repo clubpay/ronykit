@@ -38,14 +38,22 @@ package {{.Pkg}}
 import (
 "context"
 "fmt"
+{{ range .GetBuiltinPkgPaths -}}
+	"{{ . }}"
+{{ end }}
 
-"github.com/clubpay/ronykit/kit"
-"github.com/clubpay/ronykit/stub"
-"github.com/clubpay/ronykit/kit/utils/reflector"
+"github.com/ronaksoft/ronykit/kit"
+"github.com/ronaksoft/ronykit/kit/utils"
+"github.com/ronaksoft/ronykit/stub"
+"github.com/ronaksoft/ronykit/kit/utils/reflector"
 )
 
 {{/* We use this to make sure fmt import is not complained by the compiler */}}
-var _ fmt.Stringer
+var (
+_ fmt.Stringer
+_ utils.Result
+{{ if containsStr .GetBuiltinPkgPaths "encoding/json" }} _ json.RawMessage {{end}}
+)
 
 {{/* Generate the init function */}}
 {{$tags := strQuote .Tags}}
@@ -72,8 +80,8 @@ type I{{$serviceName}}Stub interface {
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" -}}
 		{{$methodName}}(
-		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-		) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
+		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error)
 	{{- end -}}
 {{- end }}
 }
@@ -105,9 +113,13 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" }}
 		func (s {{$serviceName}}Stub) {{$methodName}}(
-		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-		) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
-		res := &{{.GetOKResponse.Message.Name}}{}
+		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error){
+		{{ if .GetOKResponse.Message.IsSpecial }}
+			res := {{.GetOKResponse.Message.GoName }}{}
+		{{ else }}
+			res := &{{.GetOKResponse.Message.Name}}{}
+		{{end}}
 		httpCtx := s.s.REST(opt...).
 		SetMethod("{{.Method}}").
 		{{ range $idx, $errDto := .GetErrors }}
@@ -126,7 +138,13 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 		{{- end }}
 		SetOKHandler(
 		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-		return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+		{{ if .GetOKResponse.Message.IsSpecial }}
+			res = utils.CloneBytes(r.GetBody())
+			return  nil
+		{{ else }}
+			return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+		{{end}}
+
 		},
 		).
 		DefaultResponseHandler(
@@ -155,7 +173,11 @@ type MockOption func(*{{$serviceName}}StubMock)
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" }}
 		func Mock{{$methodName}}(
-		f func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error),
+		f func(
+		ctx context.Context,
+		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
+		opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error),
 		) MockOption {
 		return func(sm *{{$serviceName}}StubMock) {
 		sm.{{toLower $methodName}} = f
@@ -171,7 +193,11 @@ type {{$serviceName}}StubMock struct {
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" -}}
-		{{toLower $methodName}} func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error)
+		{{toLower $methodName}} func(
+		ctx context.Context,
+		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
+		opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error)
 	{{- end -}}
 {{- end }}
 }
@@ -191,8 +217,10 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 	{{$methodName := .Name}}
 	{{- if ne $methodName "" }}
 		func (s *{{$serviceName}}StubMock) {{$methodName}}(
-		ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption,
-		) (*{{.GetOKResponse.Message.Name}}, *stub.Error){
+		ctx context.Context,
+		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
+		opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error){
 		if s.{{toLower $methodName}} == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 		}
@@ -201,11 +229,15 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		}
 
 		func (s *{{$serviceName}}StubMock) Set{{$methodName}}(
-			f func(ctx context.Context, req *{{.Request.Message.Name}}, opt ...stub.RESTOption) (*{{.GetOKResponse.Message.Name}}, *stub.Error),
+		f func(
+		ctx context.Context,
+		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
+		opt ...stub.RESTOption,
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error),
 		) *{{$serviceName}}StubMock {
-			s.{{toLower $methodName}} = f
+		s.{{toLower $methodName}} = f
 
-			return s
+		return s
 		}
 	{{ end }}
 {{- end }}

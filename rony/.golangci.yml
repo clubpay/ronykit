@@ -21,6 +21,7 @@ linters:
     - perfsprint
     - mnd
     - recvcheck
+    - gomnd
   fast: false
 linters-settings:
   errcheck:

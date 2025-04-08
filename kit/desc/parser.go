@@ -150,6 +150,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 				Optional: ft.Kind() == reflect.Pointer || ft.Kind() == reflect.Slice || ft.Kind() == reflect.Map,
 				Embedded: f.Anonymous,
 				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
+				Exported: f.IsExported(),
 			},
 		)
 	}
@@ -316,6 +317,19 @@ func (pm ParsedMessage) IsSpecial() bool {
 	return pm.Kind == KitRawMessage || pm.Kind == KitMultipartFormMessage
 }
 
+func (pm ParsedMessage) GoName() string {
+	if pm.IsSpecial() {
+		switch pm.Kind {
+		case KitRawMessage:
+			return "kit.RawMessage"
+		case KitMultipartFormMessage:
+			return "kit.MultipartFormMessage"
+		}
+	}
+
+	return pm.Name
+}
+
 func (pm ParsedMessage) JSON() string {
 	mJSON, _ := json.MarshalIndent(pm.original, "", "  ")
 
@@ -403,6 +417,17 @@ func (pm ParsedMessage) FieldByGoName(name string) *ParsedField {
 	return nil
 }
 
+func (pm ParsedMessage) ExportedFields() int {
+	var count int
+	for _, f := range pm.Fields {
+		if f.Exported {
+			count++
+		}
+	}
+
+	return count
+}
+
 type ParsedField struct {
 	GoName      string
 	Name        string
@@ -410,6 +435,7 @@ type ParsedField struct {
 	SampleValue string
 	Optional    bool
 	Embedded    bool
+	Exported    bool
 
 	Element *ParsedElement
 }

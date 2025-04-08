@@ -1,6 +1,9 @@
 package desc_test
 
 import (
+	"reflect"
+	"time"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	. "github.com/onsi/ginkgo/v2"
@@ -45,6 +48,7 @@ type FlatMessage struct {
 	E map[int64]string             `json:"e"`
 	G [][]string                   `json:"g"`
 	M map[string]map[string]string `json:"m"`
+	T time.Time                    `json:"t"`
 }
 
 type NestedMessage struct {
@@ -83,7 +87,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
 		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(7))
+		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(8))
 
 		Expect(contract1.Name).To(Equal("s2"))
 		Expect(contract1.Type).To(Equal(desc.REST))
@@ -105,12 +109,12 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Fields[2].Element.Element.Kind).To(Equal(desc.Object))
 		Expect(contract0.Request.Message.Fields[2].Element.Element.Message.Name).To(Equal("FlatMessage"))
 		Expect(contract0.Request.Message.Fields[2].Tag.OmitEmpty).To(BeTrue())
-		Expect(contract0.Request.Message.Fields[2].Optional).To(BeFalse())
+		Expect(contract0.Request.Message.Fields[2].Optional).To(BeTrue())
 		Expect(contract0.Request.Message.Fields[3].Name).To(Equal("bm"))
 		Expect(contract0.Request.Message.Fields[3].Element.Kind).To(Equal(desc.Map))
 		Expect(contract0.Request.Message.Fields[3].Element.Element.Kind).To(Equal(desc.Object))
 		Expect(contract0.Request.Message.Fields[3].Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.Fields[3].Optional).To(BeFalse())
+		Expect(contract0.Request.Message.Fields[3].Optional).To(BeTrue())
 		Expect(contract0.Request.Message.Fields[3].Tag.OmitEmpty).To(BeFalse())
 		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("c"))
 		Expect(contract0.Request.Message.Fields[4].Element.Kind).To(Equal(desc.Object))
@@ -129,7 +133,7 @@ var _ = Describe("DescParser", func() {
 		Expect(b.Name).To(Equal("b"))
 		Expect(b.Element.Kind).To(Equal(desc.Object))
 		Expect(b.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(b.Element.Message.Fields).To(HaveLen(7))
+		Expect(b.Element.Message.Fields).To(HaveLen(8))
 		Expect(b.Element.Message.Fields[0].Name).To(Equal("a"))
 		Expect(b.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
@@ -139,7 +143,7 @@ var _ = Describe("DescParser", func() {
 		Expect(ba.Element.Message).To(BeNil())
 		Expect(ba.Element.Element.Kind).To(Equal(desc.Object))
 		Expect(ba.Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(ba.Element.Element.Message.Fields).To(HaveLen(7))
+		Expect(ba.Element.Element.Message.Fields).To(HaveLen(8))
 		Expect(ba.Element.Element.Message.Fields[0].Name).To(Equal("a"))
 		Expect(ba.Element.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
@@ -164,7 +168,7 @@ var _ = Describe("DescParser", func() {
 		Expect(f.Element.Kind).To(Equal(desc.Map))
 		Expect(f.Element.Element.Kind).To(Equal(desc.String))
 		Expect(f.Element.Message).To(BeNil())
-		Expect(f.Optional).To(BeFalse())
+		Expect(f.Optional).To(BeTrue())
 		Expect(f.Element.Message).To(BeNil())
 		Expect(f.Element.Type).To(Equal("map[string]string"))
 
@@ -173,7 +177,7 @@ var _ = Describe("DescParser", func() {
 		Expect(f3.Element.Kind).To(Equal(desc.Map))
 		Expect(f3.Element.Element.Kind).To(Equal(desc.Integer))
 		Expect(f3.Element.Message).To(BeNil())
-		Expect(f3.Optional).To(BeFalse())
+		Expect(f3.Optional).To(BeTrue())
 		Expect(f3.Element.Message).To(BeNil())
 		Expect(f3.Element.Type).To(Equal("map[string]int64"))
 	})
@@ -255,5 +259,54 @@ var _ = Describe("RawMessage and MultipartForm", func() {
 		Expect(contract1.Responses[0].Message.Name).To(Equal("RawMessage"))
 		Expect(contract1.Responses[0].Message.Fields).To(HaveLen(0))
 		Expect(contract1.Responses[0].Message.Kind).To(Equal(desc.KitRawMessage))
+	})
+})
+
+type SpecialFields struct {
+	T       time.Time             `json:"t"`
+	TPtr    *time.Time            `json:"tPtr"`
+	TMap    map[string]time.Time  `json:"tMap"`
+	TMapPtr map[string]*time.Time `json:"tMapPtr"`
+	TArr    []time.Time           `json:"tArr"`
+	TArrPtr []*time.Time          `json:"tArrPtr"`
+}
+
+var _ = Describe("Time Fields", func() {
+	d := desc.NewService("sample").
+		AddContract(
+			desc.NewContract().
+				SetName("rawRequest").
+				AddRoute(desc.Route("s1", newREST(kit.JSON, "/raw1", "POST"))).
+				In(&SpecialFields{}).
+				Out(kit.RawMessage{}),
+		)
+
+	It("should parse the descriptor", func() {
+		pd := desc.ParseService(d)
+		contract0 := pd.Contracts[0]
+		Expect(pd.Contracts).To(HaveLen(1))
+
+		Expect(contract0.Name).To(Equal("s1"))
+		Expect(contract0.Type).To(Equal(desc.REST))
+		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
+		Expect(contract0.Path).To(Equal("/raw1"))
+		Expect(contract0.Method).To(Equal("POST"))
+		Expect(contract0.GroupName).To(Equal("rawRequest"))
+		Expect(contract0.Request.Message.Name).To(Equal("SpecialFields"))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(6))
+		Expect(contract0.Request.Message.Kind).To(Equal(desc.Object))
+		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("t"))
+		Expect(contract0.Request.Message.Fields[0].Element.RType).To(Equal(reflect.TypeOf(time.Time{})))
+		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("tPtr"))
+		Expect(contract0.Request.Message.Fields[1].Element.RType).To(Equal(reflect.TypeOf(&time.Time{})))
+		Expect(contract0.Request.Message.Fields[2].Name).To(Equal("tMap"))
+		Expect(contract0.Request.Message.Fields[2].Element.RType).To(Equal(reflect.TypeOf(map[string]time.Time{})))
+		Expect(contract0.Request.Message.Fields[3].Name).To(Equal("tMapPtr"))
+		Expect(contract0.Request.Message.Fields[3].Element.RType).To(Equal(reflect.TypeOf(map[string]*time.Time{})))
+		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("tArr"))
+		Expect(contract0.Request.Message.Fields[4].Element.RType).To(Equal(reflect.TypeOf([]time.Time{})))
+		Expect(contract0.Request.Message.Fields[5].Name).To(Equal("tArrPtr"))
+		Expect(contract0.Request.Message.Fields[5].Element.RType).To(Equal(reflect.TypeOf([]*time.Time{})))
+		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
 	})
 })

@@ -2,21 +2,21 @@
 		This is a template block to generate a DTO struct
 */}}
 {{ define "dto" }}
-	// {{.Name}} is a data transfer object
-	{{- $extends := strEmptySlice }}
-	{{- range .Fields -}}
-		{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
-	{{- end }}
-	{{- if gt (len $extends) 0 }}
-		export interface {{.Name}} extends {{strJoin $extends ", "}} {
-	{{- else }}
-		export interface {{.Name}} {
-	{{- end }}
-	{{- range .Fields -}}
-			{{- if .Embedded }} {{continue}} {{end}}
-			{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Tag.OmitEmpty}}?{{end}}: {{tsType .Element.RType}}{{ if (and .Optional (not .Tag.OmitEmpty)) }}| null{{end}}
-	{{- end }}
-	}
+// {{.Name}} is a data transfer object
+{{- $extends := strEmptySlice }}
+{{- range .Fields -}}
+{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
+{{- end }}
+{{- if gt (len $extends) 0 }}
+export interface {{.Name}} extends {{strJoin $extends ", "}} {
+{{- else }}
+export interface {{.Name}} {
+{{- end }}
+{{- range .Fields -}}
+{{- if .Embedded }} {{continue}} {{end}}
+{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Tag.OmitEmpty}}?{{end}}: {{tsType .Element.RType}}{{ if (and .Optional (not .Tag.OmitEmpty)) }}| null{{end}}
+{{- end }}
+}
 {{- end }}
 
 {{/* Generate the DTO interfaces */}}
@@ -26,7 +26,7 @@ import useSWR, { SWRConfiguration } from 'swr'
 {{end}}
 
 {{ range $dtoName, $dto := .Messages -}}
-	{{ template "dto" $dto }}
+{{ template "dto" $dto }}
 {{- end }}
 
 
@@ -43,50 +43,50 @@ this.serverURL = serverURL.replace(/\/$/, '');
 			Generating the REST methods
 */}}
 {{- range .RESTMethods -}}
-	{{$methodName := .Name}}
-	{{- if ne $methodName "" }}
-		// @ts-ignore
-		async {{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
-		{{- if eq (toLower .Method) "get" }}
-			const keys = Object.keys(req);
-			const keyValuePairs = keys
-				.filter((key) => ((req as any)[key] !== undefined && (req as any)[key] !== null))
-				.map(key => {
-			return encodeURIComponent(key) + '=' + encodeURIComponent((req as any)[key]);
-			}).join('&');
-			const queryParams =  (keyValuePairs.length > 0) ? `?${keyValuePairs}`: ""
-			const url = `${this.serverURL}{{tsReplacePathParams .Path "req."}}${queryParams}`;
-			return fetch(url, {
-			method: "{{.Method}}",
-			headers: {
-			"Content-Type": "application/json",
-			...headers,
-			}
-			}).then((res: Response) => {
-			if (res.status !== 200) {
-			throw new Error("Failed to fetch the data");
-			}
+{{$methodName := .Name}}
+{{- if and (ne $methodName "") (not .Request.Message.IsSpecial) }}
+// @ts-ignore
+async {{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
+{{- if eq (toLower .Method) "get" }}
+const keys = Object.keys(req);
+const keyValuePairs = keys
+.filter((key) => ((req as any)[key] !== undefined && (req as any)[key] !== null))
+.map(key => {
+return encodeURIComponent(key) + '=' + encodeURIComponent((req as any)[key]);
+}).join('&');
+const queryParams =  (keyValuePairs.length > 0) ? `?${keyValuePairs}`: ""
+const url = `${this.serverURL}{{tsReplacePathParams .Path "req."}}${queryParams}`;
+return fetch(url, {
+method: "{{.Method}}",
+headers: {
+"Content-Type": "application/json",
+...headers,
+}
+}).then((res: Response) => {
+if (res.status !== 200) {
+throw new Error("Failed to fetch the data");
+}
 
-			return res.json()
-			})
-		{{- else }}
-			return fetch(this.serverURL + `{{tsReplacePathParams .Path "req."}}`, {
-			method: "{{.Method}}",
-			headers: {
-			"Content-Type": "application/json",
-			...headers,
-			},
-			body: JSON.stringify(req)
-			}).then((res: Response) => {
-			if (res.status !== 200) {
-			throw new Error("Failed to fetch the data");
-			}
+return res.json()
+})
+{{- else }}
+return fetch(this.serverURL + `{{tsReplacePathParams .Path "req."}}`, {
+method: "{{.Method}}",
+headers: {
+"Content-Type": "application/json",
+...headers,
+},
+body: JSON.stringify(req)
+}).then((res: Response) => {
+if (res.status !== 200) {
+throw new Error("Failed to fetch the data");
+}
 
-			return res.json()
-			})
-		{{- end }}
-		}
-	{{- end }}
+return res.json()
+})
+{{- end }}
+}
+{{- end }}
 {{- end }}
 
 } // end of {{$serviceName}}Stub
@@ -95,21 +95,21 @@ this.serverURL = serverURL.replace(/\/$/, '');
 {{if eq (.GetOption "withHook") "yes"}}
 {{- range .RESTMethods -}}
 {{$methodName := .Name}}
-{{- if ne $methodName "" }}
-	export function use{{$methodName}}(
-	stub: {{$serviceName}}Stub,
-	req: {{.Request.Message.Name}},
-	reqHeader?: HeadersInit,
-	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>
-	) {
-	return useSWR(
-	[req, '{{$methodName}}'],
-	(req) => {
-	return stub.{{lowerCamelCase $methodName}}(req[0], reqHeader)
-	},
-	options
-	)
-	}
+{{- if and (ne $methodName "") (not .Request.Message.IsSpecial) }}
+export function use{{$methodName}}(
+stub: {{$serviceName}}Stub,
+req: {{.Request.Message.Name}},
+reqHeader?: HeadersInit,
+options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>
+) {
+return useSWR(
+[req, '{{$methodName}}'],
+(req) => {
+return stub.{{lowerCamelCase $methodName}}(req[0], reqHeader)
+},
+options
+)
+}
 {{- end}}
 {{- end}}
 {{- end}}

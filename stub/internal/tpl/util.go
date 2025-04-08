@@ -2,9 +2,13 @@ package tpl
 
 import (
 	"fmt"
+	"go/build"
+	"path"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/ronaksoft/ronykit/kit"
 )
 
 func goType(t reflect.Type) string {
@@ -12,15 +16,14 @@ func goType(t reflect.Type) string {
 }
 
 func goTypeRecursive(prefix string, t reflect.Type) string {
-	// we need a hacky fix to handle correctly json.RawMessage and kit.RawMessage in auto-generated code
+	// we need a hacky fix to correctly handle json.RawMessage and kit.RawMessage in auto-generated code
 	// of the stubs
+	if t.PkgPath() == reflect.TypeOf(kit.RawMessage{}).PkgPath() {
+		return fmt.Sprintf("%s%s%s", prefix, "kit.", t.Name())
+	}
 	switch t.String() {
 	case "json.RawMessage":
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
-	case "kit.RawMessage":
-		return fmt.Sprintf("%s%s", prefix, "kit.RawMessage")
-	case "kit.MultipartFormMessage":
-		return fmt.Sprintf("%s%s", prefix, "kit.MultipartFormMessage")
 	}
 
 	//nolint:exhaustive
@@ -45,6 +48,14 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 
 		return fmt.Sprintf("%s%s", prefix, in)
 	case reflect.Struct:
+		pkgpath := t.PkgPath()
+		if pkgpath != "" {
+			pkg, err := build.Import(pkgpath, ".", build.FindOnly)
+			if err == nil && pkg.Goroot {
+				return fmt.Sprintf("%s%s.%s", prefix, path.Base(t.PkgPath()), t.Name())
+			}
+		}
+
 		return fmt.Sprintf("%s%s", prefix, t.Name())
 	case reflect.Map:
 		return fmt.Sprintf("map[%s]%s", goTypeRecursive("", t.Key()), goTypeRecursive("", t.Elem()))
@@ -61,6 +72,8 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 	// we need a hacky fix to handle correctly json.RawMessage and kit.RawMessage in auto-generated code
 	// of the stubs
 	switch t.String() {
+	case "time.Time":
+		return fmt.Sprintf("%sstring", prefix)
 	case "json.RawMessage":
 		return fmt.Sprintf("%s%s", prefix, "any")
 	case "kit.RawMessage":
@@ -70,10 +83,16 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 	//nolint:exhaustive
 	switch t.Kind() {
 	case reflect.Slice:
+		if t.Elem().Kind() == reflect.Uint8 {
+			return fmt.Sprintf("%s%s%s", prefix, "string", postfix)
+		}
 		postfix += "[]"
 
 		return tsTypeRecursive(prefix, t.Elem(), postfix)
 	case reflect.Array:
+		if t.Elem().Kind() == reflect.Uint8 {
+			return fmt.Sprintf("%s%s%s", prefix, "string", postfix)
+		}
 		postfix += fmt.Sprintf("[%d]", t.Len())
 
 		return tsTypeRecursive(prefix, t.Elem(), postfix)
