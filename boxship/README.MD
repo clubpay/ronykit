@@ -23,7 +23,7 @@ the Dockerfile.
 
 to make sure you have correct golang installed in your system, enter: `go version` it must be
 greater than 1.23.0.
-To build and install the executable in your machine from source code run `go install` in
+To build and install the executable in your machine from source code run `go install github.com/clubpay/ronykit/boxship/cmd/boxship` in
 the root of the project.
 
 ## Download

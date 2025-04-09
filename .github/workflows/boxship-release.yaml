@@ -1,5 +1,4 @@
-# .github/workflows/boxship-release.yaml
-
+name: Release Boxship Binary
 on:
   workflow_dispatch:
   release:
