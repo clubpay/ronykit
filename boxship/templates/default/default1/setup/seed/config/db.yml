@@ -1,0 +1,10 @@
+sql:
+  dialect: postgres
+  host: 127.0.0.1
+  port: 5432
+  user: qlubUser
+  pass: qlubPassword
+  db: qlub
+folders:
+  - ./setup/seed/data/main-db
+  - ./setup/seed/data/transaction-db

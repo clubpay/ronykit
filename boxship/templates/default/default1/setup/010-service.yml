@@ -1,0 +1,44 @@
+networks:
+  - boxshipTest
+gitAuth:
+  user: ${GITHUB_USER}
+  pass: ${GITHUB_PAT}
+registryCred:
+  user: ${GITHUB_USER}
+  password: ${GITHUB_PAT}
+containers:
+# POSTGRES_DB
+  db:
+    pull:
+      image: "postgres:15"
+    name: db
+    networks:
+      - boxshipTest
+    ports: ["5432:5432"]
+    waitStrategy: waitForListeningPort
+    waitStrategyArg: 5432/tcp
+    volumes:
+      /var/lib/postgresql/data: dynamic
+    env:
+      POSTGRES_DB: "boxship"
+      POSTGRES_USER: "boxshipUser"
+      POSTGRES_PASSWORD: "boxshipPassword"
+
+# REDIS
+  redis:
+    autoCert: true
+    autoCertDNS:
+      - redis.boxship
+    pull:
+      image: "redis:7.0"
+    cmd:
+      - /config/redis.conf
+    volumes:
+      /data: dynamic
+      /config/redis.conf: ./setup/vol/redis/redis.conf
+    name: redis
+    ports: ["6379:6379", "6380:6380"]
+    networks:
+      - boxshipTest
+    alias:
+      - redis.boxship

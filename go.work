@@ -1,6 +1,7 @@
 go 1.24.0
 
 use (
+	./boxship
 	./contrib
 	./example/ex-01-rpc
 	./example/ex-02-rest
