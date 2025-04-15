@@ -308,8 +308,6 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 	}
 }
 
-var rawMsgFactory = CreateMessageFactory(RawMessage{})
-
 func (sb *southBridge) genCallback(ctx *Context) func(carrier *envelopeCarrier) {
 	return func(carrier *envelopeCarrier) {
 		if carrier.Data == nil {

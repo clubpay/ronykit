@@ -110,11 +110,11 @@ func (ctx *Context) reset() {
 	ctx.ctx = context.WithValue(context.Background(), kitCtxKey, ctx)
 }
 
-// ExecuteArg is used by bundle developers, if they want to build a
+// ExecuteArg is used by bundle developers if they want to build a
 // Gateway or Cluster to be used with EdgeServer. If you are the user of
 // the framework, you don't need this.
-// In general ExecuteArg carrys information about the Context that is running,
-// for example it identifies that which Contract from which Service is this Context for.
+// In general, ExecuteArg carries information about the Context that is running.
+// For example, it identifies that which Contract from which Service is this Context for.
 // Route identifies which RouteSelector was this request comes from.
 type ExecuteArg struct {
 	ServiceName string
@@ -208,7 +208,7 @@ func (ctx *Context) Conn() Conn {
 }
 
 // RESTConn returns the underlying REST connection. It panics if the underlying connection
-// does not implement RESTConn interface. If you want to be safe when calling this method
+// does not implement RESTConn interface. If you want to be safe when calling this method,
 // you can use IsREST method:
 // Example:
 //
@@ -225,7 +225,7 @@ func (ctx *Context) IsREST() bool {
 	return ok
 }
 
-// PresetHdr sets the common header key-value pairs, so in Out method we do not need to
+// PresetHdr sets the common header key-value pairs, so in the Out method we do not need to
 // repeatedly set those. This method is useful for some cases if we need to update the
 // header in some middleware before the actual response is prepared.
 // If you only want to set the header for an envelope, you can use Envelope.SetHdr method instead.
@@ -233,7 +233,7 @@ func (ctx *Context) PresetHdr(k, v string) {
 	ctx.hdr[k] = v
 }
 
-// PresetHdrMap sets the common header key-value pairs so in Out method we do not need to
+// PresetHdrMap sets the common header key-value pairs, so in the Out method we do not need to
 // repeatedly set those. Please refer to PresetHdr for more details
 func (ctx *Context) PresetHdrMap(hdr map[string]string) {
 	for k, v := range hdr {
@@ -252,7 +252,7 @@ func (ctx *Context) In() *Envelope {
 // InputRawData returns the raw input data from the connection. This slice is not valid
 // after this Context lifetime. If you need to use it after the Context lifetime,
 // you need to copy it.
-// You should not use this method in your code, ONLY if you need it for debugging.
+// You should not use this method in your code ONLY if you need it for debugging.
 func (ctx *Context) InputRawData() RawMessage {
 	return ctx.rawData
 }
