@@ -12,7 +12,6 @@ use (
 	./example/ex-08-echo
 	./example/ex-09-mw
 	./flow
-	./iq
 	./kit
 	./rony
 	./ronyup

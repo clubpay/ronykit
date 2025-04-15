@@ -13,7 +13,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fastws v0.18.18
 	github.com/clubpay/ronykit/stub v0.18.18
 	github.com/orlangure/gnomock v0.31.0
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/smartystreets/goconvey v1.8.1
 	go.temporal.io/sdk v1.32.1
 	go.uber.org/fx v1.23.0
