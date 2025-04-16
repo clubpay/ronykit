@@ -197,7 +197,7 @@ type ExecuteChildWorkflowOptions struct {
 	// Optional: the parent workflow task queue will be used if this is not provided.
 	TaskQueue string
 
-	// WorkflowExecutionTimeout - The end to end timeout for the child workflow execution including retries
+	// WorkflowExecutionTimeout - The end-to-end timeout for the child workflow execution including retries
 	// and continue as new.
 	// Optional: defaults to unlimited.
 	WorkflowExecutionTimeout time.Duration
@@ -211,16 +211,16 @@ type ExecuteChildWorkflowOptions struct {
 	// WorkflowTaskTimeout - Maximum execution time of a single Workflow Task. In the majority of cases there is
 	// no need to change this timeout. Note that this timeout is not related to the overall Workflow duration in
 	// any way. It defines for how long the Workflow can get blocked in the case of a Workflow Worker crash.
-	// Default is 10 seconds. Maximum value allowed by the Temporal Server is 1 minute.
+	// Default is 10 seconds. The Maximum value allowed by the Temporal Server is 1 minute.
 	WorkflowTaskTimeout time.Duration
 
-	// WaitForCancellation - Whether to wait for canceled child workflow to be ended (child workflow can be ended
-	// as: completed/failed/timedout/terminated/canceled)
+	// WaitForCancellation - Whether to wait for a canceled child workflow to be ended (child workflow can be ended
+	// as: completed/failed/timeout/terminated/canceled)
 	// Optional: default false
 	WaitForCancellation bool
 
 	// WorkflowIDReusePolicy - Whether server allow reuse of workflow ID, can be useful
-	// for dedup logic if set to WorkflowIdReusePolicyRejectDuplicate
+	// for dedupe logic if set to WorkflowIdReusePolicyRejectDuplicate
 	WorkflowIDReusePolicy enumspb.WorkflowIdReusePolicy
 
 	// RetryPolicy specify how to retry child workflow if error happens.

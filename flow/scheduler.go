@@ -17,7 +17,7 @@ const (
 	// ScheduleOverlapPolicySkip (default) means don't start anything. When the
 	// workflow completes, the next scheduled event after that time will be considered.
 	ScheduleOverlapPolicySkip ScheduleOverlapPolicy = 1
-	// ScheduleOverlapPolicyBufferOne means start the workflow again soon as the
+	// ScheduleOverlapPolicyBufferOne means start the workflow again as soon as the
 	// current one completes, but only buffer one start in this way. If another start is
 	// supposed to happen when the workflow is running, and one is already buffered, then
 	// only the first one will be started after the running workflow finishes.
@@ -31,9 +31,9 @@ const (
 	// ScheduleOverlapPolicyTerminateOther means that if there is another workflow
 	// running, terminate it and start the new one immediately.
 	ScheduleOverlapPolicyTerminateOther ScheduleOverlapPolicy = 5
-	// ScheduleOverlapPolicyAllowAll means start any number of concurrent workflows.
-	// Note that with this policy, last completion result and last failure will not be
-	// available since workflows are not sequential.
+	// ScheduleOverlapPolicyAllowAll means to start any number of concurrent workflows.
+	// Note that with this policy, the last completion result and
+	// last failure will not be available since workflows are not sequential.
 	ScheduleOverlapPolicyAllowAll ScheduleOverlapPolicy = 6
 )
 

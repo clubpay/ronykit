@@ -56,9 +56,9 @@ func (ch Channel[T]) Close() {
 // is not deterministic.
 func (ch Channel[T]) Name() string { return ch.ch.Name() }
 
-// Receive blocks until it receives a value, and then assigns the received value to the provided pointer.
-// Returns false when Channel is closed.
-// Parameter valuePtr is a pointer to the expected data structure to be received. For example:
+// Receive blocks until it receives a value and then assigns the received value to the provided pointer.
+// Returns false when the Channel is closed.
+// Parameter valuePtr is a pointer to the expected data structure to be received. For example,
 //
 //	var v string
 //	c.Receive(ctx, &v)
@@ -72,13 +72,13 @@ func (ch Channel[T]) Receive(ctx Context) (value T, more bool) {
 	return
 }
 
-// ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
+// ReceiveWithTimeout blocks up to timeout until it receives a value and then assigns the received value to the
 // provided pointer.
 // Returns more value of false when Channel is closed.
 // Returns ok value of false when no value was found in the channel for the duration of timeout or
 // the ctx was canceled.
 // The valuePtr is not modified if ok is false.
-// Parameter valuePtr is a pointer to the expected data structure to be received. For example:
+// Parameter valuePtr is a pointer to the expected data structure to be received. For example,
 //
 //	var v string
 //	c.ReceiveWithTimeout(ctx, time.Minute, &v)
@@ -104,8 +104,8 @@ func (ch Channel[T]) ReceiveAsync() (value T, ok bool) {
 	return
 }
 
-// ReceiveAsyncWithMoreFlag is same as ReceiveAsync with extra return value more to indicate if there could be
-// more value from the Channel. The more is false when Channel is closed.
+// ReceiveAsyncWithMoreFlag is the same as ReceiveAsync with extra return value more to indicate if there could be
+// more value from the Channel. The more is false when the Channel is closed.
 //
 // Note, values should not be reused for extraction here because merging on
 // top of existing values may result in unexpected behavior similar to
