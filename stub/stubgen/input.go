@@ -1,6 +1,8 @@
 package stubgen
 
 import (
+	"go/build"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
@@ -114,6 +116,32 @@ func (in *Input) ExtraOptions() map[string]string {
 
 func (in *Input) GetOption(name string) string {
 	return in.extraOptions[name]
+}
+
+func (in *Input) GetBuiltinPkgPaths() []string {
+	paths := map[string]struct{}{}
+	for _, m := range in.DTOs() {
+		for _, f := range m.Fields {
+			if f.Element != nil && isBuiltinPackage(f.Element.RType.PkgPath()) {
+				paths[f.Element.RType.PkgPath()] = struct{}{}
+			}
+		}
+	}
+
+	return utils.MapKeysToArray(paths)
+}
+
+func isBuiltinPackage(pkgpath string) bool {
+	if pkgpath == "" {
+		return false // Or handle empty input as needed
+	}
+	pkg, err := build.Import(pkgpath, ".", build.FindOnly)
+
+	if err == nil && pkg.Goroot {
+		return true
+	}
+
+	return false
 }
 
 // RESTMethod represents the description of a Contract with kit.RESTRouteSelector.
