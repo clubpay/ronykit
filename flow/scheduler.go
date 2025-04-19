@@ -164,3 +164,12 @@ func (sdk *SDK) TogglePause(ctx context.Context, id string, pause bool) error {
 
 	return sdk.cli.ScheduleClient().GetHandle(ctx, id).Unpause(ctx, client.ScheduleUnpauseOptions{})
 }
+
+func (sdk *SDK) Trigger(ctx context.Context, id string) error {
+	return sdk.cli.ScheduleClient().
+		GetHandle(ctx, id).
+		Trigger(
+			ctx,
+			client.ScheduleTriggerOptions{},
+		)
+}

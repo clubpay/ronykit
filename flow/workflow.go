@@ -226,6 +226,10 @@ type ExecuteChildWorkflowOptions struct {
 	// RetryPolicy specify how to retry child workflow if error happens.
 	// Optional: default is no retry
 	RetryPolicy *RetryPolicy
+
+	// ParentClosePolicy specify how the retry child workflow get terminated.
+	// default is Terminate
+	ParentClosePolicy enumspb.ParentClosePolicy
 }
 
 func (w *Workflow[REQ, RES, InitArg]) ExecuteAsChild(
