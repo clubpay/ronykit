@@ -33,7 +33,7 @@ func NewServer(opts ...ServerOption) *Server {
 func (s *Server) initEdge() error {
 	if s.cfg.serveDocsPath != "" {
 		swaggerFS, err := swagger.New(s.cfg.serverName, s.cfg.version, "").
-			SwaggerUI(s.cfg.allServiceDesc()...)
+			ReDocUI(s.cfg.allServiceDesc()...)
 		if err != nil {
 			return err
 		}
