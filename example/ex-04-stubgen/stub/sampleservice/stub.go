@@ -4,14 +4,21 @@ package sampleservice
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/clubpay/ronykit/stub"
 )
 
-var _ fmt.Stringer
+var (
+	_ fmt.Stringer
+	_ utils.Result
+	_ json.RawMessage
+)
 
 func init() {
 	reflector.Register(&ErrorMessage{}, "json")
@@ -43,8 +50,11 @@ type KeyValue struct {
 
 // SimpleHdr is a data transfer object
 type SimpleHdr struct {
-	Key1 string `json:"sKey1"`
-	Key2 int    `json:"sKey2"`
+	Key1 string      `json:"sKey1"`
+	Key2 int         `json:"sKey2"`
+	T1   time.Time   `json:"t1"`
+	T2   *time.Time  `json:"t2"`
+	T3   []time.Time `json:"t3"`
 }
 
 // VeryComplexRequest is a data transfer object
@@ -105,7 +115,9 @@ var _ IsampleServiceStub = (*sampleServiceStub)(nil)
 func (s sampleServiceStub) ComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
+
 	res := &VeryComplexResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
@@ -122,7 +134,9 @@ func (s sampleServiceStub) ComplexDummy(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -143,7 +157,9 @@ func (s sampleServiceStub) ComplexDummy(
 func (s sampleServiceStub) ComplexDummy2(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
+
 	res := &VeryComplexResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
@@ -160,7 +176,9 @@ func (s sampleServiceStub) ComplexDummy2(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -181,7 +199,9 @@ func (s sampleServiceStub) ComplexDummy2(
 func (s sampleServiceStub) GetComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
+
 	res := &VeryComplexResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
@@ -198,7 +218,9 @@ func (s sampleServiceStub) GetComplexDummy(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -219,7 +241,11 @@ func (s sampleServiceStub) GetComplexDummy(
 type MockOption func(*sampleServiceStubMock)
 
 func MockComplexDummy(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.complexdummy = f
@@ -227,7 +253,11 @@ func MockComplexDummy(
 }
 
 func MockComplexDummy2(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.complexdummy2 = f
@@ -235,7 +265,11 @@ func MockComplexDummy2(
 }
 
 func MockGetComplexDummy(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.getcomplexdummy = f
@@ -245,9 +279,21 @@ func MockGetComplexDummy(
 // sampleServiceStubMock represents the mocked for client/stub for sampleService.
 // Implements IsampleServiceStub
 type sampleServiceStubMock struct {
-	complexdummy    func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error)
-	complexdummy2   func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error)
-	getcomplexdummy func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error)
+	complexdummy func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error)
+	complexdummy2 func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error)
+	getcomplexdummy func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error)
 }
 
 func NewsampleServiceStubMock(opts ...MockOption) *sampleServiceStubMock {
@@ -262,7 +308,9 @@ func NewsampleServiceStubMock(opts ...MockOption) *sampleServiceStubMock {
 var _ IsampleServiceStub = (*sampleServiceStubMock)(nil)
 
 func (s *sampleServiceStubMock) ComplexDummy(
-	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
+	ctx context.Context,
+	req *VeryComplexRequest,
+	opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.complexdummy == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
@@ -272,7 +320,11 @@ func (s *sampleServiceStubMock) ComplexDummy(
 }
 
 func (s *sampleServiceStubMock) SetComplexDummy(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) *sampleServiceStubMock {
 	s.complexdummy = f
 
@@ -280,7 +332,9 @@ func (s *sampleServiceStubMock) SetComplexDummy(
 }
 
 func (s *sampleServiceStubMock) ComplexDummy2(
-	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
+	ctx context.Context,
+	req *VeryComplexRequest,
+	opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.complexdummy2 == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
@@ -290,7 +344,11 @@ func (s *sampleServiceStubMock) ComplexDummy2(
 }
 
 func (s *sampleServiceStubMock) SetComplexDummy2(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) *sampleServiceStubMock {
 	s.complexdummy2 = f
 
@@ -298,7 +356,9 @@ func (s *sampleServiceStubMock) SetComplexDummy2(
 }
 
 func (s *sampleServiceStubMock) GetComplexDummy(
-	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
+	ctx context.Context,
+	req *VeryComplexRequest,
+	opt ...stub.RESTOption,
 ) (*VeryComplexResponse, *stub.Error) {
 	if s.getcomplexdummy == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
@@ -308,7 +368,11 @@ func (s *sampleServiceStubMock) GetComplexDummy(
 }
 
 func (s *sampleServiceStubMock) SetGetComplexDummy(
-	f func(ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption) (*VeryComplexResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, *stub.Error),
 ) *sampleServiceStubMock {
 	s.getcomplexdummy = f
 

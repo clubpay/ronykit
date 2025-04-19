@@ -14,6 +14,9 @@ export interface KeyValue {
 export interface SimpleHdr {
 	sKey1: string;
 	sKey2: number;
+	t1: string;
+	t2: string | null;
+	t3: string | null;
 }
 // VeryComplexRequest is a data transfer object
 export interface VeryComplexRequest extends SimpleHdr {
@@ -32,7 +35,7 @@ export interface VeryComplexResponse {
 	key1Ptr?: string;
 	mapKey1?: { [key: string]: number };
 	mapKey2?: { [key: number]: KeyValue };
-	sliceKey1: number[] | null;
+	sliceKey1: string | null;
 	sliceKey2: KeyValue[] | null;
 }
 
@@ -90,7 +93,9 @@ export class sampleServiceStub {
 	): Promise<VeryComplexResponse> {
 		const keys = Object.keys(req);
 		const keyValuePairs = keys
-			.filter((key) => (req as any)[key] !== undefined)
+			.filter(
+				(key) => (req as any)[key] !== undefined && (req as any)[key] !== null,
+			)
 			.map((key) => {
 				return (
 					encodeURIComponent(key) + "=" + encodeURIComponent((req as any)[key])

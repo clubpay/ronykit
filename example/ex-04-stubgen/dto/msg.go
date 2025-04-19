@@ -1,10 +1,16 @@
 package dto
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type SimpleHdr struct {
-	Key1 string `json:"sKey1"`
-	Key2 int    `json:"sKey2"`
+	Key1 string      `json:"sKey1"`
+	Key2 int         `json:"sKey2"`
+	T1   time.Time   `json:"t1"`
+	T2   *time.Time  `json:"t2"`
+	T3   []time.Time `json:"t3"`
 }
 
 type VeryComplexRequest struct {
