@@ -52,6 +52,7 @@ type CreateScheduleRequest struct {
 }
 
 type ScheduleAction struct {
+	WorkflowIDPrefix string
 	WorkflowName     string
 	WorkflowArg      any
 	SearchAttributes SearchAttributes

@@ -8,7 +8,7 @@ require (
 	github.com/clubpay/ronykit/kit v0.18.23
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.35.0
-	go.temporal.io/api v1.47.0
+	go.temporal.io/api v1.48.0
 	go.temporal.io/sdk v1.34.0
 	google.golang.org/protobuf v1.36.6
 )
