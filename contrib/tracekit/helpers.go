@@ -21,10 +21,12 @@ func Span(ctx context.Context, attrs ...attribute.KeyValue) trace.Span {
 	return span
 }
 
-func NewSpan(instrument, spanName string, ctx context.Context) (context.Context, trace.Span) {
+func NewSpan(ctx context.Context, instrument, spanName string) (context.Context, trace.Span, func()) {
 	ctx, span := otel.Tracer(instrument).Start(ctx, spanName)
 
-	return ctx, span
+	return ctx, span, func() {
+		span.End()
+	}
 }
 
 func Error(span trace.Span, err error) trace.Span {
