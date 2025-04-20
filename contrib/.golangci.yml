@@ -23,6 +23,7 @@ linters:
     - wrapcheck
     - wsl
     - recvcheck
+    - mnd
   settings:
     cyclop:
       max-complexity: 15
