@@ -33,7 +33,7 @@ type Exporter struct {
 	sampler   sdktrace.Sampler
 }
 
-func New(serviceName string, opts ...ExporterOption) (*Exporter, error) {
+func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) {
 	t := Exporter{
 		sampler: sdktrace.ParentBased(defaultSampler),
 	}
