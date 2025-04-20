@@ -10,6 +10,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+var instrument string
+
+func SetInstrument(name string) {
+	instrument = name
+}
+
 func Link(ctx context.Context, kv ...attribute.KeyValue) trace.Link {
 	return trace.LinkFromContext(ctx, kv...)
 }
@@ -21,7 +27,7 @@ func Span(ctx context.Context, attrs ...attribute.KeyValue) trace.Span {
 	return span
 }
 
-func NewSpan(ctx context.Context, instrument, spanName string) (context.Context, trace.Span, func()) {
+func NewSpan(ctx context.Context, spanName string) (context.Context, trace.Span, func()) {
 	ctx, span := otel.Tracer(instrument).Start(ctx, spanName)
 
 	return ctx, span, func() {
