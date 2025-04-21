@@ -8,45 +8,62 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-type WorkflowContext[REQ, RES any] struct {
+type WorkflowContext[REQ, RES, STATE any] struct {
 	ctx workflow.Context
+	s   STATE
 }
 
 type WorkflowInfo = workflow.Info
 
-func (ctx WorkflowContext[REQ, RES]) Info() *WorkflowInfo {
+func (ctx WorkflowContext[REQ, RES, STATE]) Info() *WorkflowInfo {
 	return workflow.GetInfo(ctx.ctx)
 }
 
-func (ctx WorkflowContext[REQ, RES]) Context() workflow.Context {
+func (ctx WorkflowContext[REQ, RES, STATE]) Context() workflow.Context {
 	return ctx.ctx
 }
 
-func (ctx WorkflowContext[REQ, RES]) Selector(name string) Selector {
+func (ctx WorkflowContext[REQ, RES, STATE]) NamedSelector(name string) Selector {
 	return workflow.NewNamedSelector(ctx.ctx, name)
 }
 
-func (ctx WorkflowContext[REQ, RES]) WaitGroup() WaitGroup {
+func (ctx WorkflowContext[REQ, RES, STATE]) Selector() Selector {
+	return workflow.NewSelector(ctx.ctx)
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) WaitGroup() WaitGroup {
 	return workflow.NewWaitGroup(ctx.ctx)
 }
 
-func (ctx WorkflowContext[REQ, RES]) Log() log.Logger {
+func (ctx WorkflowContext[REQ, RES, STATE]) Log() log.Logger {
 	return workflow.GetLogger(ctx.ctx)
 }
 
-func (ctx WorkflowContext[REQ, RES]) Sleep(d time.Duration) error {
+func (ctx WorkflowContext[REQ, RES, STATE]) Sleep(d time.Duration) error {
 	return workflow.Sleep(ctx.ctx, d)
 }
 
-func (ctx WorkflowContext[REQ, RES]) Timer(d time.Duration) Future[temporal.CanceledError] {
+func (ctx WorkflowContext[REQ, RES, STATE]) Timer(d time.Duration) Future[temporal.CanceledError] {
 	return Future[temporal.CanceledError]{
 		f: workflow.NewTimer(ctx.ctx, d),
 	}
 }
 
-func SideEffect[REQ, RES, T any](ctx *WorkflowContext[REQ, RES], fn func() T) (T, error) {
+func (ctx WorkflowContext[REQ, RES, STATE]) State() STATE {
+	return ctx.s
+}
+
+func (ctx *WorkflowContext[REQ, RES, STATE]) SetState(s STATE) {
+	ctx.s = s
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) S() STATE {
+	return ctx.s
+}
+
+func SideEffect[T any](ctx Context, fn func() T) (T, error) {
 	reqEncoded := workflow.SideEffect(
-		ctx.Context(),
+		ctx,
 		func(wctx workflow.Context) any {
 			return fn()
 		},
@@ -58,10 +75,9 @@ func SideEffect[REQ, RES, T any](ctx *WorkflowContext[REQ, RES], fn func() T) (T
 	return out, err
 }
 
-func MutableSideEffect[REQ, RES any, T comparable](ctx *WorkflowContext[REQ, RES], id string, fn func() T) (T, error) {
+func MutableSideEffect[T comparable](ctx Context, id string, fn func() T) (T, error) {
 	reqEncoded := workflow.MutableSideEffect(
-		ctx.Context(),
-		id,
+		ctx, id,
 		func(wctx workflow.Context) any {
 			return fn()
 		},

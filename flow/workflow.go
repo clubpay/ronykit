@@ -13,41 +13,83 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-type WorkflowFunc[REQ, RES any] func(ctx *WorkflowContext[REQ, RES], req REQ) (*RES, error)
+type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
 
-func NewWorkflow[REQ, RES, InitArg any](
+type Workflow[REQ, RES, STATE any] struct {
+	sdk   *SDK
+	Name  string
+	State STATE
+	Fn    WorkflowFunc[REQ, RES, STATE]
+}
+
+func NewWorkflow[REQ, RES, STATE any](
 	name string,
-	factory func(initArg InitArg) WorkflowFunc[REQ, RES],
-) Workflow[REQ, RES, InitArg] {
-	return Workflow[REQ, RES, InitArg]{
-		Name:    name,
-		Factory: factory,
+	fn WorkflowFunc[REQ, RES, STATE],
+) Workflow[REQ, RES, STATE] {
+	return Workflow[REQ, RES, STATE]{
+		Name: name,
+		Fn:   fn,
 	}
 }
 
-type Workflow[REQ, RES, InitArg any] struct {
-	sdk     *SDK
-	Name    string
-	Factory func(InitArg) WorkflowFunc[REQ, RES]
+func NewWorkflowWithState[REQ, RES, STATE any](
+	name string, state STATE,
+	fn WorkflowFunc[REQ, RES, STATE],
+) Workflow[REQ, RES, STATE] {
+	return Workflow[REQ, RES, STATE]{
+		Name:  name,
+		State: state,
+		Fn:    fn,
+	}
 }
 
-func (w *Workflow[REQ, RES, InitArg]) Init(sdk *SDK, initArg InitArg) {
+func (w *Workflow[REQ, RES, STATE]) Init(sdk *SDK) {
 	sdk.w.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
-			return w.Factory(initArg)(
-				&WorkflowContext[REQ, RES]{
-					ctx: ctx,
-				}, req,
-			)
+			fCtx := &WorkflowContext[REQ, RES, STATE]{
+				ctx: ctx,
+				s:   w.State,
+			}
+
+			return w.Fn(fCtx, req)
 		},
 		workflow.RegisterOptions{Name: w.Name},
 	)
 
 	sdk.replay.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
-			return w.Factory(initArg)(
-				&WorkflowContext[REQ, RES]{
+			return w.Fn(
+				&WorkflowContext[REQ, RES, STATE]{
 					ctx: ctx,
+					s:   w.State,
+				}, req,
+			)
+		},
+		workflow.RegisterOptions{Name: w.Name},
+	)
+
+	w.sdk = sdk
+}
+
+func (w *Workflow[REQ, RES, STATE]) InitWithState(sdk *SDK, s STATE) {
+	sdk.w.RegisterWorkflowWithOptions(
+		func(ctx workflow.Context, req REQ) (*RES, error) {
+			fCtx := &WorkflowContext[REQ, RES, STATE]{
+				ctx: ctx,
+				s:   s,
+			}
+
+			return w.Fn(fCtx, req)
+		},
+		workflow.RegisterOptions{Name: w.Name},
+	)
+
+	sdk.replay.RegisterWorkflowWithOptions(
+		func(ctx workflow.Context, req REQ) (*RES, error) {
+			return w.Fn(
+				&WorkflowContext[REQ, RES, STATE]{
+					ctx: ctx,
+					s:   s,
 				}, req,
 			)
 		},
@@ -160,7 +202,7 @@ func (x WorkflowRun[T]) Get(ctx context.Context) (*T, error) {
 	return &result, nil
 }
 
-func (w *Workflow[REQ, RES, InitArg]) Execute(
+func (w *Workflow[REQ, RES, STATE]) Execute(
 	ctx context.Context, req REQ, opts ExecuteWorkflowOptions,
 ) (*WorkflowRun[RES], error) {
 	run, err := w.sdk.cli.ExecuteWorkflow(
@@ -232,7 +274,7 @@ type ExecuteChildWorkflowOptions struct {
 	ParentClosePolicy enumspb.ParentClosePolicy
 }
 
-func (w *Workflow[REQ, RES, InitArg]) ExecuteAsChild(
+func (w *Workflow[REQ, RES, STATE]) ExecuteAsChild(
 	ctx Context,
 	req REQ,
 	opts ExecuteChildWorkflowOptions,

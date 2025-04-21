@@ -8,33 +8,48 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-type ActivityFunc[REQ, RES any] func(ctx *ActivityContext[REQ, RES], req REQ) (*RES, error)
+type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
 
-func NewActivity[REQ, RES, InitArg any](
+func NewActivity[REQ, RES, STATE any](
 	name string,
-	factory func(initArg InitArg) ActivityFunc[REQ, RES],
-) Activity[REQ, RES, InitArg] {
-	return Activity[REQ, RES, InitArg]{
-		Name:    name,
-		Factory: factory,
+	fn ActivityFunc[REQ, RES, STATE],
+) Activity[REQ, RES, STATE] {
+	return Activity[REQ, RES, STATE]{
+		Name: name,
+		Fn:   fn,
 	}
 }
 
-type Activity[REQ, RES, InitArg any] struct {
-	sdk     *SDK
-	Name    string
-	Factory func(InitArg) ActivityFunc[REQ, RES]
+type Activity[REQ, RES, STATE any] struct {
+	sdk  *SDK
+	Name string
+	Fn   ActivityFunc[REQ, RES, STATE]
 }
 
-func (a *Activity[REQ, RES, InitArg]) Init(sdk *SDK, initArg InitArg) {
+func (a *Activity[REQ, RES, STATE]) Init(sdk *SDK) {
 	a.sdk = sdk
 	sdk.w.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
-			return a.Factory(initArg)(
-				&ActivityContext[REQ, RES]{
-					ctx: ctx,
-				}, req,
-			)
+			fCtx := &ActivityContext[REQ, RES, STATE]{
+				ctx: ctx,
+			}
+
+			return a.Fn(fCtx, req)
+		},
+		activity.RegisterOptions{Name: a.Name, SkipInvalidStructFunctions: true},
+	)
+}
+
+func (a *Activity[REQ, RES, STATE]) InitWithState(sdk *SDK, state STATE) {
+	a.sdk = sdk
+	sdk.w.RegisterActivityWithOptions(
+		func(ctx context.Context, req REQ) (*RES, error) {
+			fCtx := &ActivityContext[REQ, RES, STATE]{
+				ctx: ctx,
+				s:   state,
+			}
+
+			return a.Fn(fCtx, req)
 		},
 		activity.RegisterOptions{Name: a.Name, SkipInvalidStructFunctions: true},
 	)
