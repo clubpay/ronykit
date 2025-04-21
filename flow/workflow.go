@@ -469,3 +469,23 @@ func (sdk *SDK) CancelWorkflow(ctx context.Context, req CancelWorkflowRequest) (
 
 	return res, nil
 }
+
+type GetWorkflowRequest struct {
+	WorkflowID string
+	RunID      string
+}
+
+func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*WorkflowExecution, error) {
+	wr := sdk.cli.GetWorkflow(ctx, req.WorkflowID, req.RunID)
+	var e WorkflowExecution
+	err := wr.Get(ctx, &e)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
+}
+
+func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
+	return sdk.cli.SignalWorkflow(ctx, workflowID, "", signalName, arg)
+}
