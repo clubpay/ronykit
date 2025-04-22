@@ -288,6 +288,7 @@ func (w *Workflow[REQ, RES, STATE]) ExecuteAsChild(
 				WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 				WorkflowIDReusePolicy:    opts.WorkflowIDReusePolicy,
 				RetryPolicy:              opts.RetryPolicy,
+				ParentClosePolicy:        opts.ParentClosePolicy,
 			}),
 			w.Name, req,
 		),
