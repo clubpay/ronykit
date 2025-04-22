@@ -2,11 +2,13 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/clubpay/ronykit/kit/utils"
 	enumspb "go.temporal.io/api/enums/v1"
+	"go.temporal.io/api/serviceerror"
 	v112 "go.temporal.io/api/workflow/v1"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
@@ -461,6 +463,11 @@ type CancelWorkflowResponse struct {
 func (sdk *SDK) CancelWorkflow(ctx context.Context, req CancelWorkflowRequest) (*CancelWorkflowResponse, error) {
 	err := sdk.cli.CancelWorkflow(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
+		var notFoundErr *serviceerror.NotFound
+		if errors.As(err, &notFoundErr) {
+			return &CancelWorkflowResponse{Success: false}, nil
+		}
+
 		return nil, err
 	}
 
