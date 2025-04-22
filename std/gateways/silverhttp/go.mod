@@ -5,7 +5,7 @@ go 1.22.0
 toolchain go1.22.11
 
 require (
-	github.com/clubpay/ronykit/kit v0.18.35
+	github.com/clubpay/ronykit/kit v0.18.36
 	github.com/go-www/silverlining v1.3.3
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.4.0
