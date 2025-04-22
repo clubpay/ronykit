@@ -56,6 +56,7 @@ type ScheduleAction struct {
 	WorkflowName     string
 	WorkflowArg      any
 	SearchAttributes SearchAttributes
+	RetryPolicy      *RetryPolicy
 }
 
 type ScheduleSpec struct {
@@ -125,6 +126,7 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 			WorkflowExecutionTimeout: req.ExecutionTimeout,
 			WorkflowRunTimeout:       req.RunTimeout,
 			TypedSearchAttributes:    req.Action.SearchAttributes,
+			RetryPolicy:              req.Action.RetryPolicy,
 		},
 		Overlap:               enumspb.ScheduleOverlapPolicy(req.OverlapPolicy),
 		CatchupWindow:         req.CatchupWindow,
