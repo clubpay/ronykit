@@ -122,7 +122,7 @@ func (a *Activity[REQ, RES, InitArg]) ExecuteLocal(ctx Context, req REQ, opts Ex
 	)
 
 	return Future[RES]{
-		f: workflow.ExecuteActivity(ctx, a.Name, req),
+		f: workflow.ExecuteLocalActivity(ctx, a.Name, req),
 	}
 }
 
