@@ -35,6 +35,10 @@ func (ctx WorkflowContext[REQ, RES, STATE]) WaitGroup() WaitGroup {
 	return workflow.NewWaitGroup(ctx.ctx)
 }
 
+func (ctx WorkflowContext[REQ, RES, STATE]) Go(fn func(ctx Context)) {
+	workflow.Go(ctx.ctx, fn)
+}
+
 func (ctx WorkflowContext[REQ, RES, STATE]) Log() log.Logger {
 	return workflow.GetLogger(ctx.ctx)
 }
