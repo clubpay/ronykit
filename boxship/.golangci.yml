@@ -73,6 +73,7 @@ linters:
     - wsl
     - zerologlint
     - cyclop
+    - funcorder
   exclusions:
     generated: lax
     presets:

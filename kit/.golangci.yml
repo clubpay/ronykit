@@ -73,6 +73,7 @@ linters:
     - wrapcheck
     - wsl
     - zerologlint
+    - funcorder
   settings:
     cyclop:
       max-complexity: 15

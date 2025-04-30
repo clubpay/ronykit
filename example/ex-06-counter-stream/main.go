@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -11,6 +10,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/rony/errs"
 )
 
 func main() {
@@ -113,7 +113,7 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*Co
 		req.Action,
 		func(s *EchoCounter, err error) error {
 			if err != nil {
-				return rony.NewError(err).SetCode(http.StatusBadRequest)
+				return errs.WrapCode(err, errs.InvalidArgument, "BAD_REQUEST")
 			}
 
 			res.Count = s.Count
@@ -135,7 +135,7 @@ func countStream(ctx *rony.StreamCtx[*EchoCounter, string, *CounterResponseDTO],
 			req.Action,
 			func(s *EchoCounter, err error) error {
 				if err != nil {
-					return rony.NewError(err).SetCode(http.StatusBadRequest)
+					return errs.WrapCode(err, errs.InvalidArgument, "BAD_REQUEST")
 				}
 
 				res.Count = s.Count

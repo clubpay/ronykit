@@ -7,6 +7,8 @@ require (
 	github.com/clubpay/ronykit/kit v0.18.39
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.18.39
 	github.com/clubpay/ronykit/stub v0.18.39
+	github.com/json-iterator/go v1.1.12
+	github.com/modern-go/reflect2 v1.0.2
 )
 
 require (
@@ -24,6 +26,7 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect

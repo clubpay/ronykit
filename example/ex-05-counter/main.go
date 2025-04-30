@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/rony/errs"
 )
 
 func main() {
@@ -94,7 +94,7 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*Co
 		req.Action,
 		func(s *EchoCounter, err error) error {
 			if err != nil {
-				return rony.NewError(err).SetCode(http.StatusBadRequest)
+				return errs.WrapCode(err, errs.InvalidArgument, "BAD_REQUEST")
 			}
 
 			res.Count = s.Count

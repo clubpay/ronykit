@@ -213,7 +213,7 @@ func (s *EdgeServer) startChild(ctx context.Context) {
 // watchParent watches the parent process
 func (s *EdgeServer) watchParent() {
 	if runtime.GOOS == "windows" {
-		// finds parent process,
+		// finds the parent process
 		// and waits for it to exit
 		p, err := os.FindProcess(os.Getppid())
 		if err == nil {
