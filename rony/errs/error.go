@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/clubpay/ronykit/stub"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -114,6 +115,15 @@ func Convert(err error) error {
 	var e *Error
 	if errors.As(err, &e) {
 		return e
+	}
+
+	var se *stub.Error
+	if errors.As(err, &se) {
+		return &Error{
+			Code:       HTTPStatusToCode(se.Code()),
+			Message:    se.Item(),
+			underlying: se,
+		}
 	}
 
 	return &Error{

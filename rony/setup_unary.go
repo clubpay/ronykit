@@ -9,6 +9,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/rony/internal/options/unary"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
@@ -171,7 +172,7 @@ func CreateKitHandler[IN, OUT Message, S State[A], A Action](
 				ctx.SetStatusCode(e.GetCode())
 			}
 
-			ctx.In().Reply().SetMsg(err).Send()
+			ctx.In().Reply().SetMsg(errs.Convert(err)).Send()
 
 			return
 		}
@@ -202,7 +203,7 @@ func CreateRawKitHandler[IN Message, S State[A], A Action](
 				ctx.SetStatusCode(e.GetCode())
 			}
 
-			ctx.In().Reply().SetMsg(err).Send()
+			ctx.In().Reply().SetMsg(errs.Convert(err)).Send()
 
 			return
 		}

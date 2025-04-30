@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/rony/internal/options/stream"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
@@ -43,7 +44,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
 			err := h(newStreamCtx[S, A, OUT](ctx, s, sl), *req)
 			if err != nil {
-				ctx.Error(err)
+				ctx.Error(errs.Convert(err))
 			}
 		},
 	)
