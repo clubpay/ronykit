@@ -3,6 +3,7 @@ package rony
 import (
 	"context"
 	"io"
+	"io/fs"
 	"os"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
@@ -32,12 +33,22 @@ func NewServer(opts ...ServerOption) *Server {
 
 func (s *Server) initEdge() error {
 	if s.cfg.serveDocsPath != "" {
-		swaggerFS, err := swagger.New(s.cfg.serverName, s.cfg.version, "").
-			ReDocUI(s.cfg.allServiceDesc()...)
+		var (
+			docFS fs.FS
+			err   error
+		)
+		switch s.cfg.serveDocsUI {
+		default:
+			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
+				ReDocUI(s.cfg.allServiceDesc()...)
+		case swaggerUI:
+			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
+				SwaggerUI(s.cfg.allServiceDesc()...)
+		}
 		if err != nil {
 			return err
 		}
-		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", swaggerFS))
+		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", docFS))
 	}
 
 	opts := []kit.Option{

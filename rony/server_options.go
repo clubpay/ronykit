@@ -8,6 +8,13 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
+type docUI string
+
+const (
+	swaggerUI docUI = "swagger"
+	redocUI   docUI = "redoc"
+)
+
 type serverConfig struct {
 	serverName  string
 	version     string
@@ -16,6 +23,7 @@ type serverConfig struct {
 	gatewayOpts []fasthttp.Option
 
 	serveDocsPath string
+	serveDocsUI   docUI
 }
 
 func defaultServerConfig() serverConfig {
@@ -167,5 +175,11 @@ func WithDisableHeaderNamesNormalizing() ServerOption {
 func WithAPIDocs(path string) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.serveDocsPath = path
+	}
+}
+
+func UseSwaggerUI() ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.serveDocsUI = swaggerUI
 	}
 }
