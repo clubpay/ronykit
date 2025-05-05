@@ -119,7 +119,7 @@ func Setup[S State[A], A Action](
 // - OPTIONS: to set up OPTIONS handler
 func WithUnary[S State[A], A Action, IN, OUT Message](
 	h UnaryHandler[S, A, IN, OUT],
-	opt ...UnaryOption,
+	opt ...UnaryOption[S, A],
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerUnary[IN, OUT, S, A](ctx, h, opt...)
@@ -128,7 +128,7 @@ func WithUnary[S State[A], A Action, IN, OUT Message](
 
 func WithRawUnary[S State[A], A Action, IN Message](
 	h RawUnaryHandler[S, A, IN],
-	opt ...UnaryOption,
+	opt ...UnaryOption[S, A],
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerRawUnary[IN, S, A](ctx, h, opt...)
@@ -171,9 +171,10 @@ func WithMiddleware[S State[A], A Action, M Middleware[S, A]](
 		for _, m := range m {
 			switch mw := any(m).(type) {
 			case StatefulMiddleware[S, A]:
-				registerStatefulMiddleware[S, A](ctx, mw)
+				ctx.mw = append(ctx.mw, statefulMiddlewareToKitHandler[S, A](ctx.s, mw)...)
+
 			case StatelessMiddleware:
-				registerStatelessMiddleware[S, A](ctx, mw)
+				ctx.mw = append(ctx.mw, mw)
 			}
 		}
 	}
