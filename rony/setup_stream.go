@@ -7,14 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/rony/errs"
-	"github.com/clubpay/ronykit/rony/internal/options/stream"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
-)
-
-// Exposing internal types
-type (
-	StreamOption         = stream.Option
-	StreamSelectorOption = stream.SelectorOption
 )
 
 type StreamHandler[
@@ -59,7 +52,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 		c.SetCoordinator(setupCtx.nodeSel)
 	}
 
-	cfg := stream.GenConfig(opt...)
+	cfg := genStreamConfig(opt...)
 	for _, s := range cfg.Selectors {
 		c.AddRoute(desc.Route(s.Name, s.Selector))
 	}
@@ -73,10 +66,44 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 
 // RPC is a StreamOption to set up an RPC handler.
 func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
-	return func(cfg *stream.Config) {
-		sCfg := stream.GenSelectorConfig(opt...)
+	return func(cfg *streamConfig) {
+		sCfg := genStreamSelectorConfig(opt...)
 		sCfg.Selector = fasthttp.RPC(predicate)
 
 		cfg.Selectors = append(cfg.Selectors, sCfg)
 	}
+}
+
+type streamConfig struct {
+	Selectors []streamSelectorConfig
+}
+
+func genStreamConfig(opt ...StreamOption) streamConfig {
+	cfg := streamConfig{}
+
+	for _, o := range opt {
+		o(&cfg)
+	}
+
+	return cfg
+}
+
+type StreamOption func(*streamConfig)
+
+type streamSelectorConfig struct {
+	Decoder  fasthttp.DecoderFunc
+	Name     string
+	Selector kit.RPCRouteSelector
+}
+
+type StreamSelectorOption func(*streamSelectorConfig)
+
+func genStreamSelectorConfig(opt ...StreamSelectorOption) streamSelectorConfig {
+	cfg := streamSelectorConfig{}
+
+	for _, o := range opt {
+		o(&cfg)
+	}
+
+	return cfg
 }
