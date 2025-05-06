@@ -119,7 +119,7 @@ func Setup[S State[A], A Action](
 // - OPTIONS: to set up OPTIONS handler
 func WithUnary[S State[A], A Action, IN, OUT Message](
 	h UnaryHandler[S, A, IN, OUT],
-	opt ...UnaryOption[S, A],
+	opt ...UnaryOption,
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerUnary[IN, OUT, S, A](ctx, h, opt...)
@@ -128,7 +128,7 @@ func WithUnary[S State[A], A Action, IN, OUT Message](
 
 func WithRawUnary[S State[A], A Action, IN Message](
 	h RawUnaryHandler[S, A, IN],
-	opt ...UnaryOption[S, A],
+	opt ...UnaryOption,
 ) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		registerRawUnary[IN, S, A](ctx, h, opt...)

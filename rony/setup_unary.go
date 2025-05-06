@@ -26,7 +26,7 @@ type RawUnaryHandler[
 func registerUnary[IN, OUT Message, S State[A], A Action](
 	setupCtx *SetupContext[S, A],
 	h UnaryHandler[S, A, IN, OUT],
-	opt ...UnaryOption[S, A],
+	opt ...UnaryOption,
 ) {
 	var (
 		in  IN
@@ -41,7 +41,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)
 
-	cfg := genUnaryConfig(setupCtx.s, opt...)
+	cfg := genUnaryConfig(opt...)
 	handlers = append(handlers, cfg.Middlewares...)
 
 	c := desc.NewContract()
@@ -88,7 +88,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 func registerRawUnary[IN Message, S State[A], A Action](
 	setupCtx *SetupContext[S, A],
 	h RawUnaryHandler[S, A, IN],
-	opt ...UnaryOption[S, A],
+	opt ...UnaryOption,
 ) {
 	var (
 		in  IN
@@ -103,7 +103,7 @@ func registerRawUnary[IN Message, S State[A], A Action](
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)
 
-	cfg := genUnaryConfig(setupCtx.s, opt...)
+	cfg := genUnaryConfig(opt...)
 	handlers = append(handlers, cfg.Middlewares...)
 
 	c := desc.NewContract()
@@ -223,8 +223,8 @@ func UnaryName(name string) UnarySelectorOption {
 	UnaryOption
 */
 
-func REST[S State[A], A Action](method, path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return func(cfg *unaryConfig[S, A]) {
+func REST(method, path string, opt ...UnarySelectorOption) UnaryOption {
+	return func(cfg *unaryConfig) {
 		sCfg := genUnarySelectorConfig(opt...)
 		sCfg.Selector = fasthttp.REST(method, path)
 
@@ -232,62 +232,55 @@ func REST[S State[A], A Action](method, path string, opt ...UnarySelectorOption)
 	}
 }
 
-func ALL[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("*", path, opt...)
+func ALL(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("*", path, opt...)
 }
 
-func GET[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("GET", path, opt...)
+func GET(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("GET", path, opt...)
 }
 
-func POST[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("POST", path, opt...)
+func POST(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("POST", path, opt...)
 }
 
-func PUT[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("PUT", path, opt...)
+func PUT(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("PUT", path, opt...)
 }
 
-func DELETE[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("DELETE", path, opt...)
+func DELETE(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("DELETE", path, opt...)
 }
 
-func PATCH[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("PATCH", path, opt...)
+func PATCH(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("PATCH", path, opt...)
 }
 
-func HEAD[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("HEAD", path, opt...)
+func HEAD(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("HEAD", path, opt...)
 }
 
-func OPTIONS[S State[A], A Action](path string, opt ...UnarySelectorOption) UnaryOption[S, A] {
-	return REST[S, A]("OPTIONS", path, opt...)
+func OPTIONS(path string, opt ...UnarySelectorOption) UnaryOption {
+	return REST("OPTIONS", path, opt...)
 }
 
-func UnaryMiddleware[S State[A], A Action, M Middleware[S, A]](
-	m ...M,
-) UnaryOption[S, A] {
-	return func(cfg *unaryConfig[S, A]) {
-		for _, m := range m {
-			switch mw := any(m).(type) {
-			case StatefulMiddleware[S, A]:
-				cfg.Middlewares = append(cfg.Middlewares, statefulMiddlewareToKitHandler[S, A](cfg.s, mw)...)
-
-			case StatelessMiddleware:
-				cfg.Middlewares = append(cfg.Middlewares, mw)
-			}
+func UnaryMiddleware(
+	mw ...StatelessMiddleware,
+) UnaryOption {
+	return func(cfg *unaryConfig) {
+		for _, m := range mw {
+			cfg.Middlewares = append(cfg.Middlewares, m)
 		}
 	}
 }
 
-type unaryConfig[S State[A], A Action] struct {
-	s           *S
+type unaryConfig struct {
 	Selectors   []unarySelectorConfig
-	Middlewares []kit.HandlerFunc
+	Middlewares []StatelessMiddleware
 }
 
-func genUnaryConfig[S State[A], A Action](s *S, opt ...UnaryOption[S, A]) unaryConfig[S, A] {
-	cfg := unaryConfig[S, A]{}
+func genUnaryConfig(opt ...UnaryOption) unaryConfig {
+	cfg := unaryConfig{}
 
 	for _, o := range opt {
 		o(&cfg)
@@ -296,7 +289,7 @@ func genUnaryConfig[S State[A], A Action](s *S, opt ...UnaryOption[S, A]) unaryC
 	return cfg
 }
 
-type UnaryOption[S State[A], A Action] func(*unaryConfig[S, A])
+type UnaryOption func(*unaryConfig)
 
 type unarySelectorConfig struct {
 	Decoder  fasthttp.DecoderFunc
