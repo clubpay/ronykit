@@ -1,0 +1,17 @@
+log.level: 0
+log.syslog.tag: clubpay-01
+gateway.advertise.hostport: localhost:8081
+gateway.listen: 0.0.0.0:8081
+server.id: 001
+
+db.host: localhost
+db.port: 5432
+db.user: clubuser
+db.pass: clubpass
+db.ssl.mode: disable
+db.name.global: clubpay
+db.name.local: clubpay
+
+redis.host: localhost
+redis.port: 6379
+temporal.hostport: 127.0.0.1:7233

@@ -268,9 +268,7 @@ func UnaryMiddleware(
 	mw ...StatelessMiddleware,
 ) UnaryOption {
 	return func(cfg *unaryConfig) {
-		for _, m := range mw {
-			cfg.Middlewares = append(cfg.Middlewares, m)
-		}
+		cfg.Middlewares = append(cfg.Middlewares, mw...)
 	}
 }
 

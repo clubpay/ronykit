@@ -22,4 +22,5 @@ use (
 	./std/gateways/silverhttp
 	./stub
 	./testenv
+	./util
 )
