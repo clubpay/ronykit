@@ -44,7 +44,8 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	cfg := genUnaryConfig(opt...)
 	handlers = append(handlers, cfg.Middlewares...)
 
-	c := desc.NewContract()
+	c := desc.NewContract().
+		SetInputHeader(cfg.Headers...)
 	switch reflect.TypeOf(in) {
 	default:
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, true))
@@ -67,7 +68,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	hValue := reflect.ValueOf(h)
 	if hValue.Kind() == reflect.Func {
 		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")
-		handlerName = parts[len(parts)-1]
+		handlerName = strings.TrimSuffix(parts[len(parts)-1], "Fm")
 	}
 
 	for idx, s := range cfg.Selectors {
@@ -79,7 +80,9 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 			}
 		}
 
-		c.AddRoute(desc.Route(s.Name, s.Selector))
+		route := desc.Route(s.Name, s.Selector)
+		route.Deprecated = s.Deprecated
+		c.AddRoute(route)
 	}
 
 	setupCtx.cfg.getService(setupCtx.name).AddContract(c)
@@ -219,14 +222,39 @@ func UnaryName(name string) UnarySelectorOption {
 	}
 }
 
+type DecoderFunc = fasthttp.DecoderFunc
+
+func UnaryDecoder(decoder DecoderFunc) UnarySelectorOption {
+	return func(cfg *unarySelectorConfig) {
+		cfg.Decoder = decoder
+	}
+}
+
+func UnaryDeprecated(deprecated bool) UnarySelectorOption {
+	return func(cfg *unarySelectorConfig) {
+		cfg.Deprecated = deprecated
+	}
+}
+
 /*
 	UnaryOption
 */
 
+var (
+	OptionalHeader = desc.OptionalHeader
+	RequiredHeader = desc.RequiredHeader
+)
+
+func UnaryHeader(hdr ...desc.Header) UnaryOption {
+	return func(cfg *unaryConfig) {
+		cfg.Headers = hdr
+	}
+}
+
 func REST(method, path string, opt ...UnarySelectorOption) UnaryOption {
 	return func(cfg *unaryConfig) {
 		sCfg := genUnarySelectorConfig(opt...)
-		sCfg.Selector = fasthttp.REST(method, path)
+		sCfg.Selector = fasthttp.REST(method, path).SetDecoder(sCfg.Decoder)
 
 		cfg.Selectors = append(cfg.Selectors, sCfg)
 	}
@@ -275,6 +303,7 @@ func UnaryMiddleware(
 type unaryConfig struct {
 	Selectors   []unarySelectorConfig
 	Middlewares []StatelessMiddleware
+	Headers     []desc.Header
 }
 
 func genUnaryConfig(opt ...UnaryOption) unaryConfig {
@@ -290,9 +319,10 @@ func genUnaryConfig(opt ...UnaryOption) unaryConfig {
 type UnaryOption func(*unaryConfig)
 
 type unarySelectorConfig struct {
-	Decoder  fasthttp.DecoderFunc
-	Name     string
-	Selector kit.RouteSelector
+	Decoder    fasthttp.DecoderFunc
+	Name       string
+	Deprecated bool
+	Selector   kit.RESTRouteSelector
 }
 
 type UnarySelectorOption func(*unarySelectorConfig)

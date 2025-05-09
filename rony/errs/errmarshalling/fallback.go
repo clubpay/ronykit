@@ -15,7 +15,7 @@ func init() {
 		unmarshal: fallbackUnmarshal,
 		decoder: func(_ unsafe.Pointer, iter *jsoniter.Iterator) {
 			err := fallbackUnmarshal(iter)
-			fmt.Println("here with ", err)
+			fmt.Println("here with ", err) //nolint:forbidigo
 		},
 	}
 	serdeByName["error"] = marshaller
