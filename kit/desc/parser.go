@@ -417,7 +417,18 @@ func (pm ParsedMessage) FieldByGoName(name string) *ParsedField {
 	return nil
 }
 
-func (pm ParsedMessage) ExportedFields() int {
+func (pm ParsedMessage) ExportedFields() []*ParsedField {
+	var fields []*ParsedField
+	for idx := range pm.Fields {
+		if pm.Fields[idx].Exported {
+			fields = append(fields, &pm.Fields[idx])
+		}
+	}
+
+	return fields
+}
+
+func (pm ParsedMessage) TotalExportedFields() int {
 	var count int
 	for _, f := range pm.Fields {
 		if f.Exported {

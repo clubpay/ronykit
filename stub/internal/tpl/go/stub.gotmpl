@@ -5,7 +5,7 @@
 {{ define "dto" }}
 	// {{.Name}} is a data transfer object
 	type {{.Name}} struct {
-	{{- range .Fields -}}
+	{{- range .ExportedFields -}}
 		{{- if .Embedded }}
 			{{.GoName}}
 		{{- else }}

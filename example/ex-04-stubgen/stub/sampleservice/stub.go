@@ -23,9 +23,13 @@ var (
 func init() {
 	reflector.Register(&ErrorMessage{}, "json")
 	reflector.Register(&KeyValue{}, "json")
+	reflector.Register(&Location{}, "json")
 	reflector.Register(&SimpleHdr{}, "json")
+	reflector.Register(&Time{}, "json")
 	reflector.Register(&VeryComplexRequest{}, "json")
 	reflector.Register(&VeryComplexResponse{}, "json")
+	reflector.Register(&zone{}, "json")
+	reflector.Register(&zoneTrans{}, "json")
 }
 
 // ErrorMessage is a data transfer object
@@ -48,6 +52,10 @@ type KeyValue struct {
 	Value int    `json:"value"`
 }
 
+// Location is a data transfer object
+type Location struct {
+}
+
 // SimpleHdr is a data transfer object
 type SimpleHdr struct {
 	Key1 string      `json:"sKey1"`
@@ -55,6 +63,10 @@ type SimpleHdr struct {
 	T1   time.Time   `json:"t1"`
 	T2   *time.Time  `json:"t2"`
 	T3   []time.Time `json:"t3"`
+}
+
+// Time is a data transfer object
+type Time struct {
 }
 
 // VeryComplexRequest is a data transfer object
@@ -78,6 +90,14 @@ type VeryComplexResponse struct {
 	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty"`
 	SliceKey1 []uint8             `json:"sliceKey1"`
 	SliceKey2 []KeyValue          `json:"sliceKey2"`
+}
+
+// zone is a data transfer object
+type zone struct {
+}
+
+// zoneTrans is a data transfer object
+type zoneTrans struct {
 }
 
 type IsampleServiceStub interface {

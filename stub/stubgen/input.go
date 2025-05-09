@@ -99,9 +99,7 @@ func (in *Input) AddMessage(msg ...desc.ParsedMessage) {
 	}
 
 	for _, m := range msg {
-		if m.ExportedFields() > 0 {
-			in.messages[m.Name] = m
-		}
+		in.messages[m.Name] = m
 	}
 }
 
