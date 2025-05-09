@@ -18,6 +18,7 @@ var (
 	_ fmt.Stringer
 	_ utils.Result
 	_ json.RawMessage
+	_ time.Time
 )
 
 func init() {

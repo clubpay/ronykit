@@ -53,6 +53,7 @@ var (
 _ fmt.Stringer
 _ utils.Result
 {{ if containsStr .GetBuiltinPkgPaths "encoding/json" }} _ json.RawMessage {{end}}
+{{ if containsStr .GetBuiltinPkgPaths "time" }} _ time.Time {{end}}
 )
 
 {{/* Generate the init function */}}
