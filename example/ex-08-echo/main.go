@@ -12,9 +12,10 @@ import (
 
 func main() {
 	srv := rony.NewServer(
-		rony.Listen(":80"),
+		rony.Listen(":81"),
 		rony.WithServerName("EchoServer"),
 		rony.WithAPIDocs("/docs"),
+		rony.WithCORS(rony.CORSConfig{}),
 	)
 
 	// Set up the server with the initial state, which is a pointer to EchoCounter

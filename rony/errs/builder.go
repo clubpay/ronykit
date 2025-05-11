@@ -99,7 +99,7 @@ func (b *Builder) Err() error {
 
 	return &Error{
 		Code:       code,
-		Message:    msg,
+		Item:       msg,
 		Meta:       mergeMeta(errMeta, b.meta),
 		Details:    b.det,
 		underlying: b.err,

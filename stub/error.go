@@ -70,6 +70,10 @@ func (err Error) Code() int {
 	return err.code
 }
 
+func (err Error) GetCode() int {
+	return err.code
+}
+
 func (err *Error) SetItem(item string) *Error {
 	err.item = item
 
@@ -77,6 +81,10 @@ func (err *Error) SetItem(item string) *Error {
 }
 
 func (err Error) Item() string {
+	return err.item
+}
+
+func (err Error) GetItem() string {
 	return err.item
 }
 

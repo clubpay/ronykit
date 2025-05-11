@@ -6,10 +6,11 @@ package errs
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"unsafe"
 
+	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/rony/errs/errmarshalling"
 	"github.com/clubpay/ronykit/stub"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -37,8 +38,8 @@ var json = jsoniter.Config{
 type Error struct {
 	// Code is the error code to return.
 	Code ErrCode `json:"code"`
-	// Message is a descriptive message of the error.
-	Message string `json:"message"`
+	// Item is a descriptive message of the error.
+	Item string `json:"item"`
 	// Details are user-defined additional details.
 	Details ErrDetails `json:"details"`
 	// Meta are arbitrary key-value pairs for use within
@@ -66,7 +67,7 @@ func Wrap(err error, msg string, metaPairs ...any) error {
 		return nil
 	}
 
-	e := &Error{Code: Unknown, Message: msg, underlying: err}
+	e := &Error{Code: Unknown, Item: msg, underlying: err}
 	var ee *Error
 	if errors.As(err, &ee) {
 		e.Details = ee.Details
@@ -86,7 +87,7 @@ func WrapCode(err error, code ErrCode, msg string, metaPairs ...any) error {
 		return nil
 	}
 
-	e := &Error{Code: code, Message: msg, underlying: err}
+	e := &Error{Code: code, Item: msg, underlying: err}
 	ee := &Error{}
 	if errors.As(err, &ee) {
 		e.Details = ee.Details
@@ -119,11 +120,16 @@ func Convert(err error) error {
 
 	var se *stub.Error
 	if errors.As(err, &se) {
-		return &Error{
-			Code:       HTTPStatusToCode(se.Code()),
-			Message:    se.Item(),
-			underlying: se,
+		cErr, _ := errmarshalling.Unmarshal(utils.S2B(se.Item()))
+		if cErr == nil {
+			return &Error{
+				Code:       HTTPStatusToCode(se.Code()),
+				Item:       se.Item(),
+				underlying: se,
+			}
 		}
+
+		return cErr
 	}
 
 	return &Error{
@@ -173,6 +179,10 @@ func (e *Error) GetCode() int {
 	return codeStatus[e.Code]
 }
 
+func (e *Error) GetItem() string {
+	return e.Item
+}
+
 // Error reports the error code and message.
 func (e *Error) Error() string {
 	if e.Code == Unknown {
@@ -186,18 +196,18 @@ func (e *Error) Error() string {
 // error's message with the messages from any underlying errors.
 func (e *Error) ErrorMessage() string {
 	if e.underlying == nil {
-		return e.Message
+		return e.Item
 	}
 
 	var b strings.Builder
-	b.WriteString(e.Message)
+	b.WriteString(e.Item)
 
 	next := e.underlying
 	for next != nil {
 		var msg string
 		e := &Error{}
 		if errors.As(next, &e) {
-			msg = e.Message
+			msg = e.Item
 			next = e.underlying
 		} else {
 			msg = next.Error()
@@ -215,16 +225,6 @@ func (e *Error) ErrorMessage() string {
 // Unwrap returns the underlying error, if any.
 func (e *Error) Unwrap() error {
 	return e.underlying
-}
-
-// HTTPError writes structured error information to w using JSON encoding.
-// The status code is computed with HTTPStatus.
-//
-// If err is nil it writes:
-//
-//	{"code": "ok", "message": "", "details": null}
-func HTTPError(w http.ResponseWriter, err error) {
-	HTTPErrorWithCode(w, err, 0)
 }
 
 func mergeMeta(md Metadata, pairs []any) Metadata {

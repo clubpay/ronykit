@@ -1,6 +1,7 @@
 ### GET request query params
-GET http://127.0.0.1/echo?id={{$random.uuid}}&timestamp={{$timestamp}}
+GET http://127.0.0.1:81/echo?id={{$random.uuid}}&timestamp={{$timestamp}}
 Accept: application/json
+Origin: http://localhost:3003
 
 
 ### GET request with url params

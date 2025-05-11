@@ -1,9 +1,6 @@
 package errs
 
 import (
-	"errors"
-	"net/http"
-
 	"github.com/clubpay/ronykit/rony/errs/errmarshalling"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -73,50 +70,6 @@ func HTTPStatus(err error) int {
 	}
 }
 
-// HTTPErrorWithCode writes structured error information to w using JSON encoding.
-// The given status code is used if it is non-zero, and otherwise
-// it is computed with HTTPStatus.
-//
-// If err is nil it writes:
-//
-//	{"code": "ok", "message": "", "details": null}
-func HTTPErrorWithCode(w http.ResponseWriter, err error, code int) {
-	if code == 0 {
-		code = HTTPStatus(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-
-	if err == nil {
-		w.WriteHeader(code)
-		_, _ = w.Write([]byte(`{
-  "code": "ok",
-  "message": "",
-  "details": null
-}
-`))
-
-		return
-	}
-
-	e := func() *Error {
-		target := &Error{}
-		_ = errors.As(Convert(err), &target)
-
-		return target
-	}()
-	data, err2 := json.MarshalIndent(e, "", "  ")
-	if err2 != nil {
-		// Must be the details; drop them
-		e2 := &Error{Code: e.Code, Message: e.Message}
-		data, _ = json.MarshalIndent(e2, "", "  ")
-	}
-	w.WriteHeader(code)
-	// nosemgrep
-	_, _ = w.Write(data)
-}
-
 // writeErrorFieldsToInternalStream writes the error fields to the given stream
 // for passing between running Encore services.
 //
@@ -129,7 +82,7 @@ func writeErrorFieldsToInternalStream(e *Error, stream *jsoniter.Stream) {
 
 	stream.WriteMore()
 	stream.WriteObjectField(errmarshalling.MessageKey)
-	stream.WriteString(e.Message)
+	stream.WriteString(e.Item)
 
 	if len(e.Meta) > 0 {
 		if err := errmarshalling.TryWriteValue(stream, "meta", e.Meta); err != nil {
@@ -155,7 +108,7 @@ func unmarshalFromInternalIterator(e *Error, itr *jsoniter.Iterator) {
 		case "code":
 			e.Code = ErrCode(itr.ReadInt())
 		case errmarshalling.MessageKey:
-			e.Message = itr.ReadString()
+			e.Item = itr.ReadString()
 		case "meta":
 			itr.ReadVal(&e.Meta)
 		case errmarshalling.WrappedKey:
