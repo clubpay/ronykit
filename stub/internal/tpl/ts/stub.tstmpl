@@ -46,7 +46,7 @@ export class {{$serviceName}}Stub {
 	{{$methodName := .Name}}
 	{{- if and (ne $methodName "") (not .Request.Message.IsSpecial) }}
 // @ts-ignore
-	async{{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
+	async {{lowerCamelCase $methodName}}(req: {{.Request.Message.Name}}, headers?: HeadersInit): Promise<{{.GetOKResponse.Message.Name}}> {
 		{{- if eq (toLower .Method) "get" }}
 		const keys = Object.keys(req);
 		const keyValuePairs = keys
