@@ -49,7 +49,7 @@ func Marshal(err error) (rtn []byte) {
 			rtn = []byte(
 				fmt.Sprintf(
 					"{ \"%s\": \"error\", \"%s\": \"%s\"}",
-					TypeKey, MessageKey,
+					TypeKey, ItemKey,
 					strconv.Quote(fmt.Sprintf("panic occurred while marshalling error: %v", r)),
 				),
 			)
@@ -76,7 +76,7 @@ func Marshal(err error) (rtn []byte) {
 	stream.WriteObjectField(TypeKey)
 	stream.WriteString("error")
 	stream.WriteMore()
-	stream.WriteObjectField(MessageKey)
+	stream.WriteObjectField(ItemKey)
 	stream.WriteString(err.Error())
 	stream.WriteObjectEnd()
 	_ = stream.Flush()

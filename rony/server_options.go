@@ -1,6 +1,7 @@
 package rony
 
 import (
+	"io/fs"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -181,5 +182,11 @@ func WithAPIDocs(path string) ServerOption {
 func UseSwaggerUI() ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.serveDocsUI = swaggerUI
+	}
+}
+
+func WithServerFS(path, root string, fs fs.FS) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithServeFS(path, root, fs))
 	}
 }

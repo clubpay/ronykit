@@ -25,9 +25,9 @@ const (
 	// used to unmarshal the correct error type
 	TypeKey = "@type"
 
-	// MessageKey is the key used to identify the message of an error
+	// ItemKey is the key used to identify the message of an error
 	// we use a common name, which allows the fallback unmarshaler to work
-	MessageKey = "msg"
+	ItemKey = "item"
 
 	// WrappedKey is the key used to identify the wrapped error(s) of an error
 	// it can be either a single object or an array of objects

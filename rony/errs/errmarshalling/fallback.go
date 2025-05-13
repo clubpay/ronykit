@@ -28,7 +28,7 @@ func fallbackUnmarshal(itr *jsoniter.Iterator) error {
 
 	itr.ReadObjectCB(func(itr *jsoniter.Iterator, field string) bool {
 		switch field {
-		case MessageKey:
+		case ItemKey:
 			errMsg = itr.ReadString()
 		case WrappedKey:
 			switch itr.WhatIsNext() {
@@ -92,7 +92,7 @@ func createFallbackEncoder(typ reflect2.Type) jsoniter.ValEncoder {
 			stream.WriteString("error")
 			stream.WriteMore()
 
-			stream.WriteObjectField(MessageKey)
+			stream.WriteObjectField(ItemKey)
 			stream.WriteString(err.Error())
 
 			if err, ok := err.(interface{ Unwrap() error }); ok {

@@ -81,7 +81,7 @@ func writeErrorFieldsToInternalStream(e *Error, stream *jsoniter.Stream) {
 	stream.WriteInt(int(e.Code))
 
 	stream.WriteMore()
-	stream.WriteObjectField(errmarshalling.MessageKey)
+	stream.WriteObjectField(errmarshalling.ItemKey)
 	stream.WriteString(e.Item)
 
 	if len(e.Meta) > 0 {
@@ -107,7 +107,7 @@ func unmarshalFromInternalIterator(e *Error, itr *jsoniter.Iterator) {
 		switch field {
 		case "code":
 			e.Code = ErrCode(itr.ReadInt())
-		case errmarshalling.MessageKey:
+		case errmarshalling.ItemKey:
 			e.Item = itr.ReadString()
 		case "meta":
 			itr.ReadVal(&e.Meta)
