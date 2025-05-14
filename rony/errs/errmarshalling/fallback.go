@@ -54,12 +54,12 @@ func fallbackUnmarshal(itr *jsoniter.Iterator) error {
 	switch {
 	case len(wrappedList) > 0:
 		return &fallbackMultiWrapErr{
-			msg:     errMsg,
+			item:    errMsg,
 			wrapped: wrappedList,
 		}
 	case wrapped != nil:
 		return &fallbackSingleWrapErr{
-			msg:     errMsg,
+			item:    errMsg,
 			wrapped: wrapped,
 		}
 	default:
@@ -120,14 +120,14 @@ func createFallbackEncoder(typ reflect2.Type) jsoniter.ValEncoder {
 
 // fallbackSingleWrapErr is a fallback error type that wraps a single error.
 type fallbackSingleWrapErr struct {
-	msg     string
+	item    string
 	wrapped error
 }
 
 var _ error = (*fallbackSingleWrapErr)(nil)
 
 func (f *fallbackSingleWrapErr) Error() string {
-	return f.msg
+	return f.item
 }
 
 func (f *fallbackSingleWrapErr) Unwrap() error {
@@ -136,14 +136,14 @@ func (f *fallbackSingleWrapErr) Unwrap() error {
 
 // fallbackMultiWrapErr is a fallback error type that wraps multiple errors.
 type fallbackMultiWrapErr struct {
-	msg     string
+	item    string
 	wrapped []error
 }
 
 var _ error = (*fallbackMultiWrapErr)(nil)
 
 func (f *fallbackMultiWrapErr) Error() string {
-	return f.msg
+	return f.item
 }
 
 func (f *fallbackMultiWrapErr) Unwrap() []error {
