@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"testing"
+	"time"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
@@ -29,6 +30,8 @@ type sampleReq struct {
 	MSS map[string]string `json:"mss"`
 	MIS map[int]string    `json:"mis"`
 	MII map[int]int       `json:"mii"`
+	CT  time.Time         `json:"ct"`
+	CTP *time.Time        `json:"ctp"`
 }
 
 type subRes struct {

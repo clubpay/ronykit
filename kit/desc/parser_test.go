@@ -297,6 +297,7 @@ var _ = Describe("Time Fields", func() {
 		Expect(contract0.Request.Message.Kind).To(Equal(desc.Object))
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("t"))
 		Expect(contract0.Request.Message.Fields[0].Element.RType).To(Equal(reflect.TypeOf(time.Time{})))
+		Expect(contract0.Request.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("tPtr"))
 		Expect(contract0.Request.Message.Fields[1].Element.RType).To(Equal(reflect.TypeOf(&time.Time{})))
 		Expect(contract0.Request.Message.Fields[2].Name).To(Equal("tMap"))

@@ -532,6 +532,11 @@ func parseKind(t reflect.Type) Kind {
 	case reflect.Float32, reflect.Float64:
 		return Float
 	case reflect.Struct:
+		// Check if type implements String() string method
+		if t.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()) {
+			return String
+		}
+
 		return Object
 	case reflect.Map:
 		return Map

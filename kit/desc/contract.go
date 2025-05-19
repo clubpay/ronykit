@@ -54,7 +54,9 @@ type Contract struct {
 	Modifiers      []kit.ModifierFunc
 	InputHeaders   []Header
 	Input          kit.Message
+	InputMeta      MessageMeta
 	Output         kit.Message
+	OutputMeta     MessageMeta
 	PossibleErrors []Error
 }
 
@@ -89,28 +91,38 @@ func (c *Contract) SetInputHeader(headers ...Header) *Contract {
 }
 
 // SetInput sets the accepting message for this Contract. Contracts are bound to one input message.
-func (c *Contract) SetInput(m kit.Message) *Contract {
+func (c *Contract) SetInput(m kit.Message, opt ...MessageMetaOption) *Contract {
+	meta := MessageMeta{}
+	for _, o := range opt {
+		o(&meta)
+	}
 	c.Input = m
+	c.InputMeta = meta
 
 	return c
 }
 
 // In is an alias for SetInput
-func (c *Contract) In(m kit.Message) *Contract {
-	return c.SetInput(m)
+func (c *Contract) In(m kit.Message, opt ...MessageMetaOption) *Contract {
+	return c.SetInput(m, opt...)
 }
 
 // SetOutput sets the outgoing message for this Contract. This is an OPTIONAL parameter, which
 // mostly could be used by external tools such as Swagger or any other doc generator tools.
-func (c *Contract) SetOutput(m kit.Message) *Contract {
+func (c *Contract) SetOutput(m kit.Message, opt ...MessageMetaOption) *Contract {
+	meta := MessageMeta{}
+	for _, o := range opt {
+		o(&meta)
+	}
 	c.Output = m
+	c.OutputMeta = meta
 
 	return c
 }
 
 // Out is an alias for SetOutput
-func (c *Contract) Out(m kit.Message) *Contract {
-	return c.SetOutput(m)
+func (c *Contract) Out(m kit.Message, opt ...MessageMetaOption) *Contract {
+	return c.SetOutput(m, opt...)
 }
 
 // AddError sets the possible errors for this Contract. Using this method is OPTIONAL, which
