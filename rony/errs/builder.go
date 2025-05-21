@@ -15,9 +15,10 @@ type Builder struct {
 	det     ErrDetails
 	detSet  bool
 
-	msg  string
-	meta []any
-	err  error
+	msg    string
+	msgSet bool
+	meta   []any
+	err    error
 }
 
 // B is shorthand for creating a new Builder.
@@ -34,6 +35,7 @@ func (b *Builder) Code(c ErrCode) *Builder {
 // Msg sets the error message.
 func (b *Builder) Msg(msg string) *Builder {
 	b.msg = msg
+	b.msgSet = true
 
 	return b
 }
@@ -41,6 +43,7 @@ func (b *Builder) Msg(msg string) *Builder {
 // Msgf is like Msg but uses fmt.Sprintf to construct the message.
 func (b *Builder) Msgf(format string, args ...any) *Builder {
 	b.msg = fmt.Sprintf(format, args...)
+	b.msgSet = true
 
 	return b
 }
@@ -67,6 +70,9 @@ func (b *Builder) Cause(err error) *Builder {
 	if errors.As(err, &e) {
 		if !b.codeSet {
 			b.code = e.Code
+		}
+		if !b.msgSet {
+			b.msg = e.Item
 		}
 		if !b.detSet {
 			b.det = e.Details
