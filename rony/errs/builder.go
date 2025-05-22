@@ -32,8 +32,17 @@ func (b *Builder) Code(c ErrCode) *Builder {
 	return b
 }
 
-// Msg sets the error message.
+// Msg sets the error message if it is not already set
 func (b *Builder) Msg(msg string) *Builder {
+	if b.msgSet {
+		return b
+	}
+
+	return b.MsgX(msg)
+}
+
+// MsgX sets the error msg even if it already set
+func (b *Builder) MsgX(msg string) *Builder {
 	b.msg = msg
 	b.msgSet = true
 
@@ -42,6 +51,14 @@ func (b *Builder) Msg(msg string) *Builder {
 
 // Msgf is like Msg but uses fmt.Sprintf to construct the message.
 func (b *Builder) Msgf(format string, args ...any) *Builder {
+	if b.msgSet {
+		return b
+	}
+
+	return b.MsgfX(format, args...)
+}
+
+func (b *Builder) MsgfX(format string, args ...any) *Builder {
 	b.msg = fmt.Sprintf(format, args...)
 	b.msgSet = true
 

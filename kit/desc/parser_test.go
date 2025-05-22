@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/kit/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -269,6 +270,7 @@ type SpecialFields struct {
 	TMapPtr map[string]*time.Time `json:"tMapPtr"`
 	TArr    []time.Time           `json:"tArr"`
 	TArrPtr []*time.Time          `json:"tArrPtr"`
+	NUM     utils.Numeric         `json:"num"`
 }
 
 var _ = Describe("Time Fields", func() {
@@ -293,7 +295,7 @@ var _ = Describe("Time Fields", func() {
 		Expect(contract0.Method).To(Equal("POST"))
 		Expect(contract0.GroupName).To(Equal("rawRequest"))
 		Expect(contract0.Request.Message.Name).To(Equal("SpecialFields"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(6))
+		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Request.Message.Kind).To(Equal(desc.Object))
 		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("t"))
 		Expect(contract0.Request.Message.Fields[0].Element.RType).To(Equal(reflect.TypeOf(time.Time{})))
@@ -308,6 +310,9 @@ var _ = Describe("Time Fields", func() {
 		Expect(contract0.Request.Message.Fields[4].Element.RType).To(Equal(reflect.TypeOf([]time.Time{})))
 		Expect(contract0.Request.Message.Fields[5].Name).To(Equal("tArrPtr"))
 		Expect(contract0.Request.Message.Fields[5].Element.RType).To(Equal(reflect.TypeOf([]*time.Time{})))
+		Expect(contract0.Request.Message.Fields[6].Name).To(Equal("num"))
+		Expect(contract0.Request.Message.Fields[6].Element.RType).To(Equal(reflect.TypeOf(utils.Numeric{})))
+		Expect(contract0.Request.Message.Fields[6].Element.Kind).To(Equal(desc.String))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
 	})
 })

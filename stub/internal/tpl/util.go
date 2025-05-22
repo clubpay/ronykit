@@ -52,6 +52,8 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 			pkg, err := build.Import(pkgpath, ".", build.FindOnly)
 			if err == nil && pkg.Goroot {
 				return fmt.Sprintf("%s%s.%s", prefix, path.Base(t.PkgPath()), t.Name())
+			} else if t.Implements(reflect.TypeOf((*fmt.Stringer)(nil))) {
+				return fmt.Sprintf("%sstring", prefix)
 			}
 		}
 
