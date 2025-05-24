@@ -288,6 +288,14 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 	for fields.Back() != nil {
 		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
 
+		// handle []byte as a special case of string[base64]
+		if p.Element.Kind == desc.Array && p.Element.Element.Kind == desc.Byte {
+			setProperty(&def, p.Name, *spec.StrFmtProperty("base64"), idx)
+			idx++
+
+			continue
+		}
+
 		name, kind, wrapFuncChain := getWrapFunc(p)
 
 		switch kind {
