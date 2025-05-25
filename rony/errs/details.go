@@ -1,6 +1,6 @@
 package errs
 
-// ErrDetails is a marker interface for telling Encore
+// ErrDetails is a marker interface for telling
 // the type is used for reporting error details.
 //
 // We require a marker method (as opposed to using any)

@@ -149,6 +149,11 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 
 //nolint:cyclop
 func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc {
+	pcsMap := make(map[string]paramCaster, len(pcs))
+	for _, pc := range pcs {
+		pcsMap[pc.name] = pc
+	}
+
 	return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 		var (
 			v   = factory()
@@ -163,19 +168,27 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 		}
 
 		bag := GetParams(reqCtx)
-		for idx := range pcs {
-			x := bag.ByName(pcs[idx].name)
+		// protect against too many query params
+		if len(bag) > 64 {
+			bag = bag[:64]
+		}
+		for idx := range bag {
+			pc, ok := pcsMap[bag[idx].Key]
+			if !ok {
+				continue
+			}
+			x := bag[idx].Value
 			if x == "" {
 				continue
 			}
 
-			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pcs[idx].offset)
+			ptr := unsafe.Add((*emptyInterface)(unsafe.Pointer(&v)).word, pc.offset)
 
-			switch pcs[idx].typ.Kind() {
+			switch pc.typ.Kind() {
 			default:
 			// simply ignore
 			case reflect.Ptr:
-				switch pcs[idx].typ.Elem().Kind() {
+				switch pc.typ.Elem().Kind() {
 				default:
 				// simply ignore
 				case reflect.Bool:
@@ -218,9 +231,23 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 			case reflect.Uint:
 				*(*uint)(ptr) = utils.StrToUInt(x)
 			case reflect.Slice:
-				switch pcs[idx].typ.Elem().Kind() {
+				switch pc.typ.Elem().Kind() {
 				default:
 					// simply ignore
+				case reflect.Int64:
+					*(*[]int64)(ptr) = append(*(*[]int64)(ptr), utils.StrToInt64(x))
+				case reflect.Int32:
+					*(*[]int32)(ptr) = append(*(*[]int32)(ptr), utils.StrToInt32(x))
+				case reflect.Uint64:
+					*(*[]uint64)(ptr) = append(*(*[]uint64)(ptr), utils.StrToUInt64(x))
+				case reflect.Uint32:
+					*(*[]uint32)(ptr) = append(*(*[]uint32)(ptr), utils.StrToUInt32(x))
+				case reflect.Float64:
+					*(*[]float64)(ptr) = append(*(*[]float64)(ptr), utils.StrToFloat64(x))
+				case reflect.Float32:
+					*(*[]float32)(ptr) = append(*(*[]float32)(ptr), utils.StrToFloat32(x))
+				case reflect.String:
+					*(*[]string)(ptr) = append(*(*[]string)(ptr), x)
 				case reflect.Uint8:
 					*(*[]byte)(ptr) = utils.S2B(x)
 				}

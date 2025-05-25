@@ -73,9 +73,10 @@ func TestDecoder(t *testing.T) {
 	reqCtx.SetUserValue("a", "valueA")
 	reqCtx.SetUserValue("b", "1")
 	reqCtx.SetUserValue("c", "valueC")
-	reqCtx.SetUserValue("d", "valueD")
+	reqCtx.SetUserValue("d", "valueD3")
 	reqCtx.SetUserValue("x", "valueX")
 	reqCtx.SetUserValue("y", "2")
+	reqCtx.Request.URI().SetQueryString("d=valueD&d=valueD2")
 
 	m, err := dec(reqCtx, nil)
 	if err != nil {
@@ -94,9 +95,9 @@ func TestDecoder(t *testing.T) {
 	if string(mm.C) != "valueC" {
 		t.Fatal("invalid value for C")
 	}
-	//if len(mm.D) != 1 || mm.D[0] != "valueD" {
-	//	t.Fatal("invalid value for D")
-	//}
+	if len(mm.D) != 3 || mm.D[0] != "valueD3" {
+		t.Fatal("invalid value for D", mm.D)
+	}
 	if mm.X != "valueX" {
 		t.Fatal("invalid value for X - ", mm.X)
 	}
