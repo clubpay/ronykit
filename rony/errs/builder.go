@@ -74,6 +74,14 @@ func (b *Builder) Meta(metaPairs ...any) *Builder {
 
 // Details sets the details.
 func (b *Builder) Details(det ErrDetails) *Builder {
+	if b.detSet {
+		return b
+	}
+
+	return b.DetailsX(det)
+}
+
+func (b *Builder) DetailsX(det ErrDetails) *Builder {
 	b.det = det
 	b.detSet = true
 
@@ -87,12 +95,15 @@ func (b *Builder) Cause(err error) *Builder {
 	if errors.As(err, &e) {
 		if !b.codeSet {
 			b.code = e.Code
+			b.codeSet = true
 		}
 		if !b.msgSet {
 			b.msg = e.Item
+			b.msgSet = true
 		}
 		if !b.detSet {
 			b.det = e.Details
+			b.detSet = true
 		}
 	}
 
