@@ -19,9 +19,9 @@ require (
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
-	github.com/goccy/go-json v0.10.4 // indirect
+	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.6.5 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.6.7 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -31,9 +31,9 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.60.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	github.com/valyala/fasthttp v1.62.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
