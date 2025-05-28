@@ -36,10 +36,10 @@ github.com/onsi/ginkgo/v2 v2.22.2 h1:/3X8Panh8/WwhU/3Ssa6rCKqPLuAkVY2I0RoyDLySlU
 github.com/onsi/ginkgo/v2 v2.22.2/go.mod h1:oeMosUL+8LtarXBHu/c0bx2D/K9zyQ6uX3cTyztHwsk=
 github.com/onsi/gomega v1.36.2 h1:koNYke6TVk6ZmnyHrCXba/T/MoLBXFjeC1PtvYgw0A8=
 github.com/onsi/gomega v1.36.2/go.mod h1:DdwyADRjrc825LhMEkD76cHR5+pUnjhUN8GlHlRPHzY=
-github.com/panjf2000/ants/v2 v2.11.0 h1:sHrqEwTBQTQ2w6PMvbMfvBtVUuhsaYPzUmAYDLYmJPg=
-github.com/panjf2000/ants/v2 v2.11.0/go.mod h1:V9HhTupTWxcaRmIglJvGwvzqXUTnIZW9uO6q4hAfApw=
-github.com/panjf2000/gnet/v2 v2.7.2 h1:c+QhXBKi/Qfdi4fh8ju6xiShGQHS1lHSEk6euFzJaIk=
-github.com/panjf2000/gnet/v2 v2.7.2/go.mod h1:PIMw/8ILZsN/4K11bqDtSE1rEVPoFtjFlc0Q4edkncA=
+github.com/panjf2000/ants/v2 v2.11.3 h1:AfI0ngBoXJmYOpDh9m516vjqoUu2sLrIVgppI9TZVpg=
+github.com/panjf2000/ants/v2 v2.11.3/go.mod h1:8u92CYMUc6gyvTIw8Ru7Mt7+/ESnJahz5EVtqfrilek=
+github.com/panjf2000/gnet/v2 v2.8.0 h1:QBRejhtFMITzRYUeALxtR9UEiMYUdy/jrnkKAoBjTOU=
+github.com/panjf2000/gnet/v2 v2.8.0/go.mod h1:WQTxDWYuQ/hz3eccH0FN32IVuvZ19HewEWx0l62fx7E=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
