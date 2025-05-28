@@ -147,7 +147,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	return genDecoderFunc(factory, pcs...)
 }
 
-//nolint:cyclop,gocognit
+//nolint:cyclop,gocognit,gocyclo
 func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc {
 	pcsMap := make(map[string]paramCaster, len(pcs))
 	for _, pc := range pcs {

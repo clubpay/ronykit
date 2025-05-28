@@ -22,6 +22,7 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
+    - errname
   settings:
     depguard:
       rules:
