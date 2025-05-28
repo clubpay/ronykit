@@ -3,8 +3,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clubpay/ronykit/kit v0.19.19 h1:2/96In7J1YvZXzFJBymPBepRY7vnzxgFgo3a68g/k8g=
-github.com/clubpay/ronykit/kit v0.19.19/go.mod h1:LFzp4aClOkfWJPcUOFzVxuZ/f2z2AH8tK7FKQJck5wo=
+github.com/clubpay/ronykit/kit v0.19.20 h1:pJUt/6cG/PF4jJl9qjt/x87XkipxKjks6cqr5YKDKj0=
+github.com/clubpay/ronykit/kit v0.19.20/go.mod h1:LFzp4aClOkfWJPcUOFzVxuZ/f2z2AH8tK7FKQJck5wo=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

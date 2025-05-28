@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.19.19
+	github.com/clubpay/ronykit/kit v0.19.20
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.35.0
 	go.temporal.io/api v1.48.0
