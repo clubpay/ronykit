@@ -25,11 +25,11 @@ func TestFlow(t *testing.T) {
 			},
 		)
 		c.So(err, ShouldBeNil)
+		sdk.InitWithState("hello")
+
 		err = sdk.Start()
 		c.So(err, ShouldBeNil)
 		defer sdk.Stop()
-
-		WFSelect.Init(sdk, "hello")
 
 		ctx := context.Background()
 		wr, err := WFSelect.Execute(ctx, "Req1", flow.ExecuteWorkflowOptions{})
@@ -57,49 +57,47 @@ type Response struct {
 
 var WFSelect = flow.NewWorkflow(
 	"Select",
-	func(initArg string) flow.WorkflowFunc[string, Response] {
-		return func(ctx *flow.WorkflowContext[string, Response], req string) (*Response, error) {
-			t1 := ctx.Timer(time.Second * 5)
-			t2 := ctx.Timer(time.Second * 10)
-			ch := flow.NewBufferedChannel[string](ctx, 10)
-			ch.SendAsync("hello")
-			ch.SendAsync("world")
-			ch.Close()
-			res := Response{}
-			s := ctx.Selector("select1")
-			flow.SelectorAddReceive(s, ch, func(ch flow.Channel[string], more bool) {
-				msg, ok := ch.Receive(ctx.Context())
-				if ok {
-					res.Messages = append(res.Messages, msg)
-				}
-				ctx.Log().Info("channel received", msg, ok)
-			})
-			flow.SelectorAddFuture(s, t1, func(f flow.Future[temporal.CanceledError]) {
-				ctx.Log().Info("t1 received")
-				x, err := f.Get(ctx.Context())
-				if err != nil {
-					res.T1Err = err.Error()
-				}
-				if x != nil {
-					res.T1 = fmt.Sprintf("t1:%v", x)
-				}
-			})
-			flow.SelectorAddFuture(s, t2, func(f flow.Future[temporal.CanceledError]) {
-				ctx.Log().Info("t2 received")
-				x, err := f.Get(ctx.Context())
-				if err != nil {
-					res.T2Err = err.Error()
-				}
-				if x != nil {
-					res.T2 = fmt.Sprintf("t2:%v", x)
-				}
-			})
-
-			for i := 0; i < 5; i++ {
-				s.Select(ctx.Context())
+	func(ctx *flow.WorkflowContext[string, Response, string], req string) (*Response, error) {
+		t1 := ctx.Timer(time.Second * 5)
+		t2 := ctx.Timer(time.Second * 10)
+		ch := flow.NewBufferedChannel[string](ctx.Context(), 10)
+		ch.SendAsync("hello")
+		ch.SendAsync("world")
+		ch.Close()
+		res := Response{}
+		s := ctx.NamedSelector("select1")
+		flow.SelectorAddReceive[string](s, ch, func(ch flow.Channel[string], more bool) {
+			msg, ok := ch.Receive(ctx.Context())
+			if ok {
+				res.Messages = append(res.Messages, msg)
 			}
+			ctx.Log().Info("channel received", msg, ok)
+		})
+		flow.SelectorAddFuture(s, t1, func(f flow.Future[temporal.CanceledError]) {
+			ctx.Log().Info("t1 received")
+			x, err := f.Get(ctx.Context())
+			if err != nil {
+				res.T1Err = err.Error()
+			}
+			if x != nil {
+				res.T1 = fmt.Sprintf("t1:%v", x)
+			}
+		})
+		flow.SelectorAddFuture(s, t2, func(f flow.Future[temporal.CanceledError]) {
+			ctx.Log().Info("t2 received")
+			x, err := f.Get(ctx.Context())
+			if err != nil {
+				res.T2Err = err.Error()
+			}
+			if x != nil {
+				res.T2 = fmt.Sprintf("t2:%v", x)
+			}
+		})
 
-			return utils.ValPtr(res), nil
+		for i := 0; i < 5; i++ {
+			s.Select(ctx.Context())
 		}
+
+		return utils.ValPtr(res), nil
 	},
 )

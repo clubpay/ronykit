@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"reflect"
 	"strings"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
 
 type Workflow[REQ, RES, STATE any] struct {
-	sdk   *SDK
+	sdk   Backend
 	Name  string
 	State STATE
 	Fn    WorkflowFunc[REQ, RES, STATE]
@@ -27,26 +28,29 @@ type Workflow[REQ, RES, STATE any] struct {
 func NewWorkflow[REQ, RES, STATE any](
 	name string,
 	fn WorkflowFunc[REQ, RES, STATE],
-) Workflow[REQ, RES, STATE] {
-	return Workflow[REQ, RES, STATE]{
-		Name: name,
-		Fn:   fn,
-	}
+) *Workflow[REQ, RES, STATE] {
+	var s STATE
+
+	return NewWorkflowWithState(name, s, fn)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](
 	name string, state STATE,
 	fn WorkflowFunc[REQ, RES, STATE],
-) Workflow[REQ, RES, STATE] {
-	return Workflow[REQ, RES, STATE]{
+) *Workflow[REQ, RES, STATE] {
+	w := &Workflow[REQ, RES, STATE]{
 		Name:  name,
 		State: state,
 		Fn:    fn,
 	}
+
+	registeredWorkflows[w.stateType()] = append(registeredWorkflows[w.stateType()], w)
+
+	return w
 }
 
-func (w *Workflow[REQ, RES, STATE]) Init(sdk *SDK) {
-	sdk.w.RegisterWorkflowWithOptions(
+func (w *Workflow[REQ, RES, STATE]) init(b Backend) {
+	b.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
 			fCtx := &WorkflowContext[REQ, RES, STATE]{
 				ctx: ctx,
@@ -58,23 +62,11 @@ func (w *Workflow[REQ, RES, STATE]) Init(sdk *SDK) {
 		workflow.RegisterOptions{Name: w.Name},
 	)
 
-	sdk.replay.RegisterWorkflowWithOptions(
-		func(ctx workflow.Context, req REQ) (*RES, error) {
-			return w.Fn(
-				&WorkflowContext[REQ, RES, STATE]{
-					ctx: ctx,
-					s:   w.State,
-				}, req,
-			)
-		},
-		workflow.RegisterOptions{Name: w.Name},
-	)
-
-	w.sdk = sdk
+	w.sdk = b
 }
 
-func (w *Workflow[REQ, RES, STATE]) InitWithState(sdk *SDK, s STATE) {
-	sdk.w.RegisterWorkflowWithOptions(
+func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
+	b.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
 			fCtx := &WorkflowContext[REQ, RES, STATE]{
 				ctx: ctx,
@@ -86,19 +78,15 @@ func (w *Workflow[REQ, RES, STATE]) InitWithState(sdk *SDK, s STATE) {
 		workflow.RegisterOptions{Name: w.Name},
 	)
 
-	sdk.replay.RegisterWorkflowWithOptions(
-		func(ctx workflow.Context, req REQ) (*RES, error) {
-			return w.Fn(
-				&WorkflowContext[REQ, RES, STATE]{
-					ctx: ctx,
-					s:   s,
-				}, req,
-			)
-		},
-		workflow.RegisterOptions{Name: w.Name},
-	)
+	w.sdk = b
+}
 
-	w.sdk = sdk
+func (w *Workflow[REQ, RES, STATE]) initWithStateAny(b Backend, s any) {
+	w.initWithState(b, s.(STATE))
+}
+
+func (w *Workflow[REQ, RES, STATE]) stateType() reflect.Type {
+	return reflect.TypeOf(w.State)
 }
 
 // WorkflowIdReusePolicy
@@ -207,11 +195,11 @@ func (x WorkflowRun[T]) Get(ctx context.Context) (*T, error) {
 func (w *Workflow[REQ, RES, STATE]) Execute(
 	ctx context.Context, req REQ, opts ExecuteWorkflowOptions,
 ) (*WorkflowRun[RES], error) {
-	run, err := w.sdk.cli.ExecuteWorkflow(
+	run, err := w.sdk.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:                       opts.ID,
-			TaskQueue:                w.sdk.taskQ,
+			TaskQueue:                w.sdk.TaskQueue(),
 			WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 			WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 			WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,
@@ -327,7 +315,7 @@ func (sdk *SDK) SearchWorkflows(ctx context.Context, req SearchWorkflowRequest) 
 		Query:         req.Query,
 	}
 
-	cliRes, err := sdk.cli.ListWorkflow(ctx, cliReq)
+	cliRes, err := sdk.b.cli.ListWorkflow(ctx, cliReq)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +338,7 @@ type CountWorkflowResponse struct {
 }
 
 func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*CountWorkflowResponse, error) {
-	res, err := sdk.cli.CountWorkflow(
+	res, err := sdk.b.cli.CountWorkflow(
 		ctx,
 		&workflowservice.CountWorkflowExecutionsRequest{
 			Namespace: sdk.namespace,
@@ -395,7 +383,7 @@ func (sdk *SDK) GetWorkflowHistory(
 	if req.OnlyLastOne {
 		filterType = enumspb.HISTORY_EVENT_FILTER_TYPE_CLOSE_EVENT
 	}
-	iter := sdk.cli.GetWorkflowHistory(
+	iter := sdk.b.cli.GetWorkflowHistory(
 		ctx,
 		req.WorkflowID,
 		req.RunID,
@@ -461,7 +449,7 @@ type CancelWorkflowResponse struct {
 }
 
 func (sdk *SDK) CancelWorkflow(ctx context.Context, req CancelWorkflowRequest) (*CancelWorkflowResponse, error) {
-	err := sdk.cli.CancelWorkflow(ctx, req.WorkflowID, req.RunID)
+	err := sdk.b.cli.CancelWorkflow(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
 		var notFoundErr *serviceerror.NotFound
 		if errors.As(err, &notFoundErr) {
@@ -484,7 +472,7 @@ type GetWorkflowRequest struct {
 }
 
 func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*WorkflowExecution, error) {
-	wr := sdk.cli.GetWorkflow(ctx, req.WorkflowID, req.RunID)
+	wr := sdk.b.cli.GetWorkflow(ctx, req.WorkflowID, req.RunID)
 	var e WorkflowExecution
 	err := wr.Get(ctx, &e)
 	if err != nil {
@@ -495,5 +483,5 @@ func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*Workf
 }
 
 func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
-	return sdk.cli.SignalWorkflow(ctx, workflowID, "", signalName, arg)
+	return sdk.b.cli.SignalWorkflow(ctx, workflowID, "", signalName, arg)
 }

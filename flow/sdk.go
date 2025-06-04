@@ -2,14 +2,29 @@ package flow
 
 import (
 	"context"
+	"reflect"
 	"time"
 
+	"github.com/nexus-rpc/sdk-go/nexus"
 	"go.temporal.io/api/namespace/v1"
 	"go.temporal.io/api/workflowservice/v1"
+	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
+
+type Backend interface {
+	worker.Registry
+	ExecuteWorkflow(
+		ctx context.Context,
+		options client.StartWorkflowOptions,
+		workflow any,
+		args ...any,
+	) (client.WorkflowRun, error)
+	TaskQueue() string
+}
 
 type Config struct {
 	HostPort  string
@@ -17,23 +32,57 @@ type Config struct {
 	TaskQueue string
 }
 
-type SDK struct {
-	nsCli  client.NamespaceClient
-	cli    client.Client
-	replay worker.WorkflowReplayer
-	w      worker.Worker
+type realBackend struct {
+	cli   client.Client
+	w     worker.Worker
+	taskQ string
+}
 
-	taskQ     string
+func (r realBackend) RegisterWorkflow(w any) {
+	r.w.RegisterWorkflow(w)
+}
+
+func (r realBackend) RegisterWorkflowWithOptions(w any, options workflow.RegisterOptions) {
+	r.w.RegisterWorkflowWithOptions(w, options)
+}
+
+func (r realBackend) RegisterActivity(a any) {
+	r.w.RegisterActivity(a)
+}
+
+func (r realBackend) RegisterActivityWithOptions(a any, options activity.RegisterOptions) {
+	r.w.RegisterActivityWithOptions(a, options)
+}
+
+func (r realBackend) RegisterNexusService(service *nexus.Service) {
+	r.w.RegisterNexusService(service)
+}
+
+func (r realBackend) ExecuteWorkflow(
+	ctx context.Context, options client.StartWorkflowOptions, workflow any, args ...any,
+) (client.WorkflowRun, error) {
+	return r.cli.ExecuteWorkflow(ctx, options, workflow, args...)
+}
+
+func (r realBackend) TaskQueue() string {
+	return r.taskQ
+}
+
+type SDK struct {
+	nsCli client.NamespaceClient
+	b     realBackend
+
 	namespace string
 	hostport  string
 }
 
 func NewSDK(cfg Config) (*SDK, error) {
 	sdk := &SDK{
-		taskQ:     cfg.TaskQueue,
+		b: realBackend{
+			taskQ: cfg.TaskQueue,
+		},
 		namespace: cfg.Namespace,
 		hostport:  cfg.HostPort,
-		replay:    worker.NewWorkflowReplayer(),
 	}
 
 	err := sdk.invoke()
@@ -63,7 +112,7 @@ func (sdk *SDK) invoke() error {
 		)
 	}
 
-	sdk.cli, err = client.NewLazyClient(
+	sdk.b.cli, err = client.NewLazyClient(
 		client.Options{
 			HostPort:  sdk.hostport,
 			Namespace: sdk.namespace,
@@ -73,9 +122,9 @@ func (sdk *SDK) invoke() error {
 		return err
 	}
 
-	sdk.w = worker.New(
-		sdk.cli,
-		sdk.taskQ,
+	sdk.b.w = worker.New(
+		sdk.b.cli,
+		sdk.b.taskQ,
 		worker.Options{
 			DisableRegistrationAliasing: true,
 		},
@@ -85,15 +134,45 @@ func (sdk *SDK) invoke() error {
 }
 
 func (sdk *SDK) Start() error {
-	return sdk.w.Start()
+	return sdk.b.w.Start()
 }
 
 func (sdk *SDK) Stop() {
-	sdk.w.Stop()
+	sdk.b.w.Stop()
 }
 
 func (sdk *SDK) TaskQueue() string {
-	return sdk.taskQ
+	return sdk.b.taskQ
+}
+
+func (sdk *SDK) Init() {
+	for _, w := range registeredWorkflows {
+		for _, t := range w {
+			t.init(&sdk.b)
+		}
+	}
+	for _, a := range registeredActivities {
+		for _, t := range a {
+			t.init(sdk.b)
+		}
+	}
+}
+
+func (sdk *SDK) InitWithState(state any) {
+	for stateType, w := range registeredWorkflows {
+		if stateType == reflect.TypeOf(state) {
+			for _, t := range w {
+				t.initWithStateAny(&sdk.b, state)
+			}
+		}
+	}
+	for stateType, w := range registeredActivities {
+		if stateType == reflect.TypeOf(state) {
+			for _, t := range w {
+				t.initWithStateAny(sdk.b, state)
+			}
+		}
+	}
 }
 
 type UpdateNamespaceRequest struct {
@@ -120,3 +199,19 @@ func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Durati
 		},
 	)
 }
+
+var _StateCtxKey = struct{}{}
+
+func GetState[STATE any](ctx Context) STATE {
+	return ctx.Value(_StateCtxKey).(STATE)
+}
+
+type temporalEntityT interface {
+	init(sdk Backend)
+	initWithStateAny(sdk Backend, state any)
+}
+
+var (
+	registeredWorkflows  = make(map[reflect.Type][]temporalEntityT)
+	registeredActivities = make(map[reflect.Type][]temporalEntityT)
+)

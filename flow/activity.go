@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"go.temporal.io/sdk/activity"
@@ -10,25 +11,43 @@ import (
 
 type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
 
+type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
+
 func NewActivity[REQ, RES, STATE any](
 	name string,
 	fn ActivityFunc[REQ, RES, STATE],
-) Activity[REQ, RES, STATE] {
-	return Activity[REQ, RES, STATE]{
+) *Activity[REQ, RES, STATE] {
+	act := Activity[REQ, RES, STATE]{
 		Name: name,
 		Fn:   fn,
 	}
+
+	registeredActivities[act.stateType()] = append(registeredActivities[act.stateType()], &act)
+
+	return &act
+}
+
+func ToActivity[STATE, REQ, RES any](name string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
+	return NewActivity(
+		name,
+		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
+			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
+
+			return rawFn(ctx.ctx, req)
+		},
+	)
 }
 
 type Activity[REQ, RES, STATE any] struct {
-	sdk  *SDK
-	Name string
-	Fn   ActivityFunc[REQ, RES, STATE]
+	sdk   Backend
+	Name  string
+	State STATE
+	Fn    ActivityFunc[REQ, RES, STATE]
 }
 
-func (a *Activity[REQ, RES, STATE]) Init(sdk *SDK) {
+func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
 	a.sdk = sdk
-	sdk.w.RegisterActivityWithOptions(
+	sdk.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
 			fCtx := &ActivityContext[REQ, RES, STATE]{
 				ctx: ctx,
@@ -40,9 +59,9 @@ func (a *Activity[REQ, RES, STATE]) Init(sdk *SDK) {
 	)
 }
 
-func (a *Activity[REQ, RES, STATE]) InitWithState(sdk *SDK, state STATE) {
+func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 	a.sdk = sdk
-	sdk.w.RegisterActivityWithOptions(
+	sdk.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
 			fCtx := &ActivityContext[REQ, RES, STATE]{
 				ctx: ctx,
@@ -53,6 +72,14 @@ func (a *Activity[REQ, RES, STATE]) InitWithState(sdk *SDK, state STATE) {
 		},
 		activity.RegisterOptions{Name: a.Name, SkipInvalidStructFunctions: true},
 	)
+}
+
+func (a *Activity[REQ, RES, STATE]) initWithStateAny(sdk Backend, s any) {
+	a.initWithState(sdk, s.(STATE))
+}
+
+func (a *Activity[REQ, RES, STATE]) stateType() reflect.Type {
+	return reflect.TypeOf(a.State)
 }
 
 type ExecuteActivityOptions struct {
@@ -82,7 +109,7 @@ type ExecuteActivityOptions struct {
 	RetryPolicy         *RetryPolicy
 }
 
-func (a *Activity[REQ, RES, InitArg]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
@@ -92,7 +119,7 @@ func (a *Activity[REQ, RES, InitArg]) Execute(ctx Context, req REQ, opts Execute
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
-			TaskQueue:              a.sdk.taskQ,
+			TaskQueue:              a.sdk.TaskQueue(),
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,
@@ -105,7 +132,7 @@ func (a *Activity[REQ, RES, InitArg]) Execute(ctx Context, req REQ, opts Execute
 	}
 }
 
-func (a *Activity[REQ, RES, InitArg]) ExecuteLocal(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func (a *Activity[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
@@ -126,14 +153,14 @@ func (a *Activity[REQ, RES, InitArg]) ExecuteLocal(ctx Context, req REQ, opts Ex
 	}
 }
 
-func ExecuteActivity[REQ, RES, IA any](
-	ctx Context, act Activity[REQ, RES, IA], req REQ, opts ExecuteActivityOptions,
+func ExecuteActivity[REQ, RES, STATE any](
+	ctx Context, act Activity[REQ, RES, STATE], req REQ, opts ExecuteActivityOptions,
 ) Future[RES] {
 	return act.Execute(ctx, req, opts)
 }
 
-func ExecuteActivityLocal[REQ, RES, IA any](
-	ctx Context, act Activity[REQ, RES, IA], req REQ, opts ExecuteActivityOptions,
+func ExecuteActivityLocal[REQ, RES, STATE any](
+	ctx Context, act Activity[REQ, RES, STATE], req REQ, opts ExecuteActivityOptions,
 ) Future[RES] {
 	return act.ExecuteLocal(ctx, req, opts)
 }

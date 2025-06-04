@@ -122,7 +122,7 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 		Action: &client.ScheduleWorkflowAction{
 			Workflow:                 req.Action.WorkflowName,
 			Args:                     []any{req.Action.WorkflowArg},
-			TaskQueue:                sdk.taskQ,
+			TaskQueue:                sdk.b.taskQ,
 			WorkflowExecutionTimeout: req.ExecutionTimeout,
 			WorkflowRunTimeout:       req.RunTimeout,
 			TypedSearchAttributes:    req.Action.SearchAttributes,
@@ -134,15 +134,15 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 		TypedSearchAttributes: req.SearchAttributes,
 	}
 
-	return sdk.cli.ScheduleClient().Create(ctx, opt)
+	return sdk.b.cli.ScheduleClient().Create(ctx, opt)
 }
 
 func (sdk *SDK) GetSchedule(ctx context.Context, id string) ScheduleHandle {
-	return sdk.cli.ScheduleClient().GetHandle(ctx, id)
+	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id)
 }
 
 func (sdk *SDK) ListSchedules(ctx context.Context, query string, pageSize int) (ScheduleListIterator, error) {
-	iter, err := sdk.cli.ScheduleClient().List(
+	iter, err := sdk.b.cli.ScheduleClient().List(
 		ctx,
 		client.ScheduleListOptions{
 			PageSize: pageSize,
@@ -157,19 +157,19 @@ func (sdk *SDK) ListSchedules(ctx context.Context, query string, pageSize int) (
 }
 
 func (sdk *SDK) DeleteSchedule(ctx context.Context, id string) error {
-	return sdk.cli.ScheduleClient().GetHandle(ctx, id).Delete(ctx)
+	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Delete(ctx)
 }
 
 func (sdk *SDK) TogglePause(ctx context.Context, id string, pause bool) error {
 	if pause {
-		return sdk.cli.ScheduleClient().GetHandle(ctx, id).Pause(ctx, client.SchedulePauseOptions{})
+		return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Pause(ctx, client.SchedulePauseOptions{})
 	}
 
-	return sdk.cli.ScheduleClient().GetHandle(ctx, id).Unpause(ctx, client.ScheduleUnpauseOptions{})
+	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Unpause(ctx, client.ScheduleUnpauseOptions{})
 }
 
 func (sdk *SDK) Trigger(ctx context.Context, id string) error {
-	return sdk.cli.ScheduleClient().
+	return sdk.b.cli.ScheduleClient().
 		GetHandle(ctx, id).
 		Trigger(
 			ctx,
