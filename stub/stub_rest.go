@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -519,6 +520,7 @@ func (hc *RESTCtx) AutoRun(
 					return
 				}
 
+				v = reflect.Indirect(reflect.ValueOf(v)).Interface()
 				switch v := v.(type) {
 				default:
 					hc.SetQuery(key, fmt.Sprintf("%v", v))

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -81,6 +82,59 @@ var _ = Describe("Stub from URL", func() {
 			).
 			SetHeader("SomeKey", "SomeValue").
 			Run(ctx)
+		defer httpCtx.Release()
+
+		Expect(httpCtx.Err()).To(BeNil())
+	})
+})
+
+type sampleRequest struct {
+	Name     string  `json:"name"`
+	NamePtr  *string `json:"namePtr"`
+	Value    int     `json:"value"`
+	ValuePtr *int    `json:"valuePtr"`
+}
+
+type postEchoResponse struct {
+	Args    map[string]string `json:"args"`
+	Headers map[string]string `json:"headers"`
+	URL     string            `json:"url"`
+}
+
+var _ = Describe("Stub AutoRun", func() {
+	ctx := context.Background()
+
+	It("should handle pointer fields in the request", func() {
+		httpCtx, err := stub.HTTP("https://postman-echo.com")
+		Expect(err).To(BeNil())
+		httpCtx.
+			SetMethod(http.MethodGet).
+			DefaultResponseHandler(
+				func(_ context.Context, r stub.RESTResponse) *stub.Error {
+					switch r.StatusCode() {
+					case http.StatusOK:
+						v := &postEchoResponse{}
+						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
+						Expect(v.Args["name"]).To(Equal("someName"))
+						Expect(v.Args["value"]).To(Equal("12345"))
+						Expect(v.Args["namePtr"]).To(Equal("someName"))
+						Expect(v.Args["valuePtr"]).To(Equal("12345"))
+					default:
+						return stub.NewError(http.StatusInternalServerError, "unexpected status code")
+					}
+
+					return nil
+				},
+			).
+			SetHeader("SomeKey", "SomeValue").
+			// DumpRequestTo(os.Stdout).
+			// DumpResponseTo(os.Stdout).
+			AutoRun(ctx, "get", kit.JSON, sampleRequest{
+				Name:     "someName",
+				Value:    12345,
+				NamePtr:  utils.ValPtr("someName"),
+				ValuePtr: utils.ValPtr(12345),
+			})
 		defer httpCtx.Release()
 
 		Expect(httpCtx.Err()).To(BeNil())

@@ -10,6 +10,7 @@ import (
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/converter"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -27,9 +28,11 @@ type Backend interface {
 }
 
 type Config struct {
-	HostPort  string
-	Namespace string
-	TaskQueue string
+	HostPort      string
+	Namespace     string
+	TaskQueue     string
+	DataConverter converter.DataConverter
+	Credentials   client.Credentials
 }
 
 type realBackend struct {
@@ -70,6 +73,8 @@ func (r realBackend) TaskQueue() string {
 
 type SDK struct {
 	nsCli client.NamespaceClient
+	dc    converter.DataConverter
+	creds client.Credentials
 	b     realBackend
 
 	namespace string
@@ -81,6 +86,8 @@ func NewSDK(cfg Config) (*SDK, error) {
 		b: realBackend{
 			taskQ: cfg.TaskQueue,
 		},
+		dc:        cfg.DataConverter,
+		creds:     cfg.Credentials,
 		namespace: cfg.Namespace,
 		hostport:  cfg.HostPort,
 	}
@@ -112,12 +119,14 @@ func (sdk *SDK) invoke() error {
 		)
 	}
 
-	sdk.b.cli, err = client.NewLazyClient(
-		client.Options{
-			HostPort:  sdk.hostport,
-			Namespace: sdk.namespace,
-		},
-	)
+	clientOpt := client.Options{
+		HostPort:      sdk.hostport,
+		Namespace:     sdk.namespace,
+		DataConverter: sdk.dc,
+		Credentials:   sdk.creds,
+	}
+
+	sdk.b.cli, err = client.NewLazyClient(clientOpt)
 	if err != nil {
 		return err
 	}
