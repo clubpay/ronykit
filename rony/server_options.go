@@ -190,3 +190,9 @@ func WithServerFS(path, root string, fs fs.FS) ServerOption {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithServeFS(path, root, fs))
 	}
 }
+
+func WithErrorHandler(handler kit.ErrHandlerFunc) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithErrorHandler(handler))
+	}
+}
