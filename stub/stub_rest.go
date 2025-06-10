@@ -520,8 +520,12 @@ func (hc *RESTCtx) AutoRun(
 					return
 				}
 
-				v = reflect.Indirect(reflect.ValueOf(v)).Interface()
-				switch v := v.(type) {
+				vv := reflect.Indirect(reflect.ValueOf(v))
+				if vv.IsZero() {
+					return
+				}
+
+				switch v := vv.Interface().(type) {
 				default:
 					hc.SetQuery(key, fmt.Sprintf("%v", v))
 				case []byte:
