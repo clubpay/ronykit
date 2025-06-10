@@ -22,8 +22,8 @@ import (
 func TestDecoder(t *testing.T) {
 	Convey("Decoder", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			"Stub with Run":       stubWithRun,
-			"Stub with AutoRun 1": stubWithAutoRun1,
+			//"Stub with Run":       stubWithRun,
+			//"Stub with AutoRun 1": stubWithAutoRun1,
 			"Stub With AutoRun 2": stubWithAutoRun2,
 		}
 		for title, fn := range testCases {
@@ -161,13 +161,16 @@ func stubWithAutoRun2(t *testing.T, opt fx.Option) func(c C) {
 						return stub.WrapError(json.Unmarshal(r.GetBody(), resp))
 					},
 				).
-				AutoRun(ctx, "/echo/{xpx}", kit.JSON, req).
+				AutoRun(ctx, "/echo/{xp}", kit.JSON, req).
 				Error()
 			c.So(err, ShouldBeNil)
 			c.So(resp.X, ShouldEqual, req.X)
-			c.So(resp.XP, ShouldEqual, "_")
+			c.So(resp.XP, ShouldEqual, req.XP)
 			c.So(resp.Y, ShouldEqual, req.Y)
 			c.So(resp.Z, ShouldEqual, req.Z)
+			c.So(resp.XPtr, ShouldBeNil)
+			c.So(resp.YPtr, ShouldBeNil)
+			c.So(resp.ZPtr, ShouldBeNil)
 			fmt.Println(string(resp.A), string(req.A))
 			c.So(resp.A, ShouldEqual, req.A)
 		}

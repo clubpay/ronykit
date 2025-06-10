@@ -519,15 +519,14 @@ func (hc *RESTCtx) AutoRun(
 				if v == nil {
 					return
 				}
-
 				vv := reflect.Indirect(reflect.ValueOf(v))
-				if vv.IsZero() {
+				if !vv.IsValid() {
 					return
 				}
-
 				switch v := vv.Interface().(type) {
 				default:
 					hc.SetQuery(key, fmt.Sprintf("%v", v))
+				case nil:
 				case []byte:
 					hc.SetQuery(key, string(v))
 				}

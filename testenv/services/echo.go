@@ -20,11 +20,15 @@ type EchoResponse struct {
 }
 
 type Embedded struct {
-	X  string  `json:"x"`
-	XP string  `json:"xp"`
-	Y  int64   `json:"y"`
-	Z  float64 `json:"z"`
-	A  []byte  `json:"a"`
+	X    string   `json:"x"`
+	XP   string   `json:"xp"`
+	Y    int64    `json:"y"`
+	Z    float64  `json:"z"`
+	A    []byte   `json:"a"`
+	XPtr *string  `json:"xPtr"`
+	YPtr *int64   `json:"yPtr"`
+	ZPtr *float64 `json:"zPtr"`
+	APtr *[]byte  `json:"aPtr"`
 }
 
 type CloseRequest struct {
