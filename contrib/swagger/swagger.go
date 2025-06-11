@@ -234,20 +234,27 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 
 	var fields []desc.ParsedField
 	for _, f := range c.Request.Message.Fields {
+		if !f.Exported {
+			continue
+		}
+
 		if f.Embedded {
 			fields = append(fields, f.Element.Message.Fields...)
 		} else {
 			fields = append(fields, f)
 		}
 	}
-	for _, p := range fields {
-		if c.IsPathParam(p.Name) {
+	for _, field := range fields {
+		if !field.Exported {
+			continue
+		}
+		if c.IsPathParam(field.Name) {
 			op.AddParam(
-				setSwaggerParam(spec.PathParam(p.Name), p),
+				setSwaggerParam(spec.PathParam(field.Name), field),
 			)
 		} else if c.Method == http.MethodGet || c.Method == http.MethodDelete {
 			op.AddParam(
-				setSwaggerParam(spec.QueryParam(p.Name), p),
+				setSwaggerParam(spec.QueryParam(field.Name), field),
 			)
 		}
 	}
@@ -538,7 +545,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 }
 
 func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
-	if pp.Tag.Optional {
+	if pp.Tag.Optional || pp.Optional {
 		p.AsOptional()
 	} else {
 		p.AsRequired()
