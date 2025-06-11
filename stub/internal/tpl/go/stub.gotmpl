@@ -79,11 +79,11 @@ func init() {
 type I{{$serviceName}}Stub interface {
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" -}}
+{{ if ne $methodName "" -}}
 		{{$methodName}}(
 		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error)
-	{{- end -}}
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error)
+{{ end -}}
 {{- end }}
 }
 
@@ -115,7 +115,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 	{{- if ne $methodName "" }}
 		func (s {{$serviceName}}Stub) {{$methodName}}(
 		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error){
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error){
 		{{ if .GetOKResponse.Message.IsSpecial }}
 			res := {{.GetOKResponse.Message.GoName }}{}
 		{{ else }}
@@ -178,7 +178,7 @@ type MockOption func(*{{$serviceName}}StubMock)
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error),
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error),
 		) MockOption {
 		return func(sm *{{$serviceName}}StubMock) {
 		sm.{{toLower $methodName}} = f
@@ -198,7 +198,7 @@ type {{$serviceName}}StubMock struct {
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error)
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error)
 	{{- end -}}
 {{- end }}
 }
@@ -221,7 +221,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error){
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error){
 		if s.{{toLower $methodName}} == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 		}
@@ -234,7 +234,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, *stub.Error),
+		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error),
 		) *{{$serviceName}}StubMock {
 		s.{{toLower $methodName}} = f
 

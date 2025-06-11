@@ -1,4 +1,4 @@
-//go:build ignore
+////go:build ignore
 
 package main
 
@@ -9,9 +9,10 @@ import (
 
 func main() {
 	stubgen.New(
-		stubgen.WithGenFunc(stubgen.GolangStub),
-		stubgen.WithPkgName("sampleservice"),
-		stubgen.WithFolderName("sammpleservice"),
+		stubgen.WithGenEngine(stubgen.NewGolangEngine(stubgen.GolangConfig{
+			PkgName: "sampleservice",
+		})),
+		stubgen.WithFolderName("sampleservice"),
 		stubgen.WithTags("json"),
 	).MustGenerate(api.SampleDesc)
 }

@@ -7,11 +7,15 @@ import (
 	"fmt"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/clubpay/ronykit/stub"
 )
 
-var _ fmt.Stringer
+var (
+	_ fmt.Stringer
+	_ utils.Result
+)
 
 func init() {
 	reflector.Register(&EchoRequest{}, "json")
@@ -25,14 +29,18 @@ func init() {
 
 // EchoRequest is a data transfer object
 type EchoRequest struct {
-	RandomID int64 `json:"randomID"`
-	Ok       bool  `json:"ok"`
+	RandomID         int64   `json:"randomID"`
+	Ok               bool    `json:"ok"`
+	OptionalStrField *string `json:"optionalField"`
+	OptionalIntField *int64  `json:"optionalIntField"`
 }
 
 // EchoResponse is a data transfer object
 type EchoResponse struct {
-	RandomID int64 `json:"randomID"`
-	Ok       bool  `json:"ok"`
+	RandomID         int64   `json:"randomID"`
+	Ok               bool    `json:"ok"`
+	OptionalStrField *string `json:"optionalField"`
+	OptionalIntField *int64  `json:"optionalIntField"`
 }
 
 // EmbeddedHeader is a data transfer object
@@ -73,27 +81,35 @@ type SumResponse struct {
 	Val int64 `json:"val"`
 }
 
-type ISampleServiceStub interface {
+type IStub interface {
 	EchoGET(
 		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-	) (*EchoResponse, *stub.Error)
+	) (*EchoResponse, error)
+
 	EchoPOST(
 		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-	) (*EchoResponse, *stub.Error)
+	) (*EchoResponse, error)
+
 	Sum1(
 		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, *stub.Error)
+	) (*SumResponse, error)
+
 	Sum2(
 		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, *stub.Error)
+	) (*SumResponse, error)
+
 	SumRedirect(
 		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, *stub.Error)
+	) (*SumResponse, error)
+
+	Upload(
+		ctx context.Context, req kit.MultipartFormMessage, opt ...stub.RESTOption,
+	) (kit.RawMessage, error)
 }
 
-// SampleServiceStub represents the client/stub for SampleService.
-// Implements ISampleServiceStub
-type SampleServiceStub struct {
+// Stub represents the client/stub for .
+// Implements IStub
+type Stub struct {
 	hostPort  string
 	secure    bool
 	verifyTLS bool
@@ -101,20 +117,22 @@ type SampleServiceStub struct {
 	s *stub.Stub
 }
 
-func NewSampleServiceStub(hostPort string, opts ...stub.Option) *SampleServiceStub {
-	s := &SampleServiceStub{
+func NewStub(hostPort string, opts ...stub.Option) *Stub {
+	s := &Stub{
 		s: stub.New(hostPort, opts...),
 	}
 
 	return s
 }
 
-var _ ISampleServiceStub = (*SampleServiceStub)(nil)
+var _ IStub = (*Stub)(nil)
 
-func (s SampleServiceStub) EchoGET(
+func (s Stub) EchoGET(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-) (*EchoResponse, *stub.Error) {
+) (*EchoResponse, error) {
+
 	res := &EchoResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
@@ -131,7 +149,9 @@ func (s SampleServiceStub) EchoGET(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -139,7 +159,7 @@ func (s SampleServiceStub) EchoGET(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/echo/:randomID", kit.JSON, req)
+		AutoRun(ctx, "/echo/{randomID}", kit.CustomEncoding("json"), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -149,10 +169,12 @@ func (s SampleServiceStub) EchoGET(
 	return res, nil
 }
 
-func (s SampleServiceStub) EchoPOST(
+func (s Stub) EchoPOST(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-) (*EchoResponse, *stub.Error) {
+) (*EchoResponse, error) {
+
 	res := &EchoResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
@@ -169,7 +191,9 @@ func (s SampleServiceStub) EchoPOST(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -177,7 +201,7 @@ func (s SampleServiceStub) EchoPOST(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/echo-post", kit.JSON, req)
+		AutoRun(ctx, "/echo-post", kit.CustomEncoding("json"), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -187,10 +211,12 @@ func (s SampleServiceStub) EchoPOST(
 	return res, nil
 }
 
-func (s SampleServiceStub) Sum1(
+func (s Stub) Sum1(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+) (*SumResponse, error) {
+
 	res := &SumResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
@@ -207,7 +233,9 @@ func (s SampleServiceStub) Sum1(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -215,7 +243,7 @@ func (s SampleServiceStub) Sum1(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/sum/:val1/:val2", kit.JSON, req)
+		AutoRun(ctx, "/sum/{val1}/{val2}", kit.CustomEncoding("json"), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -225,10 +253,12 @@ func (s SampleServiceStub) Sum1(
 	return res, nil
 }
 
-func (s SampleServiceStub) Sum2(
+func (s Stub) Sum2(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+) (*SumResponse, error) {
+
 	res := &SumResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("POST").
 		SetResponseHandler(
@@ -245,7 +275,9 @@ func (s SampleServiceStub) Sum2(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -253,7 +285,7 @@ func (s SampleServiceStub) Sum2(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/sum", kit.JSON, req)
+		AutoRun(ctx, "/sum", kit.CustomEncoding("json"), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -263,10 +295,12 @@ func (s SampleServiceStub) Sum2(
 	return res, nil
 }
 
-func (s SampleServiceStub) SumRedirect(
+func (s Stub) SumRedirect(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+) (*SumResponse, error) {
+
 	res := &SumResponse{}
+
 	httpCtx := s.s.REST(opt...).
 		SetMethod("GET").
 		SetResponseHandler(
@@ -283,7 +317,9 @@ func (s SampleServiceStub) SumRedirect(
 		).
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
 				return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+
 			},
 		).
 		DefaultResponseHandler(
@@ -291,7 +327,7 @@ func (s SampleServiceStub) SumRedirect(
 				return stub.NewError(r.StatusCode(), string(r.GetBody()))
 			},
 		).
-		AutoRun(ctx, "/sum-redirect/:val1/:val2", kit.JSON, req)
+		AutoRun(ctx, "/sum-redirect/{val1}/{val2}", kit.CustomEncoding("json"), req)
 	defer httpCtx.Release()
 
 	if err := httpCtx.Err(); err != nil {
@@ -301,60 +337,161 @@ func (s SampleServiceStub) SumRedirect(
 	return res, nil
 }
 
-type MockOption func(*SampleServiceStubMock)
+func (s Stub) Upload(
+	ctx context.Context, req kit.MultipartFormMessage, opt ...stub.RESTOption,
+) (kit.RawMessage, error) {
+
+	res := kit.RawMessage{}
+
+	httpCtx := s.s.REST(opt...).
+		SetMethod("POST").
+		SetResponseHandler(
+			400,
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				res := &ErrorMessage{}
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(res)
+			},
+		).
+		SetOKHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+
+				res = utils.CloneBytes(r.GetBody())
+				return nil
+
+			},
+		).
+		DefaultResponseHandler(
+			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+				return stub.NewError(r.StatusCode(), string(r.GetBody()))
+			},
+		).
+		AutoRun(ctx, "/upload", kit.CustomEncoding("json"), req)
+	defer httpCtx.Release()
+
+	if err := httpCtx.Err(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+type MockOption func(*StubMock)
 
 func MockEchoGET(
-	f func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *StubMock) {
 		sm.echoget = f
 	}
 }
 
 func MockEchoPOST(
-	f func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *StubMock) {
 		sm.echopost = f
 	}
 }
 
 func MockSum1(
-	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *StubMock) {
 		sm.sum1 = f
 	}
 }
 
 func MockSum2(
-	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *StubMock) {
 		sm.sum2 = f
 	}
 }
 
 func MockSumRedirect(
-	f func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error),
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
 ) MockOption {
-	return func(sm *SampleServiceStubMock) {
+	return func(sm *StubMock) {
 		sm.sumredirect = f
 	}
 }
 
-// SampleServiceStubMock represents the mocked for client/stub for SampleService.
-// Implements ISampleServiceStub
-type SampleServiceStubMock struct {
-	echoget     func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
-	echopost    func(ctx context.Context, req *EchoRequest, opt ...stub.RESTOption) (*EchoResponse, *stub.Error)
-	sum1        func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
-	sum2        func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
-	sumredirect func(ctx context.Context, req *SumRequest, opt ...stub.RESTOption) (*SumResponse, *stub.Error)
+func MockUpload(
+	f func(
+		ctx context.Context,
+		req kit.MultipartFormMessage,
+		opt ...stub.RESTOption,
+	) (kit.RawMessage, error),
+) MockOption {
+	return func(sm *StubMock) {
+		sm.upload = f
+	}
 }
 
-func NewSampleServiceStubMock(opts ...MockOption) *SampleServiceStubMock {
-	s := &SampleServiceStubMock{}
+// StubMock represents the mocked for client/stub for .
+// Implements IStub
+type StubMock struct {
+	echoget func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error)
+	echopost func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error)
+	sum1 func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+	sum2 func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+	sumredirect func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+
+	upload func(
+		ctx context.Context,
+		req kit.MultipartFormMessage,
+		opt ...stub.RESTOption,
+	) (kit.RawMessage, error)
+}
+
+func NewStubMock(opts ...MockOption) *StubMock {
+	s := &StubMock{}
 	for _, o := range opts {
 		o(s)
 	}
@@ -362,11 +499,13 @@ func NewSampleServiceStubMock(opts ...MockOption) *SampleServiceStubMock {
 	return s
 }
 
-var _ ISampleServiceStub = (*SampleServiceStubMock)(nil)
+var _ IStub = (*StubMock)(nil)
 
-func (s SampleServiceStubMock) EchoGET(
-	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-) (*EchoResponse, *stub.Error) {
+func (s *StubMock) EchoGET(
+	ctx context.Context,
+	req *EchoRequest,
+	opt ...stub.RESTOption,
+) (*EchoResponse, error) {
 	if s.echoget == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -374,9 +513,23 @@ func (s SampleServiceStubMock) EchoGET(
 	return s.echoget(ctx, req, opt...)
 }
 
-func (s SampleServiceStubMock) EchoPOST(
-	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-) (*EchoResponse, *stub.Error) {
+func (s *StubMock) SetEchoGET(
+	f func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error),
+) *StubMock {
+	s.echoget = f
+
+	return s
+}
+
+func (s *StubMock) EchoPOST(
+	ctx context.Context,
+	req *EchoRequest,
+	opt ...stub.RESTOption,
+) (*EchoResponse, error) {
 	if s.echopost == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -384,9 +537,23 @@ func (s SampleServiceStubMock) EchoPOST(
 	return s.echopost(ctx, req, opt...)
 }
 
-func (s SampleServiceStubMock) Sum1(
-	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+func (s *StubMock) SetEchoPOST(
+	f func(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error),
+) *StubMock {
+	s.echopost = f
+
+	return s
+}
+
+func (s *StubMock) Sum1(
+	ctx context.Context,
+	req *SumRequest,
+	opt ...stub.RESTOption,
+) (*SumResponse, error) {
 	if s.sum1 == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -394,9 +561,23 @@ func (s SampleServiceStubMock) Sum1(
 	return s.sum1(ctx, req, opt...)
 }
 
-func (s SampleServiceStubMock) Sum2(
-	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+func (s *StubMock) SetSum1(
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
+) *StubMock {
+	s.sum1 = f
+
+	return s
+}
+
+func (s *StubMock) Sum2(
+	ctx context.Context,
+	req *SumRequest,
+	opt ...stub.RESTOption,
+) (*SumResponse, error) {
 	if s.sum2 == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -404,12 +585,62 @@ func (s SampleServiceStubMock) Sum2(
 	return s.sum2(ctx, req, opt...)
 }
 
-func (s SampleServiceStubMock) SumRedirect(
-	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-) (*SumResponse, *stub.Error) {
+func (s *StubMock) SetSum2(
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
+) *StubMock {
+	s.sum2 = f
+
+	return s
+}
+
+func (s *StubMock) SumRedirect(
+	ctx context.Context,
+	req *SumRequest,
+	opt ...stub.RESTOption,
+) (*SumResponse, error) {
 	if s.sumredirect == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
 
 	return s.sumredirect(ctx, req, opt...)
+}
+
+func (s *StubMock) SetSumRedirect(
+	f func(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error),
+) *StubMock {
+	s.sumredirect = f
+
+	return s
+}
+
+func (s *StubMock) Upload(
+	ctx context.Context,
+	req kit.MultipartFormMessage,
+	opt ...stub.RESTOption,
+) (kit.RawMessage, error) {
+	if s.upload == nil {
+		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
+	}
+
+	return s.upload(ctx, req, opt...)
+}
+
+func (s *StubMock) SetUpload(
+	f func(
+		ctx context.Context,
+		req kit.MultipartFormMessage,
+		opt ...stub.RESTOption,
+	) (kit.RawMessage, error),
+) *StubMock {
+	s.upload = f
+
+	return s
 }
