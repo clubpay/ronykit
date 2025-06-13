@@ -55,7 +55,11 @@ func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
 
 			return a.Fn(fCtx, req)
 		},
-		activity.RegisterOptions{Name: a.Name, SkipInvalidStructFunctions: true},
+		activity.RegisterOptions{
+			Name:                          a.Name,
+			DisableAlreadyRegisteredCheck: true,
+			SkipInvalidStructFunctions:    true,
+		},
 	)
 }
 
@@ -70,7 +74,11 @@ func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 
 			return a.Fn(fCtx, req)
 		},
-		activity.RegisterOptions{Name: a.Name, SkipInvalidStructFunctions: true},
+		activity.RegisterOptions{
+			Name:                          a.Name,
+			DisableAlreadyRegisteredCheck: true,
+			SkipInvalidStructFunctions:    true,
+		},
 	)
 }
 
