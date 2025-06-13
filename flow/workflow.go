@@ -68,8 +68,7 @@ func (w *Workflow[REQ, RES, STATE]) init(b Backend) {
 			return w.Fn(fCtx, req)
 		},
 		workflow.RegisterOptions{
-			Name:                          w.Name,
-			DisableAlreadyRegisteredCheck: true,
+			Name: w.Name,
 		},
 	)
 
@@ -91,8 +90,7 @@ func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
 			return w.Fn(fCtx, req)
 		},
 		workflow.RegisterOptions{
-			Name:                          w.Name,
-			DisableAlreadyRegisteredCheck: true,
+			Name: w.Name,
 		},
 	)
 
