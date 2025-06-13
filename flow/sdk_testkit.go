@@ -97,3 +97,7 @@ func (sdk *SDKTestKit) ExecuteWorkflow(
 func (sdk *SDKTestKit) TaskQueue() string {
 	return ""
 }
+
+func (sdk *SDKTestKit) Namespace() string {
+	return "test"
+}
