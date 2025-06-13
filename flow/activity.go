@@ -16,10 +16,12 @@ type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, err
 func NewActivity[REQ, RES, STATE any](
 	name string,
 	fn ActivityFunc[REQ, RES, STATE],
+	namespace string,
 ) *Activity[REQ, RES, STATE] {
 	act := Activity[REQ, RES, STATE]{
-		Name: name,
-		Fn:   fn,
+		Name:      name,
+		Fn:        fn,
+		namespace: namespace,
 	}
 
 	registeredActivities[act.stateType()] = append(registeredActivities[act.stateType()], &act)
@@ -27,7 +29,7 @@ func NewActivity[REQ, RES, STATE any](
 	return &act
 }
 
-func ToActivity[STATE, REQ, RES any](name string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
+func ToActivity[STATE, REQ, RES any](name string, rawFn activityRawFunc[REQ, RES], namespace string) *Activity[REQ, RES, STATE] {
 	return NewActivity(
 		name,
 		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
@@ -35,17 +37,23 @@ func ToActivity[STATE, REQ, RES any](name string, rawFn activityRawFunc[REQ, RES
 
 			return rawFn(ctx.ctx, req)
 		},
+		namespace,
 	)
 }
 
 type Activity[REQ, RES, STATE any] struct {
-	sdk   Backend
-	Name  string
-	State STATE
-	Fn    ActivityFunc[REQ, RES, STATE]
+	sdk       Backend
+	namespace string
+	Name      string
+	State     STATE
+	Fn        ActivityFunc[REQ, RES, STATE]
 }
 
 func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
+	if sdk.Namespace() != a.namespace {
+		return
+	}
+
 	a.sdk = sdk
 	sdk.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
@@ -64,6 +72,10 @@ func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
 }
 
 func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
+	if sdk.Namespace() != a.namespace {
+		return
+	}
+
 	a.sdk = sdk
 	sdk.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
@@ -83,6 +95,10 @@ func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 }
 
 func (a *Activity[REQ, RES, STATE]) initWithStateAny(sdk Backend, s any) {
+	if sdk.Namespace() != a.namespace {
+		return
+	}
+
 	a.initWithState(sdk, s.(STATE))
 }
 

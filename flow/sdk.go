@@ -25,6 +25,7 @@ type Backend interface {
 		args ...any,
 	) (client.WorkflowRun, error)
 	TaskQueue() string
+	Namespace() string
 }
 
 type Config struct {
@@ -38,6 +39,7 @@ type Config struct {
 type realBackend struct {
 	cli   client.Client
 	w     worker.Worker
+	ns    string
 	taskQ string
 }
 
@@ -71,6 +73,10 @@ func (r realBackend) TaskQueue() string {
 	return r.taskQ
 }
 
+func (r realBackend) Namespace() string {
+	return r.ns
+}
+
 type SDK struct {
 	nsCli client.NamespaceClient
 	dc    converter.DataConverter
@@ -85,6 +91,7 @@ func NewSDK(cfg Config) (*SDK, error) {
 	sdk := &SDK{
 		b: realBackend{
 			taskQ: cfg.TaskQueue,
+			ns:    cfg.Namespace,
 		},
 		dc:        cfg.DataConverter,
 		creds:     cfg.Credentials,

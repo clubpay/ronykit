@@ -19,29 +19,33 @@ import (
 type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
 
 type Workflow[REQ, RES, STATE any] struct {
-	sdk   Backend
-	Name  string
-	State STATE
-	Fn    WorkflowFunc[REQ, RES, STATE]
+	sdk       Backend
+	namespace string
+	Name      string
+	State     STATE
+	Fn        WorkflowFunc[REQ, RES, STATE]
 }
 
 func NewWorkflow[REQ, RES, STATE any](
 	name string,
 	fn WorkflowFunc[REQ, RES, STATE],
+	namespace string,
 ) *Workflow[REQ, RES, STATE] {
 	var s STATE
 
-	return NewWorkflowWithState(name, s, fn)
+	return NewWorkflowWithState(name, s, fn, namespace)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](
 	name string, state STATE,
 	fn WorkflowFunc[REQ, RES, STATE],
+	namespace string,
 ) *Workflow[REQ, RES, STATE] {
 	w := &Workflow[REQ, RES, STATE]{
-		Name:  name,
-		State: state,
-		Fn:    fn,
+		Name:      name,
+		State:     state,
+		Fn:        fn,
+		namespace: namespace,
 	}
 
 	registeredWorkflows[w.stateType()] = append(registeredWorkflows[w.stateType()], w)
@@ -50,6 +54,10 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 }
 
 func (w *Workflow[REQ, RES, STATE]) init(b Backend) {
+	if b.Namespace() != w.namespace {
+		return
+	}
+
 	b.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
 			fCtx := &WorkflowContext[REQ, RES, STATE]{
@@ -69,6 +77,10 @@ func (w *Workflow[REQ, RES, STATE]) init(b Backend) {
 }
 
 func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
+	if b.Namespace() != w.namespace {
+		return
+	}
+
 	b.RegisterWorkflowWithOptions(
 		func(ctx workflow.Context, req REQ) (*RES, error) {
 			fCtx := &WorkflowContext[REQ, RES, STATE]{
