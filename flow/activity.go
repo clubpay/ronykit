@@ -14,9 +14,8 @@ type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE
 type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
 
 func NewActivity[REQ, RES, STATE any](
-	name string,
+	name, namespace string,
 	fn ActivityFunc[REQ, RES, STATE],
-	namespace string,
 ) *Activity[REQ, RES, STATE] {
 	act := Activity[REQ, RES, STATE]{
 		Name:      name,
@@ -29,15 +28,14 @@ func NewActivity[REQ, RES, STATE any](
 	return &act
 }
 
-func ToActivity[STATE, REQ, RES any](name string, rawFn activityRawFunc[REQ, RES], namespace string) *Activity[REQ, RES, STATE] {
+func ToActivity[STATE, REQ, RES any](name, namespace string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
 	return NewActivity(
-		name,
+		name, namespace,
 		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
 
 			return rawFn(ctx.ctx, req)
 		},
-		namespace,
 	)
 }
 
@@ -64,9 +62,8 @@ func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
 			return a.Fn(fCtx, req)
 		},
 		activity.RegisterOptions{
-			Name:                          a.Name,
-			DisableAlreadyRegisteredCheck: true,
-			SkipInvalidStructFunctions:    true,
+			Name:                       a.Name,
+			SkipInvalidStructFunctions: true,
 		},
 	)
 }
@@ -87,9 +84,8 @@ func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 			return a.Fn(fCtx, req)
 		},
 		activity.RegisterOptions{
-			Name:                          a.Name,
-			DisableAlreadyRegisteredCheck: true,
-			SkipInvalidStructFunctions:    true,
+			Name:                       a.Name,
+			SkipInvalidStructFunctions: true,
 		},
 	)
 }

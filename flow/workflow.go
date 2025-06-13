@@ -27,19 +27,17 @@ type Workflow[REQ, RES, STATE any] struct {
 }
 
 func NewWorkflow[REQ, RES, STATE any](
-	name string,
+	name, namespace string,
 	fn WorkflowFunc[REQ, RES, STATE],
-	namespace string,
 ) *Workflow[REQ, RES, STATE] {
 	var s STATE
 
-	return NewWorkflowWithState(name, s, fn, namespace)
+	return NewWorkflowWithState(name, namespace, s, fn)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](
-	name string, state STATE,
+	name, namespace string, state STATE,
 	fn WorkflowFunc[REQ, RES, STATE],
-	namespace string,
 ) *Workflow[REQ, RES, STATE] {
 	w := &Workflow[REQ, RES, STATE]{
 		Name:      name,
