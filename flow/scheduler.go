@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/clubpay/ronykit/kit/utils"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 )
@@ -59,7 +60,7 @@ type ScheduleAction struct {
 	RetryPolicy      *RetryPolicy
 }
 
-type ScheduleSpec struct {
+type ScheduleCalendarSpec struct {
 	Second     int
 	Minute     int
 	Hour       int
@@ -67,7 +68,10 @@ type ScheduleSpec struct {
 	Year       int
 	DayOfWeek  time.Weekday
 	DayOfMonth int // between 1 and 31 inclusive
+}
 
+type ScheduleSpec struct {
+	Calendars []ScheduleCalendarSpec
 	StartTime time.Time
 	EndTime   time.Time
 	Jitter    time.Duration
@@ -82,30 +86,38 @@ type (
 )
 
 func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
-	cal := client.ScheduleCalendarSpec{}
-	if sc.Second != 0 {
-		cal.Second = []client.ScheduleRange{{Start: sc.Second}}
-	}
-	if sc.Minute != 0 {
-		cal.Minute = []client.ScheduleRange{{Start: sc.Minute}}
-	}
-	if sc.Hour != 0 {
-		cal.Hour = []client.ScheduleRange{{Start: sc.Hour}}
-	}
-	if sc.Month != 0 {
-		cal.Month = []client.ScheduleRange{{Start: sc.Month}}
-	}
-	if sc.Year != 0 {
-		cal.Year = []client.ScheduleRange{{Start: sc.Year}}
-	}
-	if sc.DayOfWeek != 0 {
-		cal.DayOfWeek = []client.ScheduleRange{{Start: int(sc.DayOfWeek)}}
-	}
-	if sc.DayOfMonth != 0 {
-		cal.DayOfMonth = []client.ScheduleRange{{Start: sc.DayOfMonth}}
-	}
+	calSpec := utils.Map(
+		func(src ScheduleCalendarSpec) client.ScheduleCalendarSpec {
+			cal := client.ScheduleCalendarSpec{}
+			if src.Second != 0 {
+				cal.Second = []client.ScheduleRange{{Start: src.Second}}
+			}
+			if src.Minute != 0 {
+				cal.Minute = []client.ScheduleRange{{Start: src.Minute}}
+			}
+			if src.Hour != 0 {
+				cal.Hour = []client.ScheduleRange{{Start: src.Hour}}
+			}
+			if src.Month != 0 {
+				cal.Month = []client.ScheduleRange{{Start: src.Month}}
+			}
+			if src.Year != 0 {
+				cal.Year = []client.ScheduleRange{{Start: src.Year}}
+			}
+			if src.DayOfWeek != 0 {
+				cal.DayOfWeek = []client.ScheduleRange{{Start: int(src.DayOfWeek)}}
+			}
+			if src.DayOfMonth != 0 {
+				cal.DayOfMonth = []client.ScheduleRange{{Start: src.DayOfMonth}}
+			}
+
+			return cal
+		},
+		sc.Calendars,
+	)
+
 	out := client.ScheduleSpec{
-		Calendars:    []client.ScheduleCalendarSpec{cal},
+		Calendars:    calSpec,
 		StartAt:      sc.StartTime,
 		EndAt:        sc.EndTime,
 		Jitter:       sc.Jitter,
