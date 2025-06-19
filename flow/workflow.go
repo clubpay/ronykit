@@ -19,35 +19,31 @@ import (
 type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
 
 type Workflow[REQ, RES, STATE any] struct {
-	sdk       Backend
-	namespace string
-	groups    []string
-	Name      string
-	State     STATE
-	Fn        WorkflowFunc[REQ, RES, STATE]
+	sdk   Backend
+	group string
+	Name  string
+	State STATE
+	Fn    WorkflowFunc[REQ, RES, STATE]
 }
 
 func NewWorkflow[REQ, RES, STATE any](
-	name, namespace string,
+	name, group string,
 	fn WorkflowFunc[REQ, RES, STATE],
-	groups ...string,
 ) *Workflow[REQ, RES, STATE] {
 	var s STATE
 
-	return NewWorkflowWithState(name, namespace, s, fn, groups...)
+	return NewWorkflowWithState(name, group, s, fn)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](
-	name, namespace string, state STATE,
+	name, group string, state STATE,
 	fn WorkflowFunc[REQ, RES, STATE],
-	groups ...string,
 ) *Workflow[REQ, RES, STATE] {
 	w := &Workflow[REQ, RES, STATE]{
-		Name:      name,
-		State:     state,
-		Fn:        fn,
-		namespace: namespace,
-		groups:    groups,
+		Name:  name,
+		State: state,
+		Fn:    fn,
+		group: group,
 	}
 
 	registeredWorkflows[w.stateType()] = append(registeredWorkflows[w.stateType()], w)
@@ -56,7 +52,7 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 }
 
 func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
-	if len(w.groups) > 0 && !utils.Contains(w.groups, b.Group()) {
+	if b.Group() != w.group {
 		return
 	}
 

@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
 )
@@ -15,14 +14,12 @@ type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE
 type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
 
 func NewActivity[REQ, RES, STATE any](
-	name, namespace string, fn ActivityFunc[REQ, RES, STATE],
-	groups ...string,
+	name, group string, fn ActivityFunc[REQ, RES, STATE],
 ) *Activity[REQ, RES, STATE] {
 	act := Activity[REQ, RES, STATE]{
-		Name:      name,
-		Fn:        fn,
-		groups:    groups,
-		namespace: namespace,
+		Name:  name,
+		Fn:    fn,
+		group: group,
 	}
 
 	registeredActivities[act.stateType()] = append(registeredActivities[act.stateType()], &act)
@@ -42,9 +39,8 @@ func ToActivity[STATE, REQ, RES any](name, namespace string, rawFn activityRawFu
 }
 
 type Activity[REQ, RES, STATE any] struct {
-	sdk       Backend
-	groups    []string
-	namespace string
+	sdk   Backend
+	group string
 
 	Name  string
 	State STATE
@@ -52,7 +48,7 @@ type Activity[REQ, RES, STATE any] struct {
 }
 
 func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
-	if len(a.groups) > 0 && !utils.Contains(a.groups, sdk.Group()) {
+	if sdk.Group() != a.group {
 		return
 	}
 
