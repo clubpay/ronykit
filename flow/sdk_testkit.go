@@ -17,11 +17,14 @@ type SDKTestKit struct {
 	suite.Suite
 	testsuite.WorkflowTestSuite
 
-	env *testsuite.TestWorkflowEnvironment
+	env   *testsuite.TestWorkflowEnvironment
+	group string
 }
 
-func NewSDKTestKit() *SDKTestKit {
-	kit := &SDKTestKit{}
+func NewSDKTestKit(group string) *SDKTestKit {
+	kit := &SDKTestKit{
+		group: group,
+	}
 	kit.env = kit.NewTestWorkflowEnvironment()
 
 	return kit
@@ -33,19 +36,6 @@ func (sdk *SDKTestKit) RunTest(t *testing.T) {
 
 func (sdk *SDKTestKit) ENV() *testsuite.TestWorkflowEnvironment {
 	return sdk.env
-}
-
-func (sdk *SDKTestKit) Init() {
-	for _, w := range registeredWorkflows {
-		for _, t := range w {
-			t.init(sdk)
-		}
-	}
-	for _, a := range registeredActivities {
-		for _, t := range a {
-			t.init(sdk)
-		}
-	}
 }
 
 func (sdk *SDKTestKit) InitWithState(state any) {
@@ -100,4 +90,8 @@ func (sdk *SDKTestKit) TaskQueue() string {
 
 func (sdk *SDKTestKit) Namespace() string {
 	return "test"
+}
+
+func (sdk *SDKTestKit) Group() string {
+	return sdk.group
 }

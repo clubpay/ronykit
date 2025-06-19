@@ -21,6 +21,7 @@ type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE
 type Workflow[REQ, RES, STATE any] struct {
 	sdk       Backend
 	namespace string
+	groups    []string
 	Name      string
 	State     STATE
 	Fn        WorkflowFunc[REQ, RES, STATE]
@@ -29,21 +30,24 @@ type Workflow[REQ, RES, STATE any] struct {
 func NewWorkflow[REQ, RES, STATE any](
 	name, namespace string,
 	fn WorkflowFunc[REQ, RES, STATE],
+	groups ...string,
 ) *Workflow[REQ, RES, STATE] {
 	var s STATE
 
-	return NewWorkflowWithState(name, namespace, s, fn)
+	return NewWorkflowWithState(name, namespace, s, fn, groups...)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](
 	name, namespace string, state STATE,
 	fn WorkflowFunc[REQ, RES, STATE],
+	groups ...string,
 ) *Workflow[REQ, RES, STATE] {
 	w := &Workflow[REQ, RES, STATE]{
 		Name:      name,
 		State:     state,
 		Fn:        fn,
 		namespace: namespace,
+		groups:    groups,
 	}
 
 	registeredWorkflows[w.stateType()] = append(registeredWorkflows[w.stateType()], w)
@@ -51,30 +55,8 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 	return w
 }
 
-func (w *Workflow[REQ, RES, STATE]) init(b Backend) {
-	if b.Namespace() != w.namespace {
-		return
-	}
-
-	b.RegisterWorkflowWithOptions(
-		func(ctx workflow.Context, req REQ) (*RES, error) {
-			fCtx := &WorkflowContext[REQ, RES, STATE]{
-				ctx: ctx,
-				s:   w.State,
-			}
-
-			return w.Fn(fCtx, req)
-		},
-		workflow.RegisterOptions{
-			Name: w.Name,
-		},
-	)
-
-	w.sdk = b
-}
-
 func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
-	if b.Namespace() != w.namespace {
+	if len(w.groups) > 0 && !utils.Contains(w.groups, b.Group()) {
 		return
 	}
 

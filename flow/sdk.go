@@ -25,12 +25,13 @@ type Backend interface {
 		args ...any,
 	) (client.WorkflowRun, error)
 	TaskQueue() string
-	Namespace() string
+	Group() string
 }
 
 type Config struct {
 	HostPort      string
 	Namespace     string
+	Group         string
 	TaskQueue     string
 	DataConverter converter.DataConverter
 	Credentials   client.Credentials
@@ -40,6 +41,7 @@ type realBackend struct {
 	cli   client.Client
 	w     worker.Worker
 	ns    string
+	group string
 	taskQ string
 }
 
@@ -77,6 +79,10 @@ func (r realBackend) Namespace() string {
 	return r.ns
 }
 
+func (r realBackend) Group() string {
+	return r.group
+}
+
 type SDK struct {
 	nsCli client.NamespaceClient
 	dc    converter.DataConverter
@@ -92,6 +98,7 @@ func NewSDK(cfg Config) (*SDK, error) {
 		b: realBackend{
 			taskQ: cfg.TaskQueue,
 			ns:    cfg.Namespace,
+			group: cfg.Group,
 		},
 		dc:        cfg.DataConverter,
 		creds:     cfg.Credentials,
@@ -162,16 +169,7 @@ func (sdk *SDK) TaskQueue() string {
 }
 
 func (sdk *SDK) Init() {
-	for _, w := range registeredWorkflows {
-		for _, t := range w {
-			t.init(&sdk.b)
-		}
-	}
-	for _, a := range registeredActivities {
-		for _, t := range a {
-			t.init(sdk.b)
-		}
-	}
+	sdk.InitWithState(EMPTY{})
 }
 
 func (sdk *SDK) InitWithState(state any) {
@@ -223,7 +221,6 @@ func GetState[STATE any](ctx Context) STATE {
 }
 
 type temporalEntityT interface {
-	init(sdk Backend)
 	initWithStateAny(sdk Backend, state any)
 }
 

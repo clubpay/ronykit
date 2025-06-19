@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/clubpay/ronykit/kit/utils"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
 )
@@ -14,12 +15,13 @@ type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE
 type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
 
 func NewActivity[REQ, RES, STATE any](
-	name, namespace string,
-	fn ActivityFunc[REQ, RES, STATE],
+	name, namespace string, fn ActivityFunc[REQ, RES, STATE],
+	groups ...string,
 ) *Activity[REQ, RES, STATE] {
 	act := Activity[REQ, RES, STATE]{
 		Name:      name,
 		Fn:        fn,
+		groups:    groups,
 		namespace: namespace,
 	}
 
@@ -41,35 +43,16 @@ func ToActivity[STATE, REQ, RES any](name, namespace string, rawFn activityRawFu
 
 type Activity[REQ, RES, STATE any] struct {
 	sdk       Backend
+	groups    []string
 	namespace string
-	Name      string
-	State     STATE
-	Fn        ActivityFunc[REQ, RES, STATE]
-}
 
-func (a *Activity[REQ, RES, STATE]) init(sdk Backend) {
-	if sdk.Namespace() != a.namespace {
-		return
-	}
-
-	a.sdk = sdk
-	sdk.RegisterActivityWithOptions(
-		func(ctx context.Context, req REQ) (*RES, error) {
-			fCtx := &ActivityContext[REQ, RES, STATE]{
-				ctx: ctx,
-			}
-
-			return a.Fn(fCtx, req)
-		},
-		activity.RegisterOptions{
-			Name:                       a.Name,
-			SkipInvalidStructFunctions: true,
-		},
-	)
+	Name  string
+	State STATE
+	Fn    ActivityFunc[REQ, RES, STATE]
 }
 
 func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
-	if sdk.Namespace() != a.namespace {
+	if len(a.groups) > 0 && !utils.Contains(a.groups, sdk.Group()) {
 		return
 	}
 
@@ -91,10 +74,6 @@ func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 }
 
 func (a *Activity[REQ, RES, STATE]) initWithStateAny(sdk Backend, s any) {
-	if sdk.Namespace() != a.namespace {
-		return
-	}
-
 	a.initWithState(sdk, s.(STATE))
 }
 
