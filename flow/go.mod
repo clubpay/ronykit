@@ -5,12 +5,12 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.19.32
-	github.com/nexus-rpc/sdk-go v0.3.0
+	github.com/clubpay/ronykit/kit v0.19.36
+	github.com/nexus-rpc/sdk-go v0.4.0
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/otel/trace v1.35.0
-	go.temporal.io/api v1.49.1
+	go.temporal.io/api v1.50.0
 	go.temporal.io/sdk v1.34.0
 	golang.org/x/sync v0.14.0
 	google.golang.org/protobuf v1.36.6

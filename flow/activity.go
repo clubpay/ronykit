@@ -27,9 +27,9 @@ func NewActivity[REQ, RES, STATE any](
 	return &act
 }
 
-func ToActivity[STATE, REQ, RES any](name, namespace string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
+func ToActivity[STATE, REQ, RES any](name, group string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
 	return NewActivity(
-		name, namespace,
+		name, group,
 		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
 

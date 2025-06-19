@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"crypto/tls"
 	"reflect"
 	"time"
 
@@ -30,6 +31,7 @@ type Backend interface {
 
 type Config struct {
 	HostPort      string
+	Secure        bool
 	Namespace     string
 	Group         string
 	TaskQueue     string
@@ -91,6 +93,7 @@ type SDK struct {
 
 	namespace string
 	hostport  string
+	secure    bool
 }
 
 func NewSDK(cfg Config) (*SDK, error) {
@@ -104,6 +107,7 @@ func NewSDK(cfg Config) (*SDK, error) {
 		creds:     cfg.Credentials,
 		namespace: cfg.Namespace,
 		hostport:  cfg.HostPort,
+		secure:    cfg.Secure,
 	}
 
 	err := sdk.invoke()
@@ -115,9 +119,15 @@ func NewSDK(cfg Config) (*SDK, error) {
 }
 
 func (sdk *SDK) invoke() error {
+	connOpt := client.ConnectionOptions{}
+	if sdk.secure {
+		connOpt.TLS = &tls.Config{}
+	}
+
 	var err error
 	sdk.nsCli, err = client.NewNamespaceClient(client.Options{
-		HostPort: sdk.hostport,
+		HostPort:          sdk.hostport,
+		ConnectionOptions: connOpt,
 	})
 	if err != nil {
 		return err
@@ -134,10 +144,11 @@ func (sdk *SDK) invoke() error {
 	}
 
 	clientOpt := client.Options{
-		HostPort:      sdk.hostport,
-		Namespace:     sdk.namespace,
-		DataConverter: sdk.dc,
-		Credentials:   sdk.creds,
+		HostPort:          sdk.hostport,
+		ConnectionOptions: connOpt,
+		Namespace:         sdk.namespace,
+		DataConverter:     sdk.dc,
+		Credentials:       sdk.creds,
 	}
 
 	sdk.b.cli, err = client.NewLazyClient(clientOpt)
