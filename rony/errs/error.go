@@ -10,7 +10,6 @@ import (
 	"unsafe"
 
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/rony/errs/errmarshalling"
 	"github.com/clubpay/ronykit/stub"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -120,16 +119,21 @@ func Convert(err error) error {
 
 	var se *stub.Error
 	if errors.As(err, &se) {
-		cErr, _ := errmarshalling.Unmarshal(utils.S2B(se.Item()))
-		if cErr == nil {
-			return &Error{
-				Code:       HTTPStatusToCode(se.Code()),
-				Item:       se.Item(),
-				underlying: se,
+		out := &Error{
+			Code:       HTTPStatusToCode(se.Code()),
+			Item:       se.Item(),
+			underlying: se,
+		}
+
+		var errMap map[string]any
+		_ = json.Unmarshal(utils.S2B(se.Item()), &errMap)
+		if errMap != nil {
+			if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
+				out.Item = item
 			}
 		}
 
-		return cErr
+		return out
 	}
 
 	return &Error{
