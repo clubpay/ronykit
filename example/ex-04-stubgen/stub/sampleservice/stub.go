@@ -24,19 +24,15 @@ var (
 func init() {
 	reflector.Register(&ErrorMessage{}, "json")
 	reflector.Register(&KeyValue{}, "json")
-	reflector.Register(&Location{}, "json")
 	reflector.Register(&SimpleHdr{}, "json")
-	reflector.Register(&Time{}, "json")
 	reflector.Register(&VeryComplexRequest{}, "json")
 	reflector.Register(&VeryComplexResponse{}, "json")
-	reflector.Register(&zone{}, "json")
-	reflector.Register(&zoneTrans{}, "json")
 }
 
 // ErrorMessage is a data transfer object
 type ErrorMessage struct {
-	Code int    `json:"code"`
-	Item string `json:"item"`
+	Code int    `json:"code" `
+	Item string `json:"item" `
 }
 
 func (x ErrorMessage) GetCode() int {
@@ -49,68 +45,54 @@ func (x ErrorMessage) GetItem() string {
 
 // KeyValue is a data transfer object
 type KeyValue struct {
-	Key   string `json:"key"`
-	Value int    `json:"value"`
-}
-
-// Location is a data transfer object
-type Location struct {
+	Key   string `json:"key" `
+	Value int    `json:"value" `
 }
 
 // SimpleHdr is a data transfer object
 type SimpleHdr struct {
-	Key1 string      `json:"sKey1"`
-	Key2 int         `json:"sKey2"`
-	T1   time.Time   `json:"t1"`
-	T2   *time.Time  `json:"t2"`
-	T3   []time.Time `json:"t3"`
-}
-
-// Time is a data transfer object
-type Time struct {
+	Key1 string      `json:"sKey1" `
+	Key2 int         `json:"sKey2" `
+	T1   time.Time   `json:"t1" `
+	T2   *time.Time  `json:"t2" `
+	T3   []time.Time `json:"t3" `
 }
 
 // VeryComplexRequest is a data transfer object
 type VeryComplexRequest struct {
 	SimpleHdr
-	Key1      string             `json:"key1"`
-	Key1Ptr   *string            `json:"key1Ptr"`
-	Key2Ptr   *int               `json:"key2Ptr,omitempty"`
-	MapKey1   map[string]int     `json:"mapKey1"`
-	MapKey2   map[int64]KeyValue `json:"mapKey2"`
-	SliceKey1 []bool             `json:"sliceKey1"`
-	SliceKey2 []*KeyValue        `json:"sliceKey2"`
-	RawKey    kit.JSONMessage    `json:"rawKey"`
+	Key1      string             `json:"key1" `
+	Key1Ptr   *string            `json:"key1Ptr" `
+	Key2Ptr   *int               `json:"key2Ptr,omitempty" `
+	MapKey1   map[string]int     `json:"mapKey1" `
+	MapKey2   map[int64]KeyValue `json:"mapKey2" `
+	SliceKey1 []bool             `json:"sliceKey1" `
+	SliceKey2 []*KeyValue        `json:"sliceKey2" `
+	RawKey    kit.JSONMessage    `json:"rawKey" `
 }
 
 // VeryComplexResponse is a data transfer object
 type VeryComplexResponse struct {
-	Key1      string              `json:"key1,omitempty"`
-	Key1Ptr   *string             `json:"key1Ptr,omitempty"`
-	MapKey1   map[string]int      `json:"mapKey1,omitempty"`
-	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty"`
-	SliceKey1 []uint8             `json:"sliceKey1"`
-	SliceKey2 []KeyValue          `json:"sliceKey2"`
-}
-
-// zone is a data transfer object
-type zone struct {
-}
-
-// zoneTrans is a data transfer object
-type zoneTrans struct {
+	Key1      string              `json:"key1,omitempty"  swag:"enum:1,2,3;deprecated"`
+	Key1Ptr   *string             `json:"key1Ptr,omitempty" `
+	MapKey1   map[string]int      `json:"mapKey1,omitempty" `
+	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty" `
+	SliceKey1 []uint8             `json:"sliceKey1" `
+	SliceKey2 []KeyValue          `json:"sliceKey2" `
 }
 
 type IsampleServiceStub interface {
 	ComplexDummy(
 		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
+
 	ComplexDummy2(
 		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
+
 	GetComplexDummy(
 		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
 }
 
 // sampleServiceStub represents the client/stub for sampleService.
@@ -135,7 +117,7 @@ var _ IsampleServiceStub = (*sampleServiceStub)(nil)
 
 func (s sampleServiceStub) ComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 
 	res := &VeryComplexResponse{}
 
@@ -177,7 +159,7 @@ func (s sampleServiceStub) ComplexDummy(
 
 func (s sampleServiceStub) ComplexDummy2(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 
 	res := &VeryComplexResponse{}
 
@@ -219,7 +201,7 @@ func (s sampleServiceStub) ComplexDummy2(
 
 func (s sampleServiceStub) GetComplexDummy(
 	ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 
 	res := &VeryComplexResponse{}
 
@@ -266,7 +248,7 @@ func MockComplexDummy(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.complexdummy = f
@@ -278,7 +260,7 @@ func MockComplexDummy2(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.complexdummy2 = f
@@ -290,7 +272,7 @@ func MockGetComplexDummy(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) MockOption {
 	return func(sm *sampleServiceStubMock) {
 		sm.getcomplexdummy = f
@@ -304,17 +286,17 @@ type sampleServiceStubMock struct {
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
 	complexdummy2 func(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
 	getcomplexdummy func(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error)
+	) (*VeryComplexResponse, error)
 }
 
 func NewsampleServiceStubMock(opts ...MockOption) *sampleServiceStubMock {
@@ -332,7 +314,7 @@ func (s *sampleServiceStubMock) ComplexDummy(
 	ctx context.Context,
 	req *VeryComplexRequest,
 	opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 	if s.complexdummy == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -345,7 +327,7 @@ func (s *sampleServiceStubMock) SetComplexDummy(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) *sampleServiceStubMock {
 	s.complexdummy = f
 
@@ -356,7 +338,7 @@ func (s *sampleServiceStubMock) ComplexDummy2(
 	ctx context.Context,
 	req *VeryComplexRequest,
 	opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 	if s.complexdummy2 == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -369,7 +351,7 @@ func (s *sampleServiceStubMock) SetComplexDummy2(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) *sampleServiceStubMock {
 	s.complexdummy2 = f
 
@@ -380,7 +362,7 @@ func (s *sampleServiceStubMock) GetComplexDummy(
 	ctx context.Context,
 	req *VeryComplexRequest,
 	opt ...stub.RESTOption,
-) (*VeryComplexResponse, *stub.Error) {
+) (*VeryComplexResponse, error) {
 	if s.getcomplexdummy == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
@@ -393,7 +375,7 @@ func (s *sampleServiceStubMock) SetGetComplexDummy(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
-	) (*VeryComplexResponse, *stub.Error),
+	) (*VeryComplexResponse, error),
 ) *sampleServiceStubMock {
 	s.getcomplexdummy = f
 

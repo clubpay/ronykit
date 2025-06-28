@@ -9,7 +9,7 @@
 		{{- if .Embedded }}
 			{{.GoName}}
 		{{- else }}
-			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty -}},omitempty{{- end -}}"`{{- end }}
+			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty -}},omitempty{{- end -}}" {{ if gt (len (.Tag.Get "swag")) 0}} swag:"{{.Tag.Get "swag"}}"{{end}}`{{- end }}
 		{{- end }}
 	{{- end }}
 	}

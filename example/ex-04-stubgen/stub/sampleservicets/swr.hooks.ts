@@ -7,13 +7,9 @@ import {
 	sampleServiceStub,
 	ErrorMessage,
 	KeyValue,
-	Location,
 	SimpleHdr,
-	Time,
 	VeryComplexRequest,
 	VeryComplexResponse,
-	zone,
-	zoneTrans,
 } from "./stub";
 
 export function useComplexDummy(
