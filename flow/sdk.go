@@ -12,6 +12,7 @@ import (
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/converter"
+	"go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -37,6 +38,7 @@ type Config struct {
 	TaskQueue     string
 	DataConverter converter.DataConverter
 	Credentials   client.Credentials
+	Logger        log.Logger
 }
 
 type realBackend struct {
@@ -86,6 +88,7 @@ func (r realBackend) Group() string {
 }
 
 type SDK struct {
+	l     log.Logger
 	nsCli client.NamespaceClient
 	dc    converter.DataConverter
 	creds client.Credentials
@@ -98,6 +101,7 @@ type SDK struct {
 
 func NewSDK(cfg Config) (*SDK, error) {
 	sdk := &SDK{
+		l: cfg.Logger,
 		b: realBackend{
 			taskQ: cfg.TaskQueue,
 			ns:    cfg.Namespace,
@@ -149,6 +153,7 @@ func (sdk *SDK) invoke() error {
 		Namespace:         sdk.namespace,
 		DataConverter:     sdk.dc,
 		Credentials:       sdk.creds,
+		Logger:            sdk.l,
 	}
 
 	sdk.b.cli, err = client.NewLazyClient(clientOpt)
