@@ -13,6 +13,8 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
+var _ Backend = (*SDKTestKit)(nil)
+
 type SDKTestKit struct {
 	suite.Suite
 	testsuite.WorkflowTestSuite
@@ -64,12 +66,20 @@ func (sdk *SDKTestKit) RegisterWorkflowWithOptions(w interface{}, options workfl
 	sdk.env.RegisterWorkflowWithOptions(w, options)
 }
 
+func (sdk *SDKTestKit) RegisterDynamicWorkflow(w interface{}, options workflow.DynamicRegisterOptions) {
+	sdk.env.RegisterDynamicWorkflow(w, options)
+}
+
 func (sdk *SDKTestKit) RegisterActivity(a interface{}) {
 	sdk.env.RegisterActivity(a)
 }
 
 func (sdk *SDKTestKit) RegisterActivityWithOptions(a interface{}, options activity.RegisterOptions) {
 	sdk.env.RegisterActivityWithOptions(a, options)
+}
+
+func (sdk *SDKTestKit) RegisterDynamicActivity(a interface{}, options activity.DynamicRegisterOptions) {
+	sdk.env.RegisterDynamicActivity(a, options)
 }
 
 func (sdk *SDKTestKit) RegisterNexusService(service *nexus.Service) {

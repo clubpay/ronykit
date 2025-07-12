@@ -41,6 +41,8 @@ type Config struct {
 	Logger        log.Logger
 }
 
+var _ Backend = (*realBackend)(nil)
+
 type realBackend struct {
 	cli   client.Client
 	w     worker.Worker
@@ -56,6 +58,9 @@ func (r realBackend) RegisterWorkflow(w any) {
 func (r realBackend) RegisterWorkflowWithOptions(w any, options workflow.RegisterOptions) {
 	r.w.RegisterWorkflowWithOptions(w, options)
 }
+func (r realBackend) RegisterDynamicWorkflow(w any, options workflow.DynamicRegisterOptions) {
+	r.w.RegisterDynamicWorkflow(w, options)
+}
 
 func (r realBackend) RegisterActivity(a any) {
 	r.w.RegisterActivity(a)
@@ -63,6 +68,10 @@ func (r realBackend) RegisterActivity(a any) {
 
 func (r realBackend) RegisterActivityWithOptions(a any, options activity.RegisterOptions) {
 	r.w.RegisterActivityWithOptions(a, options)
+}
+
+func (r realBackend) RegisterDynamicActivity(a any, options activity.DynamicRegisterOptions) {
+	r.w.RegisterDynamicActivity(a, options)
 }
 
 func (r realBackend) RegisterNexusService(service *nexus.Service) {
