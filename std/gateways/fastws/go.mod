@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/clubpay/ronykit/kit v0.19.40
 	github.com/gobwas/ws v1.4.0
-	github.com/panjf2000/gnet/v2 v2.8.0
+	github.com/panjf2000/gnet/v2 v2.9.1
 )
 
 require (
