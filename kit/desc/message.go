@@ -1,17 +1,30 @@
 package desc
 
 type MessageMeta struct {
-	Enums map[string][]string `json:"enums"`
+	Fields map[string]FieldMeta
 }
 
 type MessageMetaOption func(*MessageMeta)
 
-func WithFieldEnum(field string, enums []string) MessageMetaOption {
+func WithField(field string, fieldMeta FieldMeta) MessageMetaOption {
 	return func(meta *MessageMeta) {
-		if meta.Enums == nil {
-			meta.Enums = make(map[string][]string)
+		if meta.Fields == nil {
+			meta.Fields = make(map[string]FieldMeta)
 		}
 
-		meta.Enums[field] = enums
+		meta.Fields[field] = fieldMeta
 	}
+}
+
+type FormDataValue struct {
+	Name string
+	Type string
+}
+
+type FieldMeta struct {
+	Optional   bool
+	Deprecated bool
+	OmitEmpty  bool
+	Enum       []string
+	FormData   *FormDataValue
 }

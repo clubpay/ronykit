@@ -53,10 +53,11 @@ func (enc Encoding) Tag() string {
 }
 
 var (
-	Undefined = Encoding{}
-	JSON      = Encoding{tag: "json"}
-	Proto     = Encoding{tag: "proto"}
-	MSG       = Encoding{tag: "msg"}
+	Undefined     = Encoding{}
+	JSON          = Encoding{tag: "json"}
+	Proto         = Encoding{tag: "proto"}
+	MSG           = Encoding{tag: "msg"}
+	MultipartForm = Encoding{tag: "multipart/form-data"}
 )
 
 func CustomEncoding(tag string) Encoding {

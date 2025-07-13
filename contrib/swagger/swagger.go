@@ -134,6 +134,8 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		contentType = "application/x-protobuf"
 	case kit.MSG.Tag():
 		contentType = "application/octet-stream"
+	case kit.MultipartForm.Tag():
+		contentType = "multipart/form-data"
 	default:
 		contentType = "application/json"
 	}
@@ -248,6 +250,7 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 		if !field.Exported {
 			continue
 		}
+
 		if c.IsPathParam(field.Name) {
 			op.AddParam(
 				setSwaggerParam(spec.PathParam(field.Name), field),

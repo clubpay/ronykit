@@ -562,6 +562,8 @@ type ParsedStructTag struct {
 	PossibleValues []string
 	Deprecated     bool
 	OmitEmpty      bool
+	OmitZero       bool
+	FormData       []FormDataValue
 }
 
 func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
@@ -593,8 +595,16 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	// This is a hack to remove omitempty from tags
 	if fNameParts := strings.Split(nameTag, swagValueSep); len(fNameParts) > 0 {
 		pst.Value = strings.TrimSpace(fNameParts[0])
-		if len(fNameParts) > 1 && fNameParts[1] == "omitempty" {
-			pst.OmitEmpty = true
+
+		if len(fNameParts) > 1 {
+			for _, v := range fNameParts[1:] {
+				switch v {
+				case "omitempty":
+					pst.OmitEmpty = true
+				case "omitzero":
+					pst.OmitZero = true
+				}
+			}
 		}
 	}
 
@@ -607,6 +617,20 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 			pst.Optional = true
 		case x == "deprecated":
 			pst.Deprecated = true
+		case strings.HasPrefix(x, "form:"):
+			if xx := strings.SplitN(p, swagIdentSep, 2); len(xx) == 2 {
+				kvs := strings.Split(xx[1], swagValueSep)
+				for _, kv := range kvs {
+					if xx := strings.SplitN(kv, swagIdentSep, 2); len(xx) == 2 {
+						pst.FormData = append(pst.FormData, FormDataValue{
+							Name: xx[0],
+							Type: xx[1],
+						})
+					}
+				}
+				pst.Value = strings.TrimSpace(xx[1])
+			}
+
 		case strings.HasPrefix(x, "enum:"):
 			xx := strings.SplitN(p, swagIdentSep, 2)
 			if len(xx) == 2 {

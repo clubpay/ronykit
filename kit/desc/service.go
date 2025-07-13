@@ -76,6 +76,11 @@ func (s *Service) AddContract(contracts ...*Contract) *Service {
 			contracts[idx].Encoding = s.Encoding
 		}
 
+		switch contracts[idx].Input.(type) {
+		case kit.MultipartFormMessage:
+			contracts[idx].Encoding = kit.MultipartForm
+		}
+
 		s.Contracts = append(s.Contracts, *contracts[idx])
 	}
 

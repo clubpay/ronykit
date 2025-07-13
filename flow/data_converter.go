@@ -82,3 +82,5 @@ func (a aesCodec) Decode(payloads []*common.Payload) ([]*common.Payload, error) 
 
 	return output, nil
 }
+
+type codeServer struct{}
