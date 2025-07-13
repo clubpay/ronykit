@@ -73,14 +73,14 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 
 		pc.Request = ParsedRequest{
 			Headers: c.InputHeaders,
-			Message: ps.parseMessage(c.Input, s.Selector.GetEncoding()),
+			Message: ps.parseMessage(c.Input, c.InputMeta, s.Selector.GetEncoding()),
 		}
 
 		if c.Output != nil {
 			pc.Responses = append(
 				pc.Responses,
 				ParsedResponse{
-					Message: ps.parseMessage(c.Output, s.Selector.GetEncoding()),
+					Message: ps.parseMessage(c.Output, c.OutputMeta, s.Selector.GetEncoding()),
 				},
 			)
 		}
@@ -89,7 +89,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 			pc.Responses = append(
 				pc.Responses,
 				ParsedResponse{
-					Message: ps.parseMessage(e.Message, s.Selector.GetEncoding()),
+					Message: ps.parseMessage(e.Message, e.Meta, s.Selector.GetEncoding()),
 					ErrCode: e.Code,
 					ErrItem: e.Item,
 				},
@@ -102,7 +102,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 	return pcs
 }
 
-func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMessage {
+func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.Encoding) ParsedMessage {
 	mt := reflect.TypeOf(m)
 	if mt.Kind() == reflect.Pointer {
 		mt = mt.Elem()
@@ -116,6 +116,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, enc kit.Encoding) ParsedMes
 		Type:           typ("", mt),
 		RType:          mt,
 		ImplementError: mt.Implements(reflect.TypeOf((*kit.ErrorMessage)(nil)).Elem()),
+		Meta:           meta,
 	}
 
 	switch {
@@ -186,7 +187,7 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 			if ft.Kind() == reflect.Pointer {
 				ft = ft.Elem()
 			}
-			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), enc))
+			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), MessageMeta{}, enc))
 		}
 	}
 
@@ -311,6 +312,7 @@ type ParsedMessage struct {
 	RType          reflect.Type
 	Fields         []ParsedField
 	ImplementError bool
+	Meta           MessageMeta
 }
 
 func (pm ParsedMessage) IsSpecial() bool {
@@ -488,7 +490,7 @@ func Parse(desc ServiceDesc) ParsedService {
 // In the contrib package this is used to generate the swagger spec and postman collections.
 func ParseService(svc *Service) ParsedService {
 	// reset the parsed map
-	// we need this map, to prevent infinite recursion
+	// we need this map to prevent infinite recursion
 
 	pd := ParsedService{
 		Origin:  svc,
@@ -563,7 +565,6 @@ type ParsedStructTag struct {
 	Deprecated     bool
 	OmitEmpty      bool
 	OmitZero       bool
-	FormData       []FormDataValue
 }
 
 func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
@@ -617,20 +618,6 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 			pst.Optional = true
 		case x == "deprecated":
 			pst.Deprecated = true
-		case strings.HasPrefix(x, "form:"):
-			if xx := strings.SplitN(p, swagIdentSep, 2); len(xx) == 2 {
-				kvs := strings.Split(xx[1], swagValueSep)
-				for _, kv := range kvs {
-					if xx := strings.SplitN(kv, swagIdentSep, 2); len(xx) == 2 {
-						pst.FormData = append(pst.FormData, FormDataValue{
-							Name: xx[0],
-							Type: xx[1],
-						})
-					}
-				}
-				pst.Value = strings.TrimSpace(xx[1])
-			}
-
 		case strings.HasPrefix(x, "enum:"):
 			xx := strings.SplitN(p, swagIdentSep, 2)
 			if len(xx) == 2 {

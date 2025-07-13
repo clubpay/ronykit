@@ -104,6 +104,18 @@ func (t testService) Desc() *desc.Service {
 				SetInput(kit.RawMessage{}).
 				SetOutput(kit.RawMessage{}).
 				SetHandler(nil),
+		).
+		AddContract(
+			desc.NewContract().
+				SetName("upload").
+				AddRoute(desc.Route("", fasthttp.POST("/upload"))).
+				SetInput(kit.MultipartFormMessage{},
+					desc.WithField("file", desc.FieldMeta{
+						FormData: &desc.FormDataValue{Name: "file", Type: "file"},
+					}),
+				).
+				SetOutput(kit.RawMessage{}).
+				SetHandler(nil),
 		)
 }
 
@@ -131,26 +143,6 @@ func TestSwagger(t *testing.T) {
 var _ = Describe("ToSwaggerDefinition", func() {
 	ps := desc.Parse(testService{})
 	It("Check Request for Contract[0].Request (sampleReq)", func() {
-		// type sampleReq struct {
-		//  	X  string     `json:"x,int"`
-		//  	Y  string     `json:"y,omitempty"`
-		//  	Z  int64      `json:"z"`
-		//  	W  []string   `json:"w"`
-		//  	TT [][]string `json:"tt"`
-		//		MS  map[string]subRes `json:"ms"`
-		//		MSS map[string]string `json:"mss"`
-		//		MIS map[int]string    `json:"mis"`
-		//		MII map[int]int       `json:"mii"`
-		// }
-		// type sampleRes struct {
-		// 		Out1 int      `json:"out1"`
-		// 		Out2 string   `json:"out2"`
-		// 		Sub  subRes   `json:"sub"`
-		// 		Subs []subRes `json:"subs,omitempty"`
-		// 		XSub *subRes  `json:"xSub"`
-		//		Subs2 []*subRes `json:"subs2,omitempty"`
-		// }
-
 		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("others"))
@@ -194,16 +186,6 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[1].Response (anotherRes)", func() {
-		// type subRes struct {
-		// 	Some    string `json:"some"`
-		// 	Another []byte `json:"another"`
-		// }
-		// type anotherRes struct {
-		// 	subRes
-		// 	Out1 int    `json:"out1"`
-		// 	Out2 string `json:"out2"`
-		// }
-
 		d := swagger.ToSwaggerDefinition(ps.Contracts[1].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("another"))
@@ -221,6 +203,13 @@ var _ = Describe("ToSwaggerDefinition", func() {
 
 	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {
 		d := swagger.ToSwaggerDefinition(ps.Contracts[2].Responses[0].Message)
+		props := d.Properties.ToOrderedSchemaItems()
+
+		_ = props
+	})
+
+	It("Check Request for Contract[3] (kit.MultipartForm)", func() {
+		d := swagger.ToSwaggerDefinition(ps.Contracts[3].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props

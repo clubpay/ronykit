@@ -186,7 +186,13 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		)
 	}
 
-	setSwagInput(op, c)
+	switch c.Encoding {
+	default:
+		setSwagInput(op, c)
+	case kit.MultipartForm.Tag():
+		setSwagInputFormData(op, c)
+
+	}
 
 	restPath := fixPathForSwag(c.Path)
 	pathItem := swag.Paths.Paths[restPath]
@@ -260,6 +266,32 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 				setSwaggerParam(spec.QueryParam(field.Name), field),
 			)
 		}
+	}
+
+	for _, hdr := range c.Request.Headers {
+		if hdr.Required {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsRequired(),
+			)
+		} else {
+			op.AddParam(
+				spec.HeaderParam(hdr.Name).
+					AsOptional(),
+			)
+		}
+	}
+}
+
+func setSwagInputFormData(op *spec.Operation, c desc.ParsedContract) {
+	for _, m := range c.Request.Message.Meta.Fields {
+		if m.FormData == nil {
+			continue
+		}
+
+		op.AddParam(
+			spec.FormDataParam(m.FormData.Name).Typed(m.FormData.Type, ""),
+		)
 	}
 
 	for _, hdr := range c.Request.Headers {

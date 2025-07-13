@@ -20,6 +20,7 @@ type Error struct {
 	Code    int
 	Item    string
 	Message kit.Message
+	Meta    MessageMeta
 }
 
 func BuildService(desc ServiceDesc) kit.Service {
