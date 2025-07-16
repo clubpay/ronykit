@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.19.41
+	github.com/clubpay/ronykit/kit v0.19.42
 	github.com/nexus-rpc/sdk-go v0.4.0
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.10.0
