@@ -534,8 +534,15 @@ func parseKind(t reflect.Type) Kind {
 	case reflect.Float32, reflect.Float64:
 		return Float
 	case reflect.Struct:
+		totalExportedFields := 0
+		for i := 0; i < t.NumField(); i++ {
+			if t.Field(i).IsExported() {
+				totalExportedFields++
+			}
+		}
+
 		// Check if type implements String() string method
-		if t.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()) {
+		if totalExportedFields == 0 && t.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()) {
 			return String
 		}
 
