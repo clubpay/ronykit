@@ -37,6 +37,7 @@ type ClusterDelegate interface {
 // southBridge is a container component that connects EdgeServers using Cluster.
 type southBridge struct {
 	ctxPool
+
 	id string
 	wg *sync.WaitGroup
 	eh ErrHandlerFunc
@@ -67,7 +68,9 @@ func (sb *southBridge) Shutdown(ctx context.Context) error {
 
 func (sb *southBridge) OnMessage(data []byte) {
 	carrier := &envelopeCarrier{}
-	if err := carrier.FromJSON(data); err != nil {
+
+	err := carrier.FromJSON(data)
+	if err != nil {
 		sb.eh(nil, fmt.Errorf("failed to decode envelope carrier: %w", err))
 
 		return
@@ -83,11 +86,13 @@ func (sb *southBridge) OnMessage(data []byte) {
 		if conn != nil {
 			ctx := sb.acquireCtx(conn)
 			ctx.sb = sb
+
 			select {
 			case conn.carrierChan <- carrier:
 			default:
 				sb.eh(ctx, ErrWritingToClusterConnection)
 			}
+
 			sb.releaseCtx(ctx)
 		}
 	}
@@ -131,6 +136,7 @@ func (sb *southBridge) createSenderConn(
 
 					return
 				}
+
 				switch carrier.Kind {
 				default:
 					panic("invalid carrier kind")
@@ -218,6 +224,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 	)
 
 	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		sb.eh(ctx, err)
@@ -234,10 +241,12 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 
 func (sb *southBridge) sendMessage(carrier *envelopeCarrier) error {
 	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+
 	err := defaultMessageCodec.Encode(carrier, ecBuf)
 	if err == nil {
 		err = sb.cb.Publish(carrier.TargetID, *ecBuf.Bytes())
 	}
+
 	if err != nil {
 		sb.inProgressMtx.Lock()
 		delete(sb.inProgress, carrier.SessionID)
@@ -344,6 +353,7 @@ func (sb *southBridge) writeFunc(c *clusterConn, e *Envelope) error {
 	}
 
 	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		return err
@@ -426,9 +436,11 @@ func (c *clusterConn) Set(key string, val string) {
 func (c *clusterConn) Keys() []string {
 	keys := make([]string, 0, len(c.kv))
 	c.kvMtx.Lock()
+
 	for k := range c.kv {
 		keys = append(keys, k)
 	}
+
 	c.kvMtx.Unlock()
 
 	return keys

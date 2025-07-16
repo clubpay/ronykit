@@ -142,7 +142,8 @@ func fromForwardedHeaders(ctx *silverlining.Context) (string, error) {
 	forwardedHeaders := [...]string{xForwardedHeader, forwardedForHeader, forwardedHeader}
 	for _, forwardedHeader := range forwardedHeaders {
 		if forwarded, _ := ctx.RequestHeaders().GetBytes(utils.S2B(forwardedHeader)); forwarded != nil {
-			if clientIP, err := retrieveForwardedIP(string(forwarded)); err == nil {
+			clientIP, err := retrieveForwardedIP(string(forwarded))
+			if err == nil {
 				return clientIP, nil
 			}
 		}

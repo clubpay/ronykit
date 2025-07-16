@@ -148,7 +148,8 @@ func (buildCtx *Context) CreateNetwork(name string) error {
 }
 
 func (buildCtx *Context) RegisterContainerDesc(desc ContainerDesc) {
-	if _, err := buildCtx.getContainerDesc(desc.Name); err != nil {
+	_, err := buildCtx.getContainerDesc(desc.Name)
+	if err != nil {
 		buildCtx.containers[desc.Name] = desc
 		buildCtx.containersSort = append(buildCtx.containersSort, desc)
 	}
@@ -247,6 +248,7 @@ func (buildCtx *Context) BuildImage(name string) error {
 
 	if desc.BuildConfig.Git != nil {
 		buildCtx.log.Debugf("[%s] cloning git repo", desc.Name)
+
 		err := buildCtx.cloneRepo(desc)
 		if err != nil {
 			return err
@@ -257,6 +259,7 @@ func (buildCtx *Context) BuildImage(name string) error {
 
 	if desc.BuildConfig.BeforeBuild != nil {
 		buildCtx.log.Debugf("[%s] executing pre-built actions", desc.Name)
+
 		err := runAction(buildCtx.RepoDir(desc.Name), desc.BuildConfig.BeforeBuild.Exec...)
 		if err != nil {
 			return err

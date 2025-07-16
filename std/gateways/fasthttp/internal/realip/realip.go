@@ -103,11 +103,13 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 		}
 	}
 
-	if ip, err := fromSpecialHeaders(ctx); err == nil {
+	ip, err := fromSpecialHeaders(ctx)
+	if err == nil {
 		return ip
 	}
 
-	if ip, err := fromForwardedHeaders(ctx); err == nil {
+	ip, err = fromForwardedHeaders(ctx)
+	if err == nil {
 		return ip
 	}
 
@@ -139,7 +141,8 @@ func fromForwardedHeaders(ctx *fasthttp.RequestCtx) (string, error) {
 	forwardedHeaders := [...]string{xForwardedHeader, forwardedForHeader, forwardedHeader}
 	for _, forwardedHeader := range forwardedHeaders {
 		if forwarded := ctx.Request.Header.Peek(forwardedHeader); forwarded != nil {
-			if clientIP, err := retrieveForwardedIP(string(forwarded)); err == nil {
+			clientIP, err := retrieveForwardedIP(string(forwarded))
+			if err == nil {
 				return clientIP, nil
 			}
 		}

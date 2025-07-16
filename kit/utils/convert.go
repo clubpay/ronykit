@@ -131,6 +131,7 @@ func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	type medium any
 
 	m := new(medium)
+
 	err := json.Unmarshal(bb, m)
 	if err != nil {
 		return err

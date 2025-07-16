@@ -148,6 +148,7 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 
 	// Write the value into the substream & flush it
 	subStream.WriteVal(value)
+
 	err := subStream.Flush()
 	if err != nil {
 		return err
@@ -156,7 +157,7 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 	// Write the substream's bytes into the main stream
 	stream.WriteMore()
 	stream.WriteObjectField(fieldName)
-	_, err := stream.Write(buf.Bytes())
+	_, err = stream.Write(buf.Bytes())
 
 	return err
 }

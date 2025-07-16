@@ -346,7 +346,8 @@ func (hc *RESTCtx) ReadResponseBody(w io.Writer) *RESTCtx {
 		return hc
 	}
 
-	if _, err := w.Write(hc.res.Body()); err != nil {
+	_, err := w.Write(hc.res.Body())
+	if err != nil {
 		hc.err = WrapError(err)
 	}
 
@@ -365,7 +366,8 @@ func (hc *RESTCtx) ReadUncompressedResponseBody(w io.Writer) *RESTCtx {
 		return hc
 	}
 
-	if _, err := w.Write(body); err != nil {
+	_, err = w.Write(body)
+	if err != nil {
 		hc.err = WrapError(err)
 	}
 

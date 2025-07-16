@@ -258,6 +258,7 @@ func (s *EdgeServer) startParent(_ context.Context) {
 			os.Environ(),
 			fmt.Sprintf("%s=%d", envForkChildKey, i+1),
 		)
+
 		err := cmd.Start()
 		if err != nil {
 			panic(fmt.Errorf("failed to start a child prefork process, error: %w", err))

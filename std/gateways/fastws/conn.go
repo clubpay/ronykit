@@ -77,7 +77,9 @@ func (wsc *wsConn) isUpgraded() bool {
 
 func (wsc *wsConn) upgrade(c gnet.Conn) error {
 	sp := acquireSwitchProtocol()
-	if _, err := sp.Upgrade(c); err != nil {
+
+	_, err := sp.Upgrade(c)
+	if err != nil {
 		return err
 	}
 

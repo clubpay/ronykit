@@ -59,7 +59,9 @@ var poolSha256 = sync.Pool{
 // Sha256 appends a 32bytes array which is sha256(in) to out
 func Sha256(in, out []byte) ([]byte, error) {
 	h := poolSha256.Get().(hash.Hash) //nolint:forcetypeassert
-	if _, err := h.Write(in); err != nil {
+
+	_, err := h.Write(in)
+	if err != nil {
 		h.Reset()
 		poolSha256.Put(h)
 

@@ -178,13 +178,14 @@ func (rm *RESTMethod) GetErrors() []desc.ParsedResponse {
 
 // RPCMethod represents the description of a Contract with kit.RPCRouteSelector
 type RPCMethod struct {
+	kit.IncomingRPCContainer
+	kit.OutgoingRPCContainer
+
 	Name      string
 	Predicate string
 	Request   desc.ParsedRequest
 	Responses []desc.ParsedResponse
 	Encoding  string
-	kit.IncomingRPCContainer
-	kit.OutgoingRPCContainer
 }
 
 func (rm *RPCMethod) GetOKResponse() desc.ParsedResponse {

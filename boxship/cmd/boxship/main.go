@@ -18,7 +18,7 @@ func main() {
 		cmd.VersionCmd, cmd.LogCmd, cmd.UpdateCmd,
 	)
 
-	err := cmd.RootCmd.Execute()
+	err = cmd.RootCmd.Execute()
 	if err != nil {
 		panic(err)
 	}
