@@ -85,7 +85,8 @@ func writeErrorFieldsToInternalStream(e *Error, stream *jsoniter.Stream) {
 	stream.WriteString(e.Item)
 
 	if len(e.Meta) > 0 {
-		if err := errmarshalling.TryWriteValue(stream, "meta", e.Meta); err != nil {
+		err := errmarshalling.TryWriteValue(stream, "meta", e.Meta)
+		if err != nil {
 			// Only report the error in the JSON stream
 			// don't error out the whole marshal as it's critical
 			// that we marshal the error.

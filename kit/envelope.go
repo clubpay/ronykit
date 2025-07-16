@@ -68,6 +68,7 @@ func (e *Envelope) release() {
 	for k := range e.kv {
 		delete(e.kv, k)
 	}
+
 	e.m = nil
 	e.ctx = nil
 	e.conn = nil
@@ -118,9 +119,11 @@ func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
 	}
 
 	e.kvl.Lock()
+
 	for k, v := range kv {
 		e.kv[k] = v
 	}
+
 	e.kvl.Unlock()
 
 	return e
@@ -136,11 +139,13 @@ func (e *Envelope) GetHdr(key string) string {
 
 func (e *Envelope) WalkHdr(f func(key string, val string) bool) *Envelope {
 	e.kvl.Lock()
+
 	for k, v := range e.kv {
 		if !f(k, v) {
 			break
 		}
 	}
+
 	e.kvl.Unlock()
 
 	return e

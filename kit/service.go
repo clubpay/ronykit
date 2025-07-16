@@ -45,6 +45,7 @@ func WrapServiceContracts(svc Service, wrapper ...ContractWrapper) Service {
 		for _, w := range wrapper {
 			c = w.Wrap(c)
 		}
+
 		sw.contracts = append(sw.contracts, c)
 	}
 

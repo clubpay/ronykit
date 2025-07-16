@@ -17,11 +17,12 @@ func TestReflector(t *testing.T) {
 
 type testMessage struct {
 	testEmbed1
+	testEmbed2
+
 	X string `json:"xTag" otherTag:"xOther"`
 	Y int64  `json:"yTag" otherTag:"yOther"`
 	z string
 	M map[string]string
-	testEmbed2
 }
 
 type testEmbed1 struct {

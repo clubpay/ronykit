@@ -55,6 +55,7 @@ func parseYamlFile(yamlFile string, lookupFunc func(string) string) (*SetupFile,
 	foundDynamicVars := regexEnvKeys.FindAll(yamlBytes, -1)
 	for idx := range foundDynamicVars {
 		x := bytes.Trim(foundDynamicVars[idx], "${}")
+
 		foundX := lookupFunc(string(x))
 		if foundX == "" {
 			return nil, fmt.Errorf("could not find dynamic variable: %s", string(x))
@@ -64,6 +65,7 @@ func parseYamlFile(yamlFile string, lookupFunc func(string) string) (*SetupFile,
 	}
 
 	setup := &SetupFile{}
+
 	err = yaml.Unmarshal(yamlBytes, setup)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("path: %s", yamlFile))
@@ -81,6 +83,7 @@ func readYamlDir(
 	if err != nil {
 		return err
 	}
+
 	if !fileInfo.IsDir() {
 		return fmt.Errorf("must be a directory")
 	}
@@ -91,9 +94,11 @@ func readYamlDir(
 			if err != nil {
 				return err
 			}
+
 			if d.IsDir() {
 				return nil
 			}
+
 			fileInfo, err := d.Info()
 			if err != nil {
 				return err

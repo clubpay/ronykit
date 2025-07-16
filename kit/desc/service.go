@@ -114,16 +114,19 @@ func (s *Service) Build() kit.Service {
 	}
 
 	var index int64
+
 	for _, c := range s.Contracts {
 		reflector.Register(c.Input, s.Encoding.Tag(), c.Encoding.Tag())
 		reflector.Register(c.Output, s.Encoding.Tag(), c.Encoding.Tag())
 
 		index++
 		contractID := fmt.Sprintf("%s.%d", svc.name, index)
+
 		if c.Name != "" {
 			if _, ok := s.contractNames[c.Name]; ok {
 				panic(fmt.Sprintf("contract name %s already defined in service %s", c.Name, svc.name))
 			}
+
 			contractID = fmt.Sprintf("%s.%s", svc.name, c.Name)
 			s.contractNames[c.Name] = struct{}{}
 		}

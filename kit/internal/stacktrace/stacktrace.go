@@ -168,6 +168,7 @@ func (sf *stackFormatter) FormatFrame(frame runtime.Frame) {
 	if sf.nonEmpty {
 		sf.b.AppendByte('\n')
 	}
+
 	sf.nonEmpty = true
 	sf.b.AppendString(frame.Function)
 	sf.b.AppendByte('\n')

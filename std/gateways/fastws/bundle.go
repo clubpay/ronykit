@@ -81,6 +81,7 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	}
 
 	inputMsgContainer := b.rpcInFactory()
+
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
@@ -99,6 +100,7 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	default:
 		err = inputMsgContainer.ExtractMessage(msg)
 	}
+
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}

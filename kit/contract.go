@@ -94,6 +94,7 @@ func WrapContract(c Contract, wrappers ...ContractWrapper) Contract {
 // contract.
 type contractWrap struct {
 	Contract
+
 	h     []HandlerFunc
 	preM  []ModifierFunc
 	postM []ModifierFunc

@@ -184,6 +184,7 @@ func (rm *RawMessage) UnmarshalJSON(data []byte) error {
 
 func CastRawMessage[M Message](rawMsg RawMessage) (*M, error) {
 	var m M
+
 	err := UnmarshalMessage(rawMsg, &m)
 	if err != nil {
 		return nil, err

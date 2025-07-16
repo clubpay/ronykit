@@ -69,7 +69,8 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 }
 
 func (g *Generator) MustGenerate(desc ...desc.ServiceDesc) {
-	if err := g.Generate(desc...); err != nil {
+	err := g.Generate(desc...)
+	if err != nil {
 		panic(err)
 	}
 }

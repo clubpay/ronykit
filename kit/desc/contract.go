@@ -96,6 +96,7 @@ func (c *Contract) SetInput(m kit.Message, opt ...MessageMetaOption) *Contract {
 	for _, o := range opt {
 		o(&meta)
 	}
+
 	c.Input = m
 	c.InputMeta = meta
 
@@ -114,6 +115,7 @@ func (c *Contract) SetOutput(m kit.Message, opt ...MessageMetaOption) *Contract 
 	for _, o := range opt {
 		o(&meta)
 	}
+
 	c.Output = m
 	c.OutputMeta = meta
 

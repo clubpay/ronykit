@@ -39,7 +39,8 @@ func NewReverseProxyWith(options ...Option) (*ReverseProxy, error) {
 		clients: make([]*fasthttp.HostClient, 0, 2),
 	}
 
-	if err := proxy.init(); err != nil {
+	err := proxy.init()
+	if err != nil {
 		return nil, err
 	}
 
@@ -127,9 +128,11 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	req.SetHost(c.Addr)
 
 	// execute the request and rev response with timeout
-	if err := p.doWithTimeout(c, req, res); err != nil {
+	err := p.doWithTimeout(c, req, res)
+	if err != nil {
 		errorF(p.opt.logger, "p.doWithTimeout failed, err = %v, status = %d", err, res.StatusCode())
 		res.SetStatusCode(http.StatusInternalServerError)
+
 		if errors.Is(err, fasthttp.ErrTimeout) {
 			res.SetStatusCode(http.StatusRequestTimeout)
 		}

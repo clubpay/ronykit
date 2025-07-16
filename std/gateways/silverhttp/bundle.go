@@ -78,6 +78,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	} else {
 		ln, err = net.Listen("tcp4", b.listen)
 	}
+
 	if err != nil {
 		return err
 	}

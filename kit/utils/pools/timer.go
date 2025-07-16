@@ -38,6 +38,7 @@ func ReleaseTimer(t *time.Timer) {
 		default:
 		}
 	}
+
 	timerPool.Put(t)
 }
 
@@ -48,5 +49,6 @@ func ResetTimer(t *time.Timer, period time.Duration) {
 		default:
 		}
 	}
+
 	t.Reset(period)
 }

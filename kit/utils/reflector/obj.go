@@ -48,6 +48,7 @@ func (fields Fields) Get(m kit.Message, fieldName string) any {
 	if len(fi.idx) == 0 {
 		return nil
 	}
+
 	mVal := reflect.Indirect(reflect.ValueOf(m)).Field(fi.idx[0])
 	if len(fi.idx) > 1 {
 		for _, idx := range fi.idx[1:] {
@@ -225,9 +226,11 @@ func (fields Fields) WalkFields(cb func(key string, f FieldInfo)) {
 func (fields Fields) String() string {
 	sb := strings.Builder{}
 	sb.WriteString("{\n")
+
 	for k, f := range fields {
 		sb.WriteString(fmt.Sprintf("%s: %s %s - %d\n", k, f.name, f.typ.String(), f.offset))
 	}
+
 	sb.WriteString("}\n")
 
 	return sb.String()

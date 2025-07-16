@@ -68,6 +68,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	if rVal.Kind() != reflect.Ptr {
 		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
 	}
+
 	rVal = rVal.Elem()
 	if rVal.Kind() != reflect.Struct {
 		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
@@ -168,6 +169,7 @@ func genDecoder(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc 
 
 func extractFields(rVal reflect.Value, tagKey string) []paramCaster {
 	var pcs []paramCaster
+
 	for i := range rVal.NumField() {
 		f := rVal.Type().Field(i)
 		if f.Type.Kind() == reflect.Struct && f.Anonymous {

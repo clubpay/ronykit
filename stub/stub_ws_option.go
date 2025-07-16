@@ -48,6 +48,7 @@ func WithUpgradeHeader(key string, values ...string) WebsocketOption {
 		if cfg.upgradeHdr == nil {
 			cfg.upgradeHdr = http.Header{}
 		}
+
 		cfg.upgradeHdr[key] = values
 	}
 }
@@ -69,6 +70,7 @@ func WithHandler(predicate string, h RPCContainerHandler) WebsocketOption {
 		if cfg.handlers == nil {
 			cfg.handlers = map[string]RPCContainerHandler{}
 		}
+
 		cfg.handlers[predicate] = h
 	}
 }

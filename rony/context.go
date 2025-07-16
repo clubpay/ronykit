@@ -37,10 +37,12 @@ func (c *BaseCtx[S, A]) State() S {
 func (c *BaseCtx[S, A]) ReduceState(action A, fn func(s S, err error) error) (err error) {
 	if c.sl != nil {
 		c.sl.Lock()
+
 		err = c.s.Reduce(action)
 		if fn != nil {
 			err = fn(c.s, err)
 		}
+
 		c.sl.Unlock()
 
 		return err

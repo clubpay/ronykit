@@ -80,6 +80,7 @@ func (wsc *wsConn) upgrade(c gnet.Conn) error {
 	if _, err := sp.Upgrade(c); err != nil {
 		return err
 	}
+
 	releaseSwitchProtocol(sp)
 
 	wsc.handshakeDone = true
@@ -111,6 +112,7 @@ func (wsc *wsConn) nextHeader() error {
 	// we need to check if there is header in the buffer
 	tmp := bytes.NewReader(wsc.readBuff.Bytes())
 	preLen := tmp.Len()
+
 	head, err := ws.ReadHeader(tmp)
 	if err != nil {
 		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
@@ -121,6 +123,7 @@ func (wsc *wsConn) nextHeader() error {
 	}
 
 	skipN := preLen - tmp.Len()
+
 	_, err = wsc.readBuff.Discard(skipN)
 	if err != nil {
 		return err
@@ -189,9 +192,11 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 			stPos := wsc.msgBuff.Len()
 			written, err := io.CopyBuffer(wsc.msgBuff, io.LimitReader(wsc.readBuff, wsc.currHead.Length), *tmpBuff.Bytes())
 			tmpBuff.Release()
+
 			if err != nil {
 				return err
 			}
+
 			if written < wsc.currHead.Length && err == nil {
 				// src stopped early; must have been EOF.
 				return io.EOF
@@ -203,6 +208,7 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 
 		if wsc.currHead.Fin {
 			msgBuff := wsc.msgBuff
+
 			wsc.msgBuff = buf.GetCap(wsc.msgBuff.Cap())
 			go wsc.execMessage(d, msgBuff)
 		}
@@ -255,6 +261,7 @@ func (wsc *wsConn) WriteEnvelope(e *kit.Envelope) error {
 	}
 
 	_, err = wsc.Write(data)
+
 	outC.Release()
 
 	return err

@@ -64,10 +64,12 @@ func WithWebsocketEndpoint(endpoint string) Option {
 func WithReverseProxy(path string, opt ...proxy.Option) Option {
 	return func(b *bundle) {
 		var err error
+
 		b.reverseProxy, err = proxy.NewReverseProxyWith(opt...)
 		if err != nil {
 			panic(err)
 		}
+
 		if path == "" {
 			path = "/"
 		}

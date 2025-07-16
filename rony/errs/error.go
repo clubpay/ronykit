@@ -67,6 +67,7 @@ func Wrap(err error, msg string, metaPairs ...any) error {
 	}
 
 	e := &Error{Code: Unknown, Item: msg, underlying: err}
+
 	var ee *Error
 	if errors.As(err, &ee) {
 		e.Details = ee.Details
@@ -87,6 +88,7 @@ func WrapCode(err error, code ErrCode, msg string, metaPairs ...any) error {
 	}
 
 	e := &Error{Code: code, Item: msg, underlying: err}
+
 	ee := &Error{}
 	if errors.As(err, &ee) {
 		e.Details = ee.Details
@@ -126,6 +128,7 @@ func Convert(err error) error {
 		}
 
 		var errMap map[string]any
+
 		_ = json.Unmarshal(utils.S2B(se.Item()), &errMap)
 		if errMap != nil {
 			if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
@@ -149,6 +152,7 @@ func Code(err error) ErrCode {
 	if err == nil {
 		return OK
 	}
+
 	var e *Error
 	if errors.As(err, &e) {
 		return e.Code
@@ -209,6 +213,7 @@ func (e *Error) ErrorMessage() string {
 	next := e.underlying
 	for next != nil {
 		var msg string
+
 		e := &Error{}
 		if errors.As(next, &e) {
 			msg = e.Item
@@ -217,9 +222,11 @@ func (e *Error) ErrorMessage() string {
 			msg = next.Error()
 			next = nil
 		}
+
 		if b.Len() > 0 && msg != "" {
 			b.WriteString(": ")
 		}
+
 		b.WriteString(msg)
 	}
 
@@ -236,14 +243,17 @@ func mergeMeta(md Metadata, pairs []any) Metadata {
 	if n%2 != 0 {
 		panic(fmt.Sprintf("got uneven number (%d) of metadata key-values", n))
 	}
+
 	if md == nil && n > 0 {
 		md = make(Metadata, n/2)
 	}
+
 	for i := 0; i < n; i += 2 {
 		key, ok := pairs[i].(string)
 		if !ok {
 			panic(fmt.Sprintf("metadata key-value pair #%d key is not a string (is %T)", i/2, pairs[i]))
 		}
+
 		md[key] = pairs[i+1]
 	}
 
@@ -253,6 +263,7 @@ func mergeMeta(md Metadata, pairs []any) Metadata {
 func init() {
 	jsoniter.RegisterTypeEncoderFunc("errs.Error", func(ptr unsafe.Pointer, stream *jsoniter.Stream) {
 		e := (*Error)(ptr)
+
 		stream.WriteObjectStart()
 		stream.WriteObjectField("code")
 		stream.WriteString(e.Code.String())

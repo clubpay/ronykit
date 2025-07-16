@@ -22,8 +22,9 @@ type Logger interface {
 var _ Logger = &stdLogger{}
 
 type stdLogger struct {
-	zapLogger *zap.SugaredLogger
 	stdOutWriter
+
+	zapLogger *zap.SugaredLogger
 }
 
 func (s *stdLogger) Debugf(format string, args ...interface{}) {
@@ -44,12 +45,14 @@ func (s *stdLogger) Printf(format string, args ...interface{}) {
 
 func (s *stdLogger) FileLogger(filePath string) *fileLogger {
 	l := &fileLogger{}
+
 	f, err := os.Create(filePath)
 	if err != nil {
 		s.Warnf("got error on creating file logger: %v", err)
 
 		return l
 	}
+
 	l.f = f
 	l.l = s
 

@@ -91,16 +91,19 @@ func (b *Builder) DetailsX(det ErrDetails) *Builder {
 // Cause sets the underlying error cause.
 func (b *Builder) Cause(err error) *Builder {
 	b.err = err
+
 	e := &Error{}
 	if errors.As(err, &e) {
 		if !b.codeSet {
 			b.code = e.Code
 			b.codeSet = true
 		}
+
 		if !b.msgSet {
 			b.msg = e.Item
 			b.msgSet = true
 		}
+
 		if !b.detSet {
 			b.det = e.Details
 			b.detSet = true

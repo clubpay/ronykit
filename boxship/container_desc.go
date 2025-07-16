@@ -180,6 +180,7 @@ func (desc *ContainerDesc) SetDefaultGitAuth(ga GitAuth) {
 	if desc.BuildConfig == nil || desc.BuildConfig.Git == nil {
 		return
 	}
+
 	if desc.BuildConfig.Git.User == "" && desc.BuildConfig.Git.Pass == "" {
 		desc.BuildConfig.Git.User = ga.User
 		desc.BuildConfig.Git.Pass = ga.Pass

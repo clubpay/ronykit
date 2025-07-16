@@ -29,6 +29,7 @@ func (c *Container) Run(ctx *Context) error {
 	withLogger := ctx.set.GetBool(settings.LogAll)
 
 	ctx.log.Debugf("[%s] container starting", c.Name)
+
 	err := c.tc.Start(ctx.Context())
 	if err != nil {
 		ctx.log.Warnf("[%s] got error on starting: %v", c.Name, err)
@@ -44,10 +45,12 @@ func (c *Container) Run(ctx *Context) error {
 
 	if c.desc.AutoExec != nil {
 		ctx.log.Debugf("[%s] executing after-start actions", c.Name)
+
 		wd := c.getWorkingDir(c.desc.AutoExec.WorkingDir)
 		switch c.desc.AutoExec.RunMode {
 		default:
-			if err := runAction(wd, c.desc.AutoExec.Exec...); err != nil {
+			err := runAction(wd, c.desc.AutoExec.Exec...)
+			if err != nil {
 				return err
 			}
 		case ActionRunModeContainer:
@@ -84,6 +87,7 @@ func (c *Container) execInContainer(ctx context.Context, actions ...[]string) er
 		if err != nil {
 			return err
 		}
+
 		_, _ = io.Copy(c.Logger, rd)
 	}
 

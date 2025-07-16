@@ -69,6 +69,7 @@ func Marshal(err error) (rtn []byte) {
 
 	// Otherwise fall back and marshal the error as a super generic error
 	var buf bytes.Buffer
+
 	stream := json.BorrowStream(&buf)
 	defer json.ReturnStream(stream)
 
@@ -130,6 +131,7 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 	// Create a sub-stream to write the value into
 	// which we can then check for errors on without affecting the main stream
 	var buf bytes.Buffer
+
 	subStream := stream.Pool().BorrowStream(&buf)
 	defer stream.Pool().ReturnStream(subStream)
 
@@ -146,7 +148,8 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 
 	// Write the value into the substream & flush it
 	subStream.WriteVal(value)
-	if err := subStream.Flush(); err != nil {
+	err := subStream.Flush()
+	if err != nil {
 		return err
 	}
 

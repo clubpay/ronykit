@@ -27,6 +27,7 @@ func NewErrorWithMsg(msg kit.Message) *Error {
 	if e, ok := msg.(interface{ GetCode() int }); ok {
 		wErr.code = e.GetCode()
 	}
+
 	if e, ok := msg.(interface{ GetItem() string }); ok {
 		wErr.item = e.GetItem()
 	}
@@ -90,6 +91,7 @@ func (err Error) GetItem() string {
 
 func (err Error) Is(target error) bool {
 	var cond bool
+
 	switch e := target.(type) {
 	case Error:
 		cond = e.err == nil && e.code == err.code && e.item == err.item

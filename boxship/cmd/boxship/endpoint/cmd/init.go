@@ -86,11 +86,13 @@ There are a few templates that you can use to setup your environment, currently 
 
 		r := genny.WetRunner(context.Background())
 		err = r.Chdir(output, func() error {
-			if err = r.With(g); err != nil {
+			err = r.With(g)
+			if err != nil {
 				return err
 			}
 
-			if err = r.Run(); err != nil {
+			err = r.Run()
+			if err != nil {
 				return err
 			}
 

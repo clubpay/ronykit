@@ -10,6 +10,7 @@ import (
 
 type wsConn struct {
 	utils.SpinLock
+
 	kv            map[string]string
 	id            uint64
 	clientIP      string
@@ -41,12 +42,15 @@ func (w *wsConn) Write(data []byte) (int, error) {
 	var err error
 
 	w.Lock()
+
 	if w.c != nil {
 		err = w.c.WriteMessage(websocket.TextMessage, data)
 	} else {
 		err = kit.ErrWriteToClosedConn
 	}
+
 	w.Unlock()
+
 	if err != nil {
 		return 0, err
 	}
@@ -72,6 +76,7 @@ func (w *wsConn) WriteEnvelope(e *kit.Envelope) error {
 	}
 
 	_, err = w.Write(data)
+
 	outC.Release()
 
 	return err
@@ -83,11 +88,13 @@ func (w *wsConn) Stream() bool {
 
 func (w *wsConn) Walk(f func(key string, val string) bool) {
 	w.Lock()
+
 	for k, v := range w.kv {
 		if !f(k, v) {
 			break
 		}
 	}
+
 	w.Unlock()
 }
 

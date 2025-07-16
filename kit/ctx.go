@@ -28,6 +28,7 @@ type (
 
 type ctxPool struct {
 	sync.Pool
+
 	ls *localStore
 	th HandlerFunc // trace handler
 }
@@ -39,6 +40,7 @@ func (p *ctxPool) acquireCtx(c Conn) *Context {
 	}
 
 	ctx.conn = c
+
 	ctx.in = newEnvelope(ctx, c, false)
 	if p.th != nil {
 		ctx.handlers = append(ctx.handlers, p.th)
@@ -54,6 +56,7 @@ func (p *ctxPool) releaseCtx(ctx *Context) {
 
 type Context struct {
 	utils.SpinLock
+
 	ctx       context.Context //nolint:containedctx
 	sb        *southBridge
 	ls        *localStore
@@ -93,6 +96,7 @@ func (ctx *Context) reset() {
 	for k := range ctx.kv {
 		delete(ctx.kv, k)
 	}
+
 	for k := range ctx.hdr {
 		delete(ctx.hdr, k)
 	}

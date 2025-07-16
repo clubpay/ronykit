@@ -29,6 +29,7 @@ func WithHeader(key, value string) RESTOption {
 		if cfg.hdr == nil {
 			cfg.hdr = make(map[string]string)
 		}
+
 		cfg.hdr[key] = value
 	}
 }

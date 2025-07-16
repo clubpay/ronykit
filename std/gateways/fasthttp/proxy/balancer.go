@@ -42,6 +42,7 @@ func NewBalancer(ws []W) IBalancer {
 		if w.Weight() > rrb.maxWeight {
 			rrb.maxWeight = w.Weight()
 		}
+
 		tmpGCD = append(tmpGCD, w.Weight())
 	}
 

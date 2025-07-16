@@ -46,12 +46,15 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 
 	c := desc.NewContract().
 		SetInputHeader(cfg.Headers...)
+
 	switch reflect.TypeOf(in) {
 	default:
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, true))
+
 		c.In(&in)
 	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, false))
+
 		c.In(in)
 	}
 
@@ -65,6 +68,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 
 	// Using reflection to get the name of the passed UnaryHandler function
 	handlerName := ""
+
 	hValue := reflect.ValueOf(h)
 	if hValue.Kind() == reflect.Func {
 		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")
@@ -110,12 +114,15 @@ func registerRawUnary[IN Message, S State[A], A Action](
 	handlers = append(handlers, cfg.Middlewares...)
 
 	c := desc.NewContract()
+
 	switch reflect.TypeOf(in) {
 	default:
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, true))
+
 		c.In(&in)
 	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, false))
+
 		c.In(in)
 	}
 
@@ -129,6 +136,7 @@ func registerRawUnary[IN Message, S State[A], A Action](
 
 	// Using reflection to get the name of the passed UnaryHandler function
 	handlerName := ""
+
 	hValue := reflect.ValueOf(h)
 	if hValue.Kind() == reflect.Func {
 		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")

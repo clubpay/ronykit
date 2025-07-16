@@ -35,6 +35,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	handlers = append(handlers,
 		func(ctx *kit.Context) {
 			req := ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
+
 			err := h(newStreamCtx[S, A, OUT](ctx, s, sl), *req)
 			if err != nil {
 				ctx.Error(errs.Convert(err))

@@ -6,6 +6,7 @@ import (
 
 func GetWorkDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, set.GetString(WorkDir))
 	elems = append(elems, elem...)
 
@@ -14,6 +15,7 @@ func GetWorkDir(set Settings, elem ...string) string {
 
 func GetLogsDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, GetWorkDir(set), "logs")
 	elems = append(elems, elem...)
 
@@ -22,6 +24,7 @@ func GetLogsDir(set Settings, elem ...string) string {
 
 func GetRepoDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, GetWorkDir(set), "git-repo")
 	elems = append(elems, elem...)
 
@@ -30,6 +33,7 @@ func GetRepoDir(set Settings, elem ...string) string {
 
 func GetCertsDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, GetWorkDir(set), "certs")
 	elems = append(elems, elem...)
 
@@ -38,6 +42,7 @@ func GetCertsDir(set Settings, elem ...string) string {
 
 func GetConfigsDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, GetWorkDir(set), "config")
 	elems = append(elems, elem...)
 
@@ -46,6 +51,7 @@ func GetConfigsDir(set Settings, elem ...string) string {
 
 func GetVolumesDir(set Settings, elem ...string) string {
 	var elems []string
+
 	elems = append(elems, GetWorkDir(set), "vol")
 	elems = append(elems, elem...)
 

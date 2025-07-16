@@ -55,6 +55,7 @@ func (ll *LinkedList) Append(data any) {
 	ll.lock.Lock()
 	ll.size += 1
 	n := acquireNode()
+
 	n.data = data
 	if ll.tail == nil {
 		ll.tail, ll.head = n, n
@@ -64,6 +65,7 @@ func (ll *LinkedList) Append(data any) {
 		ll.tail.prev = o
 		o.next = ll.tail
 	}
+
 	ll.lock.Unlock()
 }
 
@@ -71,6 +73,7 @@ func (ll *LinkedList) Prepend(data any) {
 	ll.lock.Lock()
 	ll.size += 1
 	n := acquireNode()
+
 	n.data = data
 	if ll.head == nil {
 		ll.tail, ll.head = n, n
@@ -80,6 +83,7 @@ func (ll *LinkedList) Prepend(data any) {
 		ll.head.next = o
 		o.prev = ll.head
 	}
+
 	ll.lock.Unlock()
 }
 
@@ -97,6 +101,7 @@ func (ll *LinkedList) Head() *Node {
 
 func (ll *LinkedList) PickHeadData() any {
 	ll.lock.Lock()
+
 	if ll.head == nil {
 		ll.lock.Unlock()
 
@@ -110,8 +115,10 @@ func (ll *LinkedList) PickHeadData() any {
 	} else {
 		ll.head, ll.tail = nil, nil
 	}
+
 	ll.size--
 	ll.lock.Unlock()
+
 	data := n.data
 	releaseNode(n)
 
@@ -124,11 +131,13 @@ func (ll *LinkedList) Tail() *Node {
 
 func (ll *LinkedList) PickTailData() any {
 	ll.lock.Lock()
+
 	if ll.tail == nil {
 		ll.lock.Unlock()
 
 		return nil
 	}
+
 	n := ll.tail
 	if ll.tail.prev != nil {
 		ll.tail = ll.tail.prev
@@ -136,8 +145,10 @@ func (ll *LinkedList) PickTailData() any {
 	} else {
 		ll.head, ll.tail = nil, nil
 	}
+
 	ll.size -= 1
 	ll.lock.Unlock()
+
 	data := n.data
 	releaseNode(n)
 
@@ -146,6 +157,7 @@ func (ll *LinkedList) PickTailData() any {
 
 func (ll *LinkedList) Get(index int32) (n *Node) {
 	ll.lock.RLock()
+
 	if index < ll.size<<1 {
 		n = ll.head
 		for index > 0 {
@@ -159,6 +171,7 @@ func (ll *LinkedList) Get(index int32) (n *Node) {
 			index--
 		}
 	}
+
 	ll.lock.RUnlock()
 
 	return n
@@ -167,12 +180,15 @@ func (ll *LinkedList) Get(index int32) (n *Node) {
 func (ll *LinkedList) RemoveAt(index int32) {
 	n := ll.Get(index)
 	ll.lock.Lock()
+
 	if n.next != nil {
 		n.next.prev = n.prev
 	}
+
 	if n.prev != nil {
 		n.prev.next = n.next
 	}
+
 	ll.size--
 	ll.lock.Unlock()
 }

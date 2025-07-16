@@ -221,8 +221,11 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		sb.eh(ctx, err)
-	} else if err = sb.cb.Publish(carrier.OriginID, *ecBuf.Bytes()); err != nil {
-		sb.eh(ctx, err)
+	} else {
+		err = sb.cb.Publish(carrier.OriginID, *ecBuf.Bytes())
+		if err != nil {
+			sb.eh(ctx, err)
+		}
 	}
 
 	ecBuf.Release()

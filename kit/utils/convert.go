@@ -101,10 +101,12 @@ func UIntToStr(x uint) string {
 func StrTruncate(s string, maxSize int) string {
 	count := 0
 	builder := strings.Builder{}
+
 	for _, char := range s {
 		if maxSize <= 0 {
 			break
 		}
+
 		builder.WriteString(string(char))
 
 		count++
@@ -127,8 +129,10 @@ const defaultPrecision = 2
 
 func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	type medium any
+
 	m := new(medium)
-	if err := json.Unmarshal(bb, m); err != nil {
+	err := json.Unmarshal(bb, m)
+	if err != nil {
 		return err
 	}
 

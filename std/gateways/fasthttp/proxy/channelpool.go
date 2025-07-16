@@ -54,6 +54,7 @@ func NewChanPool(initialCap, maxCap int, factory Factory) (Pool, error) {
 
 			return nil, errFactoryNotHelp
 		}
+
 		pool.reverseProxyChan <- proxy
 	}
 
@@ -82,6 +83,7 @@ func (p *chanPool) Close() {
 	}
 
 	close(reverseProxyChan)
+
 	for proxy := range reverseProxyChan {
 		proxy.Close()
 	}
@@ -94,7 +96,6 @@ func (p *chanPool) Get(addr string) (*ReverseProxy, error) {
 	// if reverseProxyChan == nil {
 	// return nil, ErrClosed
 	// }
-
 	if p.reverseProxyChan == nil {
 		return nil, errClosed
 	}

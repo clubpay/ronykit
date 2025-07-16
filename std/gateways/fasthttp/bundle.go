@@ -78,6 +78,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 
 	r.httpRouter.HandleOPTIONS = true
 	r.httpRouter.GlobalOPTIONS = r.cors.handle
+
 	httpHandler := r.httpRouter.Handler
 	switch r.compress {
 	case CompressionLevelDefault:
@@ -205,6 +206,7 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 		c.ctx = ctx
 		c.rd = &rd
 		b.d.OnOpen(c)
+
 		if b.autoDecompress {
 			body, err := c.getBodyUncompressed()
 			if err != nil {
@@ -246,6 +248,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 				rpcOutFactory: b.rpcOutFactory,
 			}
 			b.d.OnOpen(wsc)
+
 			for {
 				_, in, err := conn.ReadMessage()
 				if err != nil {
@@ -255,6 +258,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 				inBuf := buf.FromBytes(in)
 				go b.wsHandlerExec(inBuf, wsc)
 			}
+
 			wsc.Close()
 			b.d.OnClose(wsc.id)
 		},
@@ -272,6 +276,7 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 	}
 
 	inputMsgContainer := b.rpcInFactory()
+
 	err := inputMsgContainer.Unmarshal(in)
 	if err != nil {
 		return noExecuteArg, err
@@ -286,6 +291,7 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 	switch v := msg.(type) {
 	case kit.MultipartFormMessage:
 		x := kit.RawMessage{}
+
 		err = inputMsgContainer.ExtractMessage(&x)
 		if err != nil {
 			return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
@@ -306,6 +312,7 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 	default:
 		err = inputMsgContainer.ExtractMessage(msg)
 	}
+
 	if err != nil {
 		return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)
 	}
@@ -367,6 +374,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	} else {
 		ln, err = net.Listen("tcp4", b.listen)
 	}
+
 	if err != nil {
 		return err
 	}
@@ -401,6 +409,7 @@ func getMultipartFormBoundary(contentType []byte) []byte {
 	if !bytes.HasPrefix(b, strMultipartFormData) {
 		return nil
 	}
+
 	b = b[len(strMultipartFormData):]
 	if len(b) == 0 || b[0] != ';' {
 		return nil
@@ -412,6 +421,7 @@ func getMultipartFormBoundary(contentType []byte) []byte {
 		for len(b) > n && b[n] == ' ' {
 			n++
 		}
+
 		b = b[n:]
 		if !bytes.HasPrefix(b, strBoundary) {
 			if n = bytes.IndexByte(b, ';'); n < 0 {
@@ -425,10 +435,12 @@ func getMultipartFormBoundary(contentType []byte) []byte {
 		if len(b) == 0 || b[0] != '=' {
 			return nil
 		}
+
 		b = b[1:]
 		if n = bytes.IndexByte(b, ';'); n >= 0 {
 			b = b[:n]
 		}
+
 		if len(b) > 1 && b[0] == '"' && b[len(b)-1] == '"' {
 			b = b[1 : len(b)-1]
 		}

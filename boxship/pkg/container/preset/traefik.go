@@ -23,6 +23,7 @@ func Traefik(set settings.Settings) (boxship.ContainerDesc, error) {
 	if err != nil {
 		return boxship.ContainerDesc{}, err
 	}
+
 	configDir, err := filepath.Abs(settings.GetConfigsDir(set, settings.TraefikContainerName))
 	if err != nil {
 		return boxship.ContainerDesc{}, err
@@ -32,6 +33,7 @@ func Traefik(set settings.Settings) (boxship.ContainerDesc, error) {
 	if err != nil {
 		return boxship.ContainerDesc{}, err
 	}
+
 	_ = f.Close()
 
 	return boxship.ContainerDesc{

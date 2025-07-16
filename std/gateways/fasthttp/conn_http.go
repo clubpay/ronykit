@@ -23,6 +23,7 @@ var _ kit.RESTConn = (*httpConn)(nil)
 
 func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
+
 	c.ctx.Request.Header.VisitAll(
 		func(key, value []byte) {
 			if stopCall {
@@ -36,6 +37,7 @@ func (c *httpConn) Walk(f func(key string, val string) bool) {
 
 func (c *httpConn) WalkQueryParams(f func(key string, val string) bool) {
 	stopCall := false
+
 	c.ctx.QueryArgs().VisitAll(
 		func(key, value []byte) {
 			if stopCall {
@@ -75,6 +77,7 @@ func (c *httpConn) Write(data []byte) (int, error) {
 
 func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
 	dataBuf := buf.GetCap(e.SizeHint())
+
 	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {
 		return err

@@ -112,6 +112,7 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 	}
 
 	var remoteIP string
+
 	remoteAddr := ctx.RemoteAddr().String()
 
 	if strings.ContainsRune(remoteAddr, ':') {

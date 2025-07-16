@@ -21,6 +21,7 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 	if t.PkgPath() == reflect.TypeOf(kit.RawMessage{}).PkgPath() {
 		return fmt.Sprintf("%s%s%s", prefix, "kit.", t.Name())
 	}
+
 	if t.String() == "json.RawMessage" {
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
 	}
@@ -87,6 +88,7 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 		if t.Elem().Kind() == reflect.Uint8 {
 			return fmt.Sprintf("%s%s%s", prefix, "string", postfix)
 		}
+
 		postfix += "[]"
 
 		return tsTypeRecursive(prefix, t.Elem(), postfix)
@@ -94,6 +96,7 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 		if t.Elem().Kind() == reflect.Uint8 {
 			return fmt.Sprintf("%s%s%s", prefix, "string", postfix)
 		}
+
 		postfix += fmt.Sprintf("[%d]", t.Len())
 
 		return tsTypeRecursive(prefix, t.Elem(), postfix)

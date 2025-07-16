@@ -68,11 +68,13 @@ var UpdateTemplateCmd = &cobra.Command{
 		}
 
 		r := genny.WetRunner(context.Background())
-		if err = r.With(g); err != nil {
+		err = r.With(g)
+		if err != nil {
 			return err
 		}
 
-		if err = r.Run(); err != nil {
+		err = r.Run()
+		if err != nil {
 			return err
 		}
 

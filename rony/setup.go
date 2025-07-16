@@ -91,6 +91,7 @@ func Setup[S State[A], A Action](
 		if reflect.TypeOf(state).Kind() != reflect.Pointer {
 			panic("state must be a pointer to a struct")
 		}
+
 		if reflect.TypeOf(state).Elem().Kind() != reflect.Struct {
 			panic("state must be a pointer to a struct")
 		}

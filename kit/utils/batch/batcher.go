@@ -47,11 +47,13 @@ func NewMulti[IN, OUT any](f Func[IN, OUT], opt ...Option) *MultiBatcher[IN, OUT
 
 func (fp *MultiBatcher[IN, OUT]) getBatcher(tagID string) *Batcher[IN, OUT] {
 	fp.poolMtx.Lock()
+
 	f := fp.pool[tagID]
 	if f == nil {
 		f = newBatcher[IN, OUT](fp.batcherFunc, tagID, fp.cfg)
 		fp.pool[tagID] = f
 	}
+
 	fp.poolMtx.Unlock()
 
 	return f
@@ -101,12 +103,14 @@ func newBatcher[IN, OUT any](f Func[IN, OUT], tagID string, cfg config) *Batcher
 
 func (f *Batcher[IN, OUT]) startWorker() {
 	f.spin.Lock()
+
 	if atomic.AddInt32(&f.readyWorkers, -1) < 0 {
 		atomic.AddInt32(&f.readyWorkers, 1)
 		f.spin.Unlock()
 
 		return
 	}
+
 	f.spin.Unlock()
 
 	w := &worker[IN, OUT]{
@@ -119,6 +123,7 @@ func (f *Batcher[IN, OUT]) startWorker() {
 
 func (f *Batcher[IN, OUT]) Enter(entry Entry[IN, OUT]) {
 	f.entryChan <- entry
+
 	f.startWorker()
 }
 
@@ -137,6 +142,7 @@ func (w *worker[IN, OUT]) run() {
 		el        = make([]Entry[IN, OUT], 0, w.bs)
 		startTime = utils.NanoTime()
 	)
+
 	for {
 		for {
 			select {
@@ -159,7 +165,9 @@ func (w *worker[IN, OUT]) run() {
 				continue
 			}
 		}
+
 		w.f.spin.Lock()
+
 		if len(el) == 0 {
 			// clean up and shutdown the worker
 			atomic.AddInt32(&w.f.readyWorkers, 1)
@@ -167,11 +175,14 @@ func (w *worker[IN, OUT]) run() {
 
 			break
 		}
+
 		w.f.spin.Unlock()
 		w.f.flusherFunc(w.f.tagID, el)
+
 		for idx := range el {
 			el[idx].done()
 		}
+
 		el = el[:0]
 	}
 }

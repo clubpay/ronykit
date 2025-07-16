@@ -63,10 +63,12 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 	if f := wCtx.cfg.preDial; f != nil {
 		f(d)
 	}
+
 	c, rsp, err := d.DialContext(ctx, wCtx.url, wCtx.cfg.upgradeHdr)
 	if err != nil {
 		return err
 	}
+
 	_ = rsp.Body.Close()
 
 	wCtx.setActivity()
@@ -78,6 +80,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 			return nil
 		},
 	)
+
 	err = c.SetCompressionLevel(wCtx.cfg.compressLevel)
 	if err != nil {
 		return err
@@ -89,6 +92,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 	// run receiver & watchdog in the background
 	wCtx.wg.Add(2)
+
 	go wCtx.receiver(c) //nolint:contextcheck
 	go wCtx.watchdog(c) //nolint:contextcheck
 
@@ -101,6 +105,7 @@ func (wCtx *WebsocketCtx) connect(ctx context.Context) error {
 
 func (wCtx *WebsocketCtx) Disconnect() {
 	wCtx.disconnectChan <- struct{}{}
+
 	wCtx.wg.Wait()
 }
 
@@ -125,6 +130,7 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 
 	t := time.NewTicker(wCtx.cfg.pingTime)
 	d := int64(wCtx.cfg.pingTime/time.Second) * 2
+
 	for {
 		select {
 		case <-wCtx.disconnectChan:
@@ -135,10 +141,12 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 		case <-t.C:
 			if utils.TimeUnix()-wCtx.getActivity() <= d {
 				wCtx.cMtx.Lock()
+
 				err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
 				if err != nil {
 					wCtx.l.Errorf("[Stub][Websocket] failed to send ping: %v", err)
 				}
+
 				wCtx.cMtx.Unlock()
 				wCtx.l.Debugf("[Stub][Websocket] websocket ping sent")
 
@@ -154,7 +162,9 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 
 			ctx, cf := context.WithTimeout(context.Background(), wCtx.cfg.dialTimeout)
 			err := wCtx.connect(ctx)
+
 			cf()
+
 			if err != nil {
 				wCtx.l.Errorf("[Stub][Websocket] failed to reconnect: %s", err)
 
@@ -182,6 +192,7 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 		wCtx.setActivity()
 
 		rpcIn := wCtx.cfg.rpcInFactory()
+
 		err = rpcIn.Unmarshal(p)
 		if err != nil {
 			wCtx.l.Debugf("received unexpected message: %v", err)
@@ -221,6 +232,7 @@ func (wCtx *WebsocketCtx) receiver(c *websocket.Conn) {
 			wCtx.l.Errorf("[Stub][Websocket] ratelimit reached, packet dropped")
 		case wCtx.cfg.rateLimitChan <- struct{}{}:
 			wCtx.cfg.handlersWG.Add(1)
+
 			go func(ctx context.Context, rpcIn kit.IncomingRPCContainer) {
 				defer wCtx.recoverPanic()
 
@@ -343,17 +355,22 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	}
 
 	outC := wCtx.cfg.rpcOutFactory()
+
 	if req.ID == "" {
 		req.ID = utils.RandomDigit(10)
 	}
+
 	outC.InjectMessage(req.ReqMsg)
 	outC.SetHdr(wCtx.cfg.predicateKey, req.Predicate)
+
 	if tp := wCtx.cfg.tracePropagator; tp != nil {
 		tp.Inject(ctx, containerTraceCarrier{out: outC})
 	}
+
 	for k, v := range req.ReqHdr {
 		outC.SetHdr(k, v)
 	}
+
 	outC.SetID(req.ID)
 
 	reqData, err := outC.Marshal()
@@ -366,6 +383,7 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	wCtx.writeBytes += uint64(len(reqData))
 	err = wCtx.c.WriteMessage(req.MessageType, reqData)
 	wCtx.cMtx.Unlock()
+
 	if err != nil {
 		return err
 	}
@@ -384,12 +402,14 @@ func (wCtx *WebsocketCtx) waitForMessage(
 	timeout time.Duration,
 ) {
 	resCh := make(chan kit.IncomingRPCContainer, 1)
+
 	wCtx.pendingMtx.Lock()
 	wCtx.pending[id] = resCh
 	wCtx.pendingMtx.Unlock()
 
 	if timeout > 0 {
 		var cancel context.CancelFunc
+
 		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}

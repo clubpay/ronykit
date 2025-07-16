@@ -26,6 +26,7 @@ func (bb *Bytes) Read(p []byte) (n int, err error) {
 	if bb.ri >= len(bb.b)-1 {
 		return 0, io.EOF
 	}
+
 	n = copy(p, bb.b[bb.ri:])
 	bb.ri += n
 
@@ -53,6 +54,7 @@ func (bb *Bytes) SetBytes(b *[]byte) {
 	if b == nil {
 		return
 	}
+
 	bb.b = *b
 }
 
@@ -194,6 +196,7 @@ func logarithmicRange(minSize, maxSize int, cb func(int)) {
 	if minSize == 0 {
 		minSize = 1
 	}
+
 	for n := ceilToPowerOfTwo(minSize); n <= maxSize; n <<= 1 {
 		cb(n)
 	}
@@ -205,9 +208,11 @@ func ceilToPowerOfTwo(n int) int {
 	if n&maxIntHeadBit != 0 && n > maxIntHeadBit {
 		panic("argument is too large")
 	}
+
 	if n <= 2 {
 		return n
 	}
+
 	n--
 	n = fillBits(n)
 	n++

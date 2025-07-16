@@ -30,6 +30,7 @@ func Sha512(in, out []byte) ([]byte, error) {
 
 		return out, err
 	}
+
 	out = h.Sum(out)
 	h.Reset()
 	poolSha512.Put(h)
@@ -40,6 +41,7 @@ func Sha512(in, out []byte) ([]byte, error) {
 // MustSha512 is Sha512 but it panics if any error happens
 func MustSha512(in, out []byte) []byte {
 	var err error
+
 	out, err = Sha512(in, out)
 	if err != nil {
 		panic(err)
@@ -63,6 +65,7 @@ func Sha256(in, out []byte) ([]byte, error) {
 
 		return out, err
 	}
+
 	out = h.Sum(out)
 	h.Reset()
 	poolSha256.Put(h)
@@ -72,6 +75,7 @@ func Sha256(in, out []byte) ([]byte, error) {
 
 func MustSha256(in, out []byte) []byte {
 	var err error
+
 	out, err = Sha256(in, out)
 	if err != nil {
 		panic(err)

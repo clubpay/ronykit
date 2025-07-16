@@ -39,11 +39,13 @@ func (ps *ParsedService) Messages() []ParsedMessage {
 
 func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract //nolint:prealloc
+
 	for idx, s := range c.RouteSelectors {
 		name := s.Name
 		if name == "" {
 			name = c.Name
 		}
+
 		pc := ParsedContract{
 			Index:      idx,
 			GroupName:  c.Name,
@@ -62,6 +64,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 				if strings.HasPrefix(p, ":") {
 					pc.PathParams = append(pc.PathParams, p[1:])
 				}
+
 				if strings.HasPrefix(p, "{") && strings.HasSuffix(p, "}") {
 					pc.PathParams = append(pc.PathParams, p[1:len(p)-1])
 				}
@@ -137,6 +140,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 
 	// if we are here, it means that mt is a struct
 	var fields []ParsedField
+
 	for i := 0; i < mt.NumField(); i++ {
 		f := mt.Field(i)
 		ft := f.Type
@@ -164,6 +168,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 
 func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedElement {
 	kind := parseKind(ft)
+
 	pe := ParsedElement{
 		Kind:  kind,
 		RKind: ft.Kind(),
@@ -187,6 +192,7 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 			if ft.Kind() == reflect.Pointer {
 				ft = ft.Elem()
 			}
+
 			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), MessageMeta{}, enc))
 		}
 	}
@@ -342,10 +348,12 @@ func (pm ParsedMessage) String() string {
 	sb := strings.Builder{}
 	sb.WriteString(pm.Name)
 	sb.WriteString("[")
+
 	for idx, p := range pm.Fields {
 		if idx > 0 {
 			sb.WriteString(", ")
 		}
+
 		sb.WriteString(p.Name)
 		sb.WriteString(":")
 		sb.WriteString(string(p.Element.Kind))
@@ -358,6 +366,7 @@ func (pm ParsedMessage) String() string {
 			sb.WriteString(":")
 		}
 	}
+
 	sb.WriteString("]")
 
 	return sb.String()
@@ -365,14 +374,17 @@ func (pm ParsedMessage) String() string {
 
 func (pm ParsedMessage) CodeField() string {
 	var fn string
+
 	for _, f := range pm.Fields {
 		x := strings.ToLower(f.GoName)
 		if f.Element.Type != "int" {
 			continue
 		}
+
 		if x == "code" {
 			return f.GoName
 		}
+
 		if strings.HasPrefix(f.GoName, "code") {
 			fn = f.GoName
 		}
@@ -383,14 +395,17 @@ func (pm ParsedMessage) CodeField() string {
 
 func (pm ParsedMessage) ItemField() string {
 	var fn string
+
 	for _, f := range pm.Fields {
 		x := strings.ToLower(f.GoName)
 		if f.Element.RType.Kind() != reflect.String {
 			continue
 		}
+
 		if x == "item" || x == "items" {
 			return f.GoName
 		}
+
 		if strings.HasPrefix(f.GoName, "item") {
 			fn = f.GoName
 		}
@@ -421,6 +436,7 @@ func (pm ParsedMessage) FieldByGoName(name string) *ParsedField {
 
 func (pm ParsedMessage) ExportedFields() []*ParsedField {
 	var fields []*ParsedField
+
 	for idx := range pm.Fields {
 		if pm.Fields[idx].Exported {
 			fields = append(fields, &pm.Fields[idx])
@@ -432,6 +448,7 @@ func (pm ParsedMessage) ExportedFields() []*ParsedField {
 
 func (pm ParsedMessage) TotalExportedFields() int {
 	var count int
+
 	for _, f := range pm.Fields {
 		if f.Exported {
 			count++
@@ -491,7 +508,6 @@ func Parse(desc ServiceDesc) ParsedService {
 func ParseService(svc *Service) ParsedService {
 	// reset the parsed map
 	// we need this map to prevent infinite recursion
-
 	pd := ParsedService{
 		Origin:  svc,
 		parsed:  make(map[string]*ParsedMessage),
@@ -569,6 +585,7 @@ type ParsedStructTag struct {
 
 func (pst ParsedStructTag) Tags(keys ...string) map[string]string {
 	tags := make(map[string]string)
+
 	for _, k := range keys {
 		v, ok := pst.Raw.Lookup(k)
 		if ok {
@@ -588,6 +605,7 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 		Raw:  tag,
 		Name: name,
 	}
+
 	nameTag := tag.Get(name)
 	if nameTag == "" {
 		return pst
@@ -610,6 +628,7 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 	}
 
 	swagTag := tag.Get(swagTagKey)
+
 	parts := strings.Split(swagTag, swagSep)
 	for _, p := range parts {
 		x := strings.TrimSpace(strings.ToLower(p))

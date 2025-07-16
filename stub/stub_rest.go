@@ -214,6 +214,7 @@ func (hc *RESTCtx) SetDeflateBodyWithLevel(body []byte, lvl RequestCompressionLe
 // any previous data that was set by SetBody method.
 func (hc *RESTCtx) SetMultipartForm(frm *multipart.Form, boundary string) *RESTCtx {
 	hc.req.ResetBody()
+
 	err := fasthttp.WriteMultipartForm(hc.req.BodyWriter(), frm, boundary)
 	if err != nil {
 		hc.err = WrapError(err)
@@ -255,6 +256,7 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	// prepare the request
 	hc.uri.SetQueryString(hc.args.String())
 	hc.req.SetURI(hc.uri)
+
 	for k, v := range hc.cfg.hdr {
 		hc.req.Header.Set(k, v)
 	}
@@ -274,6 +276,7 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	if hc.dumpReq != nil {
 		_, _ = hc.req.WriteTo(hc.dumpReq) //nolint:errcheck
 	}
+
 	if hc.dumpRes != nil {
 		_, _ = hc.res.WriteTo(hc.dumpRes) //nolint:errcheck
 	}
@@ -485,6 +488,7 @@ func (hc *RESTCtx) AutoRun(
 	}
 
 	ref := hc.r.Load(m, enc.Tag())
+
 	fields, ok := ref.ByTag(enc.Tag())
 	if !ok {
 		fields = ref.Obj()
@@ -519,10 +523,12 @@ func (hc *RESTCtx) AutoRun(
 				if v == nil {
 					return
 				}
+
 				vv := reflect.Indirect(reflect.ValueOf(v))
 				if !vv.IsValid() {
 					return
 				}
+
 				switch v := vv.Interface().(type) {
 				default:
 					hc.SetQuery(key, fmt.Sprintf("%v", v))

@@ -84,6 +84,7 @@ type SingleFlightCall[T any] func(fn func() (T, error)) (T, error)
 // The return value shared indicates whether v was given to multiple cal
 func SingleFlight[T any]() SingleFlightCall[T] {
 	mu := sync.Mutex{}
+
 	var (
 		c     *call
 		ready = true
@@ -93,6 +94,7 @@ func SingleFlight[T any]() SingleFlightCall[T] {
 
 	return func(fn func() (T, error)) (T, error) {
 		mu.Lock()
+
 		if ready {
 			ready = false
 			c = new(call)
@@ -105,6 +107,7 @@ func SingleFlight[T any]() SingleFlightCall[T] {
 		}
 
 		c.dups++
+
 		mu.Unlock()
 		c.wg.Wait()
 
@@ -139,7 +142,9 @@ func genDoCall[T any](mu *sync.Mutex, ready *bool) func(c *call, fn func() (T, e
 
 			mu.Lock()
 			defer mu.Unlock()
+
 			c.wg.Done()
+
 			*ready = true
 
 			if e, ok := c.err.(*panicError); ok {
@@ -147,6 +152,7 @@ func genDoCall[T any](mu *sync.Mutex, ready *bool) func(c *call, fn func() (T, e
 				// needs to ensure that this panic cannot be recovered.
 				if len(c.chans) > 0 {
 					go panic(e)
+
 					select {} // Keep this goroutine around so that it will appear in the crash dump.
 				} else {
 					panic(e)

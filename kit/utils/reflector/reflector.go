@@ -43,6 +43,7 @@ func Register(m kit.Message, tags ...string) {
 	if err != nil {
 		return
 	}
+
 	mType := mVal.Type()
 	registered[mType] = destruct(mType, tags...)
 }
@@ -112,13 +113,16 @@ func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 				if !ok {
 					continue
 				}
+
 				idx := strings.IndexFunc(v, unicode.IsPunct)
 				if idx != -1 {
 					v = v[:idx]
 				}
+
 				if r.byTag[t] == nil {
 					r.byTag[t] = Fields{}
 				}
+
 				if _, ok := r.byTag[t][v]; !ok {
 					r.byTag[t][v] = fi
 				}
@@ -131,13 +135,16 @@ func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 
 func (r *Reflector) Load(m kit.Message, tags ...string) *Reflected {
 	mType := reflect.Indirect(reflect.ValueOf(m)).Type()
+
 	cachedData := registered[mType]
 	if cachedData == nil {
 		r.cacheMtx.RLock()
 		cachedData = r.cache[mType]
 		r.cacheMtx.RUnlock()
+
 		if cachedData == nil {
 			cachedData = destruct(mType, tags...)
+
 			r.cacheMtx.Lock()
 			r.cache[mType] = cachedData
 			r.cacheMtx.Unlock()
@@ -157,6 +164,7 @@ func (r *Reflector) Get(m kit.Message, fieldName string) (any, error) {
 	if !ok {
 		return nil, ErrNoField
 	}
+
 	if f.PkgPath != "" {
 		return nil, ErrNotExported
 	}
@@ -169,10 +177,12 @@ func (r *Reflector) GetString(m kit.Message, fieldName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return "", ErrNoField
 	}
+
 	if f.PkgPath != "" {
 		return "", ErrNotExported
 	}
@@ -185,10 +195,12 @@ func (r *Reflector) GetInt(m kit.Message, fieldName string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	f, ok := e.Type().FieldByName(fieldName)
 	if !ok {
 		return 0, ErrNoField
 	}
+
 	if f.PkgPath != "" {
 		return 0, ErrNotExported
 	}

@@ -19,6 +19,7 @@ import (
 func CertTemplate(cn, org, cname string, dnsNames ...string) *x509.Certificate {
 	// generate a random serial number (a real cert authority would have some logic behind this)
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
 		panic(fmt.Errorf("failed to generate serial number: %v", err))
@@ -45,6 +46,7 @@ func CertTemplate(cn, org, cname string, dnsNames ...string) *x509.Certificate {
 func RootCATemplate(cn, org, cname string) *x509.Certificate {
 	// generate a random serial number (a real cert authority would have some logic behind this)
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
 		panic(err)
@@ -173,7 +175,9 @@ func GenerateCert(certTmpl, caTmpl *x509.Certificate, caKeyPath, keyPath, certPa
 	if err != nil {
 		panic(err)
 	}
+
 	b, _ := pem.Decode(caKeyBytes)
+
 	caPrivateKey, err := x509.ParseECPrivateKey(b.Bytes)
 	if err != nil {
 		panic(err)
@@ -201,6 +205,7 @@ func GenerateCert(certTmpl, caTmpl *x509.Certificate, caKeyPath, keyPath, certPa
 	if err != nil {
 		panic(err)
 	}
+
 	err = os.WriteFile(keyPath, keyPEM, os.ModePerm)
 	if err != nil {
 		panic(err)

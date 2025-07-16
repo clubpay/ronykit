@@ -52,12 +52,14 @@ func (cfg *Config) seedSQL() (err error) {
 	}
 
 	var db *sql.DB
+
 	switch strings.ToLower(cfg.SQL.Dialect) {
 	case "postgres", "pg":
 		db, err = sql.Open("postgres", dsn)
 		if err != nil {
 			return err
 		}
+
 		for {
 			err = db.Ping()
 			if err != nil {

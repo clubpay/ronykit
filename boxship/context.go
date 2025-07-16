@@ -66,6 +66,7 @@ func NewContext(cfg Config) (*Context, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	_, err = dockerC.Ping(context.TODO())
 	if err != nil {
 		return nil, err
@@ -175,7 +176,9 @@ func (buildCtx *Context) Consume(c *Container) {
 
 			ctx, cf := context.WithTimeout(context.Background(), ctxTimeout)
 			state, err := c.tc.State(ctx)
+
 			cf()
+
 			if err != nil || !state.Running {
 				buildCtx.log.Debugf("[%s] logger closed: (%v)", c.Name, err)
 
@@ -244,15 +247,18 @@ func (buildCtx *Context) BuildImage(name string) error {
 
 	if desc.BuildConfig.Git != nil {
 		buildCtx.log.Debugf("[%s] cloning git repo", desc.Name)
-		if err := buildCtx.cloneRepo(desc); err != nil {
+		err := buildCtx.cloneRepo(desc)
+		if err != nil {
 			return err
 		}
+
 		buildCtx.log.Debugf("[%s] git repo cloned", desc.Name)
 	}
 
 	if desc.BuildConfig.BeforeBuild != nil {
 		buildCtx.log.Debugf("[%s] executing pre-built actions", desc.Name)
-		if err := runAction(buildCtx.RepoDir(desc.Name), desc.BuildConfig.BeforeBuild.Exec...); err != nil {
+		err := runAction(buildCtx.RepoDir(desc.Name), desc.BuildConfig.BeforeBuild.Exec...)
+		if err != nil {
 			return err
 		}
 	}
@@ -276,10 +282,12 @@ func (buildCtx *Context) BuildImage(name string) error {
 	}
 
 	buildCtx.Log().Infof("[%s] building docker image", desc.Name)
+
 	resp, err := buildCtx.dockerC.ImageBuild(buildCtx.Context(), dockerBuildCtx, buildOptions)
 	if err != nil {
 		return err
 	}
+
 	buildCtx.Log().Infof("[%s] docker image build request sent", desc.Name)
 
 	termFd, isTerm := term.GetFdInfo(
@@ -303,6 +311,7 @@ func (buildCtx *Context) BuildImage(name string) error {
 
 	if desc.BuildConfig.AfterBuild != nil {
 		buildCtx.log.Debugf("[%s] executing after-built actions", desc.Name)
+
 		err = runAction(buildCtx.RepoDir(desc.Name), desc.BuildConfig.AfterBuild.Exec...)
 		if err != nil {
 			return err
@@ -333,6 +342,7 @@ func (buildCtx *Context) BuildNetwork(name string) error {
 		) {
 			continue
 		}
+
 		_, err = buildCtx.dockerC.NetworkCreate(
 			buildCtx.Context(), net, network.CreateOptions{
 				Driver: "bridge",
@@ -439,6 +449,7 @@ func (buildCtx *Context) deepClone(desc *ContainerDesc) error {
 	}
 
 	buildCtx.Log().Infof("[%s] git-repo cloned with git-hash: %s", desc.Name, headCommit.Hash.String())
+
 	err = wt.Pull(&git.PullOptions{
 		Auth: &http.BasicAuth{
 			Username: desc.BuildConfig.Git.User,
@@ -502,6 +513,7 @@ func (buildCtx *Context) PullImage(name string) error {
 	}
 
 	buildCtx.log.Debugf("[%s] pulling docker image", desc.Name)
+
 	resp, err := buildCtx.dockerC.ImagePull(buildCtx.Context(), desc.PullConfig.Image, image.PullOptions{
 		All:           false,
 		RegistryAuth:  desc.GetRegistryAuth(),
@@ -561,7 +573,8 @@ func (buildCtx *Context) buildContainer(desc *ContainerDesc) (*Container, error)
 	}
 
 	if desc.AutoCert {
-		if err := buildCtx.genAutoCert(desc); err != nil {
+		err := buildCtx.genAutoCert(desc)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -587,6 +600,7 @@ func (buildCtx *Context) buildContainer(desc *ContainerDesc) (*Container, error)
 
 		if v == "dynamic" {
 			v = buildCtx.VolumeDir(desc.Name)
+
 			err = os.MkdirAll(v, os.ModeDir|os.ModePerm)
 			if err != nil {
 				return nil, err
@@ -690,11 +704,13 @@ func (buildCtx *Context) loadEnv(desc *ContainerDesc, req *testcontainers.Contai
 		foundDynamicVars := regexEnvFileKeys.FindString(v)
 		if foundDynamicVars != "" {
 			x := strings.Trim(foundDynamicVars, "{}")
+
 			foundX := buildCtx.set.GetString(x)
 			if foundX != "" {
 				v = strings.ReplaceAll(v, foundDynamicVars, foundX)
 			}
 		}
+
 		req.Env[k] = v
 	}
 
@@ -703,6 +719,7 @@ func (buildCtx *Context) loadEnv(desc *ContainerDesc, req *testcontainers.Contai
 
 func (buildCtx *Context) setTraefik(desc *ContainerDesc) error {
 	entrypoint := settings.TraefikEndpoint
+
 	if desc.Labels == nil {
 		desc.Labels = map[string]string{}
 	}
@@ -720,6 +737,7 @@ func (buildCtx *Context) setTraefik(desc *ContainerDesc) error {
 		entrypoint = settings.TraefikSecureEndpoint
 		desc.Labels[tlsKey] = "true"
 	}
+
 	desc.Labels["traefik.enable"] = "true"
 	desc.Labels["traefik.docker.network"] = settings.TraefikNetwork
 	desc.Labels[entryPointKey] = entrypoint
@@ -735,10 +753,12 @@ func (buildCtx *Context) setTraefik(desc *ContainerDesc) error {
 	if err != nil {
 		return err
 	}
+
 	rootCA, err := x509.ParseCertificate(rootCATLS.Certificate[0])
 	if err != nil {
 		return err
 	}
+
 	certTmpl := utils.CertTemplate("TR", "Boxship", host)
 
 	_ = os.MkdirAll(buildCtx.ConfigsDir(settings.Traefik, "certs"), os.ModePerm)
@@ -755,6 +775,7 @@ func (buildCtx *Context) setTraefik(desc *ContainerDesc) error {
 	if err != nil {
 		return err
 	}
+
 	_, _ = f.WriteString("[[tls.certificates]]\n")
 	_, _ = f.WriteString(fmt.Sprintf("  keyFile = \"/config/certs/%s.key.pem\"\n", host))
 	_, _ = f.WriteString(fmt.Sprintf("  certFile = \"/config/certs/%s.cert.pem\"\n\n", host))
@@ -770,6 +791,7 @@ func (buildCtx *Context) genAutoCert(desc *ContainerDesc) error {
 	if err != nil {
 		return err
 	}
+
 	rootCA, err := x509.ParseCertificate(rootCATLS.Certificate[0])
 	if err != nil {
 		return err
@@ -782,6 +804,7 @@ func (buildCtx *Context) genAutoCert(desc *ContainerDesc) error {
 		buildCtx.CertsDir(desc.Hostname, "key.pem"),
 		buildCtx.CertsDir(desc.Hostname, "cert.pem"),
 	)
+
 	if desc.Volumes == nil {
 		desc.Volumes = map[string]string{}
 	}
@@ -813,6 +836,7 @@ func runAction(dir string, actions ...[]string) error {
 		cmd.Dir = dir
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
+
 		err := cmd.Run()
 		if err != nil {
 			return err

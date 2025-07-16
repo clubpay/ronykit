@@ -37,6 +37,7 @@ func (s *Server) initEdge() error {
 			docFS fs.FS
 			err   error
 		)
+
 		switch s.cfg.serveDocsUI {
 		default:
 			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
@@ -45,9 +46,11 @@ func (s *Server) initEdge() error {
 			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
 				SwaggerUI(s.cfg.allServiceDesc()...)
 		}
+
 		if err != nil {
 			return err
 		}
+
 		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", docFS))
 	}
 
@@ -64,7 +67,8 @@ func (s *Server) initEdge() error {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	if err := s.initEdge(); err != nil {
+	err := s.initEdge()
+	if err != nil {
 		return err
 	}
 
@@ -84,9 +88,11 @@ func (s *Server) PrintRoutes(w io.Writer) {
 // Run the service in blocking mode. If you need more control over the
 // lifecycle of the service, you can use the Start and Stop methods.
 func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
-	if err := s.Start(ctx); err != nil {
+	err := s.Start(ctx)
+	if err != nil {
 		return err
 	}
+
 	s.edge.PrintRoutesCompact(os.Stdout)
 	s.Stop(ctx, signals...)
 

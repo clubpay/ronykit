@@ -23,9 +23,11 @@ func NewInput(name string, services ...desc.ServiceDesc) *Input {
 		name:         name,
 		extraOptions: map[string]string{},
 	}
+
 	for _, serviceDesc := range services {
 		ps := desc.Parse(serviceDesc)
 		in.AddMessage(ps.Messages()...)
+
 		for _, c := range ps.Contracts {
 			in.addContract(c)
 		}
@@ -54,6 +56,7 @@ func (in *Input) addContract(c desc.ParsedContract) {
 			Responses:  c.Responses,
 		})
 	}
+
 	if c.Predicate != "" {
 		in.rpcMethods = append(in.rpcMethods, RPCMethod{
 			Name:      c.Name,
@@ -121,6 +124,7 @@ func (in *Input) GetOption(name string) string {
 
 func (in *Input) GetBuiltinPkgPaths() []string {
 	paths := map[string]struct{}{}
+
 	for _, m := range in.DTOs() {
 		for _, f := range m.Fields {
 			if f.Element != nil && isBuiltinPackage(f.Element.RType.PkgPath()) {
@@ -136,8 +140,8 @@ func isBuiltinPackage(pkgpath string) bool {
 	if pkgpath == "" {
 		return false // Or handle empty input as needed
 	}
-	pkg, err := build.Import(pkgpath, ".", build.FindOnly)
 
+	pkg, err := build.Import(pkgpath, ".", build.FindOnly)
 	if err == nil && pkg.Goroot {
 		return true
 	}

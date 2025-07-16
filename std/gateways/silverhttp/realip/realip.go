@@ -84,6 +84,7 @@ func IsPrivateAddress(address string) (bool, error) {
 // FromRequest returns client's real public IP address from http request headers.
 func FromRequest(ctx *silverlining.Context) string {
 	hdr := ctx.RequestHeaders()
+
 	xClientIP, _ := hdr.GetBytes(utils.S2B(xClientIPHeader))
 	if xClientIP != nil {
 		return string(xClientIP)
@@ -114,6 +115,7 @@ func FromRequest(ctx *silverlining.Context) string {
 	}
 
 	var remoteIP string
+
 	remoteAddr := ctx.RemoteAddr().String()
 
 	if strings.ContainsRune(remoteAddr, ':') {

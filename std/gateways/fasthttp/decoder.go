@@ -40,6 +40,7 @@ type DecoderFunc func(reqCtx *RequestCtx, data []byte) (kit.Message, error)
 
 func GetParams(ctx *RequestCtx) Params {
 	var params Params
+
 	ctx.VisitUserValues(
 		func(key []byte, value any) {
 			switch v := value.(type) {
@@ -110,10 +111,12 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	case kit.MultipartFormMessage:
 		return func(reqCtx *RequestCtx, data []byte) (kit.Message, error) {
 			v := kit.MultipartFormMessage{}
+
 			frm, err := reqCtx.Request.MultipartForm()
 			if err != nil {
 				return nil, err
 			}
+
 			v.SetForm(frm)
 
 			return v, nil
@@ -137,6 +140,7 @@ func reflectDecoder(enc kit.Encoding, factory kit.MessageFactoryFunc) DecoderFun
 	if rVal.Kind() != reflect.Ptr {
 		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
 	}
+
 	rVal = rVal.Elem()
 	if rVal.Kind() != reflect.Struct {
 		panic(fmt.Sprintf("%s must be a pointer to struct", rVal.String()))
@@ -172,11 +176,13 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 		if len(bag) > 64 {
 			bag = bag[:64]
 		}
+
 		for idx := range bag {
 			pc, ok := pcsMap[bag[idx].Key]
 			if !ok {
 				continue
 			}
+
 			x := bag[idx].Value
 			if x == "" {
 				continue
@@ -266,6 +272,7 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 
 func extractFields(rVal reflect.Value, tagKey string) []paramCaster {
 	var pcs []paramCaster
+
 	for i := 0; i < rVal.NumField(); i++ {
 		f := rVal.Type().Field(i)
 		if f.Type.Kind() == reflect.Struct && f.Anonymous {

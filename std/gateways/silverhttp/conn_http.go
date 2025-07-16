@@ -73,12 +73,14 @@ func (c *httpConn) Write(data []byte) (int, error) {
 
 func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
 	dataBuf := buf.GetCap(e.SizeHint())
+
 	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {
 		return err
 	}
 
 	resHdr := c.ctx.ResponseHeaders()
+
 	e.WalkHdr(
 		func(key string, val string) bool {
 			resHdr.Set(key, val)

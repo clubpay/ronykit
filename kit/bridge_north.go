@@ -58,6 +58,7 @@ type ConnDelegate interface {
 // northBridge is a container component that connects EdgeServer with a Gateway type Bundle.
 type northBridge struct {
 	ctxPool
+
 	wg *sync.WaitGroup
 	eh ErrHandlerFunc
 	c  map[string]Contract

@@ -15,6 +15,7 @@ func GenerateStub[S State[A], A Action](
 	opt ...SetupOption[S, A],
 ) error {
 	var s S
+
 	ctx := SetupContext[S, A]{
 		s:    utils.ValPtr(ToInitiateState(s)()),
 		name: name,

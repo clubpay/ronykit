@@ -51,6 +51,7 @@ func (e *simpleIncomingJSONRPC) Release() {
 	for k := range e.Header {
 		delete(e.Header, k)
 	}
+
 	e.Payload = e.Payload[:0]
 	e.ID = e.ID[:0]
 
@@ -97,6 +98,7 @@ func (e *simpleOutgoingJSONRPC) Release() {
 	for k := range e.Header {
 		delete(e.Header, k)
 	}
+
 	e.Payload = nil
 	e.ID = e.ID[:0]
 

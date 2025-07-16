@@ -35,7 +35,8 @@ func NewWSReverseProxyWith(options ...OptionWS) (*WSReverseProxy, error) {
 		opt.apply(option)
 	}
 
-	if err := option.validate(); err != nil {
+	err := option.validate()
+	if err != nil {
 		return nil, err
 	}
 
@@ -92,7 +93,8 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		errorF(w.option.logger, "websocketproxy: couldn't dial to remote backend(%s): %v", w.option.target.String(), err)
 
 		if respBackend != nil {
-			if err = wsCopyResponse(resp, respBackend); err != nil {
+			err = wsCopyResponse(resp, respBackend)
+			if err != nil {
 				errorF(w.option.logger, "websocketproxy: couldn't copy response: %v", err)
 			}
 		} else {
@@ -108,6 +110,7 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	// Also pass the header that we gathered from the Dial handshake.
 	err = upgrader.Upgrade(ctx, func(connPub *websocket.Conn) {
 		defer connPub.Close()
+
 		var (
 			errClient  = make(chan error, 1)
 			errBackend = make(chan error, 1)
@@ -173,6 +176,7 @@ func builtinForwardHeaderHandler(ctx *fasthttp.RequestCtx) (forwardHeader http.H
 		if prior := ctx.Request.Header.Peek("X-Forwarded-For"); string(prior) != "" {
 			clientIP = string(prior) + ", " + clientIP
 		}
+
 		forwardHeader.Set("X-Forwarded-For", clientIP)
 	}
 
@@ -180,6 +184,7 @@ func builtinForwardHeaderHandler(ctx *fasthttp.RequestCtx) (forwardHeader http.H
 	// be terminated on our site and because we're doing proxy adding this would
 	// be helpful for applications on the backend.
 	forwardHeader.Set("X-Forwarded-Proto", "http")
+
 	if ctx.IsTLS() {
 		forwardHeader.Set("X-Forwarded-Proto", "https")
 	}
@@ -195,6 +200,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 		if err != nil {
 			// true: handle websocket close error
 			errorF(logger, "replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+
 			if ce, ok := err.(*websocket.CloseError); ok {
 				msg = websocket.FormatCloseMessage(ce.Code, ce.Text)
 			} else {
@@ -203,7 +209,9 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 			}
 
 			errChan <- err
-			if err = dst.WriteMessage(websocket.CloseMessage, msg); err != nil {
+
+			err = dst.WriteMessage(websocket.CloseMessage, msg)
+			if err != nil {
 				errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, err=%v", err)
 			}
 
@@ -213,6 +221,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 		err = dst.WriteMessage(msgType, msg)
 		if err != nil {
 			errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+
 			errChan <- err
 
 			break
@@ -236,6 +245,7 @@ func wsCopyResponse(dst *fasthttp.Response, src *http.Response) error {
 	if _, err := io.Copy(buf, src.Body); err != nil {
 		return err
 	}
+
 	dst.SetBody(buf.Bytes())
 
 	return nil

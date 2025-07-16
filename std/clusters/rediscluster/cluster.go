@@ -31,8 +31,10 @@ var (
 )
 
 func New(name string, opts ...Option) (kit.Cluster, error) {
-	const defaultIdleTime = time.Minute * 10
-	const defaultGCPeriod = time.Minute
+	const (
+		defaultIdleTime = time.Minute * 10
+		defaultGCPeriod = time.Minute
+	)
 
 	c := &cluster{
 		prefix:   name,
@@ -90,6 +92,7 @@ func (c *cluster) Start(ctx context.Context) error { //nolint:contextcheck
 				if !ok {
 					return
 				}
+
 				c.d.OnMessage(utils.S2B(msg.Payload))
 			case <-runCtx.Done():
 				_ = c.ps.Close()
@@ -138,6 +141,7 @@ func (c *cluster) SetMulti(ctx context.Context, m map[string]string, ttl time.Du
 			ttl,
 		)
 	}
+
 	_, err := pipe.Exec(ctx)
 
 	return err
@@ -159,6 +163,7 @@ func (c *cluster) Get(ctx context.Context, key string) (string, error) {
 
 func (c *cluster) Scan(ctx context.Context, prefix string, cb func(string) bool) error {
 	const scanSize = 512
+
 	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), scanSize).Iterator()
 
 	for iter.Next(ctx) {
@@ -172,6 +177,7 @@ func (c *cluster) Scan(ctx context.Context, prefix string, cb func(string) bool)
 
 func (c *cluster) ScanWithValue(ctx context.Context, prefix string, cb func(string, string) bool) error {
 	const scanSize = 512
+
 	iter := c.rc.Scan(ctx, 0, fmt.Sprintf("%s:kv:%s*", c.prefix, prefix), scanSize).Iterator()
 
 	for iter.Next(ctx) {
@@ -179,6 +185,7 @@ func (c *cluster) ScanWithValue(ctx context.Context, prefix string, cb func(stri
 		if err != nil {
 			return err
 		}
+
 		if !cb(iter.Val(), v) {
 			return nil
 		}

@@ -15,6 +15,7 @@ const (
 
 func longestCommonPrefix(a, b string) int {
 	i := 0
+
 	maxV := min(len(a), len(b))
 	for i < maxV && a[i] == b[i] {
 		i++
@@ -35,6 +36,7 @@ func findWildcard(path string) (wildcard string, i int, valid bool) {
 
 		// Find end and check for invalid characters
 		valid = true
+
 		for end, c := range []byte(path[start+1:]) {
 			switch c {
 			case '/':
@@ -52,6 +54,7 @@ func findWildcard(path string) (wildcard string, i int, valid bool) {
 
 func countParams(path string) uint16 {
 	var n uint
+
 	for i := range []byte(path) {
 		switch path[i] {
 		case ':', '*':
@@ -162,6 +165,7 @@ walk:
 					if n.nType != catchAll {
 						pathSeg = strings.SplitN(pathSeg, "/", 2)[0]
 					}
+
 					prefix := fullPath[:strings.Index(fullPath, pathSeg)] + n.path
 					panic("'" + pathSeg +
 						"' in new path '" + fullPath +
@@ -200,6 +204,7 @@ walk:
 				n.incrementChildPrio(len(n.indices) - 1)
 				n = child
 			}
+
 			n.insertChild(path, fullPath, handle)
 
 			return
@@ -209,6 +214,7 @@ walk:
 		if n.handle != nil {
 			panic("a handle is already registered for path '" + fullPath + "'")
 		}
+
 		n.handle = handle
 
 		return
@@ -676,6 +682,7 @@ walk: // Outer loop for walking the tree
 		if path == "/" {
 			return ciPath
 		}
+
 		if len(path)+1 == npLen && n.path[len(path)] == '/' &&
 			strings.EqualFold(path[1:], n.path[1:len(path)]) && n.handle != nil {
 			return append(ciPath, n.path...)

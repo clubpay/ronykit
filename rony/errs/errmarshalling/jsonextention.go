@@ -50,10 +50,12 @@ const (
 // allowing calls to ReadObjectCB to read the fields of the object.
 func RegisterErrorMarshaller[T error](encoder func(T, *jsoniter.Stream), decoder func(T, *jsoniter.Iterator)) {
 	var zero T
+
 	typ := reflect2.TypeOf(zero)
 	if !typ.LikePtr() {
 		panic(fmt.Errorf("error type %s must be a pointer", typ.String()))
 	}
+
 	baseType := reflect2.TypeOfPtr(zero).Elem()
 	typeName := baseType.Type1().PkgPath() + "." + baseType.Type1().Name()
 

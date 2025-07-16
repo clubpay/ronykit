@@ -84,6 +84,7 @@ func HTTP(rawURL string, opts ...Option) (*RESTCtx, error) {
 
 	s := New(u.Host, opts...).REST()
 	s.SetPath(u.Path)
+
 	for k, v := range u.Query() {
 		for _, vv := range v {
 			s.AppendQuery(k, vv)

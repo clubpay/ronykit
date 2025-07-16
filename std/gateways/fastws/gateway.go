@@ -35,6 +35,7 @@ func (gw *gateway) getConnWrap(conn gnet.Conn) *wsConn {
 	if !ok {
 		return nil
 	}
+
 	gw.Lock()
 	cw := gw.conns[connID]
 	gw.Unlock()

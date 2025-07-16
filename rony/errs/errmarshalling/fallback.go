@@ -22,9 +22,11 @@ func init() {
 }
 
 func fallbackUnmarshal(itr *jsoniter.Iterator) error {
-	var errMsg string
-	var wrapped error
-	var wrappedList []error
+	var (
+		errMsg      string
+		wrapped     error
+		wrappedList []error
+	)
 
 	itr.ReadObjectCB(func(itr *jsoniter.Iterator, field string) bool {
 		switch field {

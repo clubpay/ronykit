@@ -108,6 +108,7 @@ func (testCtx *TestContext) run(conn Conn) error {
 	ctx.Next()
 
 	var out []*Envelope
+
 	switch conn := conn.(type) {
 	default:
 		panic("BUG! unknown conn type")

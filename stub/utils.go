@@ -22,15 +22,19 @@ func fillParams(pathPattern string, f func(key string) string) string {
 
 				continue
 			}
+
 			v := f(param.String())
 			if v != "" {
 				out.WriteString(v)
 			} else {
 				out.WriteString("_")
 			}
+
 			param.Reset()
+
 			readingMode = false
 		}
+
 		if !readingMode && r == '{' {
 			readingMode = true
 

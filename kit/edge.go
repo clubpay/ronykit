@@ -52,6 +52,7 @@ func NewServer(opts ...Option) *EdgeServer {
 			kv: map[string]any{},
 		},
 	}
+
 	cfg := &edgeConfig{
 		logger:     NOPLogger{},
 		errHandler: func(ctx *Context, err error) {},
@@ -65,6 +66,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	s.reusePort = cfg.reusePort
 	s.eh = cfg.errHandler
 	s.gh = cfg.globalHandlers
+
 	s.cd = cfg.connDelegate
 	if cfg.tracer != nil {
 		s.t = cfg.tracer
@@ -73,9 +75,11 @@ func NewServer(opts ...Option) *EdgeServer {
 	if cfg.cluster != nil {
 		s.registerCluster(utils.RandomID(32), cfg.cluster)
 	}
+
 	for _, gw := range cfg.gateways {
 		s.registerGateway(gw)
 	}
+
 	for _, svc := range cfg.services {
 		s.registerService(svc)
 	}
@@ -254,7 +258,8 @@ func (s *EdgeServer) startParent(_ context.Context) {
 			os.Environ(),
 			fmt.Sprintf("%s=%d", envForkChildKey, i+1),
 		)
-		if err := cmd.Start(); err != nil {
+		err := cmd.Start()
+		if err != nil {
 			panic(fmt.Errorf("failed to start a child prefork process, error: %w", err))
 		}
 
@@ -305,6 +310,7 @@ func (s *EdgeServer) startup(ctx context.Context) {
 				s.sb.registerContract(c.Input(), c.Output())
 			}
 		}
+
 		err := s.sb.Start(ctx)
 		if err != nil {
 			s.l.Errorf("[EdgeServer] got error on starting cluster: %v", err)
@@ -361,8 +367,10 @@ func (s *EdgeServer) shutdown(ctx context.Context) {
 	}
 
 	waitCh := make(chan struct{}, 1)
+
 	go func() {
 		s.wg.Wait()
+
 		waitCh <- struct{}{}
 	}()
 
@@ -448,6 +456,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 					},
 				)
 			}
+
 			if route := restRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
 					table.Row{
@@ -463,6 +472,7 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 
 		tw.AppendSeparator()
 	}
+
 	_, _ = w.Write(utils.S2B(tw.Render()))
 	_, _ = w.Write(utils.S2B("\n"))
 
@@ -531,6 +541,7 @@ func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
 					},
 				)
 			}
+
 			if route := restRoute(c.RouteSelector()); route != "" {
 				tw.AppendRow(
 					table.Row{
@@ -544,6 +555,7 @@ func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
 
 		tw.AppendSeparator()
 	}
+
 	_, _ = w.Write(utils.S2B(tw.Render()))
 	_, _ = w.Write(utils.S2B("\n"))
 
@@ -572,10 +584,12 @@ func getColor(s string) text.Color {
 
 func getHandlers(handlers ...HandlerFunc) string {
 	sb := strings.Builder{}
+
 	for idx, h := range handlers {
 		if idx != 0 {
 			sb.WriteString(", ")
 		}
+
 		sb.WriteString(getFuncName(h))
 	}
 

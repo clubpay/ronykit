@@ -64,6 +64,7 @@ func runContainers(names ...string) func(lc fx.Lifecycle, bCtx *boxship.Context)
 
 						return err
 					}
+
 					ids = append(ids, id)
 				}
 

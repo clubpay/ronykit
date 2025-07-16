@@ -146,6 +146,7 @@ func (r *Mux) Handle(method, path string, handle *RouteData) {
 	if method == "" {
 		panic("Method must not be empty")
 	}
+
 	if len(path) < 1 || path[0] != '/' {
 		panic("path must begin with '/' in path '" + path + "'")
 	}
@@ -192,6 +193,7 @@ func (r *Mux) Lookup(method, path string) (*RouteData, Params, bool) {
 
 			return nil, nil, tsr
 		}
+
 		if ps == nil {
 			return handle, nil, tsr
 		}

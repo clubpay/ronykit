@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
+	err := godotenv.Load()
+	if err != nil {
 		_ = godotenv.Load(".env.local")
 	}
 

@@ -91,6 +91,7 @@ func WithAddress(addresses ...string) Option {
 // WithBalancer generate balancer options
 func WithBalancer(addrWeights map[string]Weight) Option {
 	weights := make([]W, 0, len(addrWeights))
+
 	addresses := make([]string, 0, len(addrWeights))
 	for k, v := range addrWeights {
 		weights = append(weights, v)

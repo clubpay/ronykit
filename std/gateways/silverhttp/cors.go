@@ -47,17 +47,20 @@ func newCORS(cfg CORSConfig) *cors {
 	} else {
 		c.origins = cfg.AllowedOrigins
 	}
+
 	if len(cfg.AllowedHeaders) == 0 {
 		cfg.AllowedHeaders = []string{
 			"Origin", "Accept", "Content-Type",
 			"X-Requested-With", "X-Auth-Tokens", "Authorization",
 		}
 	}
+
 	if len(cfg.ExposedHeaders) == 0 {
 		c.exposedHeaders = "*"
 	} else {
 		c.exposedHeaders = strings.Join(cfg.ExposedHeaders, ",")
 	}
+
 	c.headers = strings.Join(cfg.AllowedHeaders, ",")
 	if len(cfg.AllowedMethods) == 0 {
 		c.methods = strings.Join([]string{
@@ -106,6 +109,7 @@ func (cors *cors) handle(rc *httpConn) {
 		)
 
 		resHdr.Set(HeaderAccessControlRequestMethod, cors.methods)
+
 		reqHeaders, _ := rc.ctx.RequestHeaders().GetBytes(utils.S2B(HeaderAccessControlRequestHeaders))
 		if len(reqHeaders) > 0 {
 			resHdr.Set(HeaderAccessControlAllowHeaders, utils.B2S(reqHeaders))

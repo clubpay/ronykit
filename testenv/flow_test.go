@@ -56,7 +56,7 @@ type Response struct {
 }
 
 var WFSelect = flow.NewWorkflow(
-	"Select",
+	"Select", "",
 	func(ctx *flow.WorkflowContext[string, Response, string], req string) (*Response, error) {
 		t1 := ctx.Timer(time.Second * 5)
 		t2 := ctx.Timer(time.Second * 10)
