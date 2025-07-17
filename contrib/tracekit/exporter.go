@@ -46,6 +46,7 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 		b   sdktrace.SpanExporter
 		err error
 	)
+
 	switch t.exp {
 	case expOTLP, expOTLPHttp:
 		b, err = otlphttpExporter(t.endpoint)
@@ -58,6 +59,7 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 	default:
 		return &t, nil
 	}
+
 	if err != nil {
 		return nil, err
 	}

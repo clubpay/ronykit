@@ -56,6 +56,7 @@ func withTracer(cfg *config) kit.Tracer {
 	if cfg.serviceName != "" {
 		t.kvs = append(t.kvs, semconv.ServiceNameKey.String(cfg.serviceName))
 	}
+
 	if cfg.env != "" {
 		t.kvs = append(t.kvs, semconv.DeploymentEnvironmentKey.String(cfg.env))
 	}
@@ -95,10 +96,12 @@ func (t *tracer) Handler() kit.HandlerFunc {
 
 		if t.dynTags != nil {
 			dynTags := t.dynTags(ctx.Limited())
+
 			kvs := make([]attribute.KeyValue, 0, len(dynTags))
 			for k, v := range dynTags {
 				kvs = append(kvs, attribute.String(k, v))
 			}
+
 			span.SetAttributes(kvs...)
 		}
 

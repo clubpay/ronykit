@@ -91,6 +91,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 
 func (sg *Generator) SwaggerUI(svc ...desc.ServiceDesc) (fs.FS, error) {
 	content := bytes.NewBuffer(nil)
+
 	err := sg.WriteSwagTo(content, svc...)
 	if err != nil {
 		return nil, err
@@ -106,6 +107,7 @@ func (sg *Generator) SwaggerUI(svc ...desc.ServiceDesc) (fs.FS, error) {
 
 func (sg *Generator) ReDocUI(svc ...desc.ServiceDesc) (fs.FS, error) {
 	content := bytes.NewBuffer(nil)
+
 	err := sg.WriteSwagTo(content, svc...)
 	if err != nil {
 		return nil, err
@@ -126,7 +128,9 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			Paths: map[string]spec.PathItem{},
 		}
 	}
+
 	var contentType string
+
 	switch c.Encoding {
 	case kit.JSON.Tag():
 		contentType = "application/json"
@@ -170,6 +174,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	}
 
 	possibleErrors := map[int][]string{}
+
 	for _, r := range c.Responses {
 		if !r.IsError() {
 			continue
@@ -191,11 +196,11 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		setSwagInput(op, c)
 	case kit.MultipartForm.Tag():
 		setSwagInputFormData(op, c)
-
 	}
 
 	restPath := fixPathForSwag(c.Path)
 	pathItem := swag.Paths.Paths[restPath]
+
 	switch strings.ToUpper(c.Method) {
 	case http.MethodGet:
 		pathItem.Get = op
@@ -210,6 +215,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 				),
 			)
 		}
+
 		pathItem.Post = op
 	case http.MethodPut:
 		if !c.Request.Message.IsSpecial() {
@@ -220,6 +226,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 				),
 			)
 		}
+
 		pathItem.Put = op
 	case http.MethodPatch:
 		if !c.Request.Message.IsSpecial() {
@@ -230,8 +237,10 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 				),
 			)
 		}
+
 		pathItem.Patch = op
 	}
+
 	swag.Paths.Paths[restPath] = pathItem
 }
 
@@ -241,6 +250,7 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 	}
 
 	var fields []desc.ParsedField
+
 	for _, f := range c.Request.Message.Fields {
 		if !f.Exported {
 			continue
@@ -252,6 +262,7 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 			fields = append(fields, f)
 		}
 	}
+
 	for _, field := range fields {
 		if !field.Exported {
 			continue
@@ -327,6 +338,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 	}
 
 	idx := 0
+
 	for fields.Back() != nil {
 		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
 
@@ -387,7 +399,9 @@ func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
 	msg := p.Element.Message
 	kind := p.Element.Kind
 	elem := p.Element
+
 Loop:
+
 	switch kind {
 	default:
 	case desc.Object:
@@ -429,6 +443,7 @@ Loop:
 				if len(schema.Description) > 0 {
 					spacer = " "
 				}
+
 				schema.Description = fmt.Sprintf("[Optional]%s%s", spacer, schema.Description)
 
 				return schema
@@ -443,6 +458,7 @@ Loop:
 				if len(schema.Description) > 0 {
 					spacer = " "
 				}
+
 				schema.Description = fmt.Sprintf("[Deprecated]%s%s", spacer, schema.Description)
 
 				return schema
@@ -519,13 +535,16 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 				break
 			}
 		}
+
 		itm.Variables = append(itm.Variables, v)
 	}
 
 	var queryParams []*postman.QueryParam
+
 	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == http.MethodGet {
 		for _, p := range c.Request.Message.Fields {
 			found := false
+
 			for _, pp := range c.PathParams {
 				if p.Name == pp {
 					found = true
@@ -545,6 +564,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 			}
 		}
 	}
+
 	itm.Request = &postman.Request{
 		URL: &postman.URL{
 			Raw: fmt.Sprintf("{{baseURL}}%s", c.Path),
@@ -635,6 +655,7 @@ func fixPathForSwag(path string) string {
 		if idx > 0 {
 			sb.WriteRune('/')
 		}
+
 		if strings.HasPrefix(p, ":") {
 			sb.WriteRune('{')
 			sb.WriteString(p[1:])

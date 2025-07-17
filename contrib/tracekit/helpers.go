@@ -39,6 +39,7 @@ func Error(span trace.Span, err error) trace.Span {
 	if err == nil {
 		return span
 	}
+
 	span.SetStatus(codes.Error, err.Error())
 
 	return span
