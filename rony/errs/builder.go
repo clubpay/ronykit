@@ -91,6 +91,7 @@ func (b *Builder) DetailsX(det ErrDetails) *Builder {
 // Cause sets the underlying error cause.
 func (b *Builder) Cause(err error) *Builder {
 	b.err = err
+	err = Convert(err)
 
 	e := &Error{}
 	if errors.As(err, &e) {
