@@ -1,7 +1,7 @@
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
-github.com/clubpay/ronykit/kit v0.20.0 h1:wU/A7xIv0EM+DqtX44vPNyvWTQRrbMZtwVywCPFhNRs=
-github.com/clubpay/ronykit/kit v0.20.0/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
+github.com/clubpay/ronykit/kit v0.20.1 h1:e2XEMCdeTlbV6nXFulY+RmXmkNJNaVg/J2RlHcgRXHs=
+github.com/clubpay/ronykit/kit v0.20.1/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fasthttp/websocket v1.5.12 h1:e4RGPpWW2HTbL3zV0Y/t7g0ub294LkiuXXUuTOUInlE=
