@@ -70,8 +70,14 @@ type ScheduleCalendarSpec struct {
 	DayOfMonth int // between 1 and 31 inclusive
 }
 
+type ScheduleIntervalSpec struct {
+	Period time.Duration
+	Offset time.Duration
+}
+
 type ScheduleSpec struct {
 	Calendars []ScheduleCalendarSpec
+	Intervals []ScheduleIntervalSpec
 	StartTime time.Time
 	EndTime   time.Time
 	Jitter    time.Duration
@@ -115,9 +121,19 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 		},
 		sc.Calendars,
 	)
+	intervalSpec := utils.Map(
+		func(src ScheduleIntervalSpec) client.ScheduleIntervalSpec {
+			return client.ScheduleIntervalSpec{
+				Every:  src.Period,
+				Offset: src.Offset,
+			}
+		},
+		sc.Intervals,
+	)
 
 	out := client.ScheduleSpec{
 		Calendars:    calSpec,
+		Intervals:    intervalSpec,
 		StartAt:      sc.StartTime,
 		EndAt:        sc.EndTime,
 		Jitter:       sc.Jitter,
