@@ -143,6 +143,10 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 	return out
 }
 
+func (sdk *SDK) ScheduleClient() client.ScheduleClient {
+	return sdk.b.cli.ScheduleClient()
+}
+
 func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (ScheduleHandle, error) {
 	opt := client.ScheduleOptions{
 		ID:   req.ID,

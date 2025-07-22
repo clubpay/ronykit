@@ -56,7 +56,9 @@ func (a aesCodec) Decode(payloads []*common.Payload) ([]*common.Payload, error) 
 			return func() error {
 				d, err := a.s.Decrypt(payloads[idx].Data, nil)
 				if err != nil {
-					return err
+					output[idx] = payloads[idx]
+
+					return nil
 				}
 				p := &common.Payload{
 					Data:     d,
@@ -82,5 +84,3 @@ func (a aesCodec) Decode(payloads []*common.Payload) ([]*common.Payload, error) 
 
 	return output, nil
 }
-
-type codeServer struct{}
