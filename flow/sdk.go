@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/clubpay/ronykit/boxship/pkg/log"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/log"
 )
 
 type SDKConfig struct {
@@ -79,7 +79,7 @@ func (sdk *SDK) migrateSchedulers() {
 		},
 	)
 	if err != nil {
-		sdk.l.Warnf("got error on migrating schedulers: %v", err)
+		sdk.l.Warn("got error on migrating schedulers: %v", err)
 	}
 }
 
