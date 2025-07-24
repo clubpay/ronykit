@@ -114,6 +114,10 @@ func (sdk *SDK) InitWithState(state any) {
 	}
 }
 
+func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Duration) error {
+	return sdk.b.UpdateWorkflowRetentionPeriod(ctx, d)
+}
+
 var _StateCtxKey = struct{}{}
 
 func GetState[STATE any](ctx Context) STATE {
