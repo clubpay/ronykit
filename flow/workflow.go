@@ -19,11 +19,11 @@ import (
 type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
 
 type Workflow[REQ, RES, STATE any] struct {
-	sdk   Backend
-	group string
-	Name  string
-	State STATE
-	Fn    WorkflowFunc[REQ, RES, STATE]
+	backend Backend
+	group   string
+	Name    string
+	State   STATE
+	Fn      WorkflowFunc[REQ, RES, STATE]
 }
 
 func NewWorkflow[REQ, RES, STATE any](
@@ -51,7 +51,7 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 	return w
 }
 
-func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
+func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDefaultBackend bool) {
 	if b.Group() != w.group {
 		return
 	}
@@ -70,11 +70,13 @@ func (w *Workflow[REQ, RES, STATE]) initWithState(b Backend, s STATE) {
 		},
 	)
 
-	w.sdk = b
+	if setDefaultBackend {
+		w.backend = b
+	}
 }
 
-func (w *Workflow[REQ, RES, STATE]) initWithStateAny(b Backend, s any) {
-	w.initWithState(b, s.(STATE))
+func (w *Workflow[REQ, RES, STATE]) registerWithStateAny(b Backend, s any, setDefaultBackend bool) {
+	w.registerWithState(b, s.(STATE), setDefaultBackend)
 }
 
 func (w *Workflow[REQ, RES, STATE]) stateType() reflect.Type {
@@ -187,11 +189,11 @@ func (x WorkflowRun[T]) Get(ctx context.Context) (*T, error) {
 func (w *Workflow[REQ, RES, STATE]) Execute(
 	ctx context.Context, req REQ, opts ExecuteWorkflowOptions,
 ) (*WorkflowRun[RES], error) {
-	run, err := w.sdk.ExecuteWorkflow(
+	run, err := w.backend.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:                       opts.ID,
-			TaskQueue:                w.sdk.TaskQueue(),
+			TaskQueue:                w.backend.TaskQueue(),
 			WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 			WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 			WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,
@@ -301,13 +303,13 @@ type SearchWorkflowResponse struct {
 
 func (sdk *SDK) SearchWorkflows(ctx context.Context, req SearchWorkflowRequest) (*SearchWorkflowResponse, error) {
 	cliReq := &workflowservice.ListWorkflowExecutionsRequest{
-		Namespace:     sdk.namespace,
+		Namespace:     sdk.b.Namespace(),
 		PageSize:      100,
 		NextPageToken: req.NextPageToken,
 		Query:         req.Query,
 	}
 
-	cliRes, err := sdk.b.cli.ListWorkflow(ctx, cliReq)
+	cliRes, err := sdk.b.Client().ListWorkflow(ctx, cliReq)
 	if err != nil {
 		return nil, err
 	}
@@ -330,10 +332,10 @@ type CountWorkflowResponse struct {
 }
 
 func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*CountWorkflowResponse, error) {
-	res, err := sdk.b.cli.CountWorkflow(
+	res, err := sdk.b.Client().CountWorkflow(
 		ctx,
 		&workflowservice.CountWorkflowExecutionsRequest{
-			Namespace: sdk.namespace,
+			Namespace: sdk.b.Namespace(),
 			Query:     req.Query + " GROUP BY ExecutionStatus",
 		},
 	)
@@ -375,7 +377,7 @@ func (sdk *SDK) GetWorkflowHistory(
 	if req.OnlyLastOne {
 		filterType = enumspb.HISTORY_EVENT_FILTER_TYPE_CLOSE_EVENT
 	}
-	iter := sdk.b.cli.GetWorkflowHistory(
+	iter := sdk.b.Client().GetWorkflowHistory(
 		ctx,
 		req.WorkflowID,
 		req.RunID,
@@ -441,7 +443,7 @@ type CancelWorkflowResponse struct {
 }
 
 func (sdk *SDK) CancelWorkflow(ctx context.Context, req CancelWorkflowRequest) (*CancelWorkflowResponse, error) {
-	err := sdk.b.cli.CancelWorkflow(ctx, req.WorkflowID, req.RunID)
+	err := sdk.b.Client().CancelWorkflow(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
 		var notFoundErr *serviceerror.NotFound
 		if errors.As(err, &notFoundErr) {
@@ -464,7 +466,7 @@ type GetWorkflowRequest struct {
 }
 
 func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*WorkflowExecution, error) {
-	wr := sdk.b.cli.GetWorkflow(ctx, req.WorkflowID, req.RunID)
+	wr := sdk.b.Client().GetWorkflow(ctx, req.WorkflowID, req.RunID)
 	var e WorkflowExecution
 	err := wr.Get(ctx, &e)
 	if err != nil {
@@ -475,5 +477,5 @@ func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*Workf
 }
 
 func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
-	return sdk.b.cli.SignalWorkflow(ctx, workflowID, "", signalName, arg)
+	return sdk.b.Client().SignalWorkflow(ctx, workflowID, "", signalName, arg)
 }

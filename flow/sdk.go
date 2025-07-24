@@ -2,195 +2,89 @@ package flow
 
 import (
 	"context"
-	"crypto/tls"
 	"reflect"
 	"time"
 
-	"github.com/nexus-rpc/sdk-go/nexus"
-	"go.temporal.io/api/namespace/v1"
-	"go.temporal.io/api/workflowservice/v1"
-	"go.temporal.io/sdk/activity"
+	"github.com/clubpay/ronykit/boxship/pkg/log"
 	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/converter"
-	"go.temporal.io/sdk/log"
-	"go.temporal.io/sdk/worker"
-	"go.temporal.io/sdk/workflow"
-	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-type Backend interface {
-	worker.Registry
-	ExecuteWorkflow(
-		ctx context.Context,
-		options client.StartWorkflowOptions,
-		workflow any,
-		args ...any,
-	) (client.WorkflowRun, error)
-	TaskQueue() string
-	Group() string
-}
-
-type Config struct {
-	HostPort      string
-	Secure        bool
-	Namespace     string
-	Group         string
-	TaskQueue     string
-	DataConverter converter.DataConverter
-	Credentials   client.Credentials
-	Logger        log.Logger
-}
-
-var _ Backend = (*realBackend)(nil)
-
-type realBackend struct {
-	cli   client.Client
-	w     worker.Worker
-	ns    string
-	group string
-	taskQ string
-}
-
-func (r realBackend) RegisterWorkflow(w any) {
-	r.w.RegisterWorkflow(w)
-}
-
-func (r realBackend) RegisterWorkflowWithOptions(w any, options workflow.RegisterOptions) {
-	r.w.RegisterWorkflowWithOptions(w, options)
-}
-func (r realBackend) RegisterDynamicWorkflow(w any, options workflow.DynamicRegisterOptions) {
-	r.w.RegisterDynamicWorkflow(w, options)
-}
-
-func (r realBackend) RegisterActivity(a any) {
-	r.w.RegisterActivity(a)
-}
-
-func (r realBackend) RegisterActivityWithOptions(a any, options activity.RegisterOptions) {
-	r.w.RegisterActivityWithOptions(a, options)
-}
-
-func (r realBackend) RegisterDynamicActivity(a any, options activity.DynamicRegisterOptions) {
-	r.w.RegisterDynamicActivity(a, options)
-}
-
-func (r realBackend) RegisterNexusService(service *nexus.Service) {
-	r.w.RegisterNexusService(service)
-}
-
-func (r realBackend) ExecuteWorkflow(
-	ctx context.Context, options client.StartWorkflowOptions, workflow any, args ...any,
-) (client.WorkflowRun, error) {
-	return r.cli.ExecuteWorkflow(ctx, options, workflow, args...)
-}
-
-func (r realBackend) TaskQueue() string {
-	return r.taskQ
-}
-
-func (r realBackend) Namespace() string {
-	return r.ns
-}
-
-func (r realBackend) Group() string {
-	return r.group
+type SDKConfig struct {
+	Logger         log.Logger
+	DefaultBackend Backend
+	// DeprecatingBackend should be only set when we are moving from one Temporal cluster
+	// to a new Temporal cluster. This way SDK makes sure the old workflows are running
+	// until they are all finished. Also, it moves all the schedulers into the new cluster.
+	DeprecatingBackend Backend
 }
 
 type SDK struct {
-	l     log.Logger
-	nsCli client.NamespaceClient
-	dc    converter.DataConverter
-	creds client.Credentials
-	b     realBackend
-
-	namespace string
-	hostport  string
-	secure    bool
+	l   log.Logger
+	b   Backend
+	old Backend
 }
 
-func NewSDK(cfg Config) (*SDK, error) {
+func NewSDK(cfg SDKConfig) *SDK {
 	sdk := &SDK{
-		l: cfg.Logger,
-		b: realBackend{
-			taskQ: cfg.TaskQueue,
-			ns:    cfg.Namespace,
-			group: cfg.Group,
-		},
-		dc:        cfg.DataConverter,
-		creds:     cfg.Credentials,
-		namespace: cfg.Namespace,
-		hostport:  cfg.HostPort,
-		secure:    cfg.Secure,
+		l:   cfg.Logger,
+		b:   cfg.DefaultBackend,
+		old: cfg.DeprecatingBackend,
 	}
 
-	err := sdk.invoke()
-	if err != nil {
-		return nil, err
-	}
-
-	return sdk, nil
+	return sdk
 }
 
-func (sdk *SDK) invoke() error {
-	connOpt := client.ConnectionOptions{}
-	if sdk.secure {
-		connOpt.TLS = &tls.Config{}
-	}
-
-	var err error
-	sdk.nsCli, err = client.NewNamespaceClient(client.Options{
-		HostPort:          sdk.hostport,
-		ConnectionOptions: connOpt,
-	})
+func (sdk *SDK) Start() error {
+	err := sdk.b.Start()
 	if err != nil {
 		return err
 	}
 
-	if _, err = sdk.nsCli.Describe(context.Background(), sdk.namespace); err != nil {
-		_ = sdk.nsCli.Register(
-			context.Background(),
-			&workflowservice.RegisterNamespaceRequest{
-				Namespace:                        sdk.namespace,
-				WorkflowExecutionRetentionPeriod: &durationpb.Duration{Seconds: 72 * 3600},
-			},
-		)
-	}
+	if sdk.old != nil {
+		err = sdk.old.Start()
+		if err != nil {
+			return err
+		}
 
-	clientOpt := client.Options{
-		HostPort:          sdk.hostport,
-		ConnectionOptions: connOpt,
-		Namespace:         sdk.namespace,
-		DataConverter:     sdk.dc,
-		Credentials:       sdk.creds,
-		Logger:            sdk.l,
+		go sdk.migrateSchedulers()
 	}
-
-	sdk.b.cli, err = client.NewLazyClient(clientOpt)
-	if err != nil {
-		return err
-	}
-
-	sdk.b.w = worker.New(
-		sdk.b.cli,
-		sdk.b.taskQ,
-		worker.Options{
-			DisableRegistrationAliasing: true,
-		},
-	)
 
 	return nil
 }
 
-func (sdk *SDK) Start() error {
-	return sdk.b.w.Start()
+func (sdk *SDK) Stop() {
+	sdk.b.Stop()
+	if sdk.old != nil {
+		sdk.old.Stop()
+	}
 }
 
-func (sdk *SDK) Stop() {
-	sdk.b.w.Stop()
+func (sdk *SDK) migrateSchedulers() {
+	if sdk.old == nil {
+		return
+	}
+
+	m := NewSchedulerMigrator(sdk.old, sdk.b)
+	err := m.Migrate(
+		context.Background(),
+		true,
+		func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult {
+			if len(sch.NextActionTimes) > 0 && sch.NextActionTimes[0].Sub(time.Now()) < time.Minute {
+				return MigrateCheckResult{
+					Ignore: true,
+				}
+			}
+
+			return MigrateCheckResult{}
+		},
+	)
+	if err != nil {
+		sdk.l.Warnf("got error on migrating schedulers: %v", err)
+	}
 }
 
 func (sdk *SDK) TaskQueue() string {
-	return sdk.b.taskQ
+	return sdk.b.TaskQueue()
 }
 
 func (sdk *SDK) Init() {
@@ -201,42 +95,23 @@ func (sdk *SDK) InitWithState(state any) {
 	for stateType, w := range registeredWorkflows {
 		if stateType == reflect.TypeOf(state) {
 			for _, t := range w {
-				t.initWithStateAny(&sdk.b, state)
+				t.registerWithStateAny(sdk.b, state, true)
+				if sdk.old != nil {
+					t.registerWithStateAny(sdk.old, state, false)
+				}
 			}
 		}
 	}
 	for stateType, w := range registeredActivities {
 		if stateType == reflect.TypeOf(state) {
 			for _, t := range w {
-				t.initWithStateAny(sdk.b, state)
+				t.registerWithStateAny(sdk.b, state, true)
+				if sdk.old != nil {
+					t.registerWithStateAny(sdk.old, state, false)
+				}
 			}
 		}
 	}
-}
-
-type UpdateNamespaceRequest struct {
-	Description                      *string
-	WorkflowExecutionRetentionPeriod *time.Duration
-}
-
-func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Duration) error {
-	res, err := sdk.nsCli.Describe(ctx, sdk.namespace)
-	if err != nil {
-		return err
-	}
-
-	if res.Config == nil {
-		res.Config = &namespace.NamespaceConfig{}
-	}
-	res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
-
-	return sdk.nsCli.Update(
-		ctx,
-		&workflowservice.UpdateNamespaceRequest{
-			Namespace: sdk.namespace,
-			Config:    res.Config,
-		},
-	)
 }
 
 var _StateCtxKey = struct{}{}
@@ -246,7 +121,7 @@ func GetState[STATE any](ctx Context) STATE {
 }
 
 type temporalEntityT interface {
-	initWithStateAny(sdk Backend, state any)
+	registerWithStateAny(sdk Backend, state any, setDefaultBackend bool)
 }
 
 var (

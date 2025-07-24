@@ -18,7 +18,7 @@ func TestFlow(t *testing.T) {
 		_, _ = c.Println(temporalHostPort)
 		_, _ = c.Println(TemporalUI)
 		sdk, err := flow.NewSDK(
-			flow.Config{
+			flow.BackendConfig{
 				TaskQueue: "kitTest",
 				Namespace: "kitTest",
 				HostPort:  temporalHostPort,

@@ -39,21 +39,20 @@ func ToActivity[STATE, REQ, RES any](name, group string, rawFn activityRawFunc[R
 }
 
 type Activity[REQ, RES, STATE any] struct {
-	sdk   Backend
-	group string
+	backend Backend
+	group   string
 
 	Name  string
 	State STATE
 	Fn    ActivityFunc[REQ, RES, STATE]
 }
 
-func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
-	if sdk.Group() != a.group {
+func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, setDefaultBackend bool) {
+	if b.Group() != a.group {
 		return
 	}
 
-	a.sdk = sdk
-	sdk.RegisterActivityWithOptions(
+	b.RegisterActivityWithOptions(
 		func(ctx context.Context, req REQ) (*RES, error) {
 			fCtx := &ActivityContext[REQ, RES, STATE]{
 				ctx: ctx,
@@ -67,10 +66,14 @@ func (a *Activity[REQ, RES, STATE]) initWithState(sdk Backend, state STATE) {
 			SkipInvalidStructFunctions: true,
 		},
 	)
+
+	if setDefaultBackend {
+		a.backend = b
+	}
 }
 
-func (a *Activity[REQ, RES, STATE]) initWithStateAny(sdk Backend, s any) {
-	a.initWithState(sdk, s.(STATE))
+func (a *Activity[REQ, RES, STATE]) registerWithStateAny(b Backend, s any, setDefaultBackend bool) {
+	a.registerWithState(b, s.(STATE), setDefaultBackend)
 }
 
 func (a *Activity[REQ, RES, STATE]) stateType() reflect.Type {
@@ -114,7 +117,7 @@ func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteAc
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
-			TaskQueue:              a.sdk.TaskQueue(),
+			TaskQueue:              a.backend.TaskQueue(),
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,

@@ -143,10 +143,6 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 	return out
 }
 
-func (sdk *SDK) ScheduleClient() client.ScheduleClient {
-	return sdk.b.cli.ScheduleClient()
-}
-
 func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (ScheduleHandle, error) {
 	opt := client.ScheduleOptions{
 		ID:   req.ID,
@@ -154,7 +150,7 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 		Action: &client.ScheduleWorkflowAction{
 			Workflow:                 req.Action.WorkflowName,
 			Args:                     []any{req.Action.WorkflowArg},
-			TaskQueue:                sdk.b.taskQ,
+			TaskQueue:                sdk.b.TaskQueue(),
 			WorkflowExecutionTimeout: req.ExecutionTimeout,
 			WorkflowRunTimeout:       req.RunTimeout,
 			TypedSearchAttributes:    req.Action.SearchAttributes,
@@ -166,15 +162,15 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 		TypedSearchAttributes: req.SearchAttributes,
 	}
 
-	return sdk.b.cli.ScheduleClient().Create(ctx, opt)
+	return sdk.b.ScheduleClient().Create(ctx, opt)
 }
 
 func (sdk *SDK) GetSchedule(ctx context.Context, id string) ScheduleHandle {
-	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id)
+	return sdk.b.ScheduleClient().GetHandle(ctx, id)
 }
 
 func (sdk *SDK) ListSchedules(ctx context.Context, query string, pageSize int) (ScheduleListIterator, error) {
-	iter, err := sdk.b.cli.ScheduleClient().List(
+	iter, err := sdk.b.ScheduleClient().List(
 		ctx,
 		client.ScheduleListOptions{
 			PageSize: pageSize,
@@ -189,22 +185,119 @@ func (sdk *SDK) ListSchedules(ctx context.Context, query string, pageSize int) (
 }
 
 func (sdk *SDK) DeleteSchedule(ctx context.Context, id string) error {
-	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Delete(ctx)
+	return sdk.b.ScheduleClient().GetHandle(ctx, id).Delete(ctx)
 }
 
 func (sdk *SDK) TogglePause(ctx context.Context, id string, pause bool) error {
 	if pause {
-		return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Pause(ctx, client.SchedulePauseOptions{})
+		return sdk.b.ScheduleClient().GetHandle(ctx, id).Pause(ctx, client.SchedulePauseOptions{})
 	}
 
-	return sdk.b.cli.ScheduleClient().GetHandle(ctx, id).Unpause(ctx, client.ScheduleUnpauseOptions{})
+	return sdk.b.ScheduleClient().GetHandle(ctx, id).Unpause(ctx, client.ScheduleUnpauseOptions{})
 }
 
 func (sdk *SDK) Trigger(ctx context.Context, id string) error {
-	return sdk.b.cli.ScheduleClient().
+	return sdk.b.ScheduleClient().
 		GetHandle(ctx, id).
 		Trigger(
 			ctx,
 			client.ScheduleTriggerOptions{},
 		)
+}
+
+type SchedulerMigrator struct {
+	from Backend
+	to   Backend
+}
+
+func NewSchedulerMigrator(from, to Backend) *SchedulerMigrator {
+	return &SchedulerMigrator{
+		from: from,
+		to:   to,
+	}
+}
+
+type (
+	MigrateCheckResult struct {
+		// Ignore is TRUE, then do not copy the scheduler
+		Ignore bool
+	}
+	MigrateCheckFunc func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult
+)
+
+func (s *SchedulerMigrator) Migrate(
+	ctx context.Context,
+	deleteSource bool,
+	checkFn MigrateCheckFunc,
+) error {
+	it, err := s.from.ScheduleClient().List(
+		ctx,
+		client.ScheduleListOptions{
+			PageSize: 100,
+			Query:    "",
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	schToCli := s.to.ScheduleClient()
+	schFromCli := s.from.ScheduleClient()
+
+	for it.HasNext() {
+		ent, err := it.Next()
+		if err != nil {
+			return err
+		}
+
+		_, err = schToCli.GetHandle(ctx, ent.ID).Describe(ctx)
+		if err == nil {
+			if deleteSource {
+				err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+				if err != nil {
+					return err
+				}
+			}
+
+			continue
+		}
+
+		res := checkFn(ctx, ent)
+		if res.Ignore {
+			continue
+		}
+
+		fromSchDesc, err := schFromCli.GetHandle(ctx, ent.ID).Describe(ctx)
+		if err != nil {
+			return err
+		}
+
+		_, err = schToCli.Create(
+			ctx,
+			client.ScheduleOptions{
+				ID:                    ent.ID,
+				Spec:                  utils.PtrVal(fromSchDesc.Schedule.Spec),
+				Action:                fromSchDesc.Schedule.Action,
+				Overlap:               fromSchDesc.Schedule.Policy.Overlap,
+				CatchupWindow:         fromSchDesc.Schedule.Policy.CatchupWindow,
+				PauseOnFailure:        fromSchDesc.Schedule.Policy.PauseOnFailure,
+				Note:                  fromSchDesc.Schedule.State.Note,
+				Paused:                fromSchDesc.Schedule.State.Paused,
+				RemainingActions:      fromSchDesc.Schedule.State.RemainingActions,
+				TypedSearchAttributes: fromSchDesc.TypedSearchAttributes,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		if deleteSource {
+			err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
