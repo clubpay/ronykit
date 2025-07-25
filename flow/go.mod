@@ -5,12 +5,12 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.20.6
+	github.com/clubpay/ronykit/kit v0.20.7
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.20.1
 	github.com/nexus-rpc/sdk-go v0.4.0
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.37.0
-	go.temporal.io/api v1.50.0
+	go.temporal.io/api v1.51.0
 	go.temporal.io/sdk v1.35.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.16.0
