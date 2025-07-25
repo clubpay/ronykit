@@ -13,6 +13,7 @@ type CORSConfig struct {
 	AllowedOrigins    []string
 	ExposedHeaders    []string
 	IgnoreEmptyOrigin bool
+	AllowCredentials  bool
 }
 
 type cors struct {
@@ -20,6 +21,7 @@ type cors struct {
 	methods           string
 	origins           []string
 	ignoreEmptyOrigin bool
+	allowCredentials  bool
 	exposedHeaders    string
 }
 
@@ -72,6 +74,10 @@ func (cors *cors) handle(ctx *fasthttp.RequestCtx) {
 	// ByPass cors (Cross Origin Resource Sharing) check
 	ctx.Response.Header.Add("Vary", fasthttp.HeaderOrigin)
 	ctx.Response.Header.Set(fasthttp.HeaderAccessControlExposeHeaders, cors.exposedHeaders)
+
+	if cors.allowCredentials {
+		ctx.Response.Header.Set(fasthttp.HeaderAccessControlAllowCredentials, "true")
+	}
 
 	origin := ctx.Request.Header.Peek(fasthttp.HeaderOrigin)
 	if cors.origins[0] == "*" {
