@@ -5,7 +5,7 @@ go 1.23.8
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.20.7
+	github.com/clubpay/ronykit/kit v0.20.8
 	github.com/libp2p/go-libp2p v0.42.0
 	github.com/libp2p/go-libp2p-pubsub v0.14.2
 )
