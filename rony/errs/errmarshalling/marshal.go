@@ -10,13 +10,11 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-var json = JsonAPI()
+var json = jsonAPI()
 
-// JsonAPI returns a jsoniter.API instance that can be used to marshal
+// jsonAPI returns a jsoniter.API instance that can be used to marshal
 // errors
-//
-// It is only exported for use in tests!
-func JsonAPI() jsoniter.API {
+func jsonAPI() jsoniter.API {
 	api := jsoniter.Config{
 		EscapeHTML:             false,
 		IndentionStep:          2,

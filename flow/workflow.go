@@ -16,7 +16,10 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-type WorkflowFunc[REQ, RES, STATE any] func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
+type (
+	WorkflowFunc[REQ, RES, STATE any]    func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error)
+	WorkflowFuncNoResult[REQ, STATE any] func(ctx *WorkflowContext[REQ, EMPTY, STATE], req REQ) error
+)
 
 type Workflow[REQ, RES, STATE any] struct {
 	backend Backend
@@ -33,6 +36,42 @@ func NewWorkflow[REQ, RES, STATE any](
 	var s STATE
 
 	return NewWorkflowWithState(name, group, s, fn)
+}
+
+func NewWorkflowNoResult[REQ, STATE any](
+	name, group string,
+	fn WorkflowFuncNoResult[REQ, STATE],
+) *Workflow[REQ, EMPTY, STATE] {
+	var s STATE
+
+	return NewWorkflowWithState(
+		name, group, s,
+		func(ctx *WorkflowContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
+			err := fn(ctx, req)
+			if err != nil {
+				return nil, err
+			}
+
+			return &EMPTY{}, nil
+		},
+	)
+}
+
+func NewWorkflowNoResultWithState[REQ, STATE any](
+	name, group string, state STATE,
+	fn WorkflowFuncNoResult[REQ, STATE],
+) *Workflow[REQ, EMPTY, STATE] {
+	return NewWorkflowWithState(
+		name, group, state,
+		func(ctx *WorkflowContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
+			err := fn(ctx, req)
+			if err != nil {
+				return nil, err
+			}
+
+			return &EMPTY{}, nil
+		},
+	)
 }
 
 func NewWorkflowWithState[REQ, RES, STATE any](

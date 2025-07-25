@@ -10,7 +10,7 @@ require (
 	github.com/fasthttp/websocket v1.5.12
 	github.com/goccy/go-reflect v1.2.0
 	github.com/valyala/bytebufferpool v1.0.0
-	github.com/valyala/fasthttp v1.63.0
+	github.com/valyala/fasthttp v1.64.0
 )
 
 require (
