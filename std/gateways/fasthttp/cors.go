@@ -28,6 +28,7 @@ type cors struct {
 func newCORS(cfg CORSConfig) *cors {
 	c := &cors{
 		ignoreEmptyOrigin: cfg.IgnoreEmptyOrigin,
+		allowCredentials:  cfg.AllowCredentials,
 	}
 	if len(cfg.AllowedOrigins) == 0 {
 		c.origins = []string{"*"}

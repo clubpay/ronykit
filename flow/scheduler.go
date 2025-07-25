@@ -230,73 +230,85 @@ func (s *SchedulerMigrator) Migrate(
 	deleteSource bool,
 	checkFn MigrateCheckFunc,
 ) error {
-	it, err := s.from.ScheduleClient().List(
-		ctx,
-		client.ScheduleListOptions{
-			PageSize: 100,
-			Query:    "",
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	schToCli := s.to.ScheduleClient()
-	schFromCli := s.from.ScheduleClient()
-
-	for it.HasNext() {
-		ent, err := it.Next()
-		if err != nil {
-			return err
-		}
-
-		_, err = schToCli.GetHandle(ctx, ent.ID).Describe(ctx)
-		if err == nil {
-			if deleteSource {
-				err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
-				if err != nil {
-					return err
-				}
-			}
-
-			continue
-		}
-
-		res := checkFn(ctx, ent)
-		if res.Ignore {
-			continue
-		}
-
-		fromSchDesc, err := schFromCli.GetHandle(ctx, ent.ID).Describe(ctx)
-		if err != nil {
-			return err
-		}
-
-		_, err = schToCli.Create(
+	for {
+		it, err := s.from.ScheduleClient().List(
 			ctx,
-			client.ScheduleOptions{
-				ID:                    ent.ID,
-				Spec:                  utils.PtrVal(fromSchDesc.Schedule.Spec),
-				Action:                fromSchDesc.Schedule.Action,
-				Overlap:               fromSchDesc.Schedule.Policy.Overlap,
-				CatchupWindow:         fromSchDesc.Schedule.Policy.CatchupWindow,
-				PauseOnFailure:        fromSchDesc.Schedule.Policy.PauseOnFailure,
-				Note:                  fromSchDesc.Schedule.State.Note,
-				Paused:                fromSchDesc.Schedule.State.Paused,
-				RemainingActions:      fromSchDesc.Schedule.State.RemainingActions,
-				TypedSearchAttributes: fromSchDesc.TypedSearchAttributes,
+			client.ScheduleListOptions{
+				PageSize: 100,
+				Query:    "",
 			},
 		)
 		if err != nil {
 			return err
 		}
 
-		if deleteSource {
-			err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+		schToCli := s.to.ScheduleClient()
+		schFromCli := s.from.ScheduleClient()
+
+		count := 0
+		for it.HasNext() {
+			count++
+			ent, err := it.Next()
 			if err != nil {
 				return err
 			}
+
+			_, err = schToCli.GetHandle(ctx, ent.ID).Describe(ctx)
+			if err == nil {
+				if deleteSource {
+					err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+					if err != nil {
+						return err
+					}
+				}
+
+				continue
+			}
+
+			res := checkFn(ctx, ent)
+			if res.Ignore {
+				continue
+			}
+
+			fromSchDesc, err := schFromCli.GetHandle(ctx, ent.ID).Describe(ctx)
+			if err != nil {
+				return err
+			}
+
+			_, err = schToCli.Create(
+				ctx,
+				client.ScheduleOptions{
+					ID:                    ent.ID,
+					Spec:                  utils.PtrVal(fromSchDesc.Schedule.Spec),
+					Action:                fromSchDesc.Schedule.Action,
+					Overlap:               fromSchDesc.Schedule.Policy.Overlap,
+					CatchupWindow:         fromSchDesc.Schedule.Policy.CatchupWindow,
+					PauseOnFailure:        fromSchDesc.Schedule.Policy.PauseOnFailure,
+					Note:                  fromSchDesc.Schedule.State.Note,
+					Paused:                fromSchDesc.Schedule.State.Paused,
+					RemainingActions:      fromSchDesc.Schedule.State.RemainingActions,
+					TypedSearchAttributes: fromSchDesc.TypedSearchAttributes,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			if deleteSource {
+				err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+				if err != nil {
+					return err
+				}
+			}
 		}
+
+		// if there is no more schedule, then break the loop
+		if count == 0 {
+			break
+		}
+
+		// wait for a while
+		time.Sleep(time.Minute)
 	}
 
 	return nil
