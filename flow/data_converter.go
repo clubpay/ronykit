@@ -15,6 +15,10 @@ func EncryptedDataConverter(key string) converter.DataConverter {
 	)
 }
 
+func EncryptedPayloadCodec(key string) converter.PayloadCodec {
+	return &aesCodec{s: scramble.NewScramble(key)}
+}
+
 var _ converter.PayloadCodec = (*aesCodec)(nil)
 
 type aesCodec struct {

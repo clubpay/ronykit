@@ -11,6 +11,7 @@ use (
 	./example/ex-06-counter-stream
 	./example/ex-08-echo
 	./example/ex-09-mw
+	./example/ex-10-flow-codec
 	./flow
 	./kit
 	./rony
