@@ -34,7 +34,10 @@ func main() {
 			),
 		),
 		kit.WithServiceBuilder(
-			codecserver.NewService("", "<yourKey>").Desc(),
+			codecserver.NewService("", map[string]string{
+				"*":   "defaultKey",
+				"ns1": "ns1Key",
+			}).Desc(),
 		),
 	).
 		Start(context.TODO()).

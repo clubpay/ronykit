@@ -17,14 +17,22 @@ var _ desc.ServiceDesc = (*Service)(nil)
 
 type Service struct {
 	routePrefix string
-	codec       converter.PayloadCodec
+	codec       map[string]converter.PayloadCodec
 }
 
-func NewService(routePrefix, key string) Service {
-	return Service{
+// NewService
+// keys: is a map of namespace -> encryptionKey
+func NewService(routePrefix string, keys map[string]string) Service {
+	svc := Service{
 		routePrefix: routePrefix,
-		codec:       flow.EncryptedPayloadCodec(key),
+		codec:       map[string]converter.PayloadCodec{},
 	}
+
+	for namespace, key := range keys {
+		svc.codec[namespace] = flow.EncryptedPayloadCodec(key)
+	}
+
+	return svc
 }
 
 func (s Service) Desc() *desc.Service {
@@ -56,7 +64,19 @@ func (s *Service) Decode(ctx *kit.Context) {
 		return
 	}
 
-	res, err := s.codec.Decode(payloadspb.Payloads)
+	ns := ctx.GetString("X-Namespace", "")
+	codec := s.codec[ns]
+	if codec == nil {
+		codec = s.codec["*"]
+		if codec == nil {
+			ctx.SetStatusCode(http.StatusBadRequest)
+			ctx.Out().SetMsg("codec not found for namespace").Send()
+
+			return
+		}
+	}
+
+	res, err := codec.Decode(payloadspb.Payloads)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		ctx.Out().SetMsg(err.Error()).Send()
@@ -91,7 +111,19 @@ func (s *Service) Encode(ctx *kit.Context) {
 		return
 	}
 
-	res, err := s.codec.Encode(payloadspb.Payloads)
+	ns := ctx.GetString("X-Namespace", "")
+	codec := s.codec[ns]
+	if codec == nil {
+		codec = s.codec["*"]
+		if codec == nil {
+			ctx.SetStatusCode(http.StatusBadRequest)
+			ctx.Out().SetMsg("codec not found for namespace").Send()
+
+			return
+		}
+	}
+
+	res, err := codec.Encode(payloadspb.Payloads)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		ctx.Out().SetMsg(err.Error()).Send()
