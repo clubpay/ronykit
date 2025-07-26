@@ -26,3 +26,45 @@ insights into the overhead a framework might introduce to your actual business l
 [benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) as a reference to evaluate how Ronykit performs in comparison to other Go frameworks.
 
 ![Benchmark Results](./docs/benchmark.png)
+
+
+### Project Structure
+
+RonyKit is organized as a Go workspace with multiple modules:
+
+- **Core modules**:
+	- `kit`: Core toolkit and utilities
+	- `rony`: Main server implementation
+	- `flow`: Workflow-related functionality
+	- `stub`: Stub generation utilities
+	- `boxship`: Build/deployment tools
+	- `ronyup`: Project setup and upgrade tools
+	- `contrib`: Contributions and extensions
+	- `util`: Utility packages
+
+- **Standard implementations**:
+	- Clusters: `p2pcluster`, `rediscluster`
+	- Gateways: `fasthttp`, `fastws`, `silverhttp`
+
+- **Examples**: Various example applications demonstrating different features
+
+### Build Commands
+
+The project uses a Makefile for common operations:
+
+```bash
+# Install required tools
+make setup
+
+# Run tests
+make test
+
+# Clean up the project
+make cleanup
+
+# Update version (patch)
+make new-version-patch
+
+# Update version (minor)
+make new-version-minor
+```

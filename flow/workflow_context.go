@@ -65,6 +65,22 @@ func (ctx WorkflowContext[REQ, RES, STATE]) S() STATE {
 	return ctx.s
 }
 
+func (ctx WorkflowContext[REQ, RES, STATE]) WorkflowID() string {
+	return workflow.GetInfo(ctx.ctx).WorkflowExecution.ID
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) WorkflowRunID() string {
+	return workflow.GetInfo(ctx.ctx).WorkflowExecution.RunID
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) WorkflowType() string {
+	return workflow.GetInfo(ctx.ctx).WorkflowType.Name
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) ContinueAsNewError() error {
+	return workflow.NewContinueAsNewError(ctx.ctx, ctx.WorkflowType())
+}
+
 func SideEffect[T any](ctx Context, fn func() T) (T, error) {
 	reqEncoded := workflow.SideEffect(
 		ctx,
