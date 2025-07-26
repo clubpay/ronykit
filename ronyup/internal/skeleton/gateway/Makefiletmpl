@@ -4,7 +4,7 @@
 shell := $SHELL
 cwd := $(shell pwd)
 baseProject = {{.RepositoryPath}}
-export GOPRIVATE=github.com/malek-group/*
+export GOPRIVATE={{.RepositoryGoModule}}/*
 
 cleanup:
 	@go mod tidy && go fmt ./... && go vet ./...
