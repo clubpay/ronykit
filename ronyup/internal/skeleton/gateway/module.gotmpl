@@ -1,0 +1,26 @@
+package {{.PackageName}}mod
+
+import (
+"io/fs"
+
+"{{.RepositoryPath}}/{{.PackagePath}}/api"
+"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
+"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
+"{{.RonyKitPath}}/util"
+"go.uber.org/fx"
+)
+
+//nolint:gochecknoglobals
+var appModule = fx.Module(
+settings.ModuleName,
+fx.Provide(
+settings.New,
+app.New,
+api.New,
+),
+)
+
+func LoadSettings(filename string, searchPaths ...string) {
+settings.ConfigName = filename
+settings.ConfigPaths = searchPaths
+}

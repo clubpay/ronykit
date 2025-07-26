@@ -4,31 +4,35 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/spf13/cobra"
 )
 
 var opt = struct {
-	DestinationDir string
-	Force          bool
-	ModulePath     string
-	ProjectName    string
-	Template       string
-	Custom         map[string]string
+	RepositoryRootDir  string
+	RepositoryGoModule string
+	ProjectDir         string
+	ProjectName        string
+
+	Force    bool
+	Template string
+	Custom   map[string]string
 }{}
 
 func init() {
 	flagSet := Cmd.Flags()
-	flagSet.StringVarP(&opt.DestinationDir, "dst", "d", ".", "destination directory for the setup")
+	flagSet.StringVarP(&opt.RepositoryRootDir, "repoDir", "d", "./my-repo", "destination directory for the setup")
+	flagSet.StringVarP(&opt.RepositoryGoModule, "repoModule", "r", "github.com/your/repo", "go module for the repository")
+	flagSet.StringVarP(&opt.ProjectDir, "projectDir", "p", "my-project", "destination directory inside repoDir for the setup")
+	flagSet.StringVarP(&opt.ProjectName, "projectName", "n", "MyProject", "project name")
+
 	flagSet.BoolVarP(&opt.Force, "force", "f", false, "clean destination directory before setup")
-	flagSet.StringVarP(&opt.ModulePath, "module", "m", "github.com/your/repo", "module path")
-	flagSet.StringVarP(&opt.ProjectName, "project", "p", "MyProject", "project name")
-	flagSet.StringVarP(&opt.Template, "template", "t", "", "possible values: rony | kit")
+	flagSet.StringVarP(&opt.Template, "template", "t", "service", "possible values: service | gateway")
 	flagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
 }
 
@@ -46,15 +50,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		err = copyTemplate()
-		if err != nil {
-			return err
-		}
-
-		err = initGo()
-		if err != nil {
-			return err
-		}
+		copyTemplate(cmd)
 
 		return nil
 	},
@@ -62,118 +58,88 @@ var Cmd = &cobra.Command{
 
 func createDestination() error {
 	// get the absolute path to the output directory
-	dstPath, err := filepath.Abs(opt.DestinationDir)
+	repoPath, err := filepath.Abs(opt.RepositoryRootDir)
 	if err != nil {
 		return err
 	}
 
-	_ = os.MkdirAll(dstPath, 0755) //nolint:gofumpt
-	if !isEmptyDir(dstPath) {
-		if !opt.Force {
-			return fmt.Errorf("%s directory is not empty, use -f to force", dstPath)
+	_ = os.MkdirAll(repoPath, 0755) //nolint:gofumpt
+
+	if opt.ProjectDir != "" {
+		p := z.RunCmdParams{Dir: repoPath}
+		z.RunCmd(p, "go", "work", "init")
+
+		projectPath := filepath.Join(repoPath, opt.ProjectDir)
+		_ = os.MkdirAll(projectPath, 0755) //nolint:gofumpt
+		if !z.IsEmptyDir(projectPath) {
+			if !opt.Force {
+				return fmt.Errorf("%s directory is not empty, use -f to force", projectPath)
+			}
+
+			_ = os.RemoveAll(projectPath)      //nolint:gofumpt
+			_ = os.MkdirAll(projectPath, 0755) //nolint:gofumpt
 		}
-
-		_ = os.RemoveAll(dstPath)      //nolint:gofumpt
-		_ = os.MkdirAll(dstPath, 0755) //nolint:gofumpt
 	}
 
 	return nil
 }
 
-func copyTemplate() error {
-	return fs.WalkDir(
-		internal.Skeleton,
-		fmt.Sprintf("skeleton/%s", opt.Template),
-		func(path string, d fs.DirEntry, err error) error {
+type ModuleInput struct {
+	RepositoryPath string
+	// PackagePath is the folder that module will reside inside the Repository root folder
+	PackagePath string
+	// PackageName is the name of the package to be used for some internal variables
+	PackageName string
+	// RonyKitPath is the address of the RonyKIT modules
+	RonyKitPath string
+}
+
+func copyTemplate(cmd *cobra.Command) {
+	pathPrefix := filepath.Join("skeleton", opt.Template)
+	packagePath := filepath.Join(opt.RepositoryRootDir, opt.ProjectDir)
+
+	err := fs.WalkDir(
+		internal.Skeleton, pathPrefix,
+		func(currPath string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
-			if path == fmt.Sprintf("skeleton/%s", opt.Template) {
-				return nil
-			}
+			srcPath := strings.TrimPrefix(currPath, pathPrefix)
+			destPath := strings.TrimSuffix(
+				filepath.Join(".", packagePath, srcPath),
+				"tmpl",
+			)
 
-			fn := strings.TrimPrefix(path, fmt.Sprintf("skeleton/%s/", opt.Template))
 			if d.IsDir() {
-				fmt.Println("Creating directory", fn)
-
-				return os.MkdirAll(filepath.Join(opt.DestinationDir, fn), 0755)
+				// Create a directory if it doesn't exist
+				return os.MkdirAll(destPath, os.ModePerm)
 			}
 
-			fmt.Println("Creating file", fn)
+			cmd.Println("FILE: ", destPath, "created")
 
-			in, err := fs.ReadFile(internal.Skeleton, path)
-			if err != nil {
-				return err
-			}
-
-			out, err := os.Create(filepath.Join(opt.DestinationDir, strings.TrimSuffix(fn, ".gotmpl")))
-			if err != nil {
-				return err
-			}
-
-			t, err := template.New("t1").Parse(string(in))
-			if err != nil {
-				return err
-			}
-
-			err = t.Execute(out, opt)
-			if err != nil {
-				return err
-			}
-
-			_ = out.Close()
-
-			return nil
-		},
-	)
-}
-
-func initGo() error {
-	fmt.Println("Initializing go module", opt.ModulePath)
-	cmd := exec.Command("go", "mod", "init", opt.ModulePath)
-	cmd.Dir = opt.DestinationDir
-
-	err := cmd.Run()
+			return z.Copy(z.CopyParams{
+				FS:             internal.Skeleton,
+				SrcPath:        currPath,
+				DestPath:       destPath,
+				TemplateSuffix: "tmpl",
+				TemplateInput: ModuleInput{
+					RepositoryPath: strings.TrimSuffix(opt.RepositoryRootDir, "/"),
+					PackagePath:    strings.Trim(packagePath, "/"),
+					PackageName:    opt.ProjectName,
+				},
+			})
+		})
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	fmt.Println("Tidying go module ...")
-	cmd = exec.Command("go", "mod", "tidy")
-	cmd.Dir = opt.DestinationDir
-
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Formatting go code ...")
-	cmd = exec.Command("go", "fmt", "./...")
-	cmd.Dir = opt.DestinationDir
-
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("GIT init ...")
-	cmd = exec.Command("git", "init")
-	cmd.Dir = opt.DestinationDir
-
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Go generate ...")
-	cmd = exec.Command("go", "generate", "./...")
-	cmd.Dir = opt.DestinationDir
-
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	cmd.Println("Module created successfully")
+	cmd.Println("Project path: ", packagePath)
+	p := z.RunCmdParams{Dir: filepath.Join(".", packagePath)}
+	z.RunCmd(p, "go", "mod", "init", path.Join(opt.RepositoryRootDir, packagePath))
+	z.RunCmd(p, "go", "mod", "edit", "-go=1.23")
+	z.RunCmd(p, "go", "mod", "tidy")
+	z.RunCmd(p, "go", "fmt", "./...")
+	z.RunCmd(p, "go", "work", "use", ".")
 }

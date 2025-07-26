@@ -1,0 +1,76 @@
+package {{.PackageName}}mod
+
+import (
+"context"
+
+"{{.RonyKitPath}}/rony"
+"go.uber.org/fx"
+"{{.RepositoryPath}}/pkg/cache"
+"{{.RepositoryPath}}/pkg/log"
+"{{.RepositoryPath}}/pkg/settings"
+"{{.RepositoryPath}}/{{.PackagePath}}/api"
+)
+
+type Service struct {
+api *api.Service
+
+fxApp *fx.App
+}
+
+func App(opt ...fx.Option) *Service {
+var apiSvc *api.Service
+fxApp := fx.New(
+fx.NopLogger,
+appModule,
+fx.Provide(
+log.New,
+cache.New,
+settings.New,
+),
+fx.Populate(&apiSvc),
+fx.Options(opt...),
+)
+
+return &Service{
+fxApp: fxApp,
+api:   apiSvc,
+}
+}
+
+func Module() fx.Option {
+return fx.Options(
+fx.Provide(
+func(lc fx.Lifecycle) *Service {
+svc := App()
+lc.Append(
+fx.Hook{
+OnStart: func(ctx context.Context) error {
+return svc.Start(ctx)
+},
+OnStop: func(ctx context.Context) error {
+return svc.Shutdown(ctx)
+},
+},
+)
+
+return svc
+},
+),
+)
+}
+
+func (svc *Service) API() *api.Service {
+return svc.api
+}
+
+func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
+return svc.api.Desc()
+}
+
+func (svc *Service) Start(ctx context.Context) error {
+return svc.fxApp.Start(ctx)
+}
+
+func (svc *Service) Shutdown(force context.Context) error {
+return svc.fxApp.Stop(force)
+}

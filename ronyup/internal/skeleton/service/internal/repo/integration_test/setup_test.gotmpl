@@ -1,0 +1,44 @@
+package integration_test
+
+import (
+"testing"
+
+v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
+"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
+"{{.RepositoryPath}}/pkg/cache"
+"{{.RepositoryPath}}/pkg/testkit"
+"go.uber.org/fx"
+)
+
+
+func Setup(t *testing.T, populates ...any) {
+t.Helper()
+
+set := &settings.Settings{
+DB: settings.DBConfig{
+User: "testuser",
+Pass: "testpass",
+DB:   "testdb",
+},
+Redis: settings.RedisConfig{
+Host: "localhost",
+Port: 6379,
+},
+}
+testkit.Run(
+t,
+fx.Supply(set),
+fx.Provide(cache.New),
+testkit.InitDB("db",
+testkit.InitDBParams{
+User:    set.DB.User,
+Pass:    set.DB.Pass,
+DB:      set.DB.DB,
+Queries: testkit.FolderContent("../v0/data/db/migrations"),
+},
+),
+testkit.InitRedis("redis", testkit.InitRedisParams{}),
+v0repo.Init,
+fx.Populate(populates...),
+)
+}

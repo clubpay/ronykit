@@ -1,0 +1,12 @@
+package v0repo
+
+import (
+"go.uber.org/fx"
+)
+
+//nolint:gochecknoglobals
+var Init = fx.Options(
+fx.Provide(
+fx.Private,
+),
+)

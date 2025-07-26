@@ -26,7 +26,7 @@ update_version() {
 
   array1=(
   	std/gateways/fasthttp std/gateways/fastws std/gateways/silverhttp
-  	std/clusters/rediscluster std/clusters/p2pcluster util
+  	std/clusters/rediscluster std/clusters/p2pcluster util log
   )
   for i in "${array1[@]}"
   do

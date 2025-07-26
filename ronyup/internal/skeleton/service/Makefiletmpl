@@ -1,0 +1,37 @@
+.PHONY:  test test-short test-race cleanup setup
+
+# Prepare
+shell := $SHELL
+cwd := $(shell pwd)
+baseProject = {{.RepositoryPath}}
+export GOPRIVATE=github.com/malek-group/*
+
+cleanup:
+	@go mod tidy && go fmt ./... && go vet ./...
+	@golangci-lint run  --fix ./... --path-prefix "{{.PackagePath}}"
+
+test:
+	@echo "Run Tests"
+	@gotestsum --hide-summary=output --format pkgname-and-test-fails --format-hide-empty-pkg --max-fails 1 -- \
+			-parallel 10 -covermode=atomic -coverprofile=coverage.out ./...
+	@go tool cover -func=coverage.out -o=coverage.out;
+
+
+test-short:
+	@echo "Run Tests (Shorts)"
+	@gotestsum --hide-summary=output --format pkgname-and-test-fails --format-hide-empty-pkg --max-fails 1 -- \
+    		-test.short -count=1 -parallel 10 -covermode=atomic -coverprofile=coverage.out ./...
+	@go tool cover -func=coverage.out -o=coverage.out
+
+gen-go-stub:
+	@echo "Generating Go Stubs for the services"
+	@go run ./gen/stub/gen.go go -o ./stub/{{.PackageName}}stub
+	@go mod tidy
+	@go fmt ./...
+
+gen-ts-stub:
+	@echo "Generating Typescript Stubs for the services"
+	@go run ./gen/stub/gen.go ts -o ./stub/{{.PackageName}}stub-typescript
+	@go mod tidy
+	@go fmt ./...
+

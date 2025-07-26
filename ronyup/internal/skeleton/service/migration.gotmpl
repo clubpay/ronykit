@@ -1,0 +1,6 @@
+package {{.PackageName}}mod
+
+import "embed"
+
+//go:embed internal/repo/v0/data/db/migrations
+var MigrationFS embed.FS

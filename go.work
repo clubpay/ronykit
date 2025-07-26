@@ -14,6 +14,7 @@ use (
 	./example/ex-10-flow-codec
 	./flow
 	./kit
+	./log
 	./rony
 	./ronyup
 	./std/clusters/p2pcluster

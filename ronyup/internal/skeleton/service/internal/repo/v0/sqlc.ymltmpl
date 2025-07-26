@@ -1,0 +1,20 @@
+version: 2
+sql:
+  - schema: data/db/migrations
+    queries: data/db/queries
+    engine: postgresql
+    gen:
+      go:
+        package: db
+#        sql_package: "pgx/v5"
+        out: data/db
+        emit_interface: true
+#        overrides:
+#          - column: "account.attrs"
+#            go_type:
+#              # for import, package and type please refer the go code above
+#              import: "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0/data/db/types"
+#              package: "db"
+#              # put your type here,
+#              # if you want struct instead, put the CustomParams
+#              type: "AccountAttributes"

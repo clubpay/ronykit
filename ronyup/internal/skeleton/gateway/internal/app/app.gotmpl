@@ -1,0 +1,24 @@
+package app
+
+import (
+"github.com/malek-group/malek/backend/pkg/log"
+"go.uber.org/fx"
+)
+
+type NewAppParams struct {
+fx.In
+
+Logger *log.Logger
+}
+
+func New(p NewAppParams) (*App, error) {
+app := &App{
+l: p.Logger.With("APP"),
+}
+
+return app, nil
+}
+
+type App struct {
+l *log.Logger
+}
