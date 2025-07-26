@@ -124,9 +124,10 @@ func copyTemplate(cmd *cobra.Command) {
 				DestPath:       destPath,
 				TemplateSuffix: "tmpl",
 				TemplateInput: ModuleInput{
-					RepositoryPath: strings.TrimSuffix(opt.RepositoryRootDir, "/"),
-					PackagePath:    strings.Trim(packagePath, "/"),
+					RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
+					PackagePath:    strings.Trim(opt.ProjectDir, "/"),
 					PackageName:    opt.ProjectName,
+					RonyKitPath:    "github.com/clubpay/ronykit",
 				},
 			})
 		})
@@ -137,7 +138,7 @@ func copyTemplate(cmd *cobra.Command) {
 	cmd.Println("Module created successfully")
 	cmd.Println("Project path: ", packagePath)
 	p := z.RunCmdParams{Dir: filepath.Join(".", packagePath)}
-	z.RunCmd(p, "go", "mod", "init", path.Join(opt.RepositoryRootDir, packagePath))
+	z.RunCmd(p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, opt.ProjectDir))
 	z.RunCmd(p, "go", "mod", "edit", "-go=1.23")
 	z.RunCmd(p, "go", "mod", "tidy")
 	z.RunCmd(p, "go", "fmt", "./...")
