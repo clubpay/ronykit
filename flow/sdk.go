@@ -60,7 +60,7 @@ func (sdk *SDK) Stop() {
 }
 
 func (sdk *SDK) migrateSchedulers() {
-	if sdk.old == nil {
+	if sdk.old == nil || sdk.b == nil {
 		return
 	}
 
@@ -78,7 +78,7 @@ func (sdk *SDK) migrateSchedulers() {
 			return MigrateCheckResult{}
 		},
 	)
-	if err != nil {
+	if err != nil && sdk.l != nil {
 		sdk.l.Warn("got error on migrating schedulers: %v", err)
 	}
 }
