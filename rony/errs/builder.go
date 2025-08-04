@@ -100,7 +100,7 @@ func (b *Builder) Cause(err error) *Builder {
 			b.codeSet = true
 		}
 
-		if !b.msgSet {
+		if !b.msgSet && e.Item != "" {
 			b.msg = e.Item
 			b.msgSet = true
 		}
