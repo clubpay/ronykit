@@ -12,11 +12,11 @@ import (
 )
 
 var opt = struct {
-	SourceLang      string
-	Languages       []string
-	DstDir          string
-	Packages        []string
-	GenPackangeName string
+	SourceLang     string
+	Languages      []string
+	DstDir         string
+	Packages       []string
+	GenPackageName string
 }{}
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
-	flagSet.StringVarP(&opt.GenPackangeName, "gen-package", "g", "i18n", "package name for generated files")
+	flagSet.StringVarP(&opt.GenPackageName, "gen-package", "g", "./internal/i18n", "package name for generated files")
 }
 
 var wrap = func(err error, msg string) error {
@@ -55,7 +55,7 @@ var Cmd = &cobra.Command{
 			Packages:       opt.Packages,
 			Dir:            opt.DstDir,
 			GenFile:        "catalog.go",
-			GenPackage:     opt.GenPackangeName,
+			GenPackage:     opt.GenPackageName,
 		}
 
 		state, err := pipeline.Extract(config)

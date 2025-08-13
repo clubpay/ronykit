@@ -60,7 +60,10 @@ func Text(msg message.Reference, args ...any) string {
 }
 
 func TextCtx(ctx context.Context, msg message.Reference, args ...any) string {
-	lang := ctx.Value(ctxLangKey).(language.Tag)
+	lang, ok := ctx.Value(ctxLangKey).(language.Tag)
+	if !ok {
+		return Text(msg, args...)
+	}
 
 	return GetBundle(lang).Sprintf(msg, args...)
 }
