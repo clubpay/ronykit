@@ -5,8 +5,8 @@ github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUS
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clubpay/ronykit/kit v0.20.12 h1:N9F8iQOz30gQOSuwH9pd+q9e/ImMRrBpcmX9Mqye5CE=
-github.com/clubpay/ronykit/kit v0.20.12/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
+github.com/clubpay/ronykit/kit v0.20.13 h1:gsxyYfq8r/lFn7ryN8cFF4LyqkNTCHIcB1pjErbpc3A=
+github.com/clubpay/ronykit/kit v0.20.13/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.20.1 h1:0cpyIYBX51GfGbZESZWGH/Ff03ZGTdmATH08mkFIYys=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.20.1/go.mod h1:maT68B+imVO+L//QKFXh2ok/8iuNPdNpXYokR5ZtRiA=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
