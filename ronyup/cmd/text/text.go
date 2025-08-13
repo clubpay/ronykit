@@ -12,9 +12,11 @@ import (
 )
 
 var opt = struct {
-	SourceLang string
-	Languages  []string
-	DstDir     string
+	SourceLang      string
+	Languages       []string
+	DstDir          string
+	Packages        []string
+	GenPackangeName string
 }{}
 
 func init() {
@@ -22,6 +24,8 @@ func init() {
 	flagSet.StringVarP(&opt.SourceLang, "src-lang", "s", "en-US", "source language")
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
+	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
+	flagSet.StringVarP(&opt.GenPackangeName, "gen-package", "g", "i18n", "package name for generated files")
 }
 
 var wrap = func(err error, msg string) error {
@@ -36,18 +40,22 @@ var wrap = func(err error, msg string) error {
 var Cmd = &cobra.Command{
 	Use: "text",
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		packages, err := getAllPackages()
-		if err != nil {
-			return wrap(err, "failed to get packages")
+		if len(opt.Packages) == 0 {
+			packages, err := getAllPackages()
+			if err != nil {
+				return wrap(err, "failed to get packages")
+			}
+
+			opt.Packages = packages
 		}
 
 		config := &pipeline.Config{
 			SourceLanguage: language.English,
 			Supported:      util.Map(opt.Languages, language.Make),
-			Packages:       packages,
+			Packages:       opt.Packages,
 			Dir:            opt.DstDir,
 			GenFile:        "catalog.go",
-			GenPackage:     opt.DstDir,
+			GenPackage:     opt.GenPackangeName,
 		}
 
 		state, err := pipeline.Extract(config)
