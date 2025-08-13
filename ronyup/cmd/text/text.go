@@ -34,7 +34,7 @@ var wrap = func(err error, msg string) error {
 
 //nolint:gochecknoglobals
 var Cmd = &cobra.Command{
-	Use: "gen",
+	Use: "text",
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		packages, err := getAllPackages()
 		if err != nil {
