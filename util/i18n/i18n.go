@@ -11,7 +11,7 @@ import (
 var (
 	ctxLangKey  = struct{}{}
 	defaultLang = language.English
-	bundles     = make(map[language.Tag]Bundle)
+	bundles     = make(map[language.Tag]Bundle, 32)
 )
 
 func init() {

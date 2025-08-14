@@ -20,6 +20,7 @@ var opt = struct {
 	DstDir         string
 	Packages       []string
 	ModulesFilter  []string
+	GenFile        string
 	GenPackageName string
 }{}
 
@@ -29,8 +30,10 @@ func init() {
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
+	flagSet.StringVarP(&opt.GenFile, "gen-file", "f", "catalog.go", "generated file name")
 	flagSet.StringSliceVarP(&opt.ModulesFilter, "modules-filter", "m", []string{}, "modules filter")
-	flagSet.StringVarP(&opt.GenPackageName, "gen-package", "g", "./internal/i18n", "package name for generated files")
+
+	flagSet.StringVarP(&opt.GenPackageName, "gen-package", "g", "", "package name for generated files")
 }
 
 var wrap = func(err error, msg string) error {
@@ -59,7 +62,7 @@ var Cmd = &cobra.Command{
 			Supported:      util.Map(opt.Languages, language.Make),
 			Packages:       opt.Packages,
 			Dir:            opt.DstDir,
-			GenFile:        "catalog.go",
+			GenFile:        opt.GenFile,
 			GenPackage:     opt.GenPackageName,
 		}
 
