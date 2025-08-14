@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.20.16
+	github.com/clubpay/ronykit/kit v0.20.17
 	github.com/gobwas/ws v1.4.0
 	github.com/panjf2000/gnet/v2 v2.9.1
 )
