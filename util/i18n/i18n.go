@@ -6,37 +6,35 @@ import (
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"golang.org/x/text/message/catalog"
 )
 
 var (
 	ctxLangKey  = struct{}{}
 	defaultLang = language.English
-	bundles     = make(map[string]Bundle, 32)
+	bundles     = make(map[language.Tag]Bundle, 32)
 )
-
-func init() {
-	InitLanguage(defaultLang)
-}
 
 type Bundle struct {
 	p *message.Printer
 }
 
 func GetBundle(lang language.Tag) Bundle {
-	b, ok := bundles[lang.String()]
+	b, ok := bundles[lang]
 	if !ok {
-		b = bundles[defaultLang.String()]
+		b = bundles[defaultLang]
 	}
 
 	return b
 }
 
-func InitLanguage(lang language.Tag) Bundle {
-	bundles[lang.String()] = Bundle{
-		p: message.NewPrinter(lang),
+func InitLanguage(lang language.Tag, catalog catalog.Catalog) Bundle {
+	t, _, _ := catalog.Matcher().Match(language.Persian)
+	bundles[lang] = Bundle{
+		p: message.NewPrinter(t),
 	}
 
-	return bundles[lang.String()]
+	return bundles[lang]
 }
 
 func InjectContext(ctx context.Context, lang language.Tag) context.Context {
