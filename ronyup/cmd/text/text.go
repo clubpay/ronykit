@@ -58,7 +58,7 @@ var Cmd = &cobra.Command{
 		}
 
 		config := &pipeline.Config{
-			SourceLanguage: language.English,
+			SourceLanguage: language.Make(opt.SourceLang),
 			Supported:      util.Map(opt.Languages, language.Make),
 			Packages:       opt.Packages,
 			Dir:            opt.DstDir,

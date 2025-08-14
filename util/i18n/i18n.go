@@ -11,7 +11,7 @@ import (
 var (
 	ctxLangKey  = struct{}{}
 	defaultLang = language.English
-	bundles     = make(map[language.Tag]Bundle, 32)
+	bundles     = make(map[string]Bundle, 32)
 )
 
 func init() {
@@ -23,20 +23,20 @@ type Bundle struct {
 }
 
 func GetBundle(lang language.Tag) Bundle {
-	b, ok := bundles[lang]
+	b, ok := bundles[lang.String()]
 	if !ok {
-		b = bundles[defaultLang]
+		b = bundles[defaultLang.String()]
 	}
 
 	return b
 }
 
 func InitLanguage(lang language.Tag) Bundle {
-	bundles[lang] = Bundle{
+	bundles[lang.String()] = Bundle{
 		p: message.NewPrinter(lang),
 	}
 
-	return bundles[lang]
+	return bundles[lang.String()]
 }
 
 func InjectContext(ctx context.Context, lang language.Tag) context.Context {
