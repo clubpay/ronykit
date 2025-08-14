@@ -3,9 +3,12 @@ package text
 import (
 	"context"
 	"fmt"
+	"os"
+	"sort"
 
 	"github.com/clubpay/ronykit/util"
 	"github.com/spf13/cobra"
+	"golang.org/x/mod/modfile"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message/pipeline"
 	"golang.org/x/tools/go/packages"
@@ -16,6 +19,7 @@ var opt = struct {
 	Languages      []string
 	DstDir         string
 	Packages       []string
+	ModulesFilter  []string
 	GenPackageName string
 }{}
 
@@ -25,6 +29,7 @@ func init() {
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
+	flagSet.StringSliceVarP(&opt.ModulesFilter, "modules-filter", "m", []string{}, "modules filter")
 	flagSet.StringVarP(&opt.GenPackageName, "gen-package", "g", "./internal/i18n", "package name for generated files")
 }
 
@@ -41,7 +46,7 @@ var Cmd = &cobra.Command{
 	Use: "text",
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		if len(opt.Packages) == 0 {
-			packages, err := getAllPackages()
+			packages, err := getAllPackages(cmd)
 			if err != nil {
 				return wrap(err, "failed to get packages")
 			}
@@ -76,28 +81,92 @@ var Cmd = &cobra.Command{
 	},
 }
 
-func getAllPackages() ([]string, error) {
-	cfg := &packages.Config{
-		Context: context.Background(),
-		Mode:    packages.NeedName | packages.NeedFiles | packages.NeedModule,
-		Dir:     ".", // module root or any subdir
-	}
-	// ./... expands to all packages in the current module/workspace
-	pkgs, err := packages.Load(cfg, "./...")
+func isGoWorkspace() bool {
+	_, err := os.Stat("go.work")
+	return err == nil
+}
+
+func getAllWorkspaceDirectories(cmd *cobra.Command) ([]string, error) {
+	workData, err := os.ReadFile("go.work")
 	if err != nil {
-		return nil, fmt.Errorf("packages.Load: %w", err)
+		return nil, fmt.Errorf("read go.work: %w", err)
 	}
+
+	f, err := modfile.ParseWork("go.work", workData, nil)
+	if err != nil {
+		return nil, fmt.Errorf("parse go.work: %w", err)
+	}
+
+	dirs := make([]string, 0, len(f.Use))
+	for _, u := range f.Use {
+		if len(opt.ModulesFilter) > 0 {
+			filtered := false
+			for _, m := range opt.ModulesFilter {
+				if u.Path == m {
+					filtered = true
+
+					break
+				}
+			}
+			if !filtered {
+				continue
+			}
+		}
+		dirs = append(dirs, u.Path)
+	}
+
+	return dirs, nil
+}
+
+func getAllPackages(cmd *cobra.Command) ([]string, error) {
+	var dirs []string
+	if isGoWorkspace() {
+		cmd.Println("detected go workspace")
+		var err error
+		dirs, err = getAllWorkspaceDirectories(cmd)
+		if err != nil {
+			return nil, err
+		}
+
+		cmd.Println("using directories:", dirs)
+	} else {
+		dirs = []string{"."}
+	}
+
 	var out []string
-	seen := make(map[string]struct{})
-	for _, p := range pkgs {
-		if p.PkgPath == "" || len(p.GoFiles) == 0 {
-			continue // skip synthetic or empty packages
+	for _, dir := range dirs {
+		cfg := &packages.Config{
+			Context: context.Background(),
+			Mode:    packages.NeedName | packages.NeedFiles | packages.NeedModule,
+			Dir:     dir, // module root or any subdir
 		}
-		if _, ok := seen[p.PkgPath]; ok {
-			continue
+		// ./... expands to all packages in the current module/workspace
+		pkgs, err := packages.Load(cfg, "./...")
+		if err != nil {
+			return nil, fmt.Errorf("packages.Load: %w", err)
 		}
-		seen[p.PkgPath] = struct{}{}
-		out = append(out, p.PkgPath)
+
+		seen := make(map[string]struct{})
+		for _, p := range pkgs {
+			if p.PkgPath == "" || len(p.GoFiles) == 0 {
+				continue // skip synthetic or empty packages
+			}
+			if _, ok := seen[p.PkgPath]; ok {
+				continue
+			}
+			seen[p.PkgPath] = struct{}{}
+
+			out = append(out, p.PkgPath)
+		}
 	}
+
+	// Sort packages for consistent output
+	sort.Strings(out)
+
+	// Pretty print packages
+	for _, pkg := range out {
+		cmd.Printf("\t%s\n", pkg)
+	}
+
 	return out, nil
 }
