@@ -45,6 +45,7 @@ type BackendConfig struct {
 	DataConverter converter.DataConverter
 	Credentials   client.Credentials
 	Logger        log.Logger
+	WorkerOptions worker.Options
 }
 
 var _ Backend = (*realBackend)(nil)
@@ -56,6 +57,7 @@ type realBackend struct {
 	creds client.Credentials
 	dc    converter.DataConverter
 	w     worker.Worker
+	wOpts worker.Options
 
 	ns       string
 	group    string
@@ -65,6 +67,9 @@ type realBackend struct {
 }
 
 func NewBackend(cfg BackendConfig) (Backend, error) {
+	// This worker option is forced to be true according to temporal-go-sdk.
+	cfg.WorkerOptions.DisableRegistrationAliasing = true
+
 	b := &realBackend{
 		l:        cfg.Logger,
 		dc:       cfg.DataConverter,
@@ -74,6 +79,7 @@ func NewBackend(cfg BackendConfig) (Backend, error) {
 		taskQ:    cfg.TaskQueue,
 		hostport: cfg.HostPort,
 		secure:   cfg.Secure,
+		wOpts:    cfg.WorkerOptions,
 	}
 
 	err := b.init()
@@ -126,9 +132,7 @@ func (r *realBackend) init() error {
 	r.w = worker.New(
 		r.cli,
 		r.taskQ,
-		worker.Options{
-			DisableRegistrationAliasing: true,
-		},
+		r.wOpts,
 	)
 
 	return nil
