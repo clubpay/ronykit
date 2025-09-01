@@ -23,6 +23,10 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Context() workflow.Context {
 	return ctx.ctx
 }
 
+func (ctx WorkflowContext[REQ, RES, STATE]) WithCancel() (workflow.Context, workflow.CancelFunc) {
+	return workflow.WithCancel(ctx.ctx)
+}
+
 func (ctx WorkflowContext[REQ, RES, STATE]) NamedSelector(name string) Selector {
 	return workflow.NewNamedSelector(ctx.ctx, name)
 }
@@ -50,6 +54,14 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Sleep(d time.Duration) error {
 func (ctx WorkflowContext[REQ, RES, STATE]) Timer(d time.Duration) Future[temporal.CanceledError] {
 	return Future[temporal.CanceledError]{
 		f: workflow.NewTimer(ctx.ctx, d),
+	}
+}
+
+func (ctx WorkflowContext[REQ, RES, STATE]) TimerCtx(
+	wCtx Context, d time.Duration,
+) Future[temporal.CanceledError] {
+	return Future[temporal.CanceledError]{
+		f: workflow.NewTimer(wCtx, d),
 	}
 }
 
