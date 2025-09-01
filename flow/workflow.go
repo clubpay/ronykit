@@ -515,6 +515,23 @@ func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*Workf
 	return &e, nil
 }
 
+type DescribeWorkflowExecutionRequest struct {
+	WorkflowID string
+	RunID      string
+}
+
+func (sdk *SDK) DescribeWorkflowExecution(
+	ctx context.Context,
+	req DescribeWorkflowExecutionRequest,
+) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
+	workflowData, err := sdk.b.Client().DescribeWorkflowExecution(ctx, req.WorkflowID, req.RunID)
+	if err != nil {
+		return nil, err
+	}
+
+	return workflowData, nil
+}
+
 func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
 	return sdk.b.Client().SignalWorkflow(ctx, workflowID, "", signalName, arg)
 }
