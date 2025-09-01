@@ -520,16 +520,20 @@ type DescribeWorkflowExecutionRequest struct {
 	RunID      string
 }
 
+type DescribeWorkflowExecutionResponse struct {
+	Response *workflowservice.DescribeWorkflowExecutionResponse
+}
+
 func (sdk *SDK) DescribeWorkflowExecution(
 	ctx context.Context,
 	req DescribeWorkflowExecutionRequest,
-) (*workflowservice.DescribeWorkflowExecutionResponse, error) {
+) (*DescribeWorkflowExecutionResponse, error) {
 	workflowData, err := sdk.b.Client().DescribeWorkflowExecution(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
 		return nil, err
 	}
 
-	return workflowData, nil
+	return &DescribeWorkflowExecutionResponse{Response: workflowData}, nil
 }
 
 func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
