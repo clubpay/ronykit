@@ -9,9 +9,9 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.20.1
 	github.com/nexus-rpc/sdk-go v0.4.0
 	github.com/smartystreets/goconvey v1.8.1
-	go.opentelemetry.io/otel/trace v1.37.0
-	go.temporal.io/api v1.51.0
-	go.temporal.io/sdk v1.35.0
+	go.opentelemetry.io/otel/trace v1.38.0
+	go.temporal.io/api v1.52.0
+	go.temporal.io/sdk v1.36.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.16.0
 	google.golang.org/protobuf v1.36.6
@@ -29,7 +29,7 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.6.7 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
@@ -41,10 +41,10 @@ require (
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.63.0 // indirect
-	go.opentelemetry.io/otel v1.37.0 // indirect
+	go.opentelemetry.io/otel v1.38.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

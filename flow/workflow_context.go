@@ -89,8 +89,8 @@ func (ctx WorkflowContext[REQ, RES, STATE]) WorkflowType() string {
 	return workflow.GetInfo(ctx.ctx).WorkflowType.Name
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) ContinueAsNewError() error {
-	return workflow.NewContinueAsNewError(ctx.ctx, ctx.WorkflowType())
+func (ctx WorkflowContext[REQ, RES, STATE]) ContinueAsNewError(req REQ) error {
+	return workflow.NewContinueAsNewError(ctx.ctx, ctx.WorkflowType(), req)
 }
 
 func SideEffect[T any](ctx Context, fn func() T) (T, error) {
