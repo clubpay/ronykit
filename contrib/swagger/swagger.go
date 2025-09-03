@@ -148,11 +148,13 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		return
 	}
 
-	opID := serviceName + "." + c.Name
+	opID := definitionName(serviceName, c.Name)
 	op := spec.NewOperation(opID).
-		WithTags(serviceName).
 		WithProduces(contentType).
 		WithConsumes(contentType)
+	if serviceName != "" {
+		op.Tags = []string{serviceName}
+	}
 
 	if c.Deprecated {
 		op.Deprecate()
@@ -168,7 +170,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			http.StatusOK,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.OKResponse().Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.OKResponse().Message.Name))),
 				),
 		)
 	}
@@ -185,7 +187,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			r.ErrCode,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, r.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, r.Message.Name))),
 				).
 				WithDescription(fmt.Sprintf("Items: %s", strings.Join(possibleErrors[r.ErrCode], ", "))),
 		)
@@ -211,7 +213,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
 				),
 			)
 		}
@@ -222,7 +224,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
 				),
 			)
 		}
@@ -233,7 +235,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
 				),
 			)
 		}
@@ -327,7 +329,7 @@ func addSwagDefinition(swag *spec.Swagger, svcName string, m desc.ParsedMessage)
 		swag.Definitions = map[string]spec.Schema{}
 	}
 
-	swag.Definitions[svcName+"."+m.Name] = toSwagDefinition(svcName, m)
+	swag.Definitions[definitionName(svcName, m.Name)] = toSwagDefinition(svcName, m)
 }
 
 func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
@@ -365,7 +367,7 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 			} else {
 				setProperty(
 					&def, p.Name,
-					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", svcName, name))),
+					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(svcName, name)))),
 					idx,
 				)
 			}
@@ -686,4 +688,12 @@ func (chain schemaWrapperChain) Apply(schema *spec.Schema) spec.Schema {
 	}
 
 	return *schema
+}
+
+func definitionName(serviceName, name string) string {
+	if serviceName == "" {
+		return name
+	}
+
+	return serviceName + "." + name
 }
