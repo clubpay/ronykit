@@ -19,8 +19,8 @@ github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clubpay/ronykit/kit v0.21.2 h1:lVJrWrD1+Hm/+BenQ3ImQieI+Jgibbtt+LAM1b6Ftcg=
-github.com/clubpay/ronykit/kit v0.21.2/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
+github.com/clubpay/ronykit/kit v0.21.3 h1:xvb9ipjsDC7cqiBSlM55IKuGhe7nhhM+YX3XD/FUHhw=
+github.com/clubpay/ronykit/kit v0.21.3/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
 github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
