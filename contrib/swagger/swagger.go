@@ -65,10 +65,12 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 	for _, d := range descs {
 		ps := desc.Parse(d)
 
-		swag.Tags = append(
-			swag.Tags,
-			spec.NewTag(ps.Origin.Name, ps.Origin.Description, nil),
-		)
+		if ps.Origin.Name != "" {
+			swag.Tags = append(
+				swag.Tags,
+				spec.NewTag(ps.Origin.Name, ps.Origin.Description, nil),
+			)
+		}
 
 		for _, m := range ps.Messages() {
 			addSwagDefinition(swag, ps.Origin.Name, m)
