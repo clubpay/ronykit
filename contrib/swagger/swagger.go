@@ -71,7 +71,7 @@ func (sg *Generator) WriteSwagTo(w io.Writer, descs ...desc.ServiceDesc) error {
 		)
 
 		for _, m := range ps.Messages() {
-			addSwagDefinition(swag, m)
+			addSwagDefinition(swag, ps.Origin.Name, m)
 		}
 
 		for _, c := range ps.Contracts {
@@ -168,7 +168,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			http.StatusOK,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.OKResponse().Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.OKResponse().Message.Name)),
 				),
 		)
 	}
@@ -185,7 +185,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			r.ErrCode,
 			spec.NewResponse().
 				WithSchema(
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", r.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, r.Message.Name)),
 				).
 				WithDescription(fmt.Sprintf("Items: %s", strings.Join(possibleErrors[r.ErrCode], ", "))),
 		)
@@ -211,7 +211,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
 				),
 			)
 		}
@@ -222,7 +222,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
 				),
 			)
 		}
@@ -233,7 +233,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", c.Request.Message.Name)),
+					spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", serviceName, c.Request.Message.Name)),
 				),
 			)
 		}
@@ -322,15 +322,15 @@ func setSwagInputFormData(op *spec.Operation, c desc.ParsedContract) {
 	}
 }
 
-func addSwagDefinition(swag *spec.Swagger, m desc.ParsedMessage) {
+func addSwagDefinition(swag *spec.Swagger, svcName string, m desc.ParsedMessage) {
 	if swag.Definitions == nil {
 		swag.Definitions = map[string]spec.Schema{}
 	}
 
-	swag.Definitions[m.Name] = toSwagDefinition(m)
+	swag.Definitions[svcName+"."+m.Name] = toSwagDefinition(svcName, m)
 }
 
-func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
+func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 	def := spec.Schema{}
 	def.Typed("object", "")
 
@@ -365,7 +365,7 @@ func toSwagDefinition(m desc.ParsedMessage) spec.Schema {
 			} else {
 				setProperty(
 					&def, p.Name,
-					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", name))),
+					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s.%s", svcName, name))),
 					idx,
 				)
 			}
