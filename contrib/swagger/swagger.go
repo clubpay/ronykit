@@ -148,7 +148,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		return
 	}
 
-	opID := c.Name
+	opID := serviceName + "." + c.Name
 	op := spec.NewOperation(opID).
 		WithTags(serviceName).
 		WithProduces(contentType).
@@ -283,11 +283,13 @@ func setSwagInput(op *spec.Operation, c desc.ParsedContract) {
 		if hdr.Required {
 			op.AddParam(
 				spec.HeaderParam(hdr.Name).
+					Typed("string", "").
 					AsRequired(),
 			)
 		} else {
 			op.AddParam(
 				spec.HeaderParam(hdr.Name).
+					Typed("string", "").
 					AsOptional(),
 			)
 		}
