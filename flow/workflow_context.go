@@ -93,6 +93,14 @@ func (ctx WorkflowContext[REQ, RES, STATE]) ContinueAsNewError(req REQ) error {
 	return workflow.NewContinueAsNewError(ctx.ctx, ctx.WorkflowType(), req)
 }
 
+type Version = workflow.Version
+
+const DefaultVersion = workflow.DefaultVersion
+
+func (ctx WorkflowContext[REQ, RES, STATE]) GetVersion(changeID string, minVer, maxVer Version) Version {
+	return workflow.GetVersion(ctx.ctx, changeID, minVer, maxVer)
+}
+
 func SideEffect[T any](ctx Context, fn func() T) (T, error) {
 	reqEncoded := workflow.SideEffect(
 		ctx,
