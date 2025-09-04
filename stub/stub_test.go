@@ -89,14 +89,16 @@ var _ = Describe("Stub from URL", func() {
 })
 
 type sampleRequest struct {
-	Name     string  `json:"name"`
-	NamePtr  *string `json:"namePtr"`
-	Value    int     `json:"value"`
-	ValuePtr *int    `json:"valuePtr"`
+	Name     string   `json:"name"`
+	NamePtr  *string  `json:"namePtr"`
+	Value    int      `json:"value"`
+	ValuePtr *int     `json:"valuePtr"`
+	Strings  []string `json:"strings"`
+	Ints     []int64  `json:"ints"`
 }
 
 type postEchoResponse struct {
-	Args    map[string]string `json:"args"`
+	Args    map[string]any    `json:"args"`
 	Headers map[string]string `json:"headers"`
 	URL     string            `json:"url"`
 }
@@ -119,6 +121,9 @@ var _ = Describe("Stub AutoRun", func() {
 						Expect(v.Args["value"]).To(Equal("12345"))
 						Expect(v.Args["namePtr"]).To(Equal("someName"))
 						Expect(v.Args["valuePtr"]).To(Equal("12345"))
+						Expect(v.Args["strings"]).To(HaveLen(3))
+						Expect(v.Args["ints"]).To(HaveLen(3))
+						Expect(v.Args["strings"].([]any)[0]).To(Equal("a"))
 					default:
 						return stub.NewError(http.StatusInternalServerError, "unexpected status code")
 					}
@@ -127,13 +132,13 @@ var _ = Describe("Stub AutoRun", func() {
 				},
 			).
 			SetHeader("SomeKey", "SomeValue").
-			// DumpRequestTo(os.Stdout).
-			// DumpResponseTo(os.Stdout).
 			AutoRun(ctx, "get", kit.JSON, sampleRequest{
 				Name:     "someName",
 				Value:    12345,
 				NamePtr:  utils.ValPtr("someName"),
 				ValuePtr: utils.ValPtr(12345),
+				Strings:  []string{"a", "b", "c"},
+				Ints:     []int64{1, 2, 3},
 			})
 		defer httpCtx.Release()
 

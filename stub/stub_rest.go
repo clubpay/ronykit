@@ -532,11 +532,26 @@ func (hc *RESTCtx) AutoRun(
 				}
 
 				switch v := vv.Interface().(type) {
-				default:
-					hc.SetQuery(key, fmt.Sprintf("%v", v))
 				case nil:
 				case []byte:
 					hc.SetQuery(key, string(v))
+				default:
+					switch vv.Kind() {
+					default:
+						hc.SetQuery(key, fmt.Sprintf("%v", v))
+					case reflect.Slice:
+						el := vv.Type().Elem().Kind()
+						switch {
+						default:
+							hc.SetQuery(key, fmt.Sprintf("%v", v))
+						case el == reflect.String:
+							fallthrough
+						case el > reflect.Invalid && el < reflect.Complex64:
+							for i := 0; i < vv.Len(); i++ {
+								hc.AppendQuery(key, fmt.Sprintf("%v", vv.Index(i).Interface()))
+							}
+						}
+					}
 				}
 			},
 		)
