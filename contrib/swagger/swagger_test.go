@@ -143,7 +143,7 @@ func TestSwagger(t *testing.T) {
 var _ = Describe("ToSwaggerDefinition", func() {
 	ps := desc.Parse(testService{})
 	It("Check Request for Contract[0].Request (sampleReq)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Request.Message)
+		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("others"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
@@ -166,27 +166,27 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Contracts[0].Responses[0].Message)
+		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("out1"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("integer"))
 		Expect(props[1].Name).To(Equal("out2"))
 		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
 		Expect(props[2].Name).To(Equal("sub"))
-		Expect(props[2].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[2].SchemaProps.Ref.String()).To(Equal("#/definitions/testService.subRes"))
 		Expect(props[3].Name).To(Equal("subs"))
 		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
 		Expect(props[4].Name).To(Equal("xSub"))
-		Expect(props[4].SchemaProps.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[4].SchemaProps.Ref.String()).To(Equal("#/definitions/testService.subRes"))
 		Expect(props[4].SchemaProps.Description).To(Equal("[Optional]"))
 		Expect(props[5].Name).To(Equal("subs2"))
 		Expect(props[5].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[5].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/subRes"))
+		Expect(props[5].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
 	})
 
 	It("Check Request for Contract[1].Response (anotherRes)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Contracts[1].Responses[0].Message)
+		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[1].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("another"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
@@ -201,14 +201,14 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Contracts[2].Responses[0].Message)
+		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[2].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props
 	})
 
 	It("Check Request for Contract[3] (kit.MultipartForm)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Contracts[3].Responses[0].Message)
+		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[3].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props
