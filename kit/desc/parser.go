@@ -114,6 +114,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	pm := ParsedMessage{
 		original:       m,
 		Name:           mt.Name(),
+		PkgPath:        mt.PkgPath(),
 		Kind:           parseKind(mt),
 		RKind:          mt.Kind(),
 		Type:           typ("", mt),
@@ -131,7 +132,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 		return pm
 	}
 
-	ps.visited[mt.Name()] = struct{}{}
+	ps.setVisited(mt)
 
 	tagName := enc.Tag()
 	if tagName == "" {
@@ -161,7 +162,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	}
 
 	pm.Fields = fields
-	ps.parsed[mt.Name()] = &pm
+	ps.setParsed(mt, &pm)
 
 	return pm
 }
@@ -184,9 +185,9 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
 
 	case Object:
-		if ps.isParsed(ft.Name()) {
-			pe.Message = ps.parsed[ft.Name()]
-		} else if ps.isVisited(ft.Name()) {
+		if ps.isParsed(ft) {
+			pe.Message = ps.getParsed(ft)
+		} else if ps.isVisited(ft) {
 			panic(fmt.Sprintf("infinite recursion detected: %s", ft.Name()))
 		} else {
 			if ft.Kind() == reflect.Pointer {
@@ -200,14 +201,26 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 	return pe
 }
 
-func (ps *ParsedService) isParsed(name string) bool {
-	_, ok := ps.parsed[name]
+func (ps *ParsedService) setParsed(t reflect.Type, pm *ParsedMessage) {
+	ps.parsed[t.PkgPath()+t.Name()] = pm
+}
+
+func (ps *ParsedService) getParsed(t reflect.Type) *ParsedMessage {
+	return ps.parsed[t.PkgPath()+t.Name()]
+}
+
+func (ps *ParsedService) isParsed(t reflect.Type) bool {
+	_, ok := ps.parsed[t.PkgPath()+t.Name()]
 
 	return ok
 }
 
-func (ps *ParsedService) isVisited(name string) bool {
-	_, ok := ps.visited[name]
+func (ps *ParsedService) setVisited(t reflect.Type) {
+	ps.visited[t.PkgPath()+t.Name()] = struct{}{}
+}
+
+func (ps *ParsedService) isVisited(t reflect.Type) bool {
+	_, ok := ps.visited[t.PkgPath()+t.Name()]
 
 	return ok
 }
@@ -312,6 +325,7 @@ const (
 type ParsedMessage struct {
 	original       kit.Message
 	Name           string
+	PkgPath        string
 	Kind           Kind
 	RKind          reflect.Kind
 	Type           string
