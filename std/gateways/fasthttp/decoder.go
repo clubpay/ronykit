@@ -66,29 +66,24 @@ func GetParams(ctx *RequestCtx) Params {
 	)
 
 	// Walk over all the query params
-	ctx.QueryArgs().VisitAll(
-		func(key, value []byte) {
-			params = append(
-				params,
-				Param{
-					Key:   utils.B2S(key),
-					Value: utils.B2S(value),
-				},
-			)
-		},
-	)
-
-	ctx.PostArgs().VisitAll(
-		func(key, value []byte) {
-			params = append(
-				params,
-				Param{
-					Key:   utils.B2S(key),
-					Value: utils.B2S(value),
-				},
-			)
-		},
-	)
+	for key, value := range ctx.QueryArgs().All() {
+		params = append(
+			params,
+			Param{
+				Key:   strings.TrimSuffix(utils.B2S(key), "[]"),
+				Value: utils.B2S(value),
+			},
+		)
+	}
+	for key, value := range ctx.PostArgs().All() {
+		params = append(
+			params,
+			Param{
+				Key:   utils.B2S(key),
+				Value: utils.B2S(value),
+			},
+		)
+	}
 
 	return params
 }
