@@ -1,8 +1,8 @@
 module github.com/clubpay/ronykit/std/gateways/fasthttp
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.24.4
 
 require (
 	github.com/clubpay/ronykit/kit v0.21.8
@@ -10,7 +10,7 @@ require (
 	github.com/fasthttp/websocket v1.5.12
 	github.com/goccy/go-reflect v1.2.0
 	github.com/valyala/bytebufferpool v1.0.0
-	github.com/valyala/fasthttp v1.65.0
+	github.com/valyala/fasthttp v1.66.0
 )
 
 require (
@@ -22,8 +22,8 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

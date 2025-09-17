@@ -75,6 +75,7 @@ func GetParams(ctx *RequestCtx) Params {
 			},
 		)
 	}
+
 	for key, value := range ctx.PostArgs().All() {
 		params = append(
 			params,
