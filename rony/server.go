@@ -85,6 +85,10 @@ func (s *Server) PrintRoutes(w io.Writer) {
 	s.edge.PrintRoutes(w)
 }
 
+func (s *Server) PrintRoutesCompact(w io.Writer) {
+	s.edge.PrintRoutesCompact(w)
+}
+
 // Run the service in blocking mode. If you need more control over the
 // lifecycle of the service, you can use the Start and Stop methods.
 func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {

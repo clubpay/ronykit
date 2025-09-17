@@ -20,7 +20,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-// EdgeServer is the main component of the kit. It glues all other components of the
+// EdgeServer is the main element of the kit. It glues all other components of the
 // app to each other.
 type EdgeServer struct {
 	sb        *southBridge
