@@ -11,7 +11,7 @@ import (
 
 type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
 
-type activityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
+type ActivityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
 
 func NewActivity[REQ, RES, STATE any](
 	name, group string, fn ActivityFunc[REQ, RES, STATE],
@@ -27,13 +27,51 @@ func NewActivity[REQ, RES, STATE any](
 	return &act
 }
 
-func ToActivity[STATE, REQ, RES any](name, group string, rawFn activityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
+func NewActivityFactory[REQ, RES, STATE any](
+	name, group string, fn func(s STATE) ActivityFunc[REQ, RES, STATE],
+) *ActivityFactory[REQ, RES, STATE] {
+	stateT := reflect.TypeOf(fn).In(0)
+	actFactory := &ActivityFactory[REQ, RES, STATE]{}
+	registeredActivityFactories[stateT] = append(
+		registeredActivityFactories[stateT],
+		func(s any) temporalEntityT {
+			act := &Activity[REQ, RES, STATE]{
+				Name:  name,
+				Fn:    fn(s.(STATE)),
+				group: group,
+			}
+			actFactory.act = act
+
+			return act
+		},
+	)
+
+	return actFactory
+}
+
+func ToActivity[STATE, REQ, RES any](name, group string, rawFn ActivityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
 	return NewActivity(
 		name, group,
 		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
 
 			return rawFn(ctx.ctx, req)
+		},
+	)
+}
+
+func ToActivityFactory[STATE, REQ, RES any](
+	name, group string,
+	factoryFn func(s STATE) ActivityRawFunc[REQ, RES],
+) *ActivityFactory[REQ, RES, STATE] {
+	return NewActivityFactory(
+		name, group,
+		func(s STATE) ActivityFunc[REQ, RES, STATE] {
+			return func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
+				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+
+				return factoryFn(s)(ctx.ctx, req)
+			}
 		},
 	)
 }
@@ -148,6 +186,54 @@ func (a *Activity[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts Exec
 
 	return Future[RES]{
 		f: workflow.ExecuteLocalActivity(ctx, a.Name, req),
+	}
+}
+
+type ActivityFactory[REQ, RES, STATE any] struct {
+	act *Activity[REQ, RES, STATE]
+}
+
+func (a *ActivityFactory[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+	if opts.StartToCloseTimeout == 0 {
+		opts.StartToCloseTimeout = time.Minute
+	}
+	if opts.ScheduleToCloseTimeout == 0 {
+		opts.ScheduleToCloseTimeout = time.Hour * 24
+	}
+	ctx = workflow.WithActivityOptions(
+		ctx,
+		workflow.ActivityOptions{
+			TaskQueue:              a.act.backend.TaskQueue(),
+			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
+			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
+			StartToCloseTimeout:    opts.StartToCloseTimeout,
+			RetryPolicy:            opts.RetryPolicy,
+		},
+	)
+
+	return Future[RES]{
+		f: workflow.ExecuteActivity(ctx, a.act.Name, req),
+	}
+}
+
+func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+	if opts.StartToCloseTimeout == 0 {
+		opts.StartToCloseTimeout = time.Minute
+	}
+	if opts.ScheduleToCloseTimeout == 0 {
+		opts.ScheduleToCloseTimeout = time.Hour * 24
+	}
+	ctx = workflow.WithLocalActivityOptions(
+		ctx,
+		workflow.LocalActivityOptions{
+			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
+			StartToCloseTimeout:    opts.StartToCloseTimeout,
+			RetryPolicy:            opts.RetryPolicy,
+		},
+	)
+
+	return Future[RES]{
+		f: workflow.ExecuteLocalActivity(ctx, a.act.Name, req),
 	}
 }
 

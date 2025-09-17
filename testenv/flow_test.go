@@ -17,7 +17,7 @@ func TestFlow(t *testing.T) {
 		Prepare(t, c)
 		_, _ = c.Println(temporalHostPort)
 		_, _ = c.Println(TemporalUI)
-		sdk, err := flow.NewSDK(
+		b, err := flow.NewBackend(
 			flow.BackendConfig{
 				TaskQueue: "kitTest",
 				Namespace: "kitTest",
@@ -25,7 +25,8 @@ func TestFlow(t *testing.T) {
 			},
 		)
 		c.So(err, ShouldBeNil)
-		sdk.InitWithState("hello")
+		sdk := flow.NewSDK(flow.SDKConfig{DefaultBackend: b})
+		sdk.InitWithState(&State{Name: "StateName"})
 
 		err = sdk.Start()
 		c.So(err, ShouldBeNil)
@@ -57,7 +58,7 @@ type Response struct {
 
 var WFSelect = flow.NewWorkflow(
 	"Select", "",
-	func(ctx *flow.WorkflowContext[string, Response, string], req string) (*Response, error) {
+	func(ctx *flow.WorkflowContext[string, Response, *State], req string) (*Response, error) {
 		t1 := ctx.Timer(time.Second * 5)
 		t2 := ctx.Timer(time.Second * 10)
 		ch := flow.NewBufferedChannel[string](ctx.Context(), 10)
@@ -98,6 +99,33 @@ var WFSelect = flow.NewWorkflow(
 			s.Select(ctx.Context())
 		}
 
+		name, err := ACTGetName.Execute(
+			ctx.Context(), "Req1",
+			flow.ExecuteActivityOptions{},
+		).Get(ctx.Context())
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println(*name)
+
 		return utils.ValPtr(res), nil
 	},
 )
+
+type State struct {
+	Name string
+}
+
+var ACTGetName = flow.ToActivityFactory[*State, string, string](
+	"GetName", "",
+	func(s *State) flow.ActivityRawFunc[string, string] {
+		return s.GetName
+	},
+)
+
+func (s *State) GetName(ctx context.Context, req string) (*string, error) {
+	out := req + " " + s.Name
+
+	return &out, nil
+}

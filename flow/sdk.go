@@ -112,6 +112,16 @@ func (sdk *SDK) InitWithState(state any) {
 			}
 		}
 	}
+	for stateType, w := range registeredActivityFactories {
+		if stateType == reflect.TypeOf(state) {
+			for _, fn := range w {
+				fn(state).registerWithStateAny(sdk.b, state, true)
+				if sdk.old != nil {
+					fn(state).registerWithStateAny(sdk.old, state, false)
+				}
+			}
+		}
+	}
 }
 
 func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Duration) error {
@@ -129,6 +139,7 @@ type temporalEntityT interface {
 }
 
 var (
-	registeredWorkflows  = make(map[reflect.Type][]temporalEntityT)
-	registeredActivities = make(map[reflect.Type][]temporalEntityT)
+	registeredWorkflows         = make(map[reflect.Type][]temporalEntityT)
+	registeredActivities        = make(map[reflect.Type][]temporalEntityT)
+	registeredActivityFactories = make(map[reflect.Type][]func(s any) temporalEntityT)
 )
