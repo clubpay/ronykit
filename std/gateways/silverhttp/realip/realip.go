@@ -106,11 +106,13 @@ func FromRequest(ctx *silverlining.Context) string {
 		}
 	}
 
-	if ip, err := fromSpecialHeaders(ctx); err == nil {
+	ip, err := fromSpecialHeaders(ctx)
+	if err == nil {
 		return ip
 	}
 
-	if ip, err := fromForwardedHeaders(ctx); err == nil {
+	ip, err = fromForwardedHeaders(ctx)
+	if err == nil {
 		return ip
 	}
 

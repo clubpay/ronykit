@@ -547,7 +547,7 @@ func (hc *RESTCtx) AutoRun(
 						case el == reflect.String:
 							fallthrough
 						case el > reflect.Invalid && el < reflect.Complex64:
-							for i := 0; i < vv.Len(); i++ {
+							for i := range vv.Len() {
 								hc.AppendQuery(key, fmt.Sprintf("%v", vv.Index(i).Interface()))
 							}
 						}

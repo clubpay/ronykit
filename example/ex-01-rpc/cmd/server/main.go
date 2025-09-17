@@ -14,7 +14,6 @@ import (
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
-	_ "github.com/clubpay/ronykit/std/gateways/fastws"
 )
 
 func main() {

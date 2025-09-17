@@ -113,7 +113,8 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	res := &ctx.Response
 
 	// prepare request(replace headers and some URL host)
-	if ip, _, err := net.SplitHostPort(ctx.RemoteAddr().String()); err == nil {
+	ip, _, err := net.SplitHostPort(ctx.RemoteAddr().String())
+	if err == nil {
 		req.Header.Add("X-Forwarded-For", ip)
 	}
 
@@ -128,7 +129,7 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	req.SetHost(c.Addr)
 
 	// execute the request and rev response with timeout
-	err := p.doWithTimeout(c, req, res)
+	err = p.doWithTimeout(c, req, res)
 	if err != nil {
 		errorF(p.opt.logger, "p.doWithTimeout failed, err = %v, status = %d", err, res.StatusCode())
 		res.SetStatusCode(http.StatusInternalServerError)

@@ -36,7 +36,7 @@ func main() {
 	/*
 		Using the auto-generated service stub
 	*/
-	s2 := sampleservice.NewSampleServiceStub(
+	s2 := sampleservice.NewStub(
 		"127.0.0.1",
 	)
 	res2, err := s2.EchoGET(

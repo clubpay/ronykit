@@ -40,6 +40,8 @@ func (s *Server) initEdge() error {
 
 		switch s.cfg.serveDocsUI {
 		default:
+			fallthrough
+		case redocUI:
 			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
 				ReDocUI(s.cfg.allServiceDesc()...)
 		case swaggerUI:

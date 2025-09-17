@@ -56,7 +56,8 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 			break
 		}
 
-		if _, err := dst.Write(buf[:n]); err != nil {
+		_, err = dst.Write(buf[:n])
+		if err != nil {
 			return err
 		}
 	}

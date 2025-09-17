@@ -22,7 +22,7 @@ func statefulMiddlewareToKitHandler[S State[A], A Action](
 	// since Setup function guarantees that S is a pointer to a struct,
 	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
 
-	var handlers []kit.HandlerFunc
+	var handlers []kit.HandlerFunc //nolint:prealloc
 	for _, m := range mw {
 		handlers = append(
 			handlers,

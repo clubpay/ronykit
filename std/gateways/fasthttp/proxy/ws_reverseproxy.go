@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -169,7 +170,8 @@ func builtinForwardHeaderHandler(ctx *fasthttp.RequestCtx) (forwardHeader http.H
 	// httputil.ReverseProxy. See http://en.wikipedia.org/wiki/X-Forwarded-For
 	// for more information
 	// TODO: use RFC7239 http://tools.ietf.org/html/rfc7239
-	if clientIP, _, err := net.SplitHostPort(ctx.RemoteAddr().String()); err == nil {
+	clientIP, _, err := net.SplitHostPort(ctx.RemoteAddr().String())
+	if err == nil {
 		// If we aren't the first proxy retain prior
 		// X-Forwarded-For information as a comma+space
 		// separated list and fold multiple headers into one.
@@ -201,7 +203,8 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 			// true: handle websocket close error
 			errorF(logger, "replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
 
-			if ce, ok := err.(*websocket.CloseError); ok {
+			var ce *websocket.CloseError
+			if errors.As(err, &ce) {
 				msg = websocket.FormatCloseMessage(ce.Code, ce.Text)
 			} else {
 				errorF(logger, "replicateWebsocketConn: src.ReadMessage failed, err=%v", err)

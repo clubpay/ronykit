@@ -129,7 +129,7 @@ func Convert(err error) error {
 
 		var errMap map[string]any
 
-		_ = json.Unmarshal(utils.S2B(se.Item()), &errMap)
+		_ = json.Unmarshal(utils.S2B(se.Item()), &errMap) //nolint:errcheck
 		if errMap != nil {
 			if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
 				out.Item = item
