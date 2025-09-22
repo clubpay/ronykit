@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
+	"github.com/clubpay/ronykit/contrib/swagger/internal/testdata/a"
+	"github.com/clubpay/ronykit/contrib/swagger/internal/testdata/b"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
@@ -142,6 +144,7 @@ func TestSwagger(t *testing.T) {
 
 var _ = Describe("ToSwaggerDefinition", func() {
 	ps := desc.Parse(testService{})
+	ps2 := desc.Parse(testService2{})
 	It("Check Request for Contract[0].Request (sampleReq)", func() {
 		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
@@ -213,6 +216,13 @@ var _ = Describe("ToSwaggerDefinition", func() {
 
 		_ = props
 	})
+
+	It("Name Collision from Multiple Package", func() {
+		Expect(ps2.Messages()).To(HaveLen(3))
+		fmt.Println(ps2.Messages())
+		err := swagger.New("Test2", "", "").WriteSwagToFile("_swagger2.json", testService2{})
+		Expect(err).To(BeNil())
+	})
 })
 
 func BenchmarkSwagger(b *testing.B) {
@@ -225,4 +235,25 @@ func BenchmarkSwagger(b *testing.B) {
 			b.Error(err)
 		}
 	}
+}
+
+type testService2 struct{}
+
+type request struct {
+	A a.Document `json:"a"`
+	B b.Document `json:"b"`
+}
+
+func (t testService2) Desc() *desc.Service {
+	return (&desc.Service{
+		Name: "testService",
+	}).
+		AddContract(
+			desc.NewContract().
+				SetName("sumGET").
+				AddRoute(desc.Route("", fasthttp.GET("/some/:x/:y"))).
+				SetInput(&request{}).
+				SetOutput(&b.Document{}).
+				SetHandler(nil),
+		)
 }
