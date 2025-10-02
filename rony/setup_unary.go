@@ -60,6 +60,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 
 	c.
 		Out(&out).
+		SetDefaultError(&errs.Error{}).
 		SetHandler(handlers...)
 
 	if setupCtx.nodeSel != nil {
