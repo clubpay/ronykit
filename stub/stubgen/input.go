@@ -47,13 +47,14 @@ func (in *Input) Tags() []string {
 func (in *Input) addContract(c desc.ParsedContract) {
 	if c.Method != "" && c.Path != "" {
 		in.restMethods = append(in.restMethods, RESTMethod{
-			Name:       c.Name,
-			Method:     c.Method,
-			Path:       c.Path,
-			PathParams: c.PathParams,
-			Encoding:   utils.Coalesce(c.Encoding, "json"),
-			Request:    c.Request,
-			Responses:  c.Responses,
+			Name:            c.Name,
+			Method:          c.Method,
+			Path:            c.Path,
+			PathParams:      c.PathParams,
+			Encoding:        utils.Coalesce(c.Encoding, "json"),
+			Request:         c.Request,
+			Responses:       c.Responses,
+			DefaultResponse: c.DefaultError,
 		})
 	}
 
@@ -151,13 +152,14 @@ func isBuiltinPackage(pkgpath string) bool {
 
 // RESTMethod represents the description of a Contract with kit.RESTRouteSelector.
 type RESTMethod struct {
-	Name       string
-	Method     string
-	Path       string
-	PathParams []string
-	Encoding   string
-	Request    desc.ParsedRequest
-	Responses  []desc.ParsedResponse
+	Name            string
+	Method          string
+	Path            string
+	PathParams      []string
+	Encoding        string
+	Request         desc.ParsedRequest
+	Responses       []desc.ParsedResponse
+	DefaultResponse *desc.ParsedResponse
 }
 
 func (rm *RESTMethod) GetOKResponse() desc.ParsedResponse {
@@ -174,6 +176,14 @@ func (rm *RESTMethod) GetErrors() []desc.ParsedResponse {
 			return src.IsError()
 		}, rm.Responses,
 	)
+}
+
+func (rm *RESTMethod) HasDefaultResponse() bool {
+	return rm.DefaultResponse != nil
+}
+
+func (rm *RESTMethod) GetDefaultResponse() *desc.ParsedResponse {
+	return rm.DefaultResponse
 }
 
 // RPCMethod represents the description of a Contract with kit.RPCRouteSelector

@@ -18,6 +18,7 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 			desc.NewContract().
 				SetInput(&dto.VeryComplexRequest{}).
 				SetOutput(&dto.VeryComplexResponse{}).
+				SetDefaultError(dto.Err(http.StatusBadRequest, "INPUT")).
 				AddRoute(desc.Route("ComplexDummy", fasthttp.POST("/complexDummy"))).
 				AddRoute(desc.Route("ComplexDummy2", fasthttp.POST("/complexDummy/:key1"))).
 				AddRoute(desc.Route("ComplexDummy3", fasthttp.RPC("complexDummy"))).

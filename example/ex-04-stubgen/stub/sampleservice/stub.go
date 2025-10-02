@@ -144,7 +144,14 @@ func (s sampleServiceStub) ComplexDummy(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.NewError(r.StatusCode(), string(r.GetBody()))
+
+				res := &ErrorMessage{}
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		AutoRun(ctx, "/complexDummy", kit.CustomEncoding("json"), req)
@@ -186,7 +193,14 @@ func (s sampleServiceStub) ComplexDummy2(
 		).
 		DefaultResponseHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-				return stub.NewError(r.StatusCode(), string(r.GetBody()))
+
+				res := &ErrorMessage{}
+				err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+				if err != nil {
+					return err
+				}
+
+				return stub.NewErrorWithMsg(res)
 			},
 		).
 		AutoRun(ctx, "/complexDummy/{key1}", kit.CustomEncoding("json"), req)

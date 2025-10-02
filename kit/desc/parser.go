@@ -99,6 +99,14 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 			)
 		}
 
+		if c.DefaultError != nil {
+			pc.DefaultError = &ParsedResponse{
+				Message: ps.parseMessage(c.DefaultError.Message, c.DefaultError.Meta, s.Selector.GetEncoding()),
+				ErrCode: c.DefaultError.Code,
+				ErrItem: c.DefaultError.Item,
+			}
+		}
+
 		pcs = append(pcs, pc)
 	}
 
@@ -245,8 +253,9 @@ type ParsedContract struct {
 	Method     string
 	Predicate  string
 
-	Request   ParsedRequest
-	Responses []ParsedResponse
+	Request      ParsedRequest
+	Responses    []ParsedResponse
+	DefaultError *ParsedResponse
 }
 
 func (pc ParsedContract) SuggestName() string {

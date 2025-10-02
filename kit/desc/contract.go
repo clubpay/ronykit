@@ -58,6 +58,7 @@ type Contract struct {
 	Output         kit.Message
 	OutputMeta     MessageMeta
 	PossibleErrors []Error
+	DefaultError   *Error
 }
 
 func NewContract() *Contract {
@@ -138,6 +139,14 @@ func (c *Contract) AddError(err kit.ErrorMessage) *Contract {
 			Message: err,
 		},
 	)
+
+	return c
+}
+
+func (c *Contract) SetDefaultError(err kit.ErrorMessage) *Contract {
+	c.DefaultError = &Error{
+		Message: err,
+	}
 
 	return c
 }

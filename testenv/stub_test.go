@@ -22,8 +22,8 @@ import (
 func TestDecoder(t *testing.T) {
 	Convey("Decoder", t, func(c C) {
 		testCases := map[string]func(t *testing.T, opt fx.Option) func(c C){
-			//"Stub with Run":       stubWithRun,
-			//"Stub with AutoRun 1": stubWithAutoRun1,
+			"Stub with Run":       stubWithRun,
+			"Stub with AutoRun 1": stubWithAutoRun1,
 			"Stub With AutoRun 2": stubWithAutoRun2,
 		}
 		for title, fn := range testCases {

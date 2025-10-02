@@ -196,6 +196,17 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		)
 	}
 
+	if c.DefaultError != nil {
+		op.WithDefaultResponse(
+			spec.NewResponse().
+				WithSchema(
+					spec.RefProperty(
+						fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.DefaultError.Message.Name)),
+					),
+				),
+		)
+	}
+
 	switch c.Encoding {
 	default:
 		setSwagInput(op, c)

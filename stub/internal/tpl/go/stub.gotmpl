@@ -148,11 +148,26 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 
 		},
 		).
+			{{ if .HasDefaultResponse }}
+		DefaultResponseHandler(
+		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
+			{{ $errDto := .GetDefaultResponse }}
+			res := &{{$errDto.Message.Name}}{}
+			err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
+			if err != nil {
+			return err
+			}
+
+			return stub.NewErrorWithMsg(res)
+		},
+		).
+			{{ else }}
 		DefaultResponseHandler(
 		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 		return stub.NewError(r.StatusCode(), string(r.GetBody()))
 		},
 		).
+			{{end}}
 		AutoRun(ctx, "{{.Path}}", kit.CustomEncoding("{{.Encoding}}"), req)
 		defer httpCtx.Release()
 
