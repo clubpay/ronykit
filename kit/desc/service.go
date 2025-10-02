@@ -15,6 +15,7 @@ type Service struct {
 	Description    string
 	Encoding       kit.Encoding
 	PossibleErrors []Error
+	DefaultError   *Error
 	Wrappers       []kit.ServiceWrapper
 	Contracts      []Contract
 	Handlers       []kit.HandlerFunc
@@ -102,6 +103,14 @@ func (s *Service) AddError(err kit.ErrorMessage) *Service {
 			Message: err,
 		},
 	)
+
+	return s
+}
+
+func (s *Service) SetDefaultError(err kit.ErrorMessage) *Service {
+	s.DefaultError = &Error{
+		Message: err,
+	}
 
 	return s
 }
