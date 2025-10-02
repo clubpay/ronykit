@@ -538,11 +538,11 @@ func ParseService(svc *Service) ParsedService {
 	}
 
 	for _, c := range svc.Contracts {
-		c.PossibleErrors = append(c.PossibleErrors, svc.PossibleErrors...)
-		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)
 		if c.DefaultError == nil {
 			c.DefaultError = svc.DefaultError
 		}
+		c.PossibleErrors = append(c.PossibleErrors, svc.PossibleErrors...)
+		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)
 	}
 
 	return pd
