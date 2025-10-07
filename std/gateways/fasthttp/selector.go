@@ -130,3 +130,11 @@ func (r Selector) Query(q string) interface{} {
 
 	return nil
 }
+
+func (r Selector) String() string {
+	if r.Predicate != "" {
+		return r.Predicate
+	}
+
+	return fmt.Sprintf("%s %s", r.Method, r.Path)
+}

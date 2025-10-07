@@ -48,6 +48,10 @@ func (r Selector) Query(q string) any {
 	return nil
 }
 
+func (r Selector) String() string {
+	return r.Predicate
+}
+
 type routeData struct {
 	ServiceName string
 	Predicate   string

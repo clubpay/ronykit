@@ -41,10 +41,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract //nolint:prealloc
 
 	for idx, s := range c.RouteSelectors {
-		name := s.Name
-		if name == "" {
-			name = c.Name
-		}
+		name := utils.Coalesce(s.Name, c.Name, s.Selector.String())
 
 		pc := ParsedContract{
 			Index:      idx,

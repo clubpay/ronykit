@@ -11,6 +11,7 @@ package kit
 type RouteSelector interface {
 	Query(q string) any
 	GetEncoding() Encoding
+	String() string
 }
 
 // RESTRouteSelector is an interface that extends RouteSelector with methods specific to REST operations,
