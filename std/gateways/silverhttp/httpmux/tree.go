@@ -361,7 +361,7 @@ walk: // Outer loop for walking the tree
 					// trailing slash if a leaf exists for that path.
 					tsr = path == "/" && n.handle != nil
 
-					return
+					return handle, ps, tsr
 				}
 
 				// Handle wildcard child
@@ -400,11 +400,11 @@ walk: // Outer loop for walking the tree
 						// ... but we can't
 						tsr = len(path) == end+1
 
-						return
+						return handle, ps, tsr
 					}
 
 					if handle = n.handle; handle != nil {
-						return
+						return handle, ps, tsr
 					} else if len(n.children) == 1 {
 						// No handle found. Check if a handle for this path + a
 						// trailing slash exists for TSR recommendation
@@ -412,7 +412,7 @@ walk: // Outer loop for walking the tree
 						tsr = (n.path == "/" && n.handle != nil) || (n.path == "" && n.indices == "/")
 					}
 
-					return
+					return handle, ps, tsr
 
 				case catchAll:
 					// Save param value
@@ -431,7 +431,7 @@ walk: // Outer loop for walking the tree
 
 					handle = n.handle
 
-					return
+					return handle, ps, tsr
 
 				default:
 					panic("invalid node type")
@@ -441,7 +441,7 @@ walk: // Outer loop for walking the tree
 			// We should have reached the node containing the handle.
 			// Check if this node has a handle registered.
 			if handle = n.handle; handle != nil {
-				return
+				return handle, ps, tsr
 			}
 
 			// If there is no handle for this route, but this route has a
@@ -450,7 +450,7 @@ walk: // Outer loop for walking the tree
 			if path == "/" && n.wildChild && n.nType != root {
 				tsr = true
 
-				return
+				return handle, ps, tsr
 			}
 
 			// No handle found. Check if a handle for this path + a
@@ -461,11 +461,11 @@ walk: // Outer loop for walking the tree
 					tsr = (len(n.path) == 1 && n.handle != nil) ||
 						(n.nType == catchAll && n.children[0].handle != nil)
 
-					return
+					return handle, ps, tsr
 				}
 			}
 
-			return
+			return handle, ps, tsr
 		}
 
 		// Nothing found. We can recommend redirecting to the same URL with an
@@ -474,7 +474,7 @@ walk: // Outer loop for walking the tree
 			(len(prefix) == len(path)+1 && prefix[len(path)] == '/' &&
 				path == prefix[:len(prefix)-1] && n.handle != nil)
 
-		return
+		return handle, ps, tsr
 	}
 }
 

@@ -4,7 +4,7 @@ import "go.opentelemetry.io/otel/exporters/prometheus"
 
 type ExporterOption func(e *Exporter) error
 
-func WithPrometheus(opt ...prometheus.Option) ExporterOption {
+func WithPrometheus(_ ...prometheus.Option) ExporterOption {
 	return func(e *Exporter) error {
 		exp, err := prometheus.New()
 		if err != nil {

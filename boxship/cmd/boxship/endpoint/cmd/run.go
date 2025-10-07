@@ -75,10 +75,12 @@ func runContainers(names ...string) func(lc fx.Lifecycle, bCtx *boxship.Context)
 		lc.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
 				bCtx.Log().Infof("running containers: %v", names)
+
 				err := bCtx.CreateNetwork(settings.TraefikNetwork)
 				if err != nil {
 					bCtx.Log().Warnf("got error on creating network[%s]: %v", settings.TraefikNetwork, err)
 				}
+
 				bCtx.RegisterContainerDesc(preset.TraefikX(bCtx.Settings()))
 
 				return onStart(ctx)

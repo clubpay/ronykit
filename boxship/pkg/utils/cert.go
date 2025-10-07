@@ -75,12 +75,12 @@ func CreateCert(
 ) (cert *x509.Certificate, err error) {
 	certDER, err := CreateCertDER(template, parent, pub, parentPriv)
 	if err != nil {
-		return
+		return cert, err
 	}
 	// parse the resulting certificate so we can use it again
 	cert, err = x509.ParseCertificate(certDER)
 
-	return
+	return cert, err
 }
 
 func CreateCertDER(

@@ -49,7 +49,7 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 
 	switch t.exp {
 	case expOTLP, expOTLPHttp:
-		b, err = otlpHttpExporter(t.endpoint)
+		b, err = otlpHTTP00Exporter(t.endpoint)
 	case expOTLPGrpc:
 		b, err = otlpGrpcExporter(t.endpoint)
 	case expSTDPretty:
@@ -87,7 +87,7 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 	return &t, nil
 }
 
-func otlpHttpExporter(endPoint string) (sdktrace.SpanExporter, error) {
+func otlpHTTP00Exporter(endPoint string) (sdktrace.SpanExporter, error) {
 	c := otlptracehttp.NewClient(
 		otlptracehttp.WithEndpoint(endPoint),
 		otlptracehttp.WithInsecure(),

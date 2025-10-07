@@ -54,6 +54,7 @@ func setupDNS() func(lc fx.Lifecycle, bCtx *boxship.Context) {
 				}
 
 				var domains []string
+
 				bCtx.ForEachContainer(
 					func(desc boxship.ContainerDesc) {
 						if desc.Disable || desc.HTTPRoute == nil {
@@ -70,6 +71,7 @@ func setupDNS() func(lc fx.Lifecycle, bCtx *boxship.Context) {
 
 				bCtx.Log().Infof("adding the following domains: %v", domains)
 				hosts.AddHosts("127.0.0.1", domains)
+
 				err = hosts.Save()
 				if err != nil {
 					return err
@@ -79,6 +81,7 @@ func setupDNS() func(lc fx.Lifecycle, bCtx *boxship.Context) {
 				if err != nil {
 					return err
 				}
+
 				bCtx.Log().Infof("hosts file updated: \r\n %s", hosts.RenderHostsFile())
 
 				return nil

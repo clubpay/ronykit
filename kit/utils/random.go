@@ -99,7 +99,7 @@ func RandomInt64(n int64) (x int64) {
 
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // RandomInt32 produces a pseudo-random 31bit number, if n == 0 there will be no limit otherwise
@@ -114,7 +114,7 @@ func RandomInt32(n int32) (x int32) {
 
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // SecureRandomInt63 produces a secure pseudo-random 63bit number
@@ -130,7 +130,7 @@ func SecureRandomInt63(n int64) (x int64) {
 		x = int64(xx >> 1)
 	}
 
-	return
+	return x
 }
 
 func RandomInt(n int) (x int) {
@@ -143,7 +143,7 @@ func RandomInt(n int) (x int) {
 
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // RandomUint64 produces a pseudo-random unsigned number
@@ -157,7 +157,7 @@ func RandomUint64(n uint64) (x uint64) {
 
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // SecureRandomUint64 produces a secure pseudo-random 64bit number
@@ -167,5 +167,5 @@ func SecureRandomUint64() (x uint64) {
 	_, _ = rand.Read(b[:])
 	x = binary.BigEndian.Uint64(b[:])
 
-	return
+	return x
 }

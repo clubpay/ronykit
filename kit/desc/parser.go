@@ -538,6 +538,7 @@ func ParseService(svc *Service) ParsedService {
 		if c.DefaultError == nil {
 			c.DefaultError = svc.DefaultError
 		}
+
 		c.PossibleErrors = append(c.PossibleErrors, svc.PossibleErrors...)
 		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)
 	}
