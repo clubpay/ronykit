@@ -17,6 +17,11 @@ type EchoRequest struct {
 type EchoResponse struct {
 	Embedded
 	Output string `json:"output"`
+	MyInterface XInterface `json:"interface"`
+}
+
+type XInterface interface {
+	X() string
 }
 
 type Embedded struct {

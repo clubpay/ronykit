@@ -79,6 +79,8 @@ type VeryComplexResponse struct {
 	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty" `
 	SliceKey1 []uint8             `json:"sliceKey1" `
 	SliceKey2 []KeyValue          `json:"sliceKey2" `
+	NoOutput  int                 `json:"-" `
+	Printer   map[string]any      `json:"printer" `
 }
 
 type IsampleServiceStub interface {
