@@ -51,15 +51,15 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	default:
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, true))
 
-		c.In(&in)
+		c.In(&in, cfg.InputMetaOptions...)
 	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, false))
 
-		c.In(in)
+		c.In(in, cfg.InputMetaOptions...)
 	}
 
 	c.
-		Out(&out).
+		Out(&out, cfg.OutputMetaOptions...).
 		SetDefaultError(&errs.Error{}).
 		SetHandler(handlers...)
 
@@ -120,15 +120,15 @@ func registerRawUnary[IN Message, S State[A], A Action](
 	default:
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, true))
 
-		c.In(&in)
+		c.In(&in, cfg.InputMetaOptions...)
 	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, false))
 
-		c.In(in)
+		c.In(in, cfg.InputMetaOptions...)
 	}
 
 	c.
-		Out(out).
+		Out(out, cfg.OutputMetaOptions...).
 		SetHandler(handlers...)
 
 	if setupCtx.nodeSel != nil {
@@ -250,6 +250,18 @@ func UnaryDeprecated(deprecated bool) UnarySelectorOption {
 	UnaryOption
 */
 
+func UnaryInputMeta(opt ...desc.MessageMetaOption) UnaryOption {
+	return func(cfg *unaryConfig) {
+		cfg.InputMetaOptions = opt
+	}
+}
+
+func UnaryOutputMeta(opt ...desc.MessageMetaOption) UnaryOption {
+	return func(cfg *unaryConfig) {
+		cfg.OutputMetaOptions = opt
+	}
+}
+
 var (
 	OptionalHeader = desc.OptionalHeader
 	RequiredHeader = desc.RequiredHeader
@@ -311,9 +323,11 @@ func UnaryMiddleware(
 }
 
 type unaryConfig struct {
-	Selectors   []unarySelectorConfig
-	Middlewares []StatelessMiddleware
-	Headers     []desc.Header
+	Selectors         []unarySelectorConfig
+	Middlewares       []StatelessMiddleware
+	Headers           []desc.Header
+	InputMetaOptions  []desc.MessageMetaOption
+	OutputMetaOptions []desc.MessageMetaOption
 }
 
 func genUnaryConfig(opt ...UnaryOption) unaryConfig {

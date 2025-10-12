@@ -44,8 +44,6 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	)
 
 	c := desc.NewContract().
-		In(&in).
-		Out(&out).
 		SetName(reflect.TypeOf(h).Name()).
 		SetHandler(handlers...)
 
@@ -58,12 +56,27 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 		c.AddRoute(desc.Route(s.Name, s.Selector))
 	}
 
+	c.In(&in, cfg.InputMetaOptions...).
+		Out(&out, cfg.OutputMetaOptions...)
+
 	setupCtx.cfg.getService(setupCtx.name).AddContract(c)
 }
 
 /*
 	StreamOption
 */
+
+func StreamInputMeta(opt ...desc.MessageMetaOption) StreamOption {
+	return func(cfg *streamConfig) {
+		cfg.InputMetaOptions = opt
+	}
+}
+
+func StreamOutputMeta(opt ...desc.MessageMetaOption) StreamOption {
+	return func(cfg *streamConfig) {
+		cfg.OutputMetaOptions = opt
+	}
+}
 
 // RPC is a StreamOption to set up an RPC handler.
 func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
@@ -76,7 +89,9 @@ func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
 }
 
 type streamConfig struct {
-	Selectors []streamSelectorConfig
+	Selectors         []streamSelectorConfig
+	InputMetaOptions  []desc.MessageMetaOption
+	OutputMetaOptions []desc.MessageMetaOption
 }
 
 func genStreamConfig(opt ...StreamOption) streamConfig {
