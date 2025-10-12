@@ -368,7 +368,7 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 			continue
 		}
 
-		name, kind, wrapFuncChain := getWrapFunc(p)
+		name, kind, wrapFuncChain := getWrapFunc(p, m.Meta.Fields[p.GoName])
 
 		switch kind {
 		default:
@@ -408,7 +408,7 @@ func setProperty(def *spec.Schema, name string, prop spec.Schema, idx int) {
 	def.SetProperty(name, prop)
 }
 
-func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
+func getWrapFunc(p desc.ParsedField, meta desc.FieldMeta) (string, desc.Kind, schemaWrapperChain) {
 	var (
 		wrapFuncChain = schemaWrapperChain{}
 		name          string
@@ -419,7 +419,6 @@ func getWrapFunc(p desc.ParsedField) (string, desc.Kind, schemaWrapperChain) {
 	elem := p.Element
 
 Loop:
-
 	switch kind {
 	default:
 	case desc.Object:
@@ -440,9 +439,14 @@ Loop:
 		goto Loop
 	}
 
+	possibleValues := p.Tag.PossibleValues
+	if meta.Enum != nil {
+		possibleValues = meta.Enum
+	}
+
 	enum := utils.Map(
 		func(v string) any { return v },
-		p.Tag.PossibleValues,
+		possibleValues,
 	)
 	if len(enum) > 0 {
 		wrapFuncChain = wrapFuncChain.Add(
@@ -454,7 +458,7 @@ Loop:
 		)
 	}
 
-	if p.Tag.Optional || p.Optional {
+	if p.Tag.Optional || p.Optional || meta.Optional {
 		wrapFuncChain = wrapFuncChain.Add(
 			func(schema *spec.Schema) *spec.Schema {
 				spacer := ""
@@ -469,7 +473,7 @@ Loop:
 		)
 	}
 
-	if p.Tag.Deprecated {
+	if p.Tag.Deprecated || meta.Deprecated {
 		wrapFuncChain = wrapFuncChain.Add(
 			func(schema *spec.Schema) *spec.Schema {
 				spacer := ""

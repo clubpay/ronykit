@@ -162,6 +162,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 				Embedded: f.Anonymous,
 				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
 				Exported: f.IsExported(),
+				Meta:     meta.Fields[f.Name],
 			},
 		)
 	}
@@ -486,6 +487,7 @@ type ParsedField struct {
 	Optional    bool
 	Embedded    bool
 	Exported    bool
+	Meta        FieldMeta
 
 	Element *ParsedElement
 }
