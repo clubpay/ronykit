@@ -16,7 +16,14 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 		AddError(dto.Err(http.StatusBadRequest, "INPUT")).
 		AddContract(
 			desc.NewContract().
-				SetInput(&dto.EchoRequest{}).
+				SetInput(
+					&dto.EchoRequest{},
+					desc.WithField(
+						"OptionalStrField", desc.FieldMeta{
+							Enum: []string{"a", "b", "c"},
+						},
+					),
+				).
 				SetOutput(&dto.EchoResponse{}).
 				AddRoute(desc.Route("EchoGET", fasthttp.REST(http.MethodGet, "/echo/:randomID"))).
 				AddRoute(desc.Route("EchoPOST", fasthttp.REST(http.MethodPost, "/echo-post"))).

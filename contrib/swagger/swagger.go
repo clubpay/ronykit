@@ -150,7 +150,7 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 		return
 	}
 
-	opID := definitionName(serviceName, c.Name)
+	opID := definitionName(serviceName, c.SelectorName)
 
 	op := spec.NewOperation(opID).
 		WithProduces(contentType).

@@ -41,14 +41,13 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract //nolint:prealloc
 
 	for idx, s := range c.RouteSelectors {
-		name := utils.Coalesce(s.Name, c.Name, s.Selector.String())
-
 		pc := ParsedContract{
-			Index:      idx,
-			GroupName:  c.Name,
-			Name:       name,
-			Deprecated: s.Deprecated,
-			Encoding:   s.Selector.GetEncoding().Tag(),
+			Index:        idx,
+			GroupName:    c.Name,
+			Name:         utils.Coalesce(s.Name, c.Name),
+			SelectorName: utils.Coalesce(s.Name, s.Selector.String()),
+			Deprecated:   s.Deprecated,
+			Encoding:     s.Selector.GetEncoding().Tag(),
 		}
 
 		switch r := s.Selector.(type) {
@@ -239,11 +238,12 @@ const (
 )
 
 type ParsedContract struct {
-	Index      int
-	GroupName  string
-	Name       string
-	Encoding   string
-	Deprecated bool
+	Index        int
+	GroupName    string
+	Name         string
+	SelectorName string
+	Encoding     string
+	Deprecated   bool
 
 	Type       ContractType
 	Path       string

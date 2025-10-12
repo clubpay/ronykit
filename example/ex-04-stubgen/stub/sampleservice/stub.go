@@ -29,6 +29,26 @@ func init() {
 	reflector.Register(&VeryComplexResponse{}, "json")
 }
 
+type IsampleServiceStub interface {
+	ComplexDummy(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, error)
+
+	ComplexDummy2(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, error)
+
+	GetComplexDummy(
+		ctx context.Context,
+		req *VeryComplexRequest,
+		opt ...stub.RESTOption,
+	) (*VeryComplexResponse, error)
+}
+
 // ErrorMessage is a data transfer object
 type ErrorMessage struct {
 	Code int    `json:"code" `
@@ -81,20 +101,6 @@ type VeryComplexResponse struct {
 	SliceKey2 []KeyValue          `json:"sliceKey2" `
 	NoOutput  int                 `json:"-" `
 	Printer   map[string]any      `json:"printer" `
-}
-
-type IsampleServiceStub interface {
-	ComplexDummy(
-		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, error)
-
-	ComplexDummy2(
-		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, error)
-
-	GetComplexDummy(
-		ctx context.Context, req *VeryComplexRequest, opt ...stub.RESTOption,
-	) (*VeryComplexResponse, error)
 }
 
 // sampleServiceStub represents the client/stub for sampleService.
@@ -303,11 +309,13 @@ type sampleServiceStubMock struct {
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
 	) (*VeryComplexResponse, error)
+
 	complexdummy2 func(
 		ctx context.Context,
 		req *VeryComplexRequest,
 		opt ...stub.RESTOption,
 	) (*VeryComplexResponse, error)
+
 	getcomplexdummy func(
 		ctx context.Context,
 		req *VeryComplexRequest,

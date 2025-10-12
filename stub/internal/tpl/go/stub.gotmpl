@@ -2,16 +2,24 @@
 		This is a template block to generate a DTO struct
 */}}
 
+{{ define "swagTag" }}
+	{{- if gt (len (.Tag.Get "swag")) 0 -}}swag:"{{.Tag.Get "swag"}}"
+	{{- else -}} {{ .Meta.SwagTag }}
+	{{- end -}}
+{{ end }}
+
 {{ define "dto" }}
 	// {{.Name}} is a data transfer object
 	type {{.Name}} struct {
-	{{- range .ExportedFields -}}
+	{{- range .ExportedFields }}
+
+
 		{{- if .Embedded }}
 			{{.GoName}}
 		{{- else if eq .Element.Kind ""}}
-			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty -}},omitempty{{- end -}}" {{ if gt (len (.Tag.Get "swag")) 0}} swag:"{{.Tag.Get "swag"}}"{{end}}`{{- end }}
+			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
 		{{- else }}
-			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty -}},omitempty{{- end -}}" {{ if gt (len (.Tag.Get "swag")) 0}} swag:"{{.Tag.Get "swag"}}"{{end}}`{{- end }}
+			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
 		{{- end }}
 	{{- end }}
 	}
@@ -27,6 +35,20 @@
 			}
 		{{- end }}
 	{{- end }}
+	{{ with $msg := . }}
+		{{ range .ExportedFields -}}
+		{{ if gt (len .Meta.Enum) 0 }}
+			type {{$msg.Name}}_{{.GoName}}ENUM = string
+			{{ with $field := . }}
+			const (
+				{{- range $_, $enum := $field.Meta.Enum }}
+				{{$msg.Name}}_{{$field.GoName}}_{{camelCase $enum}} = "{{$enum}}"
+				{{- end }}
+			)
+			{{ end }}
+		{{ end }}
+		{{ end }}
+	{{ end }}
 {{ end }}
 
 
@@ -67,27 +89,29 @@ func init() {
 }
 
 {{/*
+			Generating the Service Stub
+*/}}
+{{$serviceName := .Name}}
+type I{{$serviceName}}Stub interface {
+{{ range .RESTMethods }}
+	{{ $methodName := .Name }}
+	{{ if and (ne $methodName "") .HasOKResponse -}}
+	{{$methodName}}(
+			ctx context.Context,
+			req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
+			opt ...stub.RESTOption,
+	) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error)
+	{{ end -}}
+{{- end }}
+}
+
+{{/*
 			Generating the DTO structs with the help of the defined template block at the
 			beginning of the template file.
 */}}
 {{ range $dtoName, $dto := .Messages }}
 	{{ template "dto" $dto }}
 {{ end }}
-
-{{/*
-			Generating the Service Stub
-*/}}
-{{$serviceName := .Name}}
-type I{{$serviceName}}Stub interface {
-{{ range .RESTMethods }}
-	{{$methodName := .Name}}
-{{ if ne $methodName "" -}}
-		{{$methodName}}(
-		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
-		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error)
-{{ end -}}
-{{- end }}
-}
 
 // {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
 // Implements I{{$serviceName}}Stub
@@ -114,7 +138,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 */}}
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" }}
+	{{- if and (ne $methodName "") .HasOKResponse }}
 		func (s {{$serviceName}}Stub) {{$methodName}}(
 		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error){
@@ -150,10 +174,10 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 
 		},
 		).
-			{{ if .HasDefaultResponse }}
+			{{ if .HasDefaultErrorResponse }}
 		DefaultResponseHandler(
 		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
-			{{ $errDto := .GetDefaultResponse }}
+			{{ $errDto := .GetDefaultErrorResponse }}
 			res := &{{$errDto.Message.Name}}{}
 			err := stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))
 			if err != nil {
@@ -189,7 +213,7 @@ type MockOption func(*{{$serviceName}}StubMock)
 
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" }}
+	{{- if and (ne $methodName "") .HasOKResponse }}
 		func Mock{{$methodName}}(
 		f func(
 		ctx context.Context,
@@ -210,13 +234,13 @@ type MockOption func(*{{$serviceName}}StubMock)
 type {{$serviceName}}StubMock struct {
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" -}}
+	{{ if and (ne $methodName "") .HasOKResponse -}}
 		{{toLower $methodName}} func(
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error)
-	{{- end -}}
+	{{ end -}}
 {{- end }}
 }
 
@@ -233,7 +257,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
-	{{- if ne $methodName "" }}
+	{{- if and (ne $methodName "") .HasOKResponse }}
 		func (s *{{$serviceName}}StubMock) {{$methodName}}(
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
