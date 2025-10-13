@@ -167,12 +167,6 @@ func (c ErrCode) HTTPStatus() int {
 	return codeStatus[c]
 }
 
-func (c ErrCode) MarshalJSON() ([]byte, error) {
-	s := c.String()
-
-	return []byte("\"" + s + "\""), nil
-}
-
 var codeNames = [...]string{
 	OK:                 "ok",
 	Canceled:           "canceled",

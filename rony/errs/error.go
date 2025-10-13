@@ -36,7 +36,8 @@ var json = jsoniter.Config{
 // root cause as possible. This is made simple with Wrap.
 type Error struct {
 	// Code is the error code to return.
-	Code ErrCode `json:"code"`
+	Code     ErrCode `json:"code"`
+	CodeName string  `json:"codeName"`
 	// Item is a descriptive message of the error.
 	Item string `json:"item"`
 	// Details are user-defined additional details.
@@ -183,16 +184,16 @@ func Details(err error) ErrDetails {
 	return nil
 }
 
-func (e *Error) GetCode() int {
+func (e Error) GetCode() int {
 	return codeStatus[e.Code]
 }
 
-func (e *Error) GetItem() string {
+func (e Error) GetItem() string {
 	return e.Item
 }
 
 // Error reports the error code and message.
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	if e.Code == Unknown {
 		return "unknown code: " + e.ErrorMessage()
 	}

@@ -41,6 +41,10 @@ func (d dummyRESTSelector) GetPath() string {
 	return d.path
 }
 
+func (d dummyRESTSelector) String() string {
+	return d.method + " " + d.path
+}
+
 type FlatMessage struct {
 	A string                       `json:"a"`
 	B int64                        `json:"b"`
@@ -62,6 +66,25 @@ type NestedMessage struct {
 	PMap map[string]*FlatMessage `json:"pmap"`
 }
 
+type Err struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+var _ kit.ErrorMessage = (*Err)(nil)
+
+func (e Err) Error() string {
+	return e.Msg
+}
+
+func (e Err) GetCode() int {
+	return e.Code
+}
+
+func (e Err) GetItem() string {
+	return e.Msg
+}
+
 var _ = Describe("DescParser", func() {
 	d := desc.NewService("sample").
 		AddContract(
@@ -69,6 +92,7 @@ var _ = Describe("DescParser", func() {
 				SetName("c1").
 				AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
 				AddRoute(desc.Route("s2", newREST(kit.JSON, "/path2", "POST"))).
+				SetDefaultError(&Err{}).
 				In(&NestedMessage{}).
 				Out(&FlatMessage{}),
 		)
@@ -78,6 +102,9 @@ var _ = Describe("DescParser", func() {
 		contract0 := pd.Contracts[0]
 		contract1 := pd.Contracts[1]
 		Expect(pd.Contracts).To(HaveLen(2))
+		Expect(pd.Messages()).To(HaveLen(3))
+		Expect(pd.MessageByName("Err")).ToNot(BeNil())
+		Expect(pd.MessageByName("Err").ImplementError).To(BeTrue())
 
 		Expect(contract0.Name).To(Equal("s1"))
 		Expect(contract0.Type).To(Equal(desc.REST))

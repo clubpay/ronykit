@@ -40,7 +40,17 @@ func WrapError(err error) *Error {
 		return nil
 	}
 
-	return &Error{err: err}
+	wErr := &Error{err: err}
+
+	if e, ok := err.(interface{ GetCode() int }); ok {
+		wErr.code = e.GetCode()
+	}
+
+	if e, ok := err.(interface{ GetItem() string }); ok {
+		wErr.item = e.GetItem()
+	}
+
+	return wErr
 }
 
 func (err Error) Error() string {

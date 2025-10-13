@@ -37,6 +37,16 @@ func (ps *ParsedService) Messages() []ParsedMessage {
 	return msgs
 }
 
+func (ps *ParsedService) MessageByName(name string) *ParsedMessage {
+	for _, m := range ps.parsed {
+		if m.Name == name {
+			return m
+		}
+	}
+
+	return nil
+}
+
 func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 	var pcs []ParsedContract //nolint:prealloc
 
