@@ -44,12 +44,14 @@ func (fm FieldMeta) SwagTag() string {
 			sb.WriteRune(',')
 		}
 		sb.WriteString("deprecated")
+		hasItem = true
 	}
 	if fm.OmitEmpty {
 		if hasItem {
 			sb.WriteRune(',')
 		}
 		sb.WriteString("omitempty")
+		hasItem = true
 	}
 	if len(fm.Enum) > 0 {
 		if hasItem {
@@ -57,6 +59,7 @@ func (fm FieldMeta) SwagTag() string {
 		}
 		sb.WriteString("enum:")
 		sb.WriteString(strings.Join(fm.Enum, ","))
+		hasItem = true
 	}
 	sb.WriteString(`"`)
 	return sb.String()

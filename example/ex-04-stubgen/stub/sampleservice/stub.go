@@ -51,8 +51,8 @@ type IsampleServiceStub interface {
 
 // ErrorMessage is a data transfer object
 type ErrorMessage struct {
-	Code int    `json:"code" `
-	Item string `json:"item" `
+	Code int    `json:"code" swag:""`
+	Item string `json:"item" swag:""`
 }
 
 func (x ErrorMessage) GetCode() int {
@@ -65,42 +65,50 @@ func (x ErrorMessage) GetItem() string {
 
 // KeyValue is a data transfer object
 type KeyValue struct {
-	Key   string `json:"key" `
-	Value int    `json:"value" `
+	Key   string `json:"key" swag:""`
+	Value int    `json:"value" swag:""`
 }
 
 // SimpleHdr is a data transfer object
 type SimpleHdr struct {
-	Key1 string      `json:"sKey1" `
-	Key2 int         `json:"sKey2" `
-	T1   time.Time   `json:"t1" `
-	T2   *time.Time  `json:"t2" `
-	T3   []time.Time `json:"t3" `
+	Key1 string      `json:"sKey1" swag:""`
+	Key2 int         `json:"sKey2" swag:""`
+	T1   time.Time   `json:"t1" swag:""`
+	T2   *time.Time  `json:"t2" swag:""`
+	T3   []time.Time `json:"t3" swag:""`
 }
 
 // VeryComplexRequest is a data transfer object
 type VeryComplexRequest struct {
 	SimpleHdr
-	Key1      string             `json:"key1" `
-	Key1Ptr   *string            `json:"key1Ptr" `
-	Key2Ptr   *int               `json:"key2Ptr,omitempty" `
-	MapKey1   map[string]int     `json:"mapKey1" `
-	MapKey2   map[int64]KeyValue `json:"mapKey2" `
-	SliceKey1 []bool             `json:"sliceKey1" `
-	SliceKey2 []*KeyValue        `json:"sliceKey2" `
-	RawKey    kit.JSONMessage    `json:"rawKey" `
+	Key1      string             `json:"key1" swag:""`
+	Key1Ptr   *string            `json:"key1Ptr" swag:"enum:a,b,c"`
+	Key2Ptr   *int               `json:"key2Ptr,omitempty" swag:""`
+	MapKey1   map[string]int     `json:"mapKey1" swag:""`
+	MapKey2   map[int64]KeyValue `json:"mapKey2" swag:""`
+	SliceKey1 []bool             `json:"sliceKey1" swag:""`
+	SliceKey2 []*KeyValue        `json:"sliceKey2" swag:""`
+	RawKey    kit.JSONMessage    `json:"rawKey" swag:""`
 }
+
+type VeryComplexRequest_Key1PtrENUM = string
+
+const (
+	VeryComplexRequest_Key1Ptr_A = "a"
+	VeryComplexRequest_Key1Ptr_B = "b"
+	VeryComplexRequest_Key1Ptr_C = "c"
+)
 
 // VeryComplexResponse is a data transfer object
 type VeryComplexResponse struct {
-	Key1      string              `json:"key1,omitempty"  swag:"enum:1,2,3;deprecated"`
-	Key1Ptr   *string             `json:"key1Ptr,omitempty" `
-	MapKey1   map[string]int      `json:"mapKey1,omitempty" `
-	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty" `
-	SliceKey1 []uint8             `json:"sliceKey1" `
-	SliceKey2 []KeyValue          `json:"sliceKey2" `
-	NoOutput  int                 `json:"-" `
-	Printer   map[string]any      `json:"printer" `
+	Key1      string              `json:"key1,omitempty" swag:"enum:1,2,3;deprecated"`
+	Key1Ptr   *string             `json:"key1Ptr,omitempty" swag:""`
+	MapKey1   map[string]int      `json:"mapKey1,omitempty" swag:""`
+	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty" swag:""`
+	SliceKey1 []uint8             `json:"sliceKey1" swag:""`
+	SliceKey2 []KeyValue          `json:"sliceKey2" swag:""`
+	NoOutput  int                 `json:"-" swag:""`
+	Printer   map[string]any      `json:"printer" swag:""`
 }
 
 // sampleServiceStub represents the client/stub for sampleService.

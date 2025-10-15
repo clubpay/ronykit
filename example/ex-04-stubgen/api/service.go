@@ -29,7 +29,12 @@ var SampleDesc desc.ServiceDescFunc = func() *desc.Service {
 		).
 		AddContract(
 			desc.NewContract().
-				SetInput(&dto.VeryComplexRequest{}).
+				SetInput(
+					&dto.VeryComplexRequest{},
+					desc.WithField("Key1Ptr", desc.FieldMeta{
+						Enum: []string{"a", "b", "c"},
+					}),
+				).
 				SetOutput(&dto.VeryComplexResponse{}).
 				AddRoute(desc.Route("GetComplexDummy", fasthttp.GET("/complexDummy/:key1/xs/:sKey1"))).
 				AddRoute(desc.Route("GetComplexDummy2", fasthttp.RPC("getComplexDummy"))).
