@@ -123,7 +123,7 @@ func Convert(err error) error {
 	var se *stub.Error
 	if errors.As(err, &se) {
 		out := &Error{
-			Code:       HTTPStatusToCode(se.Code()),
+			Code:       ErrCode(se.Code()),
 			Item:       se.Item(),
 			underlying: se,
 		}

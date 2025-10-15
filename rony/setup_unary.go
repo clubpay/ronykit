@@ -178,9 +178,7 @@ func CreateKitHandler[IN, OUT Message, S State[A], A Action](
 		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)
 		if err != nil {
 			err = errs.Convert(err)
-			if e, ok := err.(errCode); ok {
-				ctx.SetStatusCode(e.GetCode())
-			}
+			ctx.SetStatusCode(errs.HTTPStatus(err))
 
 			ctx.In().Reply().SetMsg(err).Send()
 
@@ -209,10 +207,7 @@ func CreateRawKitHandler[IN Message, S State[A], A Action](
 
 		out, err = h(newUnaryCtx[S, A](ctx, s, sl), req)
 		if err != nil {
-			if e, ok := err.(errCode); ok {
-				ctx.SetStatusCode(e.GetCode())
-			}
-
+			ctx.SetStatusCode(errs.HTTPStatus(err))
 			ctx.In().Reply().SetMsg(errs.Convert(err)).Send()
 
 			return
