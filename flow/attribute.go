@@ -26,3 +26,7 @@ func AttrInt64(name string, val int64) SearchAttributeUpdate {
 func AttrKeywords(name string, val []string) SearchAttributeUpdate {
 	return temporal.NewSearchAttributeKeyKeywordList(name).ValueSet(val)
 }
+
+func AttrKeyword(name string, value string) SearchAttributeUpdate {
+	return temporal.NewSearchAttributeKeyKeyword(name).ValueSet(value)
+}
