@@ -5,16 +5,16 @@ go 1.24.0
 toolchain go1.24.4
 
 require (
-	github.com/clubpay/ronykit/kit v0.21.19
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.19
-	github.com/nexus-rpc/sdk-go v0.4.0
+	github.com/clubpay/ronykit/kit v0.21.20
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.20
+	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.38.0
-	go.temporal.io/api v1.53.0
-	go.temporal.io/sdk v1.36.0
+	go.temporal.io/api v1.54.0
+	go.temporal.io/sdk v1.37.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.17.0
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf v1.36.10
 )
 
 require (

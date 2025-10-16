@@ -207,6 +207,7 @@ type ExecuteWorkflowOptions struct {
 	// This cannot be set if WorkflowIDReusePolicy is set to TerminateIfRunning.
 	// Optional: defaulted to Fail.
 	WorkflowIDConflictPolicy WorkflowIdConflictPolicy
+	SearchAttributes         SearchAttributes
 }
 
 type WorkflowRun[T any] struct {
@@ -239,6 +240,7 @@ func (w *Workflow[REQ, RES, STATE]) Execute(
 			WorkflowIDReusePolicy:    enumspb.WorkflowIdReusePolicy(opts.WorkflowIDReusePolicy),
 			WorkflowIDConflictPolicy: enumspb.WorkflowIdConflictPolicy(opts.WorkflowIDConflictPolicy),
 			StartDelay:               opts.StartDelay,
+			TypedSearchAttributes:    opts.SearchAttributes,
 		},
 		w.Name, req,
 	)
@@ -295,6 +297,7 @@ type ExecuteChildWorkflowOptions struct {
 	// ParentClosePolicy specify how the retry child workflow get terminated.
 	// default is Terminate
 	ParentClosePolicy enumspb.ParentClosePolicy
+	SearchAttributes  SearchAttributes
 }
 
 func (w *Workflow[REQ, RES, STATE]) ExecuteAsChild(
@@ -312,6 +315,7 @@ func (w *Workflow[REQ, RES, STATE]) ExecuteAsChild(
 				WorkflowIDReusePolicy:    opts.WorkflowIDReusePolicy,
 				RetryPolicy:              opts.RetryPolicy,
 				ParentClosePolicy:        opts.ParentClosePolicy,
+				TypedSearchAttributes:    opts.SearchAttributes,
 			}),
 			w.Name, req,
 		),
