@@ -105,6 +105,16 @@ func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
 	return nil
 }
 
+func (s *Server) GenDoc(_ context.Context, w io.Writer) error {
+	return swagger.New(s.cfg.serverName, s.cfg.version, "").
+		WriteSwagTo(w, s.cfg.allServiceDesc()...)
+}
+
+func (s *Server) GenDocFile(_ context.Context, filename string) error {
+	return swagger.New(s.cfg.serverName, s.cfg.version, "").
+		WriteSwagToFile(filename, s.cfg.allServiceDesc()...)
+}
+
 // ExportDesc returns all services descriptions.
 func (s *Server) ExportDesc() []desc.ServiceDesc {
 	return utils.Map(

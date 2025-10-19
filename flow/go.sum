@@ -2,8 +2,10 @@ github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwTo
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/clubpay/ronykit/kit v0.21.19 h1:IBCrLjCeDiK+9B1Ls4Me2EujSNtSLFy32PJb/5UoMXM=
 github.com/clubpay/ronykit/kit v0.21.19/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
+github.com/clubpay/ronykit/kit v0.21.21/go.mod h1:GHDUWRFZVpbgQOTD5cmwW049on7tItTr/pBhYtntHPY=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.19 h1:dFDUiLtxN3PmHponZ+1KtuPrdDRlec/wm8gFA2K8L9Q=
 github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.19/go.mod h1:w7/fAyIKhxEeJzjwldexJ0nxbzH2jwgnFDd6neKslZA=
+github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.21/go.mod h1:/JMj6T9+xckp0NSoCrazWn1A0G+1NlKvBIWwXQX1FrM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a h1:yDWHCSQ40h88yih2JAcL6Ls/kVkSE8GFACTGVnMPruw=
@@ -102,6 +104,8 @@ go.opentelemetry.io/otel/trace v1.38.0 h1:Fxk5bKrDZJUH+AMyyIXGcFAPah0oRcT+LuNtJr
 go.opentelemetry.io/otel/trace v1.38.0/go.mod h1:j1P9ivuFsTceSWe1oY+EeW3sc+Pp42sO++GHkg4wwhs=
 go.temporal.io/api v1.54.0 h1:/sy8rYZEykgmXRjeiv1PkFHLXIus5n6FqGhRtCl7Pc0=
 go.temporal.io/api v1.54.0/go.mod h1:iaxoP/9OXMJcQkETTECfwYq4cw/bj4nwov8b3ZLVnXM=
+go.temporal.io/api v1.55.0 h1:bnMyQuVTwZKjzyz+gtlzOC6O0ZRJ9UOzxtHzq0XJAOk=
+go.temporal.io/api v1.55.0/go.mod h1:iaxoP/9OXMJcQkETTECfwYq4cw/bj4nwov8b3ZLVnXM=
 go.temporal.io/sdk v1.37.0 h1:RbwCkUQuqY4rfCzdrDZF9lgT7QWG/pHlxfZFq0NPpDQ=
 go.temporal.io/sdk v1.37.0/go.mod h1:tOy6vGonfAjrpCl6Bbw/8slTgQMiqvoyegRv2ZHPm5M=
 go.uber.org/automaxprocs v1.6.0 h1:O3y2/QNTOdbF+e/dpXNNW7Rx2hZ4sTIPyybbxyNqTUs=
