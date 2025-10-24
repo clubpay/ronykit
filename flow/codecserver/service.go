@@ -36,7 +36,6 @@ func NewService(routePrefix string, keys map[string]string) Service {
 }
 
 func (s Service) Desc() *desc.Service {
-	converter.NewPayloadCodecHTTPHandler()
 	return desc.NewService("temporal-codec-server").
 		AddContract(
 			desc.NewContract().

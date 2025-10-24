@@ -10,22 +10,29 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.temporal.io/sdk/temporal"
+	"go.uber.org/zap"
 )
 
 func TestFlow(t *testing.T) {
 	Convey("Flow", t, func(c C) {
 		Prepare(t, c)
+
 		_, _ = c.Println(temporalHostPort)
 		_, _ = c.Println(TemporalUI)
 		b, err := flow.NewBackend(
 			flow.BackendConfig{
-				TaskQueue: "kitTest",
-				Namespace: "kitTest",
-				HostPort:  temporalHostPort,
+				TaskQueue:     "kitTest",
+				Namespace:     "kitTest",
+				HostPort:      temporalHostPort,
+				DataConverter: flow.EncryptedDataConverter(utils.RandomID(32)),
+				Logger:        flow.NewZapAdapter(zap.NewNop()),
 			},
 		)
 		c.So(err, ShouldBeNil)
-		sdk := flow.NewSDK(flow.SDKConfig{DefaultBackend: b})
+		sdk := flow.NewSDK(flow.SDKConfig{
+			Logger:         flow.NewZapAdapter(zap.NewNop()),
+			DefaultBackend: b,
+		})
 		sdk.InitWithState(&State{Name: "StateName"})
 
 		err = sdk.Start()
@@ -44,7 +51,25 @@ func TestFlow(t *testing.T) {
 			"hello",
 			"world",
 		})
+
 		_, _ = c.Println(res)
+		_, _ = c.Println("==========================================================")
+		_, _ = c.Println("Workflow History Items:")
+		histRes, err := sdk.GetWorkflowHistory(
+			ctx,
+			flow.GetWorkflowHistoryRequest{
+				Namespace:  "kitTest",
+				WorkflowID: wr.ID,
+				RunID:      wr.RunID,
+			},
+		)
+		c.So(err, ShouldBeNil)
+		_, _ = c.Println(len(histRes.Events))
+		_ = histRes
+
+		for _, e := range histRes.Events {
+			c.Println(e.Payload)
+		}
 	})
 }
 

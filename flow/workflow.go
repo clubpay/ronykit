@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/util"
+	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/serviceerror"
 	v112 "go.temporal.io/api/workflow/v1"
@@ -398,6 +400,7 @@ func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*
 }
 
 type GetWorkflowHistoryRequest struct {
+	Namespace   string
 	WorkflowID  string
 	RunID       string
 	Skip        int
@@ -420,38 +423,77 @@ func (sdk *SDK) GetWorkflowHistory(
 	if req.OnlyLastOne {
 		filterType = enumspb.HISTORY_EVENT_FILTER_TYPE_CLOSE_EVENT
 	}
-	iter := sdk.b.Client().GetWorkflowHistory(
-		ctx,
-		req.WorkflowID,
-		req.RunID,
-		false,
-		filterType,
+
+	res, err := sdk.b.Client().WorkflowService().GetWorkflowExecutionHistory(
+		ctx, &workflowservice.GetWorkflowExecutionHistoryRequest{
+			Namespace: req.Namespace,
+			Execution: &common.WorkflowExecution{
+				WorkflowId: req.WorkflowID,
+				RunId:      req.RunID,
+			},
+			MaximumPageSize:        int32(req.Limit),
+			HistoryEventFilterType: filterType,
+			SkipArchival:           false,
+		},
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	events := make([]HistoryEvent, 0, 100)
-	offset := req.Skip
-	limit := req.Limit
-	for iter.HasNext() {
-		e, err := iter.Next()
-		if err != nil {
-			return nil, err
-		}
-		if offset--; offset >= 0 {
+	for _, rawEvent := range res.GetHistory().GetEvents() {
+		var payload map[string]any
+		switch rawEvent.GetEventType() {
+		default:
 			continue
+		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_STARTED:
+			attr := rawEvent.GetWorkflowExecutionStartedEventAttributes()
+			payload = map[string]any{
+				"searchAttributes": util.TransformMap(
+					attr.SearchAttributes.GetIndexedFields(),
+					func(k1 string, v1 *common.Payload) (string, string) {
+						return k1, sdk.b.DataConverter().ToString(v1)
+					},
+				),
+				"input": sdk.b.DataConverter().ToStrings(attr.Input),
+			}
+
+		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED:
+			attr := rawEvent.GetWorkflowExecutionCompletedEventAttributes()
+			payload = map[string]any{
+				"result": sdk.b.DataConverter().ToStrings(attr.Result),
+			}
+		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_FAILED:
+			attr := rawEvent.GetWorkflowExecutionFailedEventAttributes()
+			payload = map[string]any{
+				"message":    attr.GetFailure().GetMessage(),
+				"stackTrace": attr.GetFailure().GetStackTrace(),
+			}
+		case enumspb.EVENT_TYPE_ACTIVITY_TASK_COMPLETED:
+			attr := rawEvent.GetActivityTaskCompletedEventAttributes()
+			payload = map[string]any{
+				"result": sdk.b.DataConverter().ToStrings(attr.Result),
+			}
+		case enumspb.EVENT_TYPE_ACTIVITY_TASK_STARTED:
+			attr := rawEvent.GetActivityTaskStartedEventAttributes()
+			payload = map[string]any{
+				"attempt": attr.GetAttempt(),
+				"lastFailure": map[string]any{
+					"message":    attr.GetLastFailure().GetMessage(),
+					"stackTrace": attr.GetLastFailure().GetStackTrace(),
+				},
+			}
+
 		}
 		events = append(
 			events,
 			HistoryEvent{
-				ID:      e.GetEventId(),
-				Time:    e.GetEventTime().AsTime().Unix(),
-				Type:    e.GetEventType().String(),
-				Payload: utils.ToMap(e.GetAttributes()),
+				ID:      rawEvent.GetEventId(),
+				Time:    rawEvent.GetEventTime().AsTime().Unix(),
+				Type:    rawEvent.GetEventType().String(),
+				Payload: payload,
 			},
 		)
-
-		if limit--; limit <= 0 {
-			break
-		}
 	}
 
 	return &GetWorkflowHistoryResponse{

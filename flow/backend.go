@@ -34,6 +34,7 @@ type Backend interface {
 	Client() client.Client
 	ScheduleClient() client.ScheduleClient
 	UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Duration) error
+	DataConverter() converter.DataConverter
 }
 
 type BackendConfig struct {
@@ -198,6 +199,10 @@ func (r *realBackend) ScheduleClient() client.ScheduleClient {
 
 func (r *realBackend) Client() client.Client {
 	return r.cli
+}
+
+func (r *realBackend) DataConverter() converter.DataConverter {
+	return r.dc
 }
 
 type UpdateNamespaceRequest struct {
