@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/kit v0.21.22
+	github.com/clubpay/ronykit/kit v0.21.23
 	github.com/redis/go-redis/v9 v9.11.0
 )
 
