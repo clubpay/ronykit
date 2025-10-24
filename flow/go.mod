@@ -5,9 +5,9 @@ go 1.24.0
 toolchain go1.24.4
 
 require (
-	github.com/clubpay/ronykit/kit v0.21.24
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.24
-	github.com/clubpay/ronykit/util v0.21.24
+	github.com/clubpay/ronykit/kit v0.21.25
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.25
+	github.com/clubpay/ronykit/util v0.21.25
 	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.38.0

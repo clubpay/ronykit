@@ -5,8 +5,8 @@ go 1.24.0
 toolchain go1.24.4
 
 require (
-	github.com/clubpay/ronykit/kit v0.21.24
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.24
+	github.com/clubpay/ronykit/kit v0.21.25
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.25
 	github.com/go-openapi/spec v0.22.0
 	github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega v1.38.2
