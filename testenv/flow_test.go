@@ -58,7 +58,6 @@ func TestFlow(t *testing.T) {
 		histRes, err := sdk.GetWorkflowHistory(
 			ctx,
 			flow.GetWorkflowHistoryRequest{
-				Namespace:  "kitTest",
 				WorkflowID: wr.ID,
 				RunID:      wr.RunID,
 			},

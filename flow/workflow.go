@@ -400,7 +400,6 @@ func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*
 }
 
 type GetWorkflowHistoryRequest struct {
-	Namespace   string
 	WorkflowID  string
 	RunID       string
 	Skip        int
@@ -426,7 +425,7 @@ func (sdk *SDK) GetWorkflowHistory(
 
 	res, err := sdk.b.Client().WorkflowService().GetWorkflowExecutionHistory(
 		ctx, &workflowservice.GetWorkflowExecutionHistoryRequest{
-			Namespace: req.Namespace,
+			Namespace: sdk.b.Namespace(),
 			Execution: &common.WorkflowExecution{
 				WorkflowId: req.WorkflowID,
 				RunId:      req.RunID,

@@ -62,5 +62,6 @@ func (fm FieldMeta) SwagTag() string {
 		hasItem = true
 	}
 	sb.WriteString(`"`)
+
 	return sb.String()
 }
