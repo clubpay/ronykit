@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clubpay/ronykit/util"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/orlangure/gnomock"
 	pgContainer "github.com/orlangure/gnomock/preset/postgres"
 	redisContainer "github.com/orlangure/gnomock/preset/redis"
@@ -92,7 +92,7 @@ func provideWireMock(lc fx.Lifecycle, cfg wireMockConfig) (*gnomock.Container, e
 		//    }),
 	}
 
-	tempFolder := filepath.Join(os.TempDir(), "testkit", util.RandomID(10))
+	tempFolder := filepath.Join(os.TempDir(), "testkit", rkit.RandomID(10))
 	if cfg.MockFS != nil {
 		err := copyWireMockFS(cfg.MockFS, tempFolder)
 		if err != nil {

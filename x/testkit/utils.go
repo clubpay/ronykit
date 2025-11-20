@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/clubpay/ronykit/util"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func FolderContent(path string) []string {
@@ -24,7 +24,7 @@ func FolderContent(path string) []string {
 				return nil
 			}
 
-			files = append(files, util.B2S(util.Must(os.ReadFile(path))))
+			files = append(files, rkit.B2S(rkit.Must(os.ReadFile(path))))
 
 			return nil
 		},
