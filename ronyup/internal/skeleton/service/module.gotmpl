@@ -1,51 +1,51 @@
 package {{.PackageName}}mod
 
 import (
-"io/fs"
+	"io/fs"
 
-"{{.RepositoryPath}}/{{.PackagePath}}/api"
-"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
-v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
-"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
-"{{.RonyKitPath}}/util"
-"{{.RonyKitPath}}/util/datasource"
-"go.uber.org/fx"
+	"go.uber.org/fx"
+	"{{.RepositoryPath}}/{{.PackagePath}}/api"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
+	v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
+	"{{.RonyKitPath}}/util"
+	"{{.RonyKitPath}}/util/datasource"
 )
 
 //nolint:gochecknoglobals
 var appModule = fx.Module(
-settings.ModuleName,
-v0repo.Init,
-fx.Provide(
-settings.New,
-app.New,
-api.New,
-provideDBParams,
-provideRedisParams,
-),
-datasource.InitDB("", ""),
-datasource.InitRedis("", ""),
+	settings.ModuleName,
+	v0repo.Init,
+	fx.Provide(
+		settings.New,
+		app.New,
+		api.New,
+		provideDBParams,
+		provideRedisParams,
+	),
+	datasource.InitDB("", ""),
+	datasource.InitRedis("", ""),
 )
 
 func provideDBParams(svcSettings *settings.Settings) datasource.DBParams {
-return datasource.DBParams{
-Host:       svcSettings.DB.Host,
-Port:       svcSettings.DB.Port,
-User:       svcSettings.DB.User,
-Pass:       svcSettings.DB.Pass,
-DB:         svcSettings.DB.DB,
-Migrations: util.Must(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations")),
-}
+	return datasource.DBParams{
+		Host:       svcSettings.DB.Host,
+		Port:       svcSettings.DB.Port,
+		User:       svcSettings.DB.User,
+		Pass:       svcSettings.DB.Pass,
+		DB:         svcSettings.DB.DB,
+		Migrations: util.Must(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations")),
+	}
 }
 
 func provideRedisParams(svcSettings *settings.Settings) datasource.RedisParams {
-return datasource.RedisParams{
-Host: svcSettings.Redis.Host,
-Port: svcSettings.Redis.Port,
-}
+	return datasource.RedisParams{
+		Host: svcSettings.Redis.Host,
+		Port: svcSettings.Redis.Port,
+	}
 }
 
 func LoadSettings(filename string, searchPaths ...string) {
-settings.ConfigName = filename
-settings.ConfigPaths = searchPaths
+	settings.ConfigName = filename
+	settings.ConfigPaths = searchPaths
 }
