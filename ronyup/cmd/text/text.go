@@ -6,7 +6,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/clubpay/ronykit/util"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/text/language"
@@ -59,7 +59,7 @@ var Cmd = &cobra.Command{
 
 		config := &pipeline.Config{
 			SourceLanguage: language.Make(opt.SourceLang),
-			Supported:      util.Map(opt.Languages, language.Make),
+			Supported:      rkit.Map(opt.Languages, language.Make),
 			Packages:       opt.Packages,
 			Dir:            opt.DstDir,
 			GenFile:        opt.GenFile,

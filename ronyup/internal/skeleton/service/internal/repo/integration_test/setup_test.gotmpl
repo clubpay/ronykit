@@ -6,8 +6,8 @@ import (
 	"go.uber.org/fx"
 	v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
-	"{{.RonyKitPath}}/util/cache"
-	"{{.RonyKitPath}}/util/testkit"
+	"{{.RonyKitPath}}/x/cache"
+	"{{.RonyKitPath}}/x/testkit"
 )
 
 func Setup(t *testing.T, populates ...any) {

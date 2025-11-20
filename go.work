@@ -23,6 +23,7 @@ use (
 	./testenv
 	./x/apidoc
 	./x/cache
+	./x/datasource
 	./x/i18n
 	./x/ratelimit
 	./x/rkit
