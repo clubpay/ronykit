@@ -1,4 +1,4 @@
-go 1.24.4
+go 1.25.1
 
 use (
 	./boxship
@@ -24,4 +24,12 @@ use (
 	./stub
 	./testenv
 	./util
+	./x/apidoc
+	./x/cache
+	./x/i18n
+	./x/ratelimit
+	./x/rkit
+	./x/settings
+	./x/telemetry
+	./x/testkit
 )
