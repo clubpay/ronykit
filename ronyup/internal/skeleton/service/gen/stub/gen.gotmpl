@@ -1,89 +1,89 @@
 package main
 
 import (
-"{{.RepositoryPath}}/{{.PackagePath}}/api"
-"{{.RonyKitPath}}/rony"
-"{{.RonyKitPath}}/stub/stubgen"
-"github.com/spf13/cobra"
+	"github.com/spf13/cobra"
+	"{{.RepositoryPath}}/{{.PackagePath}}/api"
+	"{{.RonyKitPath}}/rony"
+	"{{.RonyKitPath}}/stub/stubgen"
 )
 
 //nolint:gochecknoglobals
 var Flags = struct {
-PackageName string
-PackagePath string
-DstDir      string
-DstFileName string
+	PackageName string
+	PackagePath string
+	DstDir      string
+	DstFileName string
 }{}
 
 //nolint:gochecknoglobals
 var RootCmd = &cobra.Command{
-Use: "gen",
+	Use: "gen",
 }
 
 //nolint:gochecknoglobals
 var GenGoCmd = &cobra.Command{
-Use: "go",
-RunE: func(_ *cobra.Command, _ []string) error {
-return rony.GenerateStub(
-Flags.PackageName,
-"",
-Flags.DstDir,
-stubgen.NewGolangEngine(
-stubgen.GolangConfig{
-PkgName: Flags.PackageName,
-},
-),
-api.Service{}.Desc(),
-)
-},
+	Use: "go",
+	RunE: func(_ *cobra.Command, _ []string) error {
+		return rony.GenerateStub(
+			Flags.PackageName,
+			"",
+			Flags.DstDir,
+			stubgen.NewGolangEngine(
+				stubgen.GolangConfig{
+					PkgName: Flags.PackageName,
+				},
+			),
+			api.Service{}.Desc(),
+		)
+	},
 }
 
 //nolint:gochecknoglobals
 var GenTypescriptCmd = &cobra.Command{
-Use: "ts",
-RunE: func(_ *cobra.Command, _ []string) error {
-return rony.GenerateStub(
-Flags.PackageName,
-"",
-Flags.DstDir,
-stubgen.NewTypescriptEngine(
-stubgen.TypescriptConfig{
-GenerateSWR: true,
-},
-),
-api.Service{}.Desc(),
-)
-},
+	Use: "ts",
+	RunE: func(_ *cobra.Command, _ []string) error {
+		return rony.GenerateStub(
+			Flags.PackageName,
+			"",
+			Flags.DstDir,
+			stubgen.NewTypescriptEngine(
+				stubgen.TypescriptConfig{
+					GenerateSWR: true,
+				},
+			),
+			api.Service{}.Desc(),
+		)
+	},
 }
 
 //nolint:gochecknoinits
 func init() {
-RootCmd.PersistentFlags().StringVarP(
-&Flags.PackageName,
-"pkg-name", "n", "{{.PackageName}}",
-"package name",
-)
-RootCmd.PersistentFlags().StringVarP(
-&Flags.PackagePath,
-"pkg-path", "p", "{{.PackagePath}}",
-"package path",
-)
-RootCmd.PersistentFlags().StringVarP(
-&Flags.DstDir,
-"output-dir", "o", "../stub",
-"output directory",
-)
-RootCmd.PersistentFlags().StringVarP(
-&Flags.DstFileName,
-"dst-file-name", "d", "stub.go",
-"destination file name",
-)
+	RootCmd.PersistentFlags().StringVarP(
+		&Flags.PackageName,
+		"pkg-name", "n", "{{.PackageName}}",
+		"package name",
+	)
+	RootCmd.PersistentFlags().StringVarP(
+		&Flags.PackagePath,
+		"pkg-path", "p", "{{.PackagePath}}",
+		"package path",
+	)
+	RootCmd.PersistentFlags().StringVarP(
+		&Flags.DstDir,
+		"output-dir", "o", "../stub",
+		"output directory",
+	)
+	RootCmd.PersistentFlags().StringVarP(
+		&Flags.DstFileName,
+		"dst-file-name", "d", "stub.go",
+		"destination file name",
+	)
 }
 
 func main() {
-RootCmd.AddCommand(GenGoCmd, GenTypescriptCmd)
-err := RootCmd.Execute()
-if err != nil {
-panic(err)
-}
+	RootCmd.AddCommand(GenGoCmd, GenTypescriptCmd)
+	err := RootCmd.Execute()
+	if err != nil {
+		panic(err)
+	}
 }

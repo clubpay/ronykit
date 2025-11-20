@@ -1,33 +1,33 @@
 package api
 
 import (
-"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
-"{{.RonyKitPath}}/util/settings"
-"{{.RonyKitPath}}/rony"
-"go.uber.org/fx"
+	"go.uber.org/fx"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
+	"{{.RonyKitPath}}/rony"
+	"{{.RonyKitPath}}/util/settings"
 )
 
 type RContext = rony.UnaryCtx[rony.EMPTY, rony.NOP]
 
 type ServiceParams struct {
-fx.In
+	fx.In
 
-Settings settings.Settings
-App      *app.App
+	Settings settings.Settings
+	App      *app.App
 }
 
 type Service struct {
-{{.PackageName}}App *app.App
+	{{.PackageName}}App *app.App
 }
 
 func New(params ServiceParams) *Service {
-return &Service{
-{{.PackageName}}App: params.App,
-}
+	return &Service{
+		{{.PackageName}}App: params.App,
+	}
 }
 
 func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
-return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
-// Your API Handlers here
-)
+	return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
+		// Your API Handlers here
+	)
 }

@@ -104,6 +104,12 @@ func WithServeFS(path string, root string, fs fs.FS) Option {
 	}
 }
 
+func WithMaxRequestBodySize(size int) Option {
+	return func(b *bundle) {
+		b.srv.MaxRequestBodySize = size
+	}
+}
+
 // CompressionLevel is numeric representation of compression level
 type CompressionLevel int
 

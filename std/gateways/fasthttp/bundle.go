@@ -59,10 +59,12 @@ var _ kit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (kit.Gateway, error) {
 	r := &bundle{
-		httpRouter:    router.New(),
-		compress:      CompressionLevelDefault,
-		wsRoutes:      map[string]*routeData{},
-		srv:           &fasthttp.Server{},
+		httpRouter: router.New(),
+		compress:   CompressionLevelDefault,
+		wsRoutes:   map[string]*routeData{},
+		srv: &fasthttp.Server{
+			MaxRequestBodySize: fasthttp.DefaultMaxRequestBodySize,
+		},
 		rpcInFactory:  common.SimpleIncomingJSONRPC,
 		rpcOutFactory: common.SimpleOutgoingJSONRPC,
 		l:             common.NewNopLogger(),

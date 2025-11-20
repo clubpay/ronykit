@@ -3,36 +3,36 @@ package settings
 import "{{.RonyKitPath}}/util/settings"
 
 type Settings struct {
-DB    DBConfig    `settings:"db"`
-Redis RedisConfig `settings:"redis"`
+	DB    DBConfig    `settings:"db"`
+	Redis RedisConfig `settings:"redis"`
 }
 
 type DBConfig struct {
-Host string `settings:"host"`
-Port int    `settings:"port"`
-User string `settings:"user"`
-Pass string `settings:"pass"`
-DB   string `settings:"db"`
+	Host string `settings:"host"`
+	Port int    `settings:"port"`
+	User string `settings:"user"`
+	Pass string `settings:"pass"`
+	DB   string `settings:"db"`
 }
 
 type RedisConfig struct {
-Host string `settings:"host"`
-Port int    `settings:"port"`
+	Host string `settings:"host"`
+	Port int    `settings:"port"`
 }
 
 var (
-ConfigName  = "config.local"          //nolint:gochecknoglobals
-ConfigPaths = []string{".", "./{{.PackagePath}}"} //nolint:gochecknoglobals
+	ConfigName  = "config.local"                      //nolint:gochecknoglobals
+	ConfigPaths = []string{".", "./{{.PackagePath}}"} //nolint:gochecknoglobals
 )
 
 func New(set settings.Settings) (*Settings, error) {
-_ = set.SetFromFile(ConfigName, ConfigPaths...)
+	_ = set.SetFromFile(ConfigName, ConfigPaths...)
 
-modSettings := &Settings{}
-err := set.Unmarshal(modSettings)
-if err != nil {
-return nil, err
-}
+	modSettings := &Settings{}
+	err := set.Unmarshal(modSettings)
+	if err != nil {
+		return nil, err
+	}
 
-return modSettings, nil
+	return modSettings, nil
 }

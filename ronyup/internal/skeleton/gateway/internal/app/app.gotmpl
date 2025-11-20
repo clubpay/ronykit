@@ -1,24 +1,24 @@
 package app
 
 import (
-"{{.RonyKitPath}}/log"
-"go.uber.org/fx"
+	"go.uber.org/fx"
+	"{{.RonyKitPath}}/log"
 )
 
 type NewAppParams struct {
-fx.In
+	fx.In
 
-Logger *log.Logger
+	Logger *log.Logger
 }
 
 func New(p NewAppParams) (*App, error) {
-app := &App{
-l: p.Logger.With("APP"),
-}
+	app := &App{
+		l: p.Logger.With("APP"),
+	}
 
-return app, nil
+	return app, nil
 }
 
 type App struct {
-l *log.Logger
+	l *log.Logger
 }
