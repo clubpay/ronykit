@@ -23,6 +23,7 @@ func GetExecName() string {
 
 func CopyFile(srcFile, dstFile string) error {
 	const bufferSize = 1024 * 1024
+
 	buf := make([]byte, bufferSize)
 
 	return CopyFileWithBuffer(srcFile, dstFile, buf)
@@ -36,6 +37,7 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 	defer func(src *os.File) {
 		_ = src.Close()
 	}(src)
+
 	dst, err := os.Create(dstFile)
 	if err != nil {
 		return err
@@ -49,6 +51,7 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 		if err != nil && err != io.EOF {
 			return err
 		}
+
 		if n == 0 {
 			break
 		}
@@ -71,6 +74,7 @@ func WriteYamlFile(filePath string, data any) error {
 	}(f)
 
 	enc := yaml.NewEncoder(f)
+
 	err = enc.Encode(data)
 	if err != nil {
 		return err

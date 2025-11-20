@@ -8,6 +8,7 @@ type Future[M any] struct {
 
 func (f Future[M]) Get(ctx Context) (*M, error) {
 	var out M
+
 	err := f.f.Get(ctx, &out)
 	if err != nil {
 		return nil, err
@@ -26,6 +27,7 @@ type WorkflowFuture[M any] struct {
 
 func (f WorkflowFuture[M]) Get(ctx Context) (*M, error) {
 	var out M
+
 	err := f.f.Get(ctx, &out)
 	if err != nil {
 		return nil, err

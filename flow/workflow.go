@@ -220,6 +220,7 @@ type WorkflowRun[T any] struct {
 
 func (x WorkflowRun[T]) Get(ctx context.Context) (*T, error) {
 	var result T
+
 	err := x.internal.Get(ctx, &result)
 	if err != nil {
 		return nil, err
@@ -360,8 +361,8 @@ func (sdk *SDK) SearchWorkflows(ctx context.Context, req SearchWorkflowRequest) 
 	}
 
 	res := &SearchWorkflowResponse{
-		Executions:    utils.Map(toWorkflowExecution, cliRes.Executions),
-		NextPageToken: cliRes.NextPageToken,
+		Executions:    utils.Map(toWorkflowExecution, cliRes.GetExecutions()),
+		NextPageToken: cliRes.GetNextPageToken(),
 	}
 
 	return res, nil
@@ -389,10 +390,10 @@ func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*
 	}
 
 	out := &CountWorkflowResponse{
-		Total:  res.Count,
+		Total:  res.GetCount(),
 		Counts: make(map[string]int64),
 	}
-	for _, c := range res.Groups {
+	for _, c := range res.GetGroups() {
 		out.Counts[strings.Trim(string(c.GetGroupValues()[0].GetData()), "\"")] = c.GetCount()
 	}
 
@@ -440,8 +441,10 @@ func (sdk *SDK) GetWorkflowHistory(
 	}
 
 	events := make([]HistoryEvent, 0, 100)
+
 	for _, rawEvent := range res.GetHistory().GetEvents() {
 		var payload map[string]any
+
 		switch rawEvent.GetEventType() {
 		default:
 			continue
@@ -449,18 +452,18 @@ func (sdk *SDK) GetWorkflowHistory(
 			attr := rawEvent.GetWorkflowExecutionStartedEventAttributes()
 			payload = map[string]any{
 				"searchAttributes": util.TransformMap(
-					attr.SearchAttributes.GetIndexedFields(),
+					attr.GetSearchAttributes().GetIndexedFields(),
 					func(k1 string, v1 *common.Payload) (string, string) {
 						return k1, sdk.b.DataConverter().ToString(v1)
 					},
 				),
-				"input": sdk.b.DataConverter().ToStrings(attr.Input),
+				"input": sdk.b.DataConverter().ToStrings(attr.GetInput()),
 			}
 
 		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED:
 			attr := rawEvent.GetWorkflowExecutionCompletedEventAttributes()
 			payload = map[string]any{
-				"result": sdk.b.DataConverter().ToStrings(attr.Result),
+				"result": sdk.b.DataConverter().ToStrings(attr.GetResult()),
 			}
 		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_FAILED:
 			attr := rawEvent.GetWorkflowExecutionFailedEventAttributes()
@@ -471,7 +474,7 @@ func (sdk *SDK) GetWorkflowHistory(
 		case enumspb.EVENT_TYPE_ACTIVITY_TASK_COMPLETED:
 			attr := rawEvent.GetActivityTaskCompletedEventAttributes()
 			payload = map[string]any{
-				"result": sdk.b.DataConverter().ToStrings(attr.Result),
+				"result": sdk.b.DataConverter().ToStrings(attr.GetResult()),
 			}
 		case enumspb.EVENT_TYPE_ACTIVITY_TASK_STARTED:
 			attr := rawEvent.GetActivityTaskStartedEventAttributes()
@@ -482,8 +485,8 @@ func (sdk *SDK) GetWorkflowHistory(
 					"stackTrace": attr.GetLastFailure().GetStackTrace(),
 				},
 			}
-
 		}
+
 		events = append(
 			events,
 			HistoryEvent{
@@ -511,7 +514,7 @@ func toWorkflowExecution(src *v112.WorkflowExecutionInfo) WorkflowExecution {
 		RunID:       src.GetExecution().GetRunId(),
 		HistorySize: src.GetHistoryLength(),
 		StartTime:   src.GetStartTime().AsTime(),
-		CloseTime:   src.CloseTime.AsTime(),
+		CloseTime:   src.GetCloseTime().AsTime(),
 		Duration:    src.GetExecutionDuration().AsDuration(),
 		Status:      src.GetStatus().String(),
 	}
@@ -551,7 +554,9 @@ type GetWorkflowRequest struct {
 
 func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*WorkflowExecution, error) {
 	wr := sdk.b.Client().GetWorkflow(ctx, req.WorkflowID, req.RunID)
+
 	var e WorkflowExecution
+
 	err := wr.Get(ctx, &e)
 	if err != nil {
 		return nil, err

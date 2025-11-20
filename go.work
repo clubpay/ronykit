@@ -1,8 +1,6 @@
 go 1.25.1
 
 use (
-	./boxship
-	./contrib
 	./example/ex-01-rpc
 	./example/ex-02-rest
 	./example/ex-03-cluster
@@ -23,7 +21,6 @@ use (
 	./std/gateways/silverhttp
 	./stub
 	./testenv
-	./util
 	./x/apidoc
 	./x/cache
 	./x/i18n

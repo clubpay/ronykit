@@ -31,7 +31,7 @@ type KeyValue struct {
 }
 
 type VeryComplexResponse struct {
-	Key1      string              `json:"key1,omitempty" swag:"enum:1,2,3;deprecated"`
+	Key1      string              `json:"key1,omitempty"    swag:"enum:1,2,3;deprecated"`
 	Key1Ptr   *string             `json:"key1Ptr,omitempty"`
 	MapKey1   map[string]int      `json:"mapKey1,omitempty"`
 	MapKey2   map[int64]*KeyValue `json:"mapKey2,omitempty"`

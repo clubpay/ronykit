@@ -109,6 +109,7 @@ type CounterResponseDTO struct {
 
 func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*CounterResponseDTO, error) {
 	res := &CounterResponseDTO{}
+
 	err := ctx.ReduceState(
 		req.Action,
 		func(s *EchoCounter, err error) error {
@@ -129,8 +130,9 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*Co
 }
 
 func countStream(ctx *rony.StreamCtx[*EchoCounter, string, *CounterResponseDTO], req CounterRequestDTO) error {
-	for i := 0; i < req.Count; i++ {
+	for range req.Count {
 		res := &CounterResponseDTO{}
+
 		err := ctx.ReduceState(
 			req.Action,
 			func(s *EchoCounter, err error) error {

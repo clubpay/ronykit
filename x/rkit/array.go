@@ -122,10 +122,12 @@ func Paginate[T any](arr []T, pageSize int, fn func(start, end int) error) error
 		if end > len(arr) {
 			end = len(arr)
 		}
+
 		err := fn(start, end)
 		if err != nil {
 			return err
 		}
+
 		start = end
 		if start >= len(arr) {
 			break
@@ -227,6 +229,7 @@ func ContainsAll[T comparable](s []T, v []T) bool {
 // First returns the first value found in the map for the given keys.
 func First[K, V comparable](in map[K]V, keys ...K) (V, bool) {
 	var zero V
+
 	for _, k := range keys {
 		if v, ok := in[k]; ok {
 			return v, true

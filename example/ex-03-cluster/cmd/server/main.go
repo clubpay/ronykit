@@ -42,10 +42,10 @@ func main() {
 				},
 			}),
 		)
-
 		if err != nil {
 			panic(err)
 		}
+
 		defer func() {
 			err := gnomock.Stop(redisC)
 			if err != nil {

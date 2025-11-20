@@ -35,32 +35,44 @@ func (fm FieldMeta) SwagTag() string {
 	hasItem := false
 	sb := strings.Builder{}
 	sb.WriteString(`swag:"`)
+
 	if fm.Optional {
 		sb.WriteString("optional")
+
 		hasItem = true
 	}
+
 	if fm.Deprecated {
 		if hasItem {
 			sb.WriteRune(',')
 		}
+
 		sb.WriteString("deprecated")
+
 		hasItem = true
 	}
+
 	if fm.OmitEmpty {
 		if hasItem {
 			sb.WriteRune(',')
 		}
+
 		sb.WriteString("omitempty")
+
 		hasItem = true
 	}
+
 	if len(fm.Enum) > 0 {
 		if hasItem {
 			sb.WriteRune(',')
 		}
+
 		sb.WriteString("enum:")
 		sb.WriteString(strings.Join(fm.Enum, ","))
+
 		hasItem = true
 	}
+
 	sb.WriteString(`"`)
 
 	return sb.String()

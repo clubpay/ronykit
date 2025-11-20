@@ -58,6 +58,7 @@ func RandomID(n int) string {
 	for i := range b {
 		b[i] = alphaNumerics[FastRand()%alphaNumericsLength]
 	}
+
 	rndGen.PutRand(rnd)
 
 	return ByteToStr(b)
@@ -75,10 +76,12 @@ func RandomIDs(n ...int) []string {
 // RandomDigit generates a pseudo-random string with length 'n' which characters are only digits (0-9).
 func RandomDigit(n int) string {
 	rnd := rndGen.GetRand()
+
 	b := make([]byte, n)
 	for i := 0; i < len(b); i++ {
 		b[i] = digits[FastRand()%digitsLength]
 	}
+
 	rndGen.PutRand(rnd)
 
 	return ByteToStr(b)
@@ -93,9 +96,10 @@ func RandomInt64(n int64) (x int64) {
 	} else {
 		x = rnd.Int63n(n)
 	}
+
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // RandomInt32 produces a pseudo-random 31bit number, if n == 0 there will be no limit otherwise
@@ -107,15 +111,18 @@ func RandomInt32(n int32) (x int32) {
 	} else {
 		x = rnd.Int31n(n)
 	}
+
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // SecureRandomInt63 produces a secure pseudo-random 63bit number.
 func SecureRandomInt63(n int64) (x int64) {
 	var b [8]byte
+
 	_, _ = rand.Read(b[:])
+
 	xx := binary.BigEndian.Uint64(b[:])
 	if n > 0 {
 		x = int64(xx) % n
@@ -123,7 +130,7 @@ func SecureRandomInt63(n int64) (x int64) {
 		x = int64(xx >> 1)
 	}
 
-	return
+	return x
 }
 
 func RandomInt(n int) (x int) {
@@ -133,9 +140,10 @@ func RandomInt(n int) (x int) {
 	} else {
 		x = rnd.Intn(n)
 	}
+
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // RandomUint64 produces a pseudo-random unsigned number.
@@ -146,16 +154,18 @@ func RandomUint64(n uint64) (x uint64) {
 	} else {
 		x = rnd.Uint64() % n
 	}
+
 	rndGen.PutRand(rnd)
 
-	return
+	return x
 }
 
 // SecureRandomUint64 produces a secure pseudo-random 64bit number.
 func SecureRandomUint64() (x uint64) {
 	var b [8]byte
+
 	_, _ = rand.Read(b[:])
 	x = binary.BigEndian.Uint64(b[:])
 
-	return
+	return x
 }

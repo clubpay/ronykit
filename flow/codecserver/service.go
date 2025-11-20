@@ -55,6 +55,7 @@ func (s *Service) Decode(ctx *kit.Context) {
 	msg := ctx.In().GetMsg().(kit.RawMessage)
 
 	var payloadspb commonpb.Payloads
+
 	err := protojson.Unmarshal(msg, &payloadspb)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
@@ -64,6 +65,7 @@ func (s *Service) Decode(ctx *kit.Context) {
 	}
 
 	ns := ctx.GetString("X-Namespace", "")
+
 	codec := s.codec[ns]
 	if codec == nil {
 		codec = s.codec["*"]
@@ -75,7 +77,7 @@ func (s *Service) Decode(ctx *kit.Context) {
 		}
 	}
 
-	res, err := codec.Decode(payloadspb.Payloads)
+	res, err := codec.Decode(payloadspb.GetPayloads())
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		ctx.Out().SetMsg(err.Error()).Send()
@@ -102,6 +104,7 @@ func (s *Service) Encode(ctx *kit.Context) {
 	msg := ctx.In().GetMsg().(kit.RawMessage)
 
 	var payloadspb commonpb.Payloads
+
 	err := protojson.Unmarshal(msg, &payloadspb)
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
@@ -111,6 +114,7 @@ func (s *Service) Encode(ctx *kit.Context) {
 	}
 
 	ns := ctx.GetString("X-Namespace", "")
+
 	codec := s.codec[ns]
 	if codec == nil {
 		codec = s.codec["*"]
@@ -122,7 +126,7 @@ func (s *Service) Encode(ctx *kit.Context) {
 		}
 	}
 
-	res, err := codec.Encode(payloadspb.Payloads)
+	res, err := codec.Encode(payloadspb.GetPayloads())
 	if err != nil {
 		ctx.SetStatusCode(http.StatusBadRequest)
 		ctx.Out().SetMsg(err.Error()).Send()

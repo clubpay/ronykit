@@ -145,6 +145,7 @@ func (s *Settings) SetFromFile(configFileName string, configSearchPaths ...strin
 	for _, p := range configSearchPaths {
 		s.v.AddConfigPath(p)
 	}
+
 	if configFileName == "" {
 		configFileName = "config"
 	}

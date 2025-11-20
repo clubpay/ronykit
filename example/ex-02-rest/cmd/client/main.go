@@ -14,6 +14,7 @@ import (
 func main() {
 	res1 := dto.EchoResponse{}
 	s := stub.New("127.0.0.1")
+
 	httpCtx := s.REST().
 		SetMethod(http.MethodGet).
 		SetPath("echo/1230").
@@ -39,6 +40,7 @@ func main() {
 	s2 := sampleservice.NewStub(
 		"127.0.0.1",
 	)
+
 	res2, err := s2.EchoGET(
 		context.Background(),
 		&sampleservice.EchoRequest{

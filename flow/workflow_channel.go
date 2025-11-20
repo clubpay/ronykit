@@ -79,7 +79,7 @@ func (ch Channel[T]) Name() string { return ch.ch.Name() }
 func (ch Channel[T]) Receive(ctx Context) (value T, more bool) {
 	more = ch.ch.Receive(ctx, &value)
 
-	return
+	return value, more
 }
 
 // ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
@@ -99,7 +99,7 @@ func (ch Channel[T]) Receive(ctx Context) (value T, more bool) {
 func (ch Channel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration) (value T, ok, more bool) {
 	ok, more = ch.ch.ReceiveWithTimeout(ctx, timeout, &value)
 
-	return
+	return value, ok, more
 }
 
 // ReceiveAsync try to receive from Channel without blocking. If there is data available from the Channel, it
@@ -111,7 +111,7 @@ func (ch Channel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration) (val
 func (ch Channel[T]) ReceiveAsync() (value T, ok bool) {
 	ok = ch.ch.ReceiveAsync(&value)
 
-	return
+	return value, ok
 }
 
 // ReceiveAsyncWithMoreFlag is same as ReceiveAsync with extra return value more to indicate if there could be
@@ -123,7 +123,7 @@ func (ch Channel[T]) ReceiveAsync() (value T, ok bool) {
 func (ch Channel[T]) ReceiveAsyncWithMoreFlag() (value T, ok bool, more bool) {
 	ok, more = ch.ch.ReceiveAsyncWithMoreFlag(&value)
 
-	return
+	return value, ok, more
 }
 
 // Len returns the number of buffered messages plus the number of blocked Send calls.
@@ -152,7 +152,7 @@ func (ch SignalChannel[T]) underlying() workflow.ReceiveChannel {
 func (ch SignalChannel[T]) Receive(ctx Context) (value T, more bool) {
 	more = ch.ch.Receive(ctx, &value)
 
-	return
+	return value, more
 }
 
 // ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
@@ -172,7 +172,7 @@ func (ch SignalChannel[T]) Receive(ctx Context) (value T, more bool) {
 func (ch SignalChannel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration) (value T, ok, more bool) {
 	ok, more = ch.ch.ReceiveWithTimeout(ctx, timeout, &value)
 
-	return
+	return value, ok, more
 }
 
 // ReceiveAsync try to receive from Channel without blocking. If there is data available from the Channel, it
@@ -184,7 +184,7 @@ func (ch SignalChannel[T]) ReceiveWithTimeout(ctx Context, timeout time.Duration
 func (ch SignalChannel[T]) ReceiveAsync() (value T, ok bool) {
 	ok = ch.ch.ReceiveAsync(&value)
 
-	return
+	return value, ok
 }
 
 // ReceiveAsyncWithMoreFlag is same as ReceiveAsync with extra return value more to indicate if there could be
@@ -196,5 +196,5 @@ func (ch SignalChannel[T]) ReceiveAsync() (value T, ok bool) {
 func (ch SignalChannel[T]) ReceiveAsyncWithMoreFlag() (value T, ok bool, more bool) {
 	ok, more = ch.ch.ReceiveAsyncWithMoreFlag(&value)
 
-	return
+	return value, ok, more
 }

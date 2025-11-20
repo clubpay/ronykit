@@ -43,5 +43,4 @@ func main() {
 		Start(context.TODO()).
 		PrintRoutesCompact(os.Stdout).
 		Shutdown(context.TODO(), syscall.SIGHUP)
-
 }

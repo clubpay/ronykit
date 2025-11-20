@@ -1,6 +1,7 @@
 package z
 
 import (
+	"errors"
 	"io"
 	"io/fs"
 	"os"
@@ -70,7 +71,8 @@ func IsEmptyDir(name string) bool {
 	defer func(f *os.File) {
 		_ = f.Close()
 	}(f)
+
 	_, err = f.Readdirnames(1)
 
-	return err == io.EOF
+	return errors.Is(err, io.EOF)
 }

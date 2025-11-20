@@ -21,6 +21,7 @@ type Sensitive struct {
 
 func newSensitive(cfg sensitiveConfig) *Sensitive {
 	cfg.NewReflectedEncoder = newJSONEncoder
+
 	return &Sensitive{
 		Encoder: zapcore.NewJSONEncoder(cfg.EncoderConfig),
 	}
@@ -86,6 +87,7 @@ func maskStruct(rv reflect.Value) any {
 			case reflect.Pointer:
 				if f.Elem().Kind() == reflect.String {
 					newStr := reflect.New(f.Type().Elem())
+
 					fe := f.Elem()
 					if fe.Len() < 4 {
 						newStr.Elem().SetString("****")
@@ -96,6 +98,7 @@ func maskStruct(rv reflect.Value) any {
 						s := fe.String()
 						newStr.Elem().SetString(s[:2] + "****" + s[len(s)-2:])
 					}
+
 					f.Set(newStr)
 				} else {
 					f.Set(reflect.Zero(f.Type()))

@@ -104,10 +104,12 @@ func UIntToStr(x uint) string {
 func StrTruncate(s string, maxSize int) string {
 	count := 0
 	builder := strings.Builder{}
+
 	for _, char := range s {
 		if maxSize <= 0 {
 			break
 		}
+
 		builder.WriteRune(char)
 
 		count++

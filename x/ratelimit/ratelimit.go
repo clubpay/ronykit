@@ -87,6 +87,7 @@ func (l Limiter) AllowN(
 	n int,
 ) (*Result, error) {
 	values := []any{limit.Burst, limit.Rate, limit.Period.Seconds(), n}
+
 	v, err := luaAllowN.Run(ctx, l.rdb, []string{key}, values...).Result()
 	if err != nil {
 		return nil, err
@@ -125,6 +126,7 @@ func (l Limiter) AllowAtMost(
 	n int,
 ) (*Result, error) {
 	values := []any{limit.Burst, limit.Rate, limit.Period.Seconds(), n}
+
 	v, err := luaAllowAtMost.Run(ctx, l.rdb, []string{key}, values...).Result()
 	if err != nil {
 		return nil, err

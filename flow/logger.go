@@ -25,11 +25,13 @@ func (log *zapAdapter) fields(keyvals []any) []zap.Field {
 	}
 
 	var fields []zap.Field
+
 	for i := 0; i < len(keyvals); i += 2 {
 		key, ok := keyvals[i].(string)
 		if !ok {
 			key = fmt.Sprintf("%v", keyvals[i])
 		}
+
 		fields = append(fields, zap.Any(key, keyvals[i+1]))
 	}
 

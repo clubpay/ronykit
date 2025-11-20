@@ -98,6 +98,7 @@ func (r *realBackend) init() error {
 	}
 
 	var err error
+
 	r.nsCli, err = client.NewNamespaceClient(client.Options{
 		HostPort:          r.hostport,
 		ConnectionOptions: connOpt,
@@ -216,16 +217,17 @@ func (r *realBackend) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.
 		return err
 	}
 
-	if res.Config == nil {
+	if res.GetConfig() == nil {
 		res.Config = &namespace.NamespaceConfig{}
 	}
+
 	res.Config.WorkflowExecutionRetentionTtl = durationpb.New(d)
 
 	return r.nsCli.Update(
 		ctx,
 		&workflowservice.UpdateNamespaceRequest{
 			Namespace: r.ns,
-			Config:    res.Config,
+			Config:    res.GetConfig(),
 		},
 	)
 }

@@ -6,11 +6,11 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/apidoc"
 )
 
 type Server struct {
@@ -42,10 +42,10 @@ func (s *Server) initEdge() error {
 		default:
 			fallthrough
 		case redocUI:
-			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
+			docFS, err = apidoc.New(s.cfg.serverName, s.cfg.version, "").
 				ReDocUI(s.cfg.allServiceDesc()...)
 		case swaggerUI:
-			docFS, err = swagger.New(s.cfg.serverName, s.cfg.version, "").
+			docFS, err = apidoc.New(s.cfg.serverName, s.cfg.version, "").
 				SwaggerUI(s.cfg.allServiceDesc()...)
 		}
 
@@ -106,12 +106,12 @@ func (s *Server) Run(ctx context.Context, signals ...os.Signal) error {
 }
 
 func (s *Server) GenDoc(_ context.Context, w io.Writer) error {
-	return swagger.New(s.cfg.serverName, s.cfg.version, "").
+	return apidoc.New(s.cfg.serverName, s.cfg.version, "").
 		WriteSwagTo(w, s.cfg.allServiceDesc()...)
 }
 
 func (s *Server) GenDocFile(_ context.Context, filename string) error {
-	return swagger.New(s.cfg.serverName, s.cfg.version, "").
+	return apidoc.New(s.cfg.serverName, s.cfg.version, "").
 		WriteSwagToFile(filename, s.cfg.allServiceDesc()...)
 }
 

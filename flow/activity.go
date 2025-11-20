@@ -32,6 +32,7 @@ func NewActivityFactory[REQ, RES, STATE any](
 ) *ActivityFactory[REQ, RES, STATE] {
 	stateT := reflect.TypeOf(fn).In(0)
 	actFactory := &ActivityFactory[REQ, RES, STATE]{}
+
 	registeredActivityFactories[stateT] = append(
 		registeredActivityFactories[stateT],
 		func(s any) temporalEntityT {
@@ -149,9 +150,11 @@ func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteAc
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
+
 	if opts.ScheduleToCloseTimeout == 0 {
 		opts.ScheduleToCloseTimeout = time.Hour * 24
 	}
+
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
@@ -172,9 +175,11 @@ func (a *Activity[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts Exec
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
+
 	if opts.ScheduleToCloseTimeout == 0 {
 		opts.ScheduleToCloseTimeout = time.Hour * 24
 	}
+
 	ctx = workflow.WithLocalActivityOptions(
 		ctx,
 		workflow.LocalActivityOptions{
@@ -197,9 +202,11 @@ func (a *ActivityFactory[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts Ex
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
+
 	if opts.ScheduleToCloseTimeout == 0 {
 		opts.ScheduleToCloseTimeout = time.Hour * 24
 	}
+
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
@@ -220,9 +227,11 @@ func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, op
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
+
 	if opts.ScheduleToCloseTimeout == 0 {
 		opts.ScheduleToCloseTimeout = time.Hour * 24
 	}
+
 	ctx = workflow.WithLocalActivityOptions(
 		ctx,
 		workflow.LocalActivityOptions{

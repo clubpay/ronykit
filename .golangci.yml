@@ -2,17 +2,21 @@ version: "2"
 run:
   tests: false
 linters:
+  default: all
   disable:
+    - cyclop
     - depguard
+    - embeddedstructfieldcheck
+    - err113
     - errcheck
+    - errname
     - exhaustruct
-    - forbidigo
+    - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits
     - godot
     - godox
-    - gosec
     - ireturn
     - mnd
     - nonamedreturns
@@ -26,7 +30,7 @@ linters:
   settings:
     depguard:
       rules:
-        whilelist:
+        whitelist:
           list-mode: lax
           files:
             - $all
@@ -49,6 +53,11 @@ linters:
       - builtin$
       - examples$
 formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
   exclusions:
     generated: lax
     paths:

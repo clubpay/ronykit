@@ -20,14 +20,17 @@ type Scramble struct {
 func NewScramble(seed string) *Scramble {
 	s := &Scramble{}
 	s.secretKey = []byte(seed)
+
 	b, err := aes.NewCipher(s.secretKey)
 	if err != nil {
 		panic(err)
 	}
+
 	s.aead, err = cipher.NewGCM(b)
 	if err != nil {
 		panic(err)
 	}
+
 	s.nonceSize = s.aead.NonceSize()
 	s.tagSize = s.aead.Overhead()
 	binary.BigEndian.PutUint32(s.ad[:], s.Hash())
@@ -50,6 +53,7 @@ func (s *Scramble) Encrypt(src, dst []byte) []byte {
 	} else {
 		dst = dst[:s.nonceSize]
 	}
+
 	copy(dst[:4], s.ad[:])
 	_, _ = rand.Read(dst[4:])
 
@@ -68,6 +72,7 @@ func (s *Scramble) Decrypt(src, dst []byte) ([]byte, error) {
 	} else {
 		dst = dst[:0]
 	}
+
 	dst, err = s.aead.Open(dst, src[:s.nonceSize], src[s.nonceSize:], s.ad[:])
 
 	return dst, err

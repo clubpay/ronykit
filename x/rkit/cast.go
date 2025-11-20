@@ -12,6 +12,7 @@ func Cast[T any](val any) T {
 	if val, ok := val.(T); ok {
 		return val
 	}
+
 	var zero T
 
 	return zero
@@ -31,6 +32,7 @@ func ToJSON(val any) []byte {
 // FromJSON Converts a byte array to a given type.
 func FromJSON[T any](bytes []byte) T {
 	var v T
+
 	_ = json.Unmarshal(bytes, &v)
 
 	return v
@@ -47,8 +49,10 @@ func ToMap(s any) map[string]any {
 type TypeConverter = copier.TypeConverter
 
 func TypeConvert[SRC, DST any](fn func(src SRC) (DST, error)) TypeConverter {
-	var src SRC
-	var dst DST
+	var (
+		src SRC
+		dst DST
+	)
 
 	return TypeConverter{
 		SrcType: src,
@@ -76,6 +80,7 @@ func DynCastOption[DST, SRC any](
 		if m == nil {
 			m = make(map[string]string)
 		}
+
 		m[mappingPair[i]] = mappingPair[i+1]
 	}
 

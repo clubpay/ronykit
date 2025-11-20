@@ -16,8 +16,11 @@ const defaultPrecision = 2
 
 func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	type medium any
+
 	m := new(medium)
-	if err := json.Unmarshal(bb, m); err != nil {
+
+	err := json.Unmarshal(bb, m)
+	if err != nil {
 		return err
 	}
 

@@ -36,6 +36,7 @@ func Run(t *testing.T, opts ...fx.Option) {
 func decorateConfig(set settings.Settings) settings.Settings {
 	_, filename, _, ok := runtime.Caller(0)
 	_ = ok
+
 	err := set.SetFromFile("testenv", filepath.Dir(filename))
 	if err != nil {
 		panic(err)
@@ -77,6 +78,7 @@ func InitDB(containerName string, params InitDBParams) fx.Option {
 						"host=%s user=%s password=%s database=%s port=%d sslmode=disable",
 						c.Host, params.User, params.Pass, params.DB, c.DefaultPort(),
 					)
+
 					db, err := sql.Open("pgx", dsn)
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to open db")
@@ -123,6 +125,7 @@ func InitRedis(containerName string, params InitRedisParams) fx.Option {
 
 					ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 					defer cf()
+
 					err = cli.Ping(ctx).Err()
 					if err != nil {
 						return nil, err

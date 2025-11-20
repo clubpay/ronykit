@@ -98,21 +98,27 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 			if src.Second != 0 {
 				cal.Second = []client.ScheduleRange{{Start: src.Second}}
 			}
+
 			if src.Minute != 0 {
 				cal.Minute = []client.ScheduleRange{{Start: src.Minute}}
 			}
+
 			if src.Hour != 0 {
 				cal.Hour = []client.ScheduleRange{{Start: src.Hour}}
 			}
+
 			if src.Month != 0 {
 				cal.Month = []client.ScheduleRange{{Start: src.Month}}
 			}
+
 			if src.Year != 0 {
 				cal.Year = []client.ScheduleRange{{Start: src.Year}}
 			}
+
 			if src.DayOfWeek != 0 {
 				cal.DayOfWeek = []client.ScheduleRange{{Start: int(src.DayOfWeek)}}
 			}
+
 			if src.DayOfMonth != 0 {
 				cal.DayOfMonth = []client.ScheduleRange{{Start: src.DayOfMonth}}
 			}
@@ -248,6 +254,7 @@ func (s *SchedulerMigrator) Migrate(
 		count := 0
 		for it.HasNext() {
 			count++
+
 			ent, err := it.Next()
 			if err != nil {
 				return err

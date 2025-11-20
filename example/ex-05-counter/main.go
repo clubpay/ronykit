@@ -70,6 +70,7 @@ func (e *EchoCounter) Reduce(action string) error {
 		if e.Count <= 0 {
 			return fmt.Errorf("count cannot be negative")
 		}
+
 		e.Count--
 	default:
 		return fmt.Errorf("unknown action: %s", action)
@@ -89,7 +90,9 @@ type CounterResponseDTO struct {
 
 func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*CounterResponseDTO, error) {
 	res := &CounterResponseDTO{}
+
 	fmt.Println(req.Action, req.Count)
+
 	err := ctx.ReduceState(
 		req.Action,
 		func(s *EchoCounter, err error) error {

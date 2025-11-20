@@ -110,6 +110,7 @@ func SideEffect[T any](ctx Context, fn func() T) (T, error) {
 	)
 
 	var out T
+
 	err := reqEncoded.Get(&out)
 
 	return out, err
@@ -127,6 +128,7 @@ func MutableSideEffect[T comparable](ctx Context, id string, fn func() T) (T, er
 	)
 
 	var out T
+
 	err := reqEncoded.Get(&out)
 
 	return out, err

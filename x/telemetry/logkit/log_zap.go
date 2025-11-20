@@ -44,6 +44,7 @@ func New(opts ...Option) *Logger {
 	}
 
 	var cores []Core
+
 	switch cfg.encoder {
 	case "json":
 		cores = append(cores,
@@ -112,6 +113,7 @@ func (l *Logger) with(core zapcore.Core, name string, skip int) *Logger {
 	if name != "" {
 		prefix = fmt.Sprintf("%s[%s]", l.prefix, name)
 	}
+
 	childLogger := &Logger{
 		prefix:     prefix,
 		skipCaller: l.skipCaller,
@@ -167,9 +169,11 @@ func (l *Logger) Debug(msg string, fields ...Field) {
 	if l == nil {
 		return
 	}
+
 	if !l.checkLevel(DebugLevel) {
 		return
 	}
+
 	if ce := l.z.Check(DebugLevel, addPrefix(l.prefix, msg)); ce != nil {
 		ce.Write(fields...)
 	}
@@ -186,9 +190,11 @@ func (l *Logger) Info(msg string, fields ...Field) {
 	if l == nil {
 		return
 	}
+
 	if !l.checkLevel(InfoLevel) {
 		return
 	}
+
 	if ce := l.z.Check(InfoLevel, addPrefix(l.prefix, msg)); ce != nil {
 		ce.Write(fields...)
 	}
@@ -205,9 +211,11 @@ func (l *Logger) Warn(msg string, fields ...Field) {
 	if l == nil {
 		return
 	}
+
 	if !l.checkLevel(WarnLevel) {
 		return
 	}
+
 	if ce := l.z.Check(WarnLevel, addPrefix(l.prefix, msg)); ce != nil {
 		ce.Write(fields...)
 	}
@@ -224,9 +232,11 @@ func (l *Logger) Error(msg string, fields ...Field) {
 	if l == nil {
 		return
 	}
+
 	if !l.checkLevel(ErrorLevel) {
 		return
 	}
+
 	if ce := l.z.Check(ErrorLevel, addPrefix(l.prefix, msg)); ce != nil {
 		ce.Write(fields...)
 	}
@@ -243,6 +253,7 @@ func (l *Logger) Fatal(msg string, fields ...Field) {
 	if l == nil {
 		return
 	}
+
 	l.z.Fatal(addPrefix(l.prefix, msg), fields...)
 }
 
@@ -261,6 +272,7 @@ func (l *Logger) RecoverPanic(funcName string, extraInfo interface{}, compensati
 			zap.Any("Recover", r),
 			zap.ByteString("StackTrace", debug.Stack()),
 		)
+
 		if compensationFunc != nil {
 			go compensationFunc()
 		}
@@ -334,6 +346,7 @@ func (l *Logger) LogEvent(event fxevent.Event) {
 				maybeBool("private", e.Private),
 			)
 		}
+
 		if e.Err != nil {
 			l.logError("error encountered while applying options",
 				moduleField(e.ModuleName),
@@ -350,6 +363,7 @@ func (l *Logger) LogEvent(event fxevent.Event) {
 				zap.String("type", rtype),
 			)
 		}
+
 		if e.Err != nil {
 			l.logError("error encountered while replacing",
 				zap.Strings("stacktrace", e.StackTrace),
@@ -367,6 +381,7 @@ func (l *Logger) LogEvent(event fxevent.Event) {
 				zap.String("type", rtype),
 			)
 		}
+
 		if e.Err != nil {
 			l.logError("error encountered while applying options",
 				zap.Strings("stacktrace", e.StackTrace),
@@ -453,6 +468,7 @@ func moduleField(name string) Field {
 	if len(name) == 0 {
 		return zap.Skip()
 	}
+
 	return zap.String("module", name)
 }
 
@@ -460,5 +476,6 @@ func maybeBool(name string, b bool) Field {
 	if b {
 		return zap.Bool(name, true)
 	}
+
 	return zap.Skip()
 }

@@ -66,6 +66,7 @@ func New(name string, opts ...Option) kit.Cluster {
 
 func (c *cluster) Start(ctx context.Context) error {
 	var err error
+
 	c.host, err = libp2p.New(
 		libp2p.Ping(true),
 		libp2p.EnableRelay(),
@@ -78,6 +79,7 @@ func (c *cluster) Start(ctx context.Context) error {
 
 	gossipCtx, gossipCF := context.WithCancel(context.Background())
 	c.gossipCancelFunc = gossipCF
+
 	c.ps, err = pubsub.NewGossipSub(gossipCtx, c.host)
 	if err != nil {
 		return err
@@ -94,6 +96,7 @@ func (c *cluster) Start(ctx context.Context) error {
 	// Start my topic
 	myTopicCtx, myTopicCF := context.WithCancel(context.Background())
 	c.myTopicCancelFunc = myTopicCF
+
 	err = c.startMyTopic(myTopicCtx)
 	if err != nil {
 		return err
@@ -102,6 +105,7 @@ func (c *cluster) Start(ctx context.Context) error {
 	// Start broadcast
 	broadcastCtx, broadcastCF := context.WithCancel(context.Background())
 	c.broadcastCancelFunc = broadcastCF
+
 	err = c.startBroadcast(broadcastCtx)
 	if err != nil {
 		return err
@@ -281,6 +285,7 @@ func (c *cluster) Publish(id string, data []byte) error {
 	c.subsMtx.Lock()
 	t, ok := c.subs[id]
 	c.subsMtx.Unlock()
+
 	if !ok {
 		return kit.ErrClusterMemberNotFound
 	}
@@ -298,6 +303,7 @@ func (c *cluster) Subscribers() ([]string, error) {
 
 func (c *cluster) HandlePeerFound(pi peer.AddrInfo) {
 	c.log.Debugf("[Cluster][p2pCluster] found peer: %s", pi.String())
+
 	err := c.host.Connect(context.Background(), pi)
 	if err != nil {
 		c.log.Errorf("[Cluster][p2pCluster] failed to connect to peer(%s): %v", pi.String(), err)

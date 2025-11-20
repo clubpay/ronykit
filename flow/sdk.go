@@ -54,6 +54,7 @@ func (sdk *SDK) Start() error {
 
 func (sdk *SDK) Stop() {
 	sdk.b.Stop()
+
 	if sdk.old != nil {
 		sdk.old.Stop()
 	}
@@ -65,11 +66,12 @@ func (sdk *SDK) migrateSchedulers() {
 	}
 
 	m := NewSchedulerMigrator(sdk.old, sdk.b)
+
 	err := m.Migrate(
 		context.Background(),
 		true,
 		func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult {
-			if len(sch.NextActionTimes) > 0 && sch.NextActionTimes[0].Sub(time.Now()) < time.Minute {
+			if len(sch.NextActionTimes) > 0 && time.Until(sch.NextActionTimes[0]) < time.Minute {
 				return MigrateCheckResult{
 					Ignore: true,
 				}
@@ -96,26 +98,31 @@ func (sdk *SDK) InitWithState(state any) {
 		if stateType == reflect.TypeOf(state) {
 			for _, t := range w {
 				t.registerWithStateAny(sdk.b, state, true)
+
 				if sdk.old != nil {
 					t.registerWithStateAny(sdk.old, state, false)
 				}
 			}
 		}
 	}
+
 	for stateType, w := range registeredActivities {
 		if stateType == reflect.TypeOf(state) {
 			for _, t := range w {
 				t.registerWithStateAny(sdk.b, state, true)
+
 				if sdk.old != nil {
 					t.registerWithStateAny(sdk.old, state, false)
 				}
 			}
 		}
 	}
+
 	for stateType, w := range registeredActivityFactories {
 		if stateType == reflect.TypeOf(state) {
 			for _, fn := range w {
 				fn(state).registerWithStateAny(sdk.b, state, true)
+
 				if sdk.old != nil {
 					fn(state).registerWithStateAny(sdk.old, state, false)
 				}

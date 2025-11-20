@@ -28,6 +28,7 @@ func (t *bufferArrayEncoder) AppendArray(v zapcore.ArrayMarshaler) error {
 	enc := &bufferArrayEncoder{}
 	err := v.MarshalLogArray(enc)
 	t.stringsSlice = append(t.stringsSlice, fmt.Sprintf("%v", enc.stringsSlice))
+
 	return err
 }
 
@@ -35,11 +36,13 @@ func (t *bufferArrayEncoder) AppendObject(v zapcore.ObjectMarshaler) error {
 	m := zapcore.NewMapObjectEncoder()
 	err := v.MarshalLogObject(m)
 	t.stringsSlice = append(t.stringsSlice, fmt.Sprintf("%v", m.Fields))
+
 	return err
 }
 
 func (t *bufferArrayEncoder) AppendReflected(v interface{}) error {
 	t.stringsSlice = append(t.stringsSlice, fmt.Sprintf("%v", v))
+
 	return nil
 }
 

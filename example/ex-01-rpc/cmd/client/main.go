@@ -45,7 +45,8 @@ func main() {
 	ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 	defer cf()
 
-	if err := wsCtx.Connect(ctx, "/"); err != nil {
+	err := wsCtx.Connect(ctx, "/")
+	if err != nil {
 		panic(err)
 	}
 

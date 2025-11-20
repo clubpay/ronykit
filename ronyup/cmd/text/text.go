@@ -41,7 +41,7 @@ var wrap = func(err error, msg string) error {
 		return nil
 	}
 
-	return fmt.Errorf("%s: %v", msg, err)
+	return fmt.Errorf("%s: %w", msg, err)
 }
 
 //nolint:gochecknoglobals
@@ -86,6 +86,7 @@ var Cmd = &cobra.Command{
 
 func isGoWorkspace() bool {
 	_, err := os.Stat("go.work")
+
 	return err == nil
 }
 
@@ -104,6 +105,7 @@ func getAllWorkspaceDirectories(cmd *cobra.Command) ([]string, error) {
 	for _, u := range f.Use {
 		if len(opt.ModulesFilter) > 0 {
 			filtered := false
+
 			for _, m := range opt.ModulesFilter {
 				if u.Path == m {
 					filtered = true
@@ -111,10 +113,12 @@ func getAllWorkspaceDirectories(cmd *cobra.Command) ([]string, error) {
 					break
 				}
 			}
+
 			if !filtered {
 				continue
 			}
 		}
+
 		dirs = append(dirs, u.Path)
 	}
 
@@ -123,9 +127,12 @@ func getAllWorkspaceDirectories(cmd *cobra.Command) ([]string, error) {
 
 func getAllPackages(cmd *cobra.Command) ([]string, error) {
 	var dirs []string
+
 	if isGoWorkspace() {
 		cmd.Println("detected go workspace")
+
 		var err error
+
 		dirs, err = getAllWorkspaceDirectories(cmd)
 		if err != nil {
 			return nil, err
@@ -137,6 +144,7 @@ func getAllPackages(cmd *cobra.Command) ([]string, error) {
 	}
 
 	var out []string
+
 	for _, dir := range dirs {
 		cfg := &packages.Config{
 			Context: context.Background(),
@@ -150,13 +158,16 @@ func getAllPackages(cmd *cobra.Command) ([]string, error) {
 		}
 
 		seen := make(map[string]struct{})
+
 		for _, p := range pkgs {
 			if p.PkgPath == "" || len(p.GoFiles) == 0 {
 				continue // skip synthetic or empty packages
 			}
+
 			if _, ok := seen[p.PkgPath]; ok {
 				continue
 			}
+
 			seen[p.PkgPath] = struct{}{}
 
 			out = append(out, p.PkgPath)

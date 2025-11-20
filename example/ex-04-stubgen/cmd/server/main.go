@@ -23,7 +23,9 @@ func main() {
 
 	go func() {
 		time.Sleep(time.Second * 3)
+
 		s := sampleservice.NewsampleServiceStub("127.0.0.1:80")
+
 		res, err := s.ComplexDummy2(context.Background(), &sampleservice.VeryComplexRequest{
 			Key1: "someting",
 		})
@@ -36,7 +38,7 @@ func main() {
 
 	// Create, start and wait for shutdown signal of the server.
 	defer kit.NewServer(
-		//kit.WithPrefork(),
+		// kit.WithPrefork(),
 		kit.WithErrorHandler(func(ctx *kit.Context, err error) {
 			fmt.Println(err, string(debug.Stack()))
 		}),

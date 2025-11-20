@@ -15,6 +15,7 @@ func ByteToStr(bts []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&bts))
 
 	var s string
+
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
 	sh.Data = bh.Data
 	sh.Len = bh.Len

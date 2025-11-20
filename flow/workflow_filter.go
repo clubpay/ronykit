@@ -29,6 +29,7 @@ func AND(a, b string) string {
 	if strings.Contains(a, "AND") || strings.Contains(a, "OR") {
 		a = fmt.Sprintf("(%s)", a)
 	}
+
 	if strings.Contains(b, "AND") || strings.Contains(b, "OR") {
 		b = fmt.Sprintf("(%s)", b)
 	}
@@ -40,6 +41,7 @@ func OR(a, b string) string {
 	if strings.Contains(a, "AND") || strings.Contains(a, "OR") {
 		a = fmt.Sprintf("(%s)", a)
 	}
+
 	if strings.Contains(b, "AND") || strings.Contains(b, "OR") {
 		b = fmt.Sprintf("(%s)", b)
 	}

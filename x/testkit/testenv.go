@@ -98,6 +98,7 @@ func provideWireMock(lc fx.Lifecycle, cfg wireMockConfig) (*gnomock.Container, e
 		if err != nil {
 			return nil, err
 		}
+
 		options = append(options, gnomock.WithHostMounts(tempFolder, "/home/wiremock"))
 	}
 
@@ -140,6 +141,7 @@ func copyWireMockFS(mockFS *WireMockFS, tempFolder string) error {
 
 	for idx := range orgFolders {
 		orgPath := filepath.Join(mockFS.Root, orgFolders[idx])
+
 		err := fs.WalkDir(
 			mockFS.FS, orgPath,
 			func(path string, d fs.DirEntry, _ error) error {
@@ -147,10 +149,12 @@ func copyWireMockFS(mockFS *WireMockFS, tempFolder string) error {
 				if d.IsDir() {
 					return os.MkdirAll(endPath, os.ModePerm)
 				}
+
 				srcFile, err := mockFS.FS.Open(path)
 				if err != nil {
 					return err
 				}
+
 				dstFile, err := os.Create(endPath)
 				if err != nil {
 					return err
@@ -189,10 +193,12 @@ func provideTemporal(lc fx.Lifecycle) (*gnomock.Container, error) {
 		gnomock.WithHealthCheck(
 			func(_ context.Context, container *gnomock.Container) error {
 				timeout := time.Second * 3
+
 				conn, err := net.DialTimeout("tcp", container.DefaultAddress(), timeout)
 				if err != nil {
 					return err
 				}
+
 				_ = conn.Close()
 
 				return nil

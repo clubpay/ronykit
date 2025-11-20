@@ -63,21 +63,22 @@ func createDestination() error {
 		return err
 	}
 
-	_ = os.MkdirAll(repoPath, 0755) //nolint:gofumpt
+	_ = os.MkdirAll(repoPath, 0o755)
 
 	if opt.ProjectDir != "" {
 		p := z.RunCmdParams{Dir: repoPath}
 		z.RunCmd(p, "go", "work", "init")
 
 		projectPath := filepath.Join(repoPath, opt.ProjectDir)
-		_ = os.MkdirAll(projectPath, 0755) //nolint:gofumpt
+
+		_ = os.MkdirAll(projectPath, 0o755)
 		if !z.IsEmptyDir(projectPath) {
 			if !opt.Force {
 				return fmt.Errorf("%s directory is not empty, use -f to force", projectPath)
 			}
 
-			_ = os.RemoveAll(projectPath)      //nolint:gofumpt
-			_ = os.MkdirAll(projectPath, 0755) //nolint:gofumpt
+			_ = os.RemoveAll(projectPath)
+			_ = os.MkdirAll(projectPath, 0o755)
 		}
 	}
 

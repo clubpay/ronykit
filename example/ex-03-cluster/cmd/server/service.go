@@ -61,8 +61,11 @@ func coordinator(ctx *kit.LimitedContext) (string, error) {
 func SetKeyHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.SetKeyRequest)
+
 	kvl.Lock()
+
 	kv[req.Key] = req.Value
+
 	kvl.Unlock()
 
 	ctx.In().Reply().
@@ -77,8 +80,11 @@ func SetKeyHandler(ctx *kit.Context) {
 func GetKeyHandler(ctx *kit.Context) {
 	//nolint:forcetypeassert
 	req := ctx.In().GetMsg().(*dto.GetKeyRequest)
+
 	kvl.Lock()
+
 	v := kv[req.Key]
+
 	kvl.Unlock()
 
 	ctx.SetStatusCode(http.StatusBadRequest)

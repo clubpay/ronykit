@@ -57,6 +57,7 @@ func appendField(attrs []attribute.KeyValue, f Field) []attribute.KeyValue {
 	case zapcore.StringType:
 		if utf8.ValidString(f.String) {
 			attr := attribute.String(f.Key, f.String)
+
 			return append(attrs, attr)
 		}
 
@@ -98,9 +99,11 @@ func appendField(attrs []attribute.KeyValue, f Field) []attribute.KeyValue {
 
 	case zapcore.ArrayMarshalerType:
 		var attr attribute.KeyValue
+
 		arrayEncoder := &bufferArrayEncoder{
 			stringsSlice: []string{},
 		}
+
 		err := f.Interface.(zapcore.ArrayMarshaler).MarshalLogArray(arrayEncoder)
 		if err != nil {
 			attr = attribute.String(f.Key+"_error", fmt.Sprintf("otelzap: unable to marshal array: %v", err))
@@ -149,11 +152,13 @@ func reflectAttr(key string, value any) attribute.KeyValue {
 	case reflect.Struct:
 		copiedRV := reflect.New(rv.Type()).Elem()
 		copiedRV.Set(rv)
+
 		if b, err := json.Marshal(maskStruct(copiedRV)); b != nil && err == nil {
 			return attribute.String(key, string(b))
 		}
 	case reflect.Array:
 		rv = rv.Slice(0, rv.Len())
+
 		fallthrough
 	case reflect.Slice:
 		switch reflect.TypeOf(value).Elem().Kind() {
