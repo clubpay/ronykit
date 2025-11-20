@@ -261,3 +261,16 @@ func AddUnique[T comparable](s []T, v T) []T {
 
 	return append(s, v)
 }
+
+func TransformMap[K1, K2 comparable, V1, V2 any](
+	input map[K1]V1,
+	fn func(K1, V1) (K2, V2),
+) map[K2]V2 {
+	m := make(map[K2]V2, len(input))
+	for k, v := range input {
+		k2, v2 := fn(k, v)
+		m[k2] = v2
+	}
+
+	return m
+}

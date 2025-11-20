@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/util"
+	"github.com/clubpay/ronykit/x/rkit"
 	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/serviceerror"
@@ -361,7 +360,7 @@ func (sdk *SDK) SearchWorkflows(ctx context.Context, req SearchWorkflowRequest) 
 	}
 
 	res := &SearchWorkflowResponse{
-		Executions:    utils.Map(toWorkflowExecution, cliRes.GetExecutions()),
+		Executions:    rkit.Map(cliRes.GetExecutions(), toWorkflowExecution),
 		NextPageToken: cliRes.GetNextPageToken(),
 	}
 
@@ -451,7 +450,7 @@ func (sdk *SDK) GetWorkflowHistory(
 		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_STARTED:
 			attr := rawEvent.GetWorkflowExecutionStartedEventAttributes()
 			payload = map[string]any{
-				"searchAttributes": util.TransformMap(
+				"searchAttributes": rkit.TransformMap(
 					attr.GetSearchAttributes().GetIndexedFields(),
 					func(k1 string, v1 *common.Payload) (string, string) {
 						return k1, sdk.b.DataConverter().ToString(v1)

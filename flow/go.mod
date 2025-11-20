@@ -1,18 +1,16 @@
 module github.com/clubpay/ronykit/flow
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.25.1
 
 require (
 	github.com/clubpay/ronykit/kit v0.21.26
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.26
-	github.com/clubpay/ronykit/util v0.21.26
+	github.com/clubpay/ronykit/x/rkit v0.0.0-20251120132447-d9606fa34a4a
 	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.38.0
-	go.temporal.io/api v1.55.0
-	go.temporal.io/sdk v1.37.0
+	go.temporal.io/api v1.58.0
+	go.temporal.io/sdk v1.38.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.17.0
 	google.golang.org/protobuf v1.36.10
@@ -32,7 +30,7 @@ require (
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.6.8 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.7.3 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
@@ -47,6 +45,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.66.0 // indirect
 	go.opentelemetry.io/otel v1.38.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.44.0 // indirect

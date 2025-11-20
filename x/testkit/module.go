@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/clubpay/ronykit/util"
-	"github.com/clubpay/ronykit/util/settings"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/settings"
 	_ "github.com/jackc/pgx/v5/stdlib" // required by InitDB
 	"github.com/orlangure/gnomock"
 	"github.com/pkg/errors"
@@ -65,7 +65,7 @@ type InitDBParams struct {
 func InitDB(containerName string, params InitDBParams) fx.Option {
 	return fx.Options(
 		fx.Supply(
-			util.DynCast[provideDBContainerParams](params),
+			rkit.DynCast[provideDBContainerParams](params),
 		),
 		fx.Provide(
 			fx.Annotate(
@@ -112,7 +112,7 @@ func InitRedis(containerName string, params InitRedisParams) fx.Option {
 			),
 			fx.Annotate(
 				func(c *gnomock.Container) (*redis.Client, error) {
-					opt, err := redis.ParseURL("redis://" + net.JoinHostPort(c.Host, util.IntToStr(c.DefaultPort())))
+					opt, err := redis.ParseURL("redis://" + net.JoinHostPort(c.Host, rkit.IntToStr(c.DefaultPort())))
 					if err != nil {
 						return nil, err
 					}

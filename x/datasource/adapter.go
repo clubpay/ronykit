@@ -50,6 +50,7 @@ func InitDB(in, out string) fx.Option {
 	if in != "" {
 		annotations = append(annotations, fx.ParamTags(fmt.Sprintf("name:%q", in)))
 	}
+
 	if out != "" {
 		annotations = append(annotations, fx.ResultTags(fmt.Sprintf("name:%q", out)))
 	}
@@ -62,6 +63,7 @@ func InitDB(in, out string) fx.Option {
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to open db")
 					}
+
 					db.SetMaxOpenConns(12)
 					db.SetConnMaxLifetime(time.Minute)
 					db.SetMaxIdleConns(5)
@@ -145,9 +147,11 @@ func InitRedis(in, out string) fx.Option {
 	if in != "" {
 		annotations = append(annotations, fx.ParamTags(fmt.Sprintf("name:%q", in)))
 	}
+
 	if out != "" {
 		annotations = append(annotations, fx.ResultTags(fmt.Sprintf("name:%q", out)))
 	}
+
 	return fx.Options(
 		fx.Provide(
 			fx.Annotate(
@@ -165,6 +169,7 @@ func InitRedis(in, out string) fx.Option {
 
 					ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 					defer cf()
+
 					err = cli.Ping(ctx).Err()
 					if err != nil {
 						return nil, err
@@ -190,9 +195,11 @@ func InitS3(in, out string) fx.Option {
 	if in != "" {
 		annotations = append(annotations, fx.ParamTags(fmt.Sprintf("name:%q", in)))
 	}
+
 	if out != "" {
 		annotations = append(annotations, fx.ResultTags(fmt.Sprintf("name:%q", out)))
 	}
+
 	return fx.Options(
 		fx.Provide(
 			fx.Annotate(
@@ -221,9 +228,11 @@ func InitMinioClient(in, out string) fx.Option {
 	if in != "" {
 		annotations = append(annotations, fx.ParamTags(fmt.Sprintf("name:%q", in)))
 	}
+
 	if out != "" {
 		annotations = append(annotations, fx.ResultTags(fmt.Sprintf("name:%q", out)))
 	}
+
 	return fx.Options(
 		fx.Provide(
 			fx.Annotate(
@@ -245,9 +254,11 @@ func InitMinioCore(in, out string) fx.Option {
 	if in != "" {
 		annotations = append(annotations, fx.ParamTags(fmt.Sprintf("name:%q", in)))
 	}
+
 	if out != "" {
 		annotations = append(annotations, fx.ResultTags(fmt.Sprintf("name:%q", out)))
 	}
+
 	return fx.Options(
 		fx.Provide(
 			fx.Annotate(
