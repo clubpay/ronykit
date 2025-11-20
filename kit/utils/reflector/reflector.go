@@ -75,7 +75,7 @@ func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 
 	for ll.Len() > 0 {
 		mt := ll.Remove(ll.Back()).(destructInput) //nolint:forcetypeassert
-		for i := range mt.t.Name() {
+		for i := range mt.t.NumField() {
 			ft := mt.t.Field(i)
 			if ft.PkgPath != "" && !ft.Anonymous {
 				continue

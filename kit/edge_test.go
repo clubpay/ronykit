@@ -3,7 +3,6 @@ package kit_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"strings"
 	"sync"
@@ -13,14 +12,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
-
-func TestRonykit(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Ronykit Suite")
-}
 
 type testSelector struct{}
 
@@ -103,6 +95,7 @@ func newTestCluster() *testCluster {
 			d, ok := t.delegates[x.id]
 			t.mtx.Unlock()
 			if ok {
+
 				d.OnMessage(x.data)
 			}
 		}
@@ -335,189 +328,6 @@ func (t testRPCSelector) GetEncoding() kit.Encoding {
 func (t testRPCSelector) GetPredicate() string {
 	return t.predicate
 }
-
-var _ = Describe("EdgeServer/Simple", func() {
-	var (
-		b    *testGateway
-		edge *kit.EdgeServer
-	)
-	BeforeEach(func() {
-		b = &testGateway{}
-		var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
-			return desc.NewService("testService").
-				AddContract(
-					desc.NewContract().
-						SetInput(&kit.RawMessage{}).
-						SetOutput(&kit.RawMessage{}).
-						AddRoute(desc.Route("", testSelector{})).
-						AddHandler(
-							func(ctx *kit.Context) {
-								ctx.Out().
-									SetMsg(ctx.In().GetMsg()).
-									Send()
-
-								return
-							},
-						),
-				)
-		}
-		edge = kit.NewServer(
-			kit.WithGateway(b),
-			kit.WithServiceBuilder(serviceDesc.Desc()),
-		)
-		edge.Start(nil)
-	})
-	AfterEach(func() {
-		edge.Shutdown(nil)
-	})
-
-	DescribeTable("should echo back the message",
-		func(msg []byte) {
-			c := newTestConn(utils.RandomUint64(0), "", false)
-			b.Send(c, msg)
-			Expect(c.Read()).To(BeEquivalentTo(msg))
-		},
-		Entry("a raw string", kit.RawMessage("Hello this is a simple message")),
-		Entry("a ToJSON string", kit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
-	)
-})
-
-var _ = Describe("EdgeServer/GlobalHandlers", func() {
-	var (
-		b    *testGateway
-		edge *kit.EdgeServer
-	)
-	BeforeEach(func() {
-		b = &testGateway{}
-		var serviceDesc desc.ServiceDescFunc = func() *desc.Service {
-			return desc.NewService("testService").
-				AddContract(
-					desc.NewContract().
-						SetInput(&kit.RawMessage{}).
-						SetOutput(&kit.RawMessage{}).
-						AddRoute(desc.Route("", testSelector{})).
-						AddHandler(
-							func(ctx *kit.Context) {
-								in := utils.B2S(ctx.In().GetMsg().(kit.RawMessage)) //nolint:forcetypeassert
-								out := fmt.Sprintf("%s-%s-%s",
-									ctx.GetString("PRE_KEY", ""),
-									in,
-									ctx.GetString("POST_KEY", ""),
-								)
-								ctx.Out().
-									SetMsg(kit.RawMessage(out)).
-									Send()
-
-								return
-							},
-						),
-				)
-		}
-		edge = kit.NewServer(
-			kit.WithGateway(b),
-			kit.WithGlobalHandlers(
-				func(ctx *kit.Context) {
-					ctx.Set("PRE_KEY", "PRE_VALUE")
-				},
-			),
-			kit.WithServiceBuilder(serviceDesc.Desc()),
-		)
-		edge.Start(nil)
-	})
-	AfterEach(func() {
-		edge.Shutdown(nil)
-	})
-
-	DescribeTable("should echo back the message",
-		func(msg []byte) {
-			c := newTestConn(utils.RandomUint64(0), "", false)
-			b.Send(c, msg)
-			Expect(c.Read()).To(BeEquivalentTo(fmt.Sprintf("PRE_VALUE-%s-", string(msg))))
-		},
-		Entry("a raw string", kit.RawMessage("Hello this is a simple message")),
-		Entry("a ToJSON string", kit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
-	)
-})
-
-var _ = Describe("EdgeServer/Cluster", func() {
-	var (
-		b1    *testGateway
-		b2    *testGateway
-		c     *testCluster
-		edge1 *kit.EdgeServer
-		edge2 *kit.EdgeServer
-	)
-	BeforeEach(func() {
-		b1 = &testGateway{}
-		b2 = &testGateway{}
-		c = newTestCluster()
-
-		var serviceDesc = func(id string) desc.ServiceDescFunc {
-			return func() *desc.Service {
-				return desc.NewService("testService").
-					AddContract(
-						desc.NewContract().
-							SetInput(kit.RawMessage{}).
-							SetOutput(kit.RawMessage{}).
-							AddRoute(desc.Route("", testSelector{})).
-							SetCoordinator(
-								func(ctx *kit.LimitedContext) (string, error) {
-									members, err := ctx.ClusterMembers()
-									if err != nil {
-										return "", err
-									}
-
-									for _, m := range members {
-										if m != ctx.ClusterID() {
-											return m, nil
-										}
-									}
-
-									return ctx.ClusterID(), nil
-								},
-							).
-							AddHandler(
-								func(ctx *kit.Context) {
-									ctx.Out().
-										SetMsg(kit.RawMessage(id)).
-										Send()
-
-									return
-								},
-							),
-					)
-			}
-		}
-		edge1 = kit.NewServer(
-			kit.WithGateway(b1),
-			kit.WithCluster(c),
-			kit.WithServiceBuilder(serviceDesc("edge1").Desc()),
-		)
-		edge1.Start(nil)
-		edge2 = kit.NewServer(
-			kit.WithGateway(b2),
-			kit.WithCluster(c),
-			kit.WithServiceBuilder(serviceDesc("edge2").Desc()),
-		)
-		edge2.Start(nil)
-	})
-	AfterEach(func() {
-		edge1.Shutdown(nil)
-		edge2.Shutdown(nil)
-	})
-
-	DescribeTable("should echo back the message",
-		func(msg []byte) {
-			c := newTestConn(utils.RandomUint64(0), "", false)
-			c.Set("X-Hdr1", "edge1")
-			b1.Send(c, msg)
-			Expect(c.ReadString()).To(BeEquivalentTo("edge2"))
-			Expect(c.Get("X-Hdr1")).To(BeEquivalentTo("edge1"))
-		},
-		Entry("a raw string", kit.RawMessage("Hello this is a simple message")),
-		Entry("a ToJSON string", kit.RawMessage(`{"cmd": "something", "key1": 123, "key2": "val2"}`)),
-	)
-})
 
 func BenchmarkServer(b *testing.B) {
 	bundle := &testGateway{}

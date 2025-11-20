@@ -123,9 +123,14 @@ func Convert(err error) error {
 	var se *stub.Error
 	if errors.As(err, &se) {
 		out := &Error{
-			Code:       ErrCode(se.Code()),
+			Code:       HTTPStatusToCode(se.Code()),
 			Item:       se.Item(),
 			underlying: se,
+		}
+		if code := se.Code(); code >= len(codeStatus) {
+			out.Code = HTTPStatusToCode(code)
+		} else {
+			out.Code = ErrCode(code)
 		}
 
 		var errMap map[string]any

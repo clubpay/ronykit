@@ -21,10 +21,14 @@ vet:
 
 test:
 	@echo "Run Tests"
-	@for dir in $$(grep -oP '(?<=\t\./).*(?=$$)' go.work); do \
-		echo "Testing $$dir..."; \
-		(cd $$dir && gotestsum ./...); \
+	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
+		echo "Go Test $$dir..."; \
+		(cd $$dir && gotestsum --hide-summary=output --format pkgname-and-test-fails \
+                   					--format-hide-empty-pkg --max-fails 1 \
+                   					-- -covermode=atomic -coverprofile=coverage.out ./... \
+                   				); \
 	done
+
 
 
 new-version-minor:
