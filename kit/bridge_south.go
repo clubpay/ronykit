@@ -386,7 +386,7 @@ type clusterConn struct {
 	cluster   Cluster
 
 	// sender
-	ctx         context.Context
+	ctx         context.Context //nolint:containedctx
 	cf          context.CancelFunc
 	callbackFn  func(carrier *envelopeCarrier)
 	carrierChan chan *envelopeCarrier

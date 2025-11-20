@@ -90,7 +90,7 @@ func isGoWorkspace() bool {
 	return err == nil
 }
 
-func getAllWorkspaceDirectories(cmd *cobra.Command) ([]string, error) {
+func getAllWorkspaceDirectories(_ *cobra.Command) ([]string, error) {
 	workData, err := os.ReadFile("go.work")
 	if err != nil {
 		return nil, fmt.Errorf("read go.work: %w", err)

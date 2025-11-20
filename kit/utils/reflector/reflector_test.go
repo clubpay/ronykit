@@ -34,7 +34,7 @@ type testEmbed1 struct {
 type testEmbed2 struct {
 	YYY int64  `json:"yyy" otherTag:"yyyOther"`
 	MMM string `json:"mMM" otherTag:"mMMOther"`
-	Y   int64  `json:"y"`
+	Y   int64  `json:"y2"`
 }
 
 var _ = Describe("Reflector", func() {

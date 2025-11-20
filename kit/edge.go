@@ -247,7 +247,7 @@ func (s *EdgeServer) startParent(_ context.Context) {
 	childChan := make(chan child, maxProc)
 
 	// launch child processes
-	for i := 0; i < maxProc; i++ {
+	for i := range maxProc {
 		/* #nosec G204 */
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
 		cmd.Stdout = os.Stdout

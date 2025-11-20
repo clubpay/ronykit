@@ -38,6 +38,6 @@ func (ctx ActivityContext[REQ, RES, STATE]) S() STATE {
 	return ctx.s
 }
 
-func (ctx ActivityContext[REQ, RES, STATE]) SetState(state STATE) {
+func (ctx *ActivityContext[REQ, RES, STATE]) SetState(state STATE) {
 	ctx.s = state
 }

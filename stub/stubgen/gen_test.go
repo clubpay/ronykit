@@ -40,6 +40,10 @@ func (d dummyRESTSelector) GetPath() string {
 	return d.path
 }
 
+func (d dummyRESTSelector) String() string {
+	return d.method + " " + d.path
+}
+
 type SimpleObject struct {
 	Bool        bool    `json:"bool"`
 	FloatNumber float64 `json:"floatNumber"`

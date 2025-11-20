@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/contrib/swagger"
-	"github.com/clubpay/ronykit/contrib/swagger/internal/testdata/a"
-	"github.com/clubpay/ronykit/contrib/swagger/internal/testdata/b"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/apidoc"
+	"github.com/clubpay/ronykit/x/apidoc/internal/testdata/a"
+	"github.com/clubpay/ronykit/x/apidoc/internal/testdata/b"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -146,7 +147,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	ps := desc.Parse(testService{})
 	ps2 := desc.Parse(testService2{})
 	It("Check Request for Contract[0].Request (sampleReq)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
+		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("others"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
@@ -169,7 +170,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Responses[0].Message)
+		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("out1"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("integer"))
@@ -189,7 +190,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[1].Response (anotherRes)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[1].Responses[0].Message)
+		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[1].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 		Expect(props[0].Name).To(Equal("another"))
 		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
@@ -204,14 +205,14 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	})
 
 	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[2].Responses[0].Message)
+		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[2].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props
 	})
 
 	It("Check Request for Contract[3] (kit.MultipartForm)", func() {
-		d := swagger.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[3].Responses[0].Message)
+		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[3].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props

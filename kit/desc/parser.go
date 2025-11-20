@@ -156,7 +156,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	// if we are here, it means that mt is a struct
 	var fields []ParsedField
 
-	for i := 0; i < mt.NumField(); i++ {
+	for i := range mt.NumField() {
 		f := mt.Field(i)
 		ft := f.Type
 		ptn := getParsedStructTag(f.Tag, tagName)
@@ -200,16 +200,17 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
 
 	case Object:
-		if ps.isParsed(ft) {
-			pe.Message = ps.getParsed(ft)
-		} else if ps.isVisited(ft) {
-			panic(fmt.Sprintf("infinite recursion detected: %s", ft.Name()))
-		} else {
+		switch {
+		default:
 			if ft.Kind() == reflect.Pointer {
 				ft = ft.Elem()
 			}
 
 			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), MessageMeta{}, enc))
+		case ps.isParsed(ft):
+			pe.Message = ps.getParsed(ft)
+		case ps.isVisited(ft):
+			panic(fmt.Sprintf("infinite recursion detected: %s", ft.Name()))
 		}
 	}
 

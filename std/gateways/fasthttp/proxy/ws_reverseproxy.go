@@ -132,7 +132,8 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			}
 
 			// log error except '*websocket.CloseError'
-			if _, ok := err.(*websocket.CloseError); !ok {
+			closeError := &websocket.CloseError{}
+			if errors.As(err, &closeError) {
 				errorF(w.option.logger, "websocketproxy: error when copying %s: %v", message, err)
 			}
 		}

@@ -18,9 +18,12 @@ func SelectorAddReceive[
 ](
 	s Selector, ch CH, fn func(ch CH, more bool),
 ) {
-	s.AddReceive(ch.underlying(), func(c workflow.ReceiveChannel, more bool) {
-		fn(ch, more)
-	})
+	s.AddReceive(
+		ch.underlying(),
+		func(_ workflow.ReceiveChannel, more bool) {
+			fn(ch, more)
+		},
+	)
 }
 
 // SelectorAddFuture registers a callback function to be called when a future is ready.
@@ -28,7 +31,10 @@ func SelectorAddReceive[
 // The callback is called once per ready future even if Select is called multiple times for the same
 // Selector instance.
 func SelectorAddFuture[T any](s Selector, f Future[T], fn func(f Future[T])) {
-	s.AddFuture(f.f, func(wf workflow.Future) {
-		fn(f)
-	})
+	s.AddFuture(
+		f.f,
+		func(_ workflow.Future) {
+			fn(f)
+		},
+	)
 }

@@ -77,6 +77,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 
 func keyValueCoordinator(ctx *kit.LimitedContext) (string, error) {
 	var key string
+
 	switch ctx.In().GetMsg().(type) {
 	case *SetRequest:
 		key = ctx.In().GetMsg().(*SetRequest).Key //nolint:forcetypeassert
@@ -123,6 +124,7 @@ func (t *testClusterStore) Get(ctx *kit.LimitedContext, key string) (string, err
 	t.mtx.Lock()
 	value, ok := t.sharedKV[key]
 	t.mtx.Unlock()
+
 	if !ok {
 		return "", fmt.Errorf("key not found")
 	}

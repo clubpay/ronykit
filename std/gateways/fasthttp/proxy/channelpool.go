@@ -47,7 +47,7 @@ func NewChanPool(initialCap, maxCap int, factory Factory) (Pool, error) {
 
 	// create initial connections, if something goes wrong,
 	// just close the pool error out.
-	for i := 0; i < initialCap; i++ {
+	for range initialCap {
 		proxy, err := factory("")
 		if err != nil {
 			proxy.Close()

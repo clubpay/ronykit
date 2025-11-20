@@ -127,14 +127,15 @@ func ToScreamingDelimited(
 	spaces := 0
 
 	for i, v := range []byte(s) {
-		if v == ' ' {
+		switch {
+		case v == ' ':
 			spaces++
 
 			continue
-		} else if start {
+		case start:
 			start = false
 			spaces = 0
-		} else {
+		default:
 			for ; spaces > 0; spaces-- {
 				if ignore == ' ' {
 					n.WriteByte(' ')

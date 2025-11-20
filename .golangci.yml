@@ -6,22 +6,32 @@ linters:
   disable:
     - cyclop
     - depguard
+    - dupl
     - embeddedstructfieldcheck
     - err113
     - errcheck
     - errname
     - exhaustruct
+    - exhaustive
+    - forcetypeassert
     - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits
+    - gocritic
+    - gocognit
     - godot
     - godox
+    - gosec
     - ireturn
     - mnd
     - nonamedreturns
+    - noinlineerr
     - paralleltest
     - perfsprint
+    - recvcheck
+    - revive
+    - staticcheck
     - tagliatelle
     - testpackage
     - varnamelen

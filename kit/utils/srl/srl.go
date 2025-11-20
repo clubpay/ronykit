@@ -100,7 +100,7 @@ func (q SRL) Replace(src SRL) SRL {
 }
 
 func (q SRL) mix(src SRL, fn func(qi, si string, i int) string) SRL {
-	for i := 0; i < srlLength; i++ {
+	for i := range srlLength {
 		q[i] = fn(q[i], src[i], i)
 	}
 
@@ -110,7 +110,7 @@ func (q SRL) mix(src SRL, fn func(qi, si string, i int) string) SRL {
 func (q SRL) String() string {
 	var sb strings.Builder
 
-	for i := 0; i < srlLength; i++ {
+	for i := range srlLength {
 		pglue, sglue := "", ""
 
 		switch i {

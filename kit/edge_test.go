@@ -32,6 +32,10 @@ func (t testSelector) GetEncoding() kit.Encoding {
 	return kit.JSON
 }
 
+func (t testSelector) String() string {
+	return "testSelector"
+}
+
 type testGateway struct {
 	d kit.GatewayDelegate
 }

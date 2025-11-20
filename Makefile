@@ -12,6 +12,12 @@ lint:
 		(cd $$dir && golangci-lint run --path-prefix "${dir}" --fix ./...); \
 	done
 
+vet:
+	@echo "Run Go Vet"
+	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
+		echo "Go Vet $$dir..."; \
+		(cd $$dir && go vet ./...); \
+	done
 
 test:
 	@echo "Run Tests"

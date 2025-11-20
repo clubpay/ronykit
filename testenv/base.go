@@ -45,6 +45,7 @@ func getRedis() (*redis.Client, error) {
 
 	ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 	defer cf()
+
 	err = cli.Ping(ctx).Err()
 	if err != nil {
 		return nil, err
@@ -69,6 +70,7 @@ func provideRedis(lc fx.Lifecycle) (*redis.Client, error) {
 	})
 
 	redisDSN = fmt.Sprintf("redis://localhost:%d", redisC.DefaultPort())
+
 	opt, err := redis.ParseURL(redisDSN)
 	if err != nil {
 		return nil, err
@@ -83,6 +85,7 @@ func provideRedis(lc fx.Lifecycle) (*redis.Client, error) {
 
 	ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 	defer cf()
+
 	err = cli.Ping(ctx).Err()
 	if err != nil {
 		return nil, err
@@ -103,10 +106,12 @@ func invokeTemporal(lc fx.Lifecycle) error {
 		gnomock.WithHealthCheck(
 			func(ctx context.Context, container *gnomock.Container) error {
 				timeout := time.Second * 3
+
 				conn, err := net.DialTimeout("tcp", container.DefaultAddress(), timeout)
 				if err != nil {
 					return err
 				}
+
 				_ = conn.Close()
 
 				return nil
@@ -124,8 +129,10 @@ func invokeTemporal(lc fx.Lifecycle) error {
 	if err != nil {
 		return err
 	}
+
 	temporalHostPort = c.DefaultAddress()
 	TemporalUI = fmt.Sprintf("http://%s", c.Address("ui"))
+
 	lc.Append(
 		fx.Hook{
 			OnStop: func(ctx context.Context) error {
@@ -160,10 +167,12 @@ func invokeRedisMonitor(lc fx.Lifecycle, _ *redis.Client) {
 			},
 		},
 	)
+
 	go func() {
 		for x := range out {
 			fmt.Println("REDIS:", x)
 		}
+
 		fmt.Println("REDIS CLOSED")
 	}()
 }

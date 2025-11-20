@@ -34,7 +34,7 @@ type ctxPool struct {
 }
 
 func (p *ctxPool) acquireCtx(c Conn) *Context {
-	ctx, ok := p.Pool.Get().(*Context)
+	ctx, ok := p.Get().(*Context)
 	if !ok {
 		ctx = newContext(p.ls)
 	}
@@ -51,7 +51,7 @@ func (p *ctxPool) acquireCtx(c Conn) *Context {
 
 func (p *ctxPool) releaseCtx(ctx *Context) {
 	ctx.reset()
-	p.Pool.Put(ctx)
+	p.Put(ctx)
 }
 
 type Context struct {

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -48,7 +49,7 @@ func CopyFileWithBuffer(srcFile, dstFile string, buf []byte) error {
 
 	for {
 		n, err := src.Read(buf)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return err
 		}
 

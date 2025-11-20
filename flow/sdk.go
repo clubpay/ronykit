@@ -135,7 +135,7 @@ func (sdk *SDK) UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Durati
 	return sdk.b.UpdateWorkflowRetentionPeriod(ctx, d)
 }
 
-var _StateCtxKey = struct{}{}
+var _StateCtxKey struct{}
 
 func GetState[STATE any](ctx Context) STATE {
 	return ctx.Value(_StateCtxKey).(STATE)

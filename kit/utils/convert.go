@@ -107,7 +107,7 @@ func StrTruncate(s string, maxSize int) string {
 			break
 		}
 
-		builder.WriteString(string(char))
+		builder.WriteRune(char)
 
 		count++
 		if count >= maxSize {
