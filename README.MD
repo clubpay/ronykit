@@ -1,17 +1,27 @@
 # RonyKIT
+
 [![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)
 
-RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a complete API/Edge server.
-With the RonyKIT framework, you can create API handlers that support both RPC and REST style APIs without the need to rewrite the
-endpoint layer multiple times. The philosphy of Ronykit is to define the most used building blocks of the software as proper minimal
-viable interfaces and provide some standard implementations which make onboarding very quick and also let you to implement your own
-if you have a very specific case. The declarative force of defining contracts in Ronykit makes extending the code much easier and
-by the help of proper templating you can write the usecase and let the most boilerplates like stubs, tests, deployments etc to be
+RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a
+complete API/Edge server.
+With the RonyKIT framework, you can create API handlers that support both RPC and REST style APIs without the need to
+rewrite the
+endpoint layer multiple times. The philosphy of Ronykit is to define the most used building blocks of the software as
+proper minimal
+viable interfaces and provide some standard implementations which make onboarding very quick and also let you to
+implement your own
+if you have a very specific case. The declarative force of defining contracts in Ronykit makes extending the code much
+easier and
+by the help of proper templating you can write the usecase and let the most boilerplates like stubs, tests, deployments
+etc to be
 auto-generated.
 
-If you are seeking a framework to develop your API/Edge server, you can directly use the `rony` package. This package provides an
-intuitive framework, leveraging Go Generics to offer a clean and user-friendly API. This is the recommended approach for using
-the RonyKIT framework. However, if you require greater control over your API server and have concerns about performance and
+If you are seeking a framework to develop your API/Edge server, you can directly use the `rony` package. This package
+provides an
+intuitive framework, leveraging Go Generics to offer a clean and user-friendly API. This is the recommended approach for
+using
+the RonyKIT framework. However, if you require greater control over your API server and have concerns about performance
+and
 memory usage, you can directly utilize the `kit` package, which forms the core of the RonyKIT framework.
 
 ![Architect](./docs/architect.png)
@@ -20,13 +30,18 @@ memory usage, you can directly utilize the `kit` package, which forms the core o
 - For more information about the `kit` package, visit [kit](./kit/README.MD).
 - For more information about the `stub` package, visit [stub](./stub/README.MD).
 
+# Getting Started
+
+Read the [Getting Started Guide](./GETTING_STARTED.MD) to learn how to get started with RonyKIT.
+
 # Performance
+
 Benchmarks may not provide precise measurements of a framework's performance; however, they can offer
 insights into the overhead a framework might introduce to your actual business logic. You can see a
-[benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) as a reference to evaluate how Ronykit performs in comparison to other Go frameworks.
+[benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) as a reference to
+evaluate how Ronykit performs in comparison to other Go frameworks.
 
 ![Benchmark Results](./docs/benchmark.png)
-
 
 ### Project Structure
 
