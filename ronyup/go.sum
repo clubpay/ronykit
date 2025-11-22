@@ -1,5 +1,5 @@
-github.com/clubpay/ronykit/x/rkit v0.1.0 h1:CJPhkXKeFIId4wtavY355cI0V/UZmWjBhlm0+vnGLRo=
-github.com/clubpay/ronykit/x/rkit v0.1.0/go.mod h1:4OdGtjjK+T7p0yqENmF4l9Y8nWH4VfwslMpNtqkdtz8=
+github.com/clubpay/ronykit/x/rkit v0.1.1 h1:fbnmfbEofBJBeFWJ7Ru9Qcl1BSEQLyZj91/6e1FTt4k=
+github.com/clubpay/ronykit/x/rkit v0.1.1/go.mod h1:4OdGtjjK+T7p0yqENmF4l9Y8nWH4VfwslMpNtqkdtz8=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/goccy/go-reflect v1.2.0 h1:O0T8rZCuNmGXewnATuKYnkL0xm6o8UNOJZd/gOkb9ms=
 github.com/goccy/go-reflect v1.2.0/go.mod h1:n0oYZn8VcV2CkWTxi8B9QjkCoq6GTtCEdfmR66YhFtE=
