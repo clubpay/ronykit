@@ -29,8 +29,6 @@ test:
                    				); \
 	done
 
-
-
 new-version-minor:
 	@bash ./scripts/update-version.sh kit 1
 
