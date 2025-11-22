@@ -8,12 +8,12 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/x/apidoc"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		_ = http.ListenAndServe(":1234", nil)
 	}()
 
-	docUI, _ := swagger.New("Example", "v0.1.2", "").
+	docUI, _ := apidoc.New("Example", "v0.1.2", "").
 		ReDocUI(desc.ToDesc(sampleService)...)
 
 	// Create, start and wait for shutdown signal of the server.
