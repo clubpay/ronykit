@@ -5,13 +5,13 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
-	github.com/clubpay/ronykit/flow v0.21.8
-	github.com/clubpay/ronykit/kit v0.21.8
-	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.21.8
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.21.8
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.21.8
-	github.com/clubpay/ronykit/std/gateways/fastws v0.21.8
-	github.com/clubpay/ronykit/stub v0.21.8
+	github.com/clubpay/ronykit/flow v0.22.0
+	github.com/clubpay/ronykit/kit v0.22.0
+	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.22.0
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.22.0
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.0
+	github.com/clubpay/ronykit/std/gateways/fastws v0.22.0
+	github.com/clubpay/ronykit/stub v0.22.0
 	github.com/orlangure/gnomock v0.32.0
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/smartystreets/goconvey v1.8.1
