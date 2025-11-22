@@ -1,4 +1,7 @@
-.PHONY:  cleanup test new-version-patch new-version-minor
+.PHONY:  cleanup test lint vet \
+         new-version-patch new-version-minor \
+         new-version-patch-dry new-version-minor-dry \
+         bump-workspace bump-workspace-dry
 
 setup:
 	@echo "Install required tools"
@@ -27,8 +30,18 @@ test:
                    					--format-hide-empty-pkg --max-fails 1 \
                    					-- -covermode=atomic -coverprofile=coverage.out ./... \
                    				); \
-	done
+		done
 
-new-version-minor:
-	@bash ./scripts/update-version.sh kit 1
+# Workspace version bump helpers (uses scripts/bump-workspace.sh)
+# Usage:
+#   make bump-workspace PART=minor        # apply changes
+#   make bump-workspace-dry PART=patch    # dry-run only
+
+PART ?= patch
+
+bump-workspace:
+	@bash ./scripts/bump-workspace.sh --part $(PART)
+
+bump-workspace-dry:
+	@bash ./scripts/bump-workspace.sh --part $(PART) --dry-run
 
