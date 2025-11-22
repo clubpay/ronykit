@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/flow
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.22.0
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.0
-	github.com/clubpay/ronykit/x/rkit v0.1.0
+	github.com/clubpay/ronykit/kit v0.22.1
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.1
+	github.com/clubpay/ronykit/x/rkit v0.1.1
 	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.38.0
