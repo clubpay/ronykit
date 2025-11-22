@@ -11,21 +11,28 @@ setup:
 lint:
 	@echo "Run Linting"
 	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
-		echo "Linting $$dir..."; \
+		echo "lint $$dir..."; \
 		(cd $$dir && golangci-lint run --path-prefix "${dir}" --fix ./...); \
 	done
 
 vet:
 	@echo "Run Go Vet"
 	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
-		echo "Go Vet $$dir..."; \
+		echo "go vet $$dir..."; \
 		(cd $$dir && go vet ./...); \
+	done
+
+tidy:
+	@echo "Run Go Mod Tidy"
+	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
+		echo "go mod tidy $$dir..."; \
+		(cd $$dir && go mod tidy ); \
 	done
 
 test:
 	@echo "Run Tests"
 	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
-		echo "Go Test $$dir..."; \
+		echo "test $$dir..."; \
 		(cd $$dir && gotestsum --hide-summary=output --format pkgname-and-test-fails \
                    					--format-hide-empty-pkg --max-fails 1 \
                    					-- -covermode=atomic -coverprofile=coverage.out ./... \
