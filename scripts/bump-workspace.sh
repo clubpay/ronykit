@@ -230,14 +230,10 @@ for dir in "${DIRS[@]}"; do
   done < "$__tmp_deps"
   rm -f "$__tmp_deps"
 
-  if [[ $DRY_RUN -eq 0 ]]; then
-    if [[ -d "$dir" ]]; then
-      pushd "$dir" >/dev/null
-      run "go mod tidy"
-      popd >/dev/null
-    fi
-  else
-    say "$dir: would run go mod tidy"
+  # Defer 'go mod tidy' until after tags are created and pushed so that
+  # newly required versions are resolvable by the Go toolchain.
+  if [[ $DRY_RUN -eq 1 ]]; then
+    say "$dir: would run go mod tidy (deferred until after pushing tags)"
   fi
 done
 
@@ -266,7 +262,9 @@ fi
 for i in "${!DIRS[@]}"; do
   dir="${DIRS[$i]}"
   new_ver="${NEXTS[$i]}"
-  tag="$dir/$new_ver"
+  # Normalize tag prefix to avoid leading "./" in tag names
+  dir_no_dot="${dir#./}"
+  tag="$dir_no_dot/$new_ver"
   if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
     say "Tag already exists: $tag (skipping)"
     continue
@@ -282,6 +280,33 @@ if [[ $DRY_RUN -eq 1 ]]; then
   say "Would push tags"
 else
   run "git push --tags"
+fi
+
+# Now that tags are available remotely, run 'go mod tidy' for changed modules
+# to refresh sums and indirect requirements, and commit any resulting changes.
+if [[ ${#changed_modules[@]} -gt 0 ]]; then
+  if [[ $DRY_RUN -eq 1 ]]; then
+    for d in "${changed_modules[@]}"; do
+      say "$d: would run go mod tidy (post-tag)"
+    done
+    say "Would commit post-tidy changes and push"
+  else
+    for d in "${changed_modules[@]}"; do
+      if [[ -d "$d" ]]; then
+        pushd "$d" >/dev/null
+        run "go mod tidy"
+        popd >/dev/null
+      fi
+    done
+    # commit any tidy changes
+    post_msg="bump workspace post-tidy ($PART)"
+    for d in "${changed_modules[@]}"; do
+      run "git add $d/go.mod || true"
+      run "git add $d/go.sum || true"
+    done
+    run "git commit -m '$post_msg' || true"
+    run "git push || true"
+  fi
 fi
 
 say "Done."
