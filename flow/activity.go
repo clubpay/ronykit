@@ -11,7 +11,10 @@ import (
 
 type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
 
-type ActivityRawFunc[REQ, RES any] func(ctx context.Context, req REQ) (*RES, error)
+type (
+	ActivityRawFunc[REQ, RES any]    func(ctx context.Context, req REQ) (*RES, error)
+	ActivityRawFuncNoResult[REQ any] func(ctx context.Context, req REQ) error
+)
 
 func NewActivity[REQ, RES, STATE any](
 	name, group string, fn ActivityFunc[REQ, RES, STATE],
@@ -72,6 +75,27 @@ func ToActivityFactory[STATE, REQ, RES any](
 				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
 
 				return factoryFn(s)(ctx.ctx, req)
+			}
+		},
+	)
+}
+
+func ToActivityFactoryNoResult[STATE, REQ any](
+	name, group string,
+	factoryFn func(s STATE) ActivityRawFuncNoResult[REQ],
+) *ActivityFactory[REQ, EMPTY, STATE] {
+	return NewActivityFactory(
+		name, group,
+		func(s STATE) ActivityFunc[REQ, EMPTY, STATE] {
+			return func(ctx *ActivityContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
+				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+
+				err := factoryFn(s)(ctx.ctx, req)
+				if err != nil {
+					return nil, err
+				}
+
+				return &EMPTY{}, nil
 			}
 		},
 	)
