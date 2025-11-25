@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/cache
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.22.1
+	github.com/clubpay/ronykit/kit v0.22.2
 	github.com/dgraph-io/ristretto/v2 v2.3.0
 )
 
