@@ -317,6 +317,14 @@ func UnaryMiddleware(
 	}
 }
 
+func UnaryMiddlewareFn(
+	mw func() StatelessMiddleware,
+) UnaryOption {
+	return func(cfg *unaryConfig) {
+		cfg.Middlewares = append(cfg.Middlewares, mw())
+	}
+}
+
 type unaryConfig struct {
 	Selectors         []unarySelectorConfig
 	Middlewares       []StatelessMiddleware

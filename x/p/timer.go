@@ -1,4 +1,4 @@
-package pools
+package p
 
 import (
 	"sync"
@@ -32,7 +32,7 @@ func AcquireTimer(timeout time.Duration) *time.Timer {
 func ReleaseTimer(t *time.Timer) {
 	if !t.Stop() {
 		// Collect possibly added time from the channel
-		// if timer has been stopped and nobody collected its value.
+		// if the timer has been stopped and nobody collected its value.
 		select {
 		case <-t.C:
 		default:
