@@ -21,8 +21,12 @@ github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/clubpay/ronykit/kit v0.22.2 h1:VMR9on30/p//ObwGyu+UWJWeqhbJv6zFBKjQO4DrvFo=
-github.com/clubpay/ronykit/kit v0.22.2/go.mod h1:Akfrrl98Hqb2Hvr6T33sM/TXyGtD0a/u/OkxHVN7ov4=
+github.com/clubpay/ronykit/kit v0.23.0 h1:mTf4qyuMegHf7KsD1sBvNSTKTJOxuKObslaJHZh9p58=
+github.com/clubpay/ronykit/kit v0.23.0/go.mod h1:Akfrrl98Hqb2Hvr6T33sM/TXyGtD0a/u/OkxHVN7ov4=
+github.com/clubpay/ronykit/x/batch v0.1.0 h1:dLfTzSU8pyqcphGM2hS8seczp9txZ+ztosayfPS4Gxc=
+github.com/clubpay/ronykit/x/batch v0.1.0/go.mod h1:aPsjVXhR74HyZZSUMUUEEqtUOlkIFfsCtaKoBVNC8uU=
+github.com/clubpay/ronykit/x/rkit v0.2.0 h1:vbN9rUSxZhXpsKQCuFKYJvclGK9bNZd7Hd3V8NIEcW0=
+github.com/clubpay/ronykit/x/rkit v0.2.0/go.mod h1:4OdGtjjK+T7p0yqENmF4l9Y8nWH4VfwslMpNtqkdtz8=
 github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -105,6 +109,8 @@ github.com/jbenet/go-temp-err-catcher v0.1.0/go.mod h1:0kJRvmDZXNMIiJirNPEYfhpPw
 github.com/jedib0t/go-pretty/v6 v6.7.3 h1:i6IhmHUcZxxvxdgRTcIQk5N3ZMZqyQQyXLHDWxMxb3Y=
 github.com/jedib0t/go-pretty/v6 v6.7.3/go.mod h1:YwC5CE4fJ1HFUDeivSV1r//AmANFHyqczZk+U6BDALU=
 github.com/jellevandenhooff/dkim v0.0.0-20150330215556-f50fe3d243e1/go.mod h1:E0B/fFc00Y+Rasa88328GlI/XbtyysCtTHZS8h7IrBU=
+github.com/jinzhu/copier v0.4.0 h1:w3ciUoD19shMCRargcpm0cm91ytaBhDvuRpz1ODO/U8=
+github.com/jinzhu/copier v0.4.0/go.mod h1:DfbEm0FYsaqBcKcFuvmOZb218JkPGtvSHsKg8S8hyyg=
 github.com/joshdk/go-junit v1.0.0 h1:S86cUKIdwBHWwA6xCmFlf3RTLfVXYQfvanM5Uh+K6GE=
 github.com/joshdk/go-junit v1.0.0/go.mod h1:TiiV0PqkaNfFXjEiyjWM3XXrhVyCa1K4Zfga6W52ung=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
