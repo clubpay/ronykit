@@ -5,7 +5,7 @@ import (
 	"time"
 	_ "unsafe"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 /*
@@ -23,7 +23,7 @@ type Func[IN, OUT any] func(tagID string, entries []Entry[IN, OUT])
 type MultiBatcher[IN, OUT any] struct {
 	cfg         config
 	batcherFunc Func[IN, OUT]
-	poolMtx     utils.SpinLock
+	poolMtx     rkit.SpinLock
 	pool        map[string]*Batcher[IN, OUT]
 }
 
@@ -68,7 +68,7 @@ func (fp *MultiBatcher[IN, OUT]) EnterAndWait(targetID string, entry Entry[IN, O
 }
 
 type Batcher[IN, OUT any] struct {
-	spin utils.SpinLock
+	spin rkit.SpinLock
 
 	readyWorkers int32
 	batchSize    int32
@@ -140,7 +140,7 @@ type worker[IN, OUT any] struct {
 func (w *worker[IN, OUT]) run() {
 	var (
 		el        = make([]Entry[IN, OUT], 0, w.bs)
-		startTime = utils.NanoTime()
+		startTime = rkit.NanoTime()
 	)
 
 	for {
@@ -158,7 +158,7 @@ func (w *worker[IN, OUT]) run() {
 		}
 
 		if w.f.minWaitTime > 0 && len(el) < w.bs {
-			delta := w.f.minWaitTime - time.Duration(utils.NanoTime()-startTime)
+			delta := w.f.minWaitTime - time.Duration(rkit.NanoTime()-startTime)
 			if delta > 0 {
 				time.Sleep(delta)
 

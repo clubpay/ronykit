@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils/batch"
+	"github.com/clubpay/ronykit/x/batch"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

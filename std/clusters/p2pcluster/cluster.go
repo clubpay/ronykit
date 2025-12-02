@@ -10,7 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/batch"
+	"github.com/clubpay/ronykit/x/batch"
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"

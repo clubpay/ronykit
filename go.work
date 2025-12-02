@@ -22,6 +22,7 @@ use (
 	./stub
 	./testenv
 	./x/apidoc
+	./x/batch
 	./x/cache
 	./x/datasource
 	./x/i18n
