@@ -3,13 +3,13 @@ module ronykit/testenv
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/flow v0.22.2
-	github.com/clubpay/ronykit/kit v0.22.2
-	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.22.2
-	github.com/clubpay/ronykit/std/clusters/rediscluster v0.22.2
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.2
-	github.com/clubpay/ronykit/std/gateways/fastws v0.22.2
-	github.com/clubpay/ronykit/stub v0.22.2
+	github.com/clubpay/ronykit/flow v0.22.3
+	github.com/clubpay/ronykit/kit v0.22.3
+	github.com/clubpay/ronykit/std/clusters/p2pcluster v0.22.3
+	github.com/clubpay/ronykit/std/clusters/rediscluster v0.22.3
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.3
+	github.com/clubpay/ronykit/std/gateways/fastws v0.22.3
+	github.com/clubpay/ronykit/stub v0.22.3
 	github.com/orlangure/gnomock v0.32.0
 	github.com/redis/go-redis/v9 v9.14.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -25,7 +25,7 @@ require (
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.1.2 // indirect
+	github.com/clubpay/ronykit/x/rkit v0.1.3 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
