@@ -167,6 +167,7 @@ type ExecuteActivityOptions struct {
 	// and call Activity.RecordHeartbeat(ctx, "my-heartbeat") periodically for timely failure detection.
 	// Either this option or ScheduleToCloseTimeout is required: Defaults to the ScheduleToCloseTimeout value.
 	StartToCloseTimeout time.Duration
+	HeartbeatTimeout    time.Duration
 	RetryPolicy         *RetryPolicy
 }
 
@@ -186,6 +187,7 @@ func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteAc
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,
+			HeartbeatTimeout:       opts.HeartbeatTimeout,
 			RetryPolicy:            opts.RetryPolicy,
 		},
 	)

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"go.temporal.io/sdk/activity"
+	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/log"
 )
 
@@ -40,4 +41,32 @@ func (ctx ActivityContext[REQ, RES, STATE]) S() STATE {
 
 func (ctx *ActivityContext[REQ, RES, STATE]) SetState(state STATE) {
 	ctx.s = state
+}
+
+func (ctx *ActivityContext[REQ, RES, STATE]) HasHearBeat() bool {
+	return activity.HasHeartbeatDetails(ctx.ctx)
+}
+
+func (ctx *ActivityContext[REQ, RES, STATE]) GetHeartBeat() any {
+	return activity.GetHeartbeatDetails(ctx.ctx)
+}
+
+func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartBeat(details any) {
+	activity.RecordHeartbeat(ctx.ctx, details)
+}
+
+type Client = client.Client
+
+func (ctx *ActivityContext[REQ, RES, STATE]) Client() Client {
+	return activity.GetClient(ctx.ctx)
+}
+
+func SetHearBeat[D, REQ, RES, STATE any](
+	ctx ActivityContext[REQ, RES, STATE], details D,
+) {
+	activity.RecordHeartbeat(ctx.ctx, details)
+}
+
+func GetHeartBeat[D, REQ, RES, STATE any](ctx *ActivityContext[REQ, RES, STATE]) D {
+	return activity.GetHeartbeatDetails(ctx.ctx).(D)
 }
