@@ -69,8 +69,6 @@ func (fm FieldMeta) SwagTag() string {
 
 		sb.WriteString("enum:")
 		sb.WriteString(strings.Join(fm.Enum, ","))
-
-		hasItem = true
 	}
 
 	sb.WriteString(`"`)

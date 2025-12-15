@@ -28,7 +28,13 @@ func init() {
 	flagSet := Cmd.Flags()
 	flagSet.StringVarP(&opt.RepositoryRootDir, "repoDir", "d", "./my-repo", "destination directory for the setup")
 	flagSet.StringVarP(&opt.RepositoryGoModule, "repoModule", "r", "github.com/your/repo", "go module for the repository")
-	flagSet.StringVarP(&opt.ProjectDir, "projectDir", "p", "my-project", "destination directory inside repoDir for the setup")
+	flagSet.StringVarP(
+		&opt.ProjectDir,
+		"projectDir",
+		"p",
+		"my-project",
+		"destination directory inside repoDir for the setup",
+	)
 	flagSet.StringVarP(&opt.ProjectName, "projectName", "n", "MyProject", "project name")
 
 	flagSet.BoolVarP(&opt.Force, "force", "f", false, "clean destination directory before setup")
