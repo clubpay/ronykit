@@ -264,7 +264,7 @@ func (l *Logger) FatalCtx(ctx context.Context, msg string, fields ...Field) {
 	l.Fatal(msg, fields...)
 }
 
-func (l *Logger) RecoverPanic(funcName string, extraInfo interface{}, compensationFunc func()) {
+func (l *Logger) RecoverPanic(funcName string, extraInfo any, compensationFunc func()) {
 	if r := recover(); r != nil {
 		l.Error("Panic Recovered",
 			zap.String("Task", funcName),

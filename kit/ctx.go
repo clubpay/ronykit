@@ -2,6 +2,7 @@ package kit
 
 import (
 	"context"
+	"maps"
 	"math"
 	"net/http"
 	"sync"
@@ -240,9 +241,7 @@ func (ctx *Context) PresetHdr(k, v string) {
 // PresetHdrMap sets the common header key-value pairs, so in the Out method we do not need to
 // repeatedly set those. Please refer to PresetHdr for more details
 func (ctx *Context) PresetHdrMap(hdr map[string]string) {
-	for k, v := range hdr {
-		ctx.hdr[k] = v
-	}
+	maps.Copy(ctx.hdr, hdr)
 }
 
 // In returns the incoming Envelope which received from the connection.

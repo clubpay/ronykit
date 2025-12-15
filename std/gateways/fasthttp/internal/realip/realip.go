@@ -152,7 +152,7 @@ func fromForwardedHeaders(ctx *fasthttp.RequestCtx) (string, error) {
 }
 
 func retrieveForwardedIP(forwardedHeader string) (string, error) {
-	for _, address := range strings.Split(forwardedHeader, ",") {
+	for address := range strings.SplitSeq(forwardedHeader, ",") {
 		if len(address) > 0 {
 			address = strings.TrimSpace(address)
 			isPrivate, err := IsPrivateAddress(address)

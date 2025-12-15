@@ -73,7 +73,7 @@ func Coalesce[T comparable](in ...T) T {
 
 // ToMap Converts any type to a map[string]interface{}.
 func ToMap(s any) map[string]any {
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	_ = json.Unmarshal(Ok(json.Marshal(s)), &m)
 
 	return m

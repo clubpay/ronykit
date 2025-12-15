@@ -121,6 +121,7 @@ func NewBytesPool(minSize, maxSize int) *BytesPool {
 	p := &BytesPool{
 		pool: make(map[int]*sync.Pool),
 	}
+
 	logarithmicRange(minSize, maxSize, func(n int) {
 		p.pool[n] = &sync.Pool{}
 	})

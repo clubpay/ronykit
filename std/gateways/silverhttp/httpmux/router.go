@@ -81,7 +81,7 @@ type Mux struct {
 	// 500 (Internal Server Error).
 	// The handler can be used to keep your server from crashing because of
 	// un-recovered panics.
-	PanicHandler func(http.ResponseWriter, *http.Request, interface{})
+	PanicHandler func(http.ResponseWriter, *http.Request, any)
 }
 
 func (r *Mux) getParams() *Params {
@@ -172,7 +172,7 @@ func (r *Mux) Handle(method, path string, handle *RouteData) {
 
 	// Lazy-init paramsPool alloc func
 	if r.paramsPool.New == nil && r.maxParams > 0 {
-		r.paramsPool.New = func() interface{} {
+		r.paramsPool.New = func() any {
 			ps := make(Params, 0, r.maxParams)
 
 			return &ps

@@ -149,6 +149,7 @@ type envelopeCarrier struct {
 
 func (e envelopeCarrier) Get(key string) string {
 	var val string
+
 	e.e.WalkHdr(
 		func(k string, v string) bool {
 			if strings.EqualFold(key, k) {

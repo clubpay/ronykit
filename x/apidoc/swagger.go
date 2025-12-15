@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -565,15 +566,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 
 	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == http.MethodGet {
 		for _, p := range c.Request.Message.Fields {
-			found := false
-
-			for _, pp := range c.PathParams {
-				if p.Name == pp {
-					found = true
-
-					break
-				}
-			}
+			found := slices.Contains(c.PathParams, p.Name)
 
 			if !found {
 				queryParams = append(
@@ -673,6 +666,7 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 // for example, /some/path/:x1 --> /some/path/{x1}
 func fixPathForSwag(path string) string {
 	sb := strings.Builder{}
+
 	for idx, p := range strings.Split(path, "/") {
 		if idx > 0 {
 			sb.WriteRune('/')

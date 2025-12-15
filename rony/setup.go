@@ -87,7 +87,7 @@ func Setup[S State[A], A Action](
 	opt ...SetupOption[S, A],
 ) {
 	state := initState()
-	if reflect.TypeOf(state) != reflect.TypeOf(EMPTY{}) {
+	if reflect.TypeOf(state) != reflect.TypeFor[EMPTY]() {
 		if reflect.TypeOf(state).Kind() != reflect.Pointer {
 			panic("state must be a pointer to a struct")
 		}

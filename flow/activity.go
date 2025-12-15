@@ -35,7 +35,7 @@ func NewActivity[REQ, RES, STATE any](
 func NewActivityFactory[REQ, RES, STATE any](
 	name, group string, fn func(s STATE) ActivityFunc[REQ, RES, STATE],
 ) *ActivityFactory[REQ, RES, STATE] {
-	stateT := reflect.TypeOf(fn).In(0)
+	stateT := reflect.TypeFor[func(s STATE) ActivityFunc[REQ, RES, STATE]]().In(0)
 	actFactory := &ActivityFactory[REQ, RES, STATE]{}
 
 	registeredActivityFactories[stateT] = append(
@@ -84,6 +84,7 @@ func ToActivityFactory[STATE, REQ, RES any](
 
 func withSpan[IN, OUT any, Fn ActivityRawFunc[IN, OUT]](spanName string, fn Fn) Fn {
 	var mw tricks.MiddlewareStack[Fn]
+
 	mw = mw.Push(
 		func(next Fn) Fn {
 			return func(ctx context.Context, in IN) (*OUT, error) {

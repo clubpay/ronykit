@@ -342,7 +342,7 @@ func UintptrPtr(key string, val *uintptr) Field {
 //
 // If encoding fails (e.g., trying to serialize a map[int]string to JSON), Reflect
 // includes the error message in the final log output.
-func Reflect(key string, val interface{}) Field {
+func Reflect(key string, val any) Field {
 	return Field{Key: key, Type: zapcore.ReflectType, Interface: val}
 }
 

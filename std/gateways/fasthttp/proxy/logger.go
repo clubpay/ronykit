@@ -5,12 +5,12 @@ import (
 )
 
 type __Logger interface {
-	Printf(format string, args ...interface{})
+	Printf(format string, args ...any)
 }
 
 type nopLogger struct{}
 
-func (n *nopLogger) Printf(format string, args ...interface{}) {
+func (n *nopLogger) Printf(format string, args ...any) {
 	// if format not end with '\n', then append it
 	if format[len(format)-1] != '\n' {
 		format += "\n"

@@ -1,6 +1,7 @@
 package kit
 
 import (
+	"maps"
 	"sync"
 
 	"github.com/clubpay/ronykit/kit/utils"
@@ -49,9 +50,7 @@ func newEnvelope(ctx *Context, conn Conn, outgoing bool) *Envelope {
 		}
 	}
 
-	for k, v := range ctx.hdr {
-		e.kv[k] = v
-	}
+	maps.Copy(e.kv, ctx.hdr)
 
 	e.ctx = ctx
 	e.conn = conn
@@ -120,9 +119,7 @@ func (e *Envelope) SetHdrMap(kv map[string]string) *Envelope {
 
 	e.kvl.Lock()
 
-	for k, v := range kv {
-		e.kv[k] = v
-	}
+	maps.Copy(e.kv, kv)
 
 	e.kvl.Unlock()
 

@@ -171,6 +171,7 @@ func (n Numeric) WithoutPrecision() Numeric {
 // ParseNumeric converts int, string, float to Numeric.
 func ParseNumeric(src any) Numeric {
 	var number float64
+
 	switch v := src.(type) {
 	case float64:
 		number = v

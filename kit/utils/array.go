@@ -1,5 +1,7 @@
 package utils
 
+import "slices"
+
 // Filter returns a new slice containing only the elements in tt for which the match function returns true.
 //
 //		type User struct {
@@ -118,10 +120,7 @@ func Reduce[T, R any](reducer func(r R, t T) R, tt []T) R {
 func Paginate[T any](arr []T, pageSize int, fn func(start, end int) error) error {
 	start := 0
 	for {
-		end := start + pageSize
-		if end > len(arr) {
-			end = len(arr)
-		}
+		end := min(start+pageSize, len(arr))
 
 		err := fn(start, end)
 		if err != nil {
@@ -188,13 +187,7 @@ func ArrayToSet[T comparable](s []T) map[T]struct{} {
 }
 
 func Contains[T comparable](s []T, v T) bool {
-	for _, vv := range s {
-		if vv == v {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(s, v)
 }
 
 func ContainsAny[T comparable](s []T, v []T) bool {

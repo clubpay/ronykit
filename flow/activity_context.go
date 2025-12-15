@@ -11,7 +11,7 @@ import (
 type ActivityInfo = activity.Info
 
 type ActivityContext[REQ, RES, STATE any] struct {
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 	s   STATE
 }
 

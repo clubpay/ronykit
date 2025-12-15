@@ -152,6 +152,7 @@ func invokeRedisMonitor(lc fx.Lifecycle, _ *redis.Client) {
 	out := make(chan string, 10)
 	cli, _ := getRedis()
 	cmd := cli.Monitor(context.Background(), out)
+
 	lc.Append(
 		fx.Hook{
 			OnStart: func(ctx context.Context) error {

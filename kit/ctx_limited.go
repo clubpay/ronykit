@@ -2,6 +2,7 @@ package kit
 
 import (
 	"context"
+	"maps"
 	"time"
 )
 
@@ -49,9 +50,7 @@ func (ctx *LimitedContext) SetHdr(k, v string) {
 // SetHdrMap sets the common header key-value pairs, so in Out method we do not need to
 // repeatedly set those.
 func (ctx *LimitedContext) SetHdrMap(hdr map[string]string) {
-	for k, v := range hdr {
-		ctx.ctx.hdr[k] = v
-	}
+	maps.Copy(ctx.ctx.hdr, hdr)
 }
 
 func (ctx *LimitedContext) Route() string {

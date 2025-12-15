@@ -44,12 +44,10 @@ func Marshal(err error) (rtn []byte) {
 			// because we don't know the cause of the panic, let's write
 			// the bytes manually to avoid any further panics if it's being caused by
 			// jsoniter
-			rtn = []byte(
-				fmt.Sprintf(
-					"{ \"%s\": \"error\", \"%s\": \"%s\"}",
-					TypeKey, ItemKey,
-					strconv.Quote(fmt.Sprintf("panic occurred while marshalling error: %v", r)),
-				),
+			rtn = fmt.Appendf(nil,
+				"{ \"%s\": \"error\", \"%s\": \"%s\"}",
+				TypeKey, ItemKey,
+				strconv.Quote(fmt.Sprintf("panic occurred while marshalling error: %v", r)),
 			)
 		}
 	}()

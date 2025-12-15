@@ -18,7 +18,7 @@ func goType(t reflect.Type) string {
 func goTypeRecursive(prefix string, t reflect.Type) string {
 	// we need a hacky fix to correctly handle json.RawMessage and kit.RawMessage in auto-generated code
 	// of the stubs
-	if t.PkgPath() == reflect.TypeOf(kit.RawMessage{}).PkgPath() {
+	if t.PkgPath() == reflect.TypeFor[kit.RawMessage]().PkgPath() {
 		return fmt.Sprintf("%s%s%s", prefix, "kit.", t.Name())
 	}
 
@@ -53,7 +53,7 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 			pkg, err := build.Import(pkgpath, ".", build.FindOnly)
 			if err == nil && pkg.Goroot {
 				return fmt.Sprintf("%s%s.%s", prefix, path.Base(t.PkgPath()), t.Name())
-			} else if t.AssignableTo(reflect.TypeOf((*fmt.Stringer)(nil))) {
+			} else if t.AssignableTo(reflect.TypeFor[*fmt.Stringer]()) {
 				return fmt.Sprintf("%sstring", prefix)
 			}
 		}

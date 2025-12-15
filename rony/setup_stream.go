@@ -44,7 +44,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	)
 
 	c := desc.NewContract().
-		SetName(reflect.TypeOf(h).Name()).
+		SetName(reflect.TypeFor[StreamHandler[S, A, IN, OUT]]().Name()).
 		SetHandler(handlers...)
 
 	if setupCtx.nodeSel != nil {

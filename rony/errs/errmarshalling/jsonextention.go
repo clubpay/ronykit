@@ -17,7 +17,7 @@ var (
 	serdeByName = map[string]*jsonMarshaller{}
 
 	// errType is the reflect2 type of the error interface
-	errType = reflect2.Type2(reflect.TypeOf((*error)(nil)).Elem())
+	errType = reflect2.Type2(reflect.TypeFor[error]())
 )
 
 const (

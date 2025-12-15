@@ -51,7 +51,7 @@ func Event(span trace.Span, name string, attrs ...attribute.KeyValue) trace.Span
 	return span
 }
 
-func EventF(span trace.Span, format string, v ...interface{}) trace.Span {
+func EventF(span trace.Span, format string, v ...any) trace.Span {
 	span.AddEvent(fmt.Sprintf(format, v...))
 
 	return span

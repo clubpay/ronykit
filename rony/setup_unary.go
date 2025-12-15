@@ -52,7 +52,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, true))
 
 		c.In(&in, cfg.InputMetaOptions...)
-	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
+	case reflect.TypeFor[kit.RawMessage](), reflect.TypeFor[kit.MultipartFormMessage]():
 		handlers = append(handlers, CreateKitHandler[IN, OUT, S, A](h, s, sl, false))
 
 		c.In(in, cfg.InputMetaOptions...)
@@ -121,7 +121,7 @@ func registerRawUnary[IN Message, S State[A], A Action](
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, true))
 
 		c.In(&in, cfg.InputMetaOptions...)
-	case reflect.TypeOf(kit.RawMessage{}), reflect.TypeOf(kit.MultipartFormMessage{}):
+	case reflect.TypeFor[kit.RawMessage](), reflect.TypeFor[kit.MultipartFormMessage]():
 		handlers = append(handlers, CreateRawKitHandler[IN, S, A](h, s, sl, false))
 
 		c.In(in, cfg.InputMetaOptions...)

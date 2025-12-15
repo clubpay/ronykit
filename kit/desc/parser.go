@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
@@ -133,14 +134,14 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 		RKind:          mt.Kind(),
 		Type:           typ("", mt),
 		RType:          mt,
-		ImplementError: mt.Implements(reflect.TypeOf((*kit.ErrorMessage)(nil)).Elem()),
+		ImplementError: mt.Implements(reflect.TypeFor[kit.ErrorMessage]()),
 		Meta:           meta,
 	}
 
 	switch {
-	case mt == reflect.TypeOf(kit.RawMessage{}):
+	case mt == reflect.TypeFor[kit.RawMessage]():
 		return pm
-	case mt == reflect.TypeOf(kit.MultipartFormMessage{}):
+	case mt == reflect.TypeFor[kit.MultipartFormMessage]():
 		return pm
 	case mt.Kind() != reflect.Struct:
 		return pm
@@ -300,13 +301,7 @@ func (pc ParsedContract) OKResponse() ParsedResponse {
 }
 
 func (pc ParsedContract) IsPathParam(name string) bool {
-	for _, p := range pc.PathParams {
-		if p == name {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(pc.PathParams, name)
 }
 
 type ParsedRequest struct {
@@ -567,9 +562,9 @@ func parseKind(t reflect.Type) Kind {
 	// Handle special messages
 	switch t {
 	default:
-	case reflect.TypeOf(kit.MultipartFormMessage{}):
+	case reflect.TypeFor[kit.MultipartFormMessage]():
 		return KitMultipartFormMessage
-	case reflect.TypeOf(kit.RawMessage{}):
+	case reflect.TypeFor[kit.RawMessage]():
 		return KitRawMessage
 	}
 
@@ -588,7 +583,7 @@ func parseKind(t reflect.Type) Kind {
 		return Float
 	case reflect.Struct:
 		// Check if type implements String() string method
-		if t.Implements(reflect.TypeOf((*fmt.Stringer)(nil)).Elem()) {
+		if t.Implements(reflect.TypeFor[fmt.Stringer]()) {
 			return String
 		}
 

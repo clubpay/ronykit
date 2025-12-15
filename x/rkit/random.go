@@ -78,7 +78,7 @@ func RandomDigit(n int) string {
 	rnd := rndGen.GetRand()
 
 	b := make([]byte, n)
-	for i := 0; i < len(b); i++ {
+	for i := range b {
 		b[i] = digits[FastRand()%digitsLength]
 	}
 

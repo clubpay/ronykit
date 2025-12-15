@@ -90,7 +90,7 @@ func (r Selector) GetPredicate() string {
 	return r.Predicate
 }
 
-func (r Selector) Query(q string) interface{} {
+func (r Selector) Query(q string) any {
 	switch q {
 	case queryDecoder:
 		return r.Decoder
