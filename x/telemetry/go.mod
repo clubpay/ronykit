@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/telemetry
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.23.0
+	github.com/clubpay/ronykit/kit v0.23.1
 	go.opentelemetry.io/contrib/propagators/b3 v1.38.0
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0
