@@ -5,9 +5,9 @@ go 1.25.1
 require (
 	github.com/clubpay/ronykit/x/rkit v0.2.1
 	github.com/spf13/cobra v1.10.1
-	golang.org/x/mod v0.30.0
-	golang.org/x/text v0.31.0
-	golang.org/x/tools v0.39.0
+	golang.org/x/mod v0.31.0
+	golang.org/x/text v0.32.0
+	golang.org/x/tools v0.40.0
 )
 
 require (
