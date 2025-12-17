@@ -16,14 +16,17 @@ require (
 require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.3 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.7.7 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/onsi/ginkgo/v2 v2.27.3 // indirect
+	github.com/onsi/gomega v1.38.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
-	golang.org/x/net v0.46.0 // indirect
-	golang.org/x/sys v0.37.0 // indirect
-	golang.org/x/text v0.30.0 // indirect
+	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/tools v0.39.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
