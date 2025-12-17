@@ -2,7 +2,7 @@ module github.com/clubpay/ronykit/x/ratelimit
 
 go 1.25.1
 
-require github.com/redis/go-redis/v9 v9.17.0
+require github.com/redis/go-redis/v9 v9.17.2
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
