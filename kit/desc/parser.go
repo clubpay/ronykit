@@ -67,7 +67,7 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 			pc.Path = r.GetPath()
 			pc.Method = r.GetMethod()
 
-			for _, p := range strings.Split(pc.Path, "/") {
+			for p := range strings.SplitSeq(pc.Path, "/") {
 				if strings.HasPrefix(p, ":") {
 					pc.PathParams = append(pc.PathParams, p[1:])
 				}
@@ -661,8 +661,8 @@ func getParsedStructTag(tag reflect.StructTag, name string) ParsedStructTag {
 
 	swagTag := tag.Get(swagTagKey)
 
-	parts := strings.Split(swagTag, swagSep)
-	for _, p := range parts {
+	parts := strings.SplitSeq(swagTag, swagSep)
+	for p := range parts {
 		x := strings.TrimSpace(strings.ToLower(p))
 		switch {
 		case x == "optional":

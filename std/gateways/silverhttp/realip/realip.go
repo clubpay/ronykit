@@ -155,7 +155,7 @@ func fromForwardedHeaders(ctx *silverlining.Context) (string, error) {
 }
 
 func retrieveForwardedIP(forwardedHeader string) (string, error) {
-	for _, address := range strings.Split(forwardedHeader, ",") {
+	for address := range strings.SplitSeq(forwardedHeader, ",") {
 		if len(address) > 0 {
 			address = strings.TrimSpace(address)
 			isPrivate, err := IsPrivateAddress(address)
