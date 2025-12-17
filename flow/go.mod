@@ -11,11 +11,11 @@ require (
 	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.39.0
-	go.temporal.io/api v1.58.0
+	go.temporal.io/api v1.59.0
 	go.temporal.io/sdk v1.38.0
 	go.uber.org/zap v1.27.1
-	golang.org/x/sync v0.18.0
-	google.golang.org/protobuf v1.36.10
+	golang.org/x/sync v0.19.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
