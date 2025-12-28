@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/ronyup
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.2.3
+	github.com/clubpay/ronykit/x/rkit v0.2.4
 	github.com/spf13/cobra v1.10.1
 	golang.org/x/mod v0.31.0
 	golang.org/x/text v0.32.0
