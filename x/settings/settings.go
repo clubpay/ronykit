@@ -1,10 +1,12 @@
 package settings
 
 import (
+	"reflect"
 	"strings"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )
 
@@ -162,22 +164,72 @@ func (s *Settings) AutomaticEnv() {
 }
 
 func (s *Settings) Unmarshal(v any) error {
-	c := &mapstructure.DecoderConfig{
-		Metadata:             nil,
-		Result:               v,
-		TagName:              "settings",
-		IgnoreUntaggedFields: true,
-		WeaklyTypedInput:     true,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeDurationHookFunc(),
-			mapstructure.StringToSliceHookFunc(","),
+	err := s.v.Unmarshal(
+		v,
+		viper.DecodeHook(
+			mapstructure.ComposeDecodeHookFunc(
+				mapstructure.StringToTimeDurationHookFunc(),
+				mapstructure.StringToSliceHookFunc(","),
+			),
 		),
-	}
-
-	decoder, err := mapstructure.NewDecoder(c)
+		func(config *mapstructure.DecoderConfig) {
+			config.TagName = "settings"
+			config.IgnoreUntaggedFields = true
+		},
+	)
 	if err != nil {
 		return err
 	}
 
-	return decoder.Decode(s.AllSettings())
+	s.walkFields(reflect.Indirect(reflect.ValueOf(v)), "")
+
+	return nil
+}
+
+func (s *Settings) walkFields(v reflect.Value, parent string) {
+	for i := range v.NumField() {
+		fieldV := v.Field(i)
+		fieldT := v.Type().Field(i)
+		name := fieldT.Tag.Get("settings")
+		defaultValue := fieldT.Tag.Get("default")
+
+		if name == "" {
+			continue
+		}
+
+		switch fieldT.Type.Kind() { //nolint:exhaustive
+		default:
+		case reflect.String, reflect.Bool,
+			reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8,
+			reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8,
+			reflect.Float32, reflect.Float64:
+		}
+
+		path := name
+		if parent != "" {
+			path = parent + "." + name
+		}
+
+		if fieldT.Type.Kind() == reflect.Struct {
+			s.walkFields(fieldV, path)
+
+			continue
+		}
+
+		_ = s.v.BindEnv(path)
+		s.v.SetDefault(path, reflect.Zero(fieldT.Type).Interface())
+		switch fieldT.Type.Kind() {
+		default:
+		case reflect.String:
+			s.v.SetDefault(path, defaultValue)
+		case reflect.Bool:
+			s.v.SetDefault(path, cast.ToBool(defaultValue))
+		case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
+			s.v.SetDefault(path, cast.ToInt(defaultValue))
+		case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
+			s.v.SetDefault(path, cast.ToUint(defaultValue))
+		case reflect.Float32, reflect.Float64:
+			s.v.SetDefault(path, cast.ToFloat64(defaultValue))
+		}
+	}
 }

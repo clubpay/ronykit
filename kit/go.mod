@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/goccy/go-json v0.10.5
 	github.com/goccy/go-reflect v1.2.0
-	github.com/jedib0t/go-pretty/v6 v6.7.7
+	github.com/jedib0t/go-pretty/v6 v6.7.8
 	github.com/onsi/ginkgo/v2 v2.27.3
 	github.com/onsi/gomega v1.38.3
 	gopkg.in/yaml.v3 v3.0.1

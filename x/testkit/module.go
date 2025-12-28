@@ -26,7 +26,7 @@ func Run(t *testing.T, opts ...fx.Option) {
 	app := fxtest.New(
 		t,
 		fx.NopLogger,
-		settings.Init,
+		fx.Provide(settings.New),
 		fx.Decorate(decorateConfig),
 		setupModule(opts...),
 	).RequireStart()
