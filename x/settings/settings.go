@@ -207,7 +207,7 @@ func (s *Settings) walkFields(v reflect.Value, parent string) {
 
 		path := name
 		if parent != "" {
-			path = parent + "." + name
+			path = parent + "_" + name
 		}
 
 		if fieldT.Type.Kind() == reflect.Struct {
