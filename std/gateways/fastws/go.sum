@@ -1,7 +1,7 @@
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
-github.com/clubpay/ronykit/kit v0.23.4 h1:yBqZgnpOPznydwJofPe88rfhmYtZy9PnhVX/HXlYgAg=
-github.com/clubpay/ronykit/kit v0.23.4/go.mod h1:8mUS0ifXksAzI7nlBvS6YRsWipQxmd5njN2MV8iHV28=
+github.com/clubpay/ronykit/kit v0.23.5 h1:64uPJOdPYmmNAFAbzYWr8sIFFyc1rXa2fJL/WePhjBA=
+github.com/clubpay/ronykit/kit v0.23.5/go.mod h1:8mUS0ifXksAzI7nlBvS6YRsWipQxmd5njN2MV8iHV28=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
