@@ -13,7 +13,3 @@ type (
 	RESTParam        = fasthttp.Param
 	NodeSelectorFunc = kit.EdgeSelectorFunc
 )
-
-type errCode interface {
-	GetCode() int
-}

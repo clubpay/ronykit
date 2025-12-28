@@ -63,10 +63,6 @@ func newCORS(cfg CORSConfig) *cors {
 	return c
 }
 
-func (cors *cors) preflightCheck(rc *httpConn) {
-	rc.ctx.Request.Header.Peek(fasthttp.HeaderAccessControlRequestMethod)
-}
-
 func (cors *cors) handle(ctx *fasthttp.RequestCtx) {
 	if cors == nil {
 		return

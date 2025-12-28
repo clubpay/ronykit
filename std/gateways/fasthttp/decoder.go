@@ -269,7 +269,7 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 func extractFields(rVal reflect.Value, tagKey string) []paramCaster {
 	var pcs []paramCaster
 
-	for i := 0; i < rVal.NumField(); i++ {
+	for i := range rVal.NumField() {
 		f := rVal.Type().Field(i)
 		if f.Type.Kind() == reflect.Struct && f.Anonymous {
 			pcs = append(pcs, extractFields(rVal.Field(i), tagKey)...)

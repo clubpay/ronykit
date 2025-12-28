@@ -121,34 +121,34 @@ func Convert(err error) error {
 	}
 
 	var se *stub.Error
-	if errors.As(err, &se) {
-		out := &Error{
-			Code:       HTTPStatusToCode(se.Code()),
-			Item:       se.Item(),
-			underlying: se,
+	if !errors.As(err, &se) {
+		return &Error{
+			Code:       Unknown,
+			underlying: err,
 		}
-		if code := se.Code(); code >= len(codeStatus) {
-			out.Code = HTTPStatusToCode(code)
-		} else {
-			out.Code = ErrCode(code)
-		}
-
-		var errMap map[string]any
-
-		_ = json.Unmarshal(utils.S2B(se.Item()), &errMap) //nolint:errcheck
-		if errMap != nil {
-			if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
-				out.Item = item
-			}
-		}
-
-		return out
 	}
 
-	return &Error{
-		Code:       Unknown,
-		underlying: err,
+	out := &Error{
+		Code:       HTTPStatusToCode(se.Code()),
+		Item:       se.Item(),
+		underlying: se,
 	}
+	if code := se.Code(); code >= len(codeStatus) {
+		out.Code = HTTPStatusToCode(code)
+	} else {
+		out.Code = ErrCode(code)
+	}
+
+	var errMap map[string]any
+
+	_ = json.Unmarshal(utils.S2B(se.Item()), &errMap) //nolint:errcheck
+	if errMap != nil {
+		if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
+			out.Item = item
+		}
+	}
+
+	return out
 }
 
 // Code reports the error code from an error.

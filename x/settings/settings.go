@@ -218,6 +218,7 @@ func (s *Settings) walkFields(v reflect.Value, parent string) {
 
 		_ = s.v.BindEnv(path)
 		s.v.SetDefault(path, reflect.Zero(fieldT.Type).Interface())
+
 		switch fieldT.Type.Kind() {
 		default:
 		case reflect.String:

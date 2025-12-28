@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"os"
 )
 
 type __Logger interface {
@@ -16,7 +17,7 @@ func (n *nopLogger) Printf(format string, args ...any) {
 		format += "\n"
 	}
 
-	fmt.Printf(format, args...)
+	_, _ = fmt.Fprintf(os.Stdout, format, args...)
 }
 
 func debugF(debug bool, logger __Logger, format string, args ...any) {

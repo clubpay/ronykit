@@ -17,7 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-type Backend interface {
+type Backend interface { //nolint:intefacebloat
 	worker.Registry
 
 	ExecuteWorkflow(

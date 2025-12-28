@@ -185,7 +185,6 @@ func (p *ReverseProxy) Close() {
 	p.clients = nil
 	p.opt = nil
 	p.bla = nil
-	p = nil
 }
 
 // Hop-by-hop headers. These are removed when sent to the backend.
