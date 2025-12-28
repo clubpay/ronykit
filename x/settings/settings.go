@@ -164,6 +164,8 @@ func (s *Settings) AutomaticEnv() {
 }
 
 func (s *Settings) Unmarshal(v any) error {
+	s.walkFields(reflect.Indirect(reflect.ValueOf(v)), "")
+
 	err := s.v.Unmarshal(
 		v,
 		viper.DecodeHook(
@@ -180,8 +182,6 @@ func (s *Settings) Unmarshal(v any) error {
 	if err != nil {
 		return err
 	}
-
-	s.walkFields(reflect.Indirect(reflect.ValueOf(v)), "")
 
 	return nil
 }
@@ -207,7 +207,7 @@ func (s *Settings) walkFields(v reflect.Value, parent string) {
 
 		path := name
 		if parent != "" {
-			path = parent + "_" + name
+			path = parent + "." + name
 		}
 
 		if fieldT.Type.Kind() == reflect.Struct {
@@ -216,9 +216,7 @@ func (s *Settings) walkFields(v reflect.Value, parent string) {
 			continue
 		}
 
-		_ = s.v.BindEnv(path)
 		s.v.SetDefault(path, reflect.Zero(fieldT.Type).Interface())
-
 		switch fieldT.Type.Kind() {
 		default:
 		case reflect.String:
