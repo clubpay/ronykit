@@ -27,6 +27,7 @@ func WithPrometheus(path string, port int, opt ...prometheus.Option) ExporterOpt
 		}
 
 		e.rd = exp
+		e.shutdownFn = exp.Shutdown
 
 		go func() {
 			http.Handle(path, promhttp.HandlerFor(prom.DefaultGatherer, promhttp.HandlerOpts{}))
