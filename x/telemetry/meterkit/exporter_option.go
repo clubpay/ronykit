@@ -22,7 +22,7 @@ func WithName(name string) ExporterOption {
 
 func WithPrometheus(path string, port int, opt ...prometheus.Option) ExporterOption {
 	return func(e *Exporter) error {
-		exp, err := prometheus.New(opt...)
+		exp, err := NewPrometheusExporter(opt...)
 		if err != nil {
 			return err
 		}
@@ -30,11 +30,7 @@ func WithPrometheus(path string, port int, opt ...prometheus.Option) ExporterOpt
 		e.rd = exp
 		e.shutdownFn = exp.Shutdown
 
-		go func() {
-			mux := http.NewServeMux()
-			mux.Handle(path, promhttp.HandlerFor(prom.DefaultGatherer, promhttp.HandlerOpts{}))
-			_ = http.ListenAndServe(fmt.Sprintf(":%d", port), mux) // nosemgrep
-		}()
+		go RunPrometheusServer(path, port)
 
 		return nil
 	}
@@ -46,4 +42,14 @@ func WithMetricReader(rd sdkmetric.Reader) ExporterOption {
 
 		return nil
 	}
+}
+
+func NewPrometheusExporter(opt ...prometheus.Option) (*prometheus.Exporter, error) {
+	return prometheus.New(opt...)
+}
+
+func RunPrometheusServer(path string, port int) {
+	mux := http.NewServeMux()
+	mux.Handle(path, promhttp.HandlerFor(prom.DefaultGatherer, promhttp.HandlerOpts{}))
+	_ = http.ListenAndServe(fmt.Sprintf(":%d", port), mux) // nosemgrep
 }
