@@ -180,10 +180,6 @@ func (s *EdgeServer) wrapWithGlobalHandlers(c Contract) Contract {
 
 // Start registers services in the registered bundles and start the bundles.
 func (s *EdgeServer) Start(ctx context.Context) *EdgeServer {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	s.l.Debugf("server started.")
 
 	if s.prefork {
@@ -239,7 +235,7 @@ func (s *EdgeServer) watchParent() {
 	}
 }
 
-func (s *EdgeServer) startParent(_ context.Context) {
+func (s *EdgeServer) startParent(ctx context.Context) {
 	// create variables
 	maxProc := runtime.GOMAXPROCS(0)
 
@@ -249,7 +245,7 @@ func (s *EdgeServer) startParent(_ context.Context) {
 	// launch child processes
 	for i := range maxProc {
 		/* #nosec G204 */
-		cmd := exec.Command(os.Args[0], os.Args[1:]...)
+		cmd := exec.CommandContext(ctx, os.Args[0], os.Args[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
@@ -327,10 +323,6 @@ func (s *EdgeServer) startup(ctx context.Context) {
 // the maximum time that it waits before forcefully shutting down the server, by WithShutdownTimeout
 // option. The Default value is 1 minute.
 func (s *EdgeServer) Shutdown(ctx context.Context, signals ...os.Signal) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	if len(signals) > 0 {
 		// Create a signal channel and bind it to all the os signals in the arg
 		shutdownChan := make(chan os.Signal, 1)

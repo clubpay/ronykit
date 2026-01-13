@@ -84,7 +84,10 @@ func InitDB(containerName string, params InitDBParams) fx.Option {
 						return nil, errors.Wrap(err, "failed to open db")
 					}
 
-					err = db.Ping()
+					ctx, cf := context.WithTimeout(context.Background(), time.Minute)
+					defer cf()
+
+					err = db.PingContext(ctx)
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to ping db")
 					}

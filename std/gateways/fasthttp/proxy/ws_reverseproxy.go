@@ -51,7 +51,7 @@ func NewWSReverseProxyWith(options ...OptionWS) (*WSReverseProxy, error) {
 //nolint:cyclop
 func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	if websocket.FastHTTPIsWebSocketUpgrade(ctx) {
-		debugF(w.option.debug, w.option.logger, "websocketproxy: got websocket request")
+		debugf(w.option.debug, w.option.logger, "websocketproxy: got websocket request")
 	}
 
 	var (
@@ -91,12 +91,12 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	// http://tools.ietf.org/html/draft-ietf-hybi-websocket-multiplexing-01
 	connBackend, respBackend, err := dialer.Dial(w.option.target.String(), forwardHeader)
 	if err != nil {
-		errorF(w.option.logger, "websocketproxy: couldn't dial to remote backend(%s): %v", w.option.target.String(), err)
+		errorf(w.option.logger, "websocketproxy: couldn't dial to remote backend(%s): %v", w.option.target.String(), err)
 
 		if respBackend != nil {
 			err = wsCopyResponse(resp, respBackend)
 			if err != nil {
-				errorF(w.option.logger, "websocketproxy: couldn't copy response: %v", err)
+				errorf(w.option.logger, "websocketproxy: couldn't copy response: %v", err)
 			}
 		} else {
 			// ctx.SetStatusCode(http.StatusServiceUnavailable)
@@ -118,7 +118,7 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			message    string
 		)
 
-		debugF(w.option.debug, w.option.logger, "websocketproxy: upgrade handler working")
+		debugf(w.option.debug, w.option.logger, "websocketproxy: upgrade handler working")
 
 		go replicateWebsocketConn(w.option.logger, connPub, connBackend, errClient)  // response
 		go replicateWebsocketConn(w.option.logger, connBackend, connPub, errBackend) // request
@@ -134,12 +134,12 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			// log error except '*websocket.CloseError'
 			closeError := &websocket.CloseError{}
 			if errors.As(err, &closeError) {
-				errorF(w.option.logger, "websocketproxy: error when copying %s: %v", message, err)
+				errorf(w.option.logger, "websocketproxy: error when copying %s: %v", message, err)
 			}
 		}
 	})
 	if err != nil {
-		errorF(w.option.logger, "websocketproxy: couldn't upgrade %s", err)
+		errorf(w.option.logger, "websocketproxy: couldn't upgrade %s", err)
 	}
 
 	return
@@ -202,13 +202,13 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 		msgType, msg, err := src.ReadMessage()
 		if err != nil {
 			// true: handle websocket close error
-			errorF(logger, "replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+			errorf(logger, "replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
 
 			var ce *websocket.CloseError
 			if errors.As(err, &ce) {
 				msg = websocket.FormatCloseMessage(ce.Code, ce.Text)
 			} else {
-				errorF(logger, "replicateWebsocketConn: src.ReadMessage failed, err=%v", err)
+				errorf(logger, "replicateWebsocketConn: src.ReadMessage failed, err=%v", err)
 				msg = websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, err.Error())
 			}
 
@@ -216,7 +216,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 
 			err = dst.WriteMessage(websocket.CloseMessage, msg)
 			if err != nil {
-				errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, err=%v", err)
+				errorf(logger, "replicateWebsocketConn: dst.WriteMessage failed, err=%v", err)
 			}
 
 			break
@@ -224,7 +224,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 
 		err = dst.WriteMessage(msgType, msg)
 		if err != nil {
-			errorF(logger, "replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+			errorf(logger, "replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
 
 			errChan <- err
 

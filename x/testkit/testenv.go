@@ -191,10 +191,13 @@ func provideTemporal(lc fx.Lifecycle) (*gnomock.Container, error) {
 		),
 		// gnomock.WithLogWriter(os.Stdout),
 		gnomock.WithHealthCheck(
-			func(_ context.Context, container *gnomock.Container) error {
+			func(ctx context.Context, container *gnomock.Container) error {
 				timeout := time.Second * 3
 
-				conn, err := net.DialTimeout("tcp", container.DefaultAddress(), timeout)
+				ctx, cancel := context.WithTimeout(ctx, timeout)
+				defer cancel()
+
+				conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", container.DefaultAddress())
 				if err != nil {
 					return err
 				}

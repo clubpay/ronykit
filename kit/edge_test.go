@@ -350,8 +350,8 @@ func BenchmarkServer(b *testing.B) {
 				).
 				Build(),
 		),
-	).Start(nil)
-	defer s.Shutdown(nil)
+	).Start(b.Context())
+	defer s.Shutdown(b.Context())
 
 	req := []byte(utils.RandomID(24))
 	b.ResetTimer()

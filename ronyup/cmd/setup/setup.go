@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -51,7 +52,7 @@ var Cmd = &cobra.Command{
 			return err
 		}
 
-		err = createDestination()
+		err = createDestination(cmd.Context())
 		if err != nil {
 			return err
 		}
@@ -62,7 +63,7 @@ var Cmd = &cobra.Command{
 	},
 }
 
-func createDestination() error {
+func createDestination(ctx context.Context) error {
 	// get the absolute path to the output directory
 	repoPath, err := filepath.Abs(opt.RepositoryRootDir)
 	if err != nil {
@@ -73,7 +74,7 @@ func createDestination() error {
 
 	if opt.ProjectDir != "" {
 		p := z.RunCmdParams{Dir: repoPath}
-		z.RunCmd(p, "go", "work", "init")
+		z.RunCmd(ctx, p, "go", "work", "init")
 
 		projectPath := filepath.Join(repoPath, opt.ProjectDir)
 
@@ -145,9 +146,9 @@ func copyTemplate(cmd *cobra.Command) {
 	cmd.Println("Module created successfully")
 	cmd.Println("Project path: ", packagePath)
 	p := z.RunCmdParams{Dir: filepath.Join(".", packagePath)}
-	z.RunCmd(p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, opt.ProjectDir))
-	z.RunCmd(p, "go", "mod", "edit", "-go=1.23")
-	z.RunCmd(p, "go", "mod", "tidy")
-	z.RunCmd(p, "go", "fmt", "./...")
-	z.RunCmd(p, "go", "work", "use", ".")
+	z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, opt.ProjectDir))
+	z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.23")
+	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
+	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
+	z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
 }

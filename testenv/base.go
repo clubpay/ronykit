@@ -171,10 +171,10 @@ func invokeRedisMonitor(lc fx.Lifecycle, _ *redis.Client) {
 
 	go func() {
 		for x := range out {
-			fmt.Println("REDIS:", x)
+			fmt.Println("REDIS:", x) //nolint:forbidgo
 		}
 
-		fmt.Println("REDIS CLOSED")
+		fmt.Println("REDIS CLOSED") //nolint:forbidgo
 	}()
 }
 

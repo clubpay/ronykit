@@ -6,10 +6,12 @@ import (
 	"database/sql"
 	"fmt"
 	"io/fs"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source"
@@ -73,7 +75,10 @@ func InitDB(in, out string) fx.Option {
 						return nil, errors.Wrap(err, "failed to run migrations")
 					}
 
-					err = db.Ping()
+					ctx, cf := context.WithTimeout(context.Background(), time.Minute)
+					defer cf()
+
+					err = db.PingContext(ctx)
 					if err != nil {
 						return nil, errors.Wrap(err, "failed to ping db")
 					}
@@ -131,15 +136,15 @@ type RedisParams struct {
 func (params RedisParams) DSN() string {
 	if params.DBNumber > 0 {
 		return fmt.Sprintf(
-			"redis://%s:%s@%s:%d/%d",
-			params.User, url.QueryEscape(params.Pass), params.Host, params.Port, params.DBNumber,
-		)
-	} else {
-		return fmt.Sprintf(
-			"redis://%s:%s@%s:%d",
-			params.User, url.QueryEscape(params.Pass), params.Host, params.Port,
+			"redis://%s:%s@%s/%d",
+			params.User, url.QueryEscape(params.Pass), net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)), params.DBNumber,
 		)
 	}
+
+	return fmt.Sprintf(
+		"redis://%s:%s@%s",
+		params.User, url.QueryEscape(params.Pass), net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
+	)
 }
 
 func InitRedis(in, out string) fx.Option {

@@ -366,7 +366,7 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 	}, nil
 }
 
-func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
+func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 	var (
 		ln  net.Listener
 		err error
@@ -374,7 +374,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 	if cfg.ReusePort {
 		ln, err = reuseport.Listen("tcp4", b.listen)
 	} else {
-		ln, err = net.Listen("tcp4", b.listen)
+		ln, err = (&net.ListenConfig{}).Listen(ctx, "tcp4", b.listen)
 	}
 
 	if err != nil {
