@@ -52,3 +52,5 @@ bump-workspace:
 bump-workspace-dry:
 	@bash ./scripts/bump-workspace.sh --part $(PART) --dry-run
 
+github-release:
+	@gh release create "$(TAG)" --title "$(TITLE)"
