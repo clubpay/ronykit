@@ -7,9 +7,9 @@ toolchain go1.24.2
 require (
 	github.com/clubpay/ronykit/kit v0.23.8
 	github.com/fasthttp/websocket v1.5.12
-	github.com/onsi/ginkgo/v2 v2.27.3
-	github.com/onsi/gomega v1.38.3
-	github.com/valyala/fasthttp v1.68.0
+	github.com/onsi/ginkgo/v2 v2.27.5
+	github.com/onsi/gomega v1.39.0
+	github.com/valyala/fasthttp v1.69.0
 	golang.org/x/net v0.48.0
 )
 

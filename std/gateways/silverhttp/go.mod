@@ -9,8 +9,8 @@ require (
 	github.com/go-www/silverlining v1.3.3
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.4.0
-	github.com/onsi/ginkgo/v2 v2.27.3
-	github.com/onsi/gomega v1.38.3
+	github.com/onsi/ginkgo/v2 v2.27.5
+	github.com/onsi/gomega v1.39.0
 )
 
 require (
