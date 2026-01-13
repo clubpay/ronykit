@@ -16,9 +16,8 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/onsi/ginkgo/v2 v2.27.5 // indirect
-	github.com/onsi/gomega v1.39.0 // indirect
 	github.com/panjf2000/ants/v2 v2.11.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
