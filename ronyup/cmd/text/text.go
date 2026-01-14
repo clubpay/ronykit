@@ -31,10 +31,19 @@ func init() {
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
+	flagSet.StringVarP(
+		&opt.GenPackageName,
+		"gen-package",
+		"g",
+		"",
+		`
+is the package or relative path into which to generate the
+file. If not specified it is relative to the current directory.
+`,
+	)
 	flagSet.StringVarP(&opt.GenFile, "gen-file", "f", "catalog.go", "generated file name")
 	flagSet.StringSliceVarP(&opt.ModulesFilter, "modules-filter", "m", []string{}, "modules filter")
 
-	flagSet.StringVarP(&opt.GenPackageName, "gen-package", "g", "", "package name for generated files")
 }
 
 var wrap = func(err error, msg string) error {

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
@@ -23,8 +24,8 @@ var (
 )
 
 func init() {
-	GoStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(goFileStub))
-	TSStub = template.Must(template.New("stub").Funcs(FuncMaps).Parse(tsFileStub))
+	GoStub = template.Must(template.New("stub").Funcs(FuncMaps).Funcs(sprig.FuncMap()).Parse(goFileStub))
+	TSStub = template.Must(template.New("stub").Funcs(FuncMaps).Funcs(sprig.FuncMap()).Parse(tsFileStub))
 	TSSWRHooks = template.Must(template.New("swrHooks").Funcs(FuncMaps).Parse(tsFileSWRHooks))
 }
 

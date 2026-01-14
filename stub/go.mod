@@ -5,6 +5,7 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
+	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/clubpay/ronykit/kit v0.23.9
 	github.com/fasthttp/websocket v1.5.12
 	github.com/onsi/ginkgo/v2 v2.27.5
@@ -14,6 +15,8 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.1 // indirect
+	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -22,13 +25,20 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/mod v0.32.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect

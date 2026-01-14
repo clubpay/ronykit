@@ -6,6 +6,8 @@ import (
 	"io/fs"
 	"os"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 type CopyParams struct {
@@ -23,7 +25,7 @@ func Copy(p CopyParams) error {
 			return err
 		}
 
-		tmpl, err := template.New(p.SrcPath).Parse(string(tmplBytes))
+		tmpl, err := template.New(p.SrcPath).Funcs(sprig.FuncMap()).Parse(string(tmplBytes))
 		if err != nil {
 			return err
 		}
