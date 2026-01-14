@@ -333,7 +333,7 @@ func (n *node) insertChild(path, fullPath string, handle *RouteData) {
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
 //
-//nolint:gocognit,gocyclo,nakedret
+//nolint:gocognit,gocyclo
 func (n *node) getValue(path string, params func() *Params) (handle *RouteData, ps *Params, tsr bool) {
 walk: // Outer loop for walking the tree
 	for {

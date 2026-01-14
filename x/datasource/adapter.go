@@ -137,13 +137,16 @@ func (params RedisParams) DSN() string {
 	if params.DBNumber > 0 {
 		return fmt.Sprintf(
 			"redis://%s:%s@%s/%d",
-			params.User, url.QueryEscape(params.Pass), net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)), params.DBNumber,
+			params.User, url.QueryEscape(params.Pass),
+			net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
+			params.DBNumber,
 		)
 	}
 
 	return fmt.Sprintf(
 		"redis://%s:%s@%s",
-		params.User, url.QueryEscape(params.Pass), net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
+		params.User, url.QueryEscape(params.Pass),
+		net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
 	)
 }
 

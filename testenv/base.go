@@ -106,8 +106,10 @@ func invokeTemporal(lc fx.Lifecycle) error {
 		gnomock.WithHealthCheck(
 			func(ctx context.Context, container *gnomock.Container) error {
 				timeout := time.Second * 3
+				ctx, cf := context.WithTimeout(ctx, timeout)
+				defer cf()
 
-				conn, err := net.DialTimeout("tcp", container.DefaultAddress(), timeout)
+				conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", container.DefaultAddress())
 				if err != nil {
 					return err
 				}
@@ -171,10 +173,10 @@ func invokeRedisMonitor(lc fx.Lifecycle, _ *redis.Client) {
 
 	go func() {
 		for x := range out {
-			fmt.Println("REDIS:", x) //nolint:forbidgo
+			fmt.Println("REDIS:", x) //nolint:forbidigo
 		}
 
-		fmt.Println("REDIS CLOSED") //nolint:forbidgo
+		fmt.Println("REDIS CLOSED") //nolint:forbidigo
 	}()
 }
 
@@ -185,7 +187,7 @@ func invokeEdgeServerFastHttp(_ string, port int, desc ...kit.ServiceBuilder) fx
 				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
+						fmt.Println("EdgeError: ", err) //nolint:forbidigo
 					},
 				),
 				kit.WithGateway(
