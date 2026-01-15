@@ -1,9 +1,0 @@
-db:
-  host: 127.0.0.1
-  port: 5432
-  db: {{.PackageName}}-db
-  user: dbUser
-  pass: dbPass
-redis:
-  host: 127.0.0.1
-  port: 6379

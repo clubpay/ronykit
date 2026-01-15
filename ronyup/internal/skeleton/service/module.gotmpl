@@ -34,7 +34,7 @@ func provideDBParams(svcSettings *settings.Settings) datasource.DBParams {
 		User:       svcSettings.DB.User,
 		Pass:       svcSettings.DB.Pass,
 		DB:         svcSettings.DB.DB,
-		Migrations: util.Must(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations")),
+		Migrations: rkit.Ok(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations")),
 	}
 }
 

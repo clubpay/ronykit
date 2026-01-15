@@ -11,6 +11,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,13 @@ func init() {
 	flagSet.StringVarP(&opt.ProjectName, "projectName", "n", "MyProject", "project name")
 
 	flagSet.BoolVarP(&opt.Force, "force", "f", false, "clean destination directory before setup")
-	flagSet.StringVarP(&opt.Template, "template", "t", "service", "possible values: service | gateway")
+	flagSet.StringVarP(
+		&opt.Template,
+		"template",
+		"t",
+		"service",
+		"possible values: workspace | service",
+	)
 	flagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
 }
 
@@ -84,8 +91,8 @@ func createDestination(ctx context.Context) error {
 				return fmt.Errorf("%s directory is not empty, use -f to force", projectPath)
 			}
 
-			_ = os.RemoveAll(projectPath)
-			_ = os.MkdirAll(projectPath, 0o755)
+			rkit.Assert(os.RemoveAll(projectPath))
+			rkit.Assert(os.MkdirAll(projectPath, 0o755)))
 		}
 	}
 
@@ -106,42 +113,41 @@ func copyTemplate(cmd *cobra.Command) {
 	pathPrefix := filepath.Join("skeleton", opt.Template)
 	packagePath := filepath.Join(opt.RepositoryRootDir, opt.ProjectDir)
 
-	err := fs.WalkDir(
-		internal.Skeleton, pathPrefix,
-		func(currPath string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
+	rkit.Assert(
+		fs.WalkDir(
+			internal.Skeleton, pathPrefix,
+			func(currPath string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
 
-			srcPath := strings.TrimPrefix(currPath, pathPrefix)
-			destPath := strings.TrimSuffix(
-				filepath.Join(".", packagePath, srcPath),
-				"tmpl",
-			)
+				srcPath := strings.TrimPrefix(currPath, pathPrefix)
+				destPath := strings.TrimSuffix(
+					filepath.Join(".", packagePath, srcPath),
+					"tmpl",
+				)
 
-			if d.IsDir() {
-				// Create a directory if it doesn't exist
-				return os.MkdirAll(destPath, os.ModePerm)
-			}
+				if d.IsDir() {
+					// Create a directory if it doesn't exist
+					return os.MkdirAll(destPath, os.ModePerm)
+				}
 
-			cmd.Println("FILE: ", destPath, "created")
+				cmd.Println("FILE: ", destPath, "created")
 
-			return z.Copy(z.CopyParams{
-				FS:             internal.Skeleton,
-				SrcPath:        currPath,
-				DestPath:       destPath,
-				TemplateSuffix: "tmpl",
-				TemplateInput: ModuleInput{
-					RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
-					PackagePath:    strings.Trim(opt.ProjectDir, "/"),
-					PackageName:    opt.ProjectName,
-					RonyKitPath:    "github.com/clubpay/ronykit",
-				},
-			})
-		})
-	if err != nil {
-		panic(err)
-	}
+				return z.Copy(z.CopyParams{
+					FS:             internal.Skeleton,
+					SrcPath:        currPath,
+					DestPath:       destPath,
+					TemplateSuffix: "tmpl",
+					TemplateInput: ModuleInput{
+						RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
+						PackagePath:    strings.Trim(opt.ProjectDir, "/"),
+						PackageName:    opt.ProjectName,
+						RonyKitPath:    "github.com/clubpay/ronykit",
+					},
+				})
+			}),
+	)
 
 	cmd.Println("Module created successfully")
 	cmd.Println("Project path: ", packagePath)

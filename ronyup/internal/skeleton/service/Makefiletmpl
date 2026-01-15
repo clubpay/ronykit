@@ -6,8 +6,14 @@ cwd := $(shell pwd)
 baseProject = {{.RepositoryPath}}
 export GOPRIVATE={{.RepositoryPath}}/*
 
-cleanup:
-	@go mod tidy && go fmt ./... && go vet ./...
+tidy:
+	@go mod tidy
+
+vet:
+	@go vet ./...
+
+lint: tidy vet
+	@go fmt ./... && go fix ./...
 	@golangci-lint run  --fix ./... --path-prefix "{{.PackagePath}}"
 
 test:
