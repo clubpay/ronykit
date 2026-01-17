@@ -7,11 +7,11 @@ Workspace is the root of the projects (i.e. services). We need to create it once
 After workspace is created, we can create services inside it.
 
 - Use `ronyup` cli to create a new workspace.
-- Example: `ronyup setup --template workspace`
+- Example: `ronyup setup workspace -d ./your-repo`
 
 
-### How to create a new service
+### How to create a new feature
 
-- Use `ronyup` cli to create a new service.
-- Example: `ronyup setup --template service`
+- Use `ronyup` cli to create a new feature. Features could be one of the available templates: job, service or gateway
+- Example: `ronyup setup feature -d ./your-repo -p auth-service`
 

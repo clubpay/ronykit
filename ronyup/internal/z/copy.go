@@ -5,12 +5,52 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
 )
 
-type CopyParams struct {
+type CopyDirParams struct {
+	FS             fs.FS
+	SrcPathPrefix  string
+	DestPathPrefix string
+	TemplateInput  any
+	Callback       func(filePath string, dir bool)
+}
+
+func CopyDir(params CopyDirParams) error {
+	return fs.WalkDir(
+		params.FS, params.SrcPathPrefix,
+		func(currPath string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			srcPath := strings.TrimPrefix(currPath, params.SrcPathPrefix)
+			destPath := strings.TrimSuffix(filepath.Join(params.DestPathPrefix, srcPath), "tmpl")
+
+			if d.IsDir() {
+				// Create a directory if it doesn't exist
+				return os.MkdirAll(destPath, os.ModePerm)
+			}
+
+			if params.Callback != nil {
+				params.Callback(currPath, d.IsDir())
+			}
+
+			return CopyFile(CopyFileParams{
+				FS:             params.FS,
+				SrcPath:        currPath,
+				DestPath:       destPath,
+				TemplateSuffix: "tmpl",
+				TemplateInput:  params.TemplateInput,
+			})
+		})
+}
+
+type CopyFileParams struct {
 	FS             fs.FS
 	SrcPath        string
 	DestPath       string
@@ -18,7 +58,7 @@ type CopyParams struct {
 	TemplateInput  any
 }
 
-func Copy(p CopyParams) error {
+func CopyFile(p CopyFileParams) error {
 	if p.TemplateInput != nil {
 		tmplBytes, err := fs.ReadFile(p.FS, p.SrcPath)
 		if err != nil {

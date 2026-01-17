@@ -21,6 +21,15 @@ func GetExecName() string {
 	return filepath.Base(os.Args[0])
 }
 
+func GetCurrentDir() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+
+	return dir
+}
+
 func CopyFile(srcFile, dstFile string) error {
 	const bufferSize = 1024 * 1024
 
