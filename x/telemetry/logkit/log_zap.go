@@ -7,8 +7,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/contrib/bridges/otelzap"
+	"go.opentelemetry.io/otel/log/global"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -22,6 +22,7 @@ type Logger struct {
 	prefix     string
 	skipCaller int
 	z          *zap.Logger
+	otel       *otelzap.Core
 	lvl        zap.AtomicLevel
 }
 
@@ -56,7 +57,11 @@ func New(opts ...Option) *Logger {
 		)
 	}
 
-	core := zapcore.NewTee(append(cores, cfg.cores...)...)
+	l.otel = otelzap.NewCore("otel", otelzap.WithLoggerProvider(global.GetLoggerProvider()))
+	cores = append(cores, l.otel)
+	core := zapcore.NewTee(
+		append(cores, cfg.cores...)...,
+	)
 	l.z = zap.New(
 		core,
 		zap.AddCaller(),
@@ -73,13 +78,6 @@ func newNOP() *Logger {
 	l.z = zap.NewNop()
 
 	return l
-}
-
-func (l *Logger) Sugared() *SugaredLogger {
-	return &SugaredLogger{
-		sz:     l.z.Sugar(),
-		prefix: l.prefix,
-	}
 }
 
 func (l *Logger) Sync() error {
@@ -180,10 +178,7 @@ func (l *Logger) Debug(msg string, fields ...Field) {
 }
 
 func (l *Logger) DebugCtx(ctx context.Context, msg string, fields ...Field) {
-	addTraceEvent(ctx, msg, fields...)
-	fields = append(fields, zap.String("traceID", Span(ctx).SpanContext().TraceID().String()))
-
-	l.Debug(msg, fields...)
+	l.Debug(msg, getFields(ctx, fields...)...)
 }
 
 func (l *Logger) Info(msg string, fields ...Field) {
@@ -201,10 +196,7 @@ func (l *Logger) Info(msg string, fields ...Field) {
 }
 
 func (l *Logger) InfoCtx(ctx context.Context, msg string, fields ...Field) {
-	addTraceEvent(ctx, msg, fields...)
-	fields = append(fields, zap.String("traceID", Span(ctx).SpanContext().TraceID().String()))
-
-	l.Info(msg, fields...)
+	l.Info(msg, getFields(ctx, fields...)...)
 }
 
 func (l *Logger) Warn(msg string, fields ...Field) {
@@ -222,10 +214,7 @@ func (l *Logger) Warn(msg string, fields ...Field) {
 }
 
 func (l *Logger) WarnCtx(ctx context.Context, msg string, fields ...Field) {
-	addTraceEvent(ctx, msg, fields...)
-	fields = append(fields, zap.String("traceID", Span(ctx).SpanContext().TraceID().String()))
-
-	l.Warn(msg, fields...)
+	l.Warn(msg, getFields(ctx, fields...)...)
 }
 
 func (l *Logger) Error(msg string, fields ...Field) {
@@ -243,10 +232,7 @@ func (l *Logger) Error(msg string, fields ...Field) {
 }
 
 func (l *Logger) ErrorCtx(ctx context.Context, msg string, fields ...Field) {
-	addTraceEvent(ctx, msg, fields...)
-	fields = append(fields, zap.String("traceID", Span(ctx).SpanContext().TraceID().String()))
-
-	l.Error(msg, fields...)
+	l.Error(msg, getFields(ctx, fields...)...)
 }
 
 func (l *Logger) Fatal(msg string, fields ...Field) {
@@ -258,10 +244,7 @@ func (l *Logger) Fatal(msg string, fields ...Field) {
 }
 
 func (l *Logger) FatalCtx(ctx context.Context, msg string, fields ...Field) {
-	addTraceEvent(ctx, msg, fields...)
-	fields = append(fields, zap.String("traceID", Span(ctx).SpanContext().TraceID().String()))
-
-	l.Fatal(msg, fields...)
+	l.Fatal(msg, getFields(ctx, fields...)...)
 }
 
 func (l *Logger) RecoverPanic(funcName string, extraInfo any, compensationFunc func()) {
@@ -457,13 +440,6 @@ func (l *Logger) logError(msg string, fields ...Field) {
 	l.z.Log(lvl, msg, fields...)
 }
 
-func Span(ctx context.Context, attrs ...attribute.KeyValue) trace.Span {
-	span := trace.SpanFromContext(ctx)
-	span.SetAttributes(attrs...)
-
-	return span
-}
-
 func moduleField(name string) Field {
 	if len(name) == 0 {
 		return zap.Skip()
@@ -478,4 +454,24 @@ func maybeBool(name string, b bool) Field {
 	}
 
 	return zap.Skip()
+}
+
+func addPrefix(prefix, in string) (out string) {
+	if prefix != "" {
+		sb := &strings.Builder{}
+		sb.WriteString(prefix)
+		sb.WriteRune(' ')
+		sb.WriteString(in)
+		out = sb.String()
+
+		return out
+	}
+
+	return in
+}
+
+func getFields(ctx context.Context, fields ...Field) []zap.Field {
+	fields = append(fields, Any("context", ctx))
+
+	return fields
 }

@@ -22,7 +22,7 @@ type config struct {
 var defaultConfig = config{
 	level:           InfoLevel,
 	skipCaller:      1,
-	encoder:         "console",
+	encoder:         "otel",
 	TimeEncoder:     timeEncoder,
 	LevelEncoder:    zapcore.CapitalLevelEncoder,
 	DurationEncoder: zapcore.StringDurationEncoder,

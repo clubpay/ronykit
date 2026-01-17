@@ -346,6 +346,10 @@ func Reflect(key string, val any) Field {
 	return Field{Key: key, Type: zapcore.ReflectType, Interface: val}
 }
 
+func Any(key string, val any) Field {
+	return zap.Any(key, val)
+}
+
 // Namespace creates a named, isolated scope within the logger's context. All
 // subsequent fields will be added to the new namespace.
 //
