@@ -10,10 +10,10 @@ github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1x
 github.com/cenkalti/backoff/v5 v5.0.3/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/clubpay/ronykit/x/rkit v0.2.10 h1:+qpm60zizFHqe2LIbOVmFxcF2yPZtvczqqwZOfrG16I=
-github.com/clubpay/ronykit/x/rkit v0.2.10/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
-github.com/clubpay/ronykit/x/settings v0.2.10 h1:iRUNL0J9tS0H7V27/vMFRuY0dck1Q7233PmgiMm4YUw=
-github.com/clubpay/ronykit/x/settings v0.2.10/go.mod h1:Gt7DSdiusLpClFauNeao11ci9ocIbShg/mX31aTWod0=
+github.com/clubpay/ronykit/x/rkit v0.2.11 h1:KZpI3l5WCPLs4mGz86INeVH01+0291MFESL/sOtqHiY=
+github.com/clubpay/ronykit/x/rkit v0.2.11/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
+github.com/clubpay/ronykit/x/settings v0.2.11 h1:wlB8ExKB4Zlbk7t8xiuVAuLvARo1EHmKZfyVkU0p5B0=
+github.com/clubpay/ronykit/x/settings v0.2.11/go.mod h1:Gt7DSdiusLpClFauNeao11ci9ocIbShg/mX31aTWod0=
 github.com/containerd/errdefs v1.0.0 h1:tg5yIfIlQIrxYtu9ajqY42W3lpS19XqdxRQeEwYG8PI=
 github.com/containerd/errdefs v1.0.0/go.mod h1:+YBYIdtsnF4Iw6nWZhJcqGSg/dwvV7tyJ/kCkyJ2k+M=
 github.com/containerd/errdefs/pkg v0.3.0 h1:9IKJ06FvyNlexW690DXuQNx2KA2cUJXx151Xdx3ZPPE=
