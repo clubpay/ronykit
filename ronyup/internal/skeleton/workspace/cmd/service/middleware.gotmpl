@@ -6,13 +6,13 @@ import (
 	"runtime/debug"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/rony/di"
 	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
-	"{{.RepositoryPath}}/cmd/service/di"
 )
 
 func logMW(ctx *kit.Context) {
