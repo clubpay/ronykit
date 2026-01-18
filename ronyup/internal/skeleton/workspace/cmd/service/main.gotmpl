@@ -1,0 +1,245 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/x/cache"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/settings"
+	"github.com/clubpay/ronykit/x/telemetry/logkit"
+	"github.com/clubpay/ronykit/x/telemetry/meterkit"
+	"github.com/clubpay/ronykit/x/telemetry/tracekit"
+	"github.com/spf13/cobra"
+	"go.uber.org/fx"
+	"{{.RepositoryPath}}/pkg/di"
+)
+
+func main() {
+
+}
+
+var rootCmd = &cobra.Command{
+	RunE: func(cmd *cobra.Command, args []string) error {
+		listenPort, _ := cmd.Flags().GetInt("port")
+		listenIP, _ := cmd.Flags().GetString("listenIP")
+		services, _ := cmd.Flags().GetStringSlice("service")
+
+		cmd.Println("Services:", services)
+
+		opts := []fx.Option{
+			fx.Options(
+				// fx.NopLogger,
+				fx.RecoverFromPanics(),
+				fx.Provide(
+					settings.New,
+					fx.Annotate(
+						genServerProvider(listenIP, listenPort),
+						fx.ResultTags(`name:"service"`),
+					),
+				),
+				fx.Invoke(traceExporter, metricExporter, logExporter),
+			),
+		}
+
+		moduleOpts := fx.Options(
+			fx.NopLogger,
+			fx.RecoverFromPanics(),
+			fx.Supply(
+				logkit.New(logkit.WithLevel(logkit.InfoLevel)),
+			),
+			fx.Provide(
+				settings.New,
+				func() (*cache.Cache, error) {
+					return cache.New(
+						cache.Config{
+							NumCounters: 100_000,
+							MaxCost:     10_000,
+							BufferItems: 64,
+						},
+					)
+				},
+			),
+		)
+		if len(services) == 0 {
+			for _, m := range di.AllServices() {
+				opts = append(opts, m(moduleOpts))
+			}
+		} else {
+			for _, svc := range services {
+				m := di.GetService("service", svc)
+				if m != nil {
+					return fmt.Errorf("service %s not found", svc)
+				}
+
+				opts = append(opts, m(moduleOpts))
+			}
+		}
+
+		app := fx.New(opts...)
+		startCtx, cf := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cf()
+		err := app.Start(startCtx)
+		if err != nil {
+			cmd.Println(rkit.Ok(fx.VisualizeError(err)))
+
+			return err
+		}
+
+		if len(services) > 0 {
+			cmd.Println(fmt.Sprintf("Server[Service] listening on http://%s:%d", listenIP, listenPort))
+			cmd.Println(fmt.Sprintf("API Docs: http://%s:%d/docs", listenIP, listenPort))
+		}
+
+		cmd.Println("Press Ctrl+C to stop.")
+
+		<-app.Wait()
+		stopCtx, cf := context.WithTimeout(context.Background(), time.Minute)
+		defer cf()
+		err = app.Stop(stopCtx)
+		if err != nil {
+			panic(err)
+		}
+
+		return nil
+
+	},
+}
+
+func genServerProvider(host string, port int) func(lc fx.Lifecycle) *rony.Server {
+	return func(lc fx.Lifecycle) *rony.Server {
+		srv := rony.NewServer(
+			rony.WithAPIDocs("/docs"),
+			// rony.UseSwaggerUI(),
+			rony.WithServerName("Malek (powered by RonyKIT)"),
+			rony.WithVersion("v0.0.1"),
+			rony.Listen(fmt.Sprintf("%s:%d", host, port)),
+			rony.WithTracer(tracekit.B3("all-in-one [gateways]")),
+			rony.WithCORS(rony.CORSConfig{
+				IgnoreEmptyOrigin: true,
+			}),
+			rony.WithErrorHandler(func(ctx *kit.Context, err error) {
+				if ctx == nil {
+					return
+				}
+
+				ctx.SetStatusCode(http.StatusBadRequest)
+				ctx.Out().SetMsg(
+					errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
+				).Send()
+			}),
+		)
+
+		lc.Append(fx.Hook{
+			OnStart: func(ctx context.Context) error {
+				rony.Setup(
+					srv, "Health", rony.EmptyState(),
+					rony.WithUnary[rony.EMPTY, rony.NOP, HealthInput, HealthOutput](
+						Healthz,
+						rony.GET("/healthz", rony.UnaryName("Healthz")),
+					),
+				)
+
+				err := srv.Start(ctx)
+				if err != nil {
+					return err
+				}
+
+				srv.PrintRoutesCompact(os.Stdout)
+
+				return nil
+			},
+			OnStop: func(ctx context.Context) error {
+				srv.Stop(ctx)
+
+				return nil
+			},
+		})
+
+		return srv
+	}
+}
+
+func traceExporter(lc fx.Lifecycle, set settings.Settings) error {
+	var opts []tracekit.ExporterOption
+	if otlp := set.GetString("OTLP_HOSTPORT"); otlp != "" {
+		opts = append(opts, tracekit.WithGrpcOTLP(otlp))
+	}
+
+	if len(opts) == 0 {
+		opts = append(opts, tracekit.WithTerminal(true))
+	}
+
+	opts = append(
+		opts,
+		tracekit.WithCustomSampler(
+			tracekit.NewSampler("{{ .PackageName }}").
+				AddDrop(
+					"GET /healthz",
+				),
+		),
+	)
+
+	exp, err := tracekit.NewExporter("{{ .ApplicationName }}", opts...)
+	if err != nil {
+		return err
+	}
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return exp.Shutdown(ctx)
+		},
+	})
+
+	return nil
+}
+
+func metricExporter(lc fx.Lifecycle) error {
+	exp, err := meterkit.NewExporter(
+		meterkit.WithName("{{ .ApplicationName }}"),
+		meterkit.WithPrometheus("/", 2374),
+	)
+	if err != nil {
+		return err
+	}
+
+	exp.SetAsGlobal()
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return exp.Shutdown(ctx)
+		},
+	})
+
+	return nil
+}
+
+func logExporter(lc fx.Lifecycle, set settings.Settings) error {
+	var opts []logkit.ExporterOption
+	if otlp := set.GetString("OTLP_HOSTPORT"); otlp != "" {
+		opts = append(opts, logkit.WithGrpcOTLP(otlp))
+	}
+
+	if len(opts) == 0 {
+		opts = append(opts, logkit.WithTerminal(true))
+	}
+
+	_, err := logkit.NewExporter("{{ .ApplicationName }}", opts...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func init() {
+	rootCmd.Flags().String("listenIP", "0.0.0.0", "listen ip")
+	rootCmd.Flags().Int("port", 8586, "service port")
+	rootCmd.Flags().StringSlice("service", []string{}, "service(s) to run")
+}

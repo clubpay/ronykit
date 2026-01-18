@@ -1,0 +1,87 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"runtime/debug"
+
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/telemetry/tracekit"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+)
+
+func logMW(ctx *kit.Context) {
+	span := tracekit.Span(ctx.Context())
+
+	tracekit.Event(
+		span, "request",
+		attribute.String("route", ctx.Route()),
+		attribute.String("body", rkit.B2S(rkit.ToJSON(ctx.In().GetMsg()))),
+	)
+
+	ctx.AddModifier(
+		func(out *kit.Envelope) {
+			tracekit.Event(
+				span, "response",
+				attribute.Int("code", ctx.GetStatusCode()),
+				attribute.String("body", rkit.B2S(rkit.ToJSON(out.GetMsg()))),
+			)
+
+			out.SetHdr("Trace-ID", span.SpanContext().TraceID().String())
+
+			switch x := out.GetMsg().(type) {
+			case *errs.Error:
+				tracekit.Event(
+					span, "response is error",
+					attribute.Int("code", x.GetCode()),
+					attribute.String("item", x.GetItem()),
+					attribute.String("msg", x.ErrorMessage()),
+				)
+			}
+		},
+	)
+
+	ctx.Next()
+
+	span.SetAttributes(
+		semconv.HTTPResponseStatusCode(ctx.GetStatusCode()),
+		semconv.UserAgentOriginal(ctx.Conn().Get("User-Agent")),
+		semconv.BrowserPlatform(ctx.Conn().Get("Sec-Ch-Ua-Platform")),
+	)
+
+	if ctx.GetStatusCode() >= 400 {
+		span.SetStatus(codes.Error, "http status code:"+ctx.GetStatusText())
+	}
+}
+
+var baseHDR = map[string]string{
+	"Content-Type": "application/json",
+}
+
+func baseHdrMW(ctx *kit.Context) {
+	ctx.PresetHdrMap(baseHDR)
+}
+
+func recoverPanicMW(ctx *kit.Context) {
+	span := tracekit.Span(ctx.Context())
+
+	defer func() {
+		if r := recover(); r != nil {
+			tracekit.Event(
+				span, "panic recovered",
+				attribute.String("panic", fmt.Sprintf("%+v", r)),
+				attribute.String("stack", string(debug.Stack())),
+			)
+
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			ctx.Out().SetMsg(errs.B().Code(errs.Internal).Msg("TECHNICAL_PROBLEM").Err()).Send()
+			ctx.StopExecution()
+		}
+	}()
+
+	ctx.Next()
+}

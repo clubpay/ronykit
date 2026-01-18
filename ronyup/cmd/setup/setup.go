@@ -92,7 +92,8 @@ var Cmd = &cobra.Command{
 }
 
 type ModuleInput struct {
-	RepositoryPath string
+	ApplicationName string
+	RepositoryPath  string
 	// PackagePath is the folder that module will reside inside the Repository root folder
 	PackagePath string
 	// PackageName is the name of the package to be used for some internal variables

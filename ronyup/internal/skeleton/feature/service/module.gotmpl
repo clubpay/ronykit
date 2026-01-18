@@ -1,14 +1,12 @@
 package {{.PackageName}}mod
 
 import (
-	"io/fs"
-
 	"go.uber.org/fx"
+	"{{.RepositoryPath}}/pkg/di"
 	"{{.RepositoryPath}}/{{.PackagePath}}/api"
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
 	v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
-	"{{.RonyKitPath}}/x/rkit"
 	"{{.RonyKitPath}}/x/datasource"
 )
 
@@ -20,32 +18,10 @@ var appModule = fx.Module(
 		settings.New,
 		app.New,
 		api.New,
-		provideDBParams,
-		provideRedisParams,
 	),
+	di.ProvideDBParams[settings.Settings](MigrationFS),
+	di.ProvideRedisParams[settings.Settings](),
 	datasource.InitDB("", ""),
 	datasource.InitRedis("", ""),
 )
 
-func provideDBParams(svcSettings *settings.Settings) datasource.DBParams {
-	return datasource.DBParams{
-		Host:       svcSettings.DB.Host,
-		Port:       svcSettings.DB.Port,
-		User:       svcSettings.DB.User,
-		Pass:       svcSettings.DB.Pass,
-		DB:         svcSettings.DB.DB,
-		Migrations: rkit.Ok(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations")),
-	}
-}
-
-func provideRedisParams(svcSettings *settings.Settings) datasource.RedisParams {
-	return datasource.RedisParams{
-		Host: svcSettings.Redis.Host,
-		Port: svcSettings.Redis.Port,
-	}
-}
-
-func LoadSettings(filename string, searchPaths ...string) {
-	settings.ConfigName = filename
-	settings.ConfigPaths = searchPaths
-}

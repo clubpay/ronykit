@@ -3,12 +3,12 @@ package {{.PackageName}}mod
 import (
 	"context"
 
+
 	"go.uber.org/fx"
 	"{{.RepositoryPath}}/{{.PackagePath}}/api"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
+	"{{.RepositoryPath}}/pkg/di"
 	"{{.RonyKitPath}}/rony"
-	"{{.RonyKitPath}}/x/cache"
-	log "{{.RonyKitPath}}/x/telemetry/logkit"
-	"{{.RonyKitPath}}/x/settings"
 )
 
 type Service struct {
@@ -20,13 +20,7 @@ type Service struct {
 func App(opt ...fx.Option) *Service {
 	var apiSvc *api.Service
 	fxApp := fx.New(
-		fx.NopLogger,
 		appModule,
-		fx.Provide(
-			log.New,
-			cache.New,
-			settings.New,
-		),
 		fx.Populate(&apiSvc),
 		fx.Options(opt...),
 	)
@@ -37,11 +31,11 @@ func App(opt ...fx.Option) *Service {
 	}
 }
 
-func Module() fx.Option {
+func Module(opt ...fx.Option) fx.Option {
 	return fx.Options(
 		fx.Provide(
 			func(lc fx.Lifecycle) *Service {
-				svc := App()
+				svc := App(opt...)
 				lc.Append(
 					fx.Hook{
 						OnStart: func(ctx context.Context) error {
@@ -73,4 +67,13 @@ func (svc *Service) Start(ctx context.Context) error {
 
 func (svc *Service) Shutdown(force context.Context) error {
 	return svc.fxApp.Stop(force)
+}
+
+func LoadSettings(filename string, searchPaths ...string) {
+	settings.ConfigName = filename
+	settings.ConfigPaths = searchPaths
+}
+
+func init() {
+	di.RegisterService[Service]("service", settings.ModuleName, LoadSettings, Module)
 }
