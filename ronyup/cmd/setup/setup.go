@@ -159,13 +159,16 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 	))
 
 	cmd.Println("Workspace created successfully")
+	packages := []string{"pkg/i18n", "cmd/service"}
 	p := z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
 	z.RunCmd(cmd.Context(), p, "go", "work", "init")
-	p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir, "pkg/i18n")}
-	z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, "pkg/i18n"))
-	z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
-	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
-	z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+	for _, pkg := range packages {
+		p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir, pkg)}
+		z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, pkg))
+		z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
+		z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
+		z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+	}
 }
 
 var CmdSetupFeature = &cobra.Command{

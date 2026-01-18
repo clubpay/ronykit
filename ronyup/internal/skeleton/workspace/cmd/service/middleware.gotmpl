@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	"{{.RepositoryPath}}/cmd/service/di"
 )
 
 func logMW(ctx *kit.Context) {
@@ -84,4 +85,8 @@ func recoverPanicMW(ctx *kit.Context) {
 	}()
 
 	ctx.Next()
+}
+
+func init() {
+	di.RegisterMiddleware(recoverPanicMW, baseHdrMW, logMW)
 }
