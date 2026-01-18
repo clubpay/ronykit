@@ -32,8 +32,8 @@ func RegisterService[S any, SPtr ServicePtr[S]](
 
 var _Middlewares []kit.HandlerFunc
 
-func RegisterMiddleware(mw kit.HandlerFunc) {
-	_Middlewares = append(_Middlewares, mw)
+func RegisterMiddleware(mw ...kit.HandlerFunc) {
+	_Middlewares = append(_Middlewares, mw...)
 }
 
 func AllServices() []ServiceOption {
