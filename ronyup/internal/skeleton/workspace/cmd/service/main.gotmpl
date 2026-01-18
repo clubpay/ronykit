@@ -22,7 +22,33 @@ import (
 )
 
 func main() {
+	// Setup i18n:
+	//
+	// i18n.InitLanguage(language.AmericanEnglish, message.DefaultCatalog)
+	// i18n.InitLanguage(language.Persian, message.DefaultCatalog)
+	// i18n.SetDefaultLanguage(language.Persian)
 
+	rootCmd.AddCommand()
+
+
+	const maxRetries = 10
+	const retryDelay = 5 * time.Second
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		err := rootCmd.Execute()
+		if err == nil {
+			break
+		}
+
+		fmt.Printf("got error: %v\n", err)
+		if attempt < maxRetries {
+			fmt.Printf("Retrying in %v... (attempt %d/%d)\n", retryDelay, attempt, maxRetries)
+			time.Sleep(retryDelay)
+		} else {
+			fmt.Printf("Failed after %d attempts\n", maxRetries)
+			os.Exit(1)
+		}
+	}
 }
 
 var rootCmd = &cobra.Command{
