@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/clubpay/ronykit/x/rkit v0.2.9
+	github.com/clubpay/ronykit/x/rkit v0.2.10
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/mod v0.32.0
 	golang.org/x/text v0.33.0

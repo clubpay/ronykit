@@ -4,8 +4,8 @@ go 1.25.1
 
 require (
 	github.com/clubpay/ronykit/contrib v0.21.26
-	github.com/clubpay/ronykit/kit v0.23.9
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.9
+	github.com/clubpay/ronykit/kit v0.23.10
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.10
 	github.com/go-openapi/spec v0.22.3
 	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
