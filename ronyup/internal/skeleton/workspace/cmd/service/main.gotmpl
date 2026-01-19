@@ -75,8 +75,6 @@ var rootCmd = &cobra.Command{
 		}
 
 		moduleOpts := fx.Options(
-			fx.NopLogger,
-			fx.RecoverFromPanics(),
 			fx.Supply(
 				logkit.New(logkit.WithLevel(logkit.InfoLevel)),
 			),
