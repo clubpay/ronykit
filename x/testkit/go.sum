@@ -10,10 +10,10 @@ github.com/cenkalti/backoff/v5 v5.0.3 h1:ZN+IMa753KfX5hd8vVaMixjnqRZ3y8CuJKRKj1x
 github.com/cenkalti/backoff/v5 v5.0.3/go.mod h1:rkhZdG3JZukswDf7f0cwqPNk4K0sa+F97BxZthm/crw=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/clubpay/ronykit/x/rkit v0.2.11 h1:KZpI3l5WCPLs4mGz86INeVH01+0291MFESL/sOtqHiY=
-github.com/clubpay/ronykit/x/rkit v0.2.11/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
-github.com/clubpay/ronykit/x/settings v0.2.11 h1:wlB8ExKB4Zlbk7t8xiuVAuLvARo1EHmKZfyVkU0p5B0=
-github.com/clubpay/ronykit/x/settings v0.2.11/go.mod h1:Gt7DSdiusLpClFauNeao11ci9ocIbShg/mX31aTWod0=
+github.com/clubpay/ronykit/x/rkit v0.2.12 h1:Yekj/wJ31ykQj8keXvmdnTP8/yGIB1cyxK+l1v+GnJk=
+github.com/clubpay/ronykit/x/rkit v0.2.12/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
+github.com/clubpay/ronykit/x/settings v0.2.12 h1:Bw4aqLmAayeTuzgHhpgs7vbB3DTl88mgN3JEe+xo2NY=
+github.com/clubpay/ronykit/x/settings v0.2.12/go.mod h1:oZblR1TGHKdXzd9VMArM3CelKRId6G7MsCBAtWB2sDk=
 github.com/containerd/errdefs v1.0.0 h1:tg5yIfIlQIrxYtu9ajqY42W3lpS19XqdxRQeEwYG8PI=
 github.com/containerd/errdefs v1.0.0/go.mod h1:+YBYIdtsnF4Iw6nWZhJcqGSg/dwvV7tyJ/kCkyJ2k+M=
 github.com/containerd/errdefs/pkg v0.3.0 h1:9IKJ06FvyNlexW690DXuQNx2KA2cUJXx151Xdx3ZPPE=
@@ -52,6 +52,7 @@ github.com/go-redis/redis/v7 v7.4.1 h1:PASvf36gyUpr2zdOUS/9Zqc80GbM+9BDyiJSJDDOr
 github.com/go-redis/redis/v7 v7.4.1/go.mod h1:JDNMw23GTyLNC4GZu9njt15ctBQVn7xjRfnwdHj/Dcg=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
 github.com/go-viper/mapstructure/v2 v2.5.0 h1:vM5IJoUAy3d7zRSVtIwQgBj7BiWtMPfmPEgAXnvj1Ro=
+github.com/go-viper/mapstructure/v2 v2.5.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/goccy/go-reflect v1.2.0 h1:O0T8rZCuNmGXewnATuKYnkL0xm6o8UNOJZd/gOkb9ms=
 github.com/goccy/go-reflect v1.2.0/go.mod h1:n0oYZn8VcV2CkWTxi8B9QjkCoq6GTtCEdfmR66YhFtE=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
