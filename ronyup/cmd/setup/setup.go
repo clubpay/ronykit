@@ -169,6 +169,11 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
 		z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
 	}
+
+	p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
+	z.RunCmd(cmd.Context(), p, "git", "init")
+	z.RunCmd(cmd.Context(), p, "git", "add", ".")
+	z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
 }
 
 var CmdSetupFeature = &cobra.Command{
@@ -194,6 +199,8 @@ var CmdSetupFeature = &cobra.Command{
 		}
 
 		copyFeatureTemplate(cmd)
+
+		sideEffectImportModule(cmd)
 
 		return nil
 	},
@@ -272,4 +279,78 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
 	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
 	z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+}
+
+func sideEffectImportModule(cmd *cobra.Command) {
+	featuresFilePath := filepath.Join(".", "cmd", "service", "features.go")
+
+	// Read the existing file
+	content, err := os.ReadFile(featuresFilePath)
+	if err != nil {
+		cmd.PrintErrf("Warning: Could not read features.go: %v\n", err)
+		return
+	}
+
+	// Create the import statement for the feature
+	packagePath := filepath.Join("feature", opt.Template, opt.FeatureDir)
+	importPath := fmt.Sprintf("\t_ \"%s/%s\"\n", opt.RepositoryGoModule, packagePath)
+
+	// Check if the import already exists
+	if strings.Contains(string(content), importPath) {
+		cmd.Println("Import already exists in features.go")
+		return
+	}
+
+	lines := strings.Split(string(content), "\n")
+	var newContent strings.Builder
+	importAdded := false
+
+	for i, line := range lines {
+		newContent.WriteString(line)
+		if i < len(lines)-1 {
+			newContent.WriteString("\n")
+		}
+
+		// Add import after "package main" declaration
+		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "package main") {
+			// Check if the import block exists
+			hasImport := false
+			for j := i + 1; j < len(lines); j++ {
+				if strings.HasPrefix(strings.TrimSpace(lines[j]), "import") {
+					hasImport = true
+					break
+				}
+				if strings.TrimSpace(lines[j]) != "" && !strings.HasPrefix(strings.TrimSpace(lines[j]), "//") {
+					break
+				}
+			}
+
+			if !hasImport {
+				newContent.WriteString("\n")
+				newContent.WriteString("import (\n")
+				newContent.WriteString(importPath)
+				newContent.WriteString(")\n")
+				importAdded = true
+			}
+		}
+
+		// Add to the existing import block
+		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "import (") {
+			newContent.WriteString(importPath)
+			importAdded = true
+		}
+	}
+
+	// Write back to the file
+	err = os.WriteFile(featuresFilePath, []byte(newContent.String()), 0o644)
+	if err != nil {
+		cmd.PrintErrf("Warning: Could not write to features.go: %v\n", err)
+		return
+	}
+
+	cmd.Println("Feature import added to features.go")
+
+	p := z.RunCmdParams{Dir: filepath.Join("./cmd/service")}
+	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
+	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
 }
