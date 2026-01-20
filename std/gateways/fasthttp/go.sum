@@ -2,8 +2,8 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwToPjQ=
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
-github.com/clubpay/ronykit/kit v0.23.13 h1:tccyQToK0+YsG5GB8qXoNOaDPThAyN29ZkUYfQeWyeY=
-github.com/clubpay/ronykit/kit v0.23.13/go.mod h1:q3Sa7KmJ3S4faa7WTwjGx7MX4yciNSPir69uGudB/Ro=
+github.com/clubpay/ronykit/kit v0.23.14 h1:jFKjaUqbTMzu9HXO7Y/qcBKCjMjQqde542ZWLzhnZqs=
+github.com/clubpay/ronykit/kit v0.23.14/go.mod h1:q3Sa7KmJ3S4faa7WTwjGx7MX4yciNSPir69uGudB/Ro=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
