@@ -2,6 +2,7 @@ package di
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
@@ -18,16 +19,20 @@ type (
 	}
 )
 
-var _Services = map[string]ServiceOption{}
+var _Services = map[string]map[string]ServiceOption{}
 
 func RegisterService[S any, SPtr ServicePtr[S]](
 	kind, name string,
 	initFn func(filename string, configPaths ...string),
 	moduleFn func(opt ...fx.Option) fx.Option,
+	mw ...kit.HandlerFunc,
 ) {
-	_Services[kind+"/"+name] = genModule[S, SPtr](
-		kind, name, initFn, moduleFn,
-	)
+	m := _Services[kind]
+	if m == nil {
+		m = map[string]ServiceOption{}
+	}
+	m[name] = genModule[S, SPtr](kind, name, initFn, moduleFn, mw...)
+	_Services[kind] = m
 }
 
 var _Middlewares []kit.HandlerFunc
@@ -38,15 +43,26 @@ func RegisterMiddleware(mw ...kit.HandlerFunc) {
 
 func AllServices() []ServiceOption {
 	var opts []ServiceOption
-	for _, opt := range _Services {
-		opts = append(opts, opt)
+	for k := range _Services {
+		for _, opt := range _Services[k] {
+			opts = append(opts, opt)
+		}
 	}
 
 	return opts
 }
 
 func GetService(kind, name string) func(opt ...fx.Option) fx.Option {
-	return _Services[kind+"/"+name]
+	m := _Services[kind]
+	if m == nil {
+		return nil
+	}
+
+	return m[name]
+}
+
+func GetServiceByKind(kind string) map[string]ServiceOption {
+	return _Services[kind]
 }
 
 func genModule[
@@ -55,6 +71,7 @@ func genModule[
 	typ, name string,
 	initFn func(filename string, configPaths ...string),
 	moduleFn func(opt ...fx.Option) fx.Option,
+	mw ...kit.HandlerFunc,
 ) func(opt ...fx.Option) fx.Option {
 	return func(opt ...fx.Option) fx.Option {
 		return fx.Options(
@@ -68,7 +85,7 @@ func genModule[
 			fx.Invoke(
 				fx.Annotate(
 					func(srv *rony.Server, svc SPtr) {
-						setupRony(srv, rkit.ToCamel(name), svc.Desc())
+						setupRony(srv, rkit.ToCamel(name), svc.Desc(), mw...)
 					},
 					fx.ParamTags(fmt.Sprintf("name:%q", typ)),
 				),
@@ -77,10 +94,15 @@ func genModule[
 	}
 }
 
-func setupRony(srv *rony.Server, name string, option rony.SetupOption[rony.EMPTY, rony.NOP]) {
+func setupRony(
+	srv *rony.Server,
+	name string,
+	option rony.SetupOption[rony.EMPTY, rony.NOP],
+	mw ...kit.HandlerFunc,
+) {
 	rony.Setup(
 		srv, name, rony.EmptyState(),
-		rony.WithMiddleware[rony.EMPTY](_Middlewares...),
+		rony.WithMiddleware[rony.EMPTY](append(slices.Clone(_Middlewares), mw...)...),
 		option,
 	)
 }
