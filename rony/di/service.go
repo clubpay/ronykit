@@ -65,10 +65,21 @@ func GetServiceByKind(kind string) map[string]ServiceOption {
 	return _Services[kind]
 }
 
+var (
+	ConfigFilename = func(name string) string {
+		if idx := strings.LastIndex(name, "/"); idx != -1 {
+			name = name[idx+1:]
+		}
+
+		return strings.ToLower(name) + ".local"
+	}
+	ConfigSearchPath = func(kind string) string { return fmt.Sprintf("./config/%s", kind) }
+)
+
 func genModule[
 	S any, SPtr ServicePtr[S],
 ](
-	typ, name string,
+	kind, name string,
 	initFn func(filename string, configPaths ...string),
 	moduleFn func(opt ...fx.Option) fx.Option,
 	mw ...kit.HandlerFunc,
@@ -76,10 +87,11 @@ func genModule[
 	return func(opt ...fx.Option) fx.Option {
 		return fx.Options(
 			fx.Invoke(func() {
-				initFn(
-					strings.ToLower(name)+".local",
-					fmt.Sprintf("./configs/%ss", typ),
-				)
+				if initFn == nil {
+					return
+				}
+
+				initFn(ConfigFilename(name), ConfigSearchPath(kind))
 			}),
 			moduleFn(opt...),
 			fx.Invoke(
@@ -87,7 +99,7 @@ func genModule[
 					func(srv *rony.Server, svc SPtr) {
 						setupRony(srv, rkit.ToCamel(name), svc.Desc(), mw...)
 					},
-					fx.ParamTags(fmt.Sprintf("name:%q", typ)),
+					fx.ParamTags(fmt.Sprintf("name:%q", kind)),
 				),
 			),
 		)
