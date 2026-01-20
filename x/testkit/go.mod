@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/x/testkit
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.2.11
-	github.com/clubpay/ronykit/x/settings v0.2.11
+	github.com/clubpay/ronykit/x/rkit v0.2.12
+	github.com/clubpay/ronykit/x/settings v0.2.12
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/orlangure/gnomock v0.32.0
 	github.com/pkg/errors v0.9.1
