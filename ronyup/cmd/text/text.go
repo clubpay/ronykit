@@ -43,7 +43,6 @@ file. If not specified it is relative to the current directory.
 	)
 	flagSet.StringVarP(&opt.GenFile, "gen-file", "f", "catalog.go", "generated file name")
 	flagSet.StringSliceVarP(&opt.ModulesFilter, "modules-filter", "m", []string{}, "modules filter")
-
 }
 
 var wrap = func(err error, msg string) error {

@@ -59,6 +59,7 @@ func init() {
 		"service",
 		"possible values: service | job | gateway",
 	)
+
 	_ = CmdSetupFeature.RegisterFlagCompletionFunc(
 		"template",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -159,9 +160,11 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 	))
 
 	cmd.Println("Workspace created successfully")
+
 	packages := []string{"pkg/i18n", "cmd/service"}
 	p := z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
 	z.RunCmd(cmd.Context(), p, "go", "work", "init")
+
 	for _, pkg := range packages {
 		p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir, pkg)}
 		z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, pkg))
@@ -213,11 +216,13 @@ func isGoWorkspaceRoot(dir string) (bool, error) {
 	}
 
 	goWorkPath := filepath.Join(absPath, "go.work")
+
 	_, err = os.Stat(goWorkPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
 		}
+
 		return false, err
 	}
 
@@ -288,6 +293,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 	content, err := os.ReadFile(featuresFilePath)
 	if err != nil {
 		cmd.PrintErrf("Warning: Could not read features.go: %v\n", err)
+
 		return
 	}
 
@@ -298,15 +304,19 @@ func sideEffectImportModule(cmd *cobra.Command) {
 	// Check if the import already exists
 	if strings.Contains(string(content), importPath) {
 		cmd.Println("Import already exists in features.go")
+
 		return
 	}
 
 	lines := strings.Split(string(content), "\n")
+
 	var newContent strings.Builder
+
 	importAdded := false
 
 	for i, line := range lines {
 		newContent.WriteString(line)
+
 		if i < len(lines)-1 {
 			newContent.WriteString("\n")
 		}
@@ -315,11 +325,14 @@ func sideEffectImportModule(cmd *cobra.Command) {
 		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "package main") {
 			// Check if the import block exists
 			hasImport := false
+
 			for j := i + 1; j < len(lines); j++ {
 				if strings.HasPrefix(strings.TrimSpace(lines[j]), "import") {
 					hasImport = true
+
 					break
 				}
+
 				if strings.TrimSpace(lines[j]) != "" && !strings.HasPrefix(strings.TrimSpace(lines[j]), "//") {
 					break
 				}
@@ -330,6 +343,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 				newContent.WriteString("import (\n")
 				newContent.WriteString(importPath)
 				newContent.WriteString(")\n")
+
 				importAdded = true
 			}
 		}
@@ -337,6 +351,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 		// Add to the existing import block
 		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "import (") {
 			newContent.WriteString(importPath)
+
 			importAdded = true
 		}
 	}
@@ -345,6 +360,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 	err = os.WriteFile(featuresFilePath, []byte(newContent.String()), 0o644)
 	if err != nil {
 		cmd.PrintErrf("Warning: Could not write to features.go: %v\n", err)
+
 		return
 	}
 

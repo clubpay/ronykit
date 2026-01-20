@@ -106,6 +106,7 @@ func invokeTemporal(lc fx.Lifecycle) error {
 		gnomock.WithHealthCheck(
 			func(ctx context.Context, container *gnomock.Container) error {
 				timeout := time.Second * 3
+
 				ctx, cf := context.WithTimeout(ctx, timeout)
 				defer cf()
 

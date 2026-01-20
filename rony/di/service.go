@@ -31,6 +31,7 @@ func RegisterService[S any, SPtr ServicePtr[S]](
 	if m == nil {
 		m = map[string]ServiceOption{}
 	}
+
 	m[name] = genModule[S, SPtr](kind, name, initFn, moduleFn, mw...)
 	_Services[kind] = m
 }
@@ -43,6 +44,7 @@ func RegisterMiddleware(mw ...kit.HandlerFunc) {
 
 func AllServices() []ServiceOption {
 	var opts []ServiceOption
+
 	for k := range _Services {
 		for _, opt := range _Services[k] {
 			opts = append(opts, opt)
