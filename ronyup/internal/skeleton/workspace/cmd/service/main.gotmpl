@@ -9,8 +9,8 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/rony"
-	"github.com/clubpay/ronykit/rony/di"
 	"github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/rony/x/di"
 	"github.com/clubpay/ronykit/x/cache"
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/settings"
@@ -29,7 +29,6 @@ func main() {
 	// i18n.SetDefaultLanguage(language.Persian)
 
 	rootCmd.AddCommand()
-
 
 	const maxRetries = 10
 	const retryDelay = 5 * time.Second

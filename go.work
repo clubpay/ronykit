@@ -25,6 +25,7 @@ use (
 	./x/batch
 	./x/cache
 	./x/datasource
+	./x/di
 	./x/i18n
 	./x/p
 	./x/ratelimit

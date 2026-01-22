@@ -155,8 +155,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	}
 
 	// if we are here, it means that mt is a struct
-	var fields []ParsedField
-
+	fields := make([]ParsedField, 0, mt.NumField())
 	for i := range mt.NumField() {
 		f := mt.Field(i)
 		ft := f.Type
