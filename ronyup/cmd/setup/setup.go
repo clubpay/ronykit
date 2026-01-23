@@ -83,6 +83,10 @@ var Cmd = &cobra.Command{
 	Use:                "setup",
 	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+			return RunInteractive()
+		}
+
 		err := cmd.ParseFlags(args)
 		if err != nil {
 			return err

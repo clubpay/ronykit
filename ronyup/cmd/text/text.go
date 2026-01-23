@@ -28,7 +28,7 @@ var opt = struct {
 func init() {
 	flagSet := Cmd.Flags()
 	flagSet.StringVarP(&opt.SourceLang, "src-lang", "s", "en-US", "source language")
-	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR"}, "languages to generate")
+	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR", "ar-AR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
 	flagSet.StringVarP(
@@ -56,7 +56,11 @@ var wrap = func(err error, msg string) error {
 //nolint:gochecknoglobals
 var Cmd = &cobra.Command{
 	Use: "text",
-	RunE: func(cmd *cobra.Command, _ []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+			return RunInteractive()
+		}
+
 		if len(opt.Packages) == 0 {
 			packages, err := getAllPackages(cmd)
 			if err != nil {
