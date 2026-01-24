@@ -8,6 +8,7 @@ import (
 
 func RunInteractive() error {
 	var action string
+
 	err := huh.NewSelect[string]().
 		Title("What would you like to do?").
 		Options(
@@ -51,7 +52,7 @@ func runWorkspaceInteractive() error {
 
 	fmt.Printf("Creating workspace in %s...\n", opt.RepositoryRootDir)
 
-	return CmdSetupWorkspace.RunE(CmdSetupWorkspace, nil)
+	return CmdSetupWorkspace.Execute()
 }
 
 func runFeatureInteractive() error {
@@ -84,5 +85,5 @@ func runFeatureInteractive() error {
 
 	fmt.Printf("Creating feature %s in %s...\n", opt.FeatureName, opt.FeatureDir)
 
-	return nil
+	return CmdSetupFeature.Execute()
 }

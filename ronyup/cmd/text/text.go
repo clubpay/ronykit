@@ -19,7 +19,6 @@ var opt = struct {
 	SourceLang     string
 	Languages      []string
 	DstDir         string
-	Packages       []string
 	ModulesFilter  []string
 	GenFile        string
 	GenPackageName string
@@ -30,7 +29,6 @@ func init() {
 	flagSet.StringVarP(&opt.SourceLang, "src-lang", "s", "en-US", "source language")
 	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR", "ar-AR"}, "languages to generate")
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
-	flagSet.StringSliceVarP(&opt.Packages, "packages", "p", []string{}, "packages to generate")
 	flagSet.StringVarP(
 		&opt.GenPackageName,
 		"gen-package",
@@ -61,19 +59,15 @@ var Cmd = &cobra.Command{
 			return RunInteractive()
 		}
 
-		if len(opt.Packages) == 0 {
-			packages, err := getAllPackages(cmd)
-			if err != nil {
-				return wrap(err, "failed to get packages")
-			}
-
-			opt.Packages = packages
+		packages, err := getAllPackages(cmd)
+		if err != nil {
+			return wrap(err, "failed to get packages")
 		}
 
 		config := &pipeline.Config{
 			SourceLanguage: language.Make(opt.SourceLang),
 			Supported:      rkit.Map(opt.Languages, language.Make),
-			Packages:       opt.Packages,
+			Packages:       packages,
 			Dir:            opt.DstDir,
 			GenFile:        opt.GenFile,
 			GenPackage:     opt.GenPackageName,
