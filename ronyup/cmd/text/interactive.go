@@ -9,6 +9,7 @@ import (
 
 func RunInteractive() error {
 	var action string
+
 	err := huh.NewSelect[string]().
 		Title("What would you like to do?").
 		Options(
@@ -33,6 +34,7 @@ func runExtractInteractive() error {
 		langsStr         string
 		modulesFilterStr string
 	)
+
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().

@@ -365,7 +365,7 @@ func (pm ParsedMessage) GoName() string {
 }
 
 func (pm ParsedMessage) JSON() string {
-	mJSON, _ := json.MarshalIndent(pm.original, "", "  ")
+	mJSON, _ := json.MarshalIndent(pm.original, "", "  ") //nolint:errchkjson
 
 	return utils.B2S(mJSON)
 }
