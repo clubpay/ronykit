@@ -82,5 +82,5 @@ func runExtractInteractive() error {
 
 	fmt.Printf("Extracting translations for %v...\n", opt.Languages)
 
-	return Cmd.Execute()
+	return nil
 }

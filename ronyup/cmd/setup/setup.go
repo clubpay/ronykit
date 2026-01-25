@@ -84,7 +84,10 @@ var Cmd = &cobra.Command{
 	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
-			return RunInteractive()
+			err := RunInteractive()
+			if err != nil {
+				return err
+			}
 		}
 
 		err := cmd.ParseFlags(args)
@@ -96,7 +99,7 @@ var Cmd = &cobra.Command{
 	},
 }
 
-type ModuleInput struct {
+type TemplateInput struct {
 	ApplicationName string
 	RepositoryPath  string
 	// PackagePath is the folder that module will reside inside the Repository root folder
@@ -147,7 +150,7 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  pathPrefix,
 			DestPathPrefix: filepath.Join(".", opt.RepositoryRootDir),
-			TemplateInput: ModuleInput{
+			TemplateInput: TemplateInput{
 				RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
 				PackagePath:    strings.Trim(opt.FeatureDir, "/"),
 				PackageName:    opt.FeatureName,
@@ -264,7 +267,7 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  pathPrefix,
 			DestPathPrefix: filepath.Join(".", packagePath),
-			TemplateInput: ModuleInput{
+			TemplateInput: TemplateInput{
 				RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
 				PackagePath:    strings.Trim(path.Join(packagePath), "/"),
 				PackageName:    opt.FeatureName,

@@ -52,7 +52,7 @@ func runWorkspaceInteractive() error {
 
 	fmt.Printf("Creating workspace in %s...\n", opt.RepositoryRootDir)
 
-	return CmdSetupWorkspace.Execute()
+	return nil
 }
 
 func runFeatureInteractive() error {
@@ -85,5 +85,5 @@ func runFeatureInteractive() error {
 
 	fmt.Printf("Creating feature %s in %s...\n", opt.FeatureName, opt.FeatureDir)
 
-	return CmdSetupFeature.Execute()
+	return nil
 }
