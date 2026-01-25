@@ -1,0 +1,60 @@
+{{/*
+
+Input:
+	{
+		PackageName	string
+
+		Entities []Entity{
+			EntityName string
+			EntityImport string
+			EntityPackageName string
+			Fields []Field{
+				{
+					Name string
+					Type string
+					GetCommentTag(tagName string) string
+					GetDAO() string
+					GetDTO() string
+				}
+			}
+		}
+	}
+
+*/}}
+
+package {{ .PackageNamme }}
+
+import (
+	"github.com/clubpay/ronykit/x/rkit"
+)
+
+{{ define "DAO" }}
+{{ $daoName := .Name }}
+{{ $entity := cat .EntityPkgName "." .EntityName }}
+type {{ $daoName }} struct {
+{{ range .Fields }}
+
+{{ end }}
+}
+
+func (dao {{ $daoName }}) ToJSON() []byte {
+	return rkit.ToJSON(dao)
+}
+
+func (dao {{ $daoName }}) FromEntity(ent {{ $entity }}) {
+	{{ range .Fields }}
+	{{ $daoTag := .GetCommentTag "dao" }}
+	{{ if eq $daoName "-" }}
+	{{ else }}
+	{{ end }}
+	{{ $daoField := default .Name GetCommentTag dao }}
+	{{ end }}
+}
+
+func (dao {{ $daoName }}) ToEntity() (ent {{ $entity }}) {
+	return ent
+}
+
+
+
+{{ end }}

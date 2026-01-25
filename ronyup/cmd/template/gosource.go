@@ -100,6 +100,71 @@ func ParseGoPath(root string) ([]GoPackage, error) {
 	return parseGoPackages(root)
 }
 
+// TypesByName returns a map keyed by type name for quick lookups.
+func (p GoPackage) TypesByName() map[string]GoType {
+	out := make(map[string]GoType, len(p.Types))
+	for _, t := range p.Types {
+		if t.Name == "" {
+			continue
+		}
+		out[t.Name] = t
+	}
+	return out
+}
+
+// FindType looks up a type by name in the package.
+func (p GoPackage) FindType(name string) (GoType, bool) {
+	if name == "" {
+		return GoType{}, false
+	}
+	for _, t := range p.Types {
+		if t.Name == name {
+			return t, true
+		}
+	}
+	return GoType{}, false
+}
+
+// MethodsOf returns all methods whose receiver matches the given type name.
+// Example: methods := pkg.MethodsOf("User")
+func (p GoPackage) MethodsOf(typeName string) []GoFunc {
+	if typeName == "" {
+		return nil
+	}
+	want := typeName
+	wantPtr := "*" + typeName
+	var out []GoFunc
+	for _, fn := range p.Functions {
+		if fn.ReceiverType == want || fn.ReceiverType == wantPtr {
+			out = append(out, fn)
+		}
+	}
+	return out
+}
+
+// FuncsByReceiver groups methods by their receiver type.
+// Example: receivers := pkg.FuncsByReceiver(); receivers["*User"]
+func (p GoPackage) FuncsByReceiver() map[string][]GoFunc {
+	out := make(map[string][]GoFunc)
+	for _, fn := range p.Functions {
+		if fn.ReceiverType == "" {
+			continue
+		}
+		out[fn.ReceiverType] = append(out[fn.ReceiverType], fn)
+	}
+	return out
+}
+
+// FieldsOf returns the fields for a named type, if present.
+// Example: fields := pkg.FieldsOf("User")
+func (p GoPackage) FieldsOf(typeName string) []GoField {
+	t, ok := p.FindType(typeName)
+	if !ok {
+		return nil
+	}
+	return t.Fields
+}
+
 // parseGoFile parses a single Go file into a minimal GoPackage.
 func parseGoFile(path string) ([]GoPackage, error) {
 	fset := token.NewFileSet()
@@ -445,6 +510,25 @@ func (t GoType) HasCommentTag(name string) bool {
 // CommentTagValue returns the value for a tag from the type's doc or inline comments.
 func (t GoType) CommentTagValue(name string) (string, bool) {
 	return findCommentTagValue(parseCommentTagsFromDocAndInline(t.Doc, t.Comments), name)
+}
+
+// MethodsFrom filters package-level functions to those with receivers matching this type.
+// Example:
+//
+//	for _, m := range myType.MethodsFrom(pkg.Functions) { fmt.Println(m.Name) }
+func (t GoType) MethodsFrom(funcs []GoFunc) []GoFunc {
+	if t.Name == "" {
+		return nil
+	}
+	want := t.Name
+	wantPtr := "*" + t.Name
+	var out []GoFunc
+	for _, fn := range funcs {
+		if fn.ReceiverType == want || fn.ReceiverType == wantPtr {
+			out = append(out, fn)
+		}
+	}
+	return out
 }
 
 func (f GoFunc) CommentTags() []CommentTag {

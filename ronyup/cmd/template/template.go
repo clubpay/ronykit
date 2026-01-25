@@ -15,7 +15,13 @@ var opt = struct {
 
 func init() {
 	rootFlagSet := Cmd.PersistentFlags()
-	rootFlagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
+	rootFlagSet.StringToStringVarP(
+		&opt.Custom,
+		"custom",
+		"c",
+		map[string]string{},
+		"custom values for the template",
+	)
 
 	generateFlagSet := CmdGenerate.Flags()
 	generateFlagSet.StringVarP(
@@ -30,7 +36,7 @@ func init() {
 		"template",
 		"t",
 		"service",
-		"possible values: dto | job | gateway",
+		"possible values: dto | dao | serializer",
 	)
 
 	_ = CmdGenerate.RegisterFlagCompletionFunc(
