@@ -23,6 +23,10 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Context() workflow.Context {
 	return ctx.ctx
 }
 
+func (ctx WorkflowContext[REQ, RES, STATE]) DisconnectedContext() (workflow.Context, workflow.CancelFunc) {
+	return workflow.NewDisconnectedContext(ctx.ctx)
+}
+
 func (ctx WorkflowContext[REQ, RES, STATE]) WithCancel() (workflow.Context, workflow.CancelFunc) {
 	return workflow.WithCancel(ctx.ctx)
 }
