@@ -229,7 +229,7 @@ func invokeEdgeServerWithFastWS(port int, desc ...kit.ServiceBuilder) fx.Option 
 				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
+						fmt.Println("EdgeError: ", err) //nolint:forbidigo
 					},
 				),
 				kit.WithGateway(
@@ -274,7 +274,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceBuilder) f
 				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
+						fmt.Println("EdgeError: ", err) //nolint:forbidigo
 					},
 				),
 				kit.WithGateway(
@@ -318,7 +318,7 @@ func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceBuilder) fx.
 				kit.WithLogger(common.NewStdLogger()),
 				kit.WithErrorHandler(
 					func(ctx *kit.Context, err error) {
-						fmt.Println("EdgeError: ", err)
+						fmt.Println("EdgeError: ", err) //nolint:forbidigo
 					},
 				),
 				kit.WithGateway(
@@ -349,6 +349,8 @@ func invokeEdgeServerWithP2P(_ string, port int, desc ...kit.ServiceBuilder) fx.
 }
 
 func Prepare(t *testing.T, c C, option ...fx.Option) {
+	t.Helper()
+
 	_, _ = c.Println('\n')
 	opts := []fx.Option{
 		fx.StartTimeout(time.Minute * 5),
@@ -366,9 +368,9 @@ func Prepare(t *testing.T, c C, option ...fx.Option) {
 type kitLogger struct{}
 
 func (k kitLogger) Debugf(format string, args ...any) {
-	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...))
+	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...)) //nolint:forbidigo
 }
 
 func (k kitLogger) Errorf(format string, args ...any) {
-	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...))
+	fmt.Println("kitLogger: ", fmt.Sprintf(format, args...)) //nolint:forbidigo
 }

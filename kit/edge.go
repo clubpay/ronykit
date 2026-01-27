@@ -205,7 +205,7 @@ func (s *EdgeServer) startChild(ctx context.Context) {
 	runtime.GOMAXPROCS(1)
 
 	// kill current child proc when master exits
-	go s.watchParent()
+	go s.watchParent() //nolint:contextcheck
 
 	s.startup(ctx)
 }

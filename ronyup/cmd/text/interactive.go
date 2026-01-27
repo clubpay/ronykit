@@ -1,13 +1,13 @@
 package text
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
 )
 
-func RunInteractive() error {
+func RunInteractive(cmd *cobra.Command) error {
 	var action string
 
 	err := huh.NewSelect[string]().
@@ -23,13 +23,13 @@ func RunInteractive() error {
 
 	switch action {
 	case "extract":
-		return runExtractInteractive()
+		return runExtractInteractive(cmd)
 	}
 
 	return nil
 }
 
-func runExtractInteractive() error {
+func runExtractInteractive(cmd *cobra.Command) error {
 	var (
 		langsStr         string
 		modulesFilterStr string
@@ -82,7 +82,7 @@ func runExtractInteractive() error {
 		}
 	}
 
-	fmt.Printf("Extracting translations for %v...\n", opt.Languages)
+	cmd.Printf("Extracting translations for %v...\n", opt.Languages)
 
 	return nil
 }

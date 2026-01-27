@@ -1,12 +1,11 @@
 package setup
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
 )
 
-func RunInteractive() error {
+func RunInteractive(cmd *cobra.Command) error {
 	var action string
 
 	err := huh.NewSelect[string]().
@@ -23,15 +22,15 @@ func RunInteractive() error {
 
 	switch action {
 	case "workspace":
-		return runWorkspaceInteractive()
+		return runWorkspaceInteractive(cmd)
 	case "feature":
-		return runFeatureInteractive()
+		return runFeatureInteractive(cmd)
 	}
 
 	return nil
 }
 
-func runWorkspaceInteractive() error {
+func runWorkspaceInteractive(cmd *cobra.Command) error {
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -50,12 +49,21 @@ func runWorkspaceInteractive() error {
 		return err
 	}
 
-	fmt.Printf("Creating workspace in %s...\n", opt.RepositoryRootDir)
+	err = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Creating workspace").
+				Description("Creating workspace in " + opt.RepositoryRootDir + "..."),
+		),
+	).Run()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func runFeatureInteractive() error {
+func runFeatureInteractive(cmd *cobra.Command) error {
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -83,7 +91,16 @@ func runFeatureInteractive() error {
 		return err
 	}
 
-	fmt.Printf("Creating feature %s in %s...\n", opt.FeatureName, opt.FeatureDir)
+	err = huh.NewForm(
+		huh.NewGroup(
+			huh.NewNote().
+				Title("Creating feature").
+				Description("Creating feature " + opt.FeatureName + " in " + opt.FeatureDir + "..."),
+		),
+	).Run()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

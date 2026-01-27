@@ -11,22 +11,22 @@ linters:
     - err113
     - errcheck
     - errname
-    - exhaustruct
     - exhaustive
+    - exhaustruct
     - forcetypeassert
     - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits
-    - gocritic
     - gocognit
+    - gocritic
     - godot
     - godox
     - gosec
     - ireturn
     - mnd
-    - nonamedreturns
     - noinlineerr
+    - nonamedreturns
     - paralleltest
     - perfsprint
     - recvcheck
@@ -34,6 +34,7 @@ linters:
     - staticcheck
     - tagliatelle
     - testpackage
+    - unused
     - varnamelen
     - wrapcheck
     - wsl

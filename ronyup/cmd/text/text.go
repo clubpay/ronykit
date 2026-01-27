@@ -56,7 +56,7 @@ var Cmd = &cobra.Command{
 	Use: "text",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
-			err := RunInteractive()
+			err := RunInteractive(cmd)
 			if err != nil {
 				return err
 			}

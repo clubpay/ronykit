@@ -213,7 +213,7 @@ func parseGoPackages(root string) ([]GoPackage, error) {
 		return nil, err
 	}
 
-	var out []GoPackage
+	out := make([]GoPackage, 0, len(pkgs))
 
 	for _, pkg := range pkgs {
 		if len(pkg.GoFiles) == 0 && len(pkg.CompiledGoFiles) == 0 {
@@ -492,7 +492,7 @@ func parseCommentGroup(fset *token.FileSet, group *ast.CommentGroup) []GoComment
 		return nil
 	}
 
-	var out []GoComment
+	out := make([]GoComment, 0, len(group.List))
 
 	for _, c := range group.List {
 		pos := fset.Position(c.Pos())
@@ -650,7 +650,7 @@ func (f GoField) TagName(name string) (string, bool) {
 func dedupeTypes(types []GoType) []GoType {
 	seen := make(map[string]struct{}, len(types))
 
-	var out []GoType
+	out := make([]GoType, 0, len(types))
 
 	for _, t := range types {
 		if _, ok := seen[t.Name]; ok {
@@ -667,7 +667,7 @@ func dedupeTypes(types []GoType) []GoType {
 func dedupeFuncs(funcs []GoFunc) []GoFunc {
 	seen := make(map[string]struct{}, len(funcs))
 
-	var out []GoFunc
+	out := make([]GoFunc, 0, len(funcs))
 
 	for _, fn := range funcs {
 		key := fn.Name
