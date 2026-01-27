@@ -6,9 +6,9 @@ type Selector workflow.Selector
 
 // SelectorAddReceive registers a callback function to be called when a channel has a message to receive.
 // The callback is called when Select(ctx) is called.
-// The message is expected be consumed by the callback function.
-// The branch is automatically removed after the channel is closed and callback function is called once
-// with more parameter set to false.
+// The message is expected to be consumed by the callback function.
+// The branch is automatically removed after the channel is closed, and the callback function is called once
+// with more parameters set to false.
 func SelectorAddReceive[
 	T any,
 	CH interface {
