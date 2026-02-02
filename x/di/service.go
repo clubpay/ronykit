@@ -21,19 +21,24 @@ type (
 
 var _Services = map[string]map[string]ServiceOption{}
 
+type RegisterServiceParams struct {
+	Kind        string
+	Name        string
+	InitFn      func(filename string, configPaths ...string)
+	ModuleFn    func(opt ...fx.Option) fx.Option
+	Middlewares []kit.HandlerFunc
+}
+
 func RegisterService[S any, SPtr ServicePtr[S]](
-	kind, name string,
-	initFn func(filename string, configPaths ...string),
-	moduleFn func(opt ...fx.Option) fx.Option,
-	mw ...kit.HandlerFunc,
+	params RegisterServiceParams,
 ) {
-	m := _Services[kind]
+	m := _Services[params.Kind]
 	if m == nil {
 		m = map[string]ServiceOption{}
 	}
 
-	m[name] = genModule[S, SPtr](kind, name, initFn, moduleFn, mw...)
-	_Services[kind] = m
+	m[params.Name] = genModule[S, SPtr](params)
+	_Services[params.Kind] = m
 }
 
 var _Middlewares []kit.HandlerFunc
@@ -81,27 +86,24 @@ var (
 func genModule[
 	S any, SPtr ServicePtr[S],
 ](
-	kind, name string,
-	initFn func(filename string, configPaths ...string),
-	moduleFn func(opt ...fx.Option) fx.Option,
-	mw ...kit.HandlerFunc,
+	params RegisterServiceParams,
 ) func(opt ...fx.Option) fx.Option {
 	return func(opt ...fx.Option) fx.Option {
 		return fx.Options(
 			fx.Invoke(func() {
-				if initFn == nil {
+				if params.InitFn == nil {
 					return
 				}
 
-				initFn(ConfigFilename(name), ConfigSearchPath(kind))
+				params.InitFn(ConfigFilename(params.Name), ConfigSearchPath(params.Kind))
 			}),
-			moduleFn(opt...),
+			params.ModuleFn(opt...),
 			fx.Invoke(
 				fx.Annotate(
 					func(srv *rony.Server, svc SPtr) {
-						setupRony(srv, rkit.ToCamel(name), svc.Desc(), mw...)
+						setupRony(srv, rkit.ToCamel(params.Name), svc.Desc(), params.Middlewares...)
 					},
-					fx.ParamTags(fmt.Sprintf("name:%q", kind)),
+					fx.ParamTags(fmt.Sprintf("name:%q", params.Kind)),
 				),
 			),
 		)
