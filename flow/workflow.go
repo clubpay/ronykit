@@ -10,6 +10,7 @@ import (
 	"github.com/clubpay/ronykit/x/rkit"
 	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
+	v13 "go.temporal.io/api/failure/v1"
 	"go.temporal.io/api/serviceerror"
 	v112 "go.temporal.io/api/workflow/v1"
 	"go.temporal.io/api/workflowservice/v1"
@@ -467,8 +468,8 @@ func (sdk *SDK) GetWorkflowHistory(
 		case enumspb.EVENT_TYPE_WORKFLOW_EXECUTION_FAILED:
 			attr := rawEvent.GetWorkflowExecutionFailedEventAttributes()
 			payload = map[string]any{
-				"message":    attr.GetFailure().GetMessage(),
-				"stackTrace": attr.GetFailure().GetStackTrace(),
+				"retryState": attr.GetRetryState().String(),
+				"failure":    sdk.failureToMap(attr.GetFailure()),
 			}
 		case enumspb.EVENT_TYPE_ACTIVITY_TASK_COMPLETED:
 			attr := rawEvent.GetActivityTaskCompletedEventAttributes()
@@ -478,11 +479,13 @@ func (sdk *SDK) GetWorkflowHistory(
 		case enumspb.EVENT_TYPE_ACTIVITY_TASK_STARTED:
 			attr := rawEvent.GetActivityTaskStartedEventAttributes()
 			payload = map[string]any{
-				"attempt": attr.GetAttempt(),
-				"lastFailure": map[string]any{
-					"message":    attr.GetLastFailure().GetMessage(),
-					"stackTrace": attr.GetLastFailure().GetStackTrace(),
-				},
+				"attempt":     attr.GetAttempt(),
+				"lastFailure": sdk.failureToMap(attr.GetLastFailure()),
+			}
+		case enumspb.EVENT_TYPE_ACTIVITY_TASK_FAILED:
+			attr := rawEvent.GetActivityTaskFailedEventAttributes()
+			payload = map[string]any{
+				"failure": sdk.failureToMap(attr.GetFailure()),
 			}
 		}
 
@@ -500,6 +503,28 @@ func (sdk *SDK) GetWorkflowHistory(
 	return &GetWorkflowHistoryResponse{
 		Events: events,
 	}, nil
+}
+
+func (sdk *SDK) failureToMap(failure *v13.Failure) map[string]any {
+	return map[string]any{
+		"message":    failure.GetMessage(),
+		"stackTrace": failure.GetStackTrace(),
+		"applicationFailure": map[string]any{
+			"category": failure.GetApplicationFailureInfo().GetCategory(),
+			"type":     failure.GetApplicationFailureInfo().GetType(),
+			"payloads": rkit.Map(
+				failure.GetApplicationFailureInfo().GetDetails().GetPayloads(),
+				sdk.b.DataConverter().ToString,
+			),
+			"nonRetryable": failure.GetApplicationFailureInfo().GetNonRetryable(),
+		},
+		"canceledFailure": map[string]any{
+			"payloads": rkit.Map(
+				failure.GetCanceledFailureInfo().GetDetails().GetPayloads(),
+				sdk.b.DataConverter().ToString,
+			),
+		},
+	}
 }
 
 func toWorkflowExecution(src *v112.WorkflowExecutionInfo) WorkflowExecution {
