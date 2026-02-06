@@ -1,7 +1,7 @@
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
-github.com/clubpay/ronykit/x/rkit v0.2.15 h1:bALVstIMOxYXQdiaHyvm6o4/5sniuj1EG927X3MRVFw=
-github.com/clubpay/ronykit/x/rkit v0.2.15/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
+github.com/clubpay/ronykit/x/rkit v0.2.16 h1:1FhX4t+ifOJsa8kQaqth3nL2tPLBDJpz0oo/MErWJec=
+github.com/clubpay/ronykit/x/rkit v0.2.16/go.mod h1:C0vPOPxgNGOrmCUniTXqGWRZR4ZIgljzFrIkCv8stSE=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gkampitakis/ciinfo v0.3.2 h1:JcuOPk8ZU7nZQjdUhctuhQofk7BGHuIy0c9Ez8BNhXs=

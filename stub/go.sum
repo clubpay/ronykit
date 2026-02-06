@@ -10,8 +10,8 @@ github.com/andybalholm/brotli v1.2.0 h1:ukwgCxwYrmACq68yiUqwIWnGY0cTPox/M94sVwTo
 github.com/andybalholm/brotli v1.2.0/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/clipperhouse/uax29/v2 v2.2.0 h1:ChwIKnQN3kcZteTXMgb1wztSgaU+ZemkgWdohwgs8tY=
 github.com/clipperhouse/uax29/v2 v2.2.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.23.15 h1:NZmdAgn0viScP79MBQse5x8QLQox+1VjWe4SIwmDjz8=
-github.com/clubpay/ronykit/kit v0.23.15/go.mod h1:q3Sa7KmJ3S4faa7WTwjGx7MX4yciNSPir69uGudB/Ro=
+github.com/clubpay/ronykit/kit v0.23.16 h1:Orld3AGwwQvKx1krUApWVGOWPrGl0E4n+RlGrJxHqRc=
+github.com/clubpay/ronykit/kit v0.23.16/go.mod h1:MJNq756PbRq7KN3nJbcOU5wePnVfOikoilwllvJP6Dc=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fasthttp/websocket v1.5.12 h1:e4RGPpWW2HTbL3zV0Y/t7g0ub294LkiuXXUuTOUInlE=
