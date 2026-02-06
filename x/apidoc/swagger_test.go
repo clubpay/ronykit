@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/clubpay/ronykit/contrib/swagger"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
@@ -124,7 +123,7 @@ func (t testService) Desc() *desc.Service {
 }
 
 func ExampleGenerator_WriteSwagToFile() {
-	err := swagger.New("TestTitle", "v0.0.1", "").
+	err := apidoc.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
 		WriteSwagToFile("_swagger.json", testService{})
 	fmt.Println(err)
@@ -132,7 +131,7 @@ func ExampleGenerator_WriteSwagToFile() {
 }
 
 func ExampleGenerator_WritePostmanToFile() {
-	err := swagger.New("TestTitle", "v0.0.1", "").
+	err := apidoc.New("TestTitle", "v0.0.1", "").
 		WithTag("json").
 		WritePostmanToFile("_postman.json", testService{})
 	fmt.Println(err)
@@ -233,7 +232,7 @@ var _ = Describe("ToSwaggerDefinition", func() {
 	It("Name Collision from Multiple Package", func() {
 		Expect(ps2.Messages()).To(HaveLen(3))
 		fmt.Println(ps2.Messages())
-		err := swagger.New("Test2", "", "").WriteSwagToFile("_swagger2.json", testService2{})
+		err := apidoc.New("Test2", "", "").WriteSwagToFile("_swagger2.json", testService2{})
 		Expect(err).To(BeNil())
 	})
 })
@@ -242,7 +241,7 @@ func BenchmarkSwagger(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ps := desc.Parse(testService{})
 		ps.Messages()
-		err := swagger.New("title", "v1.0.0", "").
+		err := apidoc.New("title", "v1.0.0", "").
 			WriteSwagTo(io.Discard, testService{})
 		if err != nil {
 			b.Error(err)

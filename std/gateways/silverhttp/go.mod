@@ -9,8 +9,8 @@ require (
 	github.com/go-www/silverlining v1.3.3
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.4.0
-	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/gomega v1.39.1
 )
 
 require (
@@ -23,7 +23,7 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a // indirect
+	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect

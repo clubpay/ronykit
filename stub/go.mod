@@ -8,8 +8,8 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/clubpay/ronykit/kit v0.23.16
 	github.com/fasthttp/websocket v1.5.12
-	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/gomega v1.39.1
 	github.com/valyala/fasthttp v1.69.0
 	golang.org/x/net v0.49.0
 )
@@ -25,7 +25,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a // indirect
+	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect

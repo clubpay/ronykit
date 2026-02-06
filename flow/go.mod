@@ -42,6 +42,8 @@ require (
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/onsi/ginkgo/v2 v2.28.1 // indirect
+	github.com/onsi/gomega v1.39.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect

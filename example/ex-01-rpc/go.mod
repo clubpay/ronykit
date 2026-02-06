@@ -34,8 +34,9 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/onsi/ginkgo/v2 v2.28.1 // indirect
+	github.com/onsi/gomega v1.39.1 // indirect
 	github.com/panjf2000/ants/v2 v2.11.3 // indirect
 	github.com/panjf2000/gnet/v2 v2.9.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -50,7 +51,6 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
-	golang.org/x/tools v0.41.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

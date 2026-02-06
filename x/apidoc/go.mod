@@ -3,12 +3,11 @@ module github.com/clubpay/ronykit/x/apidoc
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/contrib v0.21.26
 	github.com/clubpay/ronykit/kit v0.23.16
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.16
 	github.com/go-openapi/spec v0.22.3
-	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/gomega v1.39.1
 	github.com/rbretecher/go-postman-collection v0.9.0
 )
 
@@ -32,7 +31,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a // indirect
+	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect

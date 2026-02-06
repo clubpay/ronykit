@@ -373,18 +373,26 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 
 		switch kind {
 		default:
-			setProperty(&def, name, wrapFuncChain.Apply(spec.StringProperty()), idx)
+			setProperty(&def, name, wrapFuncChain.Apply(spec.MapProperty(spec.MapProperty(spec.StringProperty()))), idx)
 		case desc.Object:
 			if p.Embedded {
 				for _, f := range p.Element.Message.Fields {
 					fields.PushBack(f)
 				}
 			} else {
-				setProperty(
-					&def, p.Name,
-					wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(svcName, name)))),
-					idx,
-				)
+				if p.Element != nil && p.Element.Element != nil && p.Element.Element.Type == "any" {
+					setProperty(
+						&def, p.Name,
+						wrapFuncChain.Apply(spec.MapProperty(spec.MapProperty(spec.StringProperty()))),
+						idx,
+					)
+				} else {
+					setProperty(
+						&def, p.Name,
+						wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(svcName, name)))),
+						idx,
+					)
+				}
 			}
 		case desc.String:
 			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.StringProperty()), idx)
