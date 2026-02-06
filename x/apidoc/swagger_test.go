@@ -33,6 +33,7 @@ type sampleReq struct {
 	MSS map[string]string `json:"mss"`
 	MIS map[int]string    `json:"mis"`
 	MII map[int]int       `json:"mii"`
+	MIA map[string]any    `json:"mia"`
 	CT  time.Time         `json:"ct"`
 	CTP *time.Time        `json:"ctp"`
 }
@@ -167,6 +168,17 @@ var _ = Describe("ToSwaggerDefinition", func() {
 		Expect(props[6].Name).To(Equal("w"))
 		Expect(props[6].SchemaProps.Type[0]).To(Equal("array"))
 		Expect(props[6].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
+		Expect(props[7].Name).To(Equal("ms"))
+		Expect(props[7].SchemaProps.Type[0]).To(Equal("object"))
+		Expect(props[7].SchemaProps.AdditionalProperties.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
+		Expect(props[8].Name).To(Equal("mss"))
+		Expect(props[8].SchemaProps.Type[0]).To(Equal("object"))
+		Expect(props[9].Name).To(Equal("mis"))
+		Expect(props[9].SchemaProps.Type[0]).To(Equal("object"))
+		Expect(props[10].Name).To(Equal("mii"))
+		Expect(props[10].SchemaProps.Type[0]).To(Equal("object"))
+		Expect(props[11].Name).To(Equal("mia"))
+		Expect(props[11].SchemaProps.Type[0]).To(Equal("object"))
 	})
 
 	It("Check Request for Contract[0].Response (sampleRes)", func() {

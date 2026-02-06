@@ -51,6 +51,7 @@ type FlatMessage struct {
 	C map[string]string            `json:"c"`
 	D map[string]int64             `json:"d"`
 	E map[int64]string             `json:"e"`
+	F map[string]any               `json:"f"`
 	G [][]string                   `json:"g"`
 	M map[string]map[string]string `json:"m"`
 	T time.Time                    `json:"t"`
@@ -115,7 +116,7 @@ var _ = Describe("DescParser", func() {
 		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
 		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
 		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(8))
+		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(9))
 
 		Expect(contract1.Name).To(Equal("s2"))
 		Expect(contract1.Type).To(Equal(desc.REST))
@@ -161,7 +162,7 @@ var _ = Describe("DescParser", func() {
 		Expect(b.Name).To(Equal("b"))
 		Expect(b.Element.Kind).To(Equal(desc.Object))
 		Expect(b.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(b.Element.Message.Fields).To(HaveLen(8))
+		Expect(b.Element.Message.Fields).To(HaveLen(9))
 		Expect(b.Element.Message.Fields[0].Name).To(Equal("a"))
 		Expect(b.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
@@ -171,43 +172,52 @@ var _ = Describe("DescParser", func() {
 		Expect(ba.Element.Message).To(BeNil())
 		Expect(ba.Element.Element.Kind).To(Equal(desc.Object))
 		Expect(ba.Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(ba.Element.Element.Message.Fields).To(HaveLen(8))
+		Expect(ba.Element.Element.Message.Fields).To(HaveLen(9))
 		Expect(ba.Element.Element.Message.Fields[0].Name).To(Equal("a"))
 		Expect(ba.Element.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
 
-		g := contract0.Responses[0].Message.Fields[5]
-		Expect(g.Name).To(Equal("g"))
-		Expect(g.Element.Kind).To(Equal(desc.Array))
-		Expect(g.Element.Element.Kind).To(Equal(desc.Array))
-		Expect(g.Element.Element.Element.Kind).To(Equal(desc.String))
-		Expect(g.Element.Element.Element.Message).To(BeNil())
-		Expect(g.Element.Element.Message).To(BeNil())
+		cField := contract0.Responses[0].Message.Fields[2]
+		Expect(cField.Name).To(Equal("c"))
+		Expect(cField.Element.Kind).To(Equal(desc.Map))
+		Expect(cField.Element.Element.Kind).To(Equal(desc.String))
+		Expect(cField.Element.Message).To(BeNil())
+		Expect(cField.Optional).To(BeTrue())
+		Expect(cField.Element.Message).To(BeNil())
+		Expect(cField.Element.Type).To(Equal("map[string]string"))
 
-		m := contract0.Responses[0].Message.Fields[6]
-		Expect(m.Name).To(Equal("m"))
-		Expect(m.Element.Kind).To(Equal(desc.Map))
-		Expect(m.Element.Element.Kind).To(Equal(desc.Map))
-		Expect(m.Element.Element.Message).To(BeNil())
-		Expect(m.Element.Element.Element.Kind).To(Equal(desc.String))
-		Expect(m.Element.Element.Element.Message).To(BeNil())
+		dField := contract0.Responses[0].Message.Fields[3]
+		Expect(dField.Name).To(Equal("d"))
+		Expect(dField.Element.Kind).To(Equal(desc.Map))
+		Expect(dField.Element.Element.Kind).To(Equal(desc.Integer))
+		Expect(dField.Element.Message).To(BeNil())
+		Expect(dField.Optional).To(BeTrue())
+		Expect(dField.Element.Message).To(BeNil())
+		Expect(dField.Element.Type).To(Equal("map[string]int64"))
 
-		f := contract0.Responses[0].Message.Fields[2]
-		Expect(f.Name).To(Equal("c"))
-		Expect(f.Element.Kind).To(Equal(desc.Map))
-		Expect(f.Element.Element.Kind).To(Equal(desc.String))
-		Expect(f.Element.Message).To(BeNil())
-		Expect(f.Optional).To(BeTrue())
-		Expect(f.Element.Message).To(BeNil())
-		Expect(f.Element.Type).To(Equal("map[string]string"))
+		fField := contract0.Responses[0].Message.Fields[5]
+		Expect(fField.Name).To(Equal("f"))
+		Expect(fField.Element.Kind).To(Equal(desc.Map))
+		Expect(fField.Element.Message).To(BeNil())
+		Expect(fField.Optional).To(BeTrue())
+		Expect(fField.Element.Message).To(BeNil())
+		Expect(fField.Element.Type).To(Equal("map[string]any"))
 
-		f3 := contract0.Responses[0].Message.Fields[3]
-		Expect(f3.Name).To(Equal("d"))
-		Expect(f3.Element.Kind).To(Equal(desc.Map))
-		Expect(f3.Element.Element.Kind).To(Equal(desc.Integer))
-		Expect(f3.Element.Message).To(BeNil())
-		Expect(f3.Optional).To(BeTrue())
-		Expect(f3.Element.Message).To(BeNil())
-		Expect(f3.Element.Type).To(Equal("map[string]int64"))
+		gField := contract0.Responses[0].Message.Fields[6]
+		Expect(gField.Name).To(Equal("g"))
+		Expect(gField.Element.Kind).To(Equal(desc.Array))
+		Expect(gField.Element.Element.Kind).To(Equal(desc.Array))
+		Expect(gField.Element.Element.Element.Kind).To(Equal(desc.String))
+		Expect(gField.Element.Element.Element.Message).To(BeNil())
+		Expect(gField.Element.Element.Message).To(BeNil())
+
+		mField := contract0.Responses[0].Message.Fields[7]
+		Expect(mField.Name).To(Equal("m"))
+		Expect(mField.Element.Kind).To(Equal(desc.Map))
+		Expect(mField.Element.Element.Kind).To(Equal(desc.Map))
+		Expect(mField.Element.Element.Message).To(BeNil())
+		Expect(mField.Element.Element.Element.Kind).To(Equal(desc.String))
+		Expect(mField.Element.Element.Element.Message).To(BeNil())
+
 	})
 })
 

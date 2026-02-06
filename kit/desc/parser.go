@@ -569,6 +569,8 @@ func parseKind(t reflect.Type) Kind {
 
 	switch t.Kind() {
 	default:
+	case reflect.Interface:
+		return Object
 	case reflect.Bool:
 		return Bool
 	case reflect.String:
