@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/datasource
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.2.15
+	github.com/clubpay/ronykit/x/rkit v0.2.16
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/minio/minio-go/v7 v7.0.98

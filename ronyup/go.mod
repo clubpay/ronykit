@@ -5,8 +5,8 @@ go 1.25.1
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/charmbracelet/huh v0.8.0
-	github.com/clubpay/ronykit/rony v0.23.15
-	github.com/clubpay/ronykit/x/rkit v0.2.15
+	github.com/clubpay/ronykit/rony v0.23.16
+	github.com/clubpay/ronykit/x/rkit v0.2.16
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/mod v0.32.0
 	golang.org/x/text v0.33.0
@@ -30,10 +30,10 @@ require (
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
-	github.com/clubpay/ronykit/kit v0.23.15 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.15 // indirect
-	github.com/clubpay/ronykit/stub v0.23.15 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.2.15 // indirect
+	github.com/clubpay/ronykit/kit v0.23.16 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.16 // indirect
+	github.com/clubpay/ronykit/stub v0.23.16 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.2.16 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
