@@ -7,18 +7,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
+	"go.uber.org/fx"
 	"{{.RonyKitPath}}/kit"
 	"{{.RonyKitPath}}/rony"
 	"{{.RonyKitPath}}/rony/errs"
-	"{{.RonyKitPath}}/x/di"
 	"{{.RonyKitPath}}/x/cache"
+	"{{.RonyKitPath}}/x/di"
 	"{{.RonyKitPath}}/x/rkit"
 	"{{.RonyKitPath}}/x/settings"
 	"{{.RonyKitPath}}/x/telemetry/logkit"
 	"{{.RonyKitPath}}/x/telemetry/meterkit"
 	"{{.RonyKitPath}}/x/telemetry/tracekit"
-	"github.com/spf13/cobra"
-	"go.uber.org/fx"
 )
 
 func main() {

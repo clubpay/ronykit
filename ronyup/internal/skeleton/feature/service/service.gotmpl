@@ -3,12 +3,11 @@ package {{.PackageName}}mod
 import (
 	"context"
 
-
 	"go.uber.org/fx"
 	"{{.RepositoryPath}}/{{.PackagePath}}/api"
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
 	"{{.RonyKitPath}}/rony"
-	"{{.RonyKitPath}}/rony/di"
+	"{{.RonyKitPath}}/x/di"
 )
 
 type Service struct {
