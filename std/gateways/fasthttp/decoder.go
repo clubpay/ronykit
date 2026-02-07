@@ -39,7 +39,7 @@ type RequestCtx = fasthttp.RequestCtx
 type DecoderFunc func(reqCtx *RequestCtx, data []byte) (kit.Message, error)
 
 func GetParams(ctx *RequestCtx) Params {
-	var params Params //nolint:prealloc
+	var params Params
 
 	ctx.VisitUserValues(
 		func(key []byte, value any) {
