@@ -90,11 +90,6 @@ var Cmd = &cobra.Command{
 			}
 		}
 
-		err := cmd.ParseFlags(args)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	},
 }
@@ -119,15 +114,18 @@ var CmdSetupWorkspace = &cobra.Command{
 			return err
 		}
 
-		err = createWorkspace(cmd.Context())
-		if err != nil {
-			return err
-		}
-
-		copyWorkspaceTemplate(cmd)
-
-		return nil
+		return runWorkspace(cmd)
 	},
+}
+
+func runWorkspace(cmd *cobra.Command) error {
+	if err := createWorkspace(cmd.Context()); err != nil {
+		return err
+	}
+
+	copyWorkspaceTemplate(cmd)
+
+	return nil
 }
 
 func createWorkspace(_ context.Context) error {
@@ -195,25 +193,27 @@ var CmdSetupFeature = &cobra.Command{
 			return err
 		}
 
-		ok, err := isGoWorkspaceRoot(rkit.GetCurrentDir())
-		if err != nil {
-			return err
-		}
-		if !ok {
-			return fmt.Errorf("run this command in a go workspace root directory")
-		}
-
-		err = createFeature(cmd.Context())
-		if err != nil {
-			return err
-		}
-
-		copyFeatureTemplate(cmd)
-
-		sideEffectImportModule(cmd)
-
-		return nil
+		return runFeature(cmd)
 	},
+}
+
+func runFeature(cmd *cobra.Command) error {
+	ok, err := isGoWorkspaceRoot(rkit.GetCurrentDir())
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("run this command in a go workspace root directory")
+	}
+
+	if err := createFeature(cmd.Context()); err != nil {
+		return err
+	}
+
+	copyFeatureTemplate(cmd)
+	sideEffectImportModule(cmd)
+
+	return nil
 }
 
 func isGoWorkspaceRoot(dir string) (bool, error) {

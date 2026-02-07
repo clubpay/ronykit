@@ -62,36 +62,40 @@ var Cmd = &cobra.Command{
 			}
 		}
 
-		packages, err := getAllPackages(cmd)
-		if err != nil {
-			return wrap(err, "failed to get packages")
-		}
-
-		config := &pipeline.Config{
-			SourceLanguage: language.Make(opt.SourceLang),
-			Supported:      rkit.Map(opt.Languages, language.Make),
-			Packages:       packages,
-			Dir:            opt.DstDir,
-			GenFile:        opt.GenFile,
-			GenPackage:     opt.GenPackageName,
-		}
-
-		state, err := pipeline.Extract(config)
-		if err != nil {
-			return wrap(err, "extract failed")
-		}
-		if err := state.Import(); err != nil {
-			return wrap(err, "import failed")
-		}
-		if err := state.Merge(); err != nil {
-			return wrap(err, "merge failed")
-		}
-		if err := state.Export(); err != nil {
-			return wrap(err, "export failed")
-		}
-
-		return wrap(state.Generate(), "generation failed")
+		return runText(cmd)
 	},
+}
+
+func runText(cmd *cobra.Command) error {
+	allPackages, err := getAllPackages(cmd)
+	if err != nil {
+		return wrap(err, "failed to get packages")
+	}
+
+	config := &pipeline.Config{
+		SourceLanguage: language.Make(opt.SourceLang),
+		Supported:      rkit.Map(opt.Languages, language.Make),
+		Packages:       allPackages,
+		Dir:            opt.DstDir,
+		GenFile:        opt.GenFile,
+		GenPackage:     opt.GenPackageName,
+	}
+
+	state, err := pipeline.Extract(config)
+	if err != nil {
+		return wrap(err, "extract failed")
+	}
+	if err := state.Import(); err != nil {
+		return wrap(err, "import failed")
+	}
+	if err := state.Merge(); err != nil {
+		return wrap(err, "merge failed")
+	}
+	if err := state.Export(); err != nil {
+		return wrap(err, "export failed")
+	}
+
+	return wrap(state.Generate(), "generation failed")
 }
 
 func isGoWorkspace() bool {

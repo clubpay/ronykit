@@ -60,7 +60,7 @@ func runWorkspaceInteractive(cmd *cobra.Command) error {
 		return err
 	}
 
-	return nil
+	return runWorkspace(cmd)
 }
 
 func runFeatureInteractive(cmd *cobra.Command) error {
@@ -102,5 +102,5 @@ func runFeatureInteractive(cmd *cobra.Command) error {
 		return err
 	}
 
-	return nil
+	return runFeature(cmd)
 }

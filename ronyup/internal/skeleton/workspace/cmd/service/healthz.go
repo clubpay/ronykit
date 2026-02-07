@@ -1,6 +1,6 @@
 package main
 
-import "github.com/clubpay/ronykit/rony"
+import "{{.RonyKitPath}}/rony"
 
 type HealthInput struct{}
 
