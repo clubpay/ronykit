@@ -61,7 +61,7 @@ func toCamelInitCase(s string, initCase bool) string {
 
 			capNext = true
 		} else {
-			capNext = v == '_' || v == ' ' || v == '-' || v == '.'
+			capNext = strings.IndexRune(".-_/|\\", rune(v)) >= 0
 		}
 	}
 
