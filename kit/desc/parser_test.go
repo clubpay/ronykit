@@ -86,6 +86,30 @@ func (e Err) GetItem() string {
 	return e.Msg
 }
 
+type TwoFields struct {
+	A string `json:"a"`
+	B string `json:"b"`
+}
+
+type PtrErr struct {
+	Code int    `json:"code"`
+	Item string `json:"item"`
+}
+
+var _ kit.ErrorMessage = (*PtrErr)(nil)
+
+func (e *PtrErr) Error() string {
+	return e.Item
+}
+
+func (e *PtrErr) GetCode() int {
+	return e.Code
+}
+
+func (e *PtrErr) GetItem() string {
+	return e.Item
+}
+
 var _ = Describe("DescParser", func() {
 	d := desc.NewService("sample").
 		AddContract(
@@ -218,6 +242,49 @@ var _ = Describe("DescParser", func() {
 		Expect(mField.Element.Element.Element.Kind).To(Equal(desc.String))
 		Expect(mField.Element.Element.Element.Message).To(BeNil())
 
+	})
+})
+
+var _ = Describe("DescParser edge cases", func() {
+	It("should return the actual field entry", func() {
+		d := desc.NewService("sample").
+			AddContract(
+				desc.NewContract().
+					SetName("c1").
+					AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+					In(&TwoFields{}).
+					Out(&FlatMessage{}),
+			)
+
+		pd := desc.ParseService(d)
+		msg := pd.Contracts[0].Request.Message
+
+		fieldByName := msg.FieldByName("a")
+		Expect(fieldByName).ToNot(BeNil())
+		Expect(fieldByName).To(BeEquivalentTo(&msg.Fields[0]))
+		Expect(fieldByName.GoName).To(Equal("A"))
+
+		fieldByGoName := msg.FieldByGoName("A")
+		Expect(fieldByGoName).ToNot(BeNil())
+		Expect(fieldByGoName).To(BeEquivalentTo(&msg.Fields[0]))
+		Expect(fieldByGoName.Name).To(Equal("a"))
+	})
+
+	It("should mark pointer-receiver errors as implementing ErrorMessage", func() {
+		d := desc.NewService("sample").
+			AddContract(
+				desc.NewContract().
+					SetName("c1").
+					AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+					SetDefaultError(&PtrErr{}).
+					In(&FlatMessage{}).
+					Out(&FlatMessage{}),
+			)
+
+		pd := desc.ParseService(d)
+		errMsg := pd.MessageByName("PtrErr")
+		Expect(errMsg).ToNot(BeNil())
+		Expect(errMsg.ImplementError).To(BeTrue())
 	})
 })
 

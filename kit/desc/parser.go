@@ -127,15 +127,16 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	}
 
 	pm := ParsedMessage{
-		original:       m,
-		Name:           mt.Name(),
-		PkgPath:        mt.PkgPath(),
-		Kind:           parseKind(mt),
-		RKind:          mt.Kind(),
-		Type:           typ("", mt),
-		RType:          mt,
-		ImplementError: mt.Implements(reflect.TypeFor[kit.ErrorMessage]()),
-		Meta:           meta,
+		original: m,
+		Name:     mt.Name(),
+		PkgPath:  mt.PkgPath(),
+		Kind:     parseKind(mt),
+		RKind:    mt.Kind(),
+		Type:     typ("", mt),
+		RType:    mt,
+		ImplementError: mt.Implements(reflect.TypeFor[kit.ErrorMessage]()) ||
+			reflect.TypeOf(m).Implements(reflect.TypeFor[kit.ErrorMessage]()),
+		Meta: meta,
 	}
 
 	switch {
