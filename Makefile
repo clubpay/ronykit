@@ -31,7 +31,7 @@ tidy:
 
 test:
 	@echo "Run Tests"
-	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example | grep -v skelton); do \
+	@for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example | grep -v ronyup); do \
 		echo "test $$dir..."; \
 		(cd $$dir && gotestsum --hide-summary=output --format pkgname-and-test-fails \
                    					--format-hide-empty-pkg --max-fails 1 \

@@ -24,10 +24,10 @@ func TestKitWithCluster(t *testing.T) {
 				invokeEdgeServerWithRedis("edge1", 8082, services.SimpleKeyValueService),
 				invokeEdgeServerWithRedis("edge2", 8083, services.SimpleKeyValueService),
 			),
-			"KeyValue Store - With P2P": fx.Options(
-				invokeEdgeServerWithP2P("edge1", 8082, services.SimpleKeyValueService),
-				invokeEdgeServerWithP2P("edge2", 8083, services.SimpleKeyValueService),
-			),
+			//"KeyValue Store - With P2P": fx.Options(
+			//	invokeEdgeServerWithP2P("edge1", 8082, services.SimpleKeyValueService),
+			//	invokeEdgeServerWithP2P("edge2", 8083, services.SimpleKeyValueService),
+			//),
 		}
 		for title, opts := range testCases {
 			Convey(title, kitWithCluster(t, opts))

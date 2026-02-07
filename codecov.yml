@@ -22,9 +22,9 @@ component_management:
         - type: project
           target: auto
     - component_id: contrib
-      name: Contributions
+      name: Extended Libraries
       paths:
-        - contrib/**
+        - x/**
       statuses: # the core component has its own statuses
         - type: project
           target: auto
