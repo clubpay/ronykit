@@ -21,20 +21,25 @@ type embedded struct {
 	Others   string `json:"others"`
 }
 
+type iErr interface {
+	ErrorDetails()
+}
+
 type sampleReq struct {
 	embedded
-	TT  [][]string        `json:"tt"`
-	X   string            `json:"x,int" swag:"enum:1,2,3"`
-	Y   string            `json:"y,omitempty"`
-	Z   int64             `json:"z" swag:"deprecated;optional"`
-	W   []string          `json:"w"`
-	MS  map[string]subRes `json:"ms"`
-	MSS map[string]string `json:"mss"`
-	MIS map[int]string    `json:"mis"`
-	MII map[int]int       `json:"mii"`
-	MIA map[string]any    `json:"mia"`
-	CT  time.Time         `json:"ct"`
-	CTP *time.Time        `json:"ctp"`
+	TT     [][]string        `json:"tt"`
+	X      string            `json:"x,int" swag:"enum:1,2,3"`
+	Y      string            `json:"y,omitempty"`
+	Z      int64             `json:"z" swag:"deprecated;optional"`
+	W      []string          `json:"w"`
+	MS     map[string]subRes `json:"ms"`
+	MSS    map[string]string `json:"mss"`
+	MIS    map[int]string    `json:"mis"`
+	MII    map[int]int       `json:"mii"`
+	MIA    map[string]any    `json:"mia"`
+	CT     time.Time         `json:"ct"`
+	CTP    *time.Time        `json:"ctp"`
+	ErrMsg iErr              `json:"err"`
 }
 
 type subRes struct {

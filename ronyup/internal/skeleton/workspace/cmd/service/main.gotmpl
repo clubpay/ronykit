@@ -115,11 +115,8 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		if len(services) > 0 {
-			cmd.Println(fmt.Sprintf("Server[Service] listening on http://%s:%d", listenIP, listenPort))
-			cmd.Println(fmt.Sprintf("API Docs: http://%s:%d/docs", listenIP, listenPort))
-		}
-
+		cmd.Println(fmt.Sprintf("Server[Service] listening on http://%s:%d", listenIP, listenPort))
+		cmd.Println(fmt.Sprintf("API Docs: http://%s:%d/docs", listenIP, listenPort))
 		cmd.Println("Press Ctrl+C to stop.")
 
 		<-app.Wait()
