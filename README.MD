@@ -1,6 +1,9 @@
 # RonyKIT
 
 [![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=license)
+[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit)](https://goreportcard.com/report/github.com/clubpay/ronykit)
+
 
 RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a
 complete API/Edge server.
@@ -26,9 +29,9 @@ memory usage, you can directly utilize the `kit` package, which forms the core o
 
 ![Architect](./docs/architect.png)
 
-- For more information about the `rony` package, visit [rony](./rony/README.MD).
-- For more information about the `kit` package, visit [kit](./kit/README.MD).
-- For more information about the `stub` package, visit [stub](./stub/README.MD).
+## For more information about the `rony` package, visit [rony](./rony/README.MD).
+#### For more information about the `kit` package, visit [kit](./kit/README.MD).
+#### For more information about the `stub` package, visit [stub](./stub/README.MD).
 
 # Getting Started
 
