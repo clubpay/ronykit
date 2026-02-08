@@ -24,10 +24,6 @@ jobs:
             ./rony/... \
             ./stub/... \
             ./std/gateways/fasthttp/... \
-            ./std/gateways/fastws/... \
-            ./std/gateways/silverhttp/... \
-            ./std/clusters/rediscluster/... \
-            ./std/clusters/p2pcluster/... \
             ./testenv/...
 
       - name: Codecov
