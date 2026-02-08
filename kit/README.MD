@@ -1,223 +1,147 @@
 # Kit
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/kit.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/kit)
 [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/kit)](https://goreportcard.com/report/github.com/clubpay/ronykit/kit)
 
-
-RonyKit is a Go (Golang) library that provides an abstraction layer for creating API servers. By defining separate components
-for each task, you can develop your API server using RPC (Proto/JSON/...), REST, GraphQL, or even custom protocols.
-Some components are implemented in the 'std' directory, making it easy to use RonyKit out of the box. RonyKit aims to be
-both flexible and performant. It includes two bundles: one based on [fasthttp](https://github.com/valyala/fasthttp) and
-another providing RPC over WebSocket using [gobwas](https://github.com/gobwas/ws) and [gnet](https://github.com/panjf2000/gnet).
-However, you are free to build your own bundles. For examples, check the examples folder, such
-as [simple-rest-server](../example/ex-02-rest) for a simple hello world app and [mixed-jsonrpc-rest](../example/ex-01-rpc) for services
-using multiple formats like REST and RPC.
+Kit is the low-level toolkit that powers RonyKIT. It gives you granular control over gateways, clusters,
+services, and contracts, while keeping the framework overhead minimal. Use Kit when you need custom
+protocols, bespoke gateway/cluster choices, or deeper control over the server pipeline.
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Kit Components](#kit-components)
-	- [1. Handler](#1-handler)
-	- [2. Contract](#2-contract)
-	- [3. Service](#3-service)
-	- [4. Gateway](#4-gateway)
-	- [5. Cluster](#5-cluster)
-	- [6. EdgeServer](#6-edgeserver)
 - [KIT Storage Layers](#kit-storage-layers)
+- [KIT Standard Implementations](#kit-standard-implementations)
 
 ## Installation
 
-To install the RonyKIT package, you need to first install Go and set your Go workspace.
-
-First, install [Go](https://golang.org/) (version 1.17+ is required). Then use the following command to install RonyKIT:
+Install Go (version 1.17+ is required), then:
 
 ```sh
-$ go get -u github.com/clubpay/ronykit/kit/...
+go get -u github.com/clubpay/ronykit/kit/...
 ```
 
 ## Quick Start
 
-You can find sample code in the [Examples](../example) folder.
+The recommended workflow is:
 
-## Define Services and Contracts
+1. Define DTOs for input and output.
+2. Implement a handler that reads the input message and writes a response.
+3. Describe the service using `kit/desc` and bind routes.
+4. Start an EdgeServer with a gateway bundle.
 
-In RonyKIT (Kit), it's best to define the description of your services and their contracts using the `desc` package, which
-provides many helper methods. While you can create your own concrete implementations of `kit.Service` and `kit.Contract`,
-we strongly recommend using the `desc` package.
-
-When developing a handler with the Kit package, you need to consider the input and output of your API and define these
-DTOs by creating appropriate structs.
-
-For example, to implement an `Echo` handler, you can write your handler like this:
-
-```go
-package main
-
-import "github.com/clubpay/ronykit/kit"
-
-type EchoRequest struct {
-    ID string `json:"Id"`
-    Timestamp int64 `json:"timestamp"`
-}
-
-type EchoResponse struct {
-    ID string `json:"Id"`
-}
-
-func echoHandler(ctx *kit.Context) {
-    req := ctx.In().GetMsg().(*EchoRequest)
-
-    ctx.In().
-        Reply().
-        SetMsg(&EchoResponse{ID: req.ID}).
-        Send()
-}
-```
-
-Then you can write the service descriptor to define how your handler will be accessed from the Gateway of your server.
-For an HTTP Gateway to access your handler using a REST API, define your service descriptor like this:
+Minimal example:
 
 ```go
 package main
 
 import (
-    "github.com/clubpay/ronykit/kit"
-    "github.com/clubpay/ronykit/kit/desc"
-    "github.com/clubpay/ronykit/std/gateways/fasthttp"
+  "context"
+  "os"
+
+  "github.com/clubpay/ronykit/kit"
+  "github.com/clubpay/ronykit/kit/desc"
+  "github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
+
+type EchoRequest struct {
+  ID        string `json:"id"`
+  Timestamp int64  `json:"timestamp"`
+}
+
+type EchoResponse struct {
+  ID string `json:"id"`
+}
+
+func echoHandler(ctx *kit.Context) {
+  req := ctx.In().GetMsg().(*EchoRequest)
+
+  ctx.In().
+    Reply().
+    SetMsg(&EchoResponse{ID: req.ID}).
+    Send()
+}
 
 func MyServiceDesc() *desc.Service {
-    return desc.NewService("MyServiceName").
-        SetEncoding(kit.JSON).
-        AddContract(
-            desc.NewContract().
-                SetInput(&EchoRequest{}).   // Incoming request resolves to EchoRequest struct
-                SetOutput(&EchoResponse{}). // Outgoing response resolves to EchoResponse struct
-                AddSelector(fasthttp.GET("/echo/:Id")). // Use echoHandler for GET requests with /echo/:Id path
-                AddSelector(fasthttp.POST("/echo")).    // Use echoHandler for POST requests with /echo path
-                SetHandler(echoHandler),                // Use echoHandler as the handler for this contract
-        )
-}
-```
-
-In the `ServiceDescriptor`, we defined two REST endpoints which our Handler would serve. RonyKIT's EdgeServer tries its best to fill the
-input struct (i.e., EchoRequest) from URL parameters, query parameters, or the request's body. For more complex cases, you can add
-your own custom decoder when adding your selector to the contract.
-
-The final step is to set up the EdgeServer, bind the desired Gateway bundle, and the `MyServiceDesc`. The following code shows
-how to do this:
-
-```go
-package main
-
-import (
-    "context"
-    "os"
-
-    "github.com/clubpay/ronykit/kit"
-    "github.com/clubpay/ronykit/kit/desc"
-    "github.com/clubpay/ronykit/std/gateways/fasthttp"
-)
-
-type EchoRequest struct {
-    ID string `json:"Id"`
-    Timestamp int64 `json:"timestamp"`
-}
-
-type EchoResponse struct {
-    ID string `json:"Id"`
-}
-
-func echoHandler(ctx *kit.Context) {
-    req := ctx.In().GetMsg().(*EchoRequest)
-
-    ctx.In().
-        Reply().
-        SetMsg(&EchoResponse{ID: req.ID}).
-        Send()
-}
-
-var MyServiceDesc desc.ServiceDescFunc = func() *desc.Service {
-    return desc.NewService("MyServiceName").
-        SetEncoding(kit.JSON).
-        AddContract(
-            desc.NewContract().
-                SetInput(&EchoRequest{}).
-                SetOutput(&EchoResponse{}).
-                AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:Id"))).
-                AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
-                SetHandler(echoHandler),
-        )
+  return desc.NewService("MyServiceName").
+    SetEncoding(kit.JSON).
+    AddContract(
+      desc.NewContract().
+        SetInput(&EchoRequest{}).
+        SetOutput(&EchoResponse{}).
+        AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:id"))).
+        AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
+        SetHandler(echoHandler),
+    )
 }
 
 func main() {
-    defer kit.NewServer(
-        kit.WithGateway(
-            fasthttp.MustNew(
-                fasthttp.Listen(":80"),
-            ),
-        ),
-        kit.WithServiceBuilder(MyServiceDesc()),
-    ).
-        Start(context.TODO()).
-        PrintRoutes(os.Stdout).
-        Shutdown(context.TODO(), os.Kill, os.Interrupt)
+  defer kit.NewServer(
+    kit.WithGateway(
+      fasthttp.MustNew(
+        fasthttp.Listen(":80"),
+      ),
+    ),
+    kit.WithServiceBuilder(MyServiceDesc()),
+  ).
+    Start(context.TODO()).
+    PrintRoutes(os.Stdout).
+    Shutdown(context.TODO(), os.Kill, os.Interrupt)
 }
 ```
 
-# KIT Components
+For more samples, see [example](../example).
+
+## Kit Components
 
 ## 1. Handler
 
-A Handler is a function/method that accepts `kit.Context` as an argument. It is called based on the
-selector defined in the `desc.Service`.
+A Handler is a function or method that accepts `kit.Context` and is invoked based on a contract route.
 
 ## 2. Contract
 
-A Contract defines a business use case similar to a function, triggered based on the selectors defined
-in the `ServiceDescriptor`.
+A Contract defines a business use case and how it is exposed via gateway selectors.
 
 ## 3. Service
 
-One or more Contracts performing operations in a similar domain can be grouped into one Service. Each
-EdgeServer can have multiple services attached.
+One or more Contracts performing operations in a similar domain can be grouped into one Service.
+Each EdgeServer can have multiple services attached.
 
 ## 4. Gateway
 
-Gateways handle the service endpoints. For REST APIs, you can use standard gateway bundles
-like `fasthttp` or `silverhttp`. For advanced cases, you can develop your own Gateway, but it is
-unnecessary for most cases.
+Gateways handle inbound traffic. For REST APIs, use standard gateway bundles like `fasthttp` or
+`silverhttp`. For advanced cases, you can develop your own gateway.
 
 ## 5. Cluster
 
-A Cluster defines the relationship between different instances of the EdgeServer. This bundle is optional but,
-if attached to the EdgeServer, it provides facilities to share data between different instances
-of your EdgeServer.
+A Cluster defines how multiple EdgeServer instances share data. This bundle is optional and only needed
+when you require cross-instance state.
 
 ## 6. EdgeServer
 
 EdgeServer is the main component of RonyKIT, gluing different components together to create a working server.
 
-# KIT Storage Layers
+## KIT Storage Layers
 
 When developing an API server, you often need to store data with different lifecycles.
 RonyKIT provides four storage layers:
 
-| Layer      | Lifecycle                                                                                                              |
-|------------|------------------------------------------------------------------------------------------------------------------------|
-| Context    | Per request, available in all handlers                                                                                 |
-| Connection | Per connection, useful for WebSocket data that persists until the connection is active                                 |
-| Local      | Shared between different contracts and services, stored in the server's local memory                                   |
-| Cluster    | Shared between different instances of the EdgeServer, enabled ONLY if a Cluster bundle is attached                     |ß
+| Layer      | Lifecycle                                                                 |
+|------------|---------------------------------------------------------------------------|
+| Context    | Per request, available in all handlers                                    |
+| Connection | Per connection, useful for WebSocket data that persists while connected   |
+| Local      | Shared between contracts and services, stored in the server's memory      |
+| Cluster    | Shared between EdgeServer instances, requires a Cluster bundle            |
 
-# KIT Standard Implementations
+## KIT Standard Implementations
 
-This repository contains all implementations of the KIT gateways and clusters.
-In `kit` you can mix and match the Gateway and Cluster that suits your needs best, but if you want a simple
-batteries included framework, just use [rony](../rony/README.MD) package instead.
+This repository contains standard gateway and cluster bundles for Kit. You can mix and match the
+Gateway and Cluster that suit your needs, or use the batteries-included [rony](../rony/README.MD) package.
 
-| Package      | Bundle Type | Version | Description                                                                                                                          |
-|--------------|-------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
-| fasthttp     | Gateway     | v0.18.1 | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
-| fastws       | Gateway     | v0.18.1 | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
-| silverhttp   | Gateway     | v0.18.1 | The Gateway bundle implemented using the new super-fast HTTP server [silverlining](https://github.com/go-www/silverlining)           |
-| rediscluster | Cluster     | v0.18.1 | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
-| p2pcluster   | Cluster     | v0.18.1 | The Cluster bundle implemented using [p2p](https://github.com/libp2p/go-libp2p)                                                      |
+| Package      | Bundle Type | Description                                                                                                                          |
+|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| fasthttp     | Gateway     | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
+| fastws       | Gateway     | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
+| silverhttp   | Gateway     | The Gateway bundle implemented using the [silverlining](https://github.com/go-www/silverlining) HTTP server                          |
+| rediscluster | Cluster     | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
+| p2pcluster   | Cluster     | The Cluster bundle implemented using [libp2p](https://github.com/libp2p/go-libp2p)                                                    |

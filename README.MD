@@ -4,71 +4,60 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=license)
 [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit)](https://goreportcard.com/report/github.com/clubpay/ronykit)
 
+RonyKIT is a Go toolkit for building high-performance API and edge servers. It gives you two entry points: a
+batteries-included framework (`rony`) and a low-level toolkit (`kit`) so you can pick the right level of control
+without rewriting your handlers.
 
-RonyKIT is a collection of tools designed to be both extendable and flexible, enabling the rapid development of a
-complete API/Edge server.
-With the RonyKIT framework, you can create API handlers that support both RPC and REST style APIs without the need to
-rewrite the
-endpoint layer multiple times. The philosphy of Ronykit is to define the most used building blocks of the software as
-proper minimal
-viable interfaces and provide some standard implementations which make onboarding very quick and also let you to
-implement your own
-if you have a very specific case. The declarative force of defining contracts in Ronykit makes extending the code much
-easier and
-by the help of proper templating you can write the usecase and let the most boilerplates like stubs, tests, deployments
-etc to be
-auto-generated.
+## Choose your entry point
 
-If you are seeking a framework to develop your API/Edge server, you can directly use the `rony` package. This package
-provides an
-intuitive framework, leveraging Go Generics to offer a clean and user-friendly API. This is the recommended approach for
-using
-the RonyKIT framework. However, if you require greater control over your API server and have concerns about performance
-and
-memory usage, you can directly utilize the `kit` package, which forms the core of the RonyKIT framework.
+- [rony](./rony/README.MD): recommended, fast setup, opinionated defaults.
+- [kit](./kit/README.MD): low-level building blocks for custom gateways, clusters, or protocols.
+- [stub](./stub/README.MD): client stubs (work in progress).
+
+## Why RonyKIT
+
+- Define contracts once; serve REST and RPC from the same handlers.
+- Declarative service descriptors with strong typing via Go generics.
+- Pluggable gateways and clusters (fasthttp, gnet, redis, p2p).
+- Performance-oriented by design with minimal framework overhead.
+- Tooling for scaffolding and upgrades via `ronyup`.
+
+## Getting started
+
+```shell
+go install github.com/clubpay/ronykit/ronyup@latest
+ronyup setup -d ./my-project -m github.com/you/myproject -p MyProject
+```
+
+Read the [Getting Started Guide](./GETTING_STARTED.MD) for the full walkthrough.
+
+## Architecture
 
 ![Architect](./docs/architect.png)
 
-## For more information about the `rony` package, visit [rony](./rony/README.MD).
-#### For more information about the `kit` package, visit [kit](./kit/README.MD).
-#### For more information about the `stub` package, visit [stub](./stub/README.MD).
+## Examples
 
-# Getting Started
+Browse runnable examples in [example](./example).
 
-Read the [Getting Started Guide](./GETTING_STARTED.MD) to learn how to get started with RonyKIT.
+## Performance
 
-# Performance
-
-Benchmarks may not provide precise measurements of a framework's performance; however, they can offer
-insights into the overhead a framework might introduce to your actual business logic. You can see a
-[benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) as a reference to
-evaluate how Ronykit performs in comparison to other Go frameworks.
+Benchmarks can help estimate framework overhead relative to business logic. See the
+[TechEmpower JSON benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3)
+for a reference point and compare against your own workloads.
 
 ![Benchmark Results](./docs/benchmark.png)
 
-### Project Structure
+## Project layout
 
-RonyKit is organized as a Go workspace with multiple modules:
+- `rony`: batteries-included framework built on RonyKIT
+- `kit`: core building blocks and interfaces
+- `std`: standard gateway and cluster bundles
+- `flow`: workflow helpers
+- `stub`: stub generation utilities
+- `ronyup`: project setup and upgrade tool
+- `example`: runnable examples
 
-- **Core modules**:
-	- `kit`: Core toolkit and utilities
-	- `rony`: Main server implementation
-	- `flow`: Workflow-related functionality
-	- `stub`: Stub generation utilities
-	- `boxship`: Build/deployment tools
-	- `ronyup`: Project setup and upgrade tools
-	- `contrib`: Contributions and extensions
-	- `util`: Utility packages
-
-- **Standard implementations**:
-	- Clusters: `p2pcluster`, `rediscluster`
-	- Gateways: `fasthttp`, `fastws`, `silverhttp`
-
-- **Examples**: Various example applications demonstrating different features
-
-### Build Commands
-
-The project uses a Makefile for common operations:
+## Build commands
 
 ```bash
 # Install required tools
