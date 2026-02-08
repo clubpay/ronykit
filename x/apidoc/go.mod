@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/x/apidoc
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.23.18
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.18
+	github.com/clubpay/ronykit/kit v0.23.19
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.23.19
 	github.com/go-openapi/spec v0.22.3
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
