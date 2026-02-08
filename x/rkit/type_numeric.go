@@ -29,15 +29,15 @@ func (n *Numeric) UnmarshalJSON(bb []byte) error {
 	return nil
 }
 
-func (n *Numeric) MarshalJSON() ([]byte, error) {
+func (n Numeric) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.String())
 }
 
-func (n *Numeric) Value() float64 {
+func (n Numeric) Value() float64 {
 	return n.value
 }
 
-func (n *Numeric) String() string {
+func (n Numeric) String() string {
 	if n.precision == 0 {
 		n.precision = defaultPrecision
 	}
