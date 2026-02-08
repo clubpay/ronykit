@@ -12,7 +12,7 @@ type Middleware[S State[A], A Action] interface {
 
 type StatelessMiddleware = kit.HandlerFunc
 
-type StatefulMiddleware[S State[A], A Action] func(ctx *BaseCtx[S, A])
+type StatefulMiddleware[S State[A], A Action] = func(ctx *BaseCtx[S, A])
 
 func statefulMiddlewareToKitHandler[S State[A], A Action](
 	s *S,
