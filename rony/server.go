@@ -47,6 +47,9 @@ func (s *Server) initEdge() error {
 		case swaggerUI:
 			docFS, err = apidoc.New(s.cfg.serverName, s.cfg.version, "").
 				SwaggerUI(s.cfg.allServiceDesc()...)
+		case scalarUI:
+			docFS, err = apidoc.New(s.cfg.serverName, s.cfg.version, "").
+				ScalarUI(s.cfg.allServiceDesc()...)
 		}
 
 		if err != nil {

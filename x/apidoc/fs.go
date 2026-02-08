@@ -14,6 +14,8 @@ var (
 	swaggerFS embed.FS
 	//go:embed internal/redoc-ui
 	redocFS embed.FS
+	//go:embed internal/scalar-ui
+	scalarFS embed.FS
 )
 
 var _ fs.FS = (*customFS)(nil)

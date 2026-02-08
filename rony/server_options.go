@@ -14,6 +14,7 @@ type docUI string
 const (
 	swaggerUI docUI = "swagger"
 	redocUI   docUI = "redoc"
+	scalarUI  docUI = "scalar"
 )
 
 type serverConfig struct {
@@ -182,6 +183,18 @@ func WithAPIDocs(path string) ServerOption {
 func UseSwaggerUI() ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.serveDocsUI = swaggerUI
+	}
+}
+
+func UseRedocUI() ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.serveDocsUI = redocUI
+	}
+}
+
+func UseScalarUI() ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.serveDocsUI = scalarUI
 	}
 }
 

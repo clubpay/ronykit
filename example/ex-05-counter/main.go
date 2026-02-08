@@ -15,6 +15,8 @@ func main() {
 	srv := rony.NewServer(
 		rony.Listen(":80"),
 		rony.WithServerName("CounterServer"),
+		rony.WithAPIDocs("/docs"),
+		rony.UseScalarUI(),
 	)
 
 	// Set up the server with the initial state, which is a pointer to EchoCounter

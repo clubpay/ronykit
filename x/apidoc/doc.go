@@ -124,6 +124,22 @@ func (sg *Generator) ReDocUI(svc ...desc.ServiceDesc) (fs.FS, error) {
 	}, nil
 }
 
+func (sg *Generator) ScalarUI(svc ...desc.ServiceDesc) (fs.FS, error) {
+	content := bytes.NewBuffer(nil)
+
+	err := sg.WriteSwagTo(content, svc...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &customFS{
+		fs:          scalarFS,
+		folderName:  "scalar-ui",
+		swaggerJSON: content.Bytes(),
+		t:           time.Now(),
+	}, nil
+}
+
 //nolint:cyclop
 func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 	if swag.Paths == nil {

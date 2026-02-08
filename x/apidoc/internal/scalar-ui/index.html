@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+	<title>API Documentation</title>
+	<meta charset="utf-8"/>
+	<meta
+		content="width=device-width, initial-scale=1"
+		name="viewport"/>
+</head>
+
+<body>
+<div id="app"></div>
+
+<!-- Load the Script -->
+<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+
+<!-- Initialize the Scalar API Reference -->
+<script>
+	Scalar.createApiReference('#app', {
+		url: './swagger.json',
+		proxyUrl: 'https://proxy.scalar.com',
+		agent: {
+			disabled: true,
+		},
+		theme: 'deepSpace',
+		showDeveloperTools: 'never',
+		hiddenClients: {
+			c: false,
+			clojure: true,
+			csharp: true,
+			dart: ['http'],
+			fsharp: true,
+			go: false,
+			http: false,
+			java: ['asynchttp', 'nethttp','unirest'],
+			js: [ 'ofetch'],
+			kotlin: ['okhttp'],
+			node: [ 'ofetch', 'undici'],
+			ocaml: true,
+			php: ['curl', 'guzzle'],
+			powershell: ['restmethod', 'webrequest'],
+			python: ['httpx_async', 'httpx_sync'],
+			r: true,
+			ruby: ['native'],
+			rust: false,
+			shell: [ 'httpie'],
+			objc: false,
+			swift: false,
+		}
+	})
+</script>
+</body>
+</html>
