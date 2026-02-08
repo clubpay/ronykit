@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.22' ]
+        go: [ '1.25' ]
     name: Set up Go ${{ matrix.go }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
       - name: Run Tests
@@ -31,7 +31,7 @@ jobs:
             ./testenv/...
 
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
           verbose: true

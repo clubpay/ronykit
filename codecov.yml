@@ -21,7 +21,7 @@ component_management:
       statuses: # the core component has its own statuses
         - type: project
           target: auto
-    - component_id: contrib
+    - component_id: extensions
       name: Extended Libraries
       paths:
         - x/**
