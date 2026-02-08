@@ -1,6 +1,7 @@
 package rony
 
 import (
+	"context"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
@@ -109,5 +110,112 @@ func TestStreamCtxPushHeaders(t *testing.T) {
 		Run(true)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUnaryCtxHelpers(t *testing.T) {
+	state := EMPTY{}
+	var nextCalled bool
+
+	handler2 := func(_ *kit.Context) {
+		nextCalled = true
+	}
+
+	handler1 := func(ctx *kit.Context) {
+		u := newUnaryCtx[EMPTY, NOP](ctx, &state, nil)
+		if u.State() != state {
+			t.Fatalf("unexpected state: %#v", u.State())
+		}
+		if u.Conn() == nil {
+			t.Fatal("expected conn to be set")
+		}
+		u.SetUserContext(context.WithValue(context.Background(), "k", "v"))
+		if u.Context().Value("k") != "v" {
+			t.Fatalf("unexpected context value: %v", u.Context().Value("k"))
+		}
+		_ = u.Route()
+		u.Set("a", "b")
+		if u.Get("a") != "b" {
+			t.Fatalf("unexpected Get value: %v", u.Get("a"))
+		}
+		if !u.Exists("a") {
+			t.Fatal("expected Exists to return true")
+		}
+		walked := false
+		u.Walk(func(key string, val any) bool {
+			walked = true
+
+			return false
+		})
+		if !walked {
+			t.Fatal("expected Walk to be called")
+		}
+		if u.GetInHdr("in") != "header" {
+			t.Fatalf("unexpected input header: %s", u.GetInHdr("in"))
+		}
+		hdrWalked := false
+		u.WalkInHdr(func(key string, val string) bool {
+			hdrWalked = true
+
+			return false
+		})
+		if !hdrWalked {
+			t.Fatal("expected WalkInHdr to be called")
+		}
+
+		if _, ok := u.RESTConn(); !ok {
+			t.Fatal("expected REST conn to be available")
+		}
+		if u.KitCtx() != ctx {
+			t.Fatal("expected KitCtx to return the underlying context")
+		}
+
+		u.SetOutHdr("x", "1")
+		u.SetOutHdrMap(map[string]string{"y": "2"})
+		ctx.Out().SetMsg(outMsg{OK: true}).Send()
+
+		u.Next()
+	}
+
+	err := kit.NewTestContext().
+		Input(&inMsg{ID: 1}, kit.EnvelopeHdr{"in": "header"}).
+		SetHandler(handler1, handler2).
+		Expect(func(e *kit.Envelope) error {
+			if e.GetHdr("x") != "1" || e.GetHdr("y") != "2" {
+				t.Fatalf("unexpected output headers: %#v", e)
+			}
+
+			return nil
+		}).
+		RunREST()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !nextCalled {
+		t.Fatal("expected Next to call the next handler")
+	}
+}
+
+func TestUnaryCtxStopExecution(t *testing.T) {
+	state := EMPTY{}
+	called := false
+
+	handler1 := func(ctx *kit.Context) {
+		u := newUnaryCtx[EMPTY, NOP](ctx, &state, nil)
+		u.StopExecution()
+	}
+	handler2 := func(_ *kit.Context) {
+		called = true
+	}
+
+	err := kit.NewTestContext().
+		Input(&inMsg{ID: 1}, kit.EnvelopeHdr{}).
+		SetHandler(handler1, handler2).
+		RunREST()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if called {
+		t.Fatal("expected StopExecution to prevent next handler")
 	}
 }

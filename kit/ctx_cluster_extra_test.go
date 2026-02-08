@@ -19,22 +19,22 @@ func (testStore) ScanWithValue(context.Context, string, func(string, string) boo
 	return nil
 }
 
-type testCluster struct {
+type ctxTestCluster struct {
 	subs []string
 }
 
-func (testCluster) Start(context.Context) error       { return nil }
-func (testCluster) Shutdown(context.Context) error    { return nil }
-func (testCluster) Subscribe(string, ClusterDelegate) {}
-func (testCluster) Publish(string, []byte) error      { return nil }
-func (t testCluster) Subscribers() ([]string, error)  { return t.subs, nil }
+func (ctxTestCluster) Start(context.Context) error       { return nil }
+func (ctxTestCluster) Shutdown(context.Context) error    { return nil }
+func (ctxTestCluster) Subscribe(string, ClusterDelegate) {}
+func (ctxTestCluster) Publish(string, []byte) error      { return nil }
+func (t ctxTestCluster) Subscribers() ([]string, error)  { return t.subs, nil }
 
-type testClusterWithStore struct {
-	testCluster
+type ctxTestClusterWithStore struct {
+	ctxTestCluster
 	store ClusterStore
 }
 
-func (t testClusterWithStore) Store() ClusterStore { return t.store }
+func (t ctxTestClusterWithStore) Store() ClusterStore { return t.store }
 
 func TestContextClusterHelpers(t *testing.T) {
 	ctx := NewContext(nil)
@@ -58,7 +58,7 @@ func TestContextClusterHelpers(t *testing.T) {
 
 func TestContextClusterStoreAndMembers(t *testing.T) {
 	ctx := NewContext(nil)
-	cluster := testCluster{subs: []string{"a", "b"}}
+	cluster := ctxTestCluster{subs: []string{"a", "b"}}
 	ctx.sb = &southBridge{cb: cluster, id: "node"}
 
 	if !ctx.HasCluster() {
@@ -79,7 +79,7 @@ func TestContextClusterStoreAndMembers(t *testing.T) {
 	}
 
 	store := testStore{}
-	ctx.sb.cb = testClusterWithStore{testCluster: cluster, store: store}
+	ctx.sb.cb = ctxTestClusterWithStore{ctxTestCluster: cluster, store: store}
 	if ctx.ClusterStore() != store {
 		t.Fatal("expected cluster store to be returned")
 	}

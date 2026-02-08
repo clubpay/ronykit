@@ -141,3 +141,13 @@ func TestSetupWithContractAppliesMiddleware(t *testing.T) {
 		t.Fatalf("unexpected handlers count: %d", len(svc.Contracts[0].Handlers))
 	}
 }
+
+func TestEmptyState(t *testing.T) {
+	empty := EMPTY{}
+	if empty.Name() != "EMPTY" {
+		t.Fatalf("unexpected EMPTY name: %s", empty.Name())
+	}
+	if err := empty.Reduce(NOP{}); err != nil {
+		t.Fatalf("unexpected Reduce error: %v", err)
+	}
+}
