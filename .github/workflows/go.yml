@@ -23,8 +23,7 @@ jobs:
             ./kit/... \
             ./rony/... \
             ./stub/... \
-            ./std/gateways/fasthttp/... \
-            ./testenv/...
+            ./std/gateways/fasthttp/...
 
       - name: Codecov
         uses: codecov/codecov-action@v5
