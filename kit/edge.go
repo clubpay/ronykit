@@ -285,7 +285,7 @@ func (s *EdgeServer) startup(ctx context.Context) {
 	for idx := range s.nb {
 		for _, svc := range s.svc {
 			for _, c := range svc.Contracts() {
-				s.nb[idx].gw.Register(svc.Name(), c.ID(), c.Encoding(), c.RouteSelector(), c.Input())
+				s.nb[idx].gw.Register(svc.Name(), c.ID(), c.Encoding(), c.RouteSelector(), c.Input(), c.Output())
 			}
 		}
 

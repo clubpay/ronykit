@@ -136,7 +136,7 @@ type routeData struct {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input, _ kit.Message,
 ) {
 	b.registerRPC(svcName, contractID, enc, sel, input)
 	b.registerREST(svcName, contractID, enc, sel, input)

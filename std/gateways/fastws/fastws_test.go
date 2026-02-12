@@ -73,7 +73,7 @@ func TestBundleRegisterStoresRoute(t *testing.T) {
 	}
 	b := gw.(*bundle)
 
-	b.Register("svc", "contract", kit.JSON, RPC("evt"), simpleMsg{})
+	b.Register("svc", "contract", kit.JSON, RPC("evt"), simpleMsg{}, simpleMsg{})
 	if _, ok := b.routes["evt"]; !ok {
 		t.Fatal("expected route to be registered")
 	}

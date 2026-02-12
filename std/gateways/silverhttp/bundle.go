@@ -99,7 +99,7 @@ func (b *bundle) Shutdown(_ context.Context) error {
 }
 
 func (b *bundle) Register(
-	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input kit.Message,
+	svcName, contractID string, enc kit.Encoding, sel kit.RouteSelector, input, _ kit.Message,
 ) {
 	b.registerREST(svcName, contractID, enc, sel, input)
 }

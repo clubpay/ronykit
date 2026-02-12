@@ -61,7 +61,7 @@ func (t *testGateway) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, err
 }
 
 func (t *testGateway) Register(
-	_, _ string, _ kit.Encoding, _ kit.RouteSelector, _ kit.Message,
+	_, _ string, _ kit.Encoding, _ kit.RouteSelector, _, _ kit.Message,
 ) {
 }
 

@@ -26,7 +26,7 @@ type Gateway interface {
 	// Register registers the route in the Bundle. This is how Bundle gets information
 	// about the services and their contracts.
 	Register(
-		serviceName, contractID string, enc Encoding, sel RouteSelector, input Message,
+		serviceName, contractID string, enc Encoding, sel RouteSelector, input, output Message,
 	)
 	// Subscribe will be called by the EdgeServer. These delegate functions
 	// must be called by the Gateway implementation. In other words, Gateway communicates

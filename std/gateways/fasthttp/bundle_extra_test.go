@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
@@ -15,7 +16,6 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
-	"testing/fstest"
 )
 
 type testLogger struct {
@@ -149,7 +149,7 @@ func TestRegisterRPCAndREST(t *testing.T) {
 	delegate := &captureDelegate{msgCh: make(chan []byte, 1)}
 	b.Subscribe(delegate)
 
-	b.Register("svc", "c1", kit.JSON, RPC("pred"), kit.RawMessage{})
+	b.Register("svc", "c1", kit.JSON, RPC("pred"), kit.RawMessage{}, kit.RawMessage{})
 	if b.wsRoutes["pred"] == nil {
 		t.Fatalf("expected ws route to be registered")
 	}
@@ -163,7 +163,7 @@ func TestRegisterRPCAndREST(t *testing.T) {
 		return kit.RawMessage(data), nil
 	}
 	restSel := REST(MethodPost, "/echo").SetDecoder(customDec)
-	b.Register("svc", "c2", kit.JSON, restSel, kit.RawMessage{})
+	b.Register("svc", "c2", kit.JSON, restSel, kit.RawMessage{}, kit.RawMessage{})
 
 	ctx := newRequestCtx(MethodPost, "/echo")
 	ctx.Request.SetBodyRaw([]byte("body"))

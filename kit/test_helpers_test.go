@@ -15,11 +15,12 @@ type testGateway struct {
 }
 
 type gatewayReg struct {
-	svc   string
-	cid   string
-	enc   Encoding
-	sel   RouteSelector
-	input Message
+	svc    string
+	cid    string
+	enc    Encoding
+	sel    RouteSelector
+	input  Message
+	output Message
 }
 
 func (g *testGateway) Start(_ context.Context, cfg GatewayStartConfig) error {
@@ -36,9 +37,9 @@ func (g *testGateway) Shutdown(_ context.Context) error {
 }
 
 func (g *testGateway) Register(
-	svcName, contractID string, enc Encoding, sel RouteSelector, input Message,
+	svcName, contractID string, enc Encoding, sel RouteSelector, input, output Message,
 ) {
-	g.regs = append(g.regs, gatewayReg{svc: svcName, cid: contractID, enc: enc, sel: sel, input: input})
+	g.regs = append(g.regs, gatewayReg{svc: svcName, cid: contractID, enc: enc, sel: sel, input: input, output: output})
 }
 
 func (g *testGateway) Subscribe(d GatewayDelegate) {

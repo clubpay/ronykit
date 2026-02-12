@@ -60,7 +60,7 @@ func (s *Server) initEdge() error {
 	}
 
 	opts := []kit.Option{
-		kit.WithGateway(s.cfg.Gateway()),
+		kit.WithGateway(s.cfg.Gateways()...),
 		kit.WithServiceBuilder(s.cfg.allServiceBuilders()...),
 	}
 

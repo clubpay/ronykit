@@ -10,6 +10,7 @@ use (
 	./example/ex-08-echo
 	./example/ex-09-mw
 	./example/ex-10-flow-codec
+	./example/ex-11-mcp
 	./flow
 	./kit
 	./rony
@@ -18,6 +19,7 @@ use (
 	./std/clusters/rediscluster
 	./std/gateways/fasthttp
 	./std/gateways/fastws
+	./std/gateways/mcp
 	./std/gateways/silverhttp
 	./stub
 	./testenv

@@ -69,8 +69,10 @@ func (cfg *serverConfig) allServiceDesc() []desc.ServiceDesc {
 	return svcs
 }
 
-func (cfg *serverConfig) Gateway() kit.Gateway {
-	return fasthttp.MustNew(cfg.gatewayOpts...)
+func (cfg *serverConfig) Gateways() []kit.Gateway {
+	return []kit.Gateway{
+		fasthttp.MustNew(cfg.gatewayOpts...),
+	}
 }
 
 type ServerOption func(cfg *serverConfig)
