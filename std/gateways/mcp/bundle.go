@@ -78,6 +78,7 @@ func (b *bundle) Register(
 	input, output kit.Message,
 ) {
 	inputSchema := rkit.Must(jsonschema.ForType(reflect.Indirect(reflect.ValueOf(input)).Type(), &jsonschema.ForOptions{}))
+
 	outputSchema := rkit.Must(jsonschema.ForType(reflect.Indirect(reflect.ValueOf(output)).Type(), &jsonschema.ForOptions{}))
 	if inputSchema.Type != "object" || outputSchema.Type != "object" {
 		return
@@ -141,6 +142,7 @@ func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	conn := ctx.Conn().(*toolConn)
 
 	m := conn.rd.factory()
+
 	err := kit.UnmarshalMessage(in, m)
 	if err != nil {
 		return kit.ExecuteArg{}, err

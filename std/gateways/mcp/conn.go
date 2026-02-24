@@ -32,6 +32,7 @@ func (c *toolConn) WriteEnvelope(e *kit.Envelope) error {
 	}
 
 	meta := map[string]any{}
+
 	e.WalkHdr(func(key string, val string) bool {
 		meta[key] = val
 
@@ -43,7 +44,7 @@ func (c *toolConn) WriteEnvelope(e *kit.Envelope) error {
 }
 
 func (c *toolConn) Stream() bool {
-	//TODO implement me
+	// TODO implement me
 	return true
 }
 

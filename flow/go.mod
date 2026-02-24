@@ -11,8 +11,8 @@ require (
 	github.com/nexus-rpc/sdk-go v0.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.40.0
-	go.temporal.io/api v1.62.0
-	go.temporal.io/sdk v1.39.0
+	go.temporal.io/api v1.62.2
+	go.temporal.io/sdk v1.40.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/sync v0.19.0
 	google.golang.org/protobuf v1.36.11

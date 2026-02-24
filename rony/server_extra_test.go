@@ -124,7 +124,7 @@ func TestServerOptionsAffectConfig(t *testing.T) {
 	if len(cfg.allServiceDesc()) != 1 {
 		t.Fatalf("unexpected service desc count: %d", len(cfg.allServiceDesc()))
 	}
-	if cfg.Gateway() == nil {
+	if len(cfg.Gateways()) == 0 {
 		t.Fatal("expected gateway to be created")
 	}
 }
