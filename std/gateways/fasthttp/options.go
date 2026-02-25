@@ -110,6 +110,12 @@ func WithMaxRequestBodySize(size int) Option {
 	}
 }
 
+func WithPoolBufferSize(reqBodyLimit, respBodyLimit int) Option {
+	return func(b *bundle) {
+		fasthttp.SetBodySizePoolLimit(reqBodyLimit, respBodyLimit)
+	}
+}
+
 // CompressionLevel is numeric representation of compression level
 type CompressionLevel int
 
