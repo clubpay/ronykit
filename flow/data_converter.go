@@ -32,6 +32,12 @@ func (a aesCodec) Encode(payloads []*common.Payload) ([]*common.Payload, error) 
 	for i := range payloads {
 		errG.Go(func(idx int) func() error {
 			return func() error {
+				defer func() {
+					if r := recover(); r != nil {
+						output[idx] = payloads[idx]
+					}
+				}()
+
 				p := &common.Payload{
 					Data:     a.s.Encrypt(payloads[idx].GetData(), nil),
 					Metadata: make(map[string][]byte, len(payloads[idx].GetMetadata())),
@@ -61,7 +67,13 @@ func (a aesCodec) Decode(payloads []*common.Payload) ([]*common.Payload, error) 
 	errG := &errgroup.Group{}
 	for i := range payloads {
 		errG.Go(func(idx int) func() error {
-			return func() error {
+			return func() (err error) {
+				defer func() {
+					if r := recover(); r != nil {
+						output[idx] = payloads[idx]
+					}
+				}()
+
 				d, err := a.s.Decrypt(payloads[idx].GetData(), nil)
 				if err != nil {
 					output[idx] = payloads[idx]
