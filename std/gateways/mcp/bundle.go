@@ -79,7 +79,9 @@ func (b *bundle) Register(
 ) {
 	inputSchema := rkit.Must(jsonschema.ForType(reflect.Indirect(reflect.ValueOf(input)).Type(), &jsonschema.ForOptions{}))
 
-	outputSchema := rkit.Must(jsonschema.ForType(reflect.Indirect(reflect.ValueOf(output)).Type(), &jsonschema.ForOptions{}))
+	outputSchema := rkit.Must(
+		jsonschema.ForType(reflect.Indirect(reflect.ValueOf(output)).Type(), &jsonschema.ForOptions{}),
+	)
 	if inputSchema.Type != "object" || outputSchema.Type != "object" {
 		return
 	}

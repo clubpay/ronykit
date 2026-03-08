@@ -78,7 +78,7 @@ func (a aesCodec) Decode(payloads []*common.Payload) ([]*common.Payload, error) 
 				if err != nil {
 					output[idx] = payloads[idx]
 
-					return nil //nolint:nilerr
+					return nil
 				}
 
 				p := &common.Payload{
