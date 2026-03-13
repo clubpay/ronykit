@@ -122,14 +122,6 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 	}
 }
 
-func strAppend(arr []string, elem string) []string {
-	return append(arr, elem)
-}
-
-func strEmptySlice() []string {
-	return []string{}
-}
-
 var pathParamRegEX = regexp.MustCompile(`{([^}]+)}`)
 
 func tsReplacePathParams(path string, prefix string) string {

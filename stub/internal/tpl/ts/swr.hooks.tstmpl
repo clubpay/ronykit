@@ -3,18 +3,18 @@
 */}}
 {{ define "dto" }}
 // {{.Name}} is a data transfer object
-{{- $extends := strEmptySlice }}
+{{- $extends := list }}
 {{- range .Fields -}}
-{{- if .Embedded }}{{$extends = strAppend $extends .Element.Message.Name}}{{end}}
+{{- if .Embedded }}{{$extends = append $extends .Element.Message.Name}}{{end}}
 {{- end }}
 {{- if gt (len $extends) 0 }}
-export interface {{.Name}} extends {{strJoin $extends ", "}} {
+export interface {{.Name}} extends {{join ", " $extends}} {
 {{- else }}
 export interface {{.Name}} {
 {{- end }}
 {{- range .Fields -}}
 {{- if .Embedded }} {{continue}} {{end}}
-{{index (strSplit (.Tag.Get "json") ",") 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
+{{index (splitList "," (.Tag.Get "json")) 0}}{{ if .Optional}}?{{end}}: {{tsType .Element.RType}}
 {{- end }}
 }
 {{- end }}

@@ -81,14 +81,6 @@ func TestStringHelpers(t *testing.T) {
 		t.Fatalf("unexpected path param replace")
 	}
 
-	arr := strAppend([]string{"a"}, "b")
-	if len(arr) != 2 || arr[1] != "b" {
-		t.Fatalf("unexpected strAppend result: %v", arr)
-	}
-	if len(strEmptySlice()) != 0 {
-		t.Fatalf("unexpected empty slice")
-	}
-
 	quoted := FuncMaps["strQuote"].(func([]string) []string)([]string{"a", "b"})
 	if quoted[0] != `"a"` {
 		t.Fatalf("unexpected strQuote: %v", quoted)
