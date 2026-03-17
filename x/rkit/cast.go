@@ -29,6 +29,10 @@ func ToJSON(val any) []byte {
 	return Ok(json.Marshal(val))
 }
 
+func ToJSONStr(val any) string {
+	return B2S(ToJSON(val))
+}
+
 // FromJSON Converts a byte array to a given type.
 func FromJSON[T any](bytes []byte) T {
 	var v T

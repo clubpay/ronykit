@@ -1,6 +1,9 @@
 package mcp
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -25,9 +28,35 @@ func (c *toolConn) ClientIP() string {
 
 func (c *toolConn) WriteEnvelope(e *kit.Envelope) error {
 	msg := e.GetMsg()
+	if msg == nil {
+		return fmt.Errorf("nil message")
+	}
+
+	outJSON, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	// Validate output against schema, if any.
+	if c.rd.outResolved != nil {
+		var v map[string]any
+		if err := json.Unmarshal(outJSON, &v); err != nil {
+			return err
+		}
+		if err := c.rd.outResolved.Validate(&v); err != nil {
+			// Tool errors must be returned inside the tool result, not as protocol errors.
+			var res mcp.CallToolResult
+			res.SetError(err)
+			c.res = &res
+			return nil
+		}
+	}
 
 	c.res = &mcp.CallToolResult{
-		StructuredContent: msg,
+		Content: []mcp.Content{
+			&mcp.TextContent{Text: string(outJSON)},
+		},
+		StructuredContent: json.RawMessage(outJSON),
 		IsError:           false,
 	}
 
@@ -44,8 +73,7 @@ func (c *toolConn) WriteEnvelope(e *kit.Envelope) error {
 }
 
 func (c *toolConn) Stream() bool {
-	// TODO implement me
-	return true
+	return false
 }
 
 func (c *toolConn) Walk(fn func(key string, val string) bool) {
@@ -69,6 +97,9 @@ func (c *toolConn) Get(key string) string {
 
 func (c *toolConn) Set(key string, val string) {
 	meta := c.res.Meta.GetMeta()
+	if meta == nil {
+		meta = map[string]any{}
+	}
 	meta[key] = val
 	c.res.Meta.SetMeta(meta)
 }

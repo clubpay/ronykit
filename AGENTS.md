@@ -27,6 +27,7 @@ This file defines practical instructions for coding agents working in this repos
 - Add comments only when logic is non-obvious.
 - Do not introduce unrelated formatting churn.
 - Update docs when behavior or developer workflow changes.
+- Always run `make lint` after task is done.
 ## Testing
 - For logic changes, run targeted tests for affected modules.
 - For cross-cutting changes, run `make test` when feasible.
