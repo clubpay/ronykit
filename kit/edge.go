@@ -149,13 +149,15 @@ func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 // RegisterService registers a Service to our server. We need to define the appropriate
 // RouteSelector in each desc.Contract.
 func (s *EdgeServer) registerService(svc Service) *EdgeServer {
-	if _, ok := s.contracts[svc.Name()]; ok {
-		panic(errors.New("service already registered: %s", svc.Name()))
+	for _, registeredSvc := range s.svc {
+		if registeredSvc.Name() == svc.Name() {
+			panic(errors.New("service already registered: %s", svc.Name()))
+		}
 	}
 
 	s.svc = append(s.svc, svc)
 	for _, c := range svc.Contracts() {
-		s.contracts[c.ID()] = WrapContract(
+		s.contracts[contractLookupKey(svc.Name(), c.ID())] = WrapContract(
 			c,
 			ContractWrapperFunc(s.wrapWithGlobalHandlers),
 			ContractWrapperFunc(s.sb.wrapWithCoordinator),

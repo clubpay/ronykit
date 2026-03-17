@@ -104,6 +104,7 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 		if err != nil {
 			return err
 		}
+
 		b.ln = ln
 	}
 
@@ -122,6 +123,7 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 
 	go func() {
 		<-ctx.Done()
+
 		_ = b.Shutdown(context.Background())
 	}()
 
@@ -132,6 +134,7 @@ func (b *bundle) Shutdown(_ context.Context) error {
 	if b.httpSrv == nil {
 		return nil
 	}
+
 	return b.httpSrv.Close()
 }
 
@@ -154,6 +157,7 @@ func (b *bundle) Register(
 	if err != nil {
 		return
 	}
+
 	outputResolved, err := outputSchema.Resolve(&jsonschema.ResolveOptions{ValidateDefaults: true})
 	if err != nil {
 		return
@@ -203,6 +207,7 @@ func (b *bundle) getHandler(rd routeData) mcp.ToolHandler {
 		// Validate and apply defaults to arguments according to the inferred input schema,
 		// mirroring the MCP SDK behavior.
 		args := req.Params.Arguments
+
 		if rd.inResolved != nil {
 			var v map[string]any
 			if len(args) > 0 {
@@ -216,6 +221,7 @@ func (b *bundle) getHandler(rd routeData) mcp.ToolHandler {
 			if err := rd.inResolved.ApplyDefaults(&v); err != nil {
 				return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
 			}
+
 			if err := rd.inResolved.Validate(&v); err != nil {
 				return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
 			}
@@ -224,6 +230,7 @@ func (b *bundle) getHandler(rd routeData) mcp.ToolHandler {
 			if err != nil {
 				return nil, fmt.Errorf("marshal validated args: %w", err)
 			}
+
 			req2 := *req
 			req2.Params = &mcp.CallToolParamsRaw{
 				Meta:      req.Params.Meta,

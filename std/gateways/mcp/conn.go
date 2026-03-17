@@ -43,11 +43,13 @@ func (c *toolConn) WriteEnvelope(e *kit.Envelope) error {
 		if err := json.Unmarshal(outJSON, &v); err != nil {
 			return err
 		}
+
 		if err := c.rd.outResolved.Validate(&v); err != nil {
 			// Tool errors must be returned inside the tool result, not as protocol errors.
 			var res mcp.CallToolResult
 			res.SetError(err)
 			c.res = &res
+
 			return nil
 		}
 	}
@@ -100,6 +102,7 @@ func (c *toolConn) Set(key string, val string) {
 	if meta == nil {
 		meta = map[string]any{}
 	}
+
 	meta[key] = val
 	c.res.Meta.SetMeta(meta)
 }

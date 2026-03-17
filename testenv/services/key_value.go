@@ -37,6 +37,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
 					req, _ := ctx.In().GetMsg().(*SetRequest)
+
 					err := sharedKV.Set(ctx, req.Key, ctx.ClusterID(), 0)
 					if err != nil {
 						ctx.SetStatusCode(500)
@@ -59,6 +60,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
 					req, _ := ctx.In().GetMsg().(*GetRequest)
+
 					value := ctx.LocalStore().Get(req.Key)
 					if value == nil {
 						ctx.SetStatusCode(http.StatusNotFound)

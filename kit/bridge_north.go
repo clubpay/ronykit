@@ -99,7 +99,14 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 		// If this is a Preflight request, we ignore executing it.
 		// This is a workaround for CORS Preflight requests.
 	case err == nil:
-		ctx.execute(arg, n.c[arg.ContractID])
+		c, err := resolveContract(n.c, arg.ServiceName, arg.ContractID)
+		if err != nil {
+			n.eh(ctx, err)
+
+			break
+		}
+
+		ctx.execute(arg, c)
 	}
 
 	n.releaseCtx(ctx)
@@ -108,6 +115,7 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 
 var (
 	ErrNoHandler                     = errors.New("handler is not set for request")
+	ErrContractNotFound              = errors.New("contract not found")
 	ErrWriteToClosedConn             = errors.New("write to closed connection")
 	ErrDecodeIncomingMessageFailed   = errors.New("decoding the incoming message failed")
 	ErrEncodeOutgoingMessageFailed   = errors.New("encoding the outgoing message failed")
@@ -119,6 +127,7 @@ var (
 // These are just to silence the linter.
 var (
 	_ = ErrNoHandler
+	_ = ErrContractNotFound
 	_ = ErrWriteToClosedConn
 	_ = ErrDecodeIncomingMessageFailed
 	_ = ErrEncodeOutgoingMessageFailed

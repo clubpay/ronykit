@@ -207,14 +207,18 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 		SetHdrMap(carrier.Data.Hdr).
 		SetMsg(msg)
 
-	ctx.execute(
-		ExecuteArg{
-			ServiceName: carrier.Data.ServiceName,
-			ContractID:  carrier.Data.ContractID,
-			Route:       carrier.Data.Route,
-		},
-		sb.c[carrier.Data.ContractID],
-	)
+	arg := ExecuteArg{
+		ServiceName: carrier.Data.ServiceName,
+		ContractID:  carrier.Data.ContractID,
+		Route:       carrier.Data.Route,
+	}
+
+	c, err := resolveContract(sb.c, arg.ServiceName, arg.ContractID)
+	if err != nil {
+		sb.eh(ctx, err)
+	} else {
+		ctx.execute(arg, c)
+	}
 
 	ec := newEnvelopeCarrier(
 		eofCarrier,
@@ -225,7 +229,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 
 	ecBuf := buf.GetCap(CodecDefaultBufferSize)
 
-	err := defaultMessageCodec.Encode(ec, ecBuf)
+	err = defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
 		sb.eh(ctx, err)
 	} else {

@@ -52,7 +52,7 @@ func TestNorthBridgeOnMessagePaths(t *testing.T) {
 		ctxPool: ctxPool{ls: ls},
 		wg:      &sync.WaitGroup{},
 		eh:      func(_ *Context, err error) { gotErr = err },
-		c:       map[string]Contract{"c1": contract},
+		c:       map[string]Contract{contractLookupKey("svc", "c1"): contract},
 		gw:      gw,
 	}
 
@@ -77,7 +77,7 @@ func TestNorthBridgeOnMessagePaths(t *testing.T) {
 
 	gotErr = nil
 	gw.dispatchFn = func(_ *Context, _ []byte) (ExecuteArg, error) {
-		return ExecuteArg{ContractID: "c1"}, nil
+		return ExecuteArg{ServiceName: "svc", ContractID: "c1"}, nil
 	}
 	b.OnMessage(newTestConn(), []byte("ok"))
 	if gotErr != nil {
@@ -85,6 +85,99 @@ func TestNorthBridgeOnMessagePaths(t *testing.T) {
 	}
 	if !handled {
 		t.Fatal("expected handler to run")
+	}
+}
+
+func TestNorthBridgeResolvesByServiceAndContractID(t *testing.T) {
+	ls := &localStore{kv: map[string]any{}}
+	gw := &testGateway{}
+	var handledA, handledB bool
+
+	contractA := &testContract{
+		id: "shared",
+		handlers: []HandlerFunc{
+			func(ctx *Context) {
+				handledA = true
+				ctx.Out().SetMsg(&bridgeOut{OK: true}).Send()
+			},
+		},
+	}
+	contractB := &testContract{
+		id: "shared",
+		handlers: []HandlerFunc{
+			func(ctx *Context) {
+				handledB = true
+				ctx.Out().SetMsg(&bridgeOut{OK: true}).Send()
+			},
+		},
+	}
+
+	var gotErr error
+	b := &northBridge{
+		ctxPool: ctxPool{ls: ls},
+		wg:      &sync.WaitGroup{},
+		eh:      func(_ *Context, err error) { gotErr = err },
+		c: map[string]Contract{
+			contractLookupKey("svcA", "shared"): contractA,
+			contractLookupKey("svcB", "shared"): contractB,
+		},
+		gw: gw,
+	}
+
+	gw.dispatchFn = func(_ *Context, _ []byte) (ExecuteArg, error) {
+		return ExecuteArg{
+			ServiceName: "svcB",
+			ContractID:  "shared",
+		}, nil
+	}
+
+	b.OnMessage(newTestConn(), []byte("ok"))
+	if gotErr != nil {
+		t.Fatalf("unexpected error: %v", gotErr)
+	}
+	if handledA {
+		t.Fatal("unexpected handler execution for svcA")
+	}
+	if !handledB {
+		t.Fatal("expected svcB handler to run")
+	}
+}
+
+func TestNorthBridgeMissingContractDoesNotPanic(t *testing.T) {
+	ls := &localStore{kv: map[string]any{}}
+	gw := &testGateway{}
+	var gotErr error
+
+	b := &northBridge{
+		ctxPool: ctxPool{ls: ls},
+		wg:      &sync.WaitGroup{},
+		eh:      func(_ *Context, err error) { gotErr = err },
+		c:       map[string]Contract{},
+		gw:      gw,
+	}
+
+	gw.dispatchFn = func(_ *Context, _ []byte) (ExecuteArg, error) {
+		return ExecuteArg{
+			ServiceName: "missing-svc",
+			ContractID:  "missing-contract",
+		}, nil
+	}
+
+	didPanic := false
+	func() {
+		defer func() {
+			if recover() != nil {
+				didPanic = true
+			}
+		}()
+		b.OnMessage(newTestConn(), []byte("ok"))
+	}()
+
+	if didPanic {
+		t.Fatal("north bridge should not panic on missing contract")
+	}
+	if gotErr == nil || !errors.Is(gotErr, ErrContractNotFound) {
+		t.Fatalf("expected ErrContractNotFound, got: %v", gotErr)
 	}
 }
 
@@ -208,7 +301,7 @@ func TestSouthBridgeOnIncomingMessage(t *testing.T) {
 		id:           "target",
 		wg:           &sync.WaitGroup{},
 		eh:           func(_ *Context, err error) { t.Fatalf("unexpected error: %v", err) },
-		c:            map[string]Contract{"cid": contract},
+		c:            map[string]Contract{contractLookupKey("svc", "cid"): contract},
 		cb:           cluster,
 		inProgress:   map[string]*clusterConn{},
 		msgFactories: map[string]MessageFactoryFunc{},
