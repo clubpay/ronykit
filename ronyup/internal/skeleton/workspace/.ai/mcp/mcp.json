@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ronykit": {
+      "command": "ronyup",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}
