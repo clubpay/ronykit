@@ -242,6 +242,8 @@ func createFeature(_ context.Context) error {
 		return fmt.Errorf("project directory is required")
 	}
 
+	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "/")
+	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "feature")
 	projectPath := filepath.Join("feature", opt.Template, opt.FeatureDir)
 
 	_ = os.MkdirAll(projectPath, 0o755)
