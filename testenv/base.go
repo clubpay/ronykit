@@ -352,13 +352,15 @@ func Prepare(t *testing.T, c C, option ...fx.Option) {
 	t.Helper()
 
 	_, _ = c.Println('\n')
-	opts := []fx.Option{
-		fx.StartTimeout(time.Minute * 5),
-		fx.StopTimeout(time.Minute * 5),
+	opts := make([]fx.Option, 0, 5+len(option))
+	opts = append(
+		opts,
+		fx.StartTimeout(time.Minute*5),
+		fx.StopTimeout(time.Minute*5),
 		fx.NopLogger,
 		fx.Provide(provideRedis),
 		fx.Invoke(invokeTemporal),
-	}
+	)
 
 	opts = append(opts, option...)
 

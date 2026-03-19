@@ -90,6 +90,7 @@ func keyValueCoordinator(ctx *kit.LimitedContext) (string, error) {
 	return sharedKV.Get(ctx, key)
 }
 
+//nolint:unparam // Signature is shared across test middlewares for consistency.
 func contextMW(t time.Duration) kit.HandlerFunc {
 	return func(ctx *kit.Context) {
 		userCtx, cf := context.WithTimeout(context.Background(), t)

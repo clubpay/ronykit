@@ -2,6 +2,7 @@ package stubgen
 
 import (
 	"bytes"
+	"context"
 	"os/exec"
 	"strings"
 
@@ -64,7 +65,8 @@ func (t typescriptGE) Generate(in *Input) ([]GeneratedFile, error) {
 }
 
 func runPrettier(gf GeneratedFile) GeneratedFile {
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		context.Background(),
 		"npx", "prettier",
 		"--stdin-filepath", gf.Filename,
 	)

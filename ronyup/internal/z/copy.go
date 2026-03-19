@@ -59,7 +59,7 @@ type CopyFileParams struct {
 }
 
 func CopyFile(p CopyFileParams) error {
-	if p.TemplateInput != nil {
+	if p.TemplateInput != nil && strings.HasSuffix(p.SrcPath, p.TemplateSuffix) {
 		tmplBytes, err := fs.ReadFile(p.FS, p.SrcPath)
 		if err != nil {
 			return err

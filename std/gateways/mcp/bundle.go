@@ -100,7 +100,9 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 	b.httpSrv.Handler = handler
 
 	if b.ln == nil {
-		ln, err := net.Listen("tcp", b.addr)
+		listenCtx := context.WithoutCancel(ctx)
+
+		ln, err := (&net.ListenConfig{}).Listen(listenCtx, "tcp", b.addr)
 		if err != nil {
 			return err
 		}
@@ -124,7 +126,7 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 	go func() {
 		<-ctx.Done()
 
-		_ = b.Shutdown(context.Background())
+		_ = b.Shutdown(ctx)
 	}()
 
 	return nil
@@ -206,39 +208,12 @@ func (b *bundle) getHandler(rd routeData) mcp.ToolHandler {
 	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		// Validate and apply defaults to arguments according to the inferred input schema,
 		// mirroring the MCP SDK behavior.
-		args := req.Params.Arguments
-
-		if rd.inResolved != nil {
-			var v map[string]any
-			if len(args) > 0 {
-				if err := json.Unmarshal(args, &v); err != nil {
-					return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
-				}
-			} else {
-				v = map[string]any{}
-			}
-
-			if err := rd.inResolved.ApplyDefaults(&v); err != nil {
-				return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
-			}
-
-			if err := rd.inResolved.Validate(&v); err != nil {
-				return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
-			}
-
-			bb, err := json.Marshal(v)
-			if err != nil {
-				return nil, fmt.Errorf("marshal validated args: %w", err)
-			}
-
-			req2 := *req
-			req2.Params = &mcp.CallToolParamsRaw{
-				Meta:      req.Params.Meta,
-				Name:      req.Params.Name,
-				Arguments: json.RawMessage(bb),
-			}
-			req = &req2
+		normalizedReq, err := normalizeRequestArgs(req, rd.inResolved)
+		if err != nil {
+			return nil, err
 		}
+
+		req = normalizedReq
 
 		conn := &toolConn{
 			id:  b.nextConnID.Add(1),
@@ -261,6 +236,43 @@ func (b *bundle) getHandler(rd routeData) mcp.ToolHandler {
 
 		return conn.res, nil
 	}
+}
+
+func normalizeRequestArgs(
+	req *mcp.CallToolRequest, inResolved *jsonschema.Resolved,
+) (*mcp.CallToolRequest, error) {
+	if inResolved == nil {
+		return req, nil
+	}
+
+	v := map[string]any{}
+	if len(req.Params.Arguments) > 0 {
+		if err := json.Unmarshal(req.Params.Arguments, &v); err != nil {
+			return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
+		}
+	}
+
+	if err := inResolved.ApplyDefaults(&v); err != nil {
+		return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
+	}
+
+	if err := inResolved.Validate(&v); err != nil {
+		return nil, &jsonrpc.Error{Code: jsonrpc.CodeInvalidParams, Message: err.Error()}
+	}
+
+	bb, err := json.Marshal(v)
+	if err != nil {
+		return nil, fmt.Errorf("marshal validated args: %w", err)
+	}
+
+	req2 := *req
+	req2.Params = &mcp.CallToolParamsRaw{
+		Meta:      req.Params.Meta,
+		Name:      req.Params.Name,
+		Arguments: json.RawMessage(bb),
+	}
+
+	return &req2, nil
 }
 
 func (b *bundle) Subscribe(d kit.GatewayDelegate) {

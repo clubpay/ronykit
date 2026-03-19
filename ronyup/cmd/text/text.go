@@ -85,12 +85,15 @@ func runText(cmd *cobra.Command) error {
 	if err != nil {
 		return wrap(err, "extract failed")
 	}
+
 	if err := state.Import(); err != nil {
 		return wrap(err, "import failed")
 	}
+
 	if err := state.Merge(); err != nil {
 		return wrap(err, "merge failed")
 	}
+
 	if err := state.Export(); err != nil {
 		return wrap(err, "export failed")
 	}

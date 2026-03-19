@@ -59,10 +59,12 @@ func (s *Server) initEdge() error {
 		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", docFS))
 	}
 
-	opts := []kit.Option{
+	opts := make([]kit.Option, 0, 2+len(s.cfg.edgeOpts))
+	opts = append(
+		opts,
 		kit.WithGateway(s.cfg.Gateways()...),
 		kit.WithServiceBuilder(s.cfg.allServiceBuilders()...),
-	}
+	)
 
 	opts = append(opts, s.cfg.edgeOpts...)
 

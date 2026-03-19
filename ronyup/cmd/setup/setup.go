@@ -202,6 +202,7 @@ func runFeature(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
+
 	if !ok {
 		return fmt.Errorf("run this command in a go workspace root directory")
 	}

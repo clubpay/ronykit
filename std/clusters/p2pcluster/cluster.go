@@ -64,7 +64,7 @@ func New(name string, opts ...Option) kit.Cluster {
 	return c
 }
 
-func (c *cluster) Start(_ context.Context) error {
+func (c *cluster) Start(ctx context.Context) error {
 	var err error
 
 	c.host, err = libp2p.New(
@@ -77,8 +77,9 @@ func (c *cluster) Start(_ context.Context) error {
 		return err
 	}
 
-	bgCtx := context.Background()
-	gossipCtx, gossipCF := context.WithCancel(bgCtx)
+	baseCtx := context.WithoutCancel(ctx)
+
+	gossipCtx, gossipCF := context.WithCancel(baseCtx)
 	c.gossipCancelFunc = gossipCF
 
 	c.ps, err = pubsub.NewGossipSub(gossipCtx, c.host)
@@ -95,7 +96,7 @@ func (c *cluster) Start(_ context.Context) error {
 	}
 
 	// Start my topic
-	myTopicCtx, myTopicCF := context.WithCancel(bgCtx)
+	myTopicCtx, myTopicCF := context.WithCancel(baseCtx)
 	c.myTopicCancelFunc = myTopicCF
 
 	err = c.startMyTopic(myTopicCtx)
@@ -104,7 +105,7 @@ func (c *cluster) Start(_ context.Context) error {
 	}
 
 	// Start broadcast
-	broadcastCtx, broadcastCF := context.WithCancel(bgCtx)
+	broadcastCtx, broadcastCF := context.WithCancel(baseCtx)
 	c.broadcastCancelFunc = broadcastCF
 
 	err = c.startBroadcast(broadcastCtx)

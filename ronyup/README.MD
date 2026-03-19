@@ -21,6 +21,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 - `setup`: create a new workspace or add a feature to an existing workspace.
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
 - `template`: parse Go source and print package/type/function metadata (generator stub).
+- `mcp`: run `ronyup` as a stdio MCP server for AI assistants.
 
 Running `ronyup setup` or `ronyup text` with no flags triggers an interactive TUI.
 
@@ -70,6 +71,21 @@ ronyup template
 ```
 
 This parses packages under the current directory and prints collected metadata (packages, types, functions, comments).
+
+### Run MCP server
+
+```bash
+ronyup mcp
+```
+
+Starts a stdio MCP server that exposes tools for:
+
+- Listing embedded scaffold templates (`list_templates`)
+- Reading template file contents (`read_template`)
+- Creating workspaces via existing setup flow (`create_workspace`)
+- Adding feature modules via existing setup flow (`create_feature`)
+- Planning service implementation with characteristic hints (`plan_service`)
+- Implementing service starter code in scaffolded features (`implement_service`)
 
 ## Flags
 
@@ -260,6 +276,74 @@ Flags:
 ```
 
 Note: the `generate` subcommand is currently a no-op in the source.
+
+### mcp
+
+Run `ronyup` as a stdio MCP server:
+
+```bash
+ronyup mcp [flags]
+```
+
+Flags:
+
+```
+    --name string           MCP server name (default "ronyup")
+    --version string        MCP server version (default "v0.1.0")
+    --instructions string   MCP server instructions advertised to clients
+```
+
+Exposed MCP tools:
+- `list_templates`: list embedded files under `internal/skeleton`.
+- `read_template`: read one embedded template file.
+- `create_workspace`: delegates to `ronyup setup workspace`.
+- `create_feature`: delegates to `ronyup setup feature`.
+- `plan_service`: dry-run plan for implementing a service feature in workspace structure.
+- `implement_service`: writes base implementation into `api/service.go`, `internal/app/app.go`, and `internal/repo/port.go`.
+  - Supports multi-contract generation via `contracts` input.
+  - Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
+
+## Use `ronyup` MCP in IDEs
+
+Before configuring any IDE, make sure `ronyup` is installed and available on your `PATH`:
+
+```bash
+go install github.com/clubpay/ronykit/ronyup@latest
+ronyup mcp --name ronyup
+```
+
+If the second command starts and waits for input, the MCP server is ready.
+
+### Cursor IDE
+
+Create (or update) `.cursor/mcp.json` in your project:
+
+```json
+{
+  "mcpServers": {
+    "ronyup": {
+      "command": "ronyup",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Then reopen Cursor (or reload the window). The `ronyup` MCP tools should be available in Cursor's AI chat/tooling panel.
+
+### JetBrains GoLand
+
+GoLand MCP setup is done from Settings/Preferences:
+
+1. Open `Settings` (`Preferences` on macOS).
+2. Search for `MCP` in settings search.
+3. Add a new **stdio** MCP server with:
+   - Name: `ronyup`
+   - Command: `ronyup`
+   - Arguments: `mcp`
+4. Save settings and restart GoLand if tools do not appear immediately.
+
+After setup, verify from the IDE MCP/AI tools view that server `ronyup` is connected and its tools are listed (`list_templates`, `create_workspace`, etc).
 
 ## Examples
 

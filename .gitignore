@@ -120,3 +120,4 @@ Temporary Items
 _*
 *.pprof
 go.work.sum
+/.ai/mcp/mcp.json

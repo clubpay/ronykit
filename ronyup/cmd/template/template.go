@@ -56,7 +56,6 @@ var Cmd = &cobra.Command{
 		//if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 		//	return RunInteractive()
 		//}
-
 		err := cmd.ParseFlags(args)
 		if err != nil {
 			return err
@@ -68,13 +67,16 @@ var Cmd = &cobra.Command{
 		}
 
 		cmd.Println("packages:")
+
 		for _, pkg := range pkgs {
 			cmd.Println(pkg.Name)
 			cmd.Println("files:", len(pkg.Files))
 			cmd.Println("types:", len(pkg.Types))
+
 			for _, f := range pkg.Functions {
 				cmd.Println("\t", f.Name, f.Receiver, f.ReceiverType, f.Params, f.Results)
 			}
+
 			cmd.Println("comments", len(pkg.Comments))
 		}
 

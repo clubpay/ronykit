@@ -28,21 +28,10 @@ func New(params ServiceParams) *Service {
 
 func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 	return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
-		rony.WithUnary(
-			Echo,
-			rony.GET("/echo/{message}", rony.UnaryName("Echo")),
-		),
+		// Keep handlers thin: validate input and delegate use-cases to app layer.
+		// rony.WithUnary(
+		// 	Create{{.PackageName}},
+		// 	rony.POST("/{{.PackageName}}/create", rony.UnaryName("Create{{.PackageName}}")),
+		// ),
 	)
-}
-
-type EchoInput struct {
-	Message string `json:"message"`
-}
-
-type EchoOutput struct {
-	Message string `json:"message"`
-}
-
-func Echo(_ *RContext, input EchoInput) (*EchoOutput, error) {
-	return &EchoOutput{Message: input.Message}, nil
 }
