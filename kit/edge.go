@@ -382,35 +382,38 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 
 	tw := table.NewWriter()
 	tw.SuppressEmptyColumns()
-	tw.SetStyle(table.StyleRounded)
+	tw.SetStyle(table.StyleLight)
 	style := tw.Style()
 	style.Title = table.TitleOptions{
-		Align:  text.AlignLeft,
-		Colors: text.Colors{text.FgBlack, text.BgWhite},
-		Format: text.FormatTitle,
+		Align:  text.AlignCenter,
+		Colors: text.Colors{text.Bold, text.FgHiWhite},
+		Format: text.FormatUpper,
 	}
-	style.Options.SeparateRows = true
-	style.Color.Header = text.Colors{text.Bold, text.FgWhite}
+	style.Options.SeparateRows = false
+	style.Color.Header = text.Colors{text.Bold, text.FgHiCyan}
+	style.Format.Header = text.FormatUpper
+
+	tw.SetTitle("Registered Routes")
 
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{
 			Number:    1,
 			AutoMerge: true,
-			VAlign:    text.VAlignTop,
+			VAlign:    text.VAlignMiddle,
 			Align:     text.AlignLeft,
 			WidthMax:  24,
 		},
 		{
 			Number:    2,
 			AutoMerge: true,
-			VAlign:    text.VAlignTop,
+			VAlign:    text.VAlignMiddle,
 			Align:     text.AlignLeft,
-			WidthMax:  36,
+			WidthMax:  24,
 		},
 		{
 			Number:   3,
-			Align:    text.AlignLeft,
-			WidthMax: 12,
+			Align:    text.AlignCenter,
+			WidthMax: 8,
 		},
 		{
 			Number:           4,
@@ -420,56 +423,47 @@ func (s *EdgeServer) PrintRoutes(w io.Writer) *EdgeServer {
 		},
 		{
 			Number:           5,
-			AutoMerge:        true,
-			VAlign:           text.VAlignTop,
 			Align:            text.AlignLeft,
-			WidthMax:         84,
-			WidthMaxEnforcer: text.WrapText,
+			WidthMax:         64,
+			WidthMaxEnforcer: text.WrapSoft,
 		},
 	})
 
 	tw.AppendHeader(
-		table.Row{
-			"ContractID",
-			"Bundle",
-			"API",
-			"Route | Predicate",
-			"Handlers",
-		},
+		table.Row{"Service", "Contract", "Type", "Route", "Handlers"},
 	)
 
+	routeCount := 0
+
 	for _, svc := range s.svc {
+		svcName := text.Colors{text.Bold, text.FgHiYellow}.Sprint(svc.Name())
 		for _, c := range svc.Contracts() {
 			if route := rpcRoute(c.RouteSelector()); route != "" {
-				tw.AppendRow(
-					table.Row{
-						c.ID(),
-						reflect.TypeOf(c.RouteSelector()).String(),
-						text.FgBlue.Sprint("RPC"),
-						route,
-						getHandlers(c.Handlers()...),
-					},
-				)
+				routeCount++
+
+				tw.AppendRow(table.Row{
+					svcName, c.ID(), typeBadge("RPC"), route,
+					getHandlers(c.Handlers()...),
+				})
 			}
 
 			if route := restRoute(c.RouteSelector()); route != "" {
-				tw.AppendRow(
-					table.Row{
-						c.ID(),
-						reflect.TypeOf(c.RouteSelector()).String(),
-						text.FgGreen.Sprint("REST"),
-						route,
-						getHandlers(c.Handlers()...),
-					},
-				)
+				routeCount++
+
+				tw.AppendRow(table.Row{
+					svcName, c.ID(), typeBadge("REST"), route,
+					getHandlers(c.Handlers()...),
+				})
 			}
 		}
 
 		tw.AppendSeparator()
 	}
 
-	_, _ = w.Write(utils.S2B(tw.Render()))
-	_, _ = w.Write(utils.S2B("\n"))
+	_, _ = fmt.Fprintf(w, "\n%s\n", tw.Render())
+	_, _ = fmt.Fprintf(w, "  %s\n\n",
+		text.Colors{text.FgHiBlack}.Sprintf("%d route(s) registered", routeCount),
+	)
 
 	if x, ok := w.(interface{ Sync() error }); ok {
 		_ = x.Sync()
@@ -487,27 +481,24 @@ func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
 
 	tw := table.NewWriter()
 	tw.SuppressEmptyColumns()
-	tw.SetStyle(table.StyleRounded)
+	tw.SetStyle(table.StyleLight)
 	style := tw.Style()
-	style.Title = table.TitleOptions{
-		Align:  text.AlignLeft,
-		Colors: text.Colors{text.FgBlack, text.BgWhite},
-		Format: text.FormatTitle,
-	}
-	style.Color.Header = text.Colors{text.Bold, text.FgWhite}
+	style.Options.SeparateRows = false
+	style.Color.Header = text.Colors{text.Bold, text.FgHiCyan}
+	style.Format.Header = text.FormatUpper
 
 	tw.SetColumnConfigs([]table.ColumnConfig{
 		{
 			Number:    1,
 			AutoMerge: true,
-			VAlign:    text.VAlignTop,
+			VAlign:    text.VAlignMiddle,
 			Align:     text.AlignLeft,
-			WidthMax:  32,
+			WidthMax:  24,
 		},
 		{
 			Number:   2,
-			Align:    text.AlignLeft,
-			WidthMax: 12,
+			Align:    text.AlignCenter,
+			WidthMax: 8,
 		},
 		{
 			Number:           3,
@@ -518,41 +509,38 @@ func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
 	})
 
 	tw.AppendHeader(
-		table.Row{
-			"Service",
-			"API",
-			"Route | Predicate",
-		},
+		table.Row{"Service", "Type", "Route"},
 	)
 
+	routeCount := 0
+
 	for _, svc := range s.svc {
+		svcName := text.Colors{text.Bold, text.FgHiYellow}.Sprint(svc.Name())
 		for _, c := range svc.Contracts() {
 			if route := rpcRoute(c.RouteSelector()); route != "" {
-				tw.AppendRow(
-					table.Row{
-						svc.Name(),
-						text.FgBlue.Sprint("RPC"),
-						route,
-					},
-				)
+				routeCount++
+
+				tw.AppendRow(table.Row{
+					svcName, typeBadge("RPC"), route,
+				})
 			}
 
 			if route := restRoute(c.RouteSelector()); route != "" {
-				tw.AppendRow(
-					table.Row{
-						svc.Name(),
-						text.FgGreen.Sprint("REST"),
-						route,
-					},
-				)
+				routeCount++
+
+				tw.AppendRow(table.Row{
+					svcName, typeBadge("REST"), route,
+				})
 			}
 		}
 
 		tw.AppendSeparator()
 	}
 
-	_, _ = w.Write(utils.S2B(tw.Render()))
-	_, _ = w.Write(utils.S2B("\n"))
+	_, _ = fmt.Fprintf(w, "\n%s\n", tw.Render())
+	_, _ = fmt.Fprintf(w, "  %s\n\n",
+		text.Colors{text.FgHiBlack}.Sprintf("%d route(s) registered", routeCount),
+	)
 
 	if x, ok := w.(interface{ Sync() error }); ok {
 		_ = x.Sync()
@@ -581,14 +569,46 @@ func getHandlers(handlers ...HandlerFunc) string {
 	sb := strings.Builder{}
 
 	for idx, h := range handlers {
-		if idx != 0 {
-			sb.WriteString(", ")
+		if idx > 0 {
+			sb.WriteString(" → ")
 		}
 
 		sb.WriteString(getFuncName(h))
 	}
 
-	return text.WrapSoft(sb.String(), 32)
+	return sb.String()
+}
+
+func typeBadge(t string) string {
+	switch t {
+	case "REST":
+		return text.Colors{text.Bold, text.FgHiGreen}.Sprint("REST")
+	case "RPC":
+		return text.Colors{text.Bold, text.FgHiBlue}.Sprint("RPC")
+	default:
+		return t
+	}
+}
+
+func httpMethodColor(method string) text.Colors {
+	switch strings.ToUpper(method) {
+	case "GET":
+		return text.Colors{text.Bold, text.FgHiGreen}
+	case "POST":
+		return text.Colors{text.Bold, text.FgHiYellow}
+	case "PUT":
+		return text.Colors{text.Bold, text.FgHiBlue}
+	case "DELETE":
+		return text.Colors{text.Bold, text.FgHiRed}
+	case "PATCH":
+		return text.Colors{text.Bold, text.FgHiCyan}
+	case "HEAD":
+		return text.Colors{text.Bold, text.FgHiMagenta}
+	case "OPTIONS":
+		return text.Colors{text.Bold, text.FgWhite}
+	default:
+		return text.Colors{text.Bold, text.FgWhite}
+	}
 }
 
 func rpcRoute(rs RouteSelector) string {
@@ -597,9 +617,7 @@ func rpcRoute(rs RouteSelector) string {
 		return ""
 	}
 
-	return text.Colors{
-		text.Bold, text.FgBlue,
-	}.Sprint(rpc.GetPredicate())
+	return text.Colors{text.Bold, text.FgHiCyan}.Sprint(rpc.GetPredicate())
 }
 
 func restRoute(rs RouteSelector) string {
@@ -609,13 +627,8 @@ func restRoute(rs RouteSelector) string {
 	}
 
 	return fmt.Sprintf("%s %s",
-		text.Colors{
-			getColor(rest.GetMethod()),
-			text.Bold,
-		}.Sprint(rest.GetMethod()),
-		text.Colors{
-			text.BgWhite, text.FgBlack,
-		}.Sprint(rest.GetPath()),
+		httpMethodColor(rest.GetMethod()).Sprint(rest.GetMethod()),
+		text.Colors{text.FgHiWhite}.Sprint(rest.GetPath()),
 	)
 }
 
