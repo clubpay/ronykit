@@ -54,6 +54,7 @@ func main() {
 		kit.WithServiceBuilder(sampleService),
 	).
 		Start(context.TODO()).
+		LogEndpoints(os.Stdout).
 		PrintRoutes(os.Stdout).
 		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 }

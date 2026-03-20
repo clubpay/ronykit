@@ -3,8 +3,10 @@ package kit
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/clubpay/ronykit/kit/utils"
 )
 
 type WriteFunc func(conn Conn, e *Envelope) error
@@ -59,12 +61,13 @@ type ConnDelegate interface {
 type northBridge struct {
 	ctxPool
 
-	wg *sync.WaitGroup
-	eh ErrHandlerFunc
-	c  map[string]Contract
-	gw Gateway
-	sb *southBridge
-	cd ConnDelegate
+	wg   *sync.WaitGroup
+	eh   ErrHandlerFunc
+	c    map[string]Contract
+	gw   Gateway
+	sb   *southBridge
+	cd   ConnDelegate
+	elog *endpointLog
 }
 
 var _ GatewayDelegate = (*northBridge)(nil)
@@ -87,6 +90,14 @@ func (n *northBridge) OnClose(connID uint64) {
 
 func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 	n.wg.Add(1)
+
+	logEnabled := n.elog != nil && n.elog.w != nil
+
+	var start int64
+	if logEnabled {
+		start = utils.NanoTime()
+	}
+
 	ctx := n.acquireCtx(conn)
 	ctx.sb = n.sb
 	ctx.rawData = msg
@@ -107,6 +118,10 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 		}
 
 		ctx.execute(arg, c)
+
+		if logEnabled {
+			writeEndpointLog(n.elog, ctx, time.Duration(utils.NanoTime()-start))
+		}
 	}
 
 	n.releaseCtx(ctx)

@@ -20,6 +20,12 @@ import (
 	"github.com/jedib0t/go-pretty/v6/text"
 )
 
+// endpointLog holds the writer and mutex for optional per-request endpoint logging.
+type endpointLog struct {
+	mu sync.Mutex
+	w  io.Writer
+}
+
 // EdgeServer is the main element of the kit. It glues all other components of the
 // app to each other.
 type EdgeServer struct {
@@ -43,6 +49,9 @@ type EdgeServer struct {
 
 	// local store
 	ls localStore
+
+	// endpoint logging
+	elog endpointLog
 }
 
 func NewServer(opts ...Option) *EdgeServer {
@@ -101,12 +110,13 @@ func (s *EdgeServer) registerGateway(gw Gateway) *EdgeServer {
 			ls: &s.ls,
 			th: th,
 		},
-		cd: s.cd,
-		wg: &s.wg,
-		eh: s.eh,
-		c:  s.contracts,
-		gw: gw,
-		sb: s.sb,
+		cd:   s.cd,
+		wg:   &s.wg,
+		eh:   s.eh,
+		c:    s.contracts,
+		gw:   gw,
+		sb:   s.sb,
+		elog: &s.elog,
 	}
 	s.nb = append(s.nb, nb)
 
@@ -551,6 +561,15 @@ func (s *EdgeServer) PrintRoutesCompact(w io.Writer) *EdgeServer {
 	return s
 }
 
+// LogEndpoints enables per-request endpoint logging. Each completed request is
+// written to w as a single styled line containing the status code, route, latency,
+// and service name. Call this method before Start; pass nil to disable.
+func (s *EdgeServer) LogEndpoints(w io.Writer) *EdgeServer {
+	s.elog.w = w
+
+	return s
+}
+
 func getFuncName(f HandlerFunc) string {
 	name := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	parts := strings.Split(name, "/")
@@ -630,6 +649,73 @@ func restRoute(rs RouteSelector) string {
 		httpMethodColor(rest.GetMethod()).Sprint(rest.GetMethod()),
 		text.Colors{text.FgHiWhite}.Sprint(rest.GetPath()),
 	)
+}
+
+func writeEndpointLog(elog *endpointLog, ctx *Context, dur time.Duration) {
+	status := ctx.GetStatusCode()
+	route := ctx.Route()
+	svcName := ctx.ServiceName()
+
+	indicator, statusClr := statusIndicator(status)
+
+	var routeFmt string
+
+	if ctx.IsREST() {
+		method, path, _ := strings.Cut(route, " ")
+		if path != "" {
+			routeFmt = fmt.Sprintf("%s %s",
+				httpMethodColor(method).Sprint(method),
+				path,
+			)
+		} else {
+			routeFmt = route
+		}
+	} else if route != "" {
+		routeFmt = fmt.Sprintf("%s %s",
+			text.Colors{text.Bold, text.FgHiBlue}.Sprint("RPC"),
+			text.Colors{text.FgHiCyan}.Sprint(route),
+		)
+	}
+
+	line := fmt.Sprintf("  %s %s  %-40s %s  %s\n",
+		indicator,
+		statusClr.Sprintf("%d", status),
+		routeFmt,
+		text.Colors{text.FgHiBlack}.Sprint(formatDuration(dur)),
+		text.Colors{text.FgHiBlack}.Sprint(svcName),
+	)
+
+	elog.mu.Lock()
+	_, _ = io.WriteString(elog.w, line)
+	elog.mu.Unlock()
+}
+
+func statusIndicator(code int) (string, text.Colors) {
+	switch {
+	case code >= 500:
+		return text.Colors{text.FgHiRed}.Sprint("✗"),
+			text.Colors{text.Bold, text.FgHiRed}
+	case code >= 400:
+		return text.Colors{text.FgHiYellow}.Sprint("▸"),
+			text.Colors{text.Bold, text.FgHiYellow}
+	case code >= 300:
+		return text.Colors{text.FgHiCyan}.Sprint("▸"),
+			text.Colors{text.Bold, text.FgHiCyan}
+	default:
+		return text.Colors{text.FgHiGreen}.Sprint("▸"),
+			text.Colors{text.Bold, text.FgHiGreen}
+	}
+}
+
+func formatDuration(d time.Duration) string {
+	switch {
+	case d < time.Millisecond:
+		return fmt.Sprintf("%dµs", d.Microseconds())
+	case d < time.Second:
+		return fmt.Sprintf("%.2fms", float64(d.Microseconds())/1000)
+	default:
+		return d.Round(time.Millisecond).String()
+	}
 }
 
 type localStore struct {

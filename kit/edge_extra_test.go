@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 )
@@ -233,6 +234,145 @@ func TestEdgeServerPrintRoutes(t *testing.T) {
 	s.PrintRoutesCompact(flushOnly)
 	if flushOnly.flushCalls != 1 {
 		t.Fatalf("expected flush call, got: %d", flushOnly.flushCalls)
+	}
+}
+
+func TestEdgeServerLogEndpoints(t *testing.T) {
+	gw := &testGateway{}
+
+	restContract := &testContract{
+		id:     "rest",
+		enc:    JSON,
+		input:  &inMessage{},
+		output: &outMessage{},
+		sel:    testRESTSelector{method: "GET", path: "/v1", encoding: JSON},
+		handlers: []HandlerFunc{
+			func(*Context) {},
+		},
+	}
+
+	svc := testService{name: "svc", contracts: []Contract{restContract}}
+	s := NewServer(WithGateway(gw), WithService(svc))
+
+	buf := &flushBuffer{}
+	ret := s.LogEndpoints(buf)
+	if ret != s {
+		t.Fatal("LogEndpoints should return the server for chaining")
+	}
+	if s.elog.w != buf {
+		t.Fatal("expected elog writer to be set")
+	}
+
+	// Disable by passing nil
+	s.LogEndpoints(nil)
+	if s.elog.w != nil {
+		t.Fatal("expected elog writer to be nil after disabling")
+	}
+}
+
+func TestNorthBridgeEndpointLog(t *testing.T) {
+	ls := &localStore{kv: map[string]any{}}
+	gw := &testGateway{}
+	var handled bool
+
+	contract := &testContract{
+		id:  "c1",
+		enc: JSON,
+		handlers: []HandlerFunc{
+			func(ctx *Context) {
+				handled = true
+				ctx.Out().SetMsg(&outMessage{OK: true}).Send()
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	elog := &endpointLog{w: &buf}
+
+	b := &northBridge{
+		ctxPool: ctxPool{ls: ls},
+		wg:      &sync.WaitGroup{},
+		eh:      func(*Context, error) {},
+		c:       map[string]Contract{contractLookupKey("svc", "c1"): contract},
+		gw:      gw,
+		elog:    elog,
+	}
+
+	gw.dispatchFn = func(ctx *Context, _ []byte) (ExecuteArg, error) {
+		ctx.In().SetMsg(&inMessage{Name: "test"})
+
+		return ExecuteArg{ServiceName: "svc", ContractID: "c1", Route: "GET /v1"}, nil
+	}
+
+	b.OnMessage(newTestConn(), []byte("test"))
+	if !handled {
+		t.Fatal("handler should have run")
+	}
+
+	output := buf.String()
+	if !bytes.Contains(buf.Bytes(), []byte("GET")) {
+		t.Fatalf("expected GET in log output, got: %s", output)
+	}
+	if !bytes.Contains(buf.Bytes(), []byte("200")) {
+		t.Fatalf("expected 200 in log output, got: %s", output)
+	}
+	if !bytes.Contains(buf.Bytes(), []byte("svc")) {
+		t.Fatalf("expected service name in log output, got: %s", output)
+	}
+}
+
+func TestNorthBridgeEndpointLogDisabledOnError(t *testing.T) {
+	ls := &localStore{kv: map[string]any{}}
+	gw := &testGateway{}
+
+	var buf bytes.Buffer
+	elog := &endpointLog{w: &buf}
+
+	b := &northBridge{
+		ctxPool: ctxPool{ls: ls},
+		wg:      &sync.WaitGroup{},
+		eh:      func(*Context, error) {},
+		c:       map[string]Contract{},
+		gw:      gw,
+		elog:    elog,
+	}
+
+	gw.dispatchFn = func(_ *Context, _ []byte) (ExecuteArg, error) {
+		return ExecuteArg{}, ErrPreflight
+	}
+
+	b.OnMessage(newTestConn(), []byte("preflight"))
+	if buf.Len() != 0 {
+		t.Fatalf("expected no log output for preflight, got: %s", buf.String())
+	}
+
+	gw.dispatchFn = func(_ *Context, _ []byte) (ExecuteArg, error) {
+		return ExecuteArg{}, errors.New("boom")
+	}
+
+	b.OnMessage(newTestConn(), []byte("bad"))
+	if buf.Len() != 0 {
+		t.Fatalf("expected no log output for dispatch error, got: %s", buf.String())
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	tests := []struct {
+		d    time.Duration
+		want string
+	}{
+		{500 * time.Microsecond, "500µs"},
+		{1500 * time.Microsecond, "1.50ms"},
+		{123456 * time.Microsecond, "123.46ms"},
+		{2 * time.Second, "2s"},
+		{65 * time.Second, "1m5s"},
+	}
+
+	for _, tt := range tests {
+		got := formatDuration(tt.d)
+		if got != tt.want {
+			t.Errorf("formatDuration(%v) = %q, want %q", tt.d, got, tt.want)
+		}
 	}
 }
 
