@@ -2,5 +2,5 @@ package internal
 
 import "embed"
 
-//go:embed skeleton
+//go:embed all:skeleton
 var Skeleton embed.FS
