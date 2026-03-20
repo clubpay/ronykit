@@ -87,6 +87,14 @@ Starts a stdio MCP server that exposes tools for:
 - Planning service implementation with characteristic hints (`plan_service`)
 - Implementing service starter code in scaffolded features (`implement_service`)
 
+Default MCP guidance for service generation:
+
+- Keep persistence behind `internal/repo/port.go` and `internal/repo/v0` adapters.
+- Prefer Postgres + `sqlc` as the default repository/data storage stack.
+- Use another storage stack only when explicitly requested by the user.
+- After contract changes, run `make gen-stub` in each feature module.
+- For inter-service calls, consume generated stubs instead of hand-written transport clients.
+
 ## Flags
 
 ### setup
@@ -302,6 +310,12 @@ Exposed MCP tools:
 - `implement_service`: writes base implementation into `api/service.go`, `internal/app/app.go`, and `internal/repo/port.go`.
   - Supports multi-contract generation via `contracts` input.
   - Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
+
+Default MCP service conventions:
+- Prefer Postgres + `sqlc` for repository management and DB access by default.
+- Use a different persistence stack only when the request explicitly asks for it.
+- Regenerate stubs with `make gen-stub` after contract changes.
+- Use generated stubs for cross-service calls.
 
 ## Use `ronyup` MCP in IDEs
 

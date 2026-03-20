@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/knowledge"
 )
 
 func TestCollectSkeletonFiles(t *testing.T) {
@@ -232,7 +233,8 @@ func TestInspectWorkspace(t *testing.T) {
 }
 
 func TestBuildServicePlanFiles(t *testing.T) {
-	files := buildServicePlanFiles("feature/service/billing", []string{"postgres", "rest-api", "idempotent"})
+	kb := mustLoadKB(t)
+	files := buildServicePlanFiles(kb, "feature/service/billing", []string{"postgres", "rest-api", "idempotent"})
 	if len(files) == 0 {
 		t.Fatalf("expected planned files")
 	}
@@ -251,6 +253,8 @@ func TestBuildServicePlanFiles(t *testing.T) {
 }
 
 func TestNewServer_DoesNotPanicOnSchemaTags(t *testing.T) {
+	kb := mustLoadKB(t)
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Fatalf("newServer panicked: %v", r)
@@ -263,5 +267,17 @@ func TestNewServer_DoesNotPanicOnSchemaTags(t *testing.T) {
 		instructions: "test",
 		skeletonFS:   internal.Skeleton,
 		cmdRunner:    defaultRunner{},
+		kb:           kb,
 	})
+}
+
+func mustLoadKB(t *testing.T) *knowledge.Base {
+	t.Helper()
+
+	kb, err := knowledge.Load()
+	if err != nil {
+		t.Fatalf("knowledge.Load() failed: %v", err)
+	}
+
+	return kb
 }

@@ -23,8 +23,11 @@ This file defines practical guidance for AI coding assistants in this workspace.
 - Keep transport concerns in `api/` and business logic in `internal/app/`.
 - Keep handlers thin; delegate business behavior to app use-cases.
 - Define ports in `internal/repo/port.go`.
-- Keep adapter implementations in `internal/repo/v0/`.
+- Default repository/storage stack is Postgres + `sqlc`.
+- Keep adapter implementations in `internal/repo/v0/` (and use other data stacks only when explicitly requested).
 - Keep module config in `internal/settings/`.
+- After API contract changes, run `make gen-stub` in that feature module.
+- For inter-service calls, use generated stubs from `feature/service/*/stub/*` instead of hand-written clients.
 - Shared utilities belong in `pkg/` and should not depend on feature business logic.
 
 ## Service Design Pattern
@@ -40,8 +43,10 @@ For a new feature module:
 
 1. Scaffold feature: `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
 2. Implement contracts and app use-cases.
-3. Add tests for app and API behavior.
-4. Run:
+3. Run `make gen-stub` in the feature module after contract updates.
+4. In other service modules, consume the generated stubs for client calls.
+5. Add tests for app and API behavior.
+6. Run:
    - `make tidy`
    - `make lint`
    - `make test`

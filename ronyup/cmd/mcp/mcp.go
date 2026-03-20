@@ -1,10 +1,12 @@
 package mcp
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/knowledge"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )
@@ -22,11 +24,8 @@ func init() {
 	flagSet.StringVar(
 		&opt.Instructions,
 		"instructions",
-		"RonyKIT scaffolding assistant. Follow layered service conventions: "+
-			"keep API handlers thin, place business use-cases in internal/app, "+
-			"use repo ports/adapters for persistence, and inspect templates "+
-			"before generating or implementing modules.",
-		"MCP server instructions advertised to clients",
+		"",
+		"MCP server instructions advertised to clients (defaults to embedded knowledge)",
 	)
 }
 
@@ -35,18 +34,29 @@ var Cmd = &cobra.Command{
 	Use:   "mcp",
 	Short: "Run ronyup as an MCP server over stdio",
 	RunE: func(cmd *cobra.Command, _ []string) error {
+		kb, err := knowledge.Load()
+		if err != nil {
+			return fmt.Errorf("load knowledge base: %w", err)
+		}
+
 		exePath, err := os.Executable()
 		if err != nil {
 			return err
 		}
 
+		instructions := opt.Instructions
+		if instructions == "" {
+			instructions = kb.ServerInstructions
+		}
+
 		server := newServer(serverConfig{
 			name:         opt.Name,
 			version:      opt.Version,
-			instructions: opt.Instructions,
+			instructions: instructions,
 			executable:   exePath,
 			skeletonFS:   internal.Skeleton,
 			cmdRunner:    defaultRunner{},
+			kb:           kb,
 		})
 
 		return server.Run(cmd.Context(), &mcpsdk.StdioTransport{})
@@ -60,4 +70,5 @@ type serverConfig struct {
 	executable   string
 	skeletonFS   fs.FS
 	cmdRunner    runner
+	kb           *knowledge.Base
 }

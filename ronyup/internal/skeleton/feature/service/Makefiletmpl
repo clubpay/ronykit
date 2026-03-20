@@ -1,4 +1,4 @@
-.PHONY:  test test-short test-race cleanup setup
+.PHONY:  test test-short test-race cleanup setup gen-stub gen-go-stub gen-ts-stub
 
 # Prepare
 shell := $SHELL
@@ -34,6 +34,8 @@ gen-go-stub:
 	@go run ./gen/stub/gen.go go -o ./stub/{{.PackageName}}stub
 	@go mod tidy
 	@go fmt ./...
+
+gen-stub: gen-go-stub
 
 gen-ts-stub:
 	@echo "Generating Typescript Stubs for the services"

@@ -1,0 +1,1 @@
+Prefer x/rkit helpers over reinventing common utilities: rkit.RandomID for IDs, rkit.ToJSON/FromJSON for serialization, rkit.Map/Filter/Reduce for collections, and rkit.ToCamel/ToSnake for case transforms.

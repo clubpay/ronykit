@@ -36,57 +36,57 @@ Minimal example:
 package main
 
 import (
-  "context"
-  "os"
+	"context"
+	"os"
 
-  "github.com/clubpay/ronykit/kit"
-  "github.com/clubpay/ronykit/kit/desc"
-  "github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
 type EchoRequest struct {
-  ID        string `json:"id"`
-  Timestamp int64  `json:"timestamp"`
+	ID        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type EchoResponse struct {
-  ID string `json:"id"`
+	ID string `json:"id"`
 }
 
 func echoHandler(ctx *kit.Context) {
-  req := ctx.In().GetMsg().(*EchoRequest)
+	req := ctx.In().GetMsg().(*EchoRequest)
 
-  ctx.In().
-    Reply().
-    SetMsg(&EchoResponse{ID: req.ID}).
-    Send()
+	ctx.In().
+		Reply().
+		SetMsg(&EchoResponse{ID: req.ID}).
+		Send()
 }
 
 func MyServiceDesc() *desc.Service {
-  return desc.NewService("MyServiceName").
-    SetEncoding(kit.JSON).
-    AddContract(
-      desc.NewContract().
-        SetInput(&EchoRequest{}).
-        SetOutput(&EchoResponse{}).
-        AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:id"))).
-        AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
-        SetHandler(echoHandler),
-    )
+	return desc.NewService("MyServiceName").
+		SetEncoding(kit.JSON).
+		AddContract(
+			desc.NewContract().
+				SetInput(&EchoRequest{}).
+				SetOutput(&EchoResponse{}).
+				AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:id"))).
+				AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
+				SetHandler(echoHandler),
+		)
 }
 
 func main() {
-  defer kit.NewServer(
-    kit.WithGateway(
-      fasthttp.MustNew(
-        fasthttp.Listen(":80"),
-      ),
-    ),
-    kit.WithServiceBuilder(MyServiceDesc()),
-  ).
-    Start(context.TODO()).
-    PrintRoutes(os.Stdout).
-    Shutdown(context.TODO(), os.Kill, os.Interrupt)
+	defer kit.NewServer(
+		kit.WithGateway(
+			fasthttp.MustNew(
+				fasthttp.Listen(":80"),
+			),
+		),
+		kit.WithServiceBuilder(MyServiceDesc()),
+	).
+		Start(context.TODO()).
+		PrintRoutes(os.Stdout).
+		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 }
 ```
 

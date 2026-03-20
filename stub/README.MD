@@ -85,7 +85,7 @@ func main() {
 		Run(ctx)
 	defer httpCtx.Release()
 
-  if httpCtx.Error() != nil {
+	if httpCtx.Error() != nil {
 		// handle error
 	}
 }

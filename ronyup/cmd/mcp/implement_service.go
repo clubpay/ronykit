@@ -12,12 +12,6 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-const (
-	ronyKitModulePath        = "github.com/clubpay/ronykit"
-	defaultServiceIdentifier = "Service"
-	defaultServiceGroup      = "service"
-)
-
 var operationVerbSet = map[string]struct{}{
 	"create":   {},
 	"get":      {},
@@ -81,11 +75,10 @@ type generatedFile struct {
 	Content      string
 }
 
-func addImplementServiceTool(srv *mcpsdk.Server, cfg serverConfig) {
+func registerImplementService(srv *mcpsdk.Server, cfg serverConfig) {
 	mcpsdk.AddTool(srv, &mcpsdk.Tool{
-		Name: "implement_service",
-		Description: "Scaffold and implement service starter code in api/service.go, " +
-			"internal/app/app.go, and internal/repo/port.go",
+		Name:        toolImplementService,
+		Description: cfg.kb.ToolDescription(toolImplementService),
 	}, func(
 		ctx context.Context, _ *mcpsdk.CallToolRequest, in implementServiceInput,
 	) (*mcpsdk.CallToolResult, implementServiceOutput, error) {
@@ -97,7 +90,7 @@ func addImplementServiceTool(srv *mcpsdk.Server, cfg serverConfig) {
 		return &mcpsdk.CallToolResult{
 			Content: []mcpsdk.Content{
 				&mcpsdk.TextContent{
-					Text: fmt.Sprintf("Implemented service starter code in %d file(s).", len(out.ChangedFiles)),
+					Text: fmt.Sprintf(msgImplemented, len(out.ChangedFiles)),
 				},
 			},
 		}, out, nil
@@ -107,7 +100,7 @@ func addImplementServiceTool(srv *mcpsdk.Server, cfg serverConfig) {
 func implementService(ctx context.Context, cfg serverConfig, in implementServiceInput) (implementServiceOutput, error) {
 	featureDir, err := normalizeRelativePath(in.FeatureDir)
 	if err != nil {
-		return implementServiceOutput{}, fmt.Errorf("invalid feature_dir: %w", err)
+		return implementServiceOutput{}, fmt.Errorf(errInvalidFeatureDir, err)
 	}
 
 	featureName, err := normalizeFeatureName(in.FeatureName)
@@ -195,7 +188,7 @@ func implementService(ctx context.Context, cfg serverConfig, in implementService
 
 		_, stderr, err := cfg.cmdRunner.Run(ctx, absFeaturePath, "gofmt", append([]string{"-w"}, relToFeature...)...)
 		if err != nil {
-			return implementServiceOutput{}, fmt.Errorf("gofmt failed: %w, stderr: %s", err, strings.TrimSpace(stderr))
+			return implementServiceOutput{}, fmt.Errorf(errGofmtFailed, err, strings.TrimSpace(stderr))
 		}
 	}
 
@@ -233,10 +226,7 @@ func ensureFeatureExists(
 	}
 
 	if !in.createIfMissing {
-		return false, "", "", fmt.Errorf(
-			"feature path does not exist: %s (set create_if_missing=true to scaffold first)",
-			in.featureAbsPath,
-		)
+		return false, "", "", fmt.Errorf(errFeaturePathMissing, in.featureAbsPath)
 	}
 
 	args := buildFeatureArgs(createFeatureInput{
@@ -248,7 +238,7 @@ func ensureFeatureExists(
 
 	stdout, stderr, err := cfg.cmdRunner.Run(ctx, in.workspaceAbsDir, cfg.executable, args...)
 	if err != nil {
-		return false, stdout, stderr, fmt.Errorf("create feature failed: %w, stderr: %s", err, strings.TrimSpace(stderr))
+		return false, stdout, stderr, fmt.Errorf(errCreateFeatureFailed, err, strings.TrimSpace(stderr))
 	}
 
 	return true, stdout, stderr, nil
@@ -832,11 +822,11 @@ func normalizeContracts(featureDir string, in []serviceContractInput) ([]normali
 	for _, c := range in {
 		name := "Execute" + toPascalIdentifier(c.Name)
 		if strings.TrimSpace(c.Name) == "" {
-			return nil, fmt.Errorf("contract name is required")
+			return nil, fmt.Errorf(errContractNameRequired)
 		}
 
 		if _, ok := seenNames[name]; ok {
-			return nil, fmt.Errorf("duplicate contract name: %s", name)
+			return nil, fmt.Errorf(errDuplicateContract, name)
 		}
 
 		seenNames[name] = struct{}{}
@@ -849,7 +839,7 @@ func normalizeContracts(featureDir string, in []serviceContractInput) ([]normali
 		switch method {
 		case "GET", "POST", "PUT", "PATCH", "DELETE":
 		default:
-			return nil, fmt.Errorf("unsupported http_method for %s: %s", name, method)
+			return nil, fmt.Errorf(errUnsupportedMethod, name, method)
 		}
 
 		routePath := strings.TrimSpace(c.RoutePath)

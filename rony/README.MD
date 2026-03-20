@@ -43,11 +43,11 @@ State interface signature:
 package rony
 
 type (
-  Action          comparable
-  State[A Action] interface {
-    Name() string
-    Reduce(action A) error
-  }
+	Action          comparable
+	State[A Action] interface {
+		Name() string
+		Reduce(action A) error
+	}
 )
 ```
 
@@ -57,85 +57,85 @@ type (
 package main
 
 import (
-  "context"
-  "fmt"
-  "os"
-  "strings"
-  "sync"
+	"context"
+	"fmt"
+	"os"
+	"strings"
+	"sync"
 
-  "github.com/clubpay/ronykit/rony"
-  "github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/rony/errs"
 )
 
 type Counter struct {
-  sync.Mutex
-  Count int
+	sync.Mutex
+	Count int
 }
 
 func (c *Counter) Name() string {
-  return "Counter"
+	return "Counter"
 }
 
 func (c *Counter) Reduce(action string) error {
-  switch strings.ToLower(action) {
-  case "up":
-    c.Count++
-  case "down":
-    if c.Count <= 0 {
-      return fmt.Errorf("count cannot be negative")
-    }
-    c.Count--
-  default:
-    return fmt.Errorf("unknown action: %s", action)
-  }
+	switch strings.ToLower(action) {
+	case "up":
+		c.Count++
+	case "down":
+		if c.Count <= 0 {
+			return fmt.Errorf("count cannot be negative")
+		}
+		c.Count--
+	default:
+		return fmt.Errorf("unknown action: %s", action)
+	}
 
-  return nil
+	return nil
 }
 
 type CounterRequest struct {
-  Action string `json:"action"`
+	Action string `json:"action"`
 }
 
 type CounterResponse struct {
-  Count int `json:"count"`
+	Count int `json:"count"`
 }
 
 func count(ctx *rony.UnaryCtx[*Counter, string], req CounterRequest) (*CounterResponse, error) {
-  res := &CounterResponse{}
-  err := ctx.ReduceState(req.Action, func(s *Counter, err error) error {
-    if err != nil {
-      return errs.WrapCode(err, errs.InvalidArgument, "BAD_REQUEST")
-    }
-    res.Count = s.Count
-    return nil
-  })
-  if err != nil {
-    return nil, err
-  }
+	res := &CounterResponse{}
+	err := ctx.ReduceState(req.Action, func(s *Counter, err error) error {
+		if err != nil {
+			return errs.WrapCode(err, errs.InvalidArgument, "BAD_REQUEST")
+		}
+		res.Count = s.Count
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
-  return res, nil
+	return res, nil
 }
 
 func main() {
-  srv := rony.NewServer(
-    rony.Listen(":80"),
-    rony.WithServerName("CounterServer"),
-  )
+	srv := rony.NewServer(
+		rony.Listen(":80"),
+		rony.WithServerName("CounterServer"),
+	)
 
-  rony.Setup(
-    srv,
-    "CounterService",
-    rony.ToInitiateState[*Counter, string](&Counter{Count: 0}),
-    rony.WithUnary(
-      count,
-      rony.GET("/count/{action}"),
-      rony.GET("/count"),
-    ),
-  )
+	rony.Setup(
+		srv,
+		"CounterService",
+		rony.ToInitiateState[*Counter, string](&Counter{Count: 0}),
+		rony.WithUnary(
+			count,
+			rony.GET("/count/{action}"),
+			rony.GET("/count"),
+		),
+	)
 
-  if err := srv.Run(context.Background(), os.Interrupt, os.Kill); err != nil {
-    panic(err)
-  }
+	if err := srv.Run(context.Background(), os.Interrupt, os.Kill); err != nil {
+		panic(err)
+	}
 }
 ```
 
