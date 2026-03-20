@@ -6,7 +6,7 @@ require (
 	github.com/clubpay/ronykit/x/rkit v0.2.23
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/minio/minio-go/v7 v7.0.98
+	github.com/minio/minio-go/v7 v7.0.99
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.18.0
 	go.uber.org/fx v1.24.0
