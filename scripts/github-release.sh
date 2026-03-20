@@ -84,7 +84,7 @@ fi
 say "Discovered ${#MODULE_DIRS[@]} modules from go.work (excluding example/*)"
 
 # Build the release body: a table of modules and their latest tags
-body="## Workspace Modules"
+body="## Released Modules"
 body+=$'\n\n'
 body+="| Module | Version |"
 body+=$'\n'
