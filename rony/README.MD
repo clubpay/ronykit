@@ -141,5 +141,7 @@ func main() {
 
 ## More Examples
 
-- [Getting Started Guide](../GETTING_STARTED.MD)
+- [Getting Started Guide](../docs/getting-started.md)
+- [Cookbook](../docs/cookbook.md) — production patterns for auth, pagination, validation, and more
+- [ronyup Guide](../docs/ronyup-guide.md) — scaffolding CLI and MCP server
 - [Runnable examples](../example)

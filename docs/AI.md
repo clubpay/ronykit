@@ -87,7 +87,11 @@ go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
 
 ## Where to look for examples
 
-- `GETTING_STARTED.MD` for a full walkthrough.
+- `docs/getting-started.md` for a full walkthrough.
+- `docs/cookbook.md` for production patterns (auth, pagination, validation, etc.).
+- `docs/ronyup-guide.md` for scaffolding CLI and MCP server.
+- `docs/architecture.md` for how components fit together.
+- `docs/advanced-kit.md` for low-level kit usage (advanced).
 - `example/` for runnable sample services.
 - `rony/README.MD` and `kit/README.MD` for quick starts.
 
@@ -98,3 +102,4 @@ Keep this guide aligned with:
 - `go.work` (Go version and module list)
 - `.github/workflows/go.yml` (CI Go version and test scope)
 - `Makefile` (available targets)
+- `docs/` (documentation files)
