@@ -194,8 +194,12 @@ func TestSouthBridgeCreateSenderConn(t *testing.T) {
 		called = true
 	})
 
-	conn.carrierChan <- &envelopeCarrier{Kind: outgoingCarrier, Data: &carrierData{}}
-	conn.carrierChan <- &envelopeCarrier{Kind: eofCarrier}
+	if err := conn.handleCarrier(sb, &envelopeCarrier{Kind: outgoingCarrier, Data: &carrierData{}}); err != nil {
+		t.Fatalf("unexpected handleCarrier error: %v", err)
+	}
+	if err := conn.handleCarrier(sb, &envelopeCarrier{Kind: eofCarrier}); err != nil {
+		t.Fatalf("unexpected handleCarrier error: %v", err)
+	}
 
 	deadline := time.After(200 * time.Millisecond)
 	for {
@@ -208,6 +212,53 @@ func TestSouthBridgeCreateSenderConn(t *testing.T) {
 		default:
 			time.Sleep(5 * time.Millisecond)
 		}
+	}
+}
+
+func TestHandleCarrierInvalidKindReturnsError(t *testing.T) {
+	conn := &clusterConn{
+		kv: map[string]string{},
+	}
+
+	err := conn.handleCarrier(nil, &envelopeCarrier{Kind: carrierKind(99)})
+	if err == nil {
+		t.Fatal("expected error for unknown carrier kind")
+	}
+}
+
+func TestHandleCarrierCancelledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	conn := &clusterConn{
+		ctx: ctx,
+		cf:  cancel,
+		kv:  map[string]string{},
+	}
+
+	err := conn.handleCarrier(nil, &envelopeCarrier{Kind: outgoingCarrier, Data: &carrierData{}})
+	if err == nil {
+		t.Fatal("expected error for cancelled context")
+	}
+}
+
+func TestHandleCarrierEofWithNilSouthBridge(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	conn := &clusterConn{
+		ctx: ctx,
+		cf:  cancel,
+		kv:  map[string]string{},
+	}
+
+	err := conn.handleCarrier(nil, &envelopeCarrier{Kind: eofCarrier})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	select {
+	case <-conn.Done():
+	default:
+		t.Fatal("expected context to be cancelled after eof")
 	}
 }
 
@@ -253,7 +304,9 @@ func TestSouthBridgeOnMessage(t *testing.T) {
 		}
 	}
 
-	conn.carrierChan <- &envelopeCarrier{Kind: eofCarrier}
+	if err := conn.handleCarrier(sb, &envelopeCarrier{Kind: eofCarrier}); err != nil {
+		t.Fatalf("unexpected handleCarrier error: %v", err)
+	}
 }
 
 func TestSouthBridgeSendMessageError(t *testing.T) {

@@ -78,26 +78,26 @@ func (sb *southBridge) OnMessage(data []byte) {
 
 	sb.wg.Add(1)
 
+	go sb.handleCarrierMessage(carrier)
+}
+
+func (sb *southBridge) handleCarrierMessage(carrier *envelopeCarrier) {
+	defer sb.wg.Done()
+
 	switch carrier.Kind {
 	case incomingCarrier:
-		go sb.onIncomingMessage(carrier)
+		sb.onIncomingMessage(carrier)
 	default:
 		conn := sb.getConn(carrier.SessionID)
-		if conn != nil {
-			ctx := sb.acquireCtx(conn)
-			ctx.sb = sb
+		if conn == nil {
+			return
+		}
 
-			select {
-			case conn.carrierChan <- carrier:
-			default:
-				sb.eh(ctx, ErrWritingToClusterConnection)
-			}
-
-			sb.releaseCtx(ctx)
+		err := conn.handleCarrier(sb, carrier)
+		if err != nil {
+			sb.eh(nil, err)
 		}
 	}
-
-	sb.wg.Done()
 }
 
 func (sb *southBridge) createSenderConn(
@@ -109,49 +109,20 @@ func (sb *southBridge) createSenderConn(
 	}
 
 	conn := &clusterConn{
-		ctx:         ctx,
-		cf:          cancelFn,
-		callbackFn:  callbackFn,
-		cluster:     sb.cb,
-		originID:    carrier.OriginID,
-		sessionID:   carrier.SessionID,
-		serverID:    sb.id,
-		kv:          map[string]string{},
-		wf:          sb.writeFunc,
-		carrierChan: make(chan *envelopeCarrier, 32),
+		ctx:        ctx,
+		cf:         cancelFn,
+		callbackFn: callbackFn,
+		cluster:    sb.cb,
+		originID:   carrier.OriginID,
+		sessionID:  carrier.SessionID,
+		serverID:   sb.id,
+		kv:         map[string]string{},
+		wf:         sb.writeFunc,
 	}
 
 	sb.inProgressMtx.Lock()
 	sb.inProgress[carrier.SessionID] = conn
 	sb.inProgressMtx.Unlock()
-
-	go func(c *clusterConn) {
-		for {
-			select {
-			case <-c.ctx.Done():
-				return
-			case carrier, ok := <-c.carrierChan:
-				if !ok {
-					c.cf()
-
-					return
-				}
-
-				switch carrier.Kind {
-				default:
-					panic("invalid carrier kind")
-				case outgoingCarrier:
-					c.callbackFn(carrier)
-				case eofCarrier:
-					sb.inProgressMtx.Lock()
-					delete(sb.inProgress, c.sessionID)
-					sb.inProgressMtx.Unlock()
-
-					close(c.carrierChan)
-				}
-			}
-		}
-	}(conn)
 
 	return conn
 }
@@ -379,8 +350,10 @@ var _ Conn = (*clusterConn)(nil)
 type clusterConn struct {
 	clientIP string
 	stream   bool
-	kvMtx    sync.Mutex
+	kvMtx    sync.Mutex // protects kv
 	kv       map[string]string
+
+	carrierMtx sync.Mutex // serializes callback/eof handling
 
 	// target
 	serverID  string
@@ -390,10 +363,43 @@ type clusterConn struct {
 	cluster   Cluster
 
 	// sender
-	ctx         context.Context //nolint:containedctx
-	cf          context.CancelFunc
-	callbackFn  func(carrier *envelopeCarrier)
-	carrierChan chan *envelopeCarrier
+	ctx        context.Context //nolint:containedctx
+	cf         context.CancelFunc
+	callbackFn func(carrier *envelopeCarrier)
+}
+
+func (c *clusterConn) handleCarrier(sb *southBridge, carrier *envelopeCarrier) error {
+	c.carrierMtx.Lock()
+	defer c.carrierMtx.Unlock()
+
+	if c.ctx != nil {
+		select {
+		case <-c.ctx.Done():
+			return c.ctx.Err()
+		default:
+		}
+	}
+
+	switch carrier.Kind {
+	default:
+		return fmt.Errorf("unknown carrier kind: %d", carrier.Kind)
+	case outgoingCarrier:
+		if c.callbackFn != nil {
+			c.callbackFn(carrier)
+		}
+	case eofCarrier:
+		if sb != nil {
+			sb.inProgressMtx.Lock()
+			delete(sb.inProgress, c.sessionID)
+			sb.inProgressMtx.Unlock()
+		}
+
+		if c.cf != nil {
+			c.cf()
+		}
+	}
+
+	return nil
 }
 
 func (c *clusterConn) ConnID() uint64 {

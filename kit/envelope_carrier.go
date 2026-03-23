@@ -38,8 +38,6 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 		ContractID:  ctx.ContractID(),
 		ServiceName: ctx.ServiceName(),
 		Route:       ctx.Route(),
-		ConnHdr:     map[string]string{},
-		Hdr:         map[string]string{},
 	}
 
 	if tp := ctx.sb.tp; tp != nil {
@@ -48,6 +46,10 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 
 	ctx.In().
 		WalkHdr(func(key, val string) bool {
+			if ec.Data.Hdr == nil {
+				ec.Data.Hdr = make(map[string]string, 4)
+			}
+
 			ec.Data.Hdr[key] = val
 
 			return true
@@ -55,6 +57,10 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 
 	ctx.Conn().
 		Walk(func(key string, val string) bool {
+			if ec.Data.ConnHdr == nil {
+				ec.Data.ConnHdr = make(map[string]string, 4)
+			}
+
 			ec.Data.ConnHdr[key] = val
 
 			return true
@@ -73,17 +79,23 @@ func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 		ContractID:  e.ctx.ContractID(),
 		ServiceName: e.ctx.ServiceName(),
 		Route:       e.ctx.Route(),
-		ConnHdr:     map[string]string{},
-		Hdr:         map[string]string{},
 	}
 
 	e.WalkHdr(func(key string, val string) bool {
+		if ec.Data.Hdr == nil {
+			ec.Data.Hdr = make(map[string]string, 4)
+		}
+
 		ec.Data.Hdr[key] = val
 
 		return true
 	})
 
 	e.conn.Walk(func(key string, val string) bool {
+		if ec.Data.ConnHdr == nil {
+			ec.Data.ConnHdr = make(map[string]string, 4)
+		}
+
 		ec.Data.ConnHdr[key] = val
 
 		return true
@@ -106,10 +118,18 @@ type carrierData struct {
 }
 
 func (c carrierData) Get(key string) string {
+	if c.ConnHdr == nil {
+		return ""
+	}
+
 	return c.ConnHdr[key]
 }
 
-func (c carrierData) Set(key string, value string) {
+func (c *carrierData) Set(key string, value string) {
+	if c.ConnHdr == nil {
+		c.ConnHdr = make(map[string]string, 4)
+	}
+
 	c.ConnHdr[key] = value
 }
 

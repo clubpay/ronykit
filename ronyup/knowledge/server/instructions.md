@@ -24,6 +24,7 @@ IMPORTANT — Always use the RonyKIT x/ toolkit packages instead of third-party 
   • x/apidoc — OpenAPI/Swagger 2.0 + Postman collection generation from service descriptors with embedded UI.
   • x/cache — In-memory Ristretto cache with key-prefix partitions and TTL support.
   • x/rkit — Shared helpers (JSON cast, random IDs, string transforms, collections, file utilities).
+  • flow — Typed Temporal orchestration for long-running processes; keep workflows deterministic and orchestration-only, run side effects in activities, and wire SDK/backend in datasource module wiring.
 When generating any new service, wire dependencies through x/di, read configuration with x/settings, log with x/telemetry/logkit, write tests with x/testkit, and generate API docs with x/apidoc.
 
 Error handling: use rony/errs exclusively. Define domain errors in internal/domain/errors.go using errs.GenWrap(code, "ERROR_CODE") for wrappable errors and errs.B().Code(code).Msg("ERROR_CODE").Err() for static errors. In handlers, wrap with errs.B().Cause(err).Msg("OPERATION_FAILED").Err(). Error codes are SCREAMING_SNAKE_CASE.
