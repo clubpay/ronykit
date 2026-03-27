@@ -15,6 +15,7 @@ import (
 )
 
 var opt = struct {
+	ApplicationName    string
 	RepositoryRootDir  string
 	RepositoryGoModule string
 	FeatureDir         string
@@ -74,6 +75,13 @@ func init() {
 		"r",
 		"./my-repo",
 		"destination directory for the setup",
+	)
+	workspaceFlagSet.StringVarP(
+		&opt.ApplicationName,
+		"appName",
+		"a",
+		"myapp",
+		"application name",
 	)
 
 	Cmd.AddCommand(CmdSetupWorkspace, CmdSetupFeature)
@@ -149,10 +157,11 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 			SrcPathPrefix:  pathPrefix,
 			DestPathPrefix: filepath.Join(".", opt.RepositoryRootDir),
 			TemplateInput: TemplateInput{
-				RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
-				PackagePath:    strings.Trim(opt.FeatureDir, "/"),
-				PackageName:    opt.FeatureName,
-				RonyKitPath:    "github.com/clubpay/ronykit",
+				ApplicationName: opt.ApplicationName,
+				RepositoryPath:  strings.TrimSuffix(opt.RepositoryGoModule, "/"),
+				PackagePath:     strings.Trim(opt.FeatureDir, "/"),
+				PackageName:     opt.FeatureName,
+				RonyKitPath:     "github.com/clubpay/ronykit",
 			},
 			Callback: func(filePath string, dir bool) {
 				if dir {

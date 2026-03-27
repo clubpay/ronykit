@@ -1,6 +1,7 @@
 .PHONY: run test tidy vet lint
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
+DOCKER_COMPOSE := docker compose -f ./devops/docker-compose.yml
 
 run:
 	@echo "Run service"
@@ -33,3 +34,19 @@ lint:
 		echo "lint $$dir..."; \
 		(cd $$dir && golangci-lint run --fix ./...); \
 	done
+
+db-up:
+	@echo "Bring up Database (postgres)"
+	@$(DOCKER_COMPOSE) up -d postgres
+
+db-down:
+	@echo "Bring down Database (postgres)"
+	@$(DOCKER_COMPOSE) down postgres
+
+db-logs:
+	@$(DOCKER_COMPOSE) logs -f postgres
+
+run-service: db-up
+	@echo "Run service"
+	@cd cmd/service && go run .
+

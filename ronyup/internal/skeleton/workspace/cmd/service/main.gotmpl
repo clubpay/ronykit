@@ -137,7 +137,7 @@ func genServerProvider(host string, port int) func(lc fx.Lifecycle) *rony.Server
 		srv := rony.NewServer(
 			rony.WithAPIDocs("/docs"),
 			// rony.UseSwaggerUI(),
-			rony.WithServerName("Malek (powered by RonyKIT)"),
+			rony.WithServerName("{{.ApplicationName}} (powered by RonyKIT)"),
 			rony.WithVersion("v0.0.1"),
 			rony.Listen(fmt.Sprintf("%s:%d", host, port)),
 			rony.WithTracer(tracekit.B3("all-in-one [gateways]")),
