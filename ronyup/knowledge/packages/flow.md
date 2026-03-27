@@ -6,7 +6,10 @@ Type-safe workflow orchestration over Temporal using generics for workflows, act
 
 ## Usage Hint
 
-Use a single `*flow.SDK` per service and initialize it through `flow.NewBackend` + `flow.NewSDK` in datasource wiring, then call `InitWithState(app)` and `Start()` from service lifecycle hooks.
+Use a single `*flow.SDK` per service.
+
+Initialize it through `flow.NewBackend` + `flow.NewSDK` in datasource wiring,
+then call `InitWithState(app)` and `Start()` from service lifecycle hooks.
 
 For implementation patterns:
 - Define workflows/activities as package-level vars with explicit names (`Feature/Action`) and typed request/response structs.

@@ -1,1 +1,23 @@
-Each service has a gen/stub/gen.go file — a main package using cobra that calls rony.GenerateStub(pkgName, "", dstDir, engine, api.Service{}.Desc()). Register two subcommands: "go" using stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: name}) and "ts" using stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{GenerateSWR: true}). The Makefile exposes gen-go-stub and gen-ts-stub targets that run the gen program. Go stubs land in stub/<name>stub/stub.go and TS stubs in stub/<name>stub-typescript/. Regenerate stubs via make gen-stub whenever contracts change. Other services consume stubs by importing the stub package and wiring via di.ProvideXStub in their module.go.
+Each service has a `gen/stub/gen.go` file: a main package using cobra that
+calls:
+
+- `rony.GenerateStub(pkgName, "", dstDir, engine, api.Service{}.Desc())`
+
+Register two subcommands:
+
+- `"go"` using `stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: name})`
+- `"ts"` using
+  `stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{GenerateSWR: true})`
+
+The Makefile exposes `gen-go-stub` and `gen-ts-stub` targets that run the
+generator.
+
+Outputs:
+
+- Go stubs land in `stub/<name>stub/stub.go`
+- TS stubs land in `stub/<name>stub-typescript/`
+
+Regenerate stubs via `make gen-stub` whenever contracts change.
+
+Other services consume stubs by importing the stub package and wiring through
+`di.ProvideXStub` in their `module.go`.

@@ -1,1 +1,3 @@
-Keep shared cross-module utilities in pkg/* and avoid coupling them to feature business logic.
+Keep shared cross-module utilities in `pkg/*`.
+
+Avoid coupling shared utilities to feature business logic.

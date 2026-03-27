@@ -1,1 +1,4 @@
-Generate API documentation with x/apidoc: call apidoc.New() with service descriptors and serve Swagger UI, ReDoc, or Scalar at a /docs endpoint.
+Generate API documentation with `x/apidoc`.
+
+- Call `apidoc.New()` with service descriptors.
+- Serve Swagger UI, ReDoc, or Scalar at a `/docs` endpoint.

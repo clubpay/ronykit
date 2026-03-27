@@ -1,1 +1,5 @@
-Log exclusively through x/telemetry/logkit (OpenTelemetry-bridged zap): inject *logkit.Logger via fx and use .With() for contextual fields; never import raw zap, slog, or log.
+Log exclusively through `x/telemetry/logkit` (OpenTelemetry-bridged zap).
+
+- Inject `*logkit.Logger` via fx.
+- Use `.With()` for contextual fields.
+- Never import raw `zap`, `slog`, or `log`.
