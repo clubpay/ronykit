@@ -35,18 +35,18 @@ lint:
 		(cd $$dir && golangci-lint run --fix ./...); \
 	done
 
-db-up:
-	@echo "Bring up Database (postgres)"
+dev-up:
+	@echo "Bring up dockers"
 	@$(DOCKER_COMPOSE) up -d postgres
 
-db-down:
-	@echo "Bring down Database (postgres)"
+dev-down:
+	@echo "Bring down dockers"
 	@$(DOCKER_COMPOSE) down postgres
 
 db-logs:
-	@$(DOCKER_COMPOSE) logs -f postgres
+	@$(DOCKER_COMPOSE) logs
 
-run-service: db-up
+run-service: dev-up
 	@echo "Run service"
 	@cd cmd/service && go run .
 

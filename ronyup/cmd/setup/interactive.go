@@ -43,6 +43,11 @@ func runWorkspaceInteractive(cmd *cobra.Command) error {
 				Description("What is the go module name?").
 				Placeholder("github.com/your/repo").
 				Value(&opt.RepositoryGoModule),
+			huh.NewInput().
+				Title("Application Name").
+				Description("What is the application name?").
+				Placeholder("myapp").
+				Value(&opt.ApplicationName),
 		),
 	).Run()
 	if err != nil {

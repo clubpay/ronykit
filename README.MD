@@ -15,7 +15,15 @@ get type-safe handlers, auto-generated docs, and client stubs — all with minim
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
 
-### 2. Create a new project
+### 2. Create a new Project/Workspace
+
+For interactive setup, use:
+
+```bash
+rony setup
+```
+
+Or specify all options directly:
 
 ```bash
 ronyup setup workspace -r ./my-api -m github.com/you/my-api
