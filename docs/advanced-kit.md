@@ -25,56 +25,56 @@ go get github.com/clubpay/ronykit/kit@latest
 package main
 
 import (
-    "context"
-    "os"
+	"context"
+	"os"
 
-    "github.com/clubpay/ronykit/kit"
-    "github.com/clubpay/ronykit/kit/desc"
-    "github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 )
 
 type EchoRequest struct {
-    ID        string `json:"id"`
-    Timestamp int64  `json:"timestamp"`
+	ID        string `json:"id"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type EchoResponse struct {
-    ID string `json:"id"`
+	ID string `json:"id"`
 }
 
 func echoHandler(ctx *kit.Context) {
-    req := ctx.In().GetMsg().(*EchoRequest)
-    ctx.In().
-        Reply().
-        SetMsg(&EchoResponse{ID: req.ID}).
-        Send()
+	req := ctx.In().GetMsg().(*EchoRequest)
+	ctx.In().
+		Reply().
+		SetMsg(&EchoResponse{ID: req.ID}).
+		Send()
 }
 
 func EchoServiceDesc() *desc.Service {
-    return desc.NewService("EchoService").
-        SetEncoding(kit.JSON).
-        AddContract(
-            desc.NewContract().
-                SetInput(&EchoRequest{}).
-                SetOutput(&EchoResponse{}).
-                AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:id"))).
-                AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
-                SetHandler(echoHandler),
-        )
+	return desc.NewService("EchoService").
+		SetEncoding(kit.JSON).
+		AddContract(
+			desc.NewContract().
+				SetInput(&EchoRequest{}).
+				SetOutput(&EchoResponse{}).
+				AddRoute(desc.Route("GetEcho", fasthttp.GET("/echo/:id"))).
+				AddRoute(desc.Route("PostEcho", fasthttp.POST("/echo"))).
+				SetHandler(echoHandler),
+		)
 }
 
 func main() {
-    defer kit.NewServer(
-        kit.WithGateway(
-            fasthttp.MustNew(
-                fasthttp.Listen(":80"),
-            ),
-        ),
-        kit.WithServiceBuilder(EchoServiceDesc()),
-    ).
-        Start(context.TODO()).
-        PrintRoutes(os.Stdout).
-        Shutdown(context.TODO(), os.Kill, os.Interrupt)
+	defer kit.NewServer(
+		kit.WithGateway(
+			fasthttp.MustNew(
+				fasthttp.Listen(":80"),
+			),
+		),
+		kit.WithServiceBuilder(EchoServiceDesc()),
+	).
+		Start(context.TODO()).
+		PrintRoutes(os.Stdout).
+		Shutdown(context.TODO(), os.Kill, os.Interrupt)
 }
 ```
 
@@ -82,15 +82,15 @@ func main() {
 
 ## Key Differences from `rony`
 
-| Aspect | `rony` | `kit` |
-|--------|--------|-------|
-| **Handler signature** | `func(ctx, In) (*Out, error)` — typed | `func(ctx *kit.Context)` — raw |
-| **State management** | Built-in reducer pattern | Manual |
-| **API docs** | Auto-generated from types | Build with `kit/desc` manually |
-| **Gateway setup** | Automatic (fasthttp by default) | Manual — you wire gateways yourself |
-| **Server lifecycle** | `rony.NewServer` + `rony.Setup` | `kit.NewServer` + `kit.WithServiceBuilder` |
-| **Route selectors** | `rony.GET(path)` helpers | `fasthttp.GET(path)` or custom selectors |
-| **Error handling** | Return error, framework serializes | Manual: write to `ctx.Out()` yourself |
+| Aspect                | `rony`                                | `kit`                                      |
+|-----------------------|---------------------------------------|--------------------------------------------|
+| **Handler signature** | `func(ctx, In) (*Out, error)` — typed | `func(ctx *kit.Context)` — raw             |
+| **State management**  | Built-in reducer pattern              | Manual                                     |
+| **API docs**          | Auto-generated from types             | Build with `kit/desc` manually             |
+| **Gateway setup**     | Automatic (fasthttp by default)       | Manual — you wire gateways yourself        |
+| **Server lifecycle**  | `rony.NewServer` + `rony.Setup`       | `kit.NewServer` + `kit.WithServiceBuilder` |
+| **Route selectors**   | `rony.GET(path)` helpers              | `fasthttp.GET(path)` or custom selectors   |
+| **Error handling**    | Return error, framework serializes    | Manual: write to `ctx.Out()` yourself      |
 
 ---
 
@@ -102,12 +102,12 @@ A raw handler operates on `*kit.Context`:
 
 ```go
 func myHandler(ctx *kit.Context) {
-    req := ctx.In().GetMsg().(*MyRequest)
+req := ctx.In().GetMsg().(*MyRequest)
 
-    ctx.In().
-        Reply().
-        SetMsg(&MyResponse{Data: req.Data}).
-        Send()
+ctx.In().
+Reply().
+SetMsg(&MyResponse{Data: req.Data}).
+Send()
 }
 ```
 
@@ -117,22 +117,22 @@ Use `kit/desc` to build service descriptors:
 
 ```go
 func MyServiceDesc() *desc.Service {
-    return desc.NewService("MyService").
-        SetEncoding(kit.JSON).
-        AddContract(
-            desc.NewContract().
-                SetInput(&CreateRequest{}).
-                SetOutput(&CreateResponse{}).
-                AddRoute(desc.Route("Create", fasthttp.POST("/items"))).
-                SetHandler(createHandler),
-        ).
-        AddContract(
-            desc.NewContract().
-                SetInput(&GetRequest{}).
-                SetOutput(&GetResponse{}).
-                AddRoute(desc.Route("Get", fasthttp.GET("/items/:id"))).
-                SetHandler(getHandler),
-        )
+return desc.NewService("MyService").
+SetEncoding(kit.JSON).
+AddContract(
+desc.NewContract().
+SetInput(&CreateRequest{}).
+SetOutput(&CreateResponse{}).
+AddRoute(desc.Route("Create", fasthttp.POST("/items"))).
+SetHandler(createHandler),
+).
+AddContract(
+desc.NewContract().
+SetInput(&GetRequest{}).
+SetOutput(&GetResponse{}).
+AddRoute(desc.Route("Get", fasthttp.GET("/items/:id"))).
+SetHandler(getHandler),
+)
 }
 ```
 
@@ -142,13 +142,13 @@ Wire it all together:
 
 ```go
 srv := kit.NewServer(
-    kit.WithGateway(
-        fasthttp.MustNew(
-            fasthttp.Listen(":8080"),
-        ),
-    ),
-    kit.WithServiceBuilder(MyServiceDesc()),
-    kit.WithServiceBuilder(AnotherServiceDesc()),
+kit.WithGateway(
+fasthttp.MustNew(
+fasthttp.Listen(":8080"),
+),
+),
+kit.WithServiceBuilder(MyServiceDesc()),
+kit.WithServiceBuilder(AnotherServiceDesc()),
 )
 ```
 
@@ -158,11 +158,11 @@ srv := kit.NewServer(
 import "github.com/clubpay/ronykit/std/clusters/rediscluster"
 
 srv := kit.NewServer(
-    kit.WithGateway(fasthttp.MustNew(fasthttp.Listen(":8080"))),
-    kit.WithCluster(rediscluster.MustNew(
-        rediscluster.WithRedisAddr("localhost:6379"),
-    )),
-    kit.WithServiceBuilder(MyServiceDesc()),
+kit.WithGateway(fasthttp.MustNew(fasthttp.Listen(":8080"))),
+kit.WithCluster(rediscluster.MustNew(
+rediscluster.WithRedisAddr("localhost:6379"),
+)),
+kit.WithServiceBuilder(MyServiceDesc()),
 )
 ```
 
@@ -170,12 +170,12 @@ srv := kit.NewServer(
 
 ## Storage Layers
 
-| Layer | Lifecycle | Use Case |
-|-------|-----------|----------|
-| **Context** | Per request | Request-scoped data (user ID, trace ID) |
-| **Connection** | Per connection | WebSocket session data |
-| **Local** | Per server instance | In-memory caches, counters |
-| **Cluster** | Cross-instance | Shared state (requires cluster bundle) |
+| Layer          | Lifecycle           | Use Case                                |
+|----------------|---------------------|-----------------------------------------|
+| **Context**    | Per request         | Request-scoped data (user ID, trace ID) |
+| **Connection** | Per connection      | WebSocket session data                  |
+| **Local**      | Per server instance | In-memory caches, counters              |
+| **Cluster**    | Cross-instance      | Shared state (requires cluster bundle)  |
 
 ---
 
@@ -185,15 +185,15 @@ To implement a custom gateway, implement the `kit.Gateway` interface:
 
 ```go
 type Gateway interface {
-    Start(ctx context.Context, cfg GatewayStartConfig) error
-    Shutdown(ctx context.Context) error
-    Register(
-        serviceName, contractID string,
-        encoding kit.Encoding,
-        sel kit.RouteSelector,
-        input kit.Message,
-    )
-    Subscribe(d GatewayDelegate)
+Start(ctx context.Context, cfg GatewayStartConfig) error
+Shutdown(ctx context.Context) error
+Register(
+serviceName, contractID string,
+encoding kit.Encoding,
+sel kit.RouteSelector,
+input kit.Message,
+)
+Subscribe(d GatewayDelegate)
 }
 ```
 

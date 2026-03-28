@@ -121,8 +121,8 @@ RonyKIT scaffolding assistant. Follow layered service conventions: ...
 
 IMPORTANT — Always use the RonyKIT x/ toolkit packages instead of
 third-party or hand-rolled equivalents:
-  • x/di — Dependency injection ...
-  ...
+• x/di — Dependency injection ...
+...
 ```
 
 ### 2.2 Tool Descriptions — `tools/{name}.md`
@@ -131,6 +131,7 @@ third-party or hand-rolled equivalents:
 ---
 name: plan_service
 ---
+
 Create a dry-run implementation plan for a new service feature
 based on requested characteristics.
 
@@ -153,6 +154,7 @@ implement_service.
 import_path: github.com/clubpay/ronykit/x/di
 short_name: di
 ---
+
 Dependency injection glue for fx-based service registration,
 stub providers, and infra param wiring.
 
@@ -194,6 +196,7 @@ applies_to_files:
   - migration
   - settings
 ---
+
 Default to Postgres with sqlc-backed repo ports + v0 adapters;
 update migrations/sqlc and settings.
 Wire DB params via x/di.ProvideDBParams and manage connection
@@ -221,7 +224,7 @@ Ordered Markdown list. Each list item becomes one next-step string.
 1. Run create_feature (or execute setup_command) to scaffold files ...
 2. Implement contracts in api/service.go; keep handlers thin ...
 3. Implement business orchestration in internal/app ...
-...
+   ...
 ```
 
 ### 2.7 Planning — `planning/file-purposes.md`
@@ -270,9 +273,11 @@ arguments:
     description: Comma-separated list of characteristics (e.g. postgres, redis, rest-api).
     required: false
 ---
+
 You are planning a new RonyKIT service feature called "{{feature_name}}".
 
 Follow these steps:
+
 1. Call the `plan_service` tool with the feature name and characteristics.
 2. Review the architecture hints and recommended packages in the output.
 3. Call `implement_service` to generate starter code.
@@ -315,52 +320,52 @@ reads from it and returns the parsed `*Base`.
 package knowledge
 
 type Base struct {
-    ServerInstructions string
-    Tools              map[string]ToolDoc
-    Packages           []PackageDoc
-    ArchitectureHints  []ArchitectureHint
-    Characteristics    []CharacteristicDoc
-    PlanNextSteps      []string
-    FilePurposes       map[string]string
-    Prompts            []PromptDoc
+	ServerInstructions string
+	Tools              map[string]ToolDoc
+	Packages           []PackageDoc
+	ArchitectureHints  []ArchitectureHint
+	Characteristics    []CharacteristicDoc
+	PlanNextSteps      []string
+	FilePurposes       map[string]string
+	Prompts            []PromptDoc
 }
 
 type ToolDoc struct {
-    Name             string
-    Description      string   // body text before ## Extended Guidance
-    ExtendedGuidance string   // text under ## Extended Guidance (optional)
+	Name             string
+	Description      string // body text before ## Extended Guidance
+	ExtendedGuidance string // text under ## Extended Guidance (optional)
 }
 
 type PackageDoc struct {
-    ImportPath  string `yaml:"import_path"`
-    ShortName   string `yaml:"short_name"`
-    Description string // body before ## Usage Hint
-    UsageHint   string // text under ## Usage Hint
+	ImportPath  string `yaml:"import_path"`
+	ShortName   string `yaml:"short_name"`
+	Description string // body before ## Usage Hint
+	UsageHint   string // text under ## Usage Hint
 }
 
 type ArchitectureHint struct {
-    Slug string // filename stem, e.g. "thin-handlers"
-    Text string // entire file body
+	Slug string // filename stem, e.g. "thin-handlers"
+	Text string // entire file body
 }
 
 type CharacteristicDoc struct {
-    Keywords       []string `yaml:"keywords"`
-    AppliesToFiles []string `yaml:"applies_to_files"`
-    ServiceHint    string   // body before ## File-Level Hint
-    FileHint       string   // text under ## File-Level Hint
+	Keywords       []string `yaml:"keywords"`
+	AppliesToFiles []string `yaml:"applies_to_files"`
+	ServiceHint    string   // body before ## File-Level Hint
+	FileHint       string   // text under ## File-Level Hint
 }
 
 type PromptDoc struct {
-    Name        string            `yaml:"name"`
-    Description string            `yaml:"description"`
-    Arguments   []PromptArgument  `yaml:"arguments"`
-    Template    string            // body
+	Name        string           `yaml:"name"`
+	Description string           `yaml:"description"`
+	Arguments   []PromptArgument `yaml:"arguments"`
+	Template    string           // body
 }
 
 type PromptArgument struct {
-    Name        string `yaml:"name"`
-    Description string `yaml:"description"`
-    Required    bool   `yaml:"required"`
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	Required    bool   `yaml:"required"`
 }
 ```
 
@@ -388,6 +393,7 @@ func splitSections(body string) map[string]string
 ```
 
 Returns a map like:
+
 ```
 {
   "":                 "text before first heading",
@@ -409,13 +415,13 @@ Add the knowledge base to `serverConfig`:
 
 ```go
 type serverConfig struct {
-    name         string
-    version      string
-    instructions string  // overridable via --instructions flag
-    executable   string
-    skeletonFS   fs.FS
-    cmdRunner    runner
-    kb           *knowledge.Base  // NEW
+name         string
+version      string
+instructions string // overridable via --instructions flag
+executable   string
+skeletonFS   fs.FS
+cmdRunner    runner
+kb           *knowledge.Base // NEW
 }
 ```
 
@@ -427,18 +433,18 @@ import "github.com/clubpay/ronykit/ronyup/internal/knowledge"
 // In Cmd.RunE:
 base, err := knowledge.Load()
 if err != nil {
-    return fmt.Errorf("load knowledge base: %w", err)
+return fmt.Errorf("load knowledge base: %w", err)
 }
 
 instructions := opt.Instructions
 if instructions == "" {
-    instructions = base.ServerInstructions
+instructions = base.ServerInstructions
 }
 
 server := newServer(serverConfig{
-    ...
-    instructions: instructions,
-    kb:           base,
+...
+instructions: instructions,
+kb:           base,
 })
 ```
 
@@ -449,15 +455,15 @@ Each tool registrar reads from `cfg.kb` instead of constants:
 ```go
 // Before:
 mcpsdk.AddTool(srv, &mcpsdk.Tool{
-    Name:        toolPlanService,
-    Description: descPlanService,
+Name:        toolPlanService,
+Description: descPlanService,
 }, handler)
 
 // After:
 toolDoc := cfg.kb.Tools["plan_service"]
 mcpsdk.AddTool(srv, &mcpsdk.Tool{
-    Name:        toolDoc.Name,
-    Description: toolDoc.Description,
+Name:        toolDoc.Name,
+Description: toolDoc.Description,
 }, handler)
 ```
 
@@ -490,37 +496,37 @@ Registration in `newServer()`:
 
 ```go
 func registerResources(srv *mcpsdk.Server, kb *knowledge.Base) {
-    // Register a resource template for browsing
-    srv.AddResourceTemplate(
-        &mcpsdk.ResourceTemplate{
-            URITemplate: "knowledge://ronyup/{category}/{name}",
-            Name:        "RonyKIT Knowledge Base",
-            Description: "Architecture hints, package docs, and characteristic " +
-                "guidance for RonyKIT service development.",
-            MIMEType:    "text/markdown",
-        },
-        resourceHandler(kb),
-    )
+// Register a resource template for browsing
+srv.AddResourceTemplate(
+&mcpsdk.ResourceTemplate{
+URITemplate: "knowledge://ronyup/{category}/{name}",
+Name:        "RonyKIT Knowledge Base",
+Description: "Architecture hints, package docs, and characteristic " +
+"guidance for RonyKIT service development.",
+MIMEType:    "text/markdown",
+},
+resourceHandler(kb),
+)
 
-    // Register individual static resources for discoverability
-    for _, pkg := range kb.Packages {
-        srv.AddResource(&mcpsdk.Resource{
-            URI:         "knowledge://ronyup/packages/" + pkg.ShortName,
-            Name:        "Package: " + pkg.ShortName,
-            Description: pkg.Description,
-            MIMEType:    "text/markdown",
-        }, resourceHandler(kb))
-    }
+// Register individual static resources for discoverability
+for _, pkg := range kb.Packages {
+srv.AddResource(&mcpsdk.Resource{
+URI:         "knowledge://ronyup/packages/" + pkg.ShortName,
+Name:        "Package: " + pkg.ShortName,
+Description: pkg.Description,
+MIMEType:    "text/markdown",
+}, resourceHandler(kb))
+}
 
-    for _, hint := range kb.ArchitectureHints {
-        srv.AddResource(&mcpsdk.Resource{
-            URI:         "knowledge://ronyup/architecture/" + hint.Slug,
-            Name:        "Architecture: " + hint.Slug,
-            Description: truncate(hint.Text, 100),
-            MIMEType:    "text/markdown",
-        }, resourceHandler(kb))
-    }
-    // ... characteristics, planning, etc.
+for _, hint := range kb.ArchitectureHints {
+srv.AddResource(&mcpsdk.Resource{
+URI:         "knowledge://ronyup/architecture/" + hint.Slug,
+Name:        "Architecture: " + hint.Slug,
+Description: truncate(hint.Text, 100),
+MIMEType:    "text/markdown",
+}, resourceHandler(kb))
+}
+// ... characteristics, planning, etc.
 }
 ```
 
@@ -533,32 +539,32 @@ Register prompt templates from `kb.Prompts`:
 
 ```go
 func registerPrompts(srv *mcpsdk.Server, kb *knowledge.Base) {
-    for _, p := range kb.Prompts {
-        prompt := p // capture
-        srv.AddPrompt(
-            &mcpsdk.Prompt{
-                Name:        prompt.Name,
-                Description: prompt.Description,
-                Arguments:   toMCPArguments(prompt.Arguments),
-            },
-            func(ctx context.Context, req *mcpsdk.GetPromptRequest) (
-                *mcpsdk.GetPromptResult, error,
-            ) {
-                rendered := renderTemplate(prompt.Template, req.Params.Arguments)
-                return &mcpsdk.GetPromptResult{
-                    Description: prompt.Description,
-                    Messages: []mcpsdk.PromptMessage{
-                        {
-                            Role: mcpsdk.RoleUser,
-                            Content: &mcpsdk.TextContent{
-                                Text: rendered,
-                            },
-                        },
-                    },
-                }, nil
-            },
-        )
-    }
+for _, p := range kb.Prompts {
+prompt := p // capture
+srv.AddPrompt(
+&mcpsdk.Prompt{
+Name:        prompt.Name,
+Description: prompt.Description,
+Arguments:   toMCPArguments(prompt.Arguments),
+},
+func (ctx context.Context, req *mcpsdk.GetPromptRequest) (
+*mcpsdk.GetPromptResult, error,
+) {
+rendered := renderTemplate(prompt.Template, req.Params.Arguments)
+return &mcpsdk.GetPromptResult{
+Description: prompt.Description,
+Messages: []mcpsdk.PromptMessage{
+{
+Role: mcpsdk.RoleUser,
+Content: &mcpsdk.TextContent{
+Text: rendered,
+},
+},
+},
+}, nil
+},
+)
+}
 }
 ```
 
@@ -637,21 +643,22 @@ but follows the same "externalize from Go code" principle.
 
 ## 8. What Stays in Go Code
 
-| Category | Stays in Go? | Reason |
-|---|---|---|
-| Tool name constants (`toolPlanService`) | Yes | Code identifiers, not prose |
-| Error format strings (`errPathRequired`) | Yes | Developer-facing, tied to code logic |
-| Result format strings (`msgPlannedFiles`) | Yes | `fmt.Sprintf` format strings |
-| Domain constants (`ronyKitModulePath`) | Yes | Structural constants |
-| Keyword matching logic | Yes | Algorithm, but keywords come from MD frontmatter |
-| File-path matching logic | Yes | Algorithm, but `applies_to_files` comes from MD |
-| `toolkitPackage` struct type | Yes | Data type (populated from MD now) |
+| Category                                  | Stays in Go? | Reason                                           |
+|-------------------------------------------|--------------|--------------------------------------------------|
+| Tool name constants (`toolPlanService`)   | Yes          | Code identifiers, not prose                      |
+| Error format strings (`errPathRequired`)  | Yes          | Developer-facing, tied to code logic             |
+| Result format strings (`msgPlannedFiles`) | Yes          | `fmt.Sprintf` format strings                     |
+| Domain constants (`ronyKitModulePath`)    | Yes          | Structural constants                             |
+| Keyword matching logic                    | Yes          | Algorithm, but keywords come from MD frontmatter |
+| File-path matching logic                  | Yes          | Algorithm, but `applies_to_files` comes from MD  |
+| `toolkitPackage` struct type              | Yes          | Data type (populated from MD now)                |
 
 ---
 
 ## 9. Migration Path
 
 ### Phase 1 — Knowledge Base Foundation
+
 1. Create `ronyup/knowledge/` directory with all MD files (migrate from `strings.go`).
 2. Create `ronyup/internal/knowledge/` with `embed.go`, `types.go`, `loader.go`.
 3. Wire `Load()` into `newServer()`.
@@ -659,11 +666,13 @@ but follows the same "externalize from Go code" principle.
 5. Delete `strings.go` constants that are now in MD files.
 
 ### Phase 2 — MCP Resources & Prompts
+
 7. Register MCP resources from knowledge base.
 8. Write prompt template MD files.
 9. Register MCP prompts from knowledge base.
 
 ### Phase 3 — Codegen Templates
+
 10. Convert `buildAPIServiceContent` → `api_service.gotmpl`.
 11. Convert `buildAppServiceContent` → `app_service.gotmpl`.
 12. Convert `buildRepoPortContent` → `repo_port.gotmpl`.
@@ -678,9 +687,9 @@ To add a new toolkit package (e.g., `x/newpkg`):
 1. Create `ronyup/knowledge/packages/newpkg.md` with frontmatter.
 2. Rebuild `ronyup`.
 3. The MCP server automatically:
-   - Includes it in `plan_service` recommended packages.
-   - Exposes it as `knowledge://ronyup/packages/newpkg` resource.
-   - References it in server instructions (if `instructions.md` is updated).
+	- Includes it in `plan_service` recommended packages.
+	- Exposes it as `knowledge://ronyup/packages/newpkg` resource.
+	- References it in server instructions (if `instructions.md` is updated).
 
 To add a new characteristic (e.g., `graphql`):
 

@@ -7,10 +7,10 @@ how the repository is organized.
 
 RonyKIT provides two levels of abstraction:
 
-| Layer | Package | Description |
-|-------|---------|-------------|
-| **High-level** | `rony` | Batteries-included framework. Type-safe handlers, built-in docs, state management. **Start here.** |
-| **Low-level** | `kit` | Core building blocks. Use when you need custom gateways, protocols, or deeper control. |
+| Layer          | Package | Description                                                                                        |
+|----------------|---------|----------------------------------------------------------------------------------------------------|
+| **High-level** | `rony`  | Batteries-included framework. Type-safe handlers, built-in docs, state management. **Start here.** |
+| **Low-level**  | `kit`   | Core building blocks. Use when you need custom gateways, protocols, or deeper control.             |
 
 `rony` is built on top of `kit`. You can always drop down to `kit` APIs from within
 `rony` handlers using `ctx.KitCtx()`.
@@ -63,12 +63,12 @@ In the `rony` layer, `rony.Server` wraps an EdgeServer with opinionated defaults
 
 Handles inbound traffic. RonyKIT ships with several gateway implementations:
 
-| Gateway | Package | Description |
-|---------|---------|-------------|
-| fasthttp | `std/gateways/fasthttp` | High-performance HTTP gateway using [valyala/fasthttp](https://github.com/valyala/fasthttp) |
-| silverhttp | `std/gateways/silverhttp` | HTTP gateway using [silverlining](https://github.com/go-www/silverlining) |
-| fastws | `std/gateways/fastws` | WebSocket gateway using [gnet](https://github.com/panjf2000/gnet) + [gobwas/ws](https://github.com/gobwas/ws) |
-| mcp | `std/gateways/mcp` | Model Context Protocol gateway |
+| Gateway    | Package                   | Description                                                                                                   |
+|------------|---------------------------|---------------------------------------------------------------------------------------------------------------|
+| fasthttp   | `std/gateways/fasthttp`   | High-performance HTTP gateway using [valyala/fasthttp](https://github.com/valyala/fasthttp)                   |
+| silverhttp | `std/gateways/silverhttp` | HTTP gateway using [silverlining](https://github.com/go-www/silverlining)                                     |
+| fastws     | `std/gateways/fastws`     | WebSocket gateway using [gnet](https://github.com/panjf2000/gnet) + [gobwas/ws](https://github.com/gobwas/ws) |
+| mcp        | `std/gateways/mcp`        | Model Context Protocol gateway                                                                                |
 
 When using `rony.NewServer()`, the fasthttp gateway is configured automatically.
 
@@ -77,10 +77,10 @@ When using `rony.NewServer()`, the fasthttp gateway is configured automatically.
 Optional. Enables multi-instance coordination for shared state across EdgeServer
 instances.
 
-| Cluster | Package | Description |
-|---------|---------|-------------|
-| rediscluster | `std/clusters/rediscluster` | Redis-backed cluster |
-| p2pcluster | `std/clusters/p2pcluster` | Peer-to-peer cluster using [libp2p](https://github.com/libp2p/go-libp2p) |
+| Cluster      | Package                     | Description                                                              |
+|--------------|-----------------------------|--------------------------------------------------------------------------|
+| rediscluster | `std/clusters/rediscluster` | Redis-backed cluster                                                     |
+| p2pcluster   | `std/clusters/p2pcluster`   | Peer-to-peer cluster using [libp2p](https://github.com/libp2p/go-libp2p) |
 
 ### Service
 
@@ -97,12 +97,12 @@ In the `rony` layer, contracts are created implicitly with `rony.WithUnary()` an
 
 Request-scoped state with four storage layers:
 
-| Layer | Lifecycle | Access |
-|-------|-----------|--------|
-| **Context** | Per request | Available in all handlers |
-| **Connection** | Per connection | Persists across requests on the same connection (WebSocket) |
-| **Local** | Per server instance | Shared between all contracts and services |
-| **Cluster** | Cross-instance | Shared across EdgeServer instances (requires a Cluster bundle) |
+| Layer          | Lifecycle           | Access                                                         |
+|----------------|---------------------|----------------------------------------------------------------|
+| **Context**    | Per request         | Available in all handlers                                      |
+| **Connection** | Per connection      | Persists across requests on the same connection (WebSocket)    |
+| **Local**      | Per server instance | Shared between all contracts and services                      |
+| **Cluster**    | Cross-instance      | Shared across EdgeServer instances (requires a Cluster bundle) |
 
 ---
 
@@ -168,13 +168,13 @@ ronykit/
 
 RonyKIT supports multiple encoding formats:
 
-| Format | Description |
-|--------|-------------|
-| JSON | Default. Uses struct `json` tags |
-| Protobuf | Protocol Buffers encoding |
-| MessagePack | Binary encoding |
-| Multipart | `multipart/form-data` for file uploads |
-| Custom | Implement your own codec |
+| Format      | Description                            |
+|-------------|----------------------------------------|
+| JSON        | Default. Uses struct `json` tags       |
+| Protobuf    | Protocol Buffers encoding              |
+| MessagePack | Binary encoding                        |
+| Multipart   | `multipart/form-data` for file uploads |
+| Custom      | Implement your own codec               |
 
 ---
 
@@ -195,21 +195,21 @@ A single handler can serve both REST and RPC routes, which is how RonyKIT achiev
 The `x/` directory contains optional packages that integrate with the RonyKIT
 ecosystem. These are recommended when using the `ronyup` scaffolding:
 
-| Package | Purpose |
-|---------|---------|
-| `x/di` | Dependency injection helpers for uber/fx |
-| `x/settings` | Configuration management with Viper |
-| `x/telemetry/logkit` | Structured logging |
-| `x/telemetry/tracekit` | Distributed tracing (OpenTelemetry) |
-| `x/telemetry/meterkit` | Metrics collection |
-| `x/apidoc` | OpenAPI document generation |
-| `x/cache` | Caching utilities |
-| `x/datasource` | Database and Redis connection management |
-| `x/i18n` | Internationalization support |
-| `x/ratelimit` | Rate limiting |
-| `x/batch` | Batch processing |
-| `x/rkit` | Common helper functions |
-| `x/testkit` | Testing utilities |
+| Package                | Purpose                                  |
+|------------------------|------------------------------------------|
+| `x/di`                 | Dependency injection helpers for uber/fx |
+| `x/settings`           | Configuration management with Viper      |
+| `x/telemetry/logkit`   | Structured logging                       |
+| `x/telemetry/tracekit` | Distributed tracing (OpenTelemetry)      |
+| `x/telemetry/meterkit` | Metrics collection                       |
+| `x/apidoc`             | OpenAPI document generation              |
+| `x/cache`              | Caching utilities                        |
+| `x/datasource`         | Database and Redis connection management |
+| `x/i18n`               | Internationalization support             |
+| `x/ratelimit`          | Rate limiting                            |
+| `x/batch`              | Batch processing                         |
+| `x/rkit`               | Common helper functions                  |
+| `x/testkit`            | Testing utilities                        |
 
 ---
 
