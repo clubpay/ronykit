@@ -188,9 +188,33 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 	}
 
 	p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
-	z.RunCmd(cmd.Context(), p, "git", "init")
-	z.RunCmd(cmd.Context(), p, "git", "add", ".")
-	z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
+
+	isGitRepo, err := isGitRepository(filepath.Join(".", opt.RepositoryRootDir))
+	if err == nil && !isGitRepo {
+		z.RunCmd(cmd.Context(), p, "git", "init")
+		z.RunCmd(cmd.Context(), p, "git", "add", ".")
+		z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
+	}
+}
+
+func isGitRepository(dir string) (bool, error) {
+	absPath, err := filepath.Abs(dir)
+	if err != nil {
+		return false, err
+	}
+
+	gitPath := filepath.Join(absPath, ".git")
+
+	_, err = os.Stat(gitPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 var CmdSetupFeature = &cobra.Command{
