@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/clubpay/ronykit/kit v0.24.0
+	github.com/clubpay/ronykit/kit v0.24.1
 	github.com/fasthttp/websocket v1.5.12
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
