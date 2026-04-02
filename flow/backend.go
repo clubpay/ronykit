@@ -26,6 +26,9 @@ type Backend interface { //nolint:interfacebloat
 		workflow any,
 		args ...any,
 	) (client.WorkflowRun, error)
+	StartWorkflow(
+		options client.StartWorkflowOptions, workflow any, args ...any,
+	) client.WithStartWorkflowOperation
 	TaskQueue() string
 	Namespace() string
 	Group() string
@@ -172,6 +175,12 @@ func (r *realBackend) ExecuteWorkflow(
 	ctx context.Context, options client.StartWorkflowOptions, workflow any, args ...any,
 ) (client.WorkflowRun, error) {
 	return r.cli.ExecuteWorkflow(ctx, options, workflow, args...)
+}
+
+func (r *realBackend) StartWorkflow(
+	options client.StartWorkflowOptions, workflow any, args ...any,
+) client.WithStartWorkflowOperation {
+	return r.cli.NewWithStartWorkflowOperation(options, workflow, args...)
 }
 
 func (r *realBackend) TaskQueue() string {

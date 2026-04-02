@@ -92,6 +92,21 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 	return w
 }
 
+func NewSimpleWorkflow[REQ, RES, STATE any](
+	name, group string,
+	fn ActivityFunc[REQ, RES, STATE],
+	execOptions ExecuteActivityOptions,
+) *Workflow[REQ, RES, STATE] {
+	act := NewActivity(name, group, fn)
+
+	return NewWorkflow(
+		name, group,
+		func(ctx *WorkflowContext[REQ, RES, STATE], req REQ) (*RES, error) {
+			return act.Execute(ctx.Context(), req, execOptions).Get(ctx.Context())
+		},
+	)
+}
+
 func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDefaultBackend bool) {
 	if b.Group() != w.group {
 		return
