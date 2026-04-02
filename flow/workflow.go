@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/google/uuid"
 	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
 	v13 "go.temporal.io/api/failure/v1"
@@ -627,4 +628,70 @@ func (sdk *SDK) DescribeWorkflowExecution(
 
 func (sdk *SDK) Signal(ctx context.Context, workflowID, signalName string, arg any) error {
 	return sdk.b.Client().SignalWorkflow(ctx, workflowID, "", signalName, arg)
+}
+
+type CloneWorkflowRequest struct {
+	WorkflowID    string
+	RunID         string
+	NewWorkflowID string
+}
+
+type CloneWorkflowResponse struct {
+	WorkflowID string
+	RunID      string
+}
+
+// CloneWorkflow starts a new workflow execution of the same type and with the
+// exact same input as the workflow identified by the given WorkflowID/RunID.
+func (sdk *SDK) CloneWorkflow(ctx context.Context, req CloneWorkflowRequest) (*CloneWorkflowResponse, error) {
+	histRes, err := sdk.b.Client().WorkflowService().GetWorkflowExecutionHistory(
+		ctx, &workflowservice.GetWorkflowExecutionHistoryRequest{
+			Namespace: sdk.b.Namespace(),
+			Execution: &common.WorkflowExecution{
+				WorkflowId: req.WorkflowID,
+				RunId:      req.RunID,
+			},
+			MaximumPageSize:        1,
+			HistoryEventFilterType: enumspb.HISTORY_EVENT_FILTER_TYPE_ALL_EVENT,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	events := histRes.GetHistory().GetEvents()
+	if len(events) == 0 {
+		return nil, errors.New("no history events found for workflow")
+	}
+
+	startedAttr := events[0].GetWorkflowExecutionStartedEventAttributes()
+	if startedAttr == nil {
+		return nil, errors.New("first history event is not WorkflowExecutionStarted")
+	}
+
+	if req.NewWorkflowID == "" {
+		req.NewWorkflowID = startedAttr.WorkflowId
+	}
+
+	startResp, err := sdk.b.Client().WorkflowService().StartWorkflowExecution(
+		ctx, &workflowservice.StartWorkflowExecutionRequest{
+			Namespace:                sdk.b.Namespace(),
+			WorkflowId:               req.NewWorkflowID,
+			WorkflowType:             startedAttr.GetWorkflowType(),
+			TaskQueue:                startedAttr.GetTaskQueue(),
+			Input:                    startedAttr.GetInput(),
+			WorkflowExecutionTimeout: startedAttr.GetWorkflowExecutionTimeout(),
+			WorkflowRunTimeout:       startedAttr.GetWorkflowRunTimeout(),
+			WorkflowTaskTimeout:      startedAttr.GetWorkflowTaskTimeout(),
+			RequestId:                uuid.New().String(),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &CloneWorkflowResponse{
+		WorkflowID: req.NewWorkflowID,
+		RunID:      startResp.GetRunId(),
+	}, nil
 }
