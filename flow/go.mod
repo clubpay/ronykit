@@ -7,6 +7,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.24.1
 	github.com/clubpay/ronykit/x/rkit v0.3.1
 	github.com/clubpay/ronykit/x/telemetry v0.3.1
+	github.com/google/uuid v1.6.0
 	github.com/janstoon/toolbox/tricks v1.1.0
 	github.com/nexus-rpc/sdk-go v0.6.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -33,7 +34,6 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
