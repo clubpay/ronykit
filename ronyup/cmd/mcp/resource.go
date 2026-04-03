@@ -11,12 +11,14 @@ import (
 
 const resourceURIPrefix = "knowledge://ronyup/"
 
+var resourceTemplateURI = resourceURIPrefix + "{category}/{name}"
+
 func registerResources(srv *mcpsdk.Server, cfg serverConfig) {
 	kb := cfg.kb
 
 	srv.AddResourceTemplate(
 		&mcpsdk.ResourceTemplate{
-			URITemplate: resourceURIPrefix + "{category}/{name}",
+			URITemplate: resourceTemplateURI,
 			Name:        "RonyKIT Knowledge Base",
 			Description: "Architecture hints, package docs, and characteristic " +
 				"guidance for RonyKIT service development.",
@@ -166,6 +168,145 @@ func charResourceName(ch knowledge.CharacteristicDoc) string {
 	}
 
 	return "unknown"
+}
+
+func completionHandler(
+	kb *knowledge.Base,
+) func(context.Context, *mcpsdk.CompleteRequest) (*mcpsdk.CompleteResult, error) {
+	return func(_ context.Context, req *mcpsdk.CompleteRequest) (*mcpsdk.CompleteResult, error) {
+		if req.Params.Ref == nil {
+			return emptyCompletion(), nil
+		}
+
+		switch req.Params.Ref.Type {
+		case "ref/resource":
+			if req.Params.Ref.URI != resourceTemplateURI {
+				return emptyCompletion(), nil
+			}
+
+			return completeResource(kb, req), nil
+		default:
+			return emptyCompletion(), nil
+		}
+	}
+}
+
+func completeResource(
+	kb *knowledge.Base, req *mcpsdk.CompleteRequest,
+) *mcpsdk.CompleteResult {
+	argName := req.Params.Argument.Name
+	argValue := req.Params.Argument.Value
+
+	var candidates []string
+
+	switch argName {
+	case "category":
+		candidates = filterPrefix(knowledgeCategories(), argValue)
+	case "name":
+		category := ""
+		if req.Params.Context != nil {
+			category = req.Params.Context.Arguments["category"]
+		}
+
+		candidates = filterPrefix(namesForCategory(kb, category), argValue)
+	}
+
+	return buildCompletionResult(candidates)
+}
+
+func knowledgeCategories() []string {
+	return []string{"packages", "architecture", "characteristics"}
+}
+
+const maxCompletionValues = 50
+
+func buildCompletionResult(candidates []string) *mcpsdk.CompleteResult {
+	if candidates == nil {
+		candidates = []string{}
+	}
+
+	total := len(candidates)
+	hasMore := total > maxCompletionValues
+
+	if hasMore {
+		candidates = candidates[:maxCompletionValues]
+	}
+
+	return &mcpsdk.CompleteResult{
+		Completion: mcpsdk.CompletionResultDetails{
+			Values:  candidates,
+			Total:   total,
+			HasMore: hasMore,
+		},
+	}
+}
+
+func emptyCompletion() *mcpsdk.CompleteResult {
+	return &mcpsdk.CompleteResult{
+		Completion: mcpsdk.CompletionResultDetails{
+			Values: []string{},
+		},
+	}
+}
+
+func namesForCategory(kb *knowledge.Base, category string) []string {
+	switch category {
+	case "packages":
+		names := make([]string, 0, len(kb.Packages))
+		for _, pkg := range kb.Packages {
+			names = append(names, pkg.ShortName)
+		}
+
+		return names
+	case "architecture":
+		names := make([]string, 0, len(kb.ArchitectureHints))
+		for _, hint := range kb.ArchitectureHints {
+			names = append(names, hint.Slug)
+		}
+
+		return names
+	case "characteristics":
+		names := make([]string, 0, len(kb.Characteristics))
+		for _, ch := range kb.Characteristics {
+			names = append(names, charResourceName(ch))
+		}
+
+		return names
+	default:
+		var all []string
+
+		for _, pkg := range kb.Packages {
+			all = append(all, pkg.ShortName)
+		}
+
+		for _, hint := range kb.ArchitectureHints {
+			all = append(all, hint.Slug)
+		}
+
+		for _, ch := range kb.Characteristics {
+			all = append(all, charResourceName(ch))
+		}
+
+		return all
+	}
+}
+
+func filterPrefix(items []string, prefix string) []string {
+	if prefix == "" {
+		return items
+	}
+
+	lowerPrefix := strings.ToLower(prefix)
+
+	var result []string
+
+	for _, item := range items {
+		if strings.HasPrefix(strings.ToLower(item), lowerPrefix) {
+			result = append(result, item)
+		}
+	}
+
+	return result
 }
 
 func truncateText(s string, maxLen int) string {

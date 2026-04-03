@@ -40,7 +40,8 @@ func newServer(cfg serverConfig) *mcpsdk.Server {
 			Title:   serverTitle,
 		},
 		&mcpsdk.ServerOptions{
-			Instructions: cfg.instructions,
+			Instructions:      cfg.instructions,
+			CompletionHandler: completionHandler(cfg.kb),
 		},
 	)
 
