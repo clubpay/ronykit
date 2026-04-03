@@ -670,7 +670,7 @@ func (sdk *SDK) CloneWorkflow(ctx context.Context, req CloneWorkflowRequest) (*C
 	}
 
 	if req.NewWorkflowID == "" {
-		req.NewWorkflowID = startedAttr.WorkflowId
+		req.NewWorkflowID = startedAttr.GetWorkflowId()
 	}
 
 	startResp, err := sdk.b.Client().WorkflowService().StartWorkflowExecution(

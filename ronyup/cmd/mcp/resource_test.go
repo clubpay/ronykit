@@ -258,6 +258,28 @@ func TestCompletionHandler_NonMatchingRef(t *testing.T) {
 	handler := completionHandler(kb)
 	ctx := context.Background()
 
+	t.Run("nil request returns empty", func(t *testing.T) {
+		result, err := handler(ctx, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Completion.Values) != 0 {
+			t.Fatalf("expected empty values, got %v", result.Completion.Values)
+		}
+	})
+
+	t.Run("nil params returns empty", func(t *testing.T) {
+		result, err := handler(ctx, &mcpsdk.CompleteRequest{})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Completion.Values) != 0 {
+			t.Fatalf("expected empty values, got %v", result.Completion.Values)
+		}
+	})
+
 	t.Run("nil ref returns empty", func(t *testing.T) {
 		result, err := handler(ctx, &mcpsdk.CompleteRequest{
 			Params: &mcpsdk.CompleteParams{
@@ -297,6 +319,53 @@ func TestCompletionHandler_NonMatchingRef(t *testing.T) {
 			t.Fatalf("expected empty values, got %v", result.Completion.Values)
 		}
 	})
+}
+
+func TestCompletionHandler_NameArgCaseInsensitiveCategoryContext(t *testing.T) {
+	kb := mustLoadKB(t)
+	handler := completionHandler(kb)
+	ctx := context.Background()
+
+	result, err := handler(ctx, &mcpsdk.CompleteRequest{
+		Params: &mcpsdk.CompleteParams{
+			Ref: &mcpsdk.CompleteReference{
+				Type: "REF/RESOURCE",
+				URI:  " knowledge://ronyup/{category}/{name} ",
+			},
+			Argument: mcpsdk.CompleteParamsArgument{
+				Name:  " NAME ",
+				Value: "di",
+			},
+			Context: &mcpsdk.CompleteContext{
+				Arguments: map[string]string{
+					"category": " Packages ",
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !slices.Contains(result.Completion.Values, "di") {
+		t.Fatalf("expected 'di' in completions, got %v", result.Completion.Values)
+	}
+
+	for _, v := range result.Completion.Values {
+		found := false
+
+		for _, pkg := range kb.Packages {
+			if pkg.ShortName == v {
+				found = true
+
+				break
+			}
+		}
+
+		if !found {
+			t.Fatalf("completion %q not in packages", v)
+		}
+	}
 }
 
 func TestCompletionHandler_ValuesNeverNil(t *testing.T) {

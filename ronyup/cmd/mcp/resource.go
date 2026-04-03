@@ -174,13 +174,16 @@ func completionHandler(
 	kb *knowledge.Base,
 ) func(context.Context, *mcpsdk.CompleteRequest) (*mcpsdk.CompleteResult, error) {
 	return func(_ context.Context, req *mcpsdk.CompleteRequest) (*mcpsdk.CompleteResult, error) {
-		if req.Params.Ref == nil {
+		if req == nil || req.Params == nil || req.Params.Ref == nil {
 			return emptyCompletion(), nil
 		}
 
-		switch req.Params.Ref.Type {
+		refType := strings.ToLower(strings.TrimSpace(req.Params.Ref.Type))
+		refURI := strings.TrimSpace(req.Params.Ref.URI)
+
+		switch refType {
 		case "ref/resource":
-			if req.Params.Ref.URI != resourceTemplateURI {
+			if refURI != resourceTemplateURI {
 				return emptyCompletion(), nil
 			}
 
@@ -194,8 +197,8 @@ func completionHandler(
 func completeResource(
 	kb *knowledge.Base, req *mcpsdk.CompleteRequest,
 ) *mcpsdk.CompleteResult {
-	argName := req.Params.Argument.Name
-	argValue := req.Params.Argument.Value
+	argName := strings.ToLower(strings.TrimSpace(req.Params.Argument.Name))
+	argValue := strings.TrimSpace(req.Params.Argument.Value)
 
 	var candidates []string
 
@@ -250,7 +253,7 @@ func emptyCompletion() *mcpsdk.CompleteResult {
 }
 
 func namesForCategory(kb *knowledge.Base, category string) []string {
-	switch category {
+	switch strings.ToLower(strings.TrimSpace(category)) {
 	case "packages":
 		names := make([]string, 0, len(kb.Packages))
 		for _, pkg := range kb.Packages {
