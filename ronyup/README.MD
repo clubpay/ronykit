@@ -87,6 +87,11 @@ Starts a stdio MCP server that exposes tools for:
 - Planning service implementation with characteristic hints (`plan_service`)
 - Implementing service starter code in scaffolded features (`implement_service`)
 
+Migration knowledge is available at:
+
+- `knowledge://ronyup/architecture/migrating-kit-to-rony`
+- `migrate-kit-to-rony` prompt template for scoped migration planning
+
 Default MCP guidance for service generation:
 
 - Keep persistence behind `internal/repo/port.go` and `internal/repo/v0` adapters.
@@ -310,6 +315,10 @@ Exposed MCP tools:
 - `implement_service`: writes base implementation into `api/service.go`, `internal/app/app.go`, and `internal/repo/port.go`.
   - Supports multi-contract generation via `contracts` input.
   - Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
+
+Knowledge and prompt for migration:
+- `knowledge://ronyup/architecture/migrating-kit-to-rony`: phased migration guide from direct `kit` to `rony`.
+- `migrate-kit-to-rony`: MCP prompt template to generate a scoped migration plan.
 
 Default MCP service conventions:
 - Prefer Postgres + `sqlc` for repository management and DB access by default.
