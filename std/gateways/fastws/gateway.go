@@ -17,7 +17,7 @@ type gateway struct {
 	utils.SpinLock
 
 	b      *bundle
-	nextID uint64
+	nextID atomic.Uint64
 	conns  map[uint64]*wsConn
 }
 
@@ -51,7 +51,7 @@ func (gw *gateway) OnShutdown(_ gnet.Engine) {}
 
 func (gw *gateway) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 	wsc := newWebsocketConn(
-		atomic.AddUint64(&gw.nextID, 1),
+		gw.nextID.Add(1),
 		c,
 		gw.b.rpcOutFactory,
 		gw.b.writeMode,

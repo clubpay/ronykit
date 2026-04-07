@@ -31,7 +31,7 @@ type WebsocketCtx struct {
 
 	pendingMtx     sync.Mutex
 	pending        map[string]chan kit.IncomingRPCContainer
-	lastActivity   uint32
+	lastActivity   atomic.Uint32
 	disconnectChan chan struct{}
 
 	// fasthttp entities
@@ -116,11 +116,11 @@ func (wCtx *WebsocketCtx) Reconnect(ctx context.Context) error {
 }
 
 func (wCtx *WebsocketCtx) setActivity() {
-	atomic.StoreUint32(&wCtx.lastActivity, uint32(utils.TimeUnix()))
+	wCtx.lastActivity.Store(uint32(utils.TimeUnix()))
 }
 
 func (wCtx *WebsocketCtx) getActivity() int64 {
-	return int64(atomic.LoadUint32(&wCtx.lastActivity))
+	return int64(wCtx.lastActivity.Load())
 }
 
 func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {

@@ -49,7 +49,7 @@ type bundle struct {
 	wsUpgrade     websocket.FastHTTPUpgrader
 	wsRoutes      map[string]*routeData
 	wsEndpoint    string
-	wsNextID      uint64
+	wsNextID      atomic.Uint64
 	predicateKey  string
 	rpcInFactory  kit.IncomingRPCFactory
 	rpcOutFactory kit.OutgoingRPCFactory
@@ -244,7 +244,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 		func(conn *websocket.Conn) {
 			wsc := &wsConn{
 				kv:            map[string]string{},
-				id:            atomic.AddUint64(&b.wsNextID, 1),
+				id:            b.wsNextID.Add(1),
 				clientIP:      realip.FromRequest(ctx),
 				c:             conn,
 				rpcOutFactory: b.rpcOutFactory,
