@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/flow
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.24.1
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.24.1
-	github.com/clubpay/ronykit/x/rkit v0.3.1
-	github.com/clubpay/ronykit/x/telemetry v0.3.1
+	github.com/clubpay/ronykit/kit v0.24.2
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.24.2
+	github.com/clubpay/ronykit/x/rkit v0.3.2
+	github.com/clubpay/ronykit/x/telemetry v0.3.2
 	github.com/google/uuid v1.6.0
 	github.com/janstoon/toolbox/tricks v1.1.0
 	github.com/nexus-rpc/sdk-go v0.6.0
