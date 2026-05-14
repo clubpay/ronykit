@@ -12,11 +12,9 @@
 	// {{.Name}} is a data transfer object
 	type {{.Name}} struct {
 	{{- range .ExportedFields }}
-
-
 		{{- if .Embedded }}
 			{{.GoName}}
-		{{- else if eq .Element.Kind ""}}
+		{{- else if or (eq .Element.Kind "") (eq .Element.RKind.String "interface")}}
 			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
 		{{- else }}
 			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
