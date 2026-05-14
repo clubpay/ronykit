@@ -17,12 +17,9 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
-	github.com/onsi/ginkgo/v2 v2.28.3 // indirect
-	github.com/onsi/gomega v1.40.0 // indirect
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/segmentio/encoding v0.5.4 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
-	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
