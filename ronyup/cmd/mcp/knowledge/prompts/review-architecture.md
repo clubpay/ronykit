@@ -6,9 +6,11 @@ arguments:
     description: Path to the feature directory to review.
     required: true
 ---
+
 Review the RonyKIT service feature at "{{feature_path}}" for architecture best-practice compliance.
 
 Check the following:
+
 1. API handlers are thin — validation only, business logic delegated to internal/app.
 2. Persistence is abstracted behind internal/repo/port.go interfaces.
 3. Dependencies are wired through x/di.RegisterService in module.go.

@@ -5,6 +5,7 @@ Create the Temporal integration in datasource/module wiring
 `sdk.InitWithState(app)`, and start/stop the SDK from service lifecycle hooks.
 
 Keep a strict split:
+
 - workflow files orchestrate only (activities, timers, selectors, child workflows, continue-as-new),
 - activity files execute side effects (DB writes, HTTP/Kafka/stub calls) using `ctx.S()` dependencies.
 

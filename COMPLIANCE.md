@@ -1,23 +1,19 @@
 # 3rd-Party Software for [ronykit]()
 
-The following 3rd-party software packages may be used by or distributed with **ronykit**.  Any information relevant 
+The following 3rd-party software packages may be used by or distributed with **ronykit**. Any information relevant
 to third-party vendors listed below are collected using common, reasonable means.
 
-
 | Date generated |               Revision ID                |
-|:--------------:|:----------------------------------------:|
+| :------------: | :--------------------------------------: |
 |    03/20/26    | 982eaa62dfb7273603b97fc1835561450096f3bd |
-
 
 ## Dependencies
 
-
 ### [assertions (e64f0e2935168e4829711112dc859c21e2e85e27)](https://github.com/smarty/assertions)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -48,14 +44,9 @@ and conditions outlined the respective license of each component.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0, BSD-3-Clause
 
+Apache-2.0, BSD-3-Clause
 
 ```
 Copyright 2006 Google Inc.
@@ -72,11 +63,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 See the License for the specific language governing permissions and limitations under the License.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2015 The Chromium Authors. All rights reserved. . All rights reserved.
@@ -107,29 +93,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [base58 (cd0e5141f51dfcadb8311fd8e495eb11126a8010)](https://github.com/mr-tron/base58)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -158,33 +128,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [blake3 (6e4325968f64ca24b1bbc8fbf08ea320d17ebfa0)](https://github.com/lukechampine/blake3)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -211,33 +163,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [bytebufferpool (e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7)](https://github.com/valyala/bytebufferpool.git)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -265,33 +199,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [cgroups (fe7323f622bc222e72473679f12a9089aeeda177)](https://github.com/containerd/cgroups)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -498,33 +414,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [check.v1 (10cb98267c6cb43ea9cd6793f29ff4089c306974)](https://gopkg.in/check.v1)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Gocheck - A rich testing framework for Go
@@ -555,14 +453,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved. . All rights reserved.
@@ -593,29 +486,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [client_golang (6e3f4b1091875216850a486b1c2eb0e5ea852f98)](https://github.com/prometheus/client_golang)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -822,14 +699,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2015 Björn Rabenstein
@@ -852,29 +724,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [client_model (571429e996ba2d9499e3dcb12926767ba953c0ef)](https://github.com/prometheus/client_model)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -1081,33 +937,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [clock (96c602caabb567343046c08a8fca8560b4f00bb4)](https://github.com/benbjohnson/clock)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -1134,33 +972,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [cobra (e94f6d0dd9a5e5738dca6bce03c4b1207ffbc0ec)](https://github.com/spf13/cobra.git)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                 Apache License
@@ -1340,33 +1160,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [common (bd41eb6b9dee4fa983f31ae8756700efde1f3ea2)](https://github.com/prometheus/common)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -1573,14 +1375,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2011 Open Knowledge Foundation Ltd. . All rights reserved.
@@ -1611,29 +1408,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [compress (7ae2138b16cc43afcea3ce7d3d2f2625fb389d51)](https://github.com/klauspost/compress)
 
-
 #### Declared Licenses
-MIT, BSD-3-Clause, Apache-2.0
 
+MIT, BSD-3-Clause, Apache-2.0
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved.
@@ -1655,11 +1436,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2011 The Snappy-Go Authors. All rights reserved.
@@ -1692,11 +1468,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved.
@@ -2006,33 +1777,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [crypto (982eaa62dfb7273603b97fc1835561450096f3bd)](https://go.googlesource.com/crypto)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -2065,14 +1818,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-openssl-ssleay
 
+openssl-ssleay
 
 ```
 LICENSE ISSUES
@@ -2197,29 +1945,13 @@ copied and put under another distribution licence
 [including the GNU Public Licence.]
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [datachannel (9449b50aaf8911f7dd9304490cbb939dc22c4491)](https://github.com/pion/datachannel)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -2234,33 +1966,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [dbus (e523abc905595cf17fb0001a7d77eaaddfaa216d)](https://github.com/godbus/dbus)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google
@@ -2291,33 +2005,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [dig (3c7d5e3878b76b0a709514e395597059b6490fb5)](https://github.com/uber-go/dig)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2017-2018 Uber Technologies, Inc.
@@ -2342,33 +2038,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [dns (a493770824062dc616b70e7cd004b890f9e7b702)](https://github.com/miekg/dns)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 BSD 3-Clause License
@@ -2403,33 +2081,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [docker (a61e2b4c9c5f7c241aeb37f389b4444aee26bea4)](https://github.com/docker/docker.git)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -2626,14 +2286,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-GPL-2.0-or-later, BSD-3-Clause, MIT, openssl-ssleay, BSD-2-Clause, CC-BY-4.0, CC-BY-SA-4.0, GPL-2.0-only, MPL-2.0
 
+GPL-2.0-or-later, BSD-3-Clause, MIT, openssl-ssleay, BSD-2-Clause, CC-BY-4.0, CC-BY-SA-4.0, GPL-2.0-only, MPL-2.0
 
 ```
 Copyright (C)  Text: copyright notice(s) text, "NONE" or "NOASSERTION"
@@ -2641,11 +2296,6 @@ This program is free software; you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2015 Rackspace. All rights reserved. . All rights reserved.
@@ -2676,11 +2326,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2012-2017 Docker, Inc.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2701,11 +2346,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
 
 ```
 LICENSE ISSUES
@@ -2830,11 +2470,6 @@ copied and put under another distribution licence
 [including the GNU Public Licence.]
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2014 CloudFlare Inc.
 
@@ -2860,11 +2495,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
 
 ```
 Attribution 4.0 International<<endOptional>>
@@ -2941,11 +2571,6 @@ Section 8 – Interpretation.
 Creative Commons is not a party to its public licenses. Notwithstanding, Creative Commons may elect to apply one of its public licenses to material it publishes and in those instances will be considered the "Licensor." Except for the limited purpose of indicating that material is shared under a Creative Commons public license or as otherwise permitted by the Creative Commons policies published at creativecommons.org/policies, Creative Commons does not authorize the use of the trademark "Creative Commons" or any other trademark or logo of Creative Commons without its prior written consent including, without limitation, in connection with any unauthorized modifications to any of its public licenses or any other arrangements, understandings, or agreements concerning use of licensed material. For the avoidance of doubt, this paragraph does not form part of the public licenses.
 Creative Commons may be contacted at creativecommons.org.
 ```
-
-
-
-
-
 
 ```
 Attribution-ShareAlike 4.0 International<<endOptional>>
@@ -3035,22 +2660,12 @@ Creative Commons is not a party to its public licenses. Notwithstanding, Creativ
 Creative Commons may be contacted at creativecommons.org.
 ```
 
-
-
-
-
-
 ```
 Copyright (C) 1989, 1991 Free Software Foundation, Inc.,
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ```
-
-
-
-
-
 
 ```
 1\. Definitions
@@ -3131,29 +2746,13 @@ You should have received a copy of the GNU General Public License along with thi
       If You choose to distribute Source Code Form that is Incompatible With Secondary Licenses under the terms of this version of the License, the notice described in Exhibit B of this License must be attached.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [dtls (9f5ddeb325864179fc42c1563b9243a5a7c97f8f)](https://github.com/pion/dtls)
 
-
 #### Declared Licenses
-CC0-1.0, MIT
 
+CC0-1.0, MIT
 
 ```
 <<endOptional>>
@@ -3179,11 +2778,6 @@ For these and/or other purposes and motivations, and without any expectation of 
       d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 ```
 
-
-
-
-
-
 ```
 MIT License
 
@@ -3197,33 +2791,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [easyjson (c120ca7ced6051261161ce15e8f1542a4b2567fc)](https://github.com/mailru/easyjson)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Mail.Ru Group
@@ -3236,14 +2812,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved. . All rights reserved.
@@ -3274,29 +2845,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [errors (614d223910a179a466c1767a985424175c39b465)](https://github.com/pkg/errors)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2015, Dave Cheney <dave@cheney.net>
@@ -3325,33 +2880,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [exp (9bf2ced1384209783ea226f8182292578dbf0d6d)](https://go.googlesource.com/exp)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -3384,14 +2921,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Copyright [yyyy] [name of copyright owner]
@@ -3409,29 +2941,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [fasthttp (b06f4e21d918faa84ae0aa12c9e4dc7285b9767e)](https://github.com/valyala/fasthttp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -3446,33 +2962,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [fx (45af511c27eebb3b9e02abe4a35e1f978ad61bdc)](https://github.com/uber-go/fx)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016-2018 Uber Technologies, Inc.
@@ -3497,33 +2995,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ginkgo (28fb5d613e96c8f11ca813e1d467117b50662215)](https://github.com/onsi/ginkgo)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2013-2014 Onsi Fakhouri
@@ -3549,14 +3029,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause, BSD-2-Clause
 
+BSD-3-Clause, BSD-2-Clause
 
 ```
 Copyright (c) 2013 The Go Authors. All rights reserved. . All rights reserved.
@@ -3587,11 +3062,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2015 Wade Simmons
 
@@ -3618,29 +3088,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [github.com/andybalholm/brotli (v1.1.0)](https://proxy.golang.org/github.com/andybalholm/brotli/@v/v1.0.2.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
@@ -3665,14 +3119,9 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2016 The Go Authors. All rights reserved. . All rights reserved.
@@ -3703,29 +3152,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [github.com/docker/distribution (v2.8.2)](https://proxy.golang.org/github.com/docker/distribution/@v/v0.0.0-20191216044856-a8371794149d.zip)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Apache License
@@ -3933,14 +3366,9 @@ Apache License
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-CC-BY-SA-4.0, bsd-2-clause-views, BSD-3-Clause, BSD-2-Clause, MIT, Zlib
 
+CC-BY-SA-4.0, bsd-2-clause-views, BSD-3-Clause, BSD-2-Clause, MIT, Zlib
 
 ```
 Attribution-ShareAlike 4.0 International<<endOptional>>
@@ -4030,11 +3458,6 @@ Creative Commons is not a party to its public licenses. Notwithstanding, Creativ
 Creative Commons may be contacted at creativecommons.org.
 ```
 
-
-
-
-
-
 ```
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -4061,11 +3484,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved. . All rights reserved.
@@ -4096,11 +3514,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2013 The Gorilla Handlers Authors. All rights reserved.
 
@@ -4127,11 +3540,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2013 Damien Le Berrigaud and Nick Wade
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4153,11 +3561,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 ```
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
@@ -4166,29 +3569,13 @@ Permission is granted to anyone to use this software for any purpose, including 
    3. This notice may not be removed or altered from any source distribution.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [github.com/gobwas/httphead (v0.1.0)](https://proxy.golang.org/github.com/gobwas/httphead/@v/v0.0.0-20180130184737-2c6c146eadee.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -4215,33 +3602,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/gobwas/pool (v0.2.1)](https://proxy.golang.org/github.com/gobwas/pool/@v/v0.2.0.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -4268,33 +3637,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/google/gopacket (v1.1.19)](https://proxy.golang.org/github.com/google/gopacket/@v/v1.1.19.zip)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2012 Google, Inc. All rights reserved.
@@ -4328,33 +3679,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/klauspost/cpuid/v2 (v2.2.7)](https://proxy.golang.org/github.com/klauspost/cpuid/v2/@v/v2.0.12.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -4382,14 +3715,9 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2020 Klaus Post, released under MIT License. See LICENSE file. . All rights reserved.
@@ -4420,29 +3748,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [github.com/minio/sha256-simd (v1.0.1)](https://proxy.golang.org/github.com/minio/sha256-simd/@v/v0.1.1.zip)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -4650,33 +3962,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/opencontainers/go-digest (v1.0.0)](https://proxy.golang.org/github.com/opencontainers/go-digest/@v/v1.0.0.zip)
 
-
 #### Declared Licenses
-Apache-2.0, CC-BY-SA-4.0
 
+Apache-2.0, CC-BY-SA-4.0
 
 ```
 
@@ -4873,11 +4167,6 @@ Apache-2.0, CC-BY-SA-4.0
    limitations under the License.
 
 ```
-
-
-
-
-
 
 ```
 Attribution-ShareAlike 4.0 International
@@ -5308,33 +4597,15 @@ Creative Commons may be contacted at creativecommons.org.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/rivo/uniseg (v0.4.3)](https://proxy.golang.org/github.com/rivo/uniseg/@v/v0.2.0.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -5361,33 +4632,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [github.com/valyala/tcplisten (v1.0.0)](https://proxy.golang.org/github.com/valyala/tcplisten/@v/v0.0.0-20161114210144-ceec8f93295a.zip)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -5414,33 +4667,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [gls (b4936e06046bbecbb94cae9c18127ebe510a2cb9)](https://github.com/jtolds/gls)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2013, Space Monkey, Inc.
@@ -5464,33 +4699,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [gnet (e9614b6a4c17bc9fe457ab84b09afba7840ac843)](https://github.com/panjf2000/gnet)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -5698,14 +4915,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause, MIT
 
+BSD-3-Clause, MIT
 
 ```
 Copyright (c) 2014 The Go Authors. All rights reserved. . All rights reserved.
@@ -5736,11 +4948,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2019 The Gnet Authors. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -5762,29 +4969,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [gnomock (6bb416a0047040aa7c5ea726cd5e1263a9ad6459)](https://github.com/orlangure/gnomock)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -5811,33 +5002,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-ansiterm (306776ec8161b5dc8676039adbf598a39bce3de0)](https://github.com/Azure/go-ansiterm)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -5864,70 +5037,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-base32 (a16b66327f327428b32b919939b8c93482507e1f)](https://github.com/multiformats/go-base32)
 
-
 #### Declared Licenses
-BSD-3-Clause, **Multi-license:**BSD-2-Clause *OR* BSD-3-Clause
 
-
-```
-Copyright (c) 2009 The Go Authors. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-   * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-   * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-   * Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-```
-
-
-
-
-
-
+BSD-3-Clause, **Multi-license:**BSD-2-Clause _OR_ BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -5960,34 +5078,46 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
+```
+Copyright (c) 2009 The Go Authors. All rights reserved.
 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
 
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+```
 
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-base36 (da52c98bb97cfaa321be04030bc97dcee7de63ff)](https://github.com/multiformats/go-base36)
 
-
 #### Declared Licenses
-MIT, Apache-2.0
 
+MIT, Apache-2.0
 
 ```
 Copyright (c)  Protocol Labs,
@@ -6010,11 +5140,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 ```
 Copyright  Protocol Labs,
 
@@ -6031,33 +5156,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-buffer-pool (c5070857211a0615ebd7b56588154941af580a4d)](https://github.com/libp2p/go-buffer-pool)
 
-
 #### Declared Licenses
-BSD-3-Clause, MIT
 
+BSD-3-Clause, MIT
 
 ```
 \### Applies to buffer.go and buffer_test.go ###
@@ -6092,11 +5199,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 ```
 The MIT License (MIT)
 
@@ -6122,33 +5224,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-cid (d46e7f28669cd2c463bc68fe86e7dbe4f8240ab7)](https://github.com/ipfs/go-cid)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -6175,33 +5259,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-cmp (c3ad8435e7bef96af35732bc0789e5a2278c6d5f)](https://github.com/google/go-cmp)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2017 The Go Authors. All rights reserved.
@@ -6234,33 +5300,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-connections (7395e3f8aa162843a74ed6d48e79627d9792ac55)](https://github.com/docker/go-connections)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -6457,33 +5505,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-crypto (b73af7476f6c55b31aa2797d1f98afc94699548d)](https://github.com/davidlazar/go-crypto.git)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 David Lazar <lazard@mit.edu>
@@ -6508,14 +5538,9 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved. . All rights reserved.
@@ -6546,29 +5571,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-difflib (792786c7400a136282c1664665ae0a8db921c6c2)](https://github.com/pmezard/go-difflib.git)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2013, Patrick Mezard
@@ -6601,33 +5610,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-flags (c02e333e441eb1187c25e6d689d769d499ec2a0b)](https://github.com/jessevdk/go-flags)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2012 Jesse van den Kieboom. All rights reserved.
@@ -6659,33 +5650,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-flow-metrics (3f13d05958e2d1be0245aed1bdb38f9ff1b4efdc)](https://github.com/libp2p/go-flow-metrics)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -6712,33 +5685,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-internal (ec119421bb970ac974ea4ac16d8b58ffd0d727fc)](https://github.com/rogpeppe/go-internal)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved.
@@ -6771,33 +5726,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-isatty (a7c02353c47bc4ec6b30dc9628154ae4fe760c11)](https://github.com/mattn/go-isatty)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) Yasuhiro MATSUMOTO <mattn.jp@gmail.com>
@@ -6812,33 +5749,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-json (5e2ae3f23c1db71990844a230a4d11559efe128e)](https://github.com/goccy/go-json)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -6865,14 +5784,9 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2011 The Go Authors. All rights reserved. . All rights reserved.
@@ -6903,29 +5817,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-libp2p (65d36a39084083d6b5fd5bf89fe9b702a40cf6f2)](https://github.com/libp2p/go-libp2p)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -6952,14 +5850,9 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Copyright [yyyy] [name of copyright owner]
@@ -6976,30 +5869,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 See the License for the specific language governing permissions and limitations under the License.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-libp2p (879faabad93ebfd5e96009afc8cc4778aadf19b3)](https://github.com/libp2p/go-libp2p)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7026,14 +5903,9 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Copyright [yyyy] [name of copyright owner]
@@ -7051,29 +5923,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-libp2p-asn-util (3ec6bf02c86c57c28d29b2963a9d7b9d6d74bfb2)](https://github.com/libp2p/go-libp2p-asn-util)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7100,33 +5956,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-libp2p-pubsub (dbd1c9eadedc402fa40ba3e45296594d7e828110)](https://github.com/libp2p/go-libp2p-pubsub)
 
-
 #### Declared Licenses
-Apache-2.0, MIT
 
+Apache-2.0, MIT
 
 ```
 This project is transitioning from an MIT-only license to a dual MIT/Apache-2.0 license.
@@ -7139,11 +5977,6 @@ MIT: https://www.opensource.org/licenses/mit
 Apache-2.0: https://www.apache.org/licenses/license-2.0
 ```
 
-
-
-
-
-
 ```
 The MIT License (MIT)
 
@@ -7166,33 +5999,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-log (8625e3ec81bdeb96627de192e6fe21eab5896603)](https://github.com/ipfs/go-log)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7219,33 +6034,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-msgio (12f8f7a72c7dbbb246151e4c98b5a6d59e27e0c6)](https://github.com/libp2p/go-msgio)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7272,14 +6069,9 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 The GoGo Authors. All rights reserved.
@@ -7307,29 +6099,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-multiaddr (5d767c5758ee30179aa15009a91dc90e2aa9ba2a)](https://github.com/multiformats/go-multiaddr)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7356,33 +6132,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multiaddr-dns (448c10b622b0c09ce6834487156c1fd9a65f1597)](https://github.com/multiformats/go-multiaddr-dns)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7409,33 +6167,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multiaddr-fmt (113ed87ed03cfff94f29fd95236be3ccd933fd36)](https://github.com/multiformats/go-multiaddr-fmt)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7462,33 +6202,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multibase (58a41f7df1d82d16599e259325b3337d69f70e3b)](https://github.com/multiformats/go-multibase)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7515,33 +6237,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multicodec (b8b4bf5270f9f220f00bcdeddf1641b13e67cc0b)](https://github.com/multiformats/go-multicodec)
 
-
 #### Declared Licenses
-MIT, Apache-2.0
 
+MIT, Apache-2.0
 
 ```
 The MIT License (MIT)
@@ -7568,11 +6272,6 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2020 The Contributors
 
@@ -7584,33 +6283,15 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multihash (ff9da31500dddfc675e996601a05cdfc3ce7c764)](https://github.com/multiformats/go-multihash)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7637,33 +6318,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-multistream (8fabf3a244c16743222174f11b43cf4a47c6d5e8)](https://github.com/multiformats/go-multistream)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -7690,33 +6353,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-nat (14ce74b6949ca4d3f4889568e20840bdf0b05009)](https://github.com/libp2p/go-nat)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Apache License
@@ -7913,33 +6558,15 @@ third-party archives.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-nat-pmp (059203efa1edd7130293a583541b8308e7c640c4)](https://github.com/jackpal/go-nat-pmp.git)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
    Copyright 2013 John Howard Palevich
@@ -7958,33 +6585,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-netroute (462cbfaf52f4c2a2321e6382455a8f56396f3664)](https://github.com/libp2p/go-netroute)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2020 Will Scott. All rights reserved.
@@ -8019,33 +6628,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-postman-collection (093c43487f1d8ca71ffcb5826874124f468fb768)](https://github.com/rbretecher/go-postman-collection)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -8072,33 +6663,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-pretty (b0affc2e1dca52789f977147b5ba48371a628453)](https://github.com/jedib0t/go-pretty)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -8125,33 +6698,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-redis (03a86486eabb98988220415834dc9da06abb7d6d)](https://github.com/go-redis/redis)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 The github.com/go-redis/redis Authors.
@@ -8182,14 +6737,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Copyright 2013 Google Inc.
@@ -8207,29 +6757,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-reflect (62880e47809fee9a13798fcf461b619ff83c3ac6)](https://github.com/goccy/go-reflect)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -8256,14 +6790,9 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved. . All rights reserved.
@@ -8294,29 +6823,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-rendezvous (9f7001d12a5f0021fd3283525f888b5814ccee27)](https://github.com/dgryski/go-rendezvous)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -8343,33 +6856,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-reuseport (ac34b4fb35437abcc176b5bb97cc431d62d983e0)](https://github.com/libp2p/go-reuseport)
 
-
 #### Declared Licenses
-ISC
 
+ISC
 
 ```
 Copyright (c) 2013 Conformal Systems LLC.
@@ -8387,33 +6882,15 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-runewidth (44b7c5b4d67df8ca22917b6800c158a6d3be3560)](https://github.com/mattn/go-runewidth)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -8440,33 +6917,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-sdk (580f2a09be5c5b7ed4d868aa74ad1019dfd5160a)](https://github.com/modelcontextprotocol/go-sdk)
 
-
 #### Declared Licenses
-Apache-2.0, MIT
 
+Apache-2.0, MIT
 
 ```
 The MCP project is undergoing a licensing transition from the MIT License to
@@ -8662,8 +7121,6 @@ for such contributions.
    END OF TERMS AND CONDITIONS
 ```
 
-
-
 ```
 MIT License
 
@@ -8688,12 +7145,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
+
 CC-BY-4.0
 
 Documentation in this project (excluding specifications) is licensed under
@@ -8702,17 +7155,13 @@ See https://creativecommons.org/licenses/by/4.0/legalcode for the full
 license text. The CC-BY-4.0 license applies only to documentation content,
 not to source code.
 
-
-
-
 ---
 
 ### [go-spew (8991bc29aa16c548c550c7ff78260e27b9ab7c73)](https://github.com/davecgh/go-spew)
 
-
 #### Declared Licenses
-ISC
 
+ISC
 
 ```
 ISC License
@@ -8733,33 +7182,15 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-ssdp (615e2904c24d115f20139e60b9ab5916b1dfd55d)](https://github.com/koron/go-ssdp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -8786,33 +7217,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-systemd (d5623bf85e8e73ae6352f78ee6b55a287619dd4e)](https://github.com/coreos/go-systemd)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 Apache License
@@ -9009,33 +7422,15 @@ third-party archives.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-temp-err-catcher (fa11adda5e7cccb838a208007c9ea79dda63c0c0)](https://github.com/jbenet/go-temp-err-catcher)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -9062,33 +7457,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-units (e682442797b36348f8e1f98defdbf32bac0b6c6f)](https://github.com/docker/go-units)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -9285,33 +7662,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-varint (8c8129accb08fc978bb276c81d568c41eafdd48f)](https://github.com/multiformats/go-varint.git)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -9338,33 +7697,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-watchdog (9c5e371109037bec1852ea63c9512a94307bfea0)](https://github.com/raulk/go-watchdog)
 
-
 #### Declared Licenses
-Apache-2.0, MIT
 
+Apache-2.0, MIT
 
 ```
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
@@ -9374,11 +7715,6 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 ```
-
-
-
-
-
 
 ```
 The MIT License (MIT)
@@ -9403,33 +7739,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [go-winio (dfd7da8f92a382999d77b5d9cfe8cc6bec1894c6)](https://github.com/Microsoft/go-winio)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -9457,14 +7775,9 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2013 The Go Authors. All rights reserved. . All rights reserved.
@@ -9495,29 +7808,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [go-yamux (e584a210c72651b67829477b4b4285cae25b1a1b)](https://github.com/libp2p/go-yamux)
 
-
 #### Declared Licenses
-BSD-3-Clause, MPL-2.0
 
+BSD-3-Clause, MPL-2.0
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -9549,11 +7846,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
-
-
-
-
 
 ```
 Mozilla Public License, version 2.0
@@ -9920,33 +8212,15 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
       the Mozilla Public License, v. 2.0.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [goconvey (485adb037b3c3c978f3a8e8ad2481d5a4824d9a3)](https://github.com/smartystreets/goconvey)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -9977,14 +8251,9 @@ and conditions outlined the respective license of each component.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-Apache-2.0, CC-BY-3.0, OFL-1.1
 
+Apache-2.0, CC-BY-3.0, OFL-1.1
 
 ```
 Copyright 2006 Google Inc.
@@ -10001,11 +8270,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 See the License for the specific language governing permissions and limitations under the License.
 ```
-
-
-
-
-
 
 ```
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
@@ -10054,11 +8318,6 @@ Except for the limited purpose of indicating to the public that the Work is lice
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
 
-
-
-
-
-
 ```
 PREAMBLE
 The goals of the Open Font License (OFL) are to stimulate worldwide development of collaborative font projects, to support the font creation efforts of academic and linguistic communities, and to provide a free and open framework in which fonts may be shared and improved in partnership with others.
@@ -10082,29 +8341,13 @@ DISCLAIMER
 THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [gojay (1398296d938f9fae26750ddc2fe356b6d897f799)](https://github.com/francoispqt/gojay.git)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -10130,33 +8373,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [golang-lru (d8515860cebc7b25ff2d29fada3f10a43611c28b)](https://github.com/hashicorp/golang-lru)
 
-
 #### Declared Licenses
-MPL-2.0
 
+MPL-2.0
 
 ```
 Copyright (c) 2014 HashiCorp, Inc.
@@ -10526,14 +8751,9 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 This license applies to simplelru/list.go
@@ -10568,29 +8788,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [gomega (8a658bb7156446ddd3f4c99b219fcac3e6154935)](https://github.com/onsi/gomega)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2013-2014 Onsi Fakhouri
@@ -10616,33 +8820,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [gopherjs (fcf8e05a6f4fe7573b43c6bc65c2d1166fbd48cd)](https://github.com/gopherjs/gopherjs)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 Richard Musiol. All rights reserved.
@@ -10672,14 +8858,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved. . All rights reserved.
@@ -10710,29 +8891,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [gosigar (9d6c92629470099edd40ead9a3d8cf1b38020ec6)](https://github.com/elastic/gosigar)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                               Apache License
@@ -10939,33 +9104,15 @@ limitations under the License.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [gotils (093b76447511363f2be68dceb42c99d777d1bbda)](https://github.com/savsgio/gotils)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -11172,33 +9319,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [gotils (aef3928b8a38335b6c4a9d5d71faeaaddd422bb4)](https://github.com/savsgio/gotils)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -11405,33 +9534,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [goupnp (00783e79ec6092ce7c16ab10ef62e92e75e89939)](https://github.com/huin/goupnp)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013, John Beisley <johnbeisleyuk@gmail.com>
@@ -11460,33 +9571,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ice (3cdd0124e737f6853f5103016f8f8863335497f3)](https://github.com/pion/ice)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -11501,33 +9594,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ice (da3175f88304999c769e2182d03e88cc7edea0b8)](https://github.com/pion/ice)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -11542,33 +9617,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [image-spec (67d2d5658fe0476ab9bf414cec164077ebff3920)](https://github.com/opencontainers/image-spec)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -11765,33 +9822,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [interceptor (1449b4fdca68de39e3519e345f53a9f4fc6b8104)](https://github.com/pion/interceptor)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -11806,33 +9845,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [intern (8e6ff32b3e7c0b018c43953085fe2ac330fe9acd)](https://github.com/josharian/intern)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2019 Josh Bleecher Snyder
@@ -11855,33 +9876,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [jsonpointer (8b546b950409bd7b131488a88613339cd8937b7f)](https://github.com/go-openapi/jsonpointer)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -12089,33 +10092,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [jsonreference (c5fa756d84ccb15425cb8664d142ad550fe58b1b)](https://github.com/go-openapi/jsonreference)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -12323,33 +10308,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [logging (0387f8acdeb20faf48e539e74906dd633851f3a8)](https://github.com/pion/logging)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -12376,33 +10343,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [logr (1205f429d540b8b81c2b75a38943afb738dac223)](https://github.com/go-logr/logr)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -12609,33 +10558,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [lumberjack.v2 (4cb27fcfbb0f35cb48c542c5ea80b7c1d18933d0)](https://gopkg.in/natefinch/lumberjack.v2)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -12661,33 +10592,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [mdns (3ef986462f05689c03be7f5436fd10cc784bfaa3)](https://github.com/pion/mdns)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -12714,33 +10627,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [memory (7b4eea64cf580186c0eceb10dc94ba3a098af46c)](https://github.com/pbnjay/memory)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 BSD 3-Clause License
@@ -12775,33 +10670,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [mock (74a29c6e6c2cbb8ccee94db061c1604ff33fd188)](https://github.com/uber/mock)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -13009,33 +10886,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [mod (aa51b25a4485b19ca64f578bad6fa40229e75984)](https://go.googlesource.com/mod)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -13068,33 +10927,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [mousetrap (4e8053ee7ef85a6bd26368364a6d27f1641c1d21)](https://github.com/inconshreveable/mousetrap)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -13301,33 +11142,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [multierr (de75ae527b39a27afcb50a84427ec7b84021d5f4)](https://github.com/uber-go/multierr)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2017-2021 Uber Technologies, Inc.
@@ -13352,33 +11175,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [murmur3 (f09979ecbc725b9e6d41a297405f65e7e8804acc)](https://github.com/spaolacci/murmur3)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright 2013, Sébastien Paolacci.
@@ -13408,33 +11213,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [net (66e838c6fbf5387ecedc26ce490b5f4d6864a854)](https://go.googlesource.com/net)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -13467,14 +11254,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2009 Apple Inc. All rights reserved.
@@ -13501,30 +11283,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [net (e2310ae9eb6425ee6736cfc40f982f42e20f5850)](https://go.googlesource.com/net)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -13557,14 +11323,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2009 Apple Inc. All rights reserved.
@@ -13592,29 +11353,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [noise (4d9f71cd4ba1fe81415efac312664ccc4bc79b46)](https://github.com/flynn/noise)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Flynn® is a trademark of Prime Directive, Inc.
@@ -13649,33 +11394,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [opentelemetry-go (81216fb002a6a76d32fdab6ef999bcf65794130d)](https://github.com/open-telemetry/opentelemetry-go)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -13882,14 +11609,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c)  The OpenTelemetry Authors . All rights reserved.
@@ -13919,30 +11641,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [opentelemetry-go-contrib (af75717ac4fb3ba13eaea83b88301723122060cf)](https://github.com/open-telemetry/opentelemetry-go-contrib.git)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -14149,14 +11855,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c)  The OpenTelemetry Authors . All rights reserved.
@@ -14187,29 +11888,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [opentelemetry-go-auto-sdk (v1.2.1)](https://github.com/open-telemetry/opentelemetry-go-instrumentation)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -14415,12 +12100,8 @@ Apache-2.0
    limitations under the License.
 ```
 
-
-
-
-
-
 #### Other Licenses
+
 LGPL-2.1-only, LGPL-2.1-or-later
 
 FOSSA detects LGPL-2.1 references in vendored test fixtures within the
@@ -14430,17 +12111,13 @@ Apache-2.0 licensed), the LGPL-2.1 obligation does not apply to this project.
 Go statically links all dependencies; however, no LGPL-licensed source code
 is compiled into the final binary.
 
-
-
-
 ---
 
 ### [perks (37c8de3658fcb183f997c4e13e8337516ab753e6)](https://github.com/beorn7/perks)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (C) 2013 Blake Mizerany
@@ -14466,33 +12143,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [pflag (2e9d26c8c37aae03e3f9d4e90b7116f5accb7cab)](https://github.com/spf13/pflag)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2012 Alex Ogier. All rights reserved.
@@ -14526,33 +12185,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [pprof (a892ee059fd6552a08e20f612c277dcc916cbe1e)](https://github.com/google/pprof)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -14760,14 +12401,9 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009-2017 Andrea Leofreddi <a.leofreddi@vleo.net>. All rights reserved. . All rights reserved.
@@ -14798,29 +12434,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [pretty (3cd153a126da607b78d1762779b1e1054f9889fc)](https://github.com/kr/pretty)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2012 Keith Rarick
@@ -14843,33 +12463,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [procfs (ff0ad85f7e8bcd5c677d99143f14a2a3aab533aa)](https://github.com/prometheus/procfs)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -15076,33 +12678,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [protobuf (b03c65ea87cdc3521ede29f62fe3ce239267c1bc)](https://github.com/gogo/protobuf)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2013, The GoGo Authors. All rights reserved.
@@ -15143,14 +12727,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 The GoGo Authors. All rights reserved.
@@ -15178,29 +12757,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [protobuf (4a76e11653e368b9331815e1eb98e0cedc28997f)](https://go.googlesource.com/protobuf)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2018 The Go Authors. All rights reserved.
@@ -15233,33 +12796,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [qpack (3e7287cc7ce655141583b8511fbe09800d4ba896)](https://github.com/quic-go/qpack)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright 2019 Marten Seemann
@@ -15272,33 +12817,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [quic-go (e2fbf3cdcd4b803d237ef9752f1a555b022f47a4)](https://github.com/quic-go/quic-go)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -15325,14 +12852,9 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved. . All rights reserved.
@@ -15363,29 +12885,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [randutil (3e7aefb6fd280d89fca72f1596348f1939525187)](https://github.com/pion/randutil)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -15412,33 +12918,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ronykit (2726cedc29a8ccf1e818153f80fdc4a4f1c8d001)](https://github.com/clubpay/ronykit)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2021 Ehsan Moosa . All rights reserved.
@@ -15469,14 +12957,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Uber Technologies, Inc.
@@ -15498,30 +12981,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ronykit (2bdc9ea9c3e963d081c7f6185bcf9edd15b87e1a)](https://github.com/clubpay/ronykit)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2021 Ehsan Moosa . All rights reserved.
@@ -15552,14 +13019,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Uber Technologies, Inc.
@@ -15581,30 +13043,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ronykit (4adbd18f19cb47c3ba7f7b028ab9280192e84f37)](https://github.com/clubpay/ronykit)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2021 Ehsan Moosa . All rights reserved.
@@ -15635,14 +13081,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Uber Technologies, Inc.
@@ -15664,53 +13105,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ronykit (733973bc26ebb19940a912ef978903676fbf7f4e)](https://github.com/clubpay/ronykit)
 
-
 #### Declared Licenses
 
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ronykit (d041a7d300dc2a6ea1ab77b28f0c5e603cea35e2)](https://github.com/clubpay/ronykit)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2021 Ehsan Moosa . All rights reserved.
@@ -15741,14 +13151,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Uber Technologies, Inc.
@@ -15771,29 +13176,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [router (e572ed52173bcde8462d31ece9bcc7983480b4e8)](https://github.com/fasthttp/router)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2013 Julien Schmidt
@@ -15830,33 +13219,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [rtcp (b26a618d0b4137f6b4d54e03b6ece484359dab61)](https://github.com/pion/rtcp)
 
-
 #### Declared Licenses
-MIT, CC0-1.0
 
+MIT, CC0-1.0
 
 ```
 MIT License
@@ -15870,11 +13241,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
-
-
-
-
 
 ```
 <<endOptional>>
@@ -15900,33 +13266,15 @@ For these and/or other purposes and motivations, and without any expectation of 
       d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [rtp (12646b601d88f448fe5474c6ab9e746f99ae7447)](https://github.com/pion/rtp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -15941,33 +13289,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [runtime-spec (36852b0d072a4b5da675300a9e73bc4b0853f5c6)](https://github.com/opencontainers/runtime-spec)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -16164,33 +13494,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [sctp (e90e78714eea4305fa89b6af9d3d809d5b5db64a)](https://github.com/pion/sctp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -16205,33 +13517,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [sdp (84d5ab0d57c88f326287aac55e1e0f052f5ce368)](https://github.com/pion/sdp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -16246,33 +13540,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [silverlining (65fd47da42994b931ad405410983cb86a5d7f820)](https://github.com/go-www/silverlining)
 
-
 #### Declared Licenses
-Unlicense
 
+Unlicense
 
 ```
 This is free and unencumbered software released into the public domain.
@@ -16302,14 +13578,9 @@ For more information, please refer to <https://unlicense.org>
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -16336,29 +13607,13 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [slim-sprig (b05cce61fffa5c6dea6ac8b9a1f12b6e3fb7c894)](https://github.com/go-task/slim-sprig)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (C) 2013-2020 Masterminds
@@ -16383,33 +13638,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [spec (af9bab81cf9ab52283c1498b1d076ec68a1a2bcd)](https://github.com/go-openapi/spec)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -16617,33 +13854,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [srtp (f598d3bb0514d2fb4e1d789de46ca07af82452ba)](https://github.com/pion/srtp)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -16658,33 +13877,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [stdr (521af2addfa7c81c8a65d0e85ed34bb6bb6dc262)](https://github.com/go-logr/stdr.git)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
                                  Apache License
@@ -16891,33 +14092,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [stun (e56f1f82cd67337fd13713c396d4e942d10c5c36)](https://github.com/pion/stun)
 
-
 #### Declared Licenses
-BSD-3-Clause, CC0-1.0, MIT
 
+BSD-3-Clause, CC0-1.0, MIT
 
 ```
 Copyright (c) <year> <owner> . All rights reserved.
@@ -16948,11 +14131,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 <<endOptional>>
 CC0 1.0 Universal<<endOptional>>
@@ -16977,11 +14155,6 @@ For these and/or other purposes and motivations, and without any expectation of 
       d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 ```
 
-
-
-
-
-
 ```
 MIT License
 
@@ -16995,33 +14168,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [swag (53e32e82f758c8e884819330a87aef294ff10c1f)](https://github.com/go-openapi/swag)
 
-
 #### Declared Licenses
-Apache-2.0
 
+Apache-2.0
 
 ```
 
@@ -17229,33 +14384,15 @@ Apache-2.0
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [sync (14be23e5b48bec28285f8a694875175ecacfddb3)](https://go.googlesource.com/sync)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -17288,33 +14425,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [sys (673e0f94c16da4b6d7f550d6af66fde0c69503e4)](https://go.googlesource.com/sys)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -17347,33 +14466,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [sys (faed7ec2641160cebe7fdf3fa6d401d848d2710f)](https://go.googlesource.com/sys)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -17406,33 +14507,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [tcp (dfbc87cc63fd003b9a070c76d605769fa3e2e3b2)](https://github.com/marten-seemann/tcp)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2014, Mikio Hara
@@ -17461,14 +14544,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2014 Mikio Hara. All rights reserved. . All rights reserved.
@@ -17499,29 +14577,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [tcpinfo (30a79bb1804bc47fa7fe29928c9109f368792a9e)](https://github.com/mikioh/tcpinfo)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2016, Mikio Hara
@@ -17550,14 +14612,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2016 Mikio Hara. All rights reserved. . All rights reserved.
@@ -17587,30 +14644,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [tcpopt (172688c1accceb1c8699343c22838f55e4b662ca)](https://github.com/mikioh/tcpopt)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2016, Mikio Hara
@@ -17639,14 +14680,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2016 Mikio Hara. All rights reserved. . All rights reserved.
@@ -17677,29 +14713,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [testify (bb548d0473d4e1c9b7bbfd6602c7bf12f7a84dd2)](https://github.com/stretchr/testify)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -17726,33 +14746,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [text (702c74938df48b97370179f33ce2107bd7ff3b3e)](https://github.com/kr/text)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2012 Keith Rarick
@@ -17775,33 +14777,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [text (9c2f3a21352d1ff4e47776534e3f334b39ec0183)](https://go.googlesource.com/text)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -17834,14 +14818,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-CC-BY-SA-3.0, CC-BY-SA-2.0, CC-BY-SA-2.5, CC-BY-SA-1.0
 
+CC-BY-SA-3.0, CC-BY-SA-2.0, CC-BY-SA-2.5, CC-BY-SA-1.0
 
 ```
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
@@ -17893,11 +14872,6 @@ Except for the limited purpose of indicating to the public that the Work is lice
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
 
-
-
-
-
-
 ```
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
 BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
@@ -17940,11 +14914,6 @@ Creative Commons is not a party to this License, and makes no warranty whatsoeve
 Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, neither party will use the trademark "Creative Commons" or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons' then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time.
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
-
-
-
-
-
 
 ```
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
@@ -17989,11 +14958,6 @@ Except for the limited purpose of indicating to the public that the Work is lice
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
 
-
-
-
-
-
 ```
 THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE IS PROHIBITED.
 BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
@@ -18035,29 +14999,13 @@ Except for the limited purpose of indicating to the public that the Work is lice
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [tools (e35e4ccd0d2ddd32df7536574a7fec39296395f0)](https://go.googlesource.com/tools)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -18090,14 +15038,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 1994-1999 Lucent Technologies Inc.  All rights reserved.
@@ -18120,29 +15063,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [transport (c72ccc10e2c6eb585dcacc6088631d5c4e6d0f1e)](https://github.com/pion/transport)
 
-
 #### Declared Licenses
-BSD-3-Clause, MIT
 
+BSD-3-Clause, MIT
 
 ```
 Copyright (c) <year> <owner> . All rights reserved.
@@ -18173,11 +15100,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 MIT License
 
@@ -18191,33 +15113,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [turn (5df28f10685d0d2e03a932811103a2b4a890f442)](https://github.com/pion/turn)
 
-
 #### Declared Licenses
-CC0-1.0, MIT
 
+CC0-1.0, MIT
 
 ```
 <<endOptional>>
@@ -18243,11 +15147,6 @@ For these and/or other purposes and motivations, and without any expectation of 
       d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 ```
 
-
-
-
-
-
 ```
 MIT License
 
@@ -18261,33 +15160,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [uuid (0f11ee6918f41a04c201eceeadf612a377bc7fbc)](https://github.com/google/uuid)
 
-
 #### Declared Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009,2014 Google Inc. All rights reserved.
@@ -18320,33 +15201,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [webrtc (7cad104f432058509632df77ca3586146d6d8c86)](https://github.com/pion/webrtc)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 MIT License
@@ -18361,14 +15224,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause
 
+BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -18401,29 +15259,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [websocket (42c08d84a9deea48c6398cacd5e144c3db4d2054)](https://github.com/fasthttp/websocket)
 
-
 #### Declared Licenses
-BSD-2-Clause, BSD-3-Clause
 
+BSD-2-Clause, BSD-3-Clause
 
 ```
 Copyright (c) <year> <owner>
@@ -18450,11 +15292,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2023 The Gorilla Authors. All rights reserved.
@@ -18487,14 +15324,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
@@ -18516,30 +15348,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [websocket (8b9cfa6cfd82fcb76dd5697a94cc0be04a8cabce)](https://github.com/fasthttp/websocket)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
@@ -18567,14 +15383,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT, BSD-3-Clause
 
+MIT, BSD-3-Clause
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
@@ -18596,11 +15407,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved. . All rights reserved.
@@ -18631,29 +15437,13 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [websocket (ac0789be11725ab2285233e9a3800c2312cff4fc)](https://github.com/gorilla/websocket)
 
-
 #### Declared Licenses
-BSD-2-Clause, BSD-3-Clause
 
+BSD-2-Clause, BSD-3-Clause
 
 ```
 Copyright (c) <year> <owner>
@@ -18680,11 +15470,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-
-
-
-
 
 ```
 Copyright (c) 2023 The Gorilla Authors. All rights reserved.
@@ -18717,14 +15502,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
@@ -18747,29 +15527,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [websocket (ce903f6d1d961af3a8602f2842c8b1c3fca58c4d)](https://github.com/gorilla/websocket)
 
-
 #### Declared Licenses
-BSD-2-Clause
 
+BSD-2-Clause
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
@@ -18797,14 +15561,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-BSD-3-Clause, MIT
 
+BSD-3-Clause, MIT
 
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved. . All rights reserved.
@@ -18835,11 +15594,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-
-
-
-
-
 ```
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18861,29 +15615,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ### [webtransport-go (a08801eae680a46e74d82a78dab2c221d25e3511)](https://github.com/quic-go/webtransport-go)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright 2022 Marten Seemann
@@ -18896,33 +15634,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [ws (4f030072d3475c0a99f5908553997de71bb70d06)](https://github.com/gobwas/ws)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -18949,33 +15669,15 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [xxhash (a76eb16a93c1e30527c073ca831d9048b4b935f6)](https://github.com/cespare/xxhash)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016 Caleb Spare
@@ -19003,33 +15705,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [yaml.v3 (f6f7691b1fdeb513f56608cd2c32c51f8194bf51)](https://gopkg.in/yaml.v3)
 
-
 #### Declared Licenses
-MIT, Apache-2.0
 
+MIT, Apache-2.0
 
 ```
 Copyright (c)  staring in 2011 when the project was ported over:
@@ -19051,11 +15735,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-
-
-
 
 ```
 
@@ -19111,33 +15790,15 @@ limitations under the License.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [zap (fcf8ee58669e358bbd6460bef5c2ee7a53c0803a)](https://github.com/uber-go/zap)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 Copyright (c) 2016-2017 Uber Technologies, Inc.
@@ -19162,33 +15823,15 @@ THE SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
 ### [zeroconf (586e7c571d106f842c8567012dacd28d73fcf966)](https://github.com/libp2p/zeroconf)
 
-
 #### Declared Licenses
-MIT
 
+MIT
 
 ```
 The MIT License (MIT)
@@ -19221,34 +15864,13 @@ SOFTWARE.
 
 ```
 
-
-
-
-
-
 #### Other Licenses
 
-
-
-
-
-
-
-
-
-
-
-
-
 ---
-
-
-
 
 ---
 
 ## Licenses
-
 
 ### Apache-2.0
 
@@ -19458,7 +16080,6 @@ SOFTWARE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -19655,7 +16276,6 @@ SOFTWARE.
    limitations under the License.
 
 ```
-
 
 ### Apache-2.0
 
@@ -19854,7 +16474,6 @@ SOFTWARE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -20052,7 +16671,6 @@ SOFTWARE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -20249,7 +16867,6 @@ SOFTWARE.
    limitations under the License.
 
 ```
-
 
 ### Apache-2.0
 
@@ -20449,7 +17066,6 @@ SOFTWARE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -20505,7 +17121,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ```
-
 
 ### Apache-2.0
 
@@ -20715,7 +17330,6 @@ limitations under the License.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -20922,7 +17536,6 @@ limitations under the License.
    limitations under the License.
 
 ```
-
 
 ### Apache-2.0
 
@@ -21131,7 +17744,6 @@ limitations under the License.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -21338,7 +17950,6 @@ limitations under the License.
    limitations under the License.
 
 ```
-
 
 ### Apache-2.0
 
@@ -21547,7 +18158,6 @@ limitations under the License.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -21727,7 +18337,6 @@ limitations under the License.
       of your accepting any such warranty or additional liability.
 
 ```
-
 
 ### Apache-2.0
 
@@ -21936,7 +18545,6 @@ limitations under the License.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -21955,7 +18563,6 @@ limitations under the License.
    limitations under the License.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -21991,7 +18598,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### Apache-2.0
 
@@ -22201,7 +18807,6 @@ Apache License
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -22399,7 +19004,6 @@ third-party archives.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -22453,7 +19057,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-
 
 ### CC-BY-SA-4.0
 
@@ -22886,7 +19489,6 @@ Creative Commons may be contacted at creativecommons.org.
 
 ```
 
-
 ### BSD-3-Clause
 
 ```
@@ -22921,7 +19523,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -22958,7 +19559,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -22987,7 +19587,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
 
 ### BSD-3-Clause
 
@@ -23020,7 +19619,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
 
 ### CC-BY-3.0
 
@@ -23072,7 +19670,6 @@ Creative Commons is not a party to this License, and makes no warranty whatsoeve
 Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, Creative Commons does not authorize the use by either party of the trademark &quot;Creative Commons&quot; or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons&#39; then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time. For the avoidance of doubt, this trademark restriction does not form part of this License.
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
-
 
 ### CC-BY-4.0
 
@@ -23156,7 +19753,6 @@ Creative Commons is not a party to its public licenses. Notwithstanding, Creativ
 Creative Commons may be contacted at creativecommons.org.
 ```
 
-
 ### CC-BY-SA-1.0
 
 ```
@@ -23201,7 +19797,6 @@ Creative Commons is not a party to this License, and makes no warranty whatsoeve
 Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, neither party will use the trademark &quot;Creative Commons&quot; or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons&#39; then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time.
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
-
 
 ### CC-BY-SA-2.0
 
@@ -23250,7 +19845,6 @@ Except for the limited purpose of indicating to the public that the Work is lice
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
 
-
 ### CC-BY-SA-2.5
 
 ```
@@ -23297,7 +19891,6 @@ Creative Commons is not a party to this License, and makes no warranty whatsoeve
 Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, neither party will use the trademark &quot;Creative Commons&quot; or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons&#39; then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time.
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
-
 
 ### CC-BY-SA-3.0
 
@@ -23352,7 +19945,6 @@ Creative Commons is not a party to this License, and makes no warranty whatsoeve
 Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, Creative Commons does not authorize the use by either party of the trademark &quot;Creative Commons&quot; or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons&#39; then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time. For the avoidance of doubt, this trademark restriction does not form part of the License.
 Creative Commons may be contacted at http://creativecommons.org/.
 ```
-
 
 ### CC-BY-SA-4.0
 
@@ -23444,7 +20036,6 @@ Creative Commons is not a party to its public licenses. Notwithstanding, Creativ
 Creative Commons may be contacted at creativecommons.org.
 ```
 
-
 ### CC0-1.0
 
 ```
@@ -23470,7 +20061,6 @@ For these and/or other purposes and motivations, and without any expectation of 
       c. Affirmer disclaims responsibility for clearing rights of other persons that may apply to the Work or any use thereof, including without limitation any person&#39;s Copyright and Related Rights in the Work. Further, Affirmer disclaims responsibility for obtaining any necessary consents, permissions or other rights required for any use of the Work.
       d. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 ```
-
 
 ### MIT
 
@@ -23498,7 +20088,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -23523,7 +20112,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -23558,7 +20146,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -23583,7 +20170,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -23617,7 +20203,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -23653,7 +20238,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-3-Clause
 
 ```
@@ -23687,7 +20271,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -23723,7 +20306,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-3-Clause
 
 ```
@@ -23755,7 +20337,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### Apache-2.0
 
@@ -24067,7 +20648,6 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ```
 
-
 ### ISC
 
 ```
@@ -24085,7 +20665,6 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
-
 
 ### BSD-3-Clause
 
@@ -24124,7 +20703,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -24155,7 +20733,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -24183,7 +20760,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-2-Clause
 
@@ -24216,7 +20792,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -24248,7 +20823,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -24277,7 +20851,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -24312,7 +20885,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24336,7 +20908,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -24379,7 +20950,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24405,7 +20975,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### MPL-2.0
 
@@ -24777,7 +21346,6 @@ Exhibit B - &quot;Incompatible With Secondary Licenses&quot; Notice
 
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -24806,7 +21374,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### BSD-2-Clause
 
@@ -24837,7 +21404,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24866,7 +21432,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24892,7 +21457,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24905,7 +21469,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### BSD-2-Clause
 
@@ -24936,7 +21499,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24962,7 +21524,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -24987,7 +21548,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -25022,7 +21582,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25048,7 +21607,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25073,7 +21631,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -25108,7 +21665,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -25121,7 +21677,6 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -25158,7 +21713,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### BSD-3-Clause
 
 ```
@@ -25192,7 +21746,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25207,7 +21760,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -25239,7 +21791,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25253,7 +21804,6 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ```
 
-
 ### MIT
 
 ```
@@ -25266,7 +21816,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -25302,7 +21851,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
-
 
 ### GPL-2.0-only
 
@@ -25369,7 +21917,6 @@ Yoyodyne, Inc., hereby disclaims all copyright interest in the program `Gnomovis
 &lt; signature of Ty Coon &gt; , 1 April 1989 Ty Coon, President of Vice
 ```
 
-
 ### GPL-2.0-or-later
 
 ```
@@ -25435,7 +21982,6 @@ Yoyodyne, Inc., hereby disclaims all copyright interest in the program `Gnomovis
 &lt; signature of Ty Coon &gt; , 1 April 1989 Ty Coon, President of Vice
 ```
 
-
 ### BSD-2-Clause
 
 ```
@@ -25467,7 +22013,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### ISC
 
 ```
@@ -25489,7 +22034,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -25500,7 +22044,6 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 ```
-
 
 ### MIT
 
@@ -25526,7 +22069,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
 
 ### MIT
 
@@ -25555,7 +22097,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25581,7 +22122,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
 
 ### MIT
 
@@ -25609,7 +22149,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25640,7 +22179,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25667,7 +22205,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25696,7 +22233,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25723,7 +22259,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25752,7 +22287,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25779,7 +22313,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25808,7 +22341,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25835,7 +22367,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25868,7 +22399,6 @@ and conditions outlined the respective license of each component.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25895,7 +22425,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -25928,7 +22457,6 @@ and conditions outlined the respective license of each component.
 
 ```
 
-
 ### MIT
 
 ```
@@ -25944,7 +22472,6 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ```
 
-
 ### MIT
 
 ```
@@ -25959,7 +22486,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### MPL-2.0
 
@@ -26047,7 +22573,6 @@ You may add additional accurate notices of copyright ownership.
 Exhibit B - &quot;Incompatible With Secondary Licenses&quot; Notice
 This Source Code Form is &quot;Incompatible With Secondary Licenses&quot;, as defined by the Mozilla Public License, v. 2.0.
 ```
-
 
 ### MPL-2.0
 
@@ -26416,7 +22941,6 @@ Exhibit B - &quot;Incompatible With Secondary Licenses&quot; Notice
       the Mozilla Public License, v. 2.0.
 ```
 
-
 ### OFL-1.1
 
 ```
@@ -26446,7 +22970,6 @@ DISCLAIMER
 THE FONT SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 ```
 
-
 ### MIT
 
 ```
@@ -26473,7 +22996,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26502,7 +23024,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26528,7 +23049,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
 
 ### MIT
 
@@ -26558,7 +23078,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26587,7 +23106,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26615,7 +23133,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26630,7 +23147,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26658,7 +23174,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26688,7 +23203,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26715,7 +23229,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26744,7 +23257,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26771,7 +23283,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26800,7 +23311,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26827,7 +23337,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26856,7 +23365,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26883,7 +23391,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26912,7 +23419,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26939,7 +23445,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -26968,7 +23473,6 @@ SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -26995,7 +23499,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -27024,7 +23527,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -27051,7 +23553,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -27080,7 +23581,6 @@ THE SOFTWARE.
 
 ```
 
-
 ### MIT
 
 ```
@@ -27105,7 +23605,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-
 ### MIT
 
 ```
@@ -27130,7 +23629,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ```
-
 
 ### MIT
 
@@ -27165,7 +23663,6 @@ SOFTWARE.
 
 ```
 
-
 ### Unlicense
 
 ```
@@ -27195,7 +23692,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to &lt;https://unlicense.org&gt;
 
 ```
-
 
 ### BSD-3-Clause
 
@@ -27232,7 +23728,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ```
 
-
 ### Apache-2.0
 
 ```
@@ -27246,7 +23741,6 @@ MIT: https://www.opensource.org/licenses/mit
 Apache-2.0: https://www.apache.org/licenses/license-2.0
 ```
 
-
 ### Zlib
 
 ```
@@ -27257,7 +23751,6 @@ Permission is granted to anyone to use this software for any purpose, including 
    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
    3. This notice may not be removed or altered from any source distribution.
 ```
-
 
 ### bsd-2-clause-views
 
@@ -27287,7 +23780,6 @@ The views and conclusions contained in the software and documentation are those
 of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 ```
-
 
 ### openssl-ssleay
 
@@ -27414,15 +23906,5 @@ copied and put under another distribution licence
 [including the GNU Public Licence.]
 ```
 
-
-
-
-
-
-
-
-[FOSSA]: # (Do not touch the comments below)
-
-[FOSSA]: # (==depsig=pending-rescan==)
-
-
+[FOSSA]: # "Do not touch the comments below"
+[FOSSA]: # "==depsig=pending-rescan=="

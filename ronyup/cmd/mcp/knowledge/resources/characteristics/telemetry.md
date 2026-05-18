@@ -10,6 +10,7 @@ applies_to_files:
   - api
   - repo
 ---
+
 Instrument with x/telemetry: use logkit for structured logging, tracekit for distributed traces, and meterkit for Prometheus metrics.
 
 ## File-Level Hint

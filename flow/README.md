@@ -402,14 +402,14 @@ iter, err := sdk.ListSchedules(ctx, "", 100)    // list all
 
 ### Schedule Overlap Policies
 
-| Policy | Behavior |
-|---|---|
-| `ScheduleOverlapPolicySkip` | Skip if already running (default) |
-| `ScheduleOverlapPolicyBufferOne` | Buffer one start |
-| `ScheduleOverlapPolicyBufferAll` | Buffer all starts |
-| `ScheduleOverlapPolicyCancelOther` | Cancel the running workflow, start new after cancellation |
-| `ScheduleOverlapPolicyTerminateOther` | Terminate running, start immediately |
-| `ScheduleOverlapPolicyAllowAll` | Allow concurrent executions |
+| Policy                                | Behavior                                                  |
+| ------------------------------------- | --------------------------------------------------------- |
+| `ScheduleOverlapPolicySkip`           | Skip if already running (default)                         |
+| `ScheduleOverlapPolicyBufferOne`      | Buffer one start                                          |
+| `ScheduleOverlapPolicyBufferAll`      | Buffer all starts                                         |
+| `ScheduleOverlapPolicyCancelOther`    | Cancel the running workflow, start new after cancellation |
+| `ScheduleOverlapPolicyTerminateOther` | Terminate running, start immediately                      |
+| `ScheduleOverlapPolicyAllowAll`       | Allow concurrent executions                               |
 
 ## Searching and Inspecting Workflows
 
@@ -556,19 +556,19 @@ ok, appErr := flow.IsApplicationError(err)
 
 ### Reuse Policy (for completed workflows)
 
-| Policy | Behavior |
-|---|---|
-| `WorkflowIdReusePolicyAllowDuplicate` | Always allow reuse |
+| Policy                                          | Behavior                                                |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `WorkflowIdReusePolicyAllowDuplicate`           | Always allow reuse                                      |
 | `WorkflowIdReusePolicyAllowDuplicateFailedOnly` | Allow reuse only if last run failed/cancelled/timed-out |
-| `WorkflowIdReusePolicyRejectDuplicate` | Never allow reuse |
-| `WorkflowIdReusePolicyTerminateIfRunning` | Allow reuse and terminate if still running |
+| `WorkflowIdReusePolicyRejectDuplicate`          | Never allow reuse                                       |
+| `WorkflowIdReusePolicyTerminateIfRunning`       | Allow reuse and terminate if still running              |
 
 ### Conflict Policy (for running workflows)
 
-| Policy | Behavior |
-|---|---|
-| `WorkflowIdConflictPolicyFail` | Return error (default) |
-| `WorkflowIdConflictPolicyUseExisting` | Return handle to existing run |
+| Policy                                      | Behavior                      |
+| ------------------------------------------- | ----------------------------- |
+| `WorkflowIdConflictPolicyFail`              | Return error (default)        |
+| `WorkflowIdConflictPolicyUseExisting`       | Return handle to existing run |
 | `WorkflowIdConflictPolicyTerminateExisting` | Terminate existing, start new |
 
 ## Requirements

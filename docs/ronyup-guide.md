@@ -12,11 +12,11 @@ capabilities.
 - [Feature Templates](#feature-templates)
 - [Translation Catalogs](#translation-catalogs)
 - [MCP Server](#mcp-server)
-	- [Setup for Cursor IDE](#setup-for-cursor-ide)
-	- [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
-	- [Available MCP Tools](#available-mcp-tools)
-	- [Workflow Example](#workflow-example)
-	- [MCP Conventions](#mcp-conventions)
+  - [Setup for Cursor IDE](#setup-for-cursor-ide)
+  - [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
+  - [Available MCP Tools](#available-mcp-tools)
+  - [Workflow Example](#workflow-example)
+  - [MCP Conventions](#mcp-conventions)
 - [Interactive Mode](#interactive-mode)
 - [Command Reference](#command-reference)
 
@@ -62,7 +62,7 @@ The workspace is immediately runnable with `cd cmd/service && go run .`.
 ### Workspace flags
 
 | Flag           | Short | Description                    | Default                |
-|----------------|-------|--------------------------------|------------------------|
+| -------------- | ----- | ------------------------------ | ---------------------- |
 | `--repoDir`    | `-r`  | Destination directory          | `./my-repo`            |
 | `--repoModule` | `-m`  | Go module path                 | `github.com/your/repo` |
 | `--force`      | `-f`  | Clean destination before setup | `false`                |
@@ -97,7 +97,7 @@ The feature is automatically added to `go.work` and registered in `cmd/service/f
 ### Feature flags
 
 | Flag            | Short | Description                              | Default                |
-|-----------------|-------|------------------------------------------|------------------------|
+| --------------- | ----- | ---------------------------------------- | ---------------------- |
 | `--featureDir`  | `-p`  | Directory name inside the repo           | `my_feature`           |
 | `--featureName` | `-n`  | Feature name                             | `myfeature`            |
 | `--template`    | `-t`  | Template: `service`, `job`, or `gateway` | `service`              |
@@ -109,7 +109,7 @@ The feature is automatically added to `go.work` and registered in `cmd/service/f
 ## Feature Templates
 
 | Template  | Purpose                                                               |
-|-----------|-----------------------------------------------------------------------|
+| --------- | --------------------------------------------------------------------- |
 | `service` | A standard API service with CRUD endpoints, repo layer, and DI wiring |
 | `job`     | A background job or worker module                                     |
 | `gateway` | A public-facing API gateway that composes multiple services           |
@@ -134,7 +134,7 @@ If a `go.work` file is present, the command loads packages from each workspace m
 ### Text flags
 
 | Flag               | Short | Description                     | Default             |
-|--------------------|-------|---------------------------------|---------------------|
+| ------------------ | ----- | ------------------------------- | ------------------- |
 | `--src-lang`       | `-s`  | Source language                 | `en-US`             |
 | `--dst-lang`       | `-l`  | Target languages                | `en-US,fa-IR,ar-AR` |
 | `--out-dir`        | `-o`  | Output directory                | `.`                 |
@@ -189,9 +189,9 @@ chat panel.
 1. Open **Settings** (Preferences on macOS).
 2. Search for **MCP** in the settings search.
 3. Add a new **stdio** MCP server:
-	- **Name:** `ronyup`
-	- **Command:** `ronyup`
-	- **Arguments:** `mcp`
+   - **Name:** `ronyup`
+   - **Command:** `ronyup`
+   - **Arguments:** `mcp`
 4. Save and restart GoLand if tools don't appear immediately.
 
 ### Setup for VS Code
@@ -214,7 +214,7 @@ Add to your `.vscode/settings.json` or user settings:
 ### Available MCP Tools
 
 | Tool                | Description                                                    |
-|---------------------|----------------------------------------------------------------|
+| ------------------- | -------------------------------------------------------------- |
 | `list_templates`    | List embedded scaffold template files                          |
 | `read_template`     | Read the contents of a specific template file                  |
 | `create_workspace`  | Scaffold a new RonyKIT workspace                               |
@@ -252,7 +252,7 @@ The MCP server guides AI assistants to follow these conventions:
 ### MCP Flags
 
 | Flag             | Description                        | Default    |
-|------------------|------------------------------------|------------|
+| ---------------- | ---------------------------------- | ---------- |
 | `--name`         | MCP server name                    | `ronyup`   |
 | `--version`      | MCP server version                 | `v0.1.0`   |
 | `--instructions` | Custom instructions for AI clients | (built-in) |

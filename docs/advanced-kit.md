@@ -83,7 +83,7 @@ func main() {
 ## Key Differences from `rony`
 
 | Aspect                | `rony`                                | `kit`                                      |
-|-----------------------|---------------------------------------|--------------------------------------------|
+| --------------------- | ------------------------------------- | ------------------------------------------ |
 | **Handler signature** | `func(ctx, In) (*Out, error)` — typed | `func(ctx *kit.Context)` — raw             |
 | **State management**  | Built-in reducer pattern              | Manual                                     |
 | **API docs**          | Auto-generated from types             | Build with `kit/desc` manually             |
@@ -171,7 +171,7 @@ kit.WithServiceBuilder(MyServiceDesc()),
 ## Storage Layers
 
 | Layer          | Lifecycle           | Use Case                                |
-|----------------|---------------------|-----------------------------------------|
+| -------------- | ------------------- | --------------------------------------- |
 | **Context**    | Per request         | Request-scoped data (user ID, trace ID) |
 | **Connection** | Per connection      | WebSocket session data                  |
 | **Local**      | Per server instance | In-memory caches, counters              |

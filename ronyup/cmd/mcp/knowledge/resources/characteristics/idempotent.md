@@ -6,6 +6,7 @@ applies_to_files:
   - app
   - repo
 ---
+
 Design app/repo writes to be retry-safe; handlers should remain deterministic.
 
 ## File-Level Hint

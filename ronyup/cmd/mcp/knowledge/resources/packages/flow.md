@@ -2,6 +2,7 @@
 import_path: github.com/clubpay/ronykit/flow
 short_name: flow
 ---
+
 Type-safe workflow orchestration over Temporal using generics for workflows, activities, signals, channels, futures, and shared state.
 
 ## Usage Hint
@@ -12,6 +13,7 @@ Initialize it through `flow.NewBackend` + `flow.NewSDK` in datasource wiring,
 then call `InitWithState(app)` and `Start()` from service lifecycle hooks.
 
 For implementation patterns:
+
 - Define workflows/activities as package-level vars with explicit names (`Feature/Action`) and typed request/response structs.
 - Keep workflow functions orchestration-only: sequence activities, timers, selectors, and signals; keep business I/O in activities.
 - Access dependencies in activities via typed state (`ctx.S()`) instead of globals/singletons.

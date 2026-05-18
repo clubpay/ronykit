@@ -7,7 +7,8 @@ applies_to_files:
   - settings
   - app
 ---
-Use x/cache (Ristretto-backed) with key-prefix partitions and TTL for in-memory caching. Expose cache dependency via x/settings 
+
+Use x/cache (Ristretto-backed) with key-prefix partitions and TTL for in-memory caching. Expose cache dependency via x/settings
 and keep cache logic in app/repo layers.
 
 ## File-Level Hint

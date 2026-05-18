@@ -9,9 +9,11 @@ arguments:
     description: "Comma-separated list of service characteristics (e.g. postgres, redis, rest-api, idempotent)."
     required: false
 ---
+
 You are planning a new RonyKIT service feature called "{{feature_name}}".
 
 Follow these steps:
+
 1. Read the relevant knowledge resources at `knowledge://ronyup/architecture/*` and
    `knowledge://ronyup/packages/*` for the architecture conventions and recommended
    x/ toolkit packages.
@@ -19,7 +21,7 @@ Follow these steps:
    `knowledge://ronyup/characteristics/<name>` resource for service- and file-level
    hints.
 3. Scaffold the feature with the `scaffold_feature` tool (or `ronyup setup feature
-   --featureDir <dir> --featureName {{feature_name}} --template service`).
+--featureDir <dir> --featureName {{feature_name}} --template service`).
 4. Implement the domain, repo ports, app use-cases, and API contracts inside the
    generated `feature/service/{{feature_name}}/` module.
 5. Run `make gen-stub` in the feature module after contract changes.

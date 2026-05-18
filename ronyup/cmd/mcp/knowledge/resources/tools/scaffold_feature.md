@@ -1,6 +1,7 @@
 ---
 name: scaffold_feature
 ---
+
 Add a feature module to an existing RonyKIT workspace by delegating to `ronyup setup feature`.
 
 ## Extended Guidance

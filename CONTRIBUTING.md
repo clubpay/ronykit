@@ -1,18 +1,18 @@
 # Contribution Guide
 
-* [Before you get started](#before-you-get-started)
-	* [Code of Conduct](#code-of-conduct)
-* [Your First Contribution](#your-first-contribution)
-	* [Find a good first topic](#find-a-good-first-topic)
-* [Setting up your development environment](#setting-up-your-development-environment)
-	* [Fork the project](#fork-the-project)
-	* [Clone the project](#clone-the-project)
-	* [New branch for a new code](#new-branch-for-a-new-code)
-	* [Test](#test)
-	* [Commit and push](#commit-and-push)
-	* [Create a Pull Request](#create-a-pull-request)
-	* [Sign the CLA](#sign-the-cla)
-	* [Get a code review](#get-a-code-review)
+- [Before you get started](#before-you-get-started)
+  - [Code of Conduct](#code-of-conduct)
+- [Your First Contribution](#your-first-contribution)
+  - [Find a good first topic](#find-a-good-first-topic)
+- [Setting up your development environment](#setting-up-your-development-environment)
+  - [Fork the project](#fork-the-project)
+  - [Clone the project](#clone-the-project)
+  - [New branch for a new code](#new-branch-for-a-new-code)
+  - [Test](#test)
+  - [Commit and push](#commit-and-push)
+  - [Create a Pull Request](#create-a-pull-request)
+  - [Sign the CLA](#sign-the-cla)
+  - [Get a code review](#get-a-code-review)
 
 ## Before you get started
 

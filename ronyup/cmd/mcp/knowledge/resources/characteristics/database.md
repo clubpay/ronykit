@@ -9,6 +9,7 @@ applies_to_files:
   - migration
   - settings
 ---
+
 Default to Postgres with sqlc-backed repo ports + v0 adapters.
 
 - Place `sqlc.yml` at `internal/repo/v0/sqlc.yml`.

@@ -12,6 +12,7 @@ arguments:
     description: The name of the service that will consume the generated stubs (for cross-service wiring guidance).
     required: false
 ---
+
 You are generating typed client stubs for the "{{service_name}}mod" RonyKIT service.
 
 {{#if languages}}
@@ -117,10 +118,10 @@ gen-stub: gen-go-stub
 
 ## Generated Output
 
-| Language   | Output Path                                    | Contents |
-|------------|------------------------------------------------|----------|
-| Go         | `stub/{{service_name}}stub/stub.go`            | Typed client struct with methods per contract |
-| TypeScript | `stub/{{service_name}}stub-typescript/`        | Typed fetch client + SWR hooks (if enabled) |
+| Language   | Output Path                             | Contents                                      |
+| ---------- | --------------------------------------- | --------------------------------------------- |
+| Go         | `stub/{{service_name}}stub/stub.go`     | Typed client struct with methods per contract |
+| TypeScript | `stub/{{service_name}}stub-typescript/` | Typed fetch client + SWR hooks (if enabled)   |
 
 ## Consuming Go Stubs (Cross-Service)
 
@@ -166,6 +167,7 @@ type NewAppParams struct {
 ## Consuming TypeScript Stubs
 
 The TypeScript stubs generate:
+
 - A typed client class with methods per endpoint
 - SWR hooks for React data fetching (when `GenerateSWR: true`)
 
@@ -201,6 +203,7 @@ defer ctx.Release()
 ## When to Regenerate
 
 Regenerate stubs whenever you:
+
 - Add, remove, or rename a contract
 - Change input/output DTO types
 - Modify route paths or HTTP methods

@@ -33,6 +33,7 @@ This file defines practical guidance for AI coding assistants in this workspace.
 ## Service Design Pattern
 
 For a new feature module:
+
 - Add/adjust contracts in `api/service.go`.
 - Implement use-cases in `internal/app/app.go` (and split files as it grows).
 - Add persistence interfaces in `internal/repo/port.go`.

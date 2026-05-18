@@ -9,11 +9,13 @@ arguments:
     description: "Non-functional constraints such as zero-downtime, strict backward compatibility, or deadline."
     required: false
 ---
+
 Create a migration guide and execution plan to move this project from direct `kit` usage to the `rony` module.
 
 Project scope: {{project_scope}}
 
 Follow these steps:
+
 1. Read architecture resource `knowledge://ronyup/architecture/migrating-kit-to-rony`.
 2. Inventory current `kit` usage and group by transport, app, repo, and infra concerns.
 3. Produce a phased migration plan with explicit rollback and verification checkpoints.

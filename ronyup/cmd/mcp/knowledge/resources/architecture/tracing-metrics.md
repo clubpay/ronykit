@@ -9,5 +9,5 @@ Trace with `x/telemetry/tracekit` and measure with `x/telemetry/meterkit`.
   attributes, and `tracekit.Event` for span events (the scaffold's `logMW` is a
   reference implementation).
 - For metrics, call `meterkit.NewExporter(meterkit.WithName(...),
-  meterkit.WithPrometheus(path, port))` once at startup; use
+meterkit.WithPrometheus(path, port))` once at startup; use
   `exp.SetAsGlobal()` so application code can read the global meter provider.

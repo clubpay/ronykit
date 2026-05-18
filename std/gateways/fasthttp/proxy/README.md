@@ -1,4 +1,5 @@
 # fasthttp-reverse-proxy
+
 ![](https://img.shields.io/badge/LICENSE-MIT-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/yeqown/fasthttp-reverse-proxy/v2)](https://goreportcard.com/report/github.com/yeqown/fasthttp-reverse-proxy/v2) [![GoReportCard](https://godoc.org/github.com/yeqown/fasthttp-reverse-proxy/v2?status.svg)](https://godoc.org/github.com/yeqown/fasthttp-reverse-proxy/v2)
 
 reverse http proxy handler based on fasthttp.
@@ -6,11 +7,10 @@ reverse http proxy handler based on fasthttp.
 ## Features
 
 - [x] `HTTP` reverse proxy based [fasthttp](https://github.com/valyala/fasthttp)
-  
-	- [x] it's faster than golang standard `httputil.ReverseProxy` library.
-	- [x] implemented by `fasthttp.HostClient` 
-	- [x] support balance distribute based `rounddobin`
-	- [x] `HostClient` object pool with an overlay of fasthttp connection pool.
+  - [x] it's faster than golang standard `httputil.ReverseProxy` library.
+  - [x] implemented by `fasthttp.HostClient`
+  - [x] support balance distribute based `rounddobin`
+  - [x] `HostClient` object pool with an overlay of fasthttp connection pool.
 
 * [x] `WebSocket` reverse proxy.
 
@@ -86,21 +86,21 @@ func main() {
 
 ## Usages
 
-* [HTTP reverse proxy](./examples/fasthttp-reverse-proxy/proxy.go)
-* [HTTP reverse proxy with object pool](./examples/fasthttp-reverse-proxy-with-pool/pool.go)
-* [Websocket reverse proxy](./examples/ws-fasthttp-reverse-proxy)
+- [HTTP reverse proxy](./examples/fasthttp-reverse-proxy/proxy.go)
+- [HTTP reverse proxy with object pool](./examples/fasthttp-reverse-proxy-with-pool/pool.go)
+- [Websocket reverse proxy](./examples/ws-fasthttp-reverse-proxy)
 
 ## Contrast
 
-* [HTTP benchmark](./docs/http-benchmark.md)
-* [Websocket benchmark](./docs/ws-benchmark.md)
+- [HTTP benchmark](./docs/http-benchmark.md)
+- [Websocket benchmark](./docs/ws-benchmark.md)
 
 ## References
 
-* [fasthttp](https://github.com/valyala/fasthttp)
-* [standard httputil.ReverseProxy](https://golang.org/pkg/net/http/httputil/#ReverseProxy)
-* [fasthttp/websocket](https://github.com/fasthttp/websocket)
-* [koding/websocketproxy](https://github.com/koding/websocketproxy)
+- [fasthttp](https://github.com/valyala/fasthttp)
+- [standard httputil.ReverseProxy](https://golang.org/pkg/net/http/httputil/#ReverseProxy)
+- [fasthttp/websocket](https://github.com/fasthttp/websocket)
+- [koding/websocketproxy](https://github.com/koding/websocketproxy)
 
 ## Thanks
 

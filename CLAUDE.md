@@ -52,11 +52,13 @@ To test ronyup specifically: `cd ronyup && go test ./...`
 ## Architecture Quick Reference
 
 **Request flow:**
+
 ```
 Client -> Gateway -> northBridge -> EdgeServer -> Contract lookup -> Handler chain -> Response
 ```
 
 **Key abstractions:**
+
 - **EdgeServer** -- orchestrator that binds Gateways, Clusters, and Services.
 - **Gateway** -- inbound traffic (fasthttp, silverhttp, fastws, mcp).
 - **Cluster** -- multi-instance coordination (Redis, libp2p P2P).

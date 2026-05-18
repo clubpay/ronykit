@@ -12,6 +12,7 @@ arguments:
     description: "Whether endpoints require authentication (yes/no)."
     required: false
 ---
+
 You are designing the API surface for the "{{service_name}}mod" RonyKIT service.
 
 Requested endpoints: {{endpoints}}
@@ -76,16 +77,16 @@ For a stateful service use the typed `*State`/`Action` parameters and replace
 
 ## Route Selectors
 
-| Helper | HTTP Method | Example |
-|--------|------------|---------|
-| `rony.GET(path)` | GET | `rony.GET("/v1/users/{id}")` |
-| `rony.POST(path)` | POST | `rony.POST("/v1/users")` |
-| `rony.PUT(path)` | PUT | `rony.PUT("/v1/users/{id}")` |
-| `rony.PATCH(path)` | PATCH | `rony.PATCH("/v1/users/{id}")` |
-| `rony.DELETE(path)` | DELETE | `rony.DELETE("/v1/users/{id}")` |
-| `rony.OPTIONS(path)` | OPTIONS | `rony.OPTIONS("/v1/health")` |
-| `rony.REST(method, path)` | Any | `rony.REST("HEAD", "/v1/health")` |
-| `rony.RPC(predicate)` | WebSocket/RPC | `rony.RPC("users.Subscribe")` |
+| Helper                    | HTTP Method   | Example                           |
+| ------------------------- | ------------- | --------------------------------- |
+| `rony.GET(path)`          | GET           | `rony.GET("/v1/users/{id}")`      |
+| `rony.POST(path)`         | POST          | `rony.POST("/v1/users")`          |
+| `rony.PUT(path)`          | PUT           | `rony.PUT("/v1/users/{id}")`      |
+| `rony.PATCH(path)`        | PATCH         | `rony.PATCH("/v1/users/{id}")`    |
+| `rony.DELETE(path)`       | DELETE        | `rony.DELETE("/v1/users/{id}")`   |
+| `rony.OPTIONS(path)`      | OPTIONS       | `rony.OPTIONS("/v1/health")`      |
+| `rony.REST(method, path)` | Any           | `rony.REST("HEAD", "/v1/health")` |
+| `rony.RPC(predicate)`     | WebSocket/RPC | `rony.RPC("users.Subscribe")`     |
 
 Path parameters use `{name}` syntax. Query parameters are extracted from input struct fields.
 
@@ -170,18 +171,18 @@ rony.WithUnary(svc.ListItems,
 Return errors from `rony/errs` — the framework maps the `errs.ErrCode` to an HTTP
 status automatically:
 
-| `errs.ErrCode` | HTTP Status |
-|----------------|-------------|
-| `errs.InvalidArgument` | 400 |
-| `errs.FailedPrecondition` | 400 |
-| `errs.Unauthenticated` | 401 |
-| `errs.PermissionDenied` | 403 |
-| `errs.NotFound` | 404 |
-| `errs.AlreadyExists` | 409 |
-| `errs.Aborted` | 409 |
-| `errs.ResourceExhausted` | 429 |
-| `errs.Internal` | 500 |
-| `errs.DeadlineExceeded` | 504 |
+| `errs.ErrCode`            | HTTP Status |
+| ------------------------- | ----------- |
+| `errs.InvalidArgument`    | 400         |
+| `errs.FailedPrecondition` | 400         |
+| `errs.Unauthenticated`    | 401         |
+| `errs.PermissionDenied`   | 403         |
+| `errs.NotFound`           | 404         |
+| `errs.AlreadyExists`      | 409         |
+| `errs.Aborted`            | 409         |
+| `errs.ResourceExhausted`  | 429         |
+| `errs.Internal`           | 500         |
+| `errs.DeadlineExceeded`   | 504         |
 
 ## API Documentation
 

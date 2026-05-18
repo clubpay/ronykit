@@ -367,7 +367,7 @@ return &GetUserResponse{User: user}, nil
 Error codes map to HTTP status codes automatically:
 
 | Code                    | HTTP Status |
-|-------------------------|-------------|
+| ----------------------- | ----------- |
 | `errs.InvalidArgument`  | 400         |
 | `errs.Unauthenticated`  | 401         |
 | `errs.PermissionDenied` | 403         |
@@ -537,7 +537,7 @@ For integration tests, use generated Go client stubs to call your endpoints end-
 ## Server Options Reference
 
 | Option                     | Description                                 |
-|----------------------------|---------------------------------------------|
+| -------------------------- | ------------------------------------------- |
 | `Listen(":8080")`          | Bind address for the HTTP gateway           |
 | `WithServerName("name")`   | Server name (appears in docs and logs)      |
 | `WithVersion("v1.0.0")`    | API version                                 |
@@ -558,7 +558,7 @@ For integration tests, use generated Go client stubs to call your endpoints end-
 ## Context Helpers Reference
 
 | Method                        | Description                                           |
-|-------------------------------|-------------------------------------------------------|
+| ----------------------------- | ----------------------------------------------------- |
 | `ctx.GetInHdr("key")`         | Read a request header                                 |
 | `ctx.SetOutHdr("key", "val")` | Set a response header                                 |
 | `ctx.Conn()`                  | Access the underlying connection                      |

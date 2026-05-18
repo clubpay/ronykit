@@ -12,6 +12,7 @@ arguments:
     description: The service module that owns this workflow (without "mod" suffix).
     required: false
 ---
+
 You are writing a durable workflow called "{{workflow_name}}" using the RonyKIT `flow` package.
 
 Workflow description: {{description}}

@@ -12,6 +12,7 @@ arguments:
     description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)."
     required: false
 ---
+
 You are writing service code for a RonyKIT module called "{{service_name}}mod".
 
 Service description: {{description}}

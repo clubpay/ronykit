@@ -644,7 +644,7 @@ but follows the same "externalize from Go code" principle.
 ## 8. What Stays in Go Code
 
 | Category                                  | Stays in Go? | Reason                                           |
-|-------------------------------------------|--------------|--------------------------------------------------|
+| ----------------------------------------- | ------------ | ------------------------------------------------ |
 | Tool name constants (`toolPlanService`)   | Yes          | Code identifiers, not prose                      |
 | Error format strings (`errPathRequired`)  | Yes          | Developer-facing, tied to code logic             |
 | Result format strings (`msgPlannedFiles`) | Yes          | `fmt.Sprintf` format strings                     |
@@ -687,9 +687,9 @@ To add a new toolkit package (e.g., `x/newpkg`):
 1. Create `ronyup/knowledge/packages/newpkg.md` with frontmatter.
 2. Rebuild `ronyup`.
 3. The MCP server automatically:
-	- Includes it in `plan_service` recommended packages.
-	- Exposes it as `knowledge://ronyup/packages/newpkg` resource.
-	- References it in server instructions (if `instructions.md` is updated).
+   - Includes it in `plan_service` recommended packages.
+   - Exposes it as `knowledge://ronyup/packages/newpkg` resource.
+   - References it in server instructions (if `instructions.md` is updated).
 
 To add a new characteristic (e.g., `graphql`):
 
