@@ -7,7 +7,7 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func registerPrompts(srv *mcpsdk.Server, cfg serverConfig) {
+func registerPrompts(srv *mcpsdk.Server, cfg ServerConfig) {
 	for _, p := range cfg.kb.Prompts {
 		prompt := p
 

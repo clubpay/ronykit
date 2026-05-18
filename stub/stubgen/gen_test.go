@@ -1,14 +1,20 @@
 package stubgen_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/stub/stubgen"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+type sampleInterface interface {
+	Print() string
+}
 
 type dummyRESTSelector struct {
 	enc    kit.Encoding
@@ -45,8 +51,10 @@ func (d dummyRESTSelector) String() string {
 }
 
 type SimpleObject struct {
-	Bool        bool    `json:"bool"`
-	FloatNumber float64 `json:"floatNumber"`
+	Bool        bool            `json:"bool"`
+	FloatNumber float64         `json:"floatNumber"`
+	Printer     sampleInterface `json:"printer"`
+	Error       *errs.Error     `json:"err"`
 }
 
 type ComplexRequest struct {
@@ -86,8 +94,11 @@ var _ = Describe("GolangGenerator", func() {
 
 		in := stubgen.NewInput("test", svc)
 		in.AddTags("json")
-		_, err := stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "test"}).Generate(in)
+		files, err := stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "test"}).Generate(in)
 		Expect(err).To(BeNil())
+		Expect(files).ToNot(BeNil())
+		Expect(len(files)).To(BeNumerically(">", 0))
+		fmt.Println(string(files[0].Data))
 	})
 })
 

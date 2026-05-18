@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/clubpay/ronykit/ronyup/knowledge"
+	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -13,7 +13,7 @@ const resourceURIPrefix = "knowledge://ronyup/"
 
 var resourceTemplateURI = resourceURIPrefix + "{category}/{name}"
 
-func registerResources(srv *mcpsdk.Server, cfg serverConfig) {
+func registerResources(srv *mcpsdk.Server, cfg ServerConfig) {
 	kb := cfg.kb
 
 	srv.AddResourceTemplate(
@@ -53,6 +53,15 @@ func registerResources(srv *mcpsdk.Server, cfg serverConfig) {
 			Description: truncateText(ch.ServiceHint, 120),
 			MIMEType:    "text/markdown",
 		}, resourceHandler(kb, "characteristics", name))
+	}
+
+	for _, tool := range kb.Tools {
+		srv.AddResource(&mcpsdk.Resource{
+			URI:         resourceURIPrefix + "tools/" + tool.Name,
+			Name:        "Tool: " + tool.Name,
+			Description: truncateText(tool.Description, 120),
+			MIMEType:    "text/markdown",
+		}, resourceHandler(kb, "tools", tool.Name))
 	}
 }
 
@@ -121,9 +130,32 @@ func resolveKnowledge(kb *knowledge.Base, category, name string) string {
 				return formatCharacteristicResource(ch)
 			}
 		}
+	case "tools":
+		for _, tool := range kb.Tools {
+			if tool.Name == name {
+				return formatToolResource(tool)
+			}
+		}
 	}
 
 	return ""
+}
+
+func formatToolResource(tool knowledge.ToolDoc) string {
+	var b strings.Builder
+	b.WriteString("# Tool: ")
+	b.WriteString(tool.Name)
+	b.WriteString("\n\n")
+	b.WriteString(tool.Description)
+
+	if tool.ExtendedGuidance != "" {
+		b.WriteString("\n\n## Extended Guidance\n\n")
+		b.WriteString(tool.ExtendedGuidance)
+	}
+
+	b.WriteByte('\n')
+
+	return b.String()
 }
 
 func formatPackageResource(pkg knowledge.PackageDoc) string {
@@ -218,7 +250,7 @@ func completeResource(
 }
 
 func knowledgeCategories() []string {
-	return []string{"packages", "architecture", "characteristics"}
+	return []string{"packages", "architecture", "characteristics", "tools"}
 }
 
 const maxCompletionValues = 50
@@ -275,6 +307,13 @@ func namesForCategory(kb *knowledge.Base, category string) []string {
 		}
 
 		return names
+	case "tools":
+		names := make([]string, 0, len(kb.Tools))
+		for _, tool := range kb.Tools {
+			names = append(names, tool.Name)
+		}
+
+		return names
 	default:
 		var all []string
 
@@ -288,6 +327,10 @@ func namesForCategory(kb *knowledge.Base, category string) []string {
 
 		for _, ch := range kb.Characteristics {
 			all = append(all, charResourceName(ch))
+		}
+
+		for _, tool := range kb.Tools {
+			all = append(all, tool.Name)
 		}
 
 		return all

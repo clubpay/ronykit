@@ -5,34 +5,36 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 
+	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
+	"github.com/clubpay/ronykit/ronyup/cmd/mcp/tools/scaffold"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// toolRegistrar registers a single MCP tool on the server.
-// Adding a new tool requires writing a registrar function and
-// appending it to allTools.
-type toolRegistrar func(srv *mcpsdk.Server, cfg serverConfig)
-
-func allTools() []toolRegistrar {
-	return []toolRegistrar{
-		registerListTemplates,
-		registerReadTemplate,
-		registerCreateWorkspace,
-		registerCreateFeature,
-		registerPlanService,
-		registerImplementService,
-	}
+type ServerConfig struct {
+	name         string
+	version      string
+	instructions string
+	executable   string
+	skeletonFS   fs.FS
+	cmdRunner    runner
+	kb           *knowledge.Base
+	logger       *slog.Logger
 }
 
-func newServer(cfg serverConfig) *mcpsdk.Server {
+type Server struct {
+	cfg ServerConfig
+	srv *mcpsdk.Server
+}
+
+func newServer(cfg ServerConfig) *Server {
 	srv := mcpsdk.NewServer(
 		&mcpsdk.Implementation{
 			Name:    cfg.name,
@@ -42,17 +44,21 @@ func newServer(cfg serverConfig) *mcpsdk.Server {
 		&mcpsdk.ServerOptions{
 			Instructions:      cfg.instructions,
 			CompletionHandler: completionHandler(cfg.kb),
+			Logger:            cfg.logger,
+			InitializedHandler: func(ctx context.Context, request *mcpsdk.InitializedRequest) {
+			},
 		},
 	)
-
-	for _, register := range allTools() {
-		register(srv, cfg)
-	}
 
 	registerResources(srv, cfg)
 	registerPrompts(srv, cfg)
 
-	return srv
+	scaffold.Register(srv, cfg.cmdRunner, cfg.executable)
+
+	return &Server{
+		cfg: cfg,
+		srv: srv,
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -63,11 +69,17 @@ type runner interface {
 	Run(ctx context.Context, cwd, name string, args ...string) (stdout, stderr string, err error)
 }
 
-type defaultRunner struct{}
+type defaultRunner struct {
+	envs []string
+}
 
-func (defaultRunner) Run(ctx context.Context, cwd, name string, args ...string) (string, string, error) {
+func (r defaultRunner) Run(ctx context.Context, cwd, name string, args ...string) (string, string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
+
 	cmd.Dir = cwd
+	if len(r.envs) > 0 {
+		cmd.Env = append(os.Environ(), r.envs...)
+	}
 
 	var (
 		stdout bytes.Buffer
@@ -113,61 +125,4 @@ func normalizeFeatureName(v string) (string, error) {
 	}
 
 	return v, nil
-}
-
-// ---------------------------------------------------------------------------
-// Workspace inspection (shared by plan_service and implement_service)
-// ---------------------------------------------------------------------------
-
-type workspaceInspection struct {
-	AbsDir                  string
-	ExistingServiceFeatures []string
-}
-
-func inspectWorkspace(workspaceDir string) (workspaceInspection, error) {
-	absDir, err := filepath.Abs(workspaceDir)
-	if err != nil {
-		return workspaceInspection{}, err
-	}
-
-	info, err := os.Stat(absDir)
-	if err != nil {
-		return workspaceInspection{}, err
-	}
-
-	if !info.IsDir() {
-		return workspaceInspection{}, fmt.Errorf(errWorkspaceNotDir, workspaceDir)
-	}
-
-	_, err = os.Stat(filepath.Join(absDir, "go.work"))
-	if err != nil {
-		return workspaceInspection{}, fmt.Errorf(errWorkspaceNoGoWork, err)
-	}
-
-	featuresRoot := filepath.Join(absDir, "feature", "service")
-
-	entries, err := os.ReadDir(featuresRoot)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return workspaceInspection{AbsDir: absDir}, nil
-		}
-
-		return workspaceInspection{}, err
-	}
-
-	existing := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-
-		existing = append(existing, entry.Name())
-	}
-
-	sort.Strings(existing)
-
-	return workspaceInspection{
-		AbsDir:                  absDir,
-		ExistingServiceFeatures: existing,
-	}, nil
 }

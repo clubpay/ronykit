@@ -54,8 +54,8 @@ func TestNamesForCategory(t *testing.T) {
 			t.Fatal("expected at least one architecture slug")
 		}
 
-		if !slices.Contains(names, "thin-handlers") {
-			t.Fatalf("expected 'thin-handlers' in architecture, got %v", names)
+		if !slices.Contains(names, "api-handler-files") {
+			t.Fatalf("expected 'api-handler-files' in architecture, got %v", names)
 		}
 	})
 
@@ -71,8 +71,9 @@ func TestNamesForCategory(t *testing.T) {
 		pkgs := namesForCategory(kb, "packages")
 		arch := namesForCategory(kb, "architecture")
 		chars := namesForCategory(kb, "characteristics")
+		tools := namesForCategory(kb, "tools")
 
-		wantLen := len(pkgs) + len(arch) + len(chars)
+		wantLen := len(pkgs) + len(arch) + len(chars) + len(tools)
 		if len(all) != wantLen {
 			t.Fatalf("empty category returned %d names, want %d", len(all), wantLen)
 		}
@@ -140,8 +141,8 @@ func TestCompletionHandler_CategoryArg(t *testing.T) {
 			}
 
 			if tc.wantAll {
-				if len(result.Completion.Values) != 3 {
-					t.Fatalf("expected 3 categories, got %v", result.Completion.Values)
+				if len(result.Completion.Values) != 4 {
+					t.Fatalf("expected 4 categories, got %v", result.Completion.Values)
 				}
 
 				return
@@ -211,7 +212,7 @@ func TestCompletionHandler_NameArgWithContext(t *testing.T) {
 				},
 				Argument: mcpsdk.CompleteParamsArgument{
 					Name:  "name",
-					Value: "thin",
+					Value: "api",
 				},
 				Context: &mcpsdk.CompleteContext{
 					Arguments: map[string]string{
@@ -224,8 +225,8 @@ func TestCompletionHandler_NameArgWithContext(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if !slices.Contains(result.Completion.Values, "thin-handlers") {
-			t.Fatalf("expected 'thin-handlers' in completions, got %v", result.Completion.Values)
+		if !slices.Contains(result.Completion.Values, "api-handler-files") {
+			t.Fatalf("expected 'api-handler-files' in completions, got %v", result.Completion.Values)
 		}
 	})
 
@@ -396,7 +397,7 @@ func TestCompletionHandler_ValuesNeverNil(t *testing.T) {
 
 func TestCompletionE2E(t *testing.T) {
 	kb := mustLoadKB(t)
-	srv := newServer(serverConfig{
+	srv := newServer(ServerConfig{
 		name:         "ronyup-test",
 		version:      "v0.0.0-test",
 		instructions: "test",
@@ -408,7 +409,7 @@ func TestCompletionE2E(t *testing.T) {
 	ctx := context.Background()
 	ct, st := mcpsdk.NewInMemoryTransports()
 
-	ss, err := srv.Connect(ctx, st, nil)
+	ss, err := srv.srv.Connect(ctx, st, nil)
 	if err != nil {
 		t.Fatalf("server connect: %v", err)
 	}
@@ -442,11 +443,11 @@ func TestCompletionE2E(t *testing.T) {
 			t.Fatalf("Complete() error: %v", err)
 		}
 
-		if len(result.Completion.Values) != 3 {
-			t.Fatalf("expected 3 categories, got %v", result.Completion.Values)
+		if len(result.Completion.Values) != 4 {
+			t.Fatalf("expected 4 categories, got %v", result.Completion.Values)
 		}
 
-		want := []string{"packages", "architecture", "characteristics"}
+		want := []string{"packages", "architecture", "characteristics", "tools"}
 		if !slices.Equal(result.Completion.Values, want) {
 			t.Fatalf("got %v, want %v", result.Completion.Values, want)
 		}
@@ -521,7 +522,7 @@ func TestCompletionE2E(t *testing.T) {
 			},
 			Argument: mcpsdk.CompleteParamsArgument{
 				Name:  "name",
-				Value: "thin",
+				Value: "api",
 			},
 			Context: &mcpsdk.CompleteContext{
 				Arguments: map[string]string{
@@ -533,8 +534,8 @@ func TestCompletionE2E(t *testing.T) {
 			t.Fatalf("Complete() error: %v", err)
 		}
 
-		if !slices.Contains(result.Completion.Values, "thin-handlers") {
-			t.Fatalf("expected 'thin-handlers', got %v", result.Completion.Values)
+		if !slices.Contains(result.Completion.Values, "api-handler-files") {
+			t.Fatalf("expected 'api-handler-files', got %v", result.Completion.Values)
 		}
 	})
 }

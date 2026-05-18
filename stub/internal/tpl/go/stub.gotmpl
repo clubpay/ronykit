@@ -14,7 +14,9 @@
 	{{- range .ExportedFields }}
 		{{- if .Embedded }}
 			{{.GoName}}
-		{{- else if or (eq .Element.Kind "") (eq .Element.RKind.String "interface")}}
+		{{- else if eq .Element.RKind.String "interface" }}
+			{{.GoName}} any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
+		{{- else if eq .Element.Kind "" }}
 			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
 		{{- else }}
 			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}

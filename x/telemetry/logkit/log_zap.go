@@ -3,6 +3,7 @@ package logkit
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"runtime/debug"
 	"strings"
@@ -79,6 +80,10 @@ func newNOP() *Logger {
 	return l
 }
 
+func (l *Logger) SLog() *slog.Logger {
+	return slog.New(slogHandler{l: l})
+}
+
 func (l *Logger) Sync() error {
 	return l.z.Sync()
 }
@@ -126,20 +131,6 @@ func (l *Logger) with(core zapcore.Core, name string, skip int) *Logger {
 	return childLogger
 }
 
-func (l *Logger) WarnOnErr(guideTxt string, err error, fields ...Field) {
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		l.Warn(guideTxt, fields...)
-	}
-}
-
-func (l *Logger) ErrorOnErr(guideTxt string, err error, fields ...Field) {
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		l.Error(guideTxt, fields...)
-	}
-}
-
 func (l *Logger) checkLevel(lvl Level) bool {
 	if l == nil {
 		return false
@@ -176,8 +167,22 @@ func (l *Logger) Debug(msg string, fields ...Field) {
 	}
 }
 
+func (l *Logger) DebugOnErr(guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Debug(guideTxt, fields...)
+	}
+}
+
 func (l *Logger) DebugCtx(ctx context.Context, msg string, fields ...Field) {
 	l.Debug(msg, getFields(ctx, fields...)...)
+}
+
+func (l *Logger) DebugOnErrCtx(ctx context.Context, guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Debug(guideTxt, getFields(ctx, fields...)...)
+	}
 }
 
 func (l *Logger) Info(msg string, fields ...Field) {
@@ -212,8 +217,22 @@ func (l *Logger) Warn(msg string, fields ...Field) {
 	}
 }
 
+func (l *Logger) WarnOnErr(guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Warn(guideTxt, fields...)
+	}
+}
+
 func (l *Logger) WarnCtx(ctx context.Context, msg string, fields ...Field) {
 	l.Warn(msg, getFields(ctx, fields...)...)
+}
+
+func (l *Logger) WarnOnErrCtx(ctx context.Context, guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Warn(guideTxt, getFields(ctx, fields...)...)
+	}
 }
 
 func (l *Logger) Error(msg string, fields ...Field) {
@@ -230,8 +249,22 @@ func (l *Logger) Error(msg string, fields ...Field) {
 	}
 }
 
+func (l *Logger) ErrorOnErr(guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Error(guideTxt, fields...)
+	}
+}
+
 func (l *Logger) ErrorCtx(ctx context.Context, msg string, fields ...Field) {
 	l.Error(msg, getFields(ctx, fields...)...)
+}
+
+func (l *Logger) ErrorOnErrCtx(ctx context.Context, guideTxt string, err error, fields ...Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.Error(guideTxt, getFields(ctx, fields...)...)
+	}
 }
 
 func (l *Logger) Fatal(msg string, fields ...Field) {

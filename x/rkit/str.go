@@ -1,6 +1,7 @@
 package rkit
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -116,6 +117,30 @@ func StrTruncate(s string, maxSize int) string {
 		if count >= maxSize {
 			break
 		}
+	}
+
+	return builder.String()
+}
+
+type StrLine struct {
+	format string
+	args   []any
+}
+
+func (l StrLine) String() string {
+	return fmt.Sprintf(l.format, l.args...)
+}
+
+func L(format string, args ...any) StrLine {
+	return StrLine{format: format, args: args}
+}
+
+func StrLines(lines ...StrLine) string {
+	builder := strings.Builder{}
+
+	for _, line := range lines {
+		builder.WriteString(fmt.Sprintf(line.format, line.args...))
+		builder.WriteString("\n")
 	}
 
 	return builder.String()
