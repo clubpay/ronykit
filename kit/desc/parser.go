@@ -276,12 +276,12 @@ func (pc ParsedContract) SuggestName() string {
 	switch pc.Type {
 	case REST:
 		parts := strings.Split(pc.Path, "/")
-		for i := len(parts) - 1; i >= 0; i-- {
-			if strings.HasPrefix(parts[i], ":") {
+		for _, v := range slices.Backward(parts) {
+			if strings.HasPrefix(v, ":") {
 				continue
 			}
 
-			return utils.ToCamel(parts[i])
+			return utils.ToCamel(v)
 		}
 	case RPC:
 		return utils.ToCamel(pc.Predicate)

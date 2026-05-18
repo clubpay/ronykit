@@ -38,6 +38,7 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
+    - gomodguard
   settings:
     depguard:
       rules:
