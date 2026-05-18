@@ -14,7 +14,9 @@ export interface {{.Name}} extends {{join ", " $extends}} {
 	{{- end }}
 	{{- range .ExportedFields -}}
 	{{- if .Embedded }} {{continue}} {{end}}
-	{{index (splitList "," (.Tag.Get "json")) 0}}{{ if .Tag.OmitEmpty}}?{{end}}: {{tsType .Element.RType}}{{ if (and .Optional (not .Tag.OmitEmpty)) }}| null{{end}}
+	{{- $jsonName := index (splitList "," (.Tag.Get "json")) 0 }}
+	{{- if eq $jsonName "-" }} {{continue}} {{end}}
+	{{$jsonName}}{{ if .Tag.OmitEmpty}}?{{end}}: {{tsType .Element.RType}}{{ if (and .Optional (not .Tag.OmitEmpty)) }}| null{{end}}
 	{{- end }}
 }
 {{- end }}

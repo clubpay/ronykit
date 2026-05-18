@@ -1,6 +1,7 @@
 package stubgen
 
 import (
+	"fmt"
 	"go/format"
 	"strings"
 
@@ -38,12 +39,12 @@ func (g golangGE) Generate(in *Input) ([]GeneratedFile, error) {
 
 	err := tpl.GoStub.Execute(sb, in)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute template: %w", err)
 	}
 
 	formattedContent, err := format.Source(utils.S2B(sb.String()))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("formatting generated code failed: %w\n\n--- UNFORMATTED CODE ---\n%s\n------------------------", err, sb.String())
 	}
 
 	return []GeneratedFile{

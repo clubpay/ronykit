@@ -3,6 +3,8 @@ package stubgen
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -32,42 +34,47 @@ func (t typescriptGE) Generate(in *Input) ([]GeneratedFile, error) {
 
 	err := tpl.TSStub.Execute(stubSB, in)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to execute stub template: %w", err)
 	}
 
 	err = tpl.TSSWRHooks.Execute(swrHooksSB, in)
 	if err != nil {
+		return nil, fmt.Errorf("failed to execute swr hooks template: %w", err)
+	}
+
+	stubFile, err := runPrettier(
+		GeneratedFile{
+			Filename: "stub.ts",
+			Data:     utils.S2B(stubSB.String()),
+		},
+	)
+	if err != nil {
 		return nil, err
 	}
 
-	files := []GeneratedFile{
-		runPrettier(
-			GeneratedFile{
-				Filename: "stub.ts",
-				Data:     utils.S2B(stubSB.String()),
-			},
-		),
-	}
+	files := []GeneratedFile{stubFile}
 
 	if t.cfg.GenerateSWR {
-		files = append(
-			files,
-			runPrettier(
-				GeneratedFile{
-					Filename: "swr.hooks.ts",
-					Data:     utils.S2B(swrHooksSB.String()),
-				},
-			),
+		swrFile, err := runPrettier(
+			GeneratedFile{
+				Filename: "swr.hooks.ts",
+				Data:     utils.S2B(swrHooksSB.String()),
+			},
 		)
+		if err != nil {
+			return nil, err
+		}
+
+		files = append(files, swrFile)
 	}
 
 	return files, nil
 }
 
-func runPrettier(gf GeneratedFile) GeneratedFile {
+func runPrettier(gf GeneratedFile) (GeneratedFile, error) {
 	cmd := exec.CommandContext(
 		context.Background(),
-		"npx", "prettier",
+		"npx", "--yes", "prettier",
 		"--stdin-filepath", gf.Filename,
 	)
 	cmd.Stdin = bytes.NewReader(gf.Data)
@@ -78,10 +85,14 @@ func runPrettier(gf GeneratedFile) GeneratedFile {
 
 	err := cmd.Run()
 	if err != nil {
-		return gf
+		if errors.Is(err, exec.ErrNotFound) {
+			return gf, nil
+		}
+
+		return gf, fmt.Errorf("prettier failed: %w\n\n--- PRETTIER ERROR ---\n%s\n--- UNFORMATTED CODE ---\n%s\n------------------------", err, errBuf.String(), gf.Data)
 	}
 
 	gf.Data = out.Bytes()
 
-	return gf
+	return gf, nil
 }

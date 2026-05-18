@@ -22,3 +22,6 @@ conversion within the same file.
 
 Use `rony.UnaryInputMeta` with `desc.WithField(name, desc.FieldMeta{Enum: ...})`
 for enum documentation and field-level metadata on input DTOs.
+
+Never use types from domain or other packages for DTOs. Always make sure DTOs fields have
+`json` tags, otherwise stub generation will fail.
