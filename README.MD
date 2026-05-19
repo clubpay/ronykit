@@ -112,13 +112,13 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 
 ## Documentation
 
-| Guide | Description |
-|-------|-------------|
-| [Getting Started](./docs/getting-started.md) | Installation, first server, core concepts |
-| [Cookbook](./docs/cookbook.md) | Authentication, pagination, validation, error handling, and more |
-| [ronyup Guide](./docs/ronyup-guide.md) | Scaffolding CLI and MCP server for AI-assisted development |
-| [Architecture](./docs/architecture.md) | How RonyKit works, project layout, component overview |
-| [Advanced: Kit](./docs/advanced-kit.md) | Low-level toolkit for custom gateways and protocols |
+| Guide                                        | Description                                                      |
+|----------------------------------------------|------------------------------------------------------------------|
+| [Getting Started](./docs/getting-started.md) | Installation, first server, core concepts                        |
+| [Cookbook](./docs/cookbook.md)               | Authentication, pagination, validation, error handling, and more |
+| [ronyup Guide](./docs/ronyup-guide.md)       | Scaffolding CLI and MCP server for AI-assisted development       |
+| [Architecture](./docs/architecture.md)       | How RonyKit works, project layout, component overview            |
+| [Advanced: Kit](./docs/advanced-kit.md)      | Low-level toolkit for custom gateways and protocols              |
 
 ## AI-Powered Development with ronyup MCP
 
