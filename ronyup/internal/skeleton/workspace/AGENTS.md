@@ -7,7 +7,8 @@ This file defines practical guidance for AI coding assistants in this workspace.
 1. Enable the **`ronyup` MCP server** (`.cursor/mcp.json` or `.ai/mcp/mcp.json`).
 2. Invoke the **`ronykit-framework` skill** (`/ronykit-framework`) for orchestration workflows.
 3. Read architecture and package guidance from **MCP knowledge resources** — do not invent
-   service layout. Index: `.cursor/skills/ronykit-framework/mcp-map.md`.
+   service layout. Index: `.cursor/skills/ronykit-framework/references/mcp-map.md` (also under
+   `.agents/skills/ronykit-framework/`).
 
 ## Repo Purpose
 

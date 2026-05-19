@@ -234,13 +234,14 @@ Add to your `.vscode/settings.json` or user settings:
 
 The server exposes markdown resources (architecture, `x/` packages, characteristics,
 tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP
-resource browser or see `.cursor/skills/ronykit-framework/mcp-map.md` in scaffolded
-workspaces.
+resource browser or see `.cursor/skills/ronykit-framework/references/mcp-map.md` in
+scaffolded workspaces (mirrored under `.agents/skills/ronykit-framework/`).
 
-### Cursor skill
+### Agent skill
 
-Scaffolded workspaces include `.cursor/skills/ronykit-framework/` — invoke
-`/ronykit-framework` in Cursor for agent workflows that coordinate MCP tools,
+Scaffolded workspaces include the **ronykit-framework** skill under
+`.cursor/skills/` and `.agents/skills/` ([Agent Skills](https://agentskills.io/specification)
+layout). Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools,
 prompts, and resources (without duplicating the knowledge base).
 
 ### Workflow Example
