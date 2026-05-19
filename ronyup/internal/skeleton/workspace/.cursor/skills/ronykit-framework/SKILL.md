@@ -81,6 +81,5 @@ make lint                                       # from repo root when feasible
 
 ## References (human docs)
 
-- `docs/ronyup-guide.md` — CLI and MCP setup
-- `docs/architecture.md`, `docs/getting-started.md`
-- Monorepo: `AGENTS.md`, `CLAUDE.md`
+- RonyKit docs: https://github.com/clubpay/ronykit/tree/main/docs
+- This workspace: `AGENTS.md`

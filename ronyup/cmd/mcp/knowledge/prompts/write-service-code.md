@@ -57,6 +57,9 @@ Follow the RonyKIT service structure conventions below.
 5. **Settings**: Use `x/settings` with typed struct and `settings` tags for configuration.
 6. **Logging**: Use `x/telemetry/logkit` exclusively — never raw log/slog/zap.
 7. **Error handling**: Use `rony/errs` exclusively. Define domain errors with `errs.GenWrap(code, "ERROR_CODE")` or `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE.
+8. **Handlers DTO**: DTOs should have proper `json` tags
+9. **Handlers Signature**: Handlers should have a signature of `func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error)` **inputDTO MUST NOT be a pointer**
+ 
 
 ## Handler Signature Pattern
 

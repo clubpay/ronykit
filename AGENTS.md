@@ -7,6 +7,12 @@ This file defines practical instructions for coding agents working in this repos
 - Scope: entire repository rooted at this directory.
 - Default approach: prefer minimal, targeted changes over broad refactors.
 
+## AI assistants
+
+- **MCP:** `ronyup mcp` (see `.cursor/mcp.json`) — knowledge resources and scaffold tools.
+- **Skill:** `.cursor/skills/ronykit-framework/` — invoke `/ronykit-framework` for orchestration;
+  conventions live in MCP, not in the skill body.
+
 ## Project Context
 
 - Project: `ronykit`

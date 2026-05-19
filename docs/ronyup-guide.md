@@ -213,29 +213,50 @@ Add to your `.vscode/settings.json` or user settings:
 
 ### Available MCP Tools
 
-| Tool                | Description                                                    |
-| ------------------- | -------------------------------------------------------------- |
-| `list_templates`    | List embedded scaffold template files                          |
-| `read_template`     | Read the contents of a specific template file                  |
-| `create_workspace`  | Scaffold a new RonyKIT workspace                               |
-| `create_feature`    | Add a feature module to an existing workspace                  |
-| `plan_service`      | Generate a dry-run implementation plan with architecture hints |
-| `implement_service` | Write starter implementation code for a planned service        |
+| Tool                  | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `scaffold_workspace`  | Scaffold a new RonyKIT workspace at `path`       |
+| `scaffold_feature`    | Add a `feature/service/<name>/` module to a workspace |
+
+### MCP Prompts
+
+| Prompt                 | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `design-api`           | Design contracts, routes, and handlers           |
+| `plan-service`         | Plan a new service feature                       |
+| `write-service-code`   | Implement service code per conventions           |
+| `write-workflow`       | Temporal / `flow` workflows                        |
+| `review-architecture`  | Review feature layout for compliance             |
+| `generate-stubs`       | Stub generation and consumption                  |
+| `migrate-kit-to-rony`  | Migrate from `kit` to `rony` incrementally       |
+
+### Knowledge resources
+
+The server exposes markdown resources (architecture, `x/` packages, characteristics,
+tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP
+resource browser or see `.cursor/skills/ronykit-framework/mcp-map.md` in scaffolded
+workspaces.
+
+### Cursor skill
+
+Scaffolded workspaces include `.cursor/skills/ronykit-framework/` — invoke
+`/ronykit-framework` in Cursor for agent workflows that coordinate MCP tools,
+prompts, and resources (without duplicating the knowledge base).
 
 ### Workflow Example
 
 A typical AI-assisted workflow:
 
-1. **Plan the service:** Ask your AI to plan a new feature. It will call `plan_service`
-   to generate an architecture plan with recommended packages and file layout.
+1. **Plan the service:** Use the MCP prompt `plan-service` (or `design-api` for API-first work).
 
-2. **Create the scaffold:** The AI calls `create_feature` to generate the skeleton code.
+2. **Create the scaffold:** Call `scaffold_workspace` or `scaffold_feature`.
 
-3. **Implement the service:** The AI calls `implement_service` to write the base
-   implementation — contracts, app logic, and repo ports.
+3. **Load knowledge:** Read MCP architecture resources (`service-structure`,
+   `api-handler-files`, `repo-ports`, etc.) before implementing.
 
-4. **Iterate:** You refine the generated code, add business logic, and the AI
-   assists with handler implementation following the established patterns.
+4. **Implement:** Use the `write-service-code` prompt; follow generated module layout.
+
+5. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic.
 
 ### MCP Conventions
 

@@ -1,47 +1,51 @@
 # ronykit-framework Skill
 
-Reusable Cursor skill for building and modifying services in the RonyKit ecosystem.
+Cursor skill that **orchestrates** RonyKit development. It does not duplicate the
+knowledge base — that lives in the **`ronyup` MCP server** (`ronyup mcp`).
 
-## What this skill covers
+## Contents
 
-- `rony/` high-level service development
-- `kit/` low-level primitives and customization
-- `ronyup` scaffolding and MCP workflows
-- `std/gateways`, `std/clusters`, `stub`, and `flow` module context
-- RonyKit-specific guardrails and validation commands
+| File | Role |
+|------|------|
+| `SKILL.md` | Playbook: prerequisites, workflows, hard rules, validation |
+| `mcp-map.md` | Index of MCP tools, prompts, and knowledge resources |
 
-## Local usage
+## Local usage (this repo)
 
-This repository already includes the skill at:
+```text
+.cursor/skills/ronykit-framework/
+```
 
-`./.cursor/skills/ronykit-framework/SKILL.md`
+In Cursor chat: `/ronykit-framework`
 
-In Cursor chat, invoke it with:
+Enable MCP (repo or project):
 
-`/ronykit-framework`
+```json
+{
+  "mcpServers": {
+    "ronyup": {
+      "command": "ronyup",
+      "args": ["mcp"]
+    }
+  }
+}
+```
 
-## Install globally for your machine
-
-Copy the skill to your personal Cursor skills directory:
+## Install globally
 
 ```bash
 mkdir -p ~/.cursor/skills/ronykit-framework
-cp .cursor/skills/ronykit-framework/SKILL.md ~/.cursor/skills/ronykit-framework/SKILL.md
+cp .cursor/skills/ronykit-framework/SKILL.md ~/.cursor/skills/ronykit-framework/
+cp .cursor/skills/ronykit-framework/mcp-map.md ~/.cursor/skills/ronykit-framework/
 ```
 
-Then the skill is available across projects on your machine.
+## Scaffolded workspaces
 
-## Share publicly
+New workspaces created with `ronyup setup workspace` include this skill under
+`.cursor/skills/ronykit-framework/` and MCP config under `.ai/mcp/` and `.cursor/`.
 
-1. Push this folder to a public Git repository.
-2. Share installation steps that copy `SKILL.md` into `~/.cursor/skills/ronykit-framework/`.
-3. Optionally publish as part of a Cursor plugin package for marketplace/community distribution.
+## Maintenance
 
-Reference docs:
-
-- https://cursor.com/docs/context/skills
-- https://cursor.com/docs/plugins
-
-## Versioning recommendation
-
-Use semantic tags for this skill (for example `v1.0.0`) and keep a short changelog in commit messages or release notes.
+- **Conventions / architecture text:** edit `ronyup/cmd/mcp/knowledge/` only.
+- **Agent workflows / MCP index:** edit this skill when tools, prompts, or recommended
+  read order change.
