@@ -84,6 +84,10 @@ func (l *Logger) SLog() *slog.Logger {
 	return slog.New(slogHandler{l: l})
 }
 
+func (l *Logger) Zap() *zap.Logger {
+	return l.z
+}
+
 func (l *Logger) Sync() error {
 	return l.z.Sync()
 }
