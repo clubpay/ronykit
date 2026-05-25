@@ -13,7 +13,7 @@ require (
 	github.com/orlangure/gnomock v0.32.0
 	github.com/redis/go-redis/v9 v9.19.0
 	github.com/smartystreets/goconvey v1.8.1
-	go.temporal.io/sdk v1.43.0
+	go.temporal.io/sdk v1.44.0
 	go.uber.org/fx v1.24.0
 	go.uber.org/zap v1.28.0
 )
@@ -66,7 +66,6 @@ require (
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/ipfs/go-cid v0.5.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
-	github.com/janstoon/toolbox/tricks v1.1.0 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
@@ -159,7 +158,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.43.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
-	go.temporal.io/api v1.62.11 // indirect
+	go.temporal.io/api v1.62.12 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/mock v0.5.2 // indirect
