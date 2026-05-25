@@ -8,12 +8,11 @@ require (
 	github.com/clubpay/ronykit/x/rkit v0.3.8
 	github.com/clubpay/ronykit/x/telemetry v0.3.8
 	github.com/google/uuid v1.6.0
-	github.com/janstoon/toolbox/tricks v1.1.0
 	github.com/nexus-rpc/sdk-go v0.6.0
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.43.0
-	go.temporal.io/api v1.62.11
-	go.temporal.io/sdk v1.43.0
+	go.temporal.io/api v1.62.12
+	go.temporal.io/sdk v1.44.0
 	go.uber.org/zap v1.28.0
 	golang.org/x/sync v0.20.0
 	google.golang.org/protobuf v1.36.11

@@ -6,16 +6,36 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
-	"github.com/janstoon/toolbox/tricks"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
 )
 
-type ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
+type (
+	ActivityConfig struct {
+		CreateSpan bool
+	}
+	ActivityOption func(*ActivityConfig)
+)
+
+func newActivityConfig(opts ...ActivityOption) ActivityConfig {
+	cfg := ActivityConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
+	return cfg
+}
+
+func WithCreateSpan(b bool) ActivityOption {
+	return func(cfg *ActivityConfig) {
+		cfg.CreateSpan = b
+	}
+}
 
 type (
-	ActivityRawFunc[REQ, RES any]    func(ctx context.Context, req REQ) (*RES, error)
-	ActivityRawFuncNoResult[REQ any] func(ctx context.Context, req REQ) error
+	ActivityFunc[REQ, RES, STATE any] func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error)
+	ActivityRawFunc[REQ, RES any]     func(ctx context.Context, req REQ) (*RES, error)
+	ActivityRawFuncNoResult[REQ any]  func(ctx context.Context, req REQ) error
 )
 
 func NewActivity[REQ, RES, STATE any](
@@ -69,45 +89,44 @@ func ToActivity[STATE, REQ, RES any](name, group string, rawFn ActivityRawFunc[R
 func ToActivityFactory[STATE, REQ, RES any](
 	name, group string,
 	factoryFn func(s STATE) ActivityRawFunc[REQ, RES],
+	opts ...ActivityOption,
 ) *ActivityFactory[REQ, RES, STATE] {
+	cfg := newActivityConfig(opts...)
+
 	return NewActivityFactory(
 		name, group,
 		func(s STATE) ActivityFunc[REQ, RES, STATE] {
 			return func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+				if cfg.CreateSpan {
+					var cf func()
+					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
+					defer cf()
+				}
 
-				return withSpan(name, factoryFn(s))(ctx.ctx, req)
+				return factoryFn(s)(ctx.ctx, req)
 			}
 		},
 	)
-}
-
-func withSpan[IN, OUT any, Fn ActivityRawFunc[IN, OUT]](spanName string, fn Fn) Fn {
-	var mw tricks.MiddlewareStack[Fn]
-
-	mw = mw.Push(
-		func(next Fn) Fn {
-			return func(ctx context.Context, in IN) (*OUT, error) {
-				ctx, _, cf := tracekit.NewSpan(ctx, spanName)
-				defer cf()
-
-				return next(ctx, in)
-			}
-		},
-	)
-
-	return mw(fn)
 }
 
 func ToActivityFactoryNoResult[STATE, REQ any](
 	name, group string,
 	factoryFn func(s STATE) ActivityRawFuncNoResult[REQ],
+	opts ...ActivityOption,
 ) *ActivityFactory[REQ, EMPTY, STATE] {
+	cfg := newActivityConfig(opts...)
+
 	return NewActivityFactory(
 		name, group,
 		func(s STATE) ActivityFunc[REQ, EMPTY, STATE] {
 			return func(ctx *ActivityContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
 				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+				if cfg.CreateSpan {
+					var cf func()
+					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
+					defer cf()
+				}
 
 				err := factoryFn(s)(ctx.ctx, req)
 				if err != nil {
