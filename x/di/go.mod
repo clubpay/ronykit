@@ -3,12 +3,12 @@ module github.com/clubpay/ronykit/x/di
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.24.8
-	github.com/clubpay/ronykit/rony v0.24.8
-	github.com/clubpay/ronykit/stub v0.24.8
-	github.com/clubpay/ronykit/x/datasource v0.3.8
-	github.com/clubpay/ronykit/x/rkit v0.3.8
-	github.com/clubpay/ronykit/x/telemetry v0.3.8
+	github.com/clubpay/ronykit/kit v0.24.9
+	github.com/clubpay/ronykit/rony v0.24.9
+	github.com/clubpay/ronykit/stub v0.24.9
+	github.com/clubpay/ronykit/x/datasource v0.3.9
+	github.com/clubpay/ronykit/x/rkit v0.3.9
+	github.com/clubpay/ronykit/x/telemetry v0.3.9
 	go.uber.org/fx v1.24.0
 )
 
@@ -22,8 +22,8 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.24.8 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.3.8 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.24.9 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.3.9 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
