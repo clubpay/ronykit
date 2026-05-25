@@ -5,8 +5,8 @@ go 1.25.1
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/charmbracelet/huh v1.0.0
-	github.com/clubpay/ronykit/x/rkit v0.3.7
-	github.com/clubpay/ronykit/x/telemetry v0.3.7
+	github.com/clubpay/ronykit/x/rkit v0.3.8
+	github.com/clubpay/ronykit/x/telemetry v0.3.8
 	github.com/modelcontextprotocol/go-sdk v1.6.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/mod v0.36.0
