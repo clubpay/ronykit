@@ -14,6 +14,7 @@ type config struct {
 	CallerEncoder   CallerEncoder
 	skipCaller      int
 	encoder         string
+	createSpanEvent bool
 
 	cores []Core
 	hooks []Hook
@@ -27,6 +28,7 @@ var defaultConfig = config{
 	LevelEncoder:    zapcore.CapitalLevelEncoder,
 	DurationEncoder: zapcore.StringDurationEncoder,
 	CallerEncoder:   zapcore.ShortCallerEncoder,
+	createSpanEvent: true,
 }
 
 func WithLevel(lvl Level) Option {
@@ -62,5 +64,11 @@ func WithCore(cores ...Core) Option {
 func WithHook(hooks ...Hook) Option {
 	return func(cfg *config) {
 		cfg.hooks = append(cfg.hooks, hooks...)
+	}
+}
+
+func WithAutoSpanEvent(b bool) Option {
+	return func(cfg *config) {
+		cfg.createSpanEvent = b
 	}
 }

@@ -19,11 +19,12 @@ import (
 // separately. Separate layers could also have independent log levels.
 // Whenever you change log level it propagates through its children.
 type Logger struct {
-	prefix     string
-	skipCaller int
-	z          *zap.Logger
-	otel       *otelzap.Core
-	lvl        zap.AtomicLevel
+	prefix          string
+	skipCaller      int
+	z               *zap.Logger
+	otel            *otelzap.Core
+	lvl             zap.AtomicLevel
+	createSpanEvent bool
 }
 
 func New(opts ...Option) *Logger {
@@ -40,8 +41,9 @@ func New(opts ...Option) *Logger {
 	}
 
 	l := &Logger{
-		lvl:        zap.NewAtomicLevelAt(cfg.level),
-		skipCaller: cfg.skipCaller,
+		lvl:             zap.NewAtomicLevelAt(cfg.level),
+		skipCaller:      cfg.skipCaller,
+		createSpanEvent: cfg.createSpanEvent,
 	}
 
 	var cores []Core
@@ -149,6 +151,14 @@ func (l *Logger) checkLevel(lvl Level) bool {
 	return true
 }
 
+func (l *Logger) addSpanEvent(ctx context.Context, msg string, fields ...Field) {
+	if !l.createSpanEvent {
+		return
+	}
+
+	addTraceEvent(ctx, msg, fields...)
+}
+
 func (l *Logger) Check(lvl Level, msg string) *CheckedEntry {
 	if !l.checkLevel(lvl) {
 		return nil
@@ -179,6 +189,7 @@ func (l *Logger) DebugOnErr(guideTxt string, err error, fields ...Field) {
 }
 
 func (l *Logger) DebugCtx(ctx context.Context, msg string, fields ...Field) {
+	l.addSpanEvent(ctx, msg, fields...)
 	l.Debug(msg, getFields(ctx, fields...)...)
 }
 
@@ -204,6 +215,7 @@ func (l *Logger) Info(msg string, fields ...Field) {
 }
 
 func (l *Logger) InfoCtx(ctx context.Context, msg string, fields ...Field) {
+	l.addSpanEvent(ctx, msg, fields...)
 	l.Info(msg, getFields(ctx, fields...)...)
 }
 
@@ -229,6 +241,7 @@ func (l *Logger) WarnOnErr(guideTxt string, err error, fields ...Field) {
 }
 
 func (l *Logger) WarnCtx(ctx context.Context, msg string, fields ...Field) {
+	l.addSpanEvent(ctx, msg, fields...)
 	l.Warn(msg, getFields(ctx, fields...)...)
 }
 
@@ -261,6 +274,7 @@ func (l *Logger) ErrorOnErr(guideTxt string, err error, fields ...Field) {
 }
 
 func (l *Logger) ErrorCtx(ctx context.Context, msg string, fields ...Field) {
+	l.addSpanEvent(ctx, msg, fields...)
 	l.Error(msg, getFields(ctx, fields...)...)
 }
 
@@ -280,6 +294,7 @@ func (l *Logger) Fatal(msg string, fields ...Field) {
 }
 
 func (l *Logger) FatalCtx(ctx context.Context, msg string, fields ...Field) {
+	l.addSpanEvent(ctx, msg, fields...)
 	l.Fatal(msg, getFields(ctx, fields...)...)
 }
 
