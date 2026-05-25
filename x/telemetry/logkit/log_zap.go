@@ -123,8 +123,9 @@ func (l *Logger) with(core zapcore.Core, name string, skip int) *Logger {
 	}
 
 	childLogger := &Logger{
-		prefix:     prefix,
-		skipCaller: l.skipCaller,
+		prefix:          prefix,
+		skipCaller:      l.skipCaller,
+		createSpanEvent: l.createSpanEvent,
 		z: zap.New(
 			core,
 			zap.AddCaller(),
