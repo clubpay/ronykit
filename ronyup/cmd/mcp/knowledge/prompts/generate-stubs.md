@@ -42,7 +42,7 @@ import (
     "github.com/clubpay/ronykit/rony"
     "github.com/clubpay/ronykit/stub/stubgen"
 
-    "your-module/feature/service/{{service_name}}/api"
+    "your-module/feature/{{service_name}}/api"
 )
 
 var Flags = struct {

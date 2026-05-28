@@ -80,6 +80,21 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 					"type":        "string",
 					"description": "The name of the feature to create.",
 				},
+				"template": map[string]any{
+					"type":        "string",
+					"description": "Feature template: service, job, or gateway.",
+					"default":     "service",
+				},
+				"featurePrefix": map[string]any{
+					"type":        "string",
+					"description": "Parent directory for feature modules.",
+					"default":     "feature",
+				},
+				"groupByTemplate": map[string]any{
+					"type":        "boolean",
+					"description": "When true, place the module under {featurePrefix}/{template}/{name}/.",
+					"default":     false,
+				},
 			},
 			"required": []string{"workspacePath", "name"},
 		},
@@ -89,8 +104,11 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 		tool,
 		func(ctx context.Context, request *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
 			var args struct {
-				WorkspacePath string `json:"workspacePath"`
-				Name          string `json:"name"`
+				WorkspacePath   string `json:"workspacePath"`
+				Name            string `json:"name"`
+				Template        string `json:"template"`
+				FeaturePrefix   string `json:"featurePrefix"`
+				GroupByTemplate bool   `json:"groupByTemplate"`
 			}
 			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
 				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
@@ -104,7 +122,26 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				return errorResult(rkit.L("name is required")), nil
 			}
 
-			stdout, stderr, err := runner.Run(ctx, args.WorkspacePath, executable, "setup", "feature", args.Name)
+			if args.Template == "" {
+				args.Template = "service"
+			}
+
+			if args.FeaturePrefix == "" {
+				args.FeaturePrefix = "feature"
+			}
+
+			cliArgs := []string{
+				"setup", "feature",
+				"--featureDir", args.Name,
+				"--featureName", args.Name,
+				"--template", args.Template,
+				"--featurePrefix", args.FeaturePrefix,
+			}
+			if args.GroupByTemplate {
+				cliArgs = append(cliArgs, "--groupByTemplate")
+			}
+
+			stdout, stderr, err := runner.Run(ctx, args.WorkspacePath, executable, cliArgs...)
 			if err != nil {
 				return errorResult(
 					rkit.L("failed to setup feature: %v", err),

@@ -21,9 +21,11 @@ Follow these steps:
    `knowledge://ronyup/characteristics/<name>` resource for service- and file-level
    hints.
 3. Scaffold the feature with the `scaffold_feature` tool (or `ronyup setup feature
---featureDir <dir> --featureName {{feature_name}} --template service`).
+--featureDir <dir> --featureName {{feature_name}} --template service`; add
+`--groupByTemplate` for `feature/service/{{feature_name}}/`).
 4. Implement the domain, repo ports, app use-cases, and API contracts inside the
-   generated `feature/service/{{feature_name}}/` module.
+   generated `feature/{{feature_name}}/` module (or `feature/service/{{feature_name}}/`
+   when grouped by template).
 5. Run `make gen-stub` in the feature module after contract changes.
 
 {{#if characteristics}}

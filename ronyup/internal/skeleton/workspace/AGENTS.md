@@ -7,8 +7,7 @@ This file defines practical guidance for AI coding assistants in this workspace.
 1. Enable the **`ronyup` MCP server** (`.cursor/mcp.json` or `.ai/mcp/mcp.json`).
 2. Invoke the **`ronykit-framework` skill** (`/ronykit-framework`) for orchestration workflows.
 3. Read architecture and package guidance from **MCP knowledge resources** — do not invent
-   service layout. Index: `.cursor/skills/ronykit-framework/references/mcp-map.md` (also under
-   `.agents/skills/ronykit-framework/`).
+   service layout. Index: `.agents/skills/ronykit-framework/references/mcp-map.md`.
 
 ## Repo Purpose
 
@@ -35,7 +34,7 @@ This file defines practical guidance for AI coding assistants in this workspace.
 - Keep adapter implementations in `internal/repo/v0/` (and use other data stacks only when explicitly requested).
 - Keep module config in `internal/settings/`.
 - After API contract changes, run `make gen-stub` in that feature module.
-- For inter-service calls, use generated stubs from `feature/service/*/stub/*` instead of hand-written clients.
+- For inter-service calls, use generated stubs from `feature/*/stub/*` instead of hand-written clients.
 - Shared utilities belong in `pkg/` and should not depend on feature business logic.
 
 ## Service Design Pattern

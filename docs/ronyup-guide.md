@@ -12,11 +12,11 @@ capabilities.
 - [Feature Templates](#feature-templates)
 - [Translation Catalogs](#translation-catalogs)
 - [MCP Server](#mcp-server)
-  - [Setup for Cursor IDE](#setup-for-cursor-ide)
-  - [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
-  - [Available MCP Tools](#available-mcp-tools)
-  - [Workflow Example](#workflow-example)
-  - [MCP Conventions](#mcp-conventions)
+	- [Setup for Cursor IDE](#setup-for-cursor-ide)
+	- [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
+	- [Available MCP Tools](#available-mcp-tools)
+	- [Workflow Example](#workflow-example)
+	- [MCP Conventions](#mcp-conventions)
 - [Interactive Mode](#interactive-mode)
 - [Command Reference](#command-reference)
 
@@ -62,7 +62,7 @@ The workspace is immediately runnable with `cd cmd/service && go run .`.
 ### Workspace flags
 
 | Flag           | Short | Description                    | Default                |
-| -------------- | ----- | ------------------------------ | ---------------------- |
+|----------------|-------|--------------------------------|------------------------|
 | `--repoDir`    | `-r`  | Destination directory          | `./my-repo`            |
 | `--repoModule` | `-m`  | Go module path                 | `github.com/your/repo` |
 | `--force`      | `-f`  | Clean destination before setup | `false`                |
@@ -82,7 +82,7 @@ ronyup setup feature \
     --repoModule github.com/you/my-api
 ```
 
-This creates a fully structured feature module under `feature/service/users/` with:
+This creates a fully structured feature module under `feature/users/` with:
 
 - API contracts and handler stubs
 - App layer (business logic)
@@ -94,22 +94,29 @@ This creates a fully structured feature module under `feature/service/users/` wi
 
 The feature is automatically added to `go.work` and registered in `cmd/service/features.go`.
 
+By default, features are placed at `{featurePrefix}/{featureDir}/` (for example
+`feature/users/`). Pass `--groupByTemplate` (or `-g`) to place them at
+`{featurePrefix}/{template}/{featureDir}/` instead (for example
+`feature/service/users/`).
+
 ### Feature flags
 
-| Flag            | Short | Description                              | Default                |
-| --------------- | ----- | ---------------------------------------- | ---------------------- |
-| `--featureDir`  | `-p`  | Directory name inside the repo           | `my_feature`           |
-| `--featureName` | `-n`  | Feature name                             | `myfeature`            |
-| `--template`    | `-t`  | Template: `service`, `job`, or `gateway` | `service`              |
-| `--repoModule`  | `-m`  | Repository Go module path                | `github.com/your/repo` |
-| `--force`       | `-f`  | Replace existing feature directory       | `false`                |
+| Flag              | Short | Description                               | Default                |
+|-------------------|-------|-------------------------------------------|------------------------|
+| `--featurePrefix` |       | Parent directory for feature modules      | `feature`              |
+| `--featureDir`    | `-p`  | Directory name inside the feature prefix  | `my_feature`           |
+| `--featureName`   | `-n`  | Feature name                              | `myfeature`            |
+| `--template`        | `-t`  | Template: `service`, `job`, or `gateway`  | `service`              |
+| `--groupByTemplate` | `-g`  | Group under `{featurePrefix}/{template}/` | `false`                |
+| `--repoModule`      | `-m`  | Repository Go module path (auto-detected) | `github.com/your/repo` |
+| `--force`         | `-f`  | Replace existing feature directory        | `false`                |
 
 ---
 
 ## Feature Templates
 
 | Template  | Purpose                                                               |
-| --------- | --------------------------------------------------------------------- |
+|-----------|-----------------------------------------------------------------------|
 | `service` | A standard API service with CRUD endpoints, repo layer, and DI wiring |
 | `job`     | A background job or worker module                                     |
 | `gateway` | A public-facing API gateway that composes multiple services           |
@@ -134,7 +141,7 @@ If a `go.work` file is present, the command loads packages from each workspace m
 ### Text flags
 
 | Flag               | Short | Description                     | Default             |
-| ------------------ | ----- | ------------------------------- | ------------------- |
+|--------------------|-------|---------------------------------|---------------------|
 | `--src-lang`       | `-s`  | Source language                 | `en-US`             |
 | `--dst-lang`       | `-l`  | Target languages                | `en-US,fa-IR,ar-AR` |
 | `--out-dir`        | `-o`  | Output directory                | `.`                 |
@@ -189,9 +196,9 @@ chat panel.
 1. Open **Settings** (Preferences on macOS).
 2. Search for **MCP** in the settings search.
 3. Add a new **stdio** MCP server:
-   - **Name:** `ronyup`
-   - **Command:** `ronyup`
-   - **Arguments:** `mcp`
+	- **Name:** `ronyup`
+	- **Command:** `ronyup`
+	- **Arguments:** `mcp`
 4. Save and restart GoLand if tools don't appear immediately.
 
 ### Setup for VS Code
@@ -213,36 +220,37 @@ Add to your `.vscode/settings.json` or user settings:
 
 ### Available MCP Tools
 
-| Tool                  | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| `scaffold_workspace`  | Scaffold a new RonyKIT workspace at `path`       |
-| `scaffold_feature`    | Add a `feature/service/<name>/` module to a workspace |
+| Tool                 | Description                                   |
+|----------------------|-----------------------------------------------|
+| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path`    |
+| `scaffold_feature`   | Add a `feature/<name>/` module to a workspace |
 
 ### MCP Prompts
 
-| Prompt                 | Description                                      |
-| ---------------------- | ------------------------------------------------ |
-| `design-api`           | Design contracts, routes, and handlers           |
-| `plan-service`         | Plan a new service feature                       |
-| `write-service-code`   | Implement service code per conventions           |
-| `write-workflow`       | Temporal / `flow` workflows                        |
-| `review-architecture`  | Review feature layout for compliance             |
-| `generate-stubs`       | Stub generation and consumption                  |
-| `migrate-kit-to-rony`  | Migrate from `kit` to `rony` incrementally       |
+| Prompt                | Description                                |
+|-----------------------|--------------------------------------------|
+| `design-api`          | Design contracts, routes, and handlers     |
+| `plan-service`        | Plan a new service feature                 |
+| `write-service-code`  | Implement service code per conventions     |
+| `write-workflow`      | Temporal / `flow` workflows                |
+| `review-architecture` | Review feature layout for compliance       |
+| `generate-stubs`      | Stub generation and consumption            |
+| `migrate-kit-to-rony` | Migrate from `kit` to `rony` incrementally |
 
 ### Knowledge resources
 
 The server exposes markdown resources (architecture, `x/` packages, characteristics,
 tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP
-resource browser or see `.cursor/skills/ronykit-framework/references/mcp-map.md` in
-scaffolded workspaces (mirrored under `.agents/skills/ronykit-framework/`).
+resource browser or see `.agents/skills/ronykit-framework/references/mcp-map.md` in
+scaffolded workspaces.
 
 ### Agent skill
 
 Scaffolded workspaces include the **ronykit-framework** skill under
-`.cursor/skills/` and `.agents/skills/` ([Agent Skills](https://agentskills.io/specification)
-layout). Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools,
-prompts, and resources (without duplicating the knowledge base).
+`.agents/skills/` ([Agent Skills](https://agentskills.io/specification)
+layout). Cursor and other compatible agents discover it automatically. Invoke
+`/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts,
+and resources (without duplicating the knowledge base).
 
 ### Workflow Example
 
@@ -274,7 +282,7 @@ The MCP server guides AI assistants to follow these conventions:
 ### MCP Flags
 
 | Flag             | Description                        | Default    |
-| ---------------- | ---------------------------------- | ---------- |
+|------------------|------------------------------------|------------|
 | `--name`         | MCP server name                    | `ronyup`   |
 | `--version`      | MCP server version                 | `v0.1.0`   |
 | `--instructions` | Custom instructions for AI clients | (built-in) |
@@ -289,6 +297,10 @@ that walks you through the configuration:
 ```bash
 ronyup setup
 ```
+
+When adding a feature interactively, you can set the **Feature Parent Directory**
+(`--featurePrefix`) and **Group by Template** (`--groupByTemplate`), which places the
+module under `{featurePrefix}/{template}/{featureDir}/` instead of `{featurePrefix}/{featureDir}/`.
 
 ---
 

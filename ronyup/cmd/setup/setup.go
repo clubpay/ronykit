@@ -18,12 +18,17 @@ var opt = struct {
 	ApplicationName    string
 	RepositoryRootDir  string
 	RepositoryGoModule string
-	FeatureDir         string
-	FeatureName        string
+	// FeatureContainerFolder is the folder that the feature will be placed in.
+	FeatureContainerFolder string
+	// FeatureDir is the directory inside the feature container folder where the feature will be placed.
+	// The go module will be placed inside this directory. {RepositoryRootDir}/{FeatureContainerFolder}/{FeatureDir}/go.mod
+	FeatureDir  string
+	FeatureName string
 
-	Force    bool
-	Template string
-	Custom   map[string]string
+	Force           bool
+	Template        string
+	GroupByTemplate bool
+	Custom          map[string]string
 }{}
 
 func init() {
@@ -39,6 +44,13 @@ func init() {
 	rootFlagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
 
 	featureFlagSet := CmdSetupFeature.Flags()
+	featureFlagSet.StringVarP(
+		&opt.FeatureContainerFolder,
+		"featurePrefix",
+		"",
+		"feature",
+		"prefix for feature folder",
+	)
 	featureFlagSet.StringVarP(
 		&opt.FeatureDir,
 		"featureDir",
@@ -59,6 +71,13 @@ func init() {
 		"t",
 		"service",
 		"possible values: service | job | gateway",
+	)
+	featureFlagSet.BoolVarP(
+		&opt.GroupByTemplate,
+		"groupByTemplate",
+		"g",
+		false,
+		"group features by template",
 	)
 
 	_ = CmdSetupFeature.RegisterFlagCompletionFunc(
@@ -383,9 +402,13 @@ func createFeature(_ context.Context) error {
 		return fmt.Errorf("project directory is required")
 	}
 
+	groupFolder := ""
+	if opt.GroupByTemplate {
+		groupFolder = opt.Template
+	}
 	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "/")
-	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "feature")
-	projectPath := filepath.Join("feature", opt.Template, opt.FeatureDir)
+	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, opt.FeatureContainerFolder)
+	projectPath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
 
 	_ = os.MkdirAll(projectPath, 0o755)
 	if z.IsEmptyDir(projectPath) {
@@ -403,8 +426,12 @@ func createFeature(_ context.Context) error {
 }
 
 func copyFeatureTemplate(cmd *cobra.Command) {
+	groupFolder := ""
+	if opt.GroupByTemplate {
+		groupFolder = opt.Template
+	}
 	pathPrefix := filepath.Join("skeleton/feature", opt.Template)
-	packagePath := filepath.Join("feature", opt.Template, opt.FeatureDir)
+	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
 
 	rkit.Assert(z.CopyDir(
 		z.CopyDirParams{
@@ -449,7 +476,11 @@ func sideEffectImportModule(cmd *cobra.Command) {
 	}
 
 	// Create the import statement for the feature
-	packagePath := filepath.Join("feature", opt.Template, opt.FeatureDir)
+	groupFolder := ""
+	if opt.GroupByTemplate {
+		groupFolder = opt.Template
+	}
+	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
 	importPath := fmt.Sprintf("\t_ \"%s/%s\"\n", opt.RepositoryGoModule, packagePath)
 
 	// Check if the import already exists

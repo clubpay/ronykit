@@ -51,8 +51,11 @@ make tidy     # go mod tidy across modules
 ```sh
 go install ./ronyup
 ronyup setup workspace --repoDir ./my-repo --repoModule github.com/you/myrepo
-ronyup setup feature --featureDir services/auth --featureName auth --template service
+ronyup setup feature --featureDir auth --featureName auth --template service
 ```
+
+Features are placed at `feature/<name>/` by default. Use `--featurePrefix` or
+`--groupByTemplate` for alternate layouts.
 
 CI test scope (subset):
 

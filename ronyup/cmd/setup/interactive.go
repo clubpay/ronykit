@@ -72,6 +72,11 @@ func runFeatureInteractive(cmd *cobra.Command) error {
 	err := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
+				Title("Feature Parent Directory").
+				Description("Parent Directory of the Feature").
+				Placeholder("feature").
+				Value(&opt.FeatureContainerFolder),
+			huh.NewInput().
 				Title("Feature Directory").
 				Description("Destination directory inside repoDir for the setup").
 				Placeholder("auth").
@@ -90,6 +95,11 @@ func runFeatureInteractive(cmd *cobra.Command) error {
 					huh.NewOption("Gateway", "gateway"),
 				).
 				Value(&opt.Template),
+			huh.NewConfirm().
+				Title("Group by Template").
+				Affirmative("YES").
+				Negative("NO").
+				Value(&opt.GroupByTemplate),
 		),
 	).Run()
 	if err != nil {

@@ -10,9 +10,7 @@ This file defines practical instructions for coding agents working in this repos
 ## AI assistants
 
 - **MCP:** `ronyup mcp` (see `.cursor/mcp.json`) — knowledge resources and scaffold tools.
-- **Skill:** `.cursor/skills/ronykit-framework/` or `.agents/skills/ronykit-framework/`
-  (same content) — invoke `/ronykit-framework` for orchestration; conventions live in MCP,
-  not in the skill body. MCP index: `references/mcp-map.md` under that directory.
+- **Skill:** `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification) layout; Cursor discovers it automatically) — invoke `/ronykit-framework` for orchestration; conventions live in MCP, not in the skill body. MCP index: `references/mcp-map.md` under that directory.
 
 ## Project Context
 

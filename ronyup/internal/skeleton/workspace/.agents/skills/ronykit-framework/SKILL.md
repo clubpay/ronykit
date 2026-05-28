@@ -1,10 +1,10 @@
 ---
 name: ronykit-framework
 description: >-
-  Orchestrates RonyKit service development using the ronyup MCP server (knowledge
-  resources, prompts, scaffold tools). Use when the user mentions RonyKit, ronyup,
-  EdgeServer, contracts, scaffolding a workspace or feature, or implementing API
-  handlers and services in RonyKit style.
+	Orchestrates RonyKit service development using the ronyup MCP server (knowledge
+	resources, prompts, scaffold tools). Use when the user mentions RonyKit, ronyup,
+	EdgeServer, contracts, scaffolding a workspace or feature, or implementing API
+	handlers and services in RonyKit style.
 ---
 
 # RonyKit (agent playbook)
@@ -23,35 +23,37 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 ## Context
 
-| Workspace | Approach |
-|-----------|----------|
-| **RonyKit monorepo** (`github.com/clubpay/ronykit`) | Framework work: follow `AGENTS.md` / `CLAUDE.md`, respect `go.work` module boundaries. Do not scaffold into this repo unless testing `ronyup`. |
-| **Scaffolded app** (`go.work`, `cmd/service`, `feature/`) | MCP knowledge + tools are the source of truth. |
+| Workspace                                                 | Approach                                                                                                                                       |
+|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| **RonyKit monorepo** (`github.com/clubpay/ronykit`)       | Framework work: follow `AGENTS.md` / `CLAUDE.md`, respect `go.work` module boundaries. Do not scaffold into this repo unless testing `ronyup`. |
+| **Scaffolded app** (`go.work`, `cmd/service`, `feature/`) | MCP knowledge + tools are the source of truth.                                                                                                 |
 
 ## Default workflow (app development)
 
 1. **Clarify scope** — MCP prompts `plan-service` or `design-api` when requirements are unclear.
 2. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
 3. **Load knowledge** (read MCP resources before coding):
-   - Always: `architecture/service-structure`, `architecture/api-handler-files`
-   - Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
-   - Wiring: `architecture/module-wiring`, `architecture/settings-config`
-   - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
+	- Always: `architecture/service-structure`, `architecture/api-handler-files`
+	- Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
+	- Wiring: `architecture/module-wiring`, `architecture/settings-config`
+	- Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
 4. **Implement** — MCP prompt `write-service-code`; follow generated files in the feature module.
-5. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
-6. **Finish** — `make gen-stub` in the feature after contract changes; run targeted tests, then workspace `make lint` / `make test` when appropriate.
+5. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching
+   `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
+6. **Finish** — `make gen-stub` in the feature after contract changes; run targeted tests, then workspace `make lint` / `make test` when
+   appropriate.
 
 ## Task → MCP routing
 
-| User intent | Start with |
-|-------------|------------|
-| New repository | `scaffold_workspace` → `architecture/workspace-layout` |
-| New service module | `scaffold_feature` → `plan-service` prompt → `write-service-code` |
-| API / contract design | `design-api` prompt |
-| Architecture review | `review-architecture` prompt |
-| Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow` |
-| Client stubs | `generate-stubs` prompt + `architecture/gen-stub` |
-| Migrate kit → rony | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony` |
+| User intent                  | Start with                                                          |
+|------------------------------|---------------------------------------------------------------------|
+| New repository               | `scaffold_workspace` → `architecture/workspace-layout`              |
+| New service module           | `scaffold_feature` → `plan-service` prompt → `write-service-code`   |
+| API / contract design        | `design-api` prompt                                                 |
+| Architecture review          | `review-architecture` prompt                                        |
+| Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow`                |
+| Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                   |
+| Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony` |
 
 ## Hard rules
 
@@ -67,7 +69,7 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 **Scaffolded app**
 
 ```bash
-cd feature/service/<feature> && make gen-stub   # after contract changes
+cd feature/<feature> && make gen-stub   # after contract changes
 cd <module> && go test ./...
 make lint && make test                          # from workspace root when feasible
 ```
@@ -81,5 +83,6 @@ make lint                                       # from repo root when feasible
 
 ## References (human docs)
 
-- RonyKit docs: https://github.com/clubpay/ronykit/tree/main/docs
-- This workspace: `AGENTS.md`
+- `docs/ronyup-guide.md` — CLI and MCP setup
+- `docs/architecture.md`, `docs/getting-started.md`
+- Monorepo: `AGENTS.md`, `CLAUDE.md`

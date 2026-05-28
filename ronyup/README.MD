@@ -44,12 +44,14 @@ This copies the embedded workspace skeleton, initializes a `go.work`, and create
 
 ```bash
 ronyup setup feature \
-  --featureDir services/auth \
+  --featureDir auth \
   --featureName auth \
   --template service
 ```
 
-The feature is copied from the embedded templates in `internal/skeleton/feature`.
+The feature is copied from the embedded templates in `internal/skeleton/feature` into
+`feature/auth/` by default. Use `--featurePrefix` to change the parent directory, or
+`--groupByTemplate` (or `-g`) for `feature/service/auth/`.
 
 ### Generate translation catalogs
 
@@ -116,9 +118,11 @@ Workspace flags:
 
 Feature flags:
 
-- `--featureDir`, `-p`: destination directory inside the repo.
+- `--featurePrefix`: parent directory for feature modules (default `feature`).
+- `--featureDir`, `-p`: destination directory inside the feature prefix.
 - `--featureName`, `-n`: feature name.
 - `--template`, `-t`: feature template (`service`, `job`, `gateway`).
+- `--groupByTemplate`, `-g`: group features under `{featurePrefix}/{template}/`.
 
 ### text
 
@@ -207,7 +211,9 @@ What it does:
 
 #### setup feature
 
-Adds a new feature module under `feature/<template>/<featureDir>`.
+Adds a new feature module under `{featurePrefix}/{featureDir}/` by default (for example
+`feature/auth/`). Pass `--groupByTemplate` (or `-g`) to place the module at
+`{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/auth/`).
 
 ```bash
 ronyup setup feature -m github.com/you/myrepo -p auth -n auth -t service
@@ -216,14 +222,17 @@ ronyup setup feature -m github.com/you/myrepo -p auth -n auth -t service
 Flags:
 
 ```
--p, --featureDir string    destination directory inside repoDir for the setup (default "my_feature")
--n, --featureName string   feature name (default "myfeature")
--t, --template string      possible values: service | job | gateway (default "service")
+    --featurePrefix string   prefix for feature folder (default "feature")
+-p, --featureDir string      destination directory inside the feature prefix (default "my_feature")
+-n, --featureName string     feature name (default "myfeature")
+-t, --template string        possible values: service | job | gateway (default "service")
+-g, --groupByTemplate        group features by template (default false)
 ```
 
 Requirements and side effects:
 - Must be run from a Go workspace root (a `go.work` file must exist).
-- Writes into `feature/<template>/<featureDir>` in the current directory.
+- Writes into `{featurePrefix}/{featureDir}/` in the current directory (or
+  `{featurePrefix}/{template}/{featureDir}/` when `--groupByTemplate` is set).
 - Initializes a Go module for the feature, sets `go` to `1.25`, runs `go mod tidy`,
   `go fmt`, and adds the module to `go.work`.
 - Adds a side-effect import to `cmd/service/features.go` and runs `go mod tidy` + `go fmt`

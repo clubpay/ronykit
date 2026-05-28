@@ -39,6 +39,8 @@ cd my-api
 ronyup setup feature -p users -n users -t service
 ```
 
+This creates a feature module at `feature/users/` (default layout).
+
 Or start from scratch by adding the `rony` package directly:
 
 ```bash

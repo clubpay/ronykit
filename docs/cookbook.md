@@ -34,7 +34,7 @@ my-service/
 ├── go.work
 ├── cmd/service/
 │   └── main.go                # Entry point
-├── feature/service/users/
+├── feature/users/
 │   ├── go.mod
 │   ├── module.go              # DI wiring (fx.Module)
 │   ├── service.go             # Service registration

@@ -10,12 +10,10 @@ RonyKit development. Domain knowledge lives in the **`ronyup` MCP server** (`ron
 | `SKILL.md` | Playbook: prerequisites, workflows, hard rules, validation |
 | `references/mcp-map.md` | Index of MCP tools, prompts, and knowledge resources |
 
-## Locations (project)
+## Location (project)
 
-Installed in both standard skill roots (same content):
-
-- `.cursor/skills/ronykit-framework/` — Cursor
-- `.agents/skills/ronykit-framework/` — Claude Code, Codex, and other Agent Skills clients
+Installed under `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification)
+layout). Cursor and other compatible agents discover skills from this path automatically.
 
 Invoke in Cursor: `/ronykit-framework`
 
@@ -38,17 +36,14 @@ Invoke in Cursor: `/ronykit-framework`
 
 ```bash
 SKILL_ROOT=ronykit-framework
-for base in ~/.cursor/skills ~/.agents/skills; do
-  mkdir -p "$base/$SKILL_ROOT/references"
-  cp .cursor/skills/ronykit-framework/SKILL.md "$base/$SKILL_ROOT/"
-  cp .cursor/skills/ronykit-framework/references/mcp-map.md "$base/$SKILL_ROOT/references/"
-done
+mkdir -p ~/.agents/skills/$SKILL_ROOT/references
+cp .agents/skills/ronykit-framework/SKILL.md ~/.agents/skills/$SKILL_ROOT/
+cp .agents/skills/ronykit-framework/references/mcp-map.md ~/.agents/skills/$SKILL_ROOT/references/
 ```
 
 ## Scaffolded workspaces
 
-`ronyup setup workspace` copies `.cursor/skills/`, `.agents/skills/`, and MCP config
-into the new repository.
+`ronyup setup workspace` copies `.agents/skills/` and MCP config into the new repository.
 
 ## Maintenance
 
