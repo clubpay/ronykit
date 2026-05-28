@@ -98,8 +98,10 @@ func ToActivityFactory[STATE, REQ, RES any](
 		func(s STATE) ActivityFunc[REQ, RES, STATE] {
 			return func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+
 				if cfg.CreateSpan {
 					var cf func()
+
 					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
 					defer cf()
 				}
@@ -122,8 +124,10 @@ func ToActivityFactoryNoResult[STATE, REQ any](
 		func(s STATE) ActivityFunc[REQ, EMPTY, STATE] {
 			return func(ctx *ActivityContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
 				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
+
 				if cfg.CreateSpan {
 					var cf func()
+
 					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
 					defer cf()
 				}
