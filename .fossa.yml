@@ -1,0 +1,11 @@
+# FOSSA analysis configuration for https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit
+# See docs/compliance.md for policy notes and resolving flagged issues.
+
+version: 3
+
+paths:
+  exclude:
+    # Full third-party license text exports must not be scanned as project source.
+    # Pasting SPDX/license bodies here caused depth-0 false positives (GPL, CC-BY-NC-SA on ronykit).
+    - COMPLIANCE.md
+    - docs/third-party-licenses-full.md

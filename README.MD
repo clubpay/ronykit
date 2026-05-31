@@ -166,4 +166,6 @@ make tidy     # go mod tidy all modules
 
 ## License
 
+RonyKit is [BSD 3-Clause](LICENSE). Third-party licenses are tracked in [FOSSA](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit); see [docs/compliance.md](docs/compliance.md) for exports and resolving scan flags.
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_large&issueType=license)
