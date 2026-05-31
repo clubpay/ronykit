@@ -84,6 +84,7 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 					"type":        "string",
 					"description": "Feature template: service, job, or gateway.",
 					"default":     "service",
+					"enum":        []string{"service"},
 				},
 				"featurePrefix": map[string]any{
 					"type":        "string",

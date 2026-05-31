@@ -62,3 +62,11 @@ github-release:
 
 github-release-dry:
 	@bash ./scripts/github-release.sh --tag $(TAG) --dry-run
+
+################
+# RonyUP
+#
+
+dev-mcp:
+	@go install ./ronyup
+	@npx @modelcontextprotocol/inspector ronyup mcp
