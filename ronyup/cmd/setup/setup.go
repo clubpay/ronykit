@@ -406,6 +406,7 @@ func createFeature(_ context.Context) error {
 	if opt.GroupByTemplate {
 		groupFolder = opt.Template
 	}
+
 	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "/")
 	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, opt.FeatureContainerFolder)
 	projectPath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
@@ -430,7 +431,8 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 	if opt.GroupByTemplate {
 		groupFolder = opt.Template
 	}
-	pathPrefix := filepath.Join("skeleton/feature", opt.Template)
+
+	pathPrefix := filepath.Join("skeleton", opt.Template)
 	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
 
 	rkit.Assert(z.CopyDir(
@@ -480,6 +482,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 	if opt.GroupByTemplate {
 		groupFolder = opt.Template
 	}
+
 	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
 	importPath := fmt.Sprintf("\t_ \"%s/%s\"\n", opt.RepositoryGoModule, packagePath)
 
