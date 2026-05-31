@@ -31,6 +31,7 @@ This file defines practical instructions for coding agents working in this repos
 ## Tooling
 
 - Install required tools: `make setup`
+- Format Markdown files: `make format-md`
 - Lint modules (excludes `example/`): `make lint`
 - Vet modules (excludes `example/`): `make vet`
 - Tidy modules (excludes `example/`): `make tidy`

@@ -1,7 +1,6 @@
 ---
-import_path: github.com/clubpay/ronykit/flow
-short_name: flow
----
+
+## import_path: github.com/clubpay/ronykit/flow short_name: flow
 
 Type-safe workflow orchestration over Temporal using generics for workflows, activities, signals, channels, futures, and shared state.
 
@@ -9,8 +8,7 @@ Type-safe workflow orchestration over Temporal using generics for workflows, act
 
 Use a single `*flow.SDK` per service.
 
-Initialize it through `flow.NewBackend` + `flow.NewSDK` in datasource wiring,
-then call `InitWithState(app)` and `Start()` from service lifecycle hooks.
+Initialize it through `flow.NewBackend` + `flow.NewSDK` in datasource wiring, then call `InitWithState(app)` and `Start()` from service lifecycle hooks.
 
 For implementation patterns:
 

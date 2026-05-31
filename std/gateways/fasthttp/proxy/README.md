@@ -6,13 +6,13 @@ reverse http proxy handler based on fasthttp.
 
 ## Features
 
-- [x] `HTTP` reverse proxy based [fasthttp](https://github.com/valyala/fasthttp)
-  - [x] it's faster than golang standard `httputil.ReverseProxy` library.
-  - [x] implemented by `fasthttp.HostClient`
-  - [x] support balance distribute based `rounddobin`
-  - [x] `HostClient` object pool with an overlay of fasthttp connection pool.
+- [X] `HTTP` reverse proxy based [fasthttp](https://github.com/valyala/fasthttp)
+  - [X] it's faster than golang standard `httputil.ReverseProxy` library.
+  - [X] implemented by `fasthttp.HostClient`
+  - [X] support balance distribute based `rounddobin`
+  - [X] `HostClient` object pool with an overlay of fasthttp connection pool.
 
-* [x] `WebSocket` reverse proxy.
+* [X] `WebSocket` reverse proxy.
 
 ## Get started
 

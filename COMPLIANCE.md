@@ -1,10 +1,9 @@
 # 3rd-Party Software for [ronykit]()
 
-The following 3rd-party software packages may be used by or distributed with **ronykit**. Any information relevant
-to third-party vendors listed below are collected using common, reasonable means.
+The following 3rd-party software packages may be used by or distributed with **ronykit**. Any information relevant to third-party vendors listed below are collected using common, reasonable means.
 
-| Date generated |               Revision ID                |
-| :------------: | :--------------------------------------: |
+| Date generated | Revision ID                              |
+|:--------------:|:----------------------------------------:|
 |    03/20/26    | 982eaa62dfb7273603b97fc1835561450096f3bd |
 
 ## Dependencies
@@ -5045,7 +5044,7 @@ THE SOFTWARE.
 
 #### Declared Licenses
 
-BSD-3-Clause, **Multi-license:**BSD-2-Clause _OR_ BSD-3-Clause
+BSD-3-Clause, **Multi-license:**BSD-2-Clause *OR* BSD-3-Clause
 
 ```
 Copyright (c) 2009 The Go Authors. All rights reserved.
@@ -7149,11 +7148,7 @@ SOFTWARE.
 
 CC-BY-4.0
 
-Documentation in this project (excluding specifications) is licensed under
-Creative Commons Attribution 4.0 International (CC-BY-4.0).
-See https://creativecommons.org/licenses/by/4.0/legalcode for the full
-license text. The CC-BY-4.0 license applies only to documentation content,
-not to source code.
+Documentation in this project (excluding specifications) is licensed under Creative Commons Attribution 4.0 International (CC-BY-4.0). See https://creativecommons.org/licenses/by/4.0/legalcode for the full license text. The CC-BY-4.0 license applies only to documentation content, not to source code.
 
 ---
 
@@ -12104,12 +12099,7 @@ Apache-2.0
 
 LGPL-2.1-only, LGPL-2.1-or-later
 
-FOSSA detects LGPL-2.1 references in vendored test fixtures within the
-opentelemetry-go-instrumentation repository. The library itself is licensed
-under Apache-2.0. Because ronykit uses only the SDK API surface (which is
-Apache-2.0 licensed), the LGPL-2.1 obligation does not apply to this project.
-Go statically links all dependencies; however, no LGPL-licensed source code
-is compiled into the final binary.
+FOSSA detects LGPL-2.1 references in vendored test fixtures within the opentelemetry-go-instrumentation repository. The library itself is licensed under Apache-2.0. Because ronykit uses only the SDK API surface (which is Apache-2.0 licensed), the LGPL-2.1 obligation does not apply to this project. Go statically links all dependencies; however, no LGPL-licensed source code is compiled into the final binary.
 
 ---
 
@@ -23905,6 +23895,3 @@ derivative of this code cannot be changed.  i.e. this code cannot simply be
 copied and put under another distribution licence
 [including the GNU Public Licence.]
 ```
-
-[FOSSA]: # "Do not touch the comments below"
-[FOSSA]: # "==depsig=pending-rescan=="

@@ -1,11 +1,8 @@
 # RonyKIT
 
-[![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=license)
-[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit)](https://goreportcard.com/report/github.com/clubpay/ronykit)
+[![codecov](https://codecov.io/gh/clubpay/ronykit/branch/main/graph/badge.svg?token=6DALKCyYXv)](https://codecov.io/gh/clubpay/ronykit) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fclubpay%2Fronykit.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fclubpay%2Fronykit?ref=badge_shield&issueType=license) [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit)](https://goreportcard.com/report/github.com/clubpay/ronykit)
 
-A Go toolkit for building high-performance API servers. Define your contracts once,
-get type-safe handlers, auto-generated docs, and client stubs — all with minimal boilerplate.
+A Go toolkit for building high-performance API servers. Define your contracts once, get type-safe handlers, auto-generated docs, and client stubs — all with minimal boilerplate.
 
 ## Quick Start
 
@@ -42,11 +39,9 @@ ronyup setup feature -p auth -n auth -t service
 cd cmd/service && go run .
 ```
 
-That's it — you have a running API server with a scaffolded project structure,
-dependency injection, database migrations, and generated client stubs.
+That's it — you have a running API server with a scaffolded project structure, dependency injection, database migrations, and generated client stubs.
 
-> **Using an AI-powered IDE?** Set up the [ronyup MCP server](./docs/ronyup-guide.md#mcp-server)
-> to let your AI assistant scaffold and implement services for you.
+> **Using an AI-powered IDE?** Set up the [ronyup MCP server](./docs/ronyup-guide.md#mcp-server) to let your AI assistant scaffold and implement services for you.
 
 ## Hello World
 
@@ -56,40 +51,40 @@ Don't want scaffolding? Here's a complete API server in one file:
 package main
 
 import (
-    "context"
-    "os"
+	"context"
+	"os"
 
-    "github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/rony"
 )
 
 type GreetRequest struct {
-    Name string `json:"name"`
+	Name string `json:"name"`
 }
 
 type GreetResponse struct {
-    Message string `json:"message"`
+	Message string `json:"message"`
 }
 
 func Greet(ctx *rony.SUnaryCtx, in GreetRequest) (*GreetResponse, error) {
-    return &GreetResponse{Message: "Hello, " + in.Name + "!"}, nil
+	return &GreetResponse{Message: "Hello, " + in.Name + "!"}, nil
 }
 
 func main() {
-    srv := rony.NewServer(
-        rony.Listen(":8080"),
-        rony.WithServerName("greeter"),
-        rony.WithAPIDocs("/docs"),
-        rony.UseSwaggerUI(),
-    )
+	srv := rony.NewServer(
+		rony.Listen(":8080"),
+		rony.WithServerName("greeter"),
+		rony.WithAPIDocs("/docs"),
+		rony.UseSwaggerUI(),
+	)
 
-    rony.Setup(srv, "GreeterService", rony.EmptyState(),
-        rony.WithUnary(Greet,
-            rony.GET("/hello/{name}"),
-            rony.POST("/hello"),
-        ),
-    )
+	rony.Setup(srv, "GreeterService", rony.EmptyState(),
+		rony.WithUnary(Greet,
+			rony.GET("/hello/{name}"),
+			rony.POST("/hello"),
+		),
+	)
 
-    _ = srv.Run(context.Background(), os.Interrupt, os.Kill)
+	_ = srv.Run(context.Background(), os.Interrupt, os.Kill)
 }
 ```
 
@@ -122,9 +117,7 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 
 ## AI-Powered Development with ronyup MCP
 
-`ronyup` includes a built-in [MCP server](https://modelcontextprotocol.io/) that lets
-AI assistants in your IDE scaffold workspaces, plan services, and generate implementation
-code — all following RonyKit best practices.
+`ronyup` includes a built-in [MCP server](https://modelcontextprotocol.io/) that lets AI assistants in your IDE scaffold workspaces, plan services, and generate implementation code — all following RonyKit best practices.
 
 ```json
 {
@@ -137,14 +130,11 @@ code — all following RonyKit best practices.
 }
 ```
 
-Add this to `.cursor/mcp.json` (Cursor) or configure via Settings (GoLand).
-See the full [ronyup MCP Guide](./docs/ronyup-guide.md#mcp-server) for details.
+Add this to `.cursor/mcp.json` (Cursor) or configure via Settings (GoLand). See the full [ronyup MCP Guide](./docs/ronyup-guide.md#mcp-server) for details.
 
 ## Performance
 
-RonyKIT is designed for high throughput with minimal framework overhead. See the
-[TechEmpower JSON benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3)
-for a reference point.
+RonyKIT is designed for high throughput with minimal framework overhead. See the [TechEmpower JSON benchmark](https://www.techempower.com/benchmarks/#hw=ph&test=json&section=data-r22&l=zijocf-cn3) for a reference point.
 
 ## Project Layout
 
@@ -162,8 +152,7 @@ example/        Runnable examples
 
 ## Examples
 
-Browse production-style patterns in the [Cookbook](./docs/cookbook.md) or explore the
-[runnable examples](./example) directory.
+Browse production-style patterns in the [Cookbook](./docs/cookbook.md) or explore the [runnable examples](./example) directory.
 
 ## Build Commands
 

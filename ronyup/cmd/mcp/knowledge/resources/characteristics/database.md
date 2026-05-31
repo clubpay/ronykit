@@ -1,13 +1,14 @@
 ---
+
 keywords:
-  - postgres
-  - mysql
-  - sql
-  - database
-applies_to_files:
-  - repo
-  - migration
-  - settings
+- postgres
+- mysql
+- sql
+- database applies_to_files:
+- repo
+- migration
+- settings
+
 ---
 
 Default to Postgres with sqlc-backed repo ports + v0 adapters.
@@ -19,12 +20,9 @@ Default to Postgres with sqlc-backed repo ports + v0 adapters.
 - Embed migrations at module root:
   - `//go:embed internal/repo/v0/data/db/migrations`
   - `var MigrationFS embed.FS`
-- Wire DB params via
-  `di.ProvideDBParams[settings.Settings](MigrationFS)` in the `diDatasource`
-  block.
+- Wire DB params via `di.ProvideDBParams[settings.Settings](MigrationFS)` in the `diDatasource` block.
 - Initialize with `datasource.InitDB("", "")`.
-- Manage DB connection settings through `x/settings` with a nested `DBConfig`
-  struct.
+- Manage DB connection settings through `x/settings` with a nested `DBConfig` struct.
 
 ## File-Level Hint
 

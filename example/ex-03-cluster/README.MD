@@ -1,9 +1,11 @@
 # Cluster Example
-In this example we demonstrate how to have multiple instances of kit.EdgeServer and will
-communicate with each other.
+
+In this example we demonstrate how to have multiple instances of kit.EdgeServer and will communicate with each other.
 
 ## Running the example
+
 To run the example, first start the server:
+
 ```bash
 goreman start
 ```

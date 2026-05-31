@@ -1,31 +1,32 @@
 # Ronyup MCP index
 
-Reference for agents using the `ronyup mcp` server. URIs use the form
-`knowledge://ronyup/<category>/<name>` unless your client lists resources by name only.
+Reference for agents using the `ronyup mcp` server. URIs use the form `knowledge://ronyup/<category>/<name>` unless your client lists resources by name only.
 
-Server instructions (always applied on connect) are embedded from
-`ronyup/cmd/mcp/knowledge/server/instructions.md`.
+Server instructions (always applied on connect) are embedded from `ronyup/cmd/mcp/knowledge/server/instructions.md`.
 
 ## Tools
 
-| Tool                 | When to use                                           |
-|----------------------|-------------------------------------------------------|
-| `scaffold_workspace` | New Go workspace (`ronyup setup workspace` at `path`) |
+| Tool                 | When to use                                                                       |
+|----------------------|-----------------------------------------------------------------------------------|
+| `scaffold_workspace` | New Go workspace (`ronyup setup workspace` at `path`)                             |
 | `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`) |
 
 Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`.
 
 ## Prompts
 
-| Prompt                | Purpose                                              |
-|-----------------------|------------------------------------------------------|
-| `design-api`          | Contracts, routes, handlers, API documentation       |
-| `plan-service`        | Plan a new service feature before implementation     |
-| `write-service-code`  | Implement handlers, app layer, repos per conventions |
-| `write-workflow`      | Temporal / `flow` workflows and activities           |
-| `review-architecture` | Compliance review of an existing feature             |
-| `generate-stubs`      | Generate and consume typed client stubs              |
-| `migrate-kit-to-rony` | Incremental migration from `kit` to `rony`           |
+| Prompt                | Purpose                                           |
+|-----------------------|---------------------------------------------------|
+| `design-new-service`  | Full workflow: SRS → SDD → scaffold → implement   |
+| `write-srs`           | Write SRS to `docs/design/<feature>-srs.md`       |
+| `write-sdd`           | Write SDD from approved SRS                       |
+| `design-api`          | Contracts, routes, handlers, API documentation    |
+| `plan-service`        | Plan a feature (points to SRS/SDD-first workflow) |
+| `write-service-code`  | Implement handlers, app layer, repos per SDD      |
+| `write-workflow`      | Temporal / `flow` workflows and activities        |
+| `review-architecture` | Compliance review of an existing feature          |
+| `generate-stubs`      | Generate and consume typed client stubs           |
+| `migrate-kit-to-rony` | Incremental migration from `kit` to `rony`        |
 
 ## Architecture resources
 
@@ -33,6 +34,9 @@ Read these when implementing or reviewing service code.
 
 | Resource                | Topic                                            |
 |-------------------------|--------------------------------------------------|
+| `design-documents`      | SRS/SDD workflow, paths, gate rules              |
+| `srs-template`          | SRS section outline (IEEE 830)                   |
+| `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
 | `workspace-layout`      | Repo layout, `cmd/service`, feature registration |
 | `service-structure`     | `service.go`, `module.go`, `migration.go`        |
 | `api-handler-files`     | `api/service.go`, `api/api_*.go` handlers        |
@@ -87,9 +91,11 @@ When the user mentions these topics, read the resource before coding.
 
 ## Typical read order (new service feature)
 
-1. `scaffold_feature` (tool)
-2. `architecture/service-structure`
-3. `architecture/api-handler-files`
-4. `architecture/repo-ports` + `architecture/postgres-sqlc`
-5. Prompt `write-service-code`
-6. On completion: `architecture/gen-stub` → run `make gen-stub`
+1. `design-new-service` or `write-srs` → `write-sdd` (prompts)
+2. `architecture/design-documents`, `srs-template`, `sdd-template`
+3. `scaffold_feature` (tool)
+4. `architecture/service-structure`
+5. `architecture/api-handler-files`
+6. `architecture/repo-ports` + `architecture/postgres-sqlc`
+7. Prompt `write-service-code`
+8. On completion: `architecture/gen-stub` → run `make gen-stub`

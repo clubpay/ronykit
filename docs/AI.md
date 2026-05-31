@@ -1,21 +1,17 @@
 # AI Guide for RonyKIT
 
-This document gives AI assistants (and new contributors) enough context to work
-effectively in this repo without guessing. Keep it short, factual, and updated.
+This document gives AI assistants (and new contributors) enough context to work effectively in this repo without guessing. Keep it short, factual, and updated.
 
 ## Project summary
 
-RonyKIT is a Go toolkit for building high-performance API and edge servers.
-There are two main entry points:
+RonyKIT is a Go toolkit for building high-performance API and edge servers. There are two main entry points:
 
-- `rony/`: batteries-included framework with typed handlers and opinionated
-  defaults. Use this for most services.
+- `rony/`: batteries-included framework with typed handlers and opinionated defaults. Use this for most services.
 - `kit/`: low-level toolkit for custom gateways, clusters, or protocols.
 
 Supporting components include:
 
-- `std/`: standard gateways and clusters (fasthttp, fastws, silverhttp, redis,
-  p2p).
+- `std/`: standard gateways and clusters (fasthttp, fastws, silverhttp, redis, p2p).
 - `flow/`: workflow helpers.
 - `stub/`: stub generation utilities.
 - `ronyup/`: CLI for scaffolding and tooling.
@@ -24,11 +20,8 @@ Supporting components include:
 
 ## Go workspace and modules
 
-- The repo is a Go workspace (`go.work`) that includes many modules under
-  `example/`, `flow/`, `kit/`, `rony/`, `ronyup/`, `std/`, `stub/`, `testenv/`,
-  and `x/`.
-- Each module has its own `go.mod`. When adding a new module, update `go.work`
-  and `go.work.sum`.
+- The repo is a Go workspace (`go.work`) that includes many modules under `example/`, `flow/`, `kit/`, `rony/`, `ronyup/`, `std/`, `stub/`, `testenv/`, and `x/`.
+- Each module has its own `go.mod`. When adding a new module, update `go.work` and `go.work.sum`.
 - CI currently runs with Go `1.25` (see `.github/workflows/go.yml`).
 - `go.work` currently declares `go 1.25.1`.
 
@@ -54,8 +47,7 @@ ronyup setup workspace --repoDir ./my-repo --repoModule github.com/you/myrepo
 ronyup setup feature --featureDir auth --featureName auth --template service
 ```
 
-Features are placed at `feature/<name>/` by default. Use `--featurePrefix` or
-`--groupByTemplate` for alternate layouts.
+Features are placed at `feature/<name>/` by default. Use `--featurePrefix` or `--groupByTemplate` for alternate layouts.
 
 CI test scope (subset):
 
@@ -69,8 +61,7 @@ go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
 
 ## Conventions and linting
 
-- Formatting/linting: `gofmt`, `gofumpt`, `goimports`, `gci` via
-  `.golangci.yml`.
+- Formatting/linting: `gofmt`, `gofumpt`, `goimports`, `gci` via `.golangci.yml`.
 - `.editorconfig` uses tabs with size 2 and LF.
 - Avoid `io/ioutil` (blocked by `depguard` in `.golangci.yml`).
 
@@ -83,8 +74,7 @@ go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
 
 ## API description and stubs
 
-- `rony` supports declarative routes using `rony.WithUnary/WithStream` and
-  REST/RPC selectors (`GET`, `POST`, `RPC`, etc).
+- `rony` supports declarative routes using `rony.WithUnary/WithStream` and REST/RPC selectors (`GET`, `POST`, `RPC`, etc).
 - Use `srv.ExportDesc()` and `stub/stubgen` to generate Go/TS clients.
 - For raw descriptor control, use `kit/desc`.
 

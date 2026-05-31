@@ -1,25 +1,17 @@
 ---
-name: design-api
-description: Guide an AI agent through designing RonyKIT APIs with contracts, routes, handlers, and documentation.
-arguments:
-  - name: service_name
-    description: The service module name (without "mod" suffix).
-    required: true
-  - name: endpoints
-    description: "Comma-separated list of endpoint names or brief descriptions (e.g. 'CreateUser, GetUser, ListUsers, DeleteUser')."
-    required: true
-  - name: auth_required
-    description: "Whether endpoints require authentication (yes/no)."
-    required: false
+
+name: design-api description: Guide an AI agent through designing RonyKIT APIs with contracts, routes, handlers, and documentation. arguments:
+- name: service_name description: The service module name (without "mod" suffix). required: true
+- name: endpoints description: "Comma-separated list of endpoint names or brief descriptions (e.g. 'CreateUser, GetUser, ListUsers, DeleteUser')." required: true
+- name: auth_required description: "Whether endpoints require authentication (yes/no)." required: false
+
 ---
 
 You are designing the API surface for the "{{service_name}}mod" RonyKIT service.
 
 Requested endpoints: {{endpoints}}
 
-{{#if auth_required}}
-Authentication required: {{auth_required}}
-{{/if}}
+{{#if auth_required}} Authentication required: {{auth_required}} {{/if}}
 
 ## API Design Principles
 
@@ -30,9 +22,7 @@ Authentication required: {{auth_required}}
 
 ## Defining Contracts in the Service Desc()
 
-Each service's `api/service.go` exposes a `Desc()` method that returns a
-`rony.SetupOption[S, A]` produced by `rony.SetupOptionGroup`. The server wires it
-in via `rony.Setup(srv, name, initState, desc())`.
+Each service's `api/service.go` exposes a `Desc()` method that returns a `rony.SetupOption[S, A]` produced by `rony.SetupOptionGroup`. The server wires it in via `rony.Setup(srv, name, initState, desc())`.
 
 For a stateless service:
 
@@ -40,45 +30,43 @@ For a stateless service:
 type RContext = rony.UnaryCtx[rony.EMPTY, rony.NOP]
 
 func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
-    return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
-        rony.WithUnary(
-            svc.CreateItem,
-            rony.POST("/v1/{{service_name}}/items"),
-        ),
-        rony.WithUnary(
-            svc.GetItem,
-            rony.GET("/v1/{{service_name}}/items/{id}"),
-        ),
-        rony.WithUnary(
-            svc.ListItems,
-            rony.GET("/v1/{{service_name}}/items"),
-        ),
-        rony.WithUnary(
-            svc.UpdateItem,
-            rony.PUT("/v1/{{service_name}}/items/{id}"),
-        ),
-        rony.WithUnary(
-            svc.DeleteItem,
-            rony.DELETE("/v1/{{service_name}}/items/{id}"),
-        ),
+	return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
+		rony.WithUnary(
+			svc.CreateItem,
+			rony.POST("/v1/{{service_name}}/items"),
+		),
+		rony.WithUnary(
+			svc.GetItem,
+			rony.GET("/v1/{{service_name}}/items/{id}"),
+		),
+		rony.WithUnary(
+			svc.ListItems,
+			rony.GET("/v1/{{service_name}}/items"),
+		),
+		rony.WithUnary(
+			svc.UpdateItem,
+			rony.PUT("/v1/{{service_name}}/items/{id}"),
+		),
+		rony.WithUnary(
+			svc.DeleteItem,
+			rony.DELETE("/v1/{{service_name}}/items/{id}"),
+		),
 
-        // RPC / WebSocket
-        rony.WithStream(
-            svc.WatchItems,
-            rony.RPC("{{service_name}}.WatchItems"),
-        ),
-    )
+		// RPC / WebSocket
+		rony.WithStream(
+			svc.WatchItems,
+			rony.RPC("{{service_name}}.WatchItems"),
+		),
+	)
 }
 ```
 
-For a stateful service use the typed `*State`/`Action` parameters and replace
-`rony.EMPTY`/`rony.NOP` accordingly; initialize state with
-`rony.ToInitiateState[*State, Action](&State{})` when calling `rony.Setup`.
+For a stateful service use the typed `*State`/`Action` parameters and replace `rony.EMPTY`/`rony.NOP` accordingly; initialize state with `rony.ToInitiateState[*State, Action](&State{})` when calling `rony.Setup`.
 
 ## Route Selectors
 
 | Helper                    | HTTP Method   | Example                           |
-| ------------------------- | ------------- | --------------------------------- |
+|---------------------------|---------------|-----------------------------------|
 | `rony.GET(path)`          | GET           | `rony.GET("/v1/users/{id}")`      |
 | `rony.POST(path)`         | POST          | `rony.POST("/v1/users")`          |
 | `rony.PUT(path)`          | PUT           | `rony.PUT("/v1/users/{id}")`      |
@@ -94,15 +82,15 @@ Path parameters use `{name}` syntax. Query parameters are extracted from input s
 
 ```go
 type CreateItemInput struct {
-    Name        string `json:"name"        swag:"required,The item name"`
-    Description string `json:"description" swag:"The item description"`
-    CategoryID  int64  `json:"categoryId"  swag:"required,Category identifier"`
+	Name        string `json:"name"        swag:"required,The item name"`
+	Description string `json:"description" swag:"The item description"`
+	CategoryID  int64  `json:"categoryId"  swag:"required,Category identifier"`
 }
 
 type CreateItemOutput struct {
-    ID        int64  `json:"id"`
-    Name      string `json:"name"`
-    CreatedAt int64  `json:"createdAt"`
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	CreatedAt int64  `json:"createdAt"`
 }
 ```
 
@@ -110,7 +98,7 @@ For path parameters, use the same field name as in the route:
 
 ```go
 type GetItemInput struct {
-    ID int64 `json:"id" swag:"required,The item ID"`
+	ID int64 `json:"id" swag:"required,The item ID"`
 }
 ```
 
@@ -118,14 +106,14 @@ For list endpoints with pagination:
 
 ```go
 type ListItemsInput struct {
-    Offset int32  `json:"offset" swag:"Pagination offset"`
-    Limit  int32  `json:"limit"  swag:"Pagination limit (default 20)"`
-    Sort   string `json:"sort"   swag:"Sort field"`
+	Offset int32  `json:"offset" swag:"Pagination offset"`
+	Limit  int32  `json:"limit"  swag:"Pagination limit (default 20)"`
+	Sort   string `json:"sort"   swag:"Sort field"`
 }
 
 type ListItemsOutput struct {
-    Items      []ItemSummary `json:"items"`
-    TotalCount int64         `json:"totalCount"`
+	Items      []ItemSummary `json:"items"`
+	TotalCount int64         `json:"totalCount"`
 }
 ```
 
@@ -133,24 +121,22 @@ type ListItemsOutput struct {
 
 ```go
 func (svc Service) CreateItem(ctx *RContext, in CreateItemInput) (*CreateItemOutput, error) {
-    item, err := svc.app.CreateItem(ctx.Context(), app.CreateItemParams{
-        Name:        in.Name,
-        Description: in.Description,
-        CategoryID:  in.CategoryID,
-    })
-    if err != nil {
-        return nil, err
-    }
+	item, err := svc.app.CreateItem(ctx.Context(), app.CreateItemParams{
+		Name:        in.Name,
+		Description: in.Description,
+		CategoryID:  in.CategoryID,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-    return toCreateItemOutput(item), nil
+	return toCreateItemOutput(item), nil
 }
 ```
 
 ## Enum and Field Metadata
 
-Use `rony.UnaryInputMeta` with `desc.WithField` (which takes a field name and a
-`desc.FieldMeta`) to attach enum values, optional/deprecated flags, or omitempty
-behavior:
+Use `rony.UnaryInputMeta` with `desc.WithField` (which takes a field name and a `desc.FieldMeta`) to attach enum values, optional/deprecated flags, or omitempty behavior:
 
 ```go
 rony.WithUnary(svc.ListItems,
@@ -168,11 +154,10 @@ rony.WithUnary(svc.ListItems,
 
 ## Error Responses
 
-Return errors from `rony/errs` — the framework maps the `errs.ErrCode` to an HTTP
-status automatically:
+Return errors from `rony/errs` — the framework maps the `errs.ErrCode` to an HTTP status automatically:
 
 | `errs.ErrCode`            | HTTP Status |
-| ------------------------- | ----------- |
+|---------------------------|-------------|
 | `errs.InvalidArgument`    | 400         |
 | `errs.FailedPrecondition` | 400         |
 | `errs.Unauthenticated`    | 401         |
@@ -190,14 +175,13 @@ Enable built-in API docs on the server:
 
 ```go
 srv := rony.NewServer(
-    rony.Listen(":8080"),
-    rony.WithAPIDocs("/docs"),
-    rony.UseScalarUI(),  // or rony.UseSwaggerUI(), rony.UseRedocUI()
+	rony.Listen(":8080"),
+	rony.WithAPIDocs("/docs"),
+	rony.UseScalarUI(), // or rony.UseSwaggerUI(), rony.UseRedocUI()
 )
 ```
 
-For standalone OpenAPI/Postman generation outside the server, use `x/apidoc`
-(`apidoc.New(title, version, desc).SwaggerUI(...)`).
+For standalone OpenAPI/Postman generation outside the server, use `x/apidoc` (`apidoc.New(title, version, desc).SwaggerUI(...)`).
 
 ## File Organization
 

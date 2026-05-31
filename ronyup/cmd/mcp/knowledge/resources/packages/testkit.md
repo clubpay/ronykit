@@ -1,7 +1,6 @@
 ---
-import_path: github.com/clubpay/ronykit/x/testkit
-short_name: testkit
----
+
+## import_path: github.com/clubpay/ronykit/x/testkit short_name: testkit
 
 Integration test harness with fx, settings wiring, and Gnomock containers for Postgres/Redis.
 

@@ -1,10 +1,11 @@
 ---
+
 keywords:
-  - idempotent
-applies_to_files:
-  - api
-  - app
-  - repo
+- idempotent applies_to_files:
+- api
+- app
+- repo
+
 ---
 
 Design app/repo writes to be retry-safe; handlers should remain deterministic.

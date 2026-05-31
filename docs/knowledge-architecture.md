@@ -6,12 +6,7 @@ Proposed — March 2026
 
 ## Problem
 
-All MCP server knowledge — instructions, tool descriptions, architecture hints,
-package metadata, characteristic guidance, plan steps, file purposes — is
-hardcoded in `ronyup/cmd/mcp/strings.go` as Go constants and function returns.
-Improving any hint or adding a new toolkit package requires editing Go source and
-recompiling. There is no way for non-Go contributors to improve the AI
-assistant's quality.
+All MCP server knowledge — instructions, tool descriptions, architecture hints, package metadata, characteristic guidance, plan steps, file purposes — is hardcoded in `ronyup/cmd/mcp/strings.go` as Go constants and function returns. Improving any hint or adding a new toolkit package requires editing Go source and recompiling. There is no way for non-Go contributors to improve the AI assistant's quality.
 
 ## Goals
 
@@ -107,14 +102,11 @@ ronyup/
 
 ## 2. Markdown File Conventions
 
-Every knowledge file uses **YAML frontmatter** (delimited by `---`) for
-structured metadata. The **body** is the knowledge content. Specific sections
-within the body carry semantic meaning (e.g., `## Usage Hint`).
+Every knowledge file uses **YAML frontmatter** (delimited by `---`) for structured metadata. The **body** is the knowledge content. Specific sections within the body carry semantic meaning (e.g., `## Usage Hint`).
 
 ### 2.1 Server Instructions — `server/instructions.md`
 
-No frontmatter. The entire file body becomes the MCP server `Instructions`
-string.
+No frontmatter. The entire file body becomes the MCP server `Instructions` string.
 
 ```markdown
 RonyKIT scaffolding assistant. Follow layered service conventions: ...
@@ -144,8 +136,7 @@ implement_service.
 
 - **`name`** (required): Must match the tool constant in Go.
 - **Body before first `##`**: Short description used as `Tool.Description`.
-- **`## Extended Guidance`** (optional): Surfaced as an MCP resource, not
-  part of the tool description.
+- **`## Extended Guidance`** (optional): Surfaced as an MCP resource, not part of the tool description.
 
 ### 2.3 Package Docs — `packages/{short_name}.md`
 
@@ -179,8 +170,7 @@ Keep API handlers thin: validate input and delegate business
 behavior to internal/app.
 ```
 
-The filename slug (e.g., `thin-handlers`) is used as the hint identifier
-and for MCP resource URIs.
+The filename slug (e.g., `thin-handlers`) is used as the hint identifier and for MCP resource URIs.
 
 ### 2.5 Characteristics — `characteristics/{name}.md`
 
@@ -208,13 +198,10 @@ Add persistence contracts in repo ports and implement mappings
 in v0 adapters. Wire DB params via x/di.ProvideDBParams.
 ```
 
-- **`keywords`** (required): Strings matched against user-provided
-  characteristic names (fuzzy, case-insensitive).
-- **`applies_to_files`** (required): Path fragments that determine which
-  planned files receive the file-level hint.
+- **`keywords`** (required): Strings matched against user-provided characteristic names (fuzzy, case-insensitive).
+- **`applies_to_files`** (required): Path fragments that determine which planned files receive the file-level hint.
 - **Body before `## File-Level Hint`**: Service-level characteristic hint.
-- **`## File-Level Hint`**: Hint applied to individual planned files whose
-  path matches `applies_to_files`.
+- **`## File-Level Hint`**: Hint applied to individual planned files whose path matches `applies_to_files`.
 
 ### 2.6 Planning — `planning/next-steps.md`
 
@@ -297,8 +284,7 @@ Requested characteristics: {{characteristics}}
 
 ## 3. Embedding & Loader — `ronyup/internal/knowledge/`
 
-Since knowledge files live inside `ronyup/` (same Go module), embedding
-is a single `go:embed` directive — no extra modules, no workspace changes.
+Since knowledge files live inside `ronyup/` (same Go module), embedding is a single `go:embed` directive — no extra modules, no workspace changes.
 
 **`ronyup/internal/knowledge/embed.go`**:
 
@@ -311,8 +297,7 @@ import "embed"
 var content embed.FS
 ```
 
-The `content` var is unexported. External code calls `Load()` which
-reads from it and returns the parsed `*Base`.
+The `content` var is unexported. External code calls `Load()` which reads from it and returns the parsed `*Base`.
 
 ### 4.1 Types
 
@@ -376,12 +361,9 @@ func Load() (*Base, error)
 ```
 
 - Reads from the package-level `content` embed.FS.
-- A `LoadFS(fsys fs.FS) (*Base, error)` variant is also provided for
-  unit testing with mock file systems.
+- A `LoadFS(fsys fs.FS) (*Base, error)` variant is also provided for unit testing with mock file systems.
 - Called **once** at server startup.
-- Walks each subdirectory, reads files, splits frontmatter from body,
-  parses YAML frontmatter into the corresponding struct, extracts
-  named `##` sections from the body.
+- Walks each subdirectory, reads files, splits frontmatter from body, parses YAML frontmatter into the corresponding struct, extracts named `##` sections from the body.
 - Returns `*Base` or an error if any required file is malformed.
 
 ### 4.3 Section Parsing
@@ -415,13 +397,13 @@ Add the knowledge base to `serverConfig`:
 
 ```go
 type serverConfig struct {
-name         string
-version      string
-instructions string // overridable via --instructions flag
-executable   string
-skeletonFS   fs.FS
-cmdRunner    runner
-kb           *knowledge.Base // NEW
+	name         string
+	version      string
+	instructions string // overridable via --instructions flag
+	executable   string
+	skeletonFS   fs.FS
+	cmdRunner    runner
+	kb           *knowledge.Base // NEW
 }
 ```
 
@@ -455,26 +437,23 @@ Each tool registrar reads from `cfg.kb` instead of constants:
 ```go
 // Before:
 mcpsdk.AddTool(srv, &mcpsdk.Tool{
-Name:        toolPlanService,
-Description: descPlanService,
+	Name:        toolPlanService,
+	Description: descPlanService,
 }, handler)
 
 // After:
 toolDoc := cfg.kb.Tools["plan_service"]
 mcpsdk.AddTool(srv, &mcpsdk.Tool{
-Name:        toolDoc.Name,
-Description: toolDoc.Description,
+	Name:        toolDoc.Name,
+	Description: toolDoc.Description,
 }, handler)
 ```
 
-`characteristicHints()` and `fileHints()` use `cfg.kb.Characteristics`
-with the same keyword matching logic, but now driven by the `keywords`
-and `applies_to_files` from frontmatter instead of hardcoded switch cases.
+`characteristicHints()` and `fileHints()` use `cfg.kb.Characteristics` with the same keyword matching logic, but now driven by the `keywords` and `applies_to_files` from frontmatter instead of hardcoded switch cases.
 
 ### 5.4 MCP Resources
 
-Register each knowledge category as browsable resources so AI agents can
-read them on demand without calling tools.
+Register each knowledge category as browsable resources so AI agents can read them on demand without calling tools.
 
 **Static resources** (one per known file):
 
@@ -496,42 +475,41 @@ Registration in `newServer()`:
 
 ```go
 func registerResources(srv *mcpsdk.Server, kb *knowledge.Base) {
-// Register a resource template for browsing
-srv.AddResourceTemplate(
-&mcpsdk.ResourceTemplate{
-URITemplate: "knowledge://ronyup/{category}/{name}",
-Name:        "RonyKIT Knowledge Base",
-Description: "Architecture hints, package docs, and characteristic " +
-"guidance for RonyKIT service development.",
-MIMEType:    "text/markdown",
-},
-resourceHandler(kb),
-)
+	// Register a resource template for browsing
+	srv.AddResourceTemplate(
+		&mcpsdk.ResourceTemplate{
+			URITemplate: "knowledge://ronyup/{category}/{name}",
+			Name:        "RonyKIT Knowledge Base",
+			Description: "Architecture hints, package docs, and characteristic " +
+				"guidance for RonyKIT service development.",
+			MIMEType: "text/markdown",
+		},
+		resourceHandler(kb),
+	)
 
-// Register individual static resources for discoverability
-for _, pkg := range kb.Packages {
-srv.AddResource(&mcpsdk.Resource{
-URI:         "knowledge://ronyup/packages/" + pkg.ShortName,
-Name:        "Package: " + pkg.ShortName,
-Description: pkg.Description,
-MIMEType:    "text/markdown",
-}, resourceHandler(kb))
-}
+	// Register individual static resources for discoverability
+	for _, pkg := range kb.Packages {
+		srv.AddResource(&mcpsdk.Resource{
+			URI:         "knowledge://ronyup/packages/" + pkg.ShortName,
+			Name:        "Package: " + pkg.ShortName,
+			Description: pkg.Description,
+			MIMEType:    "text/markdown",
+		}, resourceHandler(kb))
+	}
 
-for _, hint := range kb.ArchitectureHints {
-srv.AddResource(&mcpsdk.Resource{
-URI:         "knowledge://ronyup/architecture/" + hint.Slug,
-Name:        "Architecture: " + hint.Slug,
-Description: truncate(hint.Text, 100),
-MIMEType:    "text/markdown",
-}, resourceHandler(kb))
-}
-// ... characteristics, planning, etc.
+	for _, hint := range kb.ArchitectureHints {
+		srv.AddResource(&mcpsdk.Resource{
+			URI:         "knowledge://ronyup/architecture/" + hint.Slug,
+			Name:        "Architecture: " + hint.Slug,
+			Description: truncate(hint.Text, 100),
+			MIMEType:    "text/markdown",
+		}, resourceHandler(kb))
+	}
+	// ... characteristics, planning, etc.
 }
 ```
 
-The resource handler parses the URI, looks up the matching entry in `*Base`,
-and returns the full Markdown content.
+The resource handler parses the URI, looks up the matching entry in `*Base`, and returns the full Markdown content.
 
 ### 5.5 MCP Prompts
 
@@ -539,32 +517,32 @@ Register prompt templates from `kb.Prompts`:
 
 ```go
 func registerPrompts(srv *mcpsdk.Server, kb *knowledge.Base) {
-for _, p := range kb.Prompts {
-prompt := p // capture
-srv.AddPrompt(
-&mcpsdk.Prompt{
-Name:        prompt.Name,
-Description: prompt.Description,
-Arguments:   toMCPArguments(prompt.Arguments),
-},
-func (ctx context.Context, req *mcpsdk.GetPromptRequest) (
-*mcpsdk.GetPromptResult, error,
-) {
-rendered := renderTemplate(prompt.Template, req.Params.Arguments)
-return &mcpsdk.GetPromptResult{
-Description: prompt.Description,
-Messages: []mcpsdk.PromptMessage{
-{
-Role: mcpsdk.RoleUser,
-Content: &mcpsdk.TextContent{
-Text: rendered,
-},
-},
-},
-}, nil
-},
-)
-}
+	for _, p := range kb.Prompts {
+		prompt := p // capture
+		srv.AddPrompt(
+			&mcpsdk.Prompt{
+				Name:        prompt.Name,
+				Description: prompt.Description,
+				Arguments:   toMCPArguments(prompt.Arguments),
+			},
+			func(ctx context.Context, req *mcpsdk.GetPromptRequest) (
+				*mcpsdk.GetPromptResult, error,
+			) {
+				rendered := renderTemplate(prompt.Template, req.Params.Arguments)
+				return &mcpsdk.GetPromptResult{
+					Description: prompt.Description,
+					Messages: []mcpsdk.PromptMessage{
+						{
+							Role: mcpsdk.RoleUser,
+							Content: &mcpsdk.TextContent{
+								Text: rendered,
+							},
+						},
+					},
+				}, nil
+			},
+		)
+	}
 }
 ```
 
@@ -572,14 +550,9 @@ Text: rendered,
 
 ## 6. Codegen Templates
 
-The `implement_service.go` functions (`buildAPIServiceContent`,
-`buildAppServiceContent`, `buildRepoPortContent`) currently use
-`fmt.Sprintf` with raw Go source strings. These should be converted to
-`.gotmpl` files using `text/template`, following the same pattern as the
-existing skeleton templates.
+The `implement_service.go` functions (`buildAPIServiceContent`, `buildAppServiceContent`, `buildRepoPortContent`) currently use `fmt.Sprintf` with raw Go source strings. These should be converted to `.gotmpl` files using `text/template`, following the same pattern as the existing skeleton templates.
 
-These are **not** knowledge files (they don't teach the AI; they produce
-Go source code). They belong alongside the skeleton:
+These are **not** knowledge files (they don't teach the AI; they produce Go source code). They belong alongside the skeleton:
 
 ```
 ronyup/internal/skeleton/codegen/
@@ -588,10 +561,7 @@ ronyup/internal/skeleton/codegen/
 └── repo_port.gotmpl
 ```
 
-They are embedded by the existing `//go:embed skeleton` directive in
-`ronyup/internal/embed.go` and loaded via `text/template` in the
-implement tool. This is a separate refactoring from the knowledge base
-but follows the same "externalize from Go code" principle.
+They are embedded by the existing `//go:embed skeleton` directive in `ronyup/internal/embed.go` and loaded via `text/template` in the implement tool. This is a separate refactoring from the knowledge base but follows the same "externalize from Go code" principle.
 
 ---
 
@@ -644,7 +614,7 @@ but follows the same "externalize from Go code" principle.
 ## 8. What Stays in Go Code
 
 | Category                                  | Stays in Go? | Reason                                           |
-| ----------------------------------------- | ------------ | ------------------------------------------------ |
+|-------------------------------------------|--------------|--------------------------------------------------|
 | Tool name constants (`toolPlanService`)   | Yes          | Code identifiers, not prose                      |
 | Error format strings (`errPathRequired`)  | Yes          | Developer-facing, tied to code logic             |
 | Result format strings (`msgPlannedFiles`) | Yes          | `fmt.Sprintf` format strings                     |
@@ -693,8 +663,7 @@ To add a new toolkit package (e.g., `x/newpkg`):
 
 To add a new characteristic (e.g., `graphql`):
 
-1. Create `ronyup/knowledge/characteristics/graphql.md` with
-   `keywords: [graphql, gql]` and `applies_to_files: [api]`.
+1. Create `ronyup/knowledge/characteristics/graphql.md` with `keywords: [graphql, gql]` and `applies_to_files: [api]`.
 2. Rebuild.
 3. The keyword matcher automatically picks it up — no Go code changes.
 

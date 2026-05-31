@@ -1,10 +1,8 @@
 ---
-name: review-architecture
-description: Review the architecture of an existing RonyKIT service feature for best-practice compliance.
-arguments:
-  - name: feature_path
-    description: Path to the feature directory to review.
-    required: true
+
+name: review-architecture description: Review the architecture of an existing RonyKIT service feature for best-practice compliance. arguments:
+- name: feature_path description: Path to the feature directory to review. required: true
+
 ---
 
 Review the RonyKIT service feature at "{{feature_path}}" for architecture best-practice compliance.

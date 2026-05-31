@@ -2,8 +2,7 @@
 
 ## Project Overview
 
-RonyKit is a Go toolkit for building high-performance network services. It is organized
-as a **Go workspace** (`go.work`, Go 1.25+) containing 27+ independent modules.
+RonyKit is a Go toolkit for building high-performance network services. It is organized as a **Go workspace** (`go.work`, Go 1.25+) containing 27+ independent modules.
 
 Two abstraction levels exist:
 
@@ -32,15 +31,15 @@ docs/           Diagrams and extra documentation
 ## Build & Development Commands
 
 ```sh
-make setup       # Install tools (gotestsum, golangci-lint)
+make setup       # Install tools (gotestsum, golangci-lint, markdownfmt)
+make format-md   # Format all Markdown files (*.md, *.MD)
 make test        # Run tests across all modules (excludes example/, ronyup/)
 make lint        # Lint all modules (excludes example/)
 make vet         # go vet all modules (excludes example/)
 make tidy        # go mod tidy all modules (excludes example/)
 ```
 
-To test a single module: `cd <module> && go test ./...`
-To test ronyup specifically: `cd ronyup && go test ./...`
+To test a single module: `cd <module> && go test ./...` To test ronyup specifically: `cd ronyup && go test ./...`
 
 ## Testing
 
@@ -64,8 +63,7 @@ Client -> Gateway -> northBridge -> EdgeServer -> Contract lookup -> Handler cha
 - **Cluster** -- multi-instance coordination (Redis, libp2p P2P).
 - **Service** -- logical grouping of Contracts.
 - **Contract** -- single API operation (input/output types, route selectors, handlers).
-- **Context** -- request-scoped state with four storage layers:
-  per-request, per-connection, per-service (local), cluster-wide.
+- **Context** -- request-scoped state with four storage layers: per-request, per-connection, per-service (local), cluster-wide.
 
 **Encoding:** JSON, Protobuf, MessagePack, multipart/form-data, or custom.
 

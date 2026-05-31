@@ -1,27 +1,17 @@
 ---
-name: generate-stubs
-description: Guide an AI agent through generating and consuming typed client stubs for RonyKIT services.
-arguments:
-  - name: service_name
-    description: The service module name (without "mod" suffix) to generate stubs for.
-    required: true
-  - name: languages
-    description: "Comma-separated target languages (go, typescript). Defaults to go."
-    required: false
-  - name: consumer_service
-    description: The name of the service that will consume the generated stubs (for cross-service wiring guidance).
-    required: false
+
+name: generate-stubs description: Guide an AI agent through generating and consuming typed client stubs for RonyKIT services. arguments:
+- name: service_name description: The service module name (without "mod" suffix) to generate stubs for. required: true
+- name: languages description: "Comma-separated target languages (go, typescript). Defaults to go." required: false
+- name: consumer_service description: The name of the service that will consume the generated stubs (for cross-service wiring guidance). required: false
+
 ---
 
 You are generating typed client stubs for the "{{service_name}}mod" RonyKIT service.
 
-{{#if languages}}
-Target languages: {{languages}}
-{{/if}}
+{{#if languages}} Target languages: {{languages}} {{/if}}
 
-{{#if consumer_service}}
-Consumer service: {{consumer_service}}mod
-{{/if}}
+{{#if consumer_service}} Consumer service: {{consumer_service}}mod {{/if}}
 
 ## Overview
 
@@ -29,69 +19,67 @@ RonyKIT generates typed client stubs from service contract descriptors. Stubs pr
 
 ## Stub Generator Setup
 
-Each service has a `gen/stub/gen.go` (or `.gotmpl`) file: a `main` package using
-cobra that calls `rony.GenerateStub`. The type parameters are inferred from the
-`api.Service{}.Desc()` argument, so callers do not pass them explicitly:
+Each service has a `gen/stub/gen.go` (or `.gotmpl`) file: a `main` package using cobra that calls `rony.GenerateStub`. The type parameters are inferred from the `api.Service{}.Desc()` argument, so callers do not pass them explicitly:
 
 ```go
 package main
 
 import (
-    "github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 
-    "github.com/clubpay/ronykit/rony"
-    "github.com/clubpay/ronykit/stub/stubgen"
+	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/stub/stubgen"
 
-    "your-module/feature/{{service_name}}/api"
+	"your-module/feature/{{service_name}}/api"
 )
 
 var Flags = struct {
-    PackageName string
-    DstDir      string
+	PackageName string
+	DstDir      string
 }{}
 
 var RootCmd = &cobra.Command{Use: "gen"}
 
 var GenGoCmd = &cobra.Command{
-    Use: "go",
-    RunE: func(_ *cobra.Command, _ []string) error {
-        return rony.GenerateStub(
-            Flags.PackageName,
-            "",
-            Flags.DstDir,
-            stubgen.NewGolangEngine(stubgen.GolangConfig{
-                PkgName: Flags.PackageName,
-            }),
-            api.Service{}.Desc(),
-        )
-    },
+	Use: "go",
+	RunE: func(_ *cobra.Command, _ []string) error {
+		return rony.GenerateStub(
+			Flags.PackageName,
+			"",
+			Flags.DstDir,
+			stubgen.NewGolangEngine(stubgen.GolangConfig{
+				PkgName: Flags.PackageName,
+			}),
+			api.Service{}.Desc(),
+		)
+	},
 }
 
 var GenTypescriptCmd = &cobra.Command{
-    Use: "ts",
-    RunE: func(_ *cobra.Command, _ []string) error {
-        return rony.GenerateStub(
-            Flags.PackageName,
-            "",
-            Flags.DstDir,
-            stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{
-                GenerateSWR: true,
-            }),
-            api.Service{}.Desc(),
-        )
-    },
+	Use: "ts",
+	RunE: func(_ *cobra.Command, _ []string) error {
+		return rony.GenerateStub(
+			Flags.PackageName,
+			"",
+			Flags.DstDir,
+			stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{
+				GenerateSWR: true,
+			}),
+			api.Service{}.Desc(),
+		)
+	},
 }
 
 func init() {
-    RootCmd.PersistentFlags().StringVarP(&Flags.PackageName, "pkg-name", "n", "{{service_name}}stub", "package name")
-    RootCmd.PersistentFlags().StringVarP(&Flags.DstDir, "output-dir", "o", "../stub", "output directory")
+	RootCmd.PersistentFlags().StringVarP(&Flags.PackageName, "pkg-name", "n", "{{service_name}}stub", "package name")
+	RootCmd.PersistentFlags().StringVarP(&Flags.DstDir, "output-dir", "o", "../stub", "output directory")
 }
 
 func main() {
-    RootCmd.AddCommand(GenGoCmd, GenTypescriptCmd)
-    if err := RootCmd.Execute(); err != nil {
-        panic(err)
-    }
+	RootCmd.AddCommand(GenGoCmd, GenTypescriptCmd)
+	if err := RootCmd.Execute(); err != nil {
+		panic(err)
+	}
 }
 ```
 
@@ -113,13 +101,12 @@ gen-ts-stub:
 gen-stub: gen-go-stub
 ```
 
-`gen-stub` only runs the Go target by default; extend it to depend on
-`gen-ts-stub` as well when the service ships a TypeScript client.
+`gen-stub` only runs the Go target by default; extend it to depend on `gen-ts-stub` as well when the service ships a TypeScript client.
 
 ## Generated Output
 
 | Language   | Output Path                             | Contents                                      |
-| ---------- | --------------------------------------- | --------------------------------------------- |
+|------------|-----------------------------------------|-----------------------------------------------|
 | Go         | `stub/{{service_name}}stub/stub.go`     | Typed client struct with methods per contract |
 | TypeScript | `stub/{{service_name}}stub-typescript/` | Typed fetch client + SWR hooks (if enabled)   |
 

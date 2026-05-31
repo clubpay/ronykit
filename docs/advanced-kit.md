@@ -1,8 +1,6 @@
 # Advanced: Using the Kit Package
 
-The `kit` package is the low-level core of RonyKIT. It gives you granular control
-over gateways, clusters, services, and contracts. **Most users should use `rony`
-instead** — see the [Getting Started guide](./getting-started.md).
+The `kit` package is the low-level core of RonyKIT. It gives you granular control over gateways, clusters, services, and contracts. **Most users should use `rony` instead** — see the [Getting Started guide](./getting-started.md).
 
 Use `kit` when you need:
 
@@ -83,7 +81,7 @@ func main() {
 ## Key Differences from `rony`
 
 | Aspect                | `rony`                                | `kit`                                      |
-| --------------------- | ------------------------------------- | ------------------------------------------ |
+|-----------------------|---------------------------------------|--------------------------------------------|
 | **Handler signature** | `func(ctx, In) (*Out, error)` — typed | `func(ctx *kit.Context)` — raw             |
 | **State management**  | Built-in reducer pattern              | Manual                                     |
 | **API docs**          | Auto-generated from types             | Build with `kit/desc` manually             |
@@ -102,12 +100,12 @@ A raw handler operates on `*kit.Context`:
 
 ```go
 func myHandler(ctx *kit.Context) {
-req := ctx.In().GetMsg().(*MyRequest)
+	req := ctx.In().GetMsg().(*MyRequest)
 
-ctx.In().
-Reply().
-SetMsg(&MyResponse{Data: req.Data}).
-Send()
+	ctx.In().
+		Reply().
+		SetMsg(&MyResponse{Data: req.Data}).
+		Send()
 }
 ```
 
@@ -117,22 +115,22 @@ Use `kit/desc` to build service descriptors:
 
 ```go
 func MyServiceDesc() *desc.Service {
-return desc.NewService("MyService").
-SetEncoding(kit.JSON).
-AddContract(
-desc.NewContract().
-SetInput(&CreateRequest{}).
-SetOutput(&CreateResponse{}).
-AddRoute(desc.Route("Create", fasthttp.POST("/items"))).
-SetHandler(createHandler),
-).
-AddContract(
-desc.NewContract().
-SetInput(&GetRequest{}).
-SetOutput(&GetResponse{}).
-AddRoute(desc.Route("Get", fasthttp.GET("/items/:id"))).
-SetHandler(getHandler),
-)
+	return desc.NewService("MyService").
+		SetEncoding(kit.JSON).
+		AddContract(
+			desc.NewContract().
+				SetInput(&CreateRequest{}).
+				SetOutput(&CreateResponse{}).
+				AddRoute(desc.Route("Create", fasthttp.POST("/items"))).
+				SetHandler(createHandler),
+		).
+		AddContract(
+			desc.NewContract().
+				SetInput(&GetRequest{}).
+				SetOutput(&GetResponse{}).
+				AddRoute(desc.Route("Get", fasthttp.GET("/items/:id"))).
+				SetHandler(getHandler),
+		)
 }
 ```
 
@@ -142,13 +140,13 @@ Wire it all together:
 
 ```go
 srv := kit.NewServer(
-kit.WithGateway(
-fasthttp.MustNew(
-fasthttp.Listen(":8080"),
-),
-),
-kit.WithServiceBuilder(MyServiceDesc()),
-kit.WithServiceBuilder(AnotherServiceDesc()),
+	kit.WithGateway(
+		fasthttp.MustNew(
+			fasthttp.Listen(":8080"),
+		),
+	),
+	kit.WithServiceBuilder(MyServiceDesc()),
+	kit.WithServiceBuilder(AnotherServiceDesc()),
 )
 ```
 
@@ -171,7 +169,7 @@ kit.WithServiceBuilder(MyServiceDesc()),
 ## Storage Layers
 
 | Layer          | Lifecycle           | Use Case                                |
-| -------------- | ------------------- | --------------------------------------- |
+|----------------|---------------------|-----------------------------------------|
 | **Context**    | Per request         | Request-scoped data (user ID, trace ID) |
 | **Connection** | Per connection      | WebSocket session data                  |
 | **Local**      | Per server instance | In-memory caches, counters              |
@@ -185,15 +183,15 @@ To implement a custom gateway, implement the `kit.Gateway` interface:
 
 ```go
 type Gateway interface {
-Start(ctx context.Context, cfg GatewayStartConfig) error
-Shutdown(ctx context.Context) error
-Register(
-serviceName, contractID string,
-encoding kit.Encoding,
-sel kit.RouteSelector,
-input kit.Message,
-)
-Subscribe(d GatewayDelegate)
+	Start(ctx context.Context, cfg GatewayStartConfig) error
+	Shutdown(ctx context.Context) error
+	Register(
+		serviceName, contractID string,
+		encoding kit.Encoding,
+		sel kit.RouteSelector,
+		input kit.Message,
+	)
+	Subscribe(d GatewayDelegate)
 }
 ```
 

@@ -1,25 +1,17 @@
 ---
-name: ronykit-framework
-description: >-
-	Orchestrates RonyKit service development using the ronyup MCP server (knowledge
-	resources, prompts, scaffold tools). Use when the user mentions RonyKit, ronyup,
-	EdgeServer, contracts, scaffolding a workspace or feature, or implementing API
-	handlers and services in RonyKit style.
----
+
+## name: ronykit-framework description: >- Orchestrates RonyKit service development using the ronyup MCP server (knowledge resources, prompts, scaffold tools). Use when the user mentions RonyKit, ronyup, EdgeServer, contracts, scaffolding a workspace or feature, or implementing API handlers and services in RonyKit style.
 
 # RonyKit (agent playbook)
 
-Thin orchestration layer. **Domain knowledge lives in the `ronyup` MCP server** — read
-resources and prompts there; do not invent layout or conventions from memory.
+Thin orchestration layer. **Domain knowledge lives in the `ronyup` MCP server** — read resources and prompts there; do not invent layout or conventions from memory.
 
 Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 ## Prerequisites
 
-1. Confirm the `ronyup` MCP server is enabled in the project (`.cursor/mcp.json` or
-   `.ai/mcp/mcp.json`: `command` `ronyup`, `args` `["mcp"]`).
-2. If MCP is unavailable, ask the user to install `ronyup` and enable MCP — do not
-   guess service structure.
+1. Confirm the `ronyup` MCP server is enabled in the project (`.cursor/mcp.json` or `.ai/mcp/mcp.json`: `command` `ronyup`, `args` `["mcp"]`).
+2. If MCP is unavailable, ask the user to install `ronyup` and enable MCP — do not guess service structure.
 
 ## Context
 
@@ -30,30 +22,29 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 ## Default workflow (app development)
 
-1. **Clarify scope** — MCP prompts `plan-service` or `design-api` when requirements are unclear.
-2. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
-3. **Load knowledge** (read MCP resources before coding):
-	- Always: `architecture/service-structure`, `architecture/api-handler-files`
-	- Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
-	- Wiring: `architecture/module-wiring`, `architecture/settings-config`
-	- Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
-4. **Implement** — MCP prompt `write-service-code`; follow generated files in the feature module.
-5. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching
-   `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
-6. **Finish** — `make gen-stub` in the feature after contract changes; run targeted tests, then workspace `make lint` / `make test` when
-   appropriate.
+1. **Clarify scope** — For new services, use `design-new-service` (SRS → SDD → scaffold → code) or `write-srs` then `write-sdd` when doing phases separately. Use `design-api` for API-only design.
+2. **Documents** — Write SRS to `docs/design/<feature>-srs.md`, SDD to `docs/design/<feature>-sdd.md`; get user approval before scaffolding. Read `architecture/design-documents`, `srs-template`, `sdd-template`.
+3. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
+4. **Load knowledge** (read MCP resources before coding):
+   - Always: `architecture/service-structure`, `architecture/api-handler-files`
+   - Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
+   - Wiring: `architecture/module-wiring`, `architecture/settings-config`
+   - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
+5. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module.
+6. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
+7. **Finish** — `make gen-stub` in the feature after contract changes; run targeted tests, then workspace `make lint` / `make test` when appropriate.
 
 ## Task → MCP routing
 
-| User intent                  | Start with                                                          |
-|------------------------------|---------------------------------------------------------------------|
-| New repository               | `scaffold_workspace` → `architecture/workspace-layout`              |
-| New service module           | `scaffold_feature` → `plan-service` prompt → `write-service-code`   |
-| API / contract design        | `design-api` prompt                                                 |
-| Architecture review          | `review-architecture` prompt                                        |
-| Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow`                |
-| Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                   |
-| Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony` |
+| User intent                  | Start with                                                                                    |
+|------------------------------|-----------------------------------------------------------------------------------------------|
+| New repository               | `scaffold_workspace` → `architecture/workspace-layout`                                        |
+| New service module           | `design-new-service` or `write-srs` → `write-sdd` → `scaffold_feature` → `write-service-code` |
+| API / contract design        | `design-api` prompt                                                                           |
+| Architecture review          | `review-architecture` prompt                                                                  |
+| Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow`                                          |
+| Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                                             |
+| Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony`                           |
 
 ## Hard rules
 

@@ -49,9 +49,7 @@ ronyup setup feature \
   --template service
 ```
 
-The feature is copied from the embedded templates in `internal/skeleton/feature` into
-`feature/auth/` by default. Use `--featurePrefix` to change the parent directory, or
-`--groupByTemplate` (or `-g`) for `feature/service/auth/`.
+The feature is copied from the embedded templates in `internal/skeleton/feature` into `feature/auth/` by default. Use `--featurePrefix` to change the parent directory, or `--groupByTemplate` (or `-g`) for `feature/service/auth/`.
 
 ### Generate translation catalogs
 
@@ -144,6 +142,7 @@ Feature flags:
 - Only the `service` feature template is currently included under `internal/skeleton/feature`.
 - `template generate` is a stub; the `template` command only inspects Go source today.
 - `--force`, `--custom`, and `--templateRepo` are accepted but not wired into behavior yet.
+
 # ronyup
 
 `ronyup` is the CLI for RonyKIT scaffolding and tooling. It can:
@@ -211,9 +210,7 @@ What it does:
 
 #### setup feature
 
-Adds a new feature module under `{featurePrefix}/{featureDir}/` by default (for example
-`feature/auth/`). Pass `--groupByTemplate` (or `-g`) to place the module at
-`{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/auth/`).
+Adds a new feature module under `{featurePrefix}/{featureDir}/` by default (for example `feature/auth/`). Pass `--groupByTemplate` (or `-g`) to place the module at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/auth/`).
 
 ```bash
 ronyup setup feature -m github.com/you/myrepo -p auth -n auth -t service
@@ -231,12 +228,9 @@ Flags:
 
 Requirements and side effects:
 - Must be run from a Go workspace root (a `go.work` file must exist).
-- Writes into `{featurePrefix}/{featureDir}/` in the current directory (or
-  `{featurePrefix}/{template}/{featureDir}/` when `--groupByTemplate` is set).
-- Initializes a Go module for the feature, sets `go` to `1.25`, runs `go mod tidy`,
-  `go fmt`, and adds the module to `go.work`.
-- Adds a side-effect import to `cmd/service/features.go` and runs `go mod tidy` + `go fmt`
-  in `cmd/service`.
+- Writes into `{featurePrefix}/{featureDir}/` in the current directory (or `{featurePrefix}/{template}/{featureDir}/` when `--groupByTemplate` is set).
+- Initializes a Go module for the feature, sets `go` to `1.25`, runs `go mod tidy`, `go fmt`, and adds the module to `go.work`.
+- Adds a side-effect import to `cmd/service/features.go` and runs `go mod tidy` + `go fmt` in `cmd/service`.
 - Use `--force` to replace a non-empty feature directory.
 
 ### text
@@ -281,8 +275,7 @@ Flags:
 ```
 
 Behavior:
-- Parses Go packages under the current directory and prints counts of files, types,
-  functions, and comments.
+- Parses Go packages under the current directory and prints counts of files, types, functions, and comments.
 
 #### template generate
 

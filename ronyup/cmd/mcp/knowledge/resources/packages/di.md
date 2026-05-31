@@ -1,7 +1,6 @@
 ---
-import_path: github.com/clubpay/ronykit/x/di
-short_name: di
----
+
+## import_path: github.com/clubpay/ronykit/x/di short_name: di
 
 Dependency injection glue for fx-based service registration, stub providers, and infra param wiring.
 
@@ -21,15 +20,11 @@ Use:
 - `di.ProvideDBParams[settings.Settings](MigrationFS)`
 - `di.ProvideRedisParams[settings.Settings]()`
 
-inside the `appModule` (or a dedicated `diDatasource` `fx.Options` block) to extract
-connection params from settings.
+inside the `appModule` (or a dedicated `diDatasource` `fx.Options` block) to extract connection params from settings.
 
-For inter-service clients, use `di.StubProvider[Settings, IStub, Stub](moduleName,
-hostPortField, constructor)` to expose a typed stub with B3 trace propagation; the
-host/port is read from `settings.Services.<hostPortField>`.
+For inter-service clients, use `di.StubProvider[Settings, IStub, Stub](moduleName, hostPortField, constructor)` to expose a typed stub with B3 trace propagation; the host/port is read from `settings.Services.<hostPortField>`.
 
-Register global middlewares via `di.RegisterMiddleware` in the `cmd/service`
-entrypoint `init()`.
+Register global middlewares via `di.RegisterMiddleware` in the `cmd/service` entrypoint `init()`.
 
 Services are discovered at runtime via:
 

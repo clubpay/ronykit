@@ -1,8 +1,6 @@
 # ronyup: Scaffolding CLI and MCP Server
 
-`ronyup` is the CLI for scaffolding RonyKIT projects and features. It can also run as
-an MCP server to give AI assistants in your IDE full scaffolding and code generation
-capabilities.
+`ronyup` is the CLI for scaffolding RonyKIT projects and features. It can also run as an MCP server to give AI assistants in your IDE full scaffolding and code generation capabilities.
 
 ## Table of Contents
 
@@ -12,11 +10,11 @@ capabilities.
 - [Feature Templates](#feature-templates)
 - [Translation Catalogs](#translation-catalogs)
 - [MCP Server](#mcp-server)
-	- [Setup for Cursor IDE](#setup-for-cursor-ide)
-	- [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
-	- [Available MCP Tools](#available-mcp-tools)
-	- [Workflow Example](#workflow-example)
-	- [MCP Conventions](#mcp-conventions)
+  - [Setup for Cursor IDE](#setup-for-cursor-ide)
+  - [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
+  - [Available MCP Tools](#available-mcp-tools)
+  - [Workflow Example](#workflow-example)
+  - [MCP Conventions](#mcp-conventions)
 - [Interactive Mode](#interactive-mode)
 - [Command Reference](#command-reference)
 
@@ -94,22 +92,19 @@ This creates a fully structured feature module under `feature/users/` with:
 
 The feature is automatically added to `go.work` and registered in `cmd/service/features.go`.
 
-By default, features are placed at `{featurePrefix}/{featureDir}/` (for example
-`feature/users/`). Pass `--groupByTemplate` (or `-g`) to place them at
-`{featurePrefix}/{template}/{featureDir}/` instead (for example
-`feature/service/users/`).
+By default, features are placed at `{featurePrefix}/{featureDir}/` (for example `feature/users/`). Pass `--groupByTemplate` (or `-g`) to place them at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/users/`).
 
 ### Feature flags
 
-| Flag              | Short | Description                               | Default                |
-|-------------------|-------|-------------------------------------------|------------------------|
-| `--featurePrefix` |       | Parent directory for feature modules      | `feature`              |
-| `--featureDir`    | `-p`  | Directory name inside the feature prefix  | `my_feature`           |
-| `--featureName`   | `-n`  | Feature name                              | `myfeature`            |
+| Flag                | Short | Description                               | Default                |
+|---------------------|-------|-------------------------------------------|------------------------|
+| `--featurePrefix`   |       | Parent directory for feature modules      | `feature`              |
+| `--featureDir`      | `-p`  | Directory name inside the feature prefix  | `my_feature`           |
+| `--featureName`     | `-n`  | Feature name                              | `myfeature`            |
 | `--template`        | `-t`  | Template: `service`, `job`, or `gateway`  | `service`              |
 | `--groupByTemplate` | `-g`  | Group under `{featurePrefix}/{template}/` | `false`                |
 | `--repoModule`      | `-m`  | Repository Go module path (auto-detected) | `github.com/your/repo` |
-| `--force`         | `-f`  | Replace existing feature directory        | `false`                |
+| `--force`           | `-f`  | Replace existing feature directory        | `false`                |
 
 ---
 
@@ -153,8 +148,7 @@ If a `go.work` file is present, the command loads packages from each workspace m
 
 ## MCP Server
 
-`ronyup` includes a built-in [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-server that exposes scaffolding and code generation as tools for AI assistants.
+`ronyup` includes a built-in [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes scaffolding and code generation as tools for AI assistants.
 
 This means you can tell your AI assistant things like:
 
@@ -162,8 +156,7 @@ This means you can tell your AI assistant things like:
 - "Add a payment feature with idempotency support"
 - "Plan the implementation of a notification service"
 
-And it will use `ronyup` tools to scaffold and implement the code following RonyKit
-best practices.
+And it will use `ronyup` tools to scaffold and implement the code following RonyKit best practices.
 
 ### Start the MCP server manually
 
@@ -188,17 +181,16 @@ Create or update `.cursor/mcp.json` in your project root:
 }
 ```
 
-Reopen Cursor (or reload the window). The `ronyup` tools should appear in the AI
-chat panel.
+Reopen Cursor (or reload the window). The `ronyup` tools should appear in the AI chat panel.
 
 ### Setup for JetBrains GoLand
 
 1. Open **Settings** (Preferences on macOS).
 2. Search for **MCP** in the settings search.
 3. Add a new **stdio** MCP server:
-	- **Name:** `ronyup`
-	- **Command:** `ronyup`
-	- **Arguments:** `mcp`
+   - **Name:** `ronyup`
+   - **Command:** `ronyup`
+   - **Arguments:** `mcp`
 4. Save and restart GoLand if tools don't appear immediately.
 
 ### Setup for VS Code
@@ -227,45 +219,42 @@ Add to your `.vscode/settings.json` or user settings:
 
 ### MCP Prompts
 
-| Prompt                | Description                                |
-|-----------------------|--------------------------------------------|
-| `design-api`          | Design contracts, routes, and handlers     |
-| `plan-service`        | Plan a new service feature                 |
-| `write-service-code`  | Implement service code per conventions     |
-| `write-workflow`      | Temporal / `flow` workflows                |
-| `review-architecture` | Review feature layout for compliance       |
-| `generate-stubs`      | Stub generation and consumption            |
-| `migrate-kit-to-rony` | Migrate from `kit` to `rony` incrementally |
+| Prompt                | Description                                 |
+|-----------------------|---------------------------------------------|
+| `design-new-service`  | Full workflow: SRS → SDD → scaffold → code  |
+| `write-srs`           | Write SRS to `docs/design/<feature>-srs.md` |
+| `write-sdd`           | Write SDD from approved SRS                 |
+| `design-api`          | Design contracts, routes, and handlers      |
+| `plan-service`        | Plan a feature (SRS/SDD-first workflow)     |
+| `write-service-code`  | Implement service code per SDD              |
+| `write-workflow`      | Temporal / `flow` workflows                 |
+| `review-architecture` | Review feature layout for compliance        |
+| `generate-stubs`      | Stub generation and consumption             |
+| `migrate-kit-to-rony` | Migrate from `kit` to `rony` incrementally  |
 
 ### Knowledge resources
 
-The server exposes markdown resources (architecture, `x/` packages, characteristics,
-tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP
-resource browser or see `.agents/skills/ronykit-framework/references/mcp-map.md` in
-scaffolded workspaces.
+The server exposes markdown resources (architecture, `x/` packages, characteristics, tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP resource browser or see `.agents/skills/ronykit-framework/references/mcp-map.md` in scaffolded workspaces.
 
 ### Agent skill
 
-Scaffolded workspaces include the **ronykit-framework** skill under
-`.agents/skills/` ([Agent Skills](https://agentskills.io/specification)
-layout). Cursor and other compatible agents discover it automatically. Invoke
-`/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts,
-and resources (without duplicating the knowledge base).
+Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor and other compatible agents discover it automatically. Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources (without duplicating the knowledge base).
 
 ### Workflow Example
 
-A typical AI-assisted workflow:
+A typical AI-assisted workflow for a **new service feature**:
 
-1. **Plan the service:** Use the MCP prompt `plan-service` (or `design-api` for API-first work).
+1. **Requirements (SRS):** MCP prompt `write-srs` or Phase 1 of `design-new-service` → `docs/design/<feature>-srs.md`. Review and approve before continuing.
 
-2. **Create the scaffold:** Call `scaffold_workspace` or `scaffold_feature`.
+2. **Design (SDD):** MCP prompt `write-sdd` or Phase 2 of `design-new-service` → `docs/design/<feature>-sdd.md`. Review and approve before scaffolding.
 
-3. **Load knowledge:** Read MCP architecture resources (`service-structure`,
-   `api-handler-files`, `repo-ports`, etc.) before implementing.
+3. **Create the scaffold:** Call `scaffold_feature` (or `scaffold_workspace` for a new repo).
 
-4. **Implement:** Use the `write-service-code` prompt; follow generated module layout.
+4. **Load knowledge:** Read MCP architecture resources (`design-documents`, `service-structure`, `api-handler-files`, `repo-ports`, etc.) before implementing.
 
-5. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic.
+5. **Implement:** MCP prompt `write-service-code`, following the SDD.
+
+6. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic.
 
 ### MCP Conventions
 
@@ -291,16 +280,13 @@ The MCP server guides AI assistants to follow these conventions:
 
 ## Interactive Mode
 
-Running `ronyup setup` or `ronyup text` with no flags starts an interactive TUI
-that walks you through the configuration:
+Running `ronyup setup` or `ronyup text` with no flags starts an interactive TUI that walks you through the configuration:
 
 ```bash
 ronyup setup
 ```
 
-When adding a feature interactively, you can set the **Feature Parent Directory**
-(`--featurePrefix`) and **Group by Template** (`--groupByTemplate`), which places the
-module under `{featurePrefix}/{template}/{featureDir}/` instead of `{featurePrefix}/{featureDir}/`.
+When adding a feature interactively, you can set the **Feature Parent Directory** (`--featurePrefix`) and **Group by Template** (`--groupByTemplate`), which places the module under `{featurePrefix}/{template}/{featureDir}/` instead of `{featurePrefix}/{featureDir}/`.
 
 ---
 

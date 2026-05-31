@@ -1,25 +1,17 @@
 ---
-name: write-workflow
-description: Guide an AI agent through writing durable workflow jobs using the RonyKIT flow module (Temporal-based).
-arguments:
-  - name: workflow_name
-    description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector").
-    required: true
-  - name: description
-    description: A brief description of what the workflow orchestrates.
-    required: true
-  - name: service_name
-    description: The service module that owns this workflow (without "mod" suffix).
-    required: false
+
+name: write-workflow description: Guide an AI agent through writing durable workflow jobs using the RonyKIT flow module (Temporal-based). arguments:
+- name: workflow_name description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector"). required: true
+- name: description description: A brief description of what the workflow orchestrates. required: true
+- name: service_name description: The service module that owns this workflow (without "mod" suffix). required: false
+
 ---
 
 You are writing a durable workflow called "{{workflow_name}}" using the RonyKIT `flow` package.
 
 Workflow description: {{description}}
 
-{{#if service_name}}
-This workflow belongs to the "{{service_name}}mod" service.
-{{/if}}
+{{#if service_name}} This workflow belongs to the "{{service_name}}mod" service. {{/if}}
 
 ## Core Concepts
 
@@ -72,16 +64,16 @@ var {{workflow_name}} = flow.NewWorkflow[MyRequest, MyResponse, *app.App](
 
 ```go
 var DoStepOne = flow.NewActivity[StepOneReq, StepOneRes, *app.App](
-    "{{service_name}}/DoStepOne", "{{service_name}}",
-    func(ctx *flow.ActivityContext[StepOneReq, StepOneRes, *app.App], req StepOneReq) (*StepOneRes, error) {
-        // Access service dependencies via typed state
-        db := ctx.S().AccountRepo
-        result, err := db.GetAccount(ctx.Context(), req.AccountID)
-        if err != nil {
-            return nil, err
-        }
-        return &StepOneRes{Account: result}, nil
-    },
+	"{{service_name}}/DoStepOne", "{{service_name}}",
+	func(ctx *flow.ActivityContext[StepOneReq, StepOneRes, *app.App], req StepOneReq) (*StepOneRes, error) {
+		// Access service dependencies via typed state
+		db := ctx.S().AccountRepo
+		result, err := db.GetAccount(ctx.Context(), req.AccountID)
+		if err != nil {
+			return nil, err
+		}
+		return &StepOneRes{Account: result}, nil
+	},
 )
 ```
 
@@ -89,14 +81,14 @@ var DoStepOne = flow.NewActivity[StepOneReq, StepOneRes, *app.App](
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
-    HostPort:  cfg.TemporalHostPort,
-    Namespace: cfg.TemporalNamespace,
-    TaskQueue: cfg.TemporalTaskQueue,
+	HostPort:  cfg.TemporalHostPort,
+	Namespace: cfg.TemporalNamespace,
+	TaskQueue: cfg.TemporalTaskQueue,
 })
 
 sdk := flow.NewSDK(flow.SDKConfig{
-    DefaultBackend: backend,
-    Logger:         logger,
+	DefaultBackend: backend,
+	Logger:         logger,
 })
 
 // Register workflows/activities and inject shared state
@@ -120,7 +112,7 @@ var ApprovalSignal = flow.NewSignal[ApprovalPayload]("approval")
 ch := ApprovalSignal.GetChannel(ctx.Context())
 sel := ctx.Selector()
 flow.SelectorAddReceive(sel, ch, func(payload ApprovalPayload) {
-    // handle approval
+	// handle approval
 })
 sel.Select(ctx.Context())
 ```
@@ -139,7 +131,7 @@ sel.Select(ctx.Context())
 
 ```go
 if ctx.GetVersion("v1", workflow.DefaultVersion, 1) == 1 {
-    return nil, ctx.ContinueAsNewError(updatedReq)
+	return nil, ctx.ContinueAsNewError(updatedReq)
 }
 ```
 
@@ -147,7 +139,7 @@ if ctx.GetVersion("v1", workflow.DefaultVersion, 1) == 1 {
 
 ```go
 run := ChildWorkflow.ExecuteAsChild(ctx.Context(), childReq, flow.ExecuteChildWorkflowOptions{
-    WorkflowID: fmt.Sprintf("{{service_name}}/Child/%s", id),
+	WorkflowID: fmt.Sprintf("{{service_name}}/Child/%s", id),
 })
 result, err := run.Get(ctx.Context())
 ```

@@ -1,7 +1,6 @@
 # Cookbook: Common API Patterns
 
-Production-ready patterns for building APIs with RonyKIT. These examples are drawn from
-real-world usage in production services.
+Production-ready patterns for building APIs with RonyKIT. These examples are drawn from real-world usage in production services.
 
 ## Table of Contents
 
@@ -26,8 +25,7 @@ real-world usage in production services.
 
 ## Project Structure
 
-For production services, organize your code in layers. The `ronyup` scaffolding tool
-generates this structure automatically:
+For production services, organize your code in layers. The `ronyup` scaffolding tool generates this structure automatically:
 
 ```
 my-service/
@@ -57,9 +55,7 @@ my-service/
 └── pkg/                       # Shared packages
 ```
 
-**Key principle:** Handlers are thin — they validate input and delegate to the `app`
-layer. Business logic lives in `internal/app`. Data access lives behind interfaces in
-`internal/repo`.
+**Key principle:** Handlers are thin — they validate input and delegate to the `app` layer. Business logic lives in `internal/app`. Data access lives behind interfaces in `internal/repo`.
 
 ---
 
@@ -71,47 +67,47 @@ Organize related endpoints into handler groups using `SetupOptionGroup`:
 type RContext = rony.UnaryCtx[rony.EMPTY, rony.NOP]
 
 type Service struct {
-    userApp *app.App
+	userApp *app.App
 }
 
 func New(userApp *app.App) *Service {
-    return &Service{userApp: userApp}
+	return &Service{userApp: userApp}
 }
 
 func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
-    return rony.SetupOptionGroup(
-        svc.accountHandlers(),
-        svc.profileHandlers(),
-    )
+	return rony.SetupOptionGroup(
+		svc.accountHandlers(),
+		svc.profileHandlers(),
+	)
 }
 
 func (svc *Service) accountHandlers() rony.SetupOption[rony.EMPTY, rony.NOP] {
-    return rony.SetupOptionGroup(
-        rony.WithUnary(svc.CreateAccount,
-            rony.POST("/accounts", rony.UnaryName("CreateAccount")),
-        ),
-        rony.WithUnary(svc.GetAccount,
-            rony.GET("/accounts/{id}", rony.UnaryName("GetAccount")),
-        ),
-        rony.WithUnary(svc.ListAccounts,
-            rony.GET("/accounts", rony.UnaryName("ListAccounts")),
-        ),
-    )
+	return rony.SetupOptionGroup(
+		rony.WithUnary(svc.CreateAccount,
+			rony.POST("/accounts", rony.UnaryName("CreateAccount")),
+		),
+		rony.WithUnary(svc.GetAccount,
+			rony.GET("/accounts/{id}", rony.UnaryName("GetAccount")),
+		),
+		rony.WithUnary(svc.ListAccounts,
+			rony.GET("/accounts", rony.UnaryName("ListAccounts")),
+		),
+	)
 }
 
 func (svc *Service) profileHandlers() rony.SetupOption[rony.EMPTY, rony.NOP] {
-    return rony.SetupOptionGroup(
-        rony.WithUnary(svc.GetProfile,
-            rony.GET("/profile", rony.UnaryName("GetProfile")),
-            rony.UnaryHeader(rony.RequiredHeader("Authorization")),
-            rony.UnaryMiddleware(svc.MustAuthorized),
-        ),
-        rony.WithUnary(svc.UpdateProfile,
-            rony.PUT("/profile", rony.UnaryName("UpdateProfile")),
-            rony.UnaryHeader(rony.RequiredHeader("Authorization")),
-            rony.UnaryMiddleware(svc.MustAuthorized),
-        ),
-    )
+	return rony.SetupOptionGroup(
+		rony.WithUnary(svc.GetProfile,
+			rony.GET("/profile", rony.UnaryName("GetProfile")),
+			rony.UnaryHeader(rony.RequiredHeader("Authorization")),
+			rony.UnaryMiddleware(svc.MustAuthorized),
+		),
+		rony.WithUnary(svc.UpdateProfile,
+			rony.PUT("/profile", rony.UnaryName("UpdateProfile")),
+			rony.UnaryHeader(rony.RequiredHeader("Authorization")),
+			rony.UnaryMiddleware(svc.MustAuthorized),
+		),
+	)
 }
 ```
 
@@ -129,54 +125,53 @@ Use a two-tier approach: parse the token on every request, enforce auth per-endp
 
 ```go
 func (svc *Service) CheckAuthToken(ctx *kit.Context) {
-    token := ctx.In().GetHdr("Authorization")
-    if token == "" {
-        return
-    }
-    token = strings.TrimPrefix(token, "Bearer ")
+	token := ctx.In().GetHdr("Authorization")
+	if token == "" {
+		return
+	}
+	token = strings.TrimPrefix(token, "Bearer ")
 
-    claim, err := svc.userApp.VerifyToken(ctx.Context(), token)
-    if err != nil {
-        ctx.SetStatusCode(401)
-        ctx.Out().SetMsg(
-            errs.B().Code(errs.Unauthenticated).Msg("INVALID_TOKEN").Err(),
-        ).Send()
-        ctx.StopExecution()
-        return
-    }
+	claim, err := svc.userApp.VerifyToken(ctx.Context(), token)
+	if err != nil {
+		ctx.SetStatusCode(401)
+		ctx.Out().SetMsg(
+			errs.B().Code(errs.Unauthenticated).Msg("INVALID_TOKEN").Err(),
+		).Send()
+		ctx.StopExecution()
+		return
+	}
 
-    ctx.Set("ctx.user.claim", claim)
+	ctx.Set("ctx.user.claim", claim)
 }
 
 func (svc *Service) MustAuthorized(ctx *kit.Context) {
-    if ctx.Get("ctx.user.claim") == nil {
-        ctx.SetStatusCode(401)
-        ctx.Out().SetMsg(
-            errs.B().Code(errs.Unauthenticated).Msg("UNAUTHORIZED").Err(),
-        ).Send()
-        ctx.StopExecution()
-    }
+	if ctx.Get("ctx.user.claim") == nil {
+		ctx.SetStatusCode(401)
+		ctx.Out().SetMsg(
+			errs.B().Code(errs.Unauthenticated).Msg("UNAUTHORIZED").Err(),
+		).Send()
+		ctx.StopExecution()
+	}
 }
 ```
 
-Register `CheckAuthToken` at service level (runs on every request) and
-`MustAuthorized` on individual protected endpoints:
+Register `CheckAuthToken` at service level (runs on every request) and `MustAuthorized` on individual protected endpoints:
 
 ```go
 func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
-    return rony.SetupOptionGroup(
-        rony.WithMiddleware[rony.EMPTY, rony.NOP](svc.CheckAuthToken),
+	return rony.SetupOptionGroup(
+		rony.WithMiddleware[rony.EMPTY, rony.NOP](svc.CheckAuthToken),
 
-        // Public — no auth required
-        rony.WithUnary(svc.Login, rony.POST("/auth/login")),
+		// Public — no auth required
+		rony.WithUnary(svc.Login, rony.POST("/auth/login")),
 
-        // Protected — requires auth
-        rony.WithUnary(svc.GetProfile,
-            rony.GET("/profile"),
-            rony.UnaryHeader(rony.RequiredHeader("Authorization")),
-            rony.UnaryMiddleware(svc.MustAuthorized),
-        ),
-    )
+		// Protected — requires auth
+		rony.WithUnary(svc.GetProfile,
+			rony.GET("/profile"),
+			rony.UnaryHeader(rony.RequiredHeader("Authorization")),
+			rony.UnaryMiddleware(svc.MustAuthorized),
+		),
+	)
 }
 ```
 
@@ -184,17 +179,17 @@ Extract the claim in handlers:
 
 ```go
 func getUserClaim(ctx *RContext) domain.UserClaim {
-    claim, _ := ctx.Get("ctx.user.claim").(domain.UserClaim)
-    return claim
+	claim, _ := ctx.Get("ctx.user.claim").(domain.UserClaim)
+	return claim
 }
 
 func (svc *Service) GetProfile(ctx *RContext, in GetProfileInput) (*GetProfileOutput, error) {
-    claim := getUserClaim(ctx)
-    profile, err := svc.userApp.GetProfile(ctx.Context(), claim.UserID)
-    if err != nil {
-        return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_GET_PROFILE").Cause(err).Err()
-    }
-    return &GetProfileOutput{Profile: profile}, nil
+	claim := getUserClaim(ctx)
+	profile, err := svc.userApp.GetProfile(ctx.Context(), claim.UserID)
+	if err != nil {
+		return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_GET_PROFILE").Cause(err).Err()
+	}
+	return &GetProfileOutput{Profile: profile}, nil
 }
 ```
 
@@ -206,39 +201,39 @@ Define a consistent pagination pattern across all list endpoints:
 
 ```go
 type ListUsersInput struct {
-    Page     int32  `json:"page"     query:"page"`
-    PageSize int32  `json:"pageSize" query:"pageSize"`
-    Status   string `json:"status"   query:"status"`
+	Page     int32  `json:"page"     query:"page"`
+	PageSize int32  `json:"pageSize" query:"pageSize"`
+	Status   string `json:"status"   query:"status"`
 }
 
 type ListUsersOutput struct {
-    Users []User `json:"users"`
-    Total int64  `json:"total"`
+	Users []User `json:"users"`
+	Total int64  `json:"total"`
 }
 
 func (svc *Service) ListUsers(ctx *RContext, in ListUsersInput) (*ListUsersOutput, error) {
-    page, pageSize := normalizePagination(in.Page, in.PageSize)
+	page, pageSize := normalizePagination(in.Page, in.PageSize)
 
-    users, total, err := svc.userApp.ListUsers(ctx.Context(), app.ListUsersInput{
-        Skip:   (page - 1) * pageSize,
-        Limit:  pageSize,
-        Status: in.Status,
-    })
-    if err != nil {
-        return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_LIST_USERS").Cause(err).Err()
-    }
+	users, total, err := svc.userApp.ListUsers(ctx.Context(), app.ListUsersInput{
+		Skip:   (page - 1) * pageSize,
+		Limit:  pageSize,
+		Status: in.Status,
+	})
+	if err != nil {
+		return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_LIST_USERS").Cause(err).Err()
+	}
 
-    return &ListUsersOutput{Users: users, Total: total}, nil
+	return &ListUsersOutput{Users: users, Total: total}, nil
 }
 
 func normalizePagination(page, pageSize int32) (int32, int32) {
-    if page <= 0 {
-        page = 1
-    }
-    if pageSize <= 0 || pageSize > 250 {
-        pageSize = 50
-    }
-    return page, pageSize
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 || pageSize > 250 {
+		pageSize = 50
+	}
+	return page, pageSize
 }
 ```
 
@@ -250,40 +245,40 @@ Validate inputs in the handler and return structured errors:
 
 ```go
 type CreateUserInput struct {
-    Email    string `json:"email"`
-    Phone    string `json:"phone"`
-    FullName string `json:"fullName"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	FullName string `json:"fullName"`
 }
 
 type CreateUserOutput struct {
-    User User `json:"user"`
+	User User `json:"user"`
 }
 
 func (svc *Service) CreateUser(ctx *RContext, in CreateUserInput) (*CreateUserOutput, error) {
-    if in.Email == "" && in.Phone == "" {
-        return nil, errs.B().
-            Code(errs.InvalidArgument).
-            Msg("EMAIL_OR_PHONE_REQUIRED").
-            Err()
-    }
+	if in.Email == "" && in.Phone == "" {
+		return nil, errs.B().
+			Code(errs.InvalidArgument).
+			Msg("EMAIL_OR_PHONE_REQUIRED").
+			Err()
+	}
 
-    if in.FullName == "" {
-        return nil, errs.B().
-            Code(errs.InvalidArgument).
-            Msg("FULL_NAME_REQUIRED").
-            Err()
-    }
+	if in.FullName == "" {
+		return nil, errs.B().
+			Code(errs.InvalidArgument).
+			Msg("FULL_NAME_REQUIRED").
+			Err()
+	}
 
-    user, err := svc.userApp.CreateUser(ctx.Context(), domain.CreateUserInput{
-        Email:    in.Email,
-        Phone:    in.Phone,
-        FullName: in.FullName,
-    })
-    if err != nil {
-        return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_CREATE_USER").Cause(err).Err()
-    }
+	user, err := svc.userApp.CreateUser(ctx.Context(), domain.CreateUserInput{
+		Email:    in.Email,
+		Phone:    in.Phone,
+		FullName: in.FullName,
+	})
+	if err != nil {
+		return nil, errs.B().Code(errs.Internal).Msg("FAILED_TO_CREATE_USER").Cause(err).Err()
+	}
 
-    return &CreateUserOutput{User: user}, nil
+	return &CreateUserOutput{User: user}, nil
 }
 ```
 
@@ -291,9 +286,9 @@ Use **pointer types** for truly optional fields and `swag` tags for OpenAPI enum
 
 ```go
 type UpdateUserInput struct {
-    ID       int64   `json:"id"`
-    FullName *string `json:"fullName"`           // optional — nil means "don't update"
-    Status   string  `json:"status" swag:"enum:active,inactive"`
+	ID       int64   `json:"id"`
+	FullName *string `json:"fullName"` // optional — nil means "don't update"
+	Status   string  `json:"status" swag:"enum:active,inactive"`
 }
 ```
 
@@ -307,22 +302,21 @@ type UpdateUserInput struct {
 // internal/domain/errors.go
 
 var (
-    ErrUserNotFound   = errs.B().Code(errs.NotFound).Msg("USER_NOT_FOUND").Err()
-    ErrInvalidToken   = errs.GenWrap(errs.FailedPrecondition, "INVALID_TOKEN")
-    ErrDuplicateEmail = errs.B().Code(errs.AlreadyExists).Msg("DUPLICATE_EMAIL").Err()
+	ErrUserNotFound   = errs.B().Code(errs.NotFound).Msg("USER_NOT_FOUND").Err()
+	ErrInvalidToken   = errs.GenWrap(errs.FailedPrecondition, "INVALID_TOKEN")
+	ErrDuplicateEmail = errs.B().Code(errs.AlreadyExists).Msg("DUPLICATE_EMAIL").Err()
 )
 ```
 
-`errs.GenWrap` creates a wrappable error factory — useful when you want to include
-the original error as context:
+`errs.GenWrap` creates a wrappable error factory — useful when you want to include the original error as context:
 
 ```go
 func (app *App) VerifyToken(ctx context.Context, token string) (*Claims, error) {
-    claims, err := app.jwtRepo.Verify(token)
-    if err != nil {
-        return nil, domain.ErrInvalidToken(err)
-    }
-    return claims, nil
+	claims, err := app.jwtRepo.Verify(token)
+	if err != nil {
+		return nil, domain.ErrInvalidToken(err)
+	}
+	return claims, nil
 }
 ```
 
@@ -332,15 +326,15 @@ Keep handlers thin. Wrap app-layer errors with context:
 
 ```go
 func (svc *Service) GetUser(ctx *RContext, in GetUserInput) (*GetUserOutput, error) {
-    user, err := svc.userApp.GetUser(ctx.Context(), in.ID)
-    if err != nil {
-        return nil, errs.B().
-            Code(errs.Internal).
-            Msg("FAILED_TO_GET_USER").
-            Cause(err).
-            Err()
-    }
-    return &GetUserOutput{User: user}, nil
+	user, err := svc.userApp.GetUser(ctx.Context(), in.ID)
+	if err != nil {
+		return nil, errs.B().
+			Code(errs.Internal).
+			Msg("FAILED_TO_GET_USER").
+			Cause(err).
+			Err()
+	}
+	return &GetUserOutput{User: user}, nil
 }
 ```
 
@@ -354,11 +348,11 @@ func (svc *Service) GetUser(ctx *RContext, in GetUserInput) (*GetUserOutput, err
 // internal/repo/port.go
 
 type UserRepository interface {
-    Create(ctx context.Context, input domain.CreateUserInput) (*domain.User, error)
-    Get(ctx context.Context, id int64) (*domain.User, error)
-    GetByEmail(ctx context.Context, email string) (*domain.User, error)
-    List(ctx context.Context, skip, limit int32, status string) ([]domain.User, int64, error)
-    Update(ctx context.Context, id int64, input domain.UpdateUserInput) (*domain.User, error)
+	Create(ctx context.Context, input domain.CreateUserInput) (*domain.User, error)
+	Get(ctx context.Context, id int64) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
+	List(ctx context.Context, skip, limit int32, status string) ([]domain.User, int64, error)
+	Update(ctx context.Context, id int64, input domain.UpdateUserInput) (*domain.User, error)
 }
 ```
 
@@ -370,47 +364,47 @@ type UserRepository interface {
 var _ repo.UserRepository = (*UserRepo)(nil) // compile-time check
 
 type UserRepo struct {
-    q *db.Queries // sqlc-generated
+	q *db.Queries // sqlc-generated
 }
 
 func NewUserRepo(q *db.Queries) *UserRepo {
-    return &UserRepo{q: q}
+	return &UserRepo{q: q}
 }
 
 func (r *UserRepo) Create(ctx context.Context, input domain.CreateUserInput) (*domain.User, error) {
-    row, err := r.q.InsertUser(ctx, db.InsertUserParams{
-        Email:    sql.NullString{String: input.Email, Valid: input.Email != ""},
-        Phone:    sql.NullString{String: input.Phone, Valid: input.Phone != ""},
-        FullName: input.FullName,
-    })
-    if err != nil {
-        return nil, err
-    }
-    return toUser(row), nil
+	row, err := r.q.InsertUser(ctx, db.InsertUserParams{
+		Email:    sql.NullString{String: input.Email, Valid: input.Email != ""},
+		Phone:    sql.NullString{String: input.Phone, Valid: input.Phone != ""},
+		FullName: input.FullName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return toUser(row), nil
 }
 
 func (r *UserRepo) List(ctx context.Context, skip, limit int32, status string) ([]domain.User, int64, error) {
-    rows, err := r.q.ListUsers(ctx, db.ListUsersParams{
-        Offset: skip,
-        Limit:  limit,
-        Status: db.NullUserStatus{UserStatus: db.UserStatus(status), Valid: status != ""},
-    })
-    if err != nil {
-        return nil, 0, err
-    }
+	rows, err := r.q.ListUsers(ctx, db.ListUsersParams{
+		Offset: skip,
+		Limit:  limit,
+		Status: db.NullUserStatus{UserStatus: db.UserStatus(status), Valid: status != ""},
+	})
+	if err != nil {
+		return nil, 0, err
+	}
 
-    total, err := r.q.CountUsers(ctx, db.CountUsersParams{
-        Status: db.NullUserStatus{UserStatus: db.UserStatus(status), Valid: status != ""},
-    })
-    if err != nil {
-        return nil, 0, err
-    }
+	total, err := r.q.CountUsers(ctx, db.CountUsersParams{
+		Status: db.NullUserStatus{UserStatus: db.UserStatus(status), Valid: status != ""},
+	})
+	if err != nil {
+		return nil, 0, err
+	}
 
-    users := make([]domain.User, len(rows))
-    for i, row := range rows {
-        users[i] = *toUser(row)
-    }
-    return users, total, nil
+	users := make([]domain.User, len(rows))
+	for i, row := range rows {
+		users[i] = *toUser(row)
+	}
+	return users, total, nil
 }
 ```
 
@@ -420,12 +414,12 @@ func (r *UserRepo) List(ctx context.Context, skip, limit int32, status string) (
 // internal/repo/v0/adapter.go
 
 var Init = fx.Options(
-    fx.Provide(
-        fx.Private,
-        db.New,
-        fx.Annotate(NewUserRepo, fx.As(new(repo.UserRepository))),
-        fx.Annotate(NewTokenRepo, fx.As(new(repo.TokenRepository))),
-    ),
+	fx.Provide(
+		fx.Private,
+		db.New,
+		fx.Annotate(NewUserRepo, fx.As(new(repo.UserRepository))),
+		fx.Annotate(NewTokenRepo, fx.As(new(repo.TokenRepository))),
+	),
 )
 ```
 
@@ -439,31 +433,31 @@ Each module defines its own settings struct using the `x/settings` package:
 // internal/settings/settings.go
 
 type Settings struct {
-    DB    DBConfig    `settings:"db"`
-    Redis RedisConfig `settings:"redis"`
-    JWT   JWTConfig   `settings:"jwt"`
+	DB    DBConfig    `settings:"db"`
+	Redis RedisConfig `settings:"redis"`
+	JWT   JWTConfig   `settings:"jwt"`
 }
 
 type DBConfig struct {
-    Host     string `settings:"host"`
-    Port     int    `settings:"port"`
-    User     string `settings:"user"`
-    Password string `settings:"password"`
-    DBName   string `settings:"dbname"`
+	Host     string `settings:"host"`
+	Port     int    `settings:"port"`
+	User     string `settings:"user"`
+	Password string `settings:"password"`
+	DBName   string `settings:"dbname"`
 }
 
 type JWTConfig struct {
-    Secret string `settings:"secret"`
-    TTL    string `settings:"ttl"`
+	Secret string `settings:"secret"`
+	TTL    string `settings:"ttl"`
 }
 
 func New(set settings.Settings) (*Settings, error) {
-    _ = set.SetFromFile("config", "./internal/settings/")
-    s := &Settings{}
-    if err := set.Unmarshal(s); err != nil {
-        return nil, err
-    }
-    return s, nil
+	_ = set.SetFromFile("config", "./internal/settings/")
+	s := &Settings{}
+	if err := set.Unmarshal(s); err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 ```
 
@@ -497,21 +491,21 @@ RonyKIT projects use `uber/fx` with the `x/di` package for DI wiring.
 // module.go
 
 var Module = fx.Module(
-    "users",
-    v0repo.Init,
-    diDatasource,
-    fx.Provide(
-        settings.New,
-        app.New,
-        api.New,
-    ),
+	"users",
+	v0repo.Init,
+	diDatasource,
+	fx.Provide(
+		settings.New,
+		app.New,
+		api.New,
+	),
 )
 
 var diDatasource = fx.Options(
-    di.ProvideDBParams[settings.Settings](MigrationFS),
-    di.ProvideRedisParams[settings.Settings](),
-    datasource.InitDB("", ""),
-    datasource.InitRedis("", ""),
+	di.ProvideDBParams[settings.Settings](MigrationFS),
+	di.ProvideRedisParams[settings.Settings](),
+	datasource.InitDB("", ""),
+	datasource.InitRedis("", ""),
 )
 ```
 
@@ -521,12 +515,12 @@ var diDatasource = fx.Options(
 // service.go
 
 func init() {
-    di.RegisterService[*api.Service](di.RegisterServiceParams{
-        Kind:     "service",
-        Name:     "users",
-        InitFn:   LoadSettings,
-        ModuleFn: Module,
-    })
+	di.RegisterService[*api.Service](di.RegisterServiceParams{
+		Kind:     "service",
+		Name:     "users",
+		InitFn:   LoadSettings,
+		ModuleFn: Module,
+	})
 }
 ```
 
@@ -536,18 +530,18 @@ func init() {
 // cmd/service/main.go
 
 func main() {
-    srv := rony.NewServer(
-        rony.Listen(":8080"),
-        rony.WithServerName("my-api"),
-        rony.WithAPIDocs("/docs"),
-        rony.UseScalarUI(),
-    )
+	srv := rony.NewServer(
+		rony.Listen(":8080"),
+		rony.WithServerName("my-api"),
+		rony.WithAPIDocs("/docs"),
+		rony.UseScalarUI(),
+	)
 
-    for _, m := range di.GetServiceByKind("service") {
-        opts = append(opts, m(moduleOpts))
-    }
+	for _, m := range di.GetServiceByKind("service") {
+		opts = append(opts, m(moduleOpts))
+	}
 
-    _ = srv.Run(context.Background(), os.Interrupt)
+	_ = srv.Run(context.Background(), os.Interrupt)
 }
 ```
 
@@ -559,17 +553,17 @@ Apply rate limiting as per-endpoint middleware:
 
 ```go
 rony.WithUnary(svc.CreateOTP,
-    rony.POST("/auth/otp"),
-    rony.UnaryMiddleware(
-        svc.app.RateLimiterHandler(app.RateLimiterInput{
-            Limit:  app.PerHour(10),
-            Name:   "CreateOTP",
-            Fields: []string{"Phone"},
-            ValueFn: []app.LimiterValueFunc{
-                func(ctx *kit.Context) string { return ctx.Conn().ClientIP() },
-            },
-        }),
-    ),
+	rony.POST("/auth/otp"),
+	rony.UnaryMiddleware(
+		svc.app.RateLimiterHandler(app.RateLimiterInput{
+			Limit:  app.PerHour(10),
+			Name:   "CreateOTP",
+			Fields: []string{"Phone"},
+			ValueFn: []app.LimiterValueFunc{
+				func(ctx *kit.Context) string { return ctx.Conn().ClientIP() },
+			},
+		}),
+	),
 )
 ```
 
@@ -631,21 +625,21 @@ A production-ready server bootstrap:
 
 ```go
 srv := rony.NewServer(
-    rony.Listen(":8080"),
-    rony.WithServerName("MyAPI"),
-    rony.WithVersion("v1.0.0"),
-    rony.WithAPIDocs("/docs"),
-    rony.UseScalarUI(),
-    rony.WithTracer(tracekit.B3("my-api")),
-    rony.WithCORS(rony.CORSConfig{
-        IgnoreEmptyOrigin: true,
-    }),
-    rony.WithErrorHandler(func(ctx *kit.Context, err error) {
-        ctx.SetStatusCode(400)
-        ctx.Out().SetMsg(
-            errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
-        ).Send()
-    }),
+	rony.Listen(":8080"),
+	rony.WithServerName("MyAPI"),
+	rony.WithVersion("v1.0.0"),
+	rony.WithAPIDocs("/docs"),
+	rony.UseScalarUI(),
+	rony.WithTracer(tracekit.B3("my-api")),
+	rony.WithCORS(rony.CORSConfig{
+		IgnoreEmptyOrigin: true,
+	}),
+	rony.WithErrorHandler(func(ctx *kit.Context, err error) {
+		ctx.SetStatusCode(400)
+		ctx.Out().SetMsg(
+			errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
+		).Send()
+	}),
 )
 ```
 
@@ -653,8 +647,7 @@ srv := rony.NewServer(
 
 ## Stub Generation for Service Communication
 
-In a microservices architecture, services communicate via generated client stubs
-instead of hand-written HTTP clients.
+In a microservices architecture, services communicate via generated client stubs instead of hand-written HTTP clients.
 
 ### Generate stubs for a service
 
@@ -662,12 +655,12 @@ instead of hand-written HTTP clients.
 // gen/stub/gen.go
 
 func main() {
-    rony.GenerateStub(
-        "userstub", "",
-        "../stub",
-        stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "userstub"}),
-        api.Service{}.Desc(),
-    )
+	rony.GenerateStub(
+		"userstub", "",
+		"../stub",
+		stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "userstub"}),
+		api.Service{}.Desc(),
+	)
 }
 ```
 
@@ -679,8 +672,8 @@ Run with `go generate` or as part of your Makefile.
 // In the gateway or another service's module.go
 
 var diRemoteServices = fx.Options(
-    di.ProvideUserStub[settings.Settings](settings.ModuleName),
-    di.ProvideLedgerStub[settings.Settings](settings.ModuleName),
+	di.ProvideUserStub[settings.Settings](settings.ModuleName),
+	di.ProvideLedgerStub[settings.Settings](settings.ModuleName),
 )
 ```
 
@@ -688,15 +681,15 @@ Then inject the stub interface in your app layer:
 
 ```go
 type App struct {
-    userStub userc.IUserStub
+	userStub userc.IUserStub
 }
 
 func (a *App) GetUserProfile(ctx context.Context, userID int64) (*Profile, error) {
-    resp, err := a.userStub.GetUser(ctx, userc.GetUserRequest{ID: userID})
-    if err != nil {
-        return nil, err
-    }
-    return mapToProfile(resp), nil
+	resp, err := a.userStub.GetUser(ctx, userc.GetUserRequest{ID: userID})
+	if err != nil {
+		return nil, err
+	}
+	return mapToProfile(resp), nil
 }
 ```
 
@@ -708,16 +701,16 @@ func (a *App) GetUserProfile(ctx context.Context, userID int64) (*Profile, error
 
 ```go
 func logMiddleware(ctx *kit.Context) {
-    span := tracekit.Span(ctx.Context())
-    tracekit.Event(span, "request",
-        attribute.String("route", ctx.Route()),
-    )
+	span := tracekit.Span(ctx.Context())
+	tracekit.Event(span, "request",
+		attribute.String("route", ctx.Route()),
+	)
 
-    ctx.AddModifier(func(out *kit.Envelope) {
-        out.SetHdr("Trace-ID", span.SpanContext().TraceID().String())
-    })
+	ctx.AddModifier(func(out *kit.Envelope) {
+		out.SetHdr("Trace-ID", span.SpanContext().TraceID().String())
+	})
 
-    ctx.Next()
+	ctx.Next()
 }
 ```
 
@@ -725,8 +718,8 @@ func logMiddleware(ctx *kit.Context) {
 
 ```go
 rony.NewServer(
-    rony.WithTracer(tracekit.B3("my-api")),
-    rony.WithLogger(myLogger),
+	rony.WithTracer(tracekit.B3("my-api")),
+	rony.WithLogger(myLogger),
 )
 ```
 

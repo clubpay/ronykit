@@ -24,14 +24,11 @@ Please make sure to read and observe our [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 ### Find a good first topic
 
-You can start by finding an existing issue with the
-[good first issue](https://github.com/clubpay/ronykit/labels/good%20first%20issue)
-or [help wanted](https://github.com/clubpay/ronykit/labels/help%20wanted) labels. These issues are well suited for new contributors.
+You can start by finding an existing issue with the [good first issue](https://github.com/clubpay/ronykit/labels/good%20first%20issue) or [help wanted](https://github.com/clubpay/ronykit/labels/help%20wanted) labels. These issues are well suited for new contributors.
 
 ## Setting up your development environment
 
-Ronykit uses [`Go Modules`](https://github.com/golang/go/wiki/Modules)
-to manage dependencies. The version of Go should be **1.17** or above.
+Ronykit uses [`Go Modules`](https://github.com/golang/go/wiki/Modules) to manage dependencies. The version of Go should be **1.17** or above.
 
 ### Fork the project
 
@@ -91,8 +88,7 @@ $ git push origin feat/my_new_feature
 
 ### Create a Pull Request
 
-Just open `https://github.com/$GITHUB_USER/ronykit/pull/new/my_new_feature` and
-fill the PR description.
+Just open `https://github.com/$GITHUB_USER/ronykit/pull/new/my_new_feature` and fill the PR description.
 
 ### Sign the CLA
 
@@ -100,8 +96,6 @@ Click the **Sign in with GitHub to agree** button to sign the CLA. [An example](
 
 ### Get a code review
 
-If your pull request (PR) is opened, it will be assigned to one or more
-reviewers. Those reviewers will do a code review.
+If your pull request (PR) is opened, it will be assigned to one or more reviewers. Those reviewers will do a code review.
 
-To address review comments, you should commit the changes to the same branch of
-the PR on your fork.
+To address review comments, you should commit the changes to the same branch of the PR on your fork.

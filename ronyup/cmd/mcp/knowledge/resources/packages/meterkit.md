@@ -1,7 +1,6 @@
 ---
-import_path: github.com/clubpay/ronykit/x/telemetry/meterkit
-short_name: meterkit
----
+
+## import_path: github.com/clubpay/ronykit/x/telemetry/meterkit short_name: meterkit
 
 OpenTelemetry MeterProvider with optional Prometheus HTTP exposure.
 

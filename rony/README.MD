@@ -1,11 +1,8 @@
 # Rony
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/rony.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/rony)
-[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/rony)](https://goreportcard.com/report/github.com/clubpay/ronykit/rony)
+[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/rony.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/rony) [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/rony)](https://goreportcard.com/report/github.com/clubpay/ronykit/rony)
 
-Rony is the batteries-included API and edge server framework in RonyKIT. It provides a compact, type-safe API
-powered by Go generics and built on top of the `kit` core. If you need full control over gateways or clusters,
-use the lower-level [Kit package](../kit/README.MD).
+Rony is the batteries-included API and edge server framework in RonyKIT. It provides a compact, type-safe API powered by Go generics and built on top of the `kit` core. If you need full control over gateways or clusters, use the lower-level [Kit package](../kit/README.MD).
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -31,10 +28,8 @@ ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
 
 ## Core Concepts
 
-- **State**: a shared, reducer-style state per service. Implement `Name()` and `Reduce(action) error`.
-  If you do not need state, use `rony.EmptyState()`.
-- **Handlers**: unary or streaming functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO,
-  then return a response DTO.
+- **State**: a shared, reducer-style state per service. Implement `Name()` and `Reduce(action) error`. If you do not need state, use `rony.EmptyState()`.
+- **Handlers**: unary or streaming functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO, then return a response DTO.
 - **Contracts**: route definitions that bind handlers to REST or RPC selectors.
 
 State interface signature:

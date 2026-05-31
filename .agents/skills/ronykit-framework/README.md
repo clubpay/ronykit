@@ -1,19 +1,17 @@
 # ronykit-framework Skill
 
-[Agent Skills](https://agentskills.io/specification)-style skill that **orchestrates**
-RonyKit development. Domain knowledge lives in the **`ronyup` MCP server** (`ronyup mcp`).
+[Agent Skills](https://agentskills.io/specification)-style skill that **orchestrates** RonyKit development. Domain knowledge lives in the **`ronyup` MCP server** (`ronyup mcp`).
 
 ## Contents
 
-| Path | Role |
-|------|------|
-| `SKILL.md` | Playbook: prerequisites, workflows, hard rules, validation |
-| `references/mcp-map.md` | Index of MCP tools, prompts, and knowledge resources |
+| Path                    | Role                                                       |
+|-------------------------|------------------------------------------------------------|
+| `SKILL.md`              | Playbook: prerequisites, workflows, hard rules, validation |
+| `references/mcp-map.md` | Index of MCP tools, prompts, and knowledge resources       |
 
 ## Location (project)
 
-Installed under `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification)
-layout). Cursor and other compatible agents discover skills from this path automatically.
+Installed under `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor and other compatible agents discover skills from this path automatically.
 
 Invoke in Cursor: `/ronykit-framework`
 

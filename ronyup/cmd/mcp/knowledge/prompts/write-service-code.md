@@ -1,25 +1,21 @@
 ---
-name: write-service-code
-description: Guide an AI agent through writing RonyKIT service code following framework conventions.
-arguments:
-  - name: service_name
-    description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger").
-    required: true
-  - name: description
-    description: A brief description of what the service does.
-    required: true
-  - name: characteristics
-    description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)."
-    required: false
+
+name: write-service-code description: Guide an AI agent through writing RonyKIT service code following framework conventions. arguments:
+- name: service_name description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger"). required: true
+- name: description description: A brief description of what the service does. required: true
+- name: characteristics description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)." required: false
+
 ---
 
 You are writing service code for a RonyKIT module called "{{service_name}}mod".
 
 Service description: {{description}}
 
-{{#if characteristics}}
-Requested characteristics: {{characteristics}}
-{{/if}}
+## Design input
+
+Before writing code, read the approved SDD at `docs/design/{{service_name}}-sdd.md` (if it exists). The SDD is the source of truth for API operations, domain types, repository ports, settings, and tests. If there is no SDD yet, stop and use the `write-sdd` prompt (after an approved SRS). Update the SDD when implementation reveals design gaps.
+
+{{#if characteristics}} Requested characteristics: {{characteristics}} {{/if}}
 
 Follow the RonyKIT service structure conventions below.
 
@@ -59,7 +55,6 @@ Follow the RonyKIT service structure conventions below.
 7. **Error handling**: Use `rony/errs` exclusively. Define domain errors with `errs.GenWrap(code, "ERROR_CODE")` or `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE.
 8. **Handlers DTO**: DTOs should have proper `json` tags
 9. **Handlers Signature**: Handlers should have a signature of `func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error)` **inputDTO MUST NOT be a pointer**
- 
 
 ## Handler Signature Pattern
 
@@ -67,11 +62,11 @@ Follow the RonyKIT service structure conventions below.
 type RContext = rony.UnaryCtx[*State, Action]
 
 func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error) {
-    result, err := svc.app.DoSomething(ctx.Context(), in.Field)
-    if err != nil {
-        return nil, err
-    }
-    return toOutputDTO(result), nil
+	result, err := svc.app.DoSomething(ctx.Context(), in.Field)
+	if err != nil {
+		return nil, err
+	}
+	return toOutputDTO(result), nil
 }
 ```
 
@@ -79,11 +74,11 @@ func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error) {
 
 ```go
 func (svc Service) Desc() *desc.Service {
-    return rony.Setup[*State, Action](
-        "{{service_name}}",
-        rony.ToInitiateState[*State, Action](&State{}),
-        rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
-    )
+	return rony.Setup[*State, Action](
+		"{{service_name}}",
+		rony.ToInitiateState[*State, Action](&State{}),
+		rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
+	)
 }
 ```
 
@@ -93,9 +88,9 @@ If the service has no shared state, use `rony.EMPTY` / `rony.NOP`:
 type RContext = rony.SUnaryCtx
 
 rony.Setup[rony.EMPTY, rony.NOP](
-    "{{service_name}}",
-    rony.EmptyState(),
-    rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
+	"{{service_name}}",
+	rony.EmptyState(),
+	rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
 )
 ```
 
@@ -109,7 +104,4 @@ rony.Setup[rony.EMPTY, rony.NOP](
 6. Write integration tests using `x/testkit`.
 7. Run `make gen-stub` to generate client stubs.
 
-Use the `scaffold_feature` tool to create the module skeleton, then read the
-relevant `knowledge://ronyup/architecture/*`, `packages/*`, and `characteristics/*`
-resources for architecture hints and package recommendations before filling in
-the generated files.
+Use the `scaffold_feature` tool to create the module skeleton, then read the relevant `knowledge://ronyup/architecture/*`, `packages/*`, and `characteristics/*` resources for architecture hints and package recommendations before filling in the generated files.

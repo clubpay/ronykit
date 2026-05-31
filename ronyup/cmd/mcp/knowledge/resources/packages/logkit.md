@@ -1,7 +1,6 @@
 ---
-import_path: github.com/clubpay/ronykit/x/telemetry/logkit
-short_name: logkit
----
+
+## import_path: github.com/clubpay/ronykit/x/telemetry/logkit short_name: logkit
 
 OpenTelemetry-bridged structured logger (zap-based) with OTLP/stdout export.
 

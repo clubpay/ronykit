@@ -1,8 +1,6 @@
 # Feature Modules
 
-Feature modules are mid-level services that implement business use-cases.
-They should expose contracts through `api/` and keep orchestration logic in
-`internal/app`.
+Feature modules are mid-level services that implement business use-cases. They should expose contracts through `api/` and keep orchestration logic in `internal/app`.
 
 ## Layering Guidelines
 
@@ -30,8 +28,7 @@ Workspace is the root of your services and should be created once.
 - Current templates: `service` (default; `job` and `gateway` are reserved for future scaffolds).
 - Default layout: `feature/<name>/` (for example `feature/billing/`).
 - Example: `ronyup setup feature --featureDir billing --featureName billing --template service`
-- Optional: `--featurePrefix` to change the parent folder; `--groupByTemplate` (or `-g`)
-  for `feature/<template>/<name>/`.
+- Optional: `--featurePrefix` to change the parent folder; `--groupByTemplate` (or `-g`) for `feature/<template>/<name>/`.
 
 ## Module Workflow
 
@@ -40,4 +37,3 @@ Workspace is the root of your services and should be created once.
 - `make tidy` to align dependencies.
 - `make lint` to apply formatting and static checks.
 - `make test` before opening a PR.
-

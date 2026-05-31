@@ -1,19 +1,17 @@
 # Architecture
 
-This document explains how RonyKIT works, how the components fit together, and
-how the repository is organized.
+This document explains how RonyKIT works, how the components fit together, and how the repository is organized.
 
 ## Two Layers
 
 RonyKIT provides two levels of abstraction:
 
 | Layer          | Package | Description                                                                                        |
-| -------------- | ------- | -------------------------------------------------------------------------------------------------- |
+|----------------|---------|----------------------------------------------------------------------------------------------------|
 | **High-level** | `rony`  | Batteries-included framework. Type-safe handlers, built-in docs, state management. **Start here.** |
 | **Low-level**  | `kit`   | Core building blocks. Use when you need custom gateways, protocols, or deeper control.             |
 
-`rony` is built on top of `kit`. You can always drop down to `kit` APIs from within
-`rony` handlers using `ctx.KitCtx()`.
+`rony` is built on top of `kit`. You can always drop down to `kit` APIs from within `rony` handlers using `ctx.KitCtx()`.
 
 ---
 
@@ -56,15 +54,14 @@ Response
 
 ### EdgeServer
 
-The main orchestrator. Binds gateways, clusters, and services together.
-In the `rony` layer, `rony.Server` wraps an EdgeServer with opinionated defaults.
+The main orchestrator. Binds gateways, clusters, and services together. In the `rony` layer, `rony.Server` wraps an EdgeServer with opinionated defaults.
 
 ### Gateway
 
 Handles inbound traffic. RonyKIT ships with several gateway implementations:
 
 | Gateway    | Package                   | Description                                                                                                   |
-| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+|------------|---------------------------|---------------------------------------------------------------------------------------------------------------|
 | fasthttp   | `std/gateways/fasthttp`   | High-performance HTTP gateway using [valyala/fasthttp](https://github.com/valyala/fasthttp)                   |
 | silverhttp | `std/gateways/silverhttp` | HTTP gateway using [silverlining](https://github.com/go-www/silverlining)                                     |
 | fastws     | `std/gateways/fastws`     | WebSocket gateway using [gnet](https://github.com/panjf2000/gnet) + [gobwas/ws](https://github.com/gobwas/ws) |
@@ -74,31 +71,27 @@ When using `rony.NewServer()`, the fasthttp gateway is configured automatically.
 
 ### Cluster
 
-Optional. Enables multi-instance coordination for shared state across EdgeServer
-instances.
+Optional. Enables multi-instance coordination for shared state across EdgeServer instances.
 
 | Cluster      | Package                     | Description                                                              |
-| ------------ | --------------------------- | ------------------------------------------------------------------------ |
+|--------------|-----------------------------|--------------------------------------------------------------------------|
 | rediscluster | `std/clusters/rediscluster` | Redis-backed cluster                                                     |
 | p2pcluster   | `std/clusters/p2pcluster`   | Peer-to-peer cluster using [libp2p](https://github.com/libp2p/go-libp2p) |
 
 ### Service
 
-A logical grouping of contracts. One EdgeServer can host multiple services.
-Services are registered with `rony.Setup()`.
+A logical grouping of contracts. One EdgeServer can host multiple services. Services are registered with `rony.Setup()`.
 
 ### Contract
 
-A single API operation. Defines the input/output types, route selectors, and handler.
-In the `rony` layer, contracts are created implicitly with `rony.WithUnary()` and
-`rony.WithStream()`.
+A single API operation. Defines the input/output types, route selectors, and handler. In the `rony` layer, contracts are created implicitly with `rony.WithUnary()` and `rony.WithStream()`.
 
 ### Context
 
 Request-scoped state with four storage layers:
 
 | Layer          | Lifecycle           | Access                                                         |
-| -------------- | ------------------- | -------------------------------------------------------------- |
+|----------------|---------------------|----------------------------------------------------------------|
 | **Context**    | Per request         | Available in all handlers                                      |
 | **Connection** | Per connection      | Persists across requests on the same connection (WebSocket)    |
 | **Local**      | Per server instance | Shared between all contracts and services                      |
@@ -169,7 +162,7 @@ ronykit/
 RonyKIT supports multiple encoding formats:
 
 | Format      | Description                            |
-| ----------- | -------------------------------------- |
+|-------------|----------------------------------------|
 | JSON        | Default. Uses struct `json` tags       |
 | Protobuf    | Protocol Buffers encoding              |
 | MessagePack | Binary encoding                        |
@@ -185,18 +178,16 @@ Two routing strategies are available:
 - **REST selectors** — HTTP method + path pattern (e.g., `GET /users/{id}`)
 - **RPC selectors** — Predicate-based routing over WebSocket (e.g., `RPC("getUser")`)
 
-A single handler can serve both REST and RPC routes, which is how RonyKIT achieves
-"define once, serve everywhere."
+A single handler can serve both REST and RPC routes, which is how RonyKIT achieves "define once, serve everywhere."
 
 ---
 
 ## Extended Utilities (`x/`)
 
-The `x/` directory contains optional packages that integrate with the RonyKIT
-ecosystem. These are recommended when using the `ronyup` scaffolding:
+The `x/` directory contains optional packages that integrate with the RonyKIT ecosystem. These are recommended when using the `ronyup` scaffolding:
 
 | Package                | Purpose                                  |
-| ---------------------- | ---------------------------------------- |
+|------------------------|------------------------------------------|
 | `x/di`                 | Dependency injection helpers for uber/fx |
 | `x/settings`           | Configuration management with Viper      |
 | `x/telemetry/logkit`   | Structured logging                       |

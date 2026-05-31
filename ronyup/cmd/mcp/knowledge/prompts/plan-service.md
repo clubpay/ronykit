@@ -1,33 +1,29 @@
 ---
-name: plan-service
-description: Guide an AI agent through planning a new RonyKIT service feature.
-arguments:
-  - name: feature_name
-    description: The name of the service feature to plan.
-    required: true
-  - name: characteristics
-    description: "Comma-separated list of service characteristics (e.g. postgres, redis, rest-api, idempotent)."
-    required: false
+
+name: plan-service description: Plan a new RonyKIT service feature — start with SRS and SDD before scaffolding (use design-new-service for the full workflow). arguments:
+- name: feature_name description: The name of the service feature to plan. required: true
+- name: characteristics description: "Comma-separated list of service characteristics (e.g. postgres, redis, rest-api, idempotent)." required: false
+
 ---
 
 You are planning a new RonyKIT service feature called "{{feature_name}}".
 
-Follow these steps:
+**Use the document-first workflow.** Do not scaffold or implement until SRS and SDD are written and approved.
 
-1. Read the relevant knowledge resources at `knowledge://ronyup/architecture/*` and
-   `knowledge://ronyup/packages/*` for the architecture conventions and recommended
-   x/ toolkit packages.
-2. For each requested characteristic, read the matching
-   `knowledge://ronyup/characteristics/<name>` resource for service- and file-level
-   hints.
-3. Scaffold the feature with the `scaffold_feature` tool (or `ronyup setup feature
---featureDir <dir> --featureName {{feature_name}} --template service`; add
-`--groupByTemplate` for `feature/service/{{feature_name}}/`).
-4. Implement the domain, repo ports, app use-cases, and API contracts inside the
-   generated `feature/{{feature_name}}/` module (or `feature/service/{{feature_name}}/`
-   when grouped by template).
-5. Run `make gen-stub` in the feature module after contract changes.
+## Recommended path
 
-{{#if characteristics}}
-Requested characteristics: {{characteristics}}
-{{/if}}
+1. **SRS** — MCP prompt `write-srs` (or Phase 1 of `design-new-service`) → `docs/design/{{feature_name}}-srs.md`
+2. **SDD** — MCP prompt `write-sdd` (or Phase 2 of `design-new-service`) → `docs/design/{{feature_name}}-sdd.md`
+3. **Scaffold** — `scaffold_feature` tool
+4. **Implement** — MCP prompt `write-service-code`, following the SDD
+
+Read `knowledge://ronyup/architecture/design-documents` for gate rules and templates.
+
+{{#if characteristics}} Requested characteristics: {{characteristics}} {{/if}}
+
+## Planning checklist (after SDD is approved)
+
+1. Read relevant `knowledge://ronyup/architecture/*` and `characteristics/*` resources.
+2. Scaffold with `scaffold_feature` (or `ronyup setup feature --featureDir <dir> --featureName {{feature_name}} --template service`).
+3. Implement domain, repo ports, app use-cases, and API contracts per the SDD.
+4. Run `make gen-stub` in the feature module after contract changes.

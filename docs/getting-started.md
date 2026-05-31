@@ -1,7 +1,6 @@
 # Getting Started with RonyKIT
 
-This guide walks you through building API servers with RonyKIT. No prior RonyKIT
-experience required — basic Go knowledge is enough.
+This guide walks you through building API servers with RonyKIT. No prior RonyKIT experience required — basic Go knowledge is enough.
 
 ## Table of Contents
 
@@ -123,8 +122,7 @@ return &GetUserResponse{...}, nil
 }
 ```
 
-`rony.SUnaryCtx` is a shorthand for stateless handlers. If you need shared state,
-use `*rony.UnaryCtx[S, A]` (see [State Management](#state-management)).
+`rony.SUnaryCtx` is a shorthand for stateless handlers. If you need shared state, use `*rony.UnaryCtx[S, A]` (see [State Management](#state-management)).
 
 ### Binding handlers to routes
 
@@ -132,16 +130,15 @@ Register handlers with route helpers during `rony.Setup`:
 
 ```go
 rony.Setup(srv, "UserService", rony.EmptyState(),
-rony.WithUnary(CreateUser, rony.POST("/users")),
-rony.WithUnary(GetUser, rony.GET("/users/{id}")),
-rony.WithUnary(UpdateUser, rony.PUT("/users/{id}")),
-rony.WithUnary(DeleteUser, rony.DELETE("/users/{id}")),
-rony.WithUnary(ListUsers, rony.GET("/users")),
+	rony.WithUnary(CreateUser, rony.POST("/users")),
+	rony.WithUnary(GetUser, rony.GET("/users/{id}")),
+	rony.WithUnary(UpdateUser, rony.PUT("/users/{id}")),
+	rony.WithUnary(DeleteUser, rony.DELETE("/users/{id}")),
+	rony.WithUnary(ListUsers, rony.GET("/users")),
 )
 ```
 
-Available route helpers: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`,
-`ALL`, and the generic `REST(method, path)`.
+Available route helpers: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, `ALL`, and the generic `REST(method, path)`.
 
 ### Route options
 
@@ -149,8 +146,8 @@ Customize individual routes for documentation and behavior:
 
 ```go
 rony.WithUnary(GetUser,
-rony.GET("/users/{id}", rony.UnaryName("GetUser")),
-rony.UnaryHeader(rony.RequiredHeader("Authorization")),
+	rony.GET("/users/{id}", rony.UnaryName("GetUser")),
+	rony.UnaryHeader(rony.RequiredHeader("Authorization")),
 )
 ```
 
@@ -184,14 +181,13 @@ orderHandlers(),
 
 ## Request Binding
 
-RonyKIT automatically binds path parameters, query parameters, and request body
-to your input struct fields. It matches fields using the `json` tag.
+RonyKIT automatically binds path parameters, query parameters, and request body to your input struct fields. It matches fields using the `json` tag.
 
 ```go
 type SearchRequest struct {
-Category string `json:"category"` // from path /{category}, query ?category=, or body
-Query    string `json:"query"`    // from query ?query= or body
-Page     *int32 `json:"page"` // optional — nil when not provided
+	Category string `json:"category"` // from path /{category}, query ?category=, or body
+	Query    string `json:"query"`    // from query ?query= or body
+	Page     *int32 `json:"page"`     // optional — nil when not provided
 }
 ```
 
@@ -213,24 +209,24 @@ If handlers need to share mutable data, `rony` provides a built-in reducer patte
 
 ```go
 type Counter struct {
-sync.Mutex
-Count int
+	sync.Mutex
+	Count int
 }
 
 func (c *Counter) Name() string { return "Counter" }
 func (c *Counter) Reduce(action string) error {
-switch action {
-case "increment":
-c.Count++
-case "decrement":
-if c.Count <= 0 {
-return fmt.Errorf("count cannot go below zero")
-}
-c.Count--
-default:
-return fmt.Errorf("unknown action: %s", action)
-}
-return nil
+	switch action {
+	case "increment":
+		c.Count++
+	case "decrement":
+		if c.Count <= 0 {
+			return fmt.Errorf("count cannot go below zero")
+		}
+		c.Count--
+	default:
+		return fmt.Errorf("unknown action: %s", action)
+	}
+	return nil
 }
 ```
 
@@ -240,18 +236,18 @@ When your state implements `sync.Locker`, `ReduceState` automatically locks arou
 
 ```go
 func Count(ctx *rony.UnaryCtx[*Counter, string], in CountRequest) (*CountResponse, error) {
-res := &CountResponse{}
-err := ctx.ReduceState(in.Action, func (s *Counter, err error) error {
-if err != nil {
-return err
-}
-res.Count = s.Count
-return nil
-})
-if err != nil {
-return nil, err
-}
-return res, nil
+	res := &CountResponse{}
+	err := ctx.ReduceState(in.Action, func(s *Counter, err error) error {
+		if err != nil {
+			return err
+		}
+		res.Count = s.Count
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 ```
 
@@ -259,22 +255,20 @@ return res, nil
 
 ```go
 rony.Setup(srv, "CounterService",
-rony.ToInitiateState[*Counter, string](&Counter{Count: 0}),
-rony.WithUnary(Count, rony.GET("/count/{action}")),
+	rony.ToInitiateState[*Counter, string](&Counter{Count: 0}),
+	rony.WithUnary(Count, rony.GET("/count/{action}")),
 )
 ```
 
 When you don't need state, use `rony.EmptyState()` and the `rony.SUnaryCtx` shorthand.
 
-**Advice:** Keep state small. For heavy shared resources (database pools, caches),
-use dependency injection or pass them through handler closures.
+**Advice:** Keep state small. For heavy shared resources (database pools, caches), use dependency injection or pass them through handler closures.
 
 ---
 
 ## Middleware
 
-Middleware runs before your handlers. Use it for auth, logging, rate limiting,
-or request shaping.
+Middleware runs before your handlers. Use it for auth, logging, rate limiting, or request shaping.
 
 ### Stateless middleware
 
@@ -282,9 +276,9 @@ The most common kind — wraps `kit.HandlerFunc`:
 
 ```go
 func LogMiddleware(ctx *kit.Context) {
-start := time.Now()
-ctx.Next()
-log.Printf("%s %s took %v", ctx.Route(), ctx.Conn().ClientIP(), time.Since(start))
+	start := time.Now()
+	ctx.Next()
+	log.Printf("%s %s took %v", ctx.Route(), ctx.Conn().ClientIP(), time.Since(start))
 }
 ```
 
@@ -292,8 +286,8 @@ Register at service level:
 
 ```go
 rony.Setup(srv, "MyService", rony.EmptyState(),
-rony.WithMiddleware[rony.EMPTY, rony.NOP](LogMiddleware),
-rony.WithUnary(MyHandler, rony.GET("/items")),
+	rony.WithMiddleware[rony.EMPTY, rony.NOP](LogMiddleware),
+	rony.WithUnary(MyHandler, rony.GET("/items")),
 )
 ```
 
@@ -301,8 +295,8 @@ Or at contract level:
 
 ```go
 rony.WithUnary(MyHandler,
-rony.GET("/items"),
-rony.UnaryMiddleware(AuthRequired),
+	rony.GET("/items"),
+	rony.UnaryMiddleware(AuthRequired),
 )
 ```
 
@@ -346,30 +340,30 @@ Return structured errors using the `rony/errs` package:
 import "github.com/clubpay/ronykit/rony/errs"
 
 func GetUser(ctx *rony.SUnaryCtx, in GetUserRequest) (*GetUserResponse, error) {
-if in.ID == "" {
-return nil, errs.B().
-Code(errs.InvalidArgument).
-Msg("USER_ID_REQUIRED").
-Err()
-}
+	if in.ID == "" {
+		return nil, errs.B().
+			Code(errs.InvalidArgument).
+			Msg("USER_ID_REQUIRED").
+			Err()
+	}
 
-user, err := userRepo.Get(ctx.Context(), in.ID)
-if err != nil {
-return nil, errs.B().
-Code(errs.Internal).
-Msg("FAILED_TO_GET_USER").
-Cause(err).
-Err()
-}
+	user, err := userRepo.Get(ctx.Context(), in.ID)
+	if err != nil {
+		return nil, errs.B().
+			Code(errs.Internal).
+			Msg("FAILED_TO_GET_USER").
+			Cause(err).
+			Err()
+	}
 
-return &GetUserResponse{User: user}, nil
+	return &GetUserResponse{User: user}, nil
 }
 ```
 
 Error codes map to HTTP status codes automatically:
 
 | Code                    | HTTP Status |
-| ----------------------- | ----------- |
+|-------------------------|-------------|
 | `errs.InvalidArgument`  | 400         |
 | `errs.Unauthenticated`  | 401         |
 | `errs.PermissionDenied` | 403         |
@@ -381,12 +375,12 @@ Override error serialization globally:
 
 ```go
 rony.NewServer(
-rony.WithErrorHandler(func (ctx *kit.Context, err error) {
-ctx.SetStatusCode(400)
-ctx.Out().SetMsg(
-errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
-).Send()
-}),
+	rony.WithErrorHandler(func(ctx *kit.Context, err error) {
+		ctx.SetStatusCode(400)
+		ctx.Out().SetMsg(
+			errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
+		).Send()
+	}),
 )
 ```
 
@@ -400,8 +394,8 @@ RonyKIT generates and serves OpenAPI documentation from your handler types.
 
 ```go
 srv := rony.NewServer(
-rony.WithAPIDocs("/docs"),
-rony.UseSwaggerUI(), // or UseRedocUI() or UseScalarUI()
+	rony.WithAPIDocs("/docs"),
+	rony.UseSwaggerUI(), // or UseRedocUI() or UseScalarUI()
 )
 ```
 
@@ -409,14 +403,14 @@ rony.UseSwaggerUI(), // or UseRedocUI() or UseScalarUI()
 
 ```go
 rony.WithUnary(Search,
-rony.GET("/search/{category}"),
-rony.UnaryInputMeta(
-desc.WithField("category", desc.FieldMeta{
-Description: "Product category",
-Enum:        []string{"electronics", "books", "clothing"},
-}),
-),
-rony.UnaryHeader(rony.RequiredHeader("Authorization")),
+	rony.GET("/search/{category}"),
+	rony.UnaryInputMeta(
+		desc.WithField("category", desc.FieldMeta{
+			Description: "Product category",
+			Enum:        []string{"electronics", "books", "clothing"},
+		}),
+	),
+	rony.UnaryHeader(rony.RequiredHeader("Authorization")),
 )
 ```
 
@@ -452,12 +446,12 @@ stubgen.WithStubName("myService"),
 
 ```go
 stubgen.New(
-stubgen.WithGenEngine(stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{
-GenerateSWR: true,
-})),
-stubgen.WithTags("json"),
-stubgen.WithFolderName("myclient-ts"),
-stubgen.WithStubName("myService"),
+	stubgen.WithGenEngine(stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{
+		GenerateSWR: true,
+	})),
+	stubgen.WithTags("json"),
+	stubgen.WithFolderName("myclient-ts"),
+	stubgen.WithStubName("myService"),
 ).MustGenerate(svcs...)
 ```
 
@@ -487,7 +481,7 @@ rony.WithUnary(Upload, rony.POST("/upload")),
 
 ```go
 func RawEcho(ctx *rony.SUnaryCtx, in kit.RawMessage) (*kit.RawMessage, error) {
-return &in, nil
+	return &in, nil
 }
 ```
 
@@ -495,10 +489,10 @@ return &in, nil
 
 ```go
 func Redirect(ctx *rony.SUnaryCtx, in RedirectRequest) (*rony.EMPTY, error) {
-if rc, ok := ctx.RESTConn(); ok {
-rc.Redirect(307, in.URL)
-}
-return nil, nil
+	if rc, ok := ctx.RESTConn(); ok {
+		rc.Redirect(307, in.URL)
+	}
+	return nil, nil
 }
 ```
 
@@ -526,9 +520,9 @@ Handlers are regular Go functions with typed inputs and outputs — test them di
 
 ```go
 func TestGreet(t *testing.T) {
-resp, err := Greet(testCtx, GreetRequest{Name: "World"})
-assert.NoError(t, err)
-assert.Equal(t, "Hello, World!", resp.Message)
+	resp, err := Greet(testCtx, GreetRequest{Name: "World"})
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello, World!", resp.Message)
 }
 ```
 
@@ -539,7 +533,7 @@ For integration tests, use generated Go client stubs to call your endpoints end-
 ## Server Options Reference
 
 | Option                     | Description                                 |
-| -------------------------- | ------------------------------------------- |
+|----------------------------|---------------------------------------------|
 | `Listen(":8080")`          | Bind address for the HTTP gateway           |
 | `WithServerName("name")`   | Server name (appears in docs and logs)      |
 | `WithVersion("v1.0.0")`    | API version                                 |
@@ -560,7 +554,7 @@ For integration tests, use generated Go client stubs to call your endpoints end-
 ## Context Helpers Reference
 
 | Method                        | Description                                           |
-| ----------------------------- | ----------------------------------------------------- |
+|-------------------------------|-------------------------------------------------------|
 | `ctx.GetInHdr("key")`         | Read a request header                                 |
 | `ctx.SetOutHdr("key", "val")` | Set a response header                                 |
 | `ctx.Conn()`                  | Access the underlying connection                      |

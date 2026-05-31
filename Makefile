@@ -1,4 +1,4 @@
-.PHONY:  cleanup test lint vet \
+.PHONY:  cleanup test lint vet format-md \
          new-version-patch new-version-minor \
          new-version-patch-dry new-version-minor-dry \
          bump-workspace bump-workspace-dry
@@ -7,6 +7,12 @@ setup:
 	@echo "Install required tools"
 	@go install gotest.tools/gotestsum@latest
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@go install github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest
+
+format-md:
+	@echo "Format Markdown files"
+	@find . -not -path './.git/*' -type f \( -iname '*.md' \) -print0 \
+		| xargs -0 markdownfmt -w -gofmt
 
 lint:
 	@echo "Run Linting"

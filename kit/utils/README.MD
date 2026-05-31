@@ -1,8 +1,6 @@
 # Utils
 
-This package contains a good few number of helper functions which are commonly used
-in projects. We used some of them in RonyKIT internally and exposed them in this separate package
-to let other projects use it easily.
+This package contains a good few number of helper functions which are commonly used in projects. We used some of them in RonyKIT internally and exposed them in this separate package to let other projects use it easily.
 
 Some utilities this package provides:
 

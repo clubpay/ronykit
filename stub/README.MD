@@ -1,9 +1,8 @@
 # STUB
-[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/stub.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/stub)
-[![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/stub)](https://goreportcard.com/report/github.com/clubpay/ronykit/stub)
 
-This package provides a set of utilities and helper methods to call a REST or RPC (over websocket)
-Many of the boilerplate codes are not necessary anymore when you use `stub` and it provides many handy features.
+[![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/stub.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/stub) [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/stub)](https://goreportcard.com/report/github.com/clubpay/ronykit/stub)
+
+This package provides a set of utilities and helper methods to call a REST or RPC (over websocket) Many of the boilerplate codes are not necessary anymore when you use `stub` and it provides many handy features.
 
 REST example:
 
@@ -28,15 +27,13 @@ func main() {
 		Run(ctx)
 	defer httpCtx.Release()
 }
-
 ```
 
 ## REST
+
 ### Response Handler
-When you call a REST endpoint, you can use `SetResponseHandler` to handle the response.
-There are a few helper methods to write handlers for different response status codes.
-Also, you use `DefaultResponseHandler` to set a default handler for all status codes,
-which are not handled by other handlers.
+
+When you call a REST endpoint, you can use `SetResponseHandler` to handle the response. There are a few helper methods to write handlers for different response status codes. Also, you use `DefaultResponseHandler` to set a default handler for all status codes, which are not handled by other handlers.
 
 ```go
 package main
@@ -89,6 +86,4 @@ func main() {
 		// handle error
 	}
 }
-
-
 ```
