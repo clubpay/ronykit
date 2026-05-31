@@ -1,6 +1,7 @@
 ---
-
-## import_path: github.com/clubpay/ronykit/flow short_name: flow
+import_path: github.com/clubpay/ronykit/flow
+short_name: flow
+---
 
 Type-safe workflow orchestration over Temporal using generics for workflows, activities, signals, channels, futures, and shared state.
 

@@ -1,6 +1,7 @@
 ---
-
-## import_path: github.com/clubpay/ronykit/x/di short_name: di
+import_path: github.com/clubpay/ronykit/x/di
+short_name: di
+---
 
 Dependency injection glue for fx-based service registration, stub providers, and infra param wiring.
 

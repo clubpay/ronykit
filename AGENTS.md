@@ -31,7 +31,7 @@ This file defines practical instructions for coding agents working in this repos
 ## Tooling
 
 - Install required tools: `make setup`
-- Format Markdown files: `make format-md`
+- Format Markdown files: `make format-md` (preserves YAML frontmatter via `scripts/format-markdown.sh`)
 - Lint modules (excludes `example/`): `make lint`
 - Vet modules (excludes `example/`): `make vet`
 - Tidy modules (excludes `example/`): `make tidy`

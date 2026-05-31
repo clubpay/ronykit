@@ -1,9 +1,13 @@
 ---
-
-name: plan-service description: Plan a new RonyKIT service feature — start with SRS and SDD before scaffolding (use design-new-service for the full workflow). arguments:
-- name: feature_name description: The name of the service feature to plan. required: true
-- name: characteristics description: "Comma-separated list of service characteristics (e.g. postgres, redis, rest-api, idempotent)." required: false
-
+name: plan-service
+description: Plan a new RonyKIT service feature — start with SRS and SDD before scaffolding (use design-new-service for the full workflow).
+arguments:
+- name: feature_name
+  description: The name of the service feature to plan.
+  required: true
+- name: characteristics
+  description: "Comma-separated list of service characteristics (e.g. postgres, redis, rest-api, idempotent)."
+  required: false
 ---
 
 You are planning a new RonyKIT service feature called "{{feature_name}}".

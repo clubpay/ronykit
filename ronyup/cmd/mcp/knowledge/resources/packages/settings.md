@@ -1,6 +1,7 @@
 ---
-
-## import_path: github.com/clubpay/ronykit/x/settings short_name: settings
+import_path: github.com/clubpay/ronykit/x/settings
+short_name: settings
+---
 
 Viper-backed configuration with env/file/flags/defaults priority and struct unmarshaling via `settings` tag.
 

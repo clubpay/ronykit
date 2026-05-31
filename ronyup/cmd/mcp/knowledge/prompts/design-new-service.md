@@ -1,10 +1,16 @@
 ---
-
-name: design-new-service description: End-to-end workflow — SRS, then SDD, then scaffold and implement a new RonyKIT service feature. arguments:
-- name: feature_name description: Feature directory name (e.g. billing, auth). required: true
-- name: requirements description: User-provided requirements, goals, constraints, and context. required: true
-- name: characteristics description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n, idempotent)." required: false
-
+name: design-new-service
+description: End-to-end workflow — SRS, then SDD, then scaffold and implement a new RonyKIT service feature.
+arguments:
+- name: feature_name
+  description: Feature directory name (e.g. billing, auth).
+  required: true
+- name: requirements
+  description: User-provided requirements, goals, constraints, and context.
+  required: true
+- name: characteristics
+  description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n, idempotent)."
+  required: false
 ---
 
 You are delivering a new RonyKIT service feature **{{feature_name}}** using a phased workflow: **SRS → SDD → scaffold → implement**.

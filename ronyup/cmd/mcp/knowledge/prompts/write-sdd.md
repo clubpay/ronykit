@@ -1,10 +1,16 @@
 ---
-
-name: write-sdd description: Write a Software Design Description (SDD) for a RonyKIT service feature based on an approved SRS. arguments:
-- name: feature_name description: Feature directory name (e.g. billing, auth). required: true
-- name: srs_path description: "Path to the approved SRS file (default docs/design/<feature_name>-srs.md)." required: false
-- name: characteristics description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n)." required: false
-
+name: write-sdd
+description: Write a Software Design Description (SDD) for a RonyKIT service feature based on an approved SRS.
+arguments:
+- name: feature_name
+  description: Feature directory name (e.g. billing, auth).
+  required: true
+- name: srs_path
+  description: "Path to the approved SRS file (default docs/design/<feature_name>-srs.md)."
+  required: false
+- name: characteristics
+  description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n)."
+  required: false
 ---
 
 You are writing the **Software Design Description (SDD)** for the RonyKIT service feature **{{feature_name}}mod**.

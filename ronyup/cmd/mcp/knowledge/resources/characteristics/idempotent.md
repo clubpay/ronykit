@@ -1,7 +1,8 @@
 ---
 
 keywords:
-- idempotent applies_to_files:
+- idempotent
+applies_to_files:
 - api
 - app
 - repo

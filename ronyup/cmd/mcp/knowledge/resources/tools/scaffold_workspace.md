@@ -1,6 +1,6 @@
 ---
-
-## name: scaffold_workspace
+name: scaffold_workspace
+---
 
 Initialize a new RonyKIT workspace at the given directory by delegating to `ronyup setup workspace`.
 

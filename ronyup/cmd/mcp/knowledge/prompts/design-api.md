@@ -1,10 +1,16 @@
 ---
-
-name: design-api description: Guide an AI agent through designing RonyKIT APIs with contracts, routes, handlers, and documentation. arguments:
-- name: service_name description: The service module name (without "mod" suffix). required: true
-- name: endpoints description: "Comma-separated list of endpoint names or brief descriptions (e.g. 'CreateUser, GetUser, ListUsers, DeleteUser')." required: true
-- name: auth_required description: "Whether endpoints require authentication (yes/no)." required: false
-
+name: design-api
+description: Guide an AI agent through designing RonyKIT APIs with contracts, routes, handlers, and documentation.
+arguments:
+- name: service_name
+  description: The service module name (without "mod" suffix).
+  required: true
+- name: endpoints
+  description: "Comma-separated list of endpoint names or brief descriptions (e.g. 'CreateUser, GetUser, ListUsers, DeleteUser')."
+  required: true
+- name: auth_required
+  description: "Whether endpoints require authentication (yes/no)."
+  required: false
 ---
 
 You are designing the API surface for the "{{service_name}}mod" RonyKIT service.

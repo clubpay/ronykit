@@ -1,10 +1,16 @@
 ---
-
-name: generate-stubs description: Guide an AI agent through generating and consuming typed client stubs for RonyKIT services. arguments:
-- name: service_name description: The service module name (without "mod" suffix) to generate stubs for. required: true
-- name: languages description: "Comma-separated target languages (go, typescript). Defaults to go." required: false
-- name: consumer_service description: The name of the service that will consume the generated stubs (for cross-service wiring guidance). required: false
-
+name: generate-stubs
+description: Guide an AI agent through generating and consuming typed client stubs for RonyKIT services.
+arguments:
+- name: service_name
+  description: The service module name (without "mod" suffix) to generate stubs for.
+  required: true
+- name: languages
+  description: "Comma-separated target languages (go, typescript). Defaults to go."
+  required: false
+- name: consumer_service
+  description: The name of the service that will consume the generated stubs (for cross-service wiring guidance).
+  required: false
 ---
 
 You are generating typed client stubs for the "{{service_name}}mod" RonyKIT service.

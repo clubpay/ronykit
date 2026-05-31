@@ -4,7 +4,8 @@ keywords:
 - postgres
 - mysql
 - sql
-- database applies_to_files:
+- database
+applies_to_files:
 - repo
 - migration
 - settings

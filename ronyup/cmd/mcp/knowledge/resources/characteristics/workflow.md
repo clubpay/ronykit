@@ -6,7 +6,8 @@ keywords:
 - orchestration
 - long running
 - saga
-- async applies_to_files:
+- async
+applies_to_files:
 - app
 - settings
 

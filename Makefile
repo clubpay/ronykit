@@ -11,8 +11,7 @@ setup:
 
 format-md:
 	@echo "Format Markdown files"
-	@find . -not -path './.git/*' -type f \( -iname '*.md' \) -print0 \
-		| xargs -0 markdownfmt -w -gofmt
+	@bash ./scripts/format-markdown.sh
 
 lint:
 	@echo "Run Linting"

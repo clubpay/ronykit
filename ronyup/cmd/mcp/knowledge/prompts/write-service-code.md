@@ -1,10 +1,16 @@
 ---
-
-name: write-service-code description: Guide an AI agent through writing RonyKIT service code following framework conventions. arguments:
-- name: service_name description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger"). required: true
-- name: description description: A brief description of what the service does. required: true
-- name: characteristics description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)." required: false
-
+name: write-service-code
+description: Guide an AI agent through writing RonyKIT service code following framework conventions.
+arguments:
+- name: service_name
+  description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger").
+  required: true
+- name: description
+  description: A brief description of what the service does.
+  required: true
+- name: characteristics
+  description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)."
+  required: false
 ---
 
 You are writing service code for a RonyKIT module called "{{service_name}}mod".

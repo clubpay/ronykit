@@ -4,7 +4,8 @@ keywords:
 - di
 - dependency inject
 - wire
-- lifecycle applies_to_files:
+- lifecycle
+applies_to_files:
 - module
 - service
 

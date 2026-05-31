@@ -1,10 +1,16 @@
 ---
-
-name: write-srs description: Write a Software Requirements Specification (SRS) for a new RonyKIT service feature before design or implementation. arguments:
-- name: feature_name description: Feature directory name (e.g. billing, auth) — not the Go package suffix. required: true
-- name: requirements description: User-provided requirements, goals, constraints, and context for the feature. required: true
-- name: characteristics description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n, idempotent, rest-api)." required: false
-
+name: write-srs
+description: Write a Software Requirements Specification (SRS) for a new RonyKIT service feature before design or implementation.
+arguments:
+- name: feature_name
+  description: Feature directory name (e.g. billing, auth) — not the Go package suffix.
+  required: true
+- name: requirements
+  description: User-provided requirements, goals, constraints, and context for the feature.
+  required: true
+- name: characteristics
+  description: "Comma-separated traits (e.g. postgres, cache, workflow, i18n, idempotent, rest-api)."
+  required: false
 ---
 
 You are writing the **Software Requirements Specification (SRS)** for a new RonyKIT service feature named **{{feature_name}}**.

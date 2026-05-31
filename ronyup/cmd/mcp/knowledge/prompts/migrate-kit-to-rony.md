@@ -1,9 +1,13 @@
 ---
-
-name: migrate-kit-to-rony description: Plan migration of a direct kit-based project to the rony module incrementally. arguments:
-- name: project_scope description: Services/modules to migrate first. required: true
-- name: constraints description: "Non-functional constraints such as zero-downtime, strict backward compatibility, or deadline." required: false
-
+name: migrate-kit-to-rony
+description: Plan migration of a direct kit-based project to the rony module incrementally.
+arguments:
+- name: project_scope
+  description: Services/modules to migrate first.
+  required: true
+- name: constraints
+  description: "Non-functional constraints such as zero-downtime, strict backward compatibility, or deadline."
+  required: false
 ---
 
 Create a migration guide and execution plan to move this project from direct `kit` usage to the `rony` module.

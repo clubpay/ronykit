@@ -32,7 +32,7 @@ docs/           Diagrams and extra documentation
 
 ```sh
 make setup       # Install tools (gotestsum, golangci-lint, markdownfmt)
-make format-md   # Format all Markdown files (*.md, *.MD)
+make format-md   # Format all Markdown (*.md); preserves YAML frontmatter (see scripts/format-markdown.sh)
 make test        # Run tests across all modules (excludes example/, ronyup/)
 make lint        # Lint all modules (excludes example/)
 make vet         # go vet all modules (excludes example/)

@@ -2,7 +2,8 @@
 
 keywords:
 - redis
-- cache applies_to_files:
+- cache
+applies_to_files:
 - repo
 - settings
 - app

@@ -5,7 +5,8 @@ keywords:
 - observ
 - log
 - trac
-- metric applies_to_files:
+- metric
+applies_to_files:
 - app
 - api
 - repo
