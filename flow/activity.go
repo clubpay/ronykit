@@ -40,10 +40,23 @@ type (
 
 func NewActivity[REQ, RES, STATE any](
 	name, group string, fn ActivityFunc[REQ, RES, STATE],
+	opts ...ActivityOption,
 ) *Activity[REQ, RES, STATE] {
+	cfg := newActivityConfig(opts...)
+
 	act := Activity[REQ, RES, STATE]{
-		Name:  name,
-		Fn:    fn,
+		Name: name,
+		Fn: func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
+			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
+			if cfg.CreateSpan {
+				var cf func()
+
+				ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
+				defer cf()
+			}
+
+			return fn(ctx, req)
+		},
 		group: group,
 	}
 
@@ -54,6 +67,7 @@ func NewActivity[REQ, RES, STATE any](
 
 func NewActivityFactory[REQ, RES, STATE any](
 	name, group string, fn func(s STATE) ActivityFunc[REQ, RES, STATE],
+	opts ...ActivityOption,
 ) *ActivityFactory[REQ, RES, STATE] {
 	stateT := reflect.TypeFor[func(s STATE) ActivityFunc[REQ, RES, STATE]]().In(0)
 	actFactory := &ActivityFactory[REQ, RES, STATE]{}
@@ -61,11 +75,7 @@ func NewActivityFactory[REQ, RES, STATE any](
 	registeredActivityFactories[stateT] = append(
 		registeredActivityFactories[stateT],
 		func(s any) temporalEntityT {
-			act := &Activity[REQ, RES, STATE]{
-				Name:  name,
-				Fn:    fn(s.(STATE)),
-				group: group,
-			}
+			act := NewActivity(name, group, fn(s.(STATE)), opts...)
 			actFactory.act = act
 
 			return act
@@ -75,14 +85,17 @@ func NewActivityFactory[REQ, RES, STATE any](
 	return actFactory
 }
 
-func ToActivity[STATE, REQ, RES any](name, group string, rawFn ActivityRawFunc[REQ, RES]) *Activity[REQ, RES, STATE] {
+func ToActivity[STATE, REQ, RES any](
+	name, group string,
+	rawFn ActivityRawFunc[REQ, RES],
+	opts ...ActivityOption,
+) *Activity[REQ, RES, STATE] {
 	return NewActivity(
 		name, group,
 		func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
-			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
-
 			return rawFn(ctx.ctx, req)
 		},
+		opts...,
 	)
 }
 
@@ -91,24 +104,14 @@ func ToActivityFactory[STATE, REQ, RES any](
 	factoryFn func(s STATE) ActivityRawFunc[REQ, RES],
 	opts ...ActivityOption,
 ) *ActivityFactory[REQ, RES, STATE] {
-	cfg := newActivityConfig(opts...)
-
 	return NewActivityFactory(
 		name, group,
 		func(s STATE) ActivityFunc[REQ, RES, STATE] {
 			return func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
-				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
-
-				if cfg.CreateSpan {
-					var cf func()
-
-					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
-					defer cf()
-				}
-
 				return factoryFn(s)(ctx.ctx, req)
 			}
 		},
+		opts...,
 	)
 }
 
@@ -117,21 +120,10 @@ func ToActivityFactoryNoResult[STATE, REQ any](
 	factoryFn func(s STATE) ActivityRawFuncNoResult[REQ],
 	opts ...ActivityOption,
 ) *ActivityFactory[REQ, EMPTY, STATE] {
-	cfg := newActivityConfig(opts...)
-
 	return NewActivityFactory(
 		name, group,
 		func(s STATE) ActivityFunc[REQ, EMPTY, STATE] {
 			return func(ctx *ActivityContext[REQ, EMPTY, STATE], req REQ) (*EMPTY, error) {
-				ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, s)
-
-				if cfg.CreateSpan {
-					var cf func()
-
-					ctx.ctx, _, cf = tracekit.NewSpan(ctx.ctx, name)
-					defer cf()
-				}
-
 				err := factoryFn(s)(ctx.ctx, req)
 				if err != nil {
 					return nil, err
@@ -140,6 +132,7 @@ func ToActivityFactoryNoResult[STATE, REQ any](
 				return &EMPTY{}, nil
 			}
 		},
+		opts...,
 	)
 }
 

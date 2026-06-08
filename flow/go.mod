@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/flow
 
-go 1.25.1
+go 1.25.4
 
 require (
 	github.com/clubpay/ronykit/kit v0.25.0
@@ -11,8 +11,8 @@ require (
 	github.com/nexus-rpc/sdk-go v0.6.0
 	github.com/smartystreets/goconvey v1.8.1
 	go.opentelemetry.io/otel/trace v1.44.0
-	go.temporal.io/api v1.62.12
-	go.temporal.io/sdk v1.44.0
+	go.temporal.io/api v1.62.13
+	go.temporal.io/sdk v1.44.1
 	go.uber.org/zap v1.28.0
 	golang.org/x/sync v0.20.0
 	google.golang.org/protobuf v1.36.11
@@ -42,6 +42,7 @@ require (
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/nexus-rpc/nexus-proto-annotations v0.1.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.29.0 // indirect
 	github.com/onsi/gomega v1.41.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

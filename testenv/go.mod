@@ -13,7 +13,7 @@ require (
 	github.com/orlangure/gnomock v0.32.0
 	github.com/redis/go-redis/v9 v9.20.0
 	github.com/smartystreets/goconvey v1.8.1
-	go.temporal.io/sdk v1.44.0
+	go.temporal.io/sdk v1.44.1
 	go.uber.org/fx v1.24.0
 	go.uber.org/zap v1.28.0
 )
@@ -105,6 +105,7 @@ require (
 	github.com/multiformats/go-multistream v0.6.1 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/nexus-rpc/nexus-proto-annotations v0.1.0 // indirect
 	github.com/nexus-rpc/sdk-go v0.6.0 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
 	github.com/onsi/ginkgo/v2 v2.29.0 // indirect
@@ -162,7 +163,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
-	go.temporal.io/api v1.62.12 // indirect
+	go.temporal.io/api v1.62.13 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/mock v0.5.2 // indirect

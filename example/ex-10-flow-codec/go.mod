@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/example/ex-10-rest
 
-go 1.25.1
+go 1.25.4
 
 require (
 	github.com/clubpay/ronykit/flow v0.23.9
@@ -34,6 +34,7 @@ require (
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/nexus-rpc/nexus-proto-annotations v0.1.0 // indirect
 	github.com/nexus-rpc/sdk-go v0.6.0 // indirect
 	github.com/onsi/ginkgo/v2 v2.29.0 // indirect
 	github.com/onsi/gomega v1.41.0 // indirect
@@ -55,8 +56,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
-	go.temporal.io/api v1.62.12 // indirect
-	go.temporal.io/sdk v1.44.0 // indirect
+	go.temporal.io/api v1.62.13 // indirect
+	go.temporal.io/sdk v1.44.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
