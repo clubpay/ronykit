@@ -226,6 +226,8 @@ type ExecuteWorkflowOptions struct {
 	// Optional: defaulted to Fail.
 	WorkflowIDConflictPolicy WorkflowIdConflictPolicy
 	SearchAttributes         SearchAttributes
+	Memo                     map[string]any
+	StaticDetails            string
 }
 
 type WorkflowRun[T any] struct {
@@ -260,6 +262,8 @@ func (w *Workflow[REQ, RES, STATE]) Execute(
 			WorkflowIDConflictPolicy: enumspb.WorkflowIdConflictPolicy(opts.WorkflowIDConflictPolicy),
 			StartDelay:               opts.StartDelay,
 			TypedSearchAttributes:    opts.SearchAttributes,
+			Memo:                     opts.Memo,
+			StaticDetails:            opts.StaticDetails,
 		},
 		w.Name, req,
 	)
