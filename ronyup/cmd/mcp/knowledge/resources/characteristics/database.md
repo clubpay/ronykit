@@ -35,4 +35,5 @@ Implement in `v0/adapter.go` with:
 
 Wire DB params via `di.ProvideDBParams`.
 
-Run `make sqlc-gen` after query/migration changes.
+Write repo SQL as sqlc queries (no hand-written query strings / ORM); run `make sqlc` after any query/migration change to regenerate the DAO
+code.

@@ -1,4 +1,4 @@
-.PHONY:  test test-short test-race cleanup setup gen-stub gen-go-stub gen-ts-stub
+.PHONY:  test test-short test-race cleanup setup gen-stub gen-go-stub gen-ts-stub sqlc
 
 # Prepare
 shell := $SHELL
@@ -40,6 +40,12 @@ gen-stub: gen-go-stub
 gen-ts-stub:
 	@echo "Generating Typescript Stubs for the services"
 	@go run ./gen/stub/gen.go ts -o ./stub/{{.PackageName}}stub-typescript
+	@go mod tidy
+	@go fmt ./...
+
+sqlc:
+	@echo "Generating sqlc DAO code"
+	@cd internal/repo/v0 && sqlc generate
 	@go mod tidy
 	@go fmt ./...
 

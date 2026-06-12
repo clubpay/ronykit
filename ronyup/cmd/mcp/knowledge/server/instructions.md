@@ -22,6 +22,17 @@ For cross-service integration, consume those generated stubs from other services
 For data storage defaults, prefer Postgres with sqlc-managed repositories in `internal/repo/v0` unless the request explicitly requires
 another persistence stack.
 
+Three non-negotiable coding rules (read the linked resources before writing the corresponding code):
+
+1. Model RICH domain entities — not anemic structs. Put behavior and invariants on the domain types: use entities (identity + guarded
+   methods), value objects (immutable, validating constructors), and aggregates (a root owns its children and enforces cross-entity rules).
+   Construct via `New...() (T, error)` so invalid instances can't exist. Read `knowledge://ronyup/architecture/domain-layer`.
+2. ALWAYS write integration tests for repo methods, and RUN them. Every repository port method needs an integration test against a real
+   datastore via `x/testkit` (Gnomock Postgres/Redis) covering happy path, not-found, and conflict cases. Execute the tests and confirm they
+   pass before treating the repo as done. Read `knowledge://ronyup/architecture/integration-tests`.
+3. Write the repo layer's SQL as sqlc queries (never hand-rolled query strings or an ORM), and run `make sqlc` after any query/migration
+   change to regenerate the DAO code. Read `knowledge://ronyup/architecture/postgres-sqlc`.
+
 Service package naming: use the feature name suffixed with "mod" (e.g. authmod, ledgermod, notifmod).
 
 Every service follows a fixed structure (the `ronyup setup feature --template service` scaffold produces it, sometimes with stubs you fill

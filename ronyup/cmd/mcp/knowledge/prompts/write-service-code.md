@@ -55,8 +55,13 @@ Follow the RonyKIT service structure conventions below.
 ## Key Rules
 
 1. **Thin handlers**: API handlers only validate input, call `app` methods, and map results to output DTOs.
-2. **Business logic in app**: All use-case behavior lives in `internal/app`.
+2. **Business logic in app**: Cross-aggregate orchestration and use-case coordination live in `internal/app`. Single-concept invariants and
+   behavior belong on the domain entities/aggregates/value objects (rich domain model — not anemic structs).
 3. **Repo ports**: Persistence is abstracted behind interfaces in `internal/repo/port.go` using domain types.
+   - **sqlc SQL**: Implement Postgres queries as sqlc `.sql` files and run `make sqlc` to regenerate DAO code — never hand-write query
+     strings or use an ORM, and never hand-edit generated files.
+   - **Mandatory integration tests**: Every repo port method needs an `x/testkit` integration test (happy path, not-found, conflict) that is
+     actually run and passing.
 4. **DI wiring**: Use `x/di.RegisterService` in `service.go` init(). Wire DB/Redis params via `di.ProvideDBParams` and
    `di.ProvideRedisParams`.
 5. **Settings**: Use `x/settings` with typed struct and `settings` tags for configuration.
@@ -112,13 +117,18 @@ rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
 
 ## Workflow of Implementation
 
-1. Start with `internal/domain/` — define domain types and errors.
+1. Start with `internal/domain/` — define RICH domain types and errors. Use entities (identity + guarded methods), value objects (immutable,
+   validating constructors), and aggregates (root enforces cross-entity invariants). Put behavior on the domain; avoid anemic structs of
+   public fields. Construct via `New...() (T, error)` so invalid instances can't exist.
 2. Define repository interfaces in `internal/repo/port.go`.
 3. Implement business logic in `internal/app/app.go`.
 4. Create API handlers in `api/` with Input/Output DTOs.
 5. Wire everything in `module.go` and `service.go`.
-6. Write integration tests using `x/testkit`.
-7. Run `make gen-stub` to generate client stubs.
+6. For Postgres repos, write the SQL as sqlc queries in `data/db/queries/*.sql` (never hand-rolled query strings) and run `make sqlc` to
+   regenerate the DAO code after any query/migration change.
+7. Write integration tests using `x/testkit` for EVERY repository port method (happy path, not-found, conflict), then RUN them and confirm
+   they pass before treating the repo as done.
+8. Run `make gen-stub` to generate client stubs.
 
 Use the `scaffold_feature` tool to create the module skeleton, then read the relevant `knowledge://ronyup/architecture/*`, `packages/*`, and
 `characteristics/*` resources for architecture hints and package recommendations before filling in the generated files.
