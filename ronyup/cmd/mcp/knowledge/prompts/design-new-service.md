@@ -31,10 +31,10 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 
 1. Read `knowledge://ronyup/architecture/srs-template` and relevant characteristics/architecture resources.
 2. Ask clarifying questions if needed.
-3. Write the SRS file with numbered FR/NFR requirements and an API requirements table.
+3. Write the SRS file with the required `status: draft` frontmatter, numbered FR/NFR requirements, and an API requirements table.
 4. Present a summary and **wait for user approval** before Phase 2.
 
-**Gate:** Do not proceed until the user confirms the SRS is approved.
+**Gate:** Do not proceed until the user approves the SRS by setting its frontmatter to `status: approved` (or explicitly telling you to). Never set `status: approved` yourself.
 
 ---
 
@@ -42,12 +42,12 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 
 **Goal:** `docs/design/{{feature_name}}-sdd.md`
 
-1. Read the approved SRS.
+1. Read the approved SRS (confirm its frontmatter is `status: approved`).
 2. Read `knowledge://ronyup/architecture/sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, `error-handling`.
-3. Write the SDD with requirement traceability to the SRS.
+3. Write the SDD with the required `status: draft` frontmatter and requirement traceability to the SRS.
 4. Present a summary and **wait for user approval** before Phase 3.
 
-**Gate:** Do not scaffold or code until the user confirms the SDD is approved.
+**Gate:** Do not scaffold or code until the user approves the SDD by setting its frontmatter to `status: approved`. `scaffold_feature` enforces this: it refuses to run unless both the SRS and SDD are `status: approved`.
 
 ---
 
@@ -74,5 +74,5 @@ If implementation reveals design gaps, update the SDD (revision history) before 
 ## Phase discipline
 
 - Complete one phase at a time unless the user explicitly asks to skip ahead.
-- Never skip SRS or SDD for non-trivial features.
+- Never skip SRS or SDD for non-trivial features. `scaffold_feature` enforces the gate (approved SRS + SDD); only pass `skipDesignGate=true` when the user explicitly asks to skip the design documents.
 - Keep handlers thin; business logic in `internal/app`; persistence behind repo ports.

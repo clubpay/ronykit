@@ -2,6 +2,20 @@
 
 Use this outline when writing `docs/design/<feature_name>-srs.md`. Replace bracketed placeholders with concrete content. Keep requirements testable and numbered.
 
+## Required frontmatter (approval gate)
+
+The file **must** begin with this YAML frontmatter. The `scaffold_feature` tool refuses to run until this document has `status: approved`:
+
+```yaml
+---
+feature: <feature_name>
+document: SRS
+status: draft   # set to "approved" ONLY after the user reviews and approves
+---
+```
+
+Write `status: draft` when you create the document. **Never** set `status: approved` yourself — only the user approves it (by editing the file or explicitly telling you to). This is enforced by `scaffold_feature`, not just convention.
+
 ## 1. Introduction
 
 ### 1.1 Purpose

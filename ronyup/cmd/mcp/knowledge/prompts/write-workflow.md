@@ -2,15 +2,15 @@
 name: write-workflow
 description: Guide an AI agent through writing durable workflow jobs using the RonyKIT flow module (Temporal-based).
 arguments:
-	- name: workflow_name
-	  description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector").
-	  required: true
-	- name: description
-	  description: A brief description of what the workflow orchestrates.
-	  required: true
-	- name: service_name
-	  description: The service module that owns this workflow (without "mod" suffix).
-	  required: false
+- name: workflow_name
+  description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector").
+  required: true
+- name: description
+  description: A brief description of what the workflow orchestrates.
+  required: true
+- name: service_name
+  description: The service module that owns this workflow (without "mod" suffix).
+  required: false
 ---
 
 You are writing a durable workflow called "{{workflow_name}}" using the RonyKIT `flow` package.

@@ -4,6 +4,10 @@ For new service features, follow the document-first workflow: write and get appr
 `docs/design/<feature>-sdd.md`), then scaffold and implement. MCP prompts: `design-new-service` (full workflow), `write-srs`, `write-sdd`.
 Read `knowledge://ronyup/architecture/design-documents`.
 
+This gate is ENFORCED, not advisory: `scaffold_feature` refuses to run unless both `docs/design/<feature>-srs.md` and `docs/design/<feature>-sdd.md`
+exist with frontmatter `status: approved`. Write each document with `status: draft`; only the user sets `status: approved` after reviewing. Do
+not approve documents yourself, and do not pass `skipDesignGate=true` unless the user explicitly asks to skip the design documents.
+
 Follow layered service conventions:
 
 - keep API handlers thin,

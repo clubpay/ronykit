@@ -16,10 +16,26 @@ Before scaffolding or writing service code, capture requirements and design in `
 
 Use the feature directory name (e.g. `billing`, `auth`), not the Go package suffix (`billingmod`).
 
-## Gate rules
+## Approval status (frontmatter)
 
-- Do **not** write the SDD until the SRS is complete and the user has reviewed it.
-- Do **not** scaffold or implement code until the SDD is complete and the user has reviewed it.
+Both documents **must** begin with YAML frontmatter that carries an approval status:
+
+```yaml
+---
+feature: <feature_name>
+document: SRS   # or SDD
+status: draft   # set to "approved" only after the user reviews
+---
+```
+
+Agents write documents with `status: draft`. **Only the user** flips a document to `status: approved` (by editing the file or explicitly telling the agent to). Agents must never approve documents on their own behalf.
+
+## Gate rules (enforced by the tool)
+
+- Do **not** write the SDD until the SRS is complete and the user has approved it (`status: approved`).
+- Do **not** scaffold or implement code until the SDD is complete and approved.
+- The `scaffold_feature` tool **enforces** this: it returns an error and refuses to run unless both `docs/design/<feature>-srs.md` and `docs/design/<feature>-sdd.md` exist with `status: approved`. This is a hard gate, not a convention.
+- The only bypass is `skipDesignGate=true` on `scaffold_feature`, which must be used **only** when the user explicitly asks to skip the design documents.
 - When implementation diverges from the SDD, update the SDD first (or note the change in the SDD revision history).
 
 ## SRS must cover

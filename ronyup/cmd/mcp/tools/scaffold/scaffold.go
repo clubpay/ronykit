@@ -67,8 +67,13 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 
 func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) {
 	tool := &mcpsdk.Tool{
-		Name:        "scaffold_feature",
-		Description: "Create a new feature in the current workspace.",
+		Name: "scaffold_feature",
+		Description: "Create a new feature in the current workspace. " +
+			"GATED: requires an approved SRS (docs/design/<name>-srs.md) and SDD " +
+			"(docs/design/<name>-sdd.md), each with frontmatter `status: approved`. " +
+			"Fails with guidance if they are missing or unapproved. Use the write-srs " +
+			"and write-sdd prompts first; only set skipDesignGate=true when the user " +
+			"explicitly asks to skip the design documents.",
 		InputSchema: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
@@ -96,6 +101,12 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 					"description": "When true, place the module under {featurePrefix}/{template}/{name}/.",
 					"default":     false,
 				},
+				"skipDesignGate": map[string]any{
+					"type": "boolean",
+					"description": "Bypass the approved SRS/SDD requirement. Only set to true " +
+						"when the user explicitly asks to skip the design documents.",
+					"default": false,
+				},
 			},
 			"required": []string{"workspacePath", "name"},
 		},
@@ -110,6 +121,7 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				Template        string `json:"template"`
 				FeaturePrefix   string `json:"featurePrefix"`
 				GroupByTemplate bool   `json:"groupByTemplate"`
+				SkipDesignGate  bool   `json:"skipDesignGate"`
 			}
 			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
 				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
@@ -121,6 +133,12 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 
 			if args.Name == "" {
 				return errorResult(rkit.L("name is required")), nil
+			}
+
+			if !args.SkipDesignGate {
+				if problems := checkDesignGate(args.WorkspacePath, args.Name); len(problems) > 0 {
+					return designGateError(args.Name, problems), nil
+				}
 			}
 
 			if args.Template == "" {

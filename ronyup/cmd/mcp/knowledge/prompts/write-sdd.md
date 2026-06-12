@@ -19,7 +19,7 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 
 ## Prerequisites
 
-- An approved SRS must exist at `docs/design/{{feature_name}}-srs.md` {{#if srs_path}}(or at {{srs_path}}){{/if}}.
+- An **approved** SRS must exist at `docs/design/{{feature_name}}-srs.md` {{#if srs_path}}(or at {{srs_path}}){{/if}} with frontmatter `status: approved`. If it is still `draft`, stop and ask the user to approve the SRS first.
 - Read the SRS fully before designing. Trace every design element back to SRS requirement IDs.
 
 ## Instructions
@@ -31,6 +31,7 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 
 ## SDD content rules
 
+- Begin the file with the required YAML frontmatter (see `sdd-template`). Set `status: draft`. **Never** set `status: approved` yourself — only the user approves it. The `scaffold_feature` tool is gated on this status, so an unapproved SDD blocks scaffolding and implementation.
 - Follow IEEE 1016–2009 structure mapped to RonyKIT modules (see `sdd-template` resource).
 - Include a **requirement traceability** table (SRS FR/NFR → design element → file path).
 - Specify every API operation: route, handler name, input/output fields, domain errors.
@@ -41,7 +42,8 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 
 ## Output
 
-- Create or update `docs/design/{{feature_name}}-sdd.md`.
+- Create or update `docs/design/{{feature_name}}-sdd.md` with `status: draft` frontmatter.
 - Summarize key design decisions and any SRS gaps found.
 - **Stop here.** Do not scaffold or implement until the user reviews and approves the SDD.
-- When approved, run `scaffold_feature`, then `write-service-code` using the SDD as the source of truth.
+- Approval = the user changes the frontmatter to `status: approved` (or explicitly tells you to). Do not approve it on your own.
+- `scaffold_feature` will refuse to run until both the SRS and SDD have `status: approved`. When approved, run `scaffold_feature`, then `write-service-code` using the SDD as the source of truth.

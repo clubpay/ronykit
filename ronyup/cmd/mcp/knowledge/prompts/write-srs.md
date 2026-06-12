@@ -32,6 +32,7 @@ User requirements and context:
 
 ## SRS content rules
 
+- Begin the file with the required YAML frontmatter (see `srs-template`). Set `status: draft`. **Never** set `status: approved` yourself — only the user approves it. The `scaffold_feature` tool is gated on this status, so an unapproved SRS blocks scaffolding and implementation.
 - Follow IEEE 830 structure (see template resource).
 - Number functional requirements (FR-001, …) and non-functional requirements (NFR-001, …).
 - Every FR must have acceptance criteria.
@@ -41,7 +42,8 @@ User requirements and context:
 
 ## Output
 
-- Create or update `docs/design/{{feature_name}}-srs.md`.
+- Create or update `docs/design/{{feature_name}}-srs.md` with `status: draft` frontmatter.
 - Summarize what you wrote and list open questions.
 - **Stop here.** Do not write the SDD, scaffold, or code until the user reviews and approves the SRS.
+- Approval = the user changes the frontmatter to `status: approved` (or explicitly tells you to). Do not approve it on your own.
 - When approved, continue with the `write-sdd` prompt (or `design-new-service` for the full workflow).
