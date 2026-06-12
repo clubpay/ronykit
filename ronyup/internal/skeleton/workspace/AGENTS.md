@@ -6,15 +6,16 @@ This file defines practical guidance for AI coding assistants in this workspace.
 
 1. Enable the **`ronyup` MCP server** (`.cursor/mcp.json` or `.ai/mcp/mcp.json`).
 2. Invoke the **`ronykit-framework` skill** (`/ronykit-framework`) for orchestration workflows.
-3. Read architecture and package guidance from **MCP knowledge resources** — do not invent service layout. Index: `.agents/skills/ronykit-framework/references/mcp-map.md`.
+3. Read architecture and package guidance from **MCP knowledge resources** — do not invent service layout. Index:
+   `.agents/skills/ronykit-framework/references/mcp-map.md`.
 
 ## Repo Purpose
 
 - Go workspace for RonyKIT services.
 - Main folders in generated workspaces:
-  - `cmd/service`: service process wiring and bootstrap.
-  - `feature/`: business modules.
-  - `pkg/`: shared libraries (cross-module, business-agnostic).
+	- `cmd/service`: service process wiring and bootstrap.
+	- `feature/`: business modules.
+	- `pkg/`: shared libraries (cross-module, business-agnostic).
 
 ## Core Rules
 
@@ -23,6 +24,16 @@ This file defines practical guidance for AI coding assistants in this workspace.
 - Prefer targeted changes over broad refactors.
 - Do not run destructive git operations.
 - Run focused checks first, then broader checks.
+
+## Package Selection (mandatory)
+
+- Before hand-rolling a utility or importing a stdlib/third-party package, use the RonyKIT equivalent. The authoritative map is the MCP
+  resource `knowledge://ronyup/architecture/package-selection`.
+- Common helpers (IDs, JSON/byte casts, string↔number, case transforms, slice/map ops) → `x/rkit`. Logging → `x/telemetry/logkit`. Config →
+  `x/settings`. DI → `x/di` + `uber/fx`. Errors → `rony/errs`. DB/Redis/S3 → `x/datasource`. Cache → `x/cache`. Rate limiting →
+  `x/ratelimit`. Batching → `x/batch`. Pools → `x/p`.
+- Durable workflows: use the `flow` package only — never import `go.temporal.io/sdk` directly.
+- The repo `.golangci.yml` enforces this with `depguard`; a forbidden-import lint failure is a design violation, not a formatting nit.
 
 ## Architecture Conventions
 
@@ -54,9 +65,9 @@ For a new feature module:
 4. In other service modules, consume the generated stubs for client calls.
 5. Add tests for app and API behavior.
 6. Run:
-   - `make tidy`
-   - `make lint`
-   - `make test`
+	- `make tidy`
+	- `make lint`
+	- `make test`
 
 ## Quality Expectations
 

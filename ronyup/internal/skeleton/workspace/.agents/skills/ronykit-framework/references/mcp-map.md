@@ -1,6 +1,7 @@
 # Ronyup MCP index
 
-Reference for agents using the `ronyup mcp` server. URIs use the form `knowledge://ronyup/<category>/<name>` unless your client lists resources by name only.
+Reference for agents using the `ronyup mcp` server. URIs use the form `knowledge://ronyup/<category>/<name>` unless your client lists
+resources by name only.
 
 Server instructions (always applied on connect) are embedded from `ronyup/cmd/mcp/knowledge/server/instructions.md`.
 
@@ -34,6 +35,7 @@ Read these when implementing or reviewing service code.
 
 | Resource                | Topic                                            |
 |-------------------------|--------------------------------------------------|
+| `package-selection`     | Mandatory reach-for-X → use-Y package map        |
 | `design-documents`      | SRS/SDD workflow, paths, gate rules              |
 | `srs-template`          | SRS section outline (IEEE 830)                   |
 | `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
@@ -59,19 +61,23 @@ Read these when implementing or reviewing service code.
 
 ## Package resources (`x/` toolkit)
 
-| Resource   | Package                |
-|------------|------------------------|
-| `di`       | `x/di`                 |
-| `settings` | `x/settings`           |
-| `logkit`   | `x/telemetry/logkit`   |
-| `tracekit` | `x/telemetry/tracekit` |
-| `meterkit` | `x/telemetry/meterkit` |
-| `testkit`  | `x/testkit`            |
-| `i18n`     | `x/i18n`               |
-| `apidoc`   | `x/apidoc`             |
-| `cache`    | `x/cache`              |
-| `flow`     | `flow`                 |
-| `rkit`     | `x/rkit`               |
+| Resource     | Package                |
+|--------------|------------------------|
+| `di`         | `x/di`                 |
+| `settings`   | `x/settings`           |
+| `logkit`     | `x/telemetry/logkit`   |
+| `tracekit`   | `x/telemetry/tracekit` |
+| `meterkit`   | `x/telemetry/meterkit` |
+| `testkit`    | `x/testkit`            |
+| `i18n`       | `x/i18n`               |
+| `apidoc`     | `x/apidoc`             |
+| `cache`      | `x/cache`              |
+| `datasource` | `x/datasource`         |
+| `ratelimit`  | `x/ratelimit`          |
+| `batch`      | `x/batch`              |
+| `p`          | `x/p`                  |
+| `flow`       | `flow`                 |
+| `rkit`       | `x/rkit`               |
 
 ## Characteristics (keyword routing)
 

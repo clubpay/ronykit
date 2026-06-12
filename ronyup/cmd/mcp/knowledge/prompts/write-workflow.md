@@ -2,15 +2,15 @@
 name: write-workflow
 description: Guide an AI agent through writing durable workflow jobs using the RonyKIT flow module (Temporal-based).
 arguments:
-- name: workflow_name
-  description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector").
-  required: true
-- name: description
-  description: A brief description of what the workflow orchestrates.
-  required: true
-- name: service_name
-  description: The service module that owns this workflow (without "mod" suffix).
-  required: false
+	- name: workflow_name
+	  description: The name of the workflow to implement (e.g. "OrderFulfillment", "DataCollector").
+	  required: true
+	- name: description
+	  description: A brief description of what the workflow orchestrates.
+	  required: true
+	- name: service_name
+	  description: The service module that owns this workflow (without "mod" suffix).
+	  required: false
 ---
 
 You are writing a durable workflow called "{{workflow_name}}" using the RonyKIT `flow` package.
@@ -18,6 +18,12 @@ You are writing a durable workflow called "{{workflow_name}}" using the RonyKIT 
 Workflow description: {{description}}
 
 {{#if service_name}} This workflow belongs to the "{{service_name}}mod" service. {{/if}}
+
+## Hard Rule: use `flow`, never the raw Temporal SDK
+
+Implement this workflow with the RonyKIT `flow` package ONLY. Do NOT import `go.temporal.io/sdk/*` (workflow, activity, client, worker,
+etc.) anywhere in service code. `flow` wraps Temporal to enforce determinism, typed request/response/state, retry ergonomics, and dependency
+injection via `ctx.S()`. Bypassing it with the bare SDK is a design violation and fails `make lint` (depguard denies the import).
 
 ## Core Concepts
 
@@ -37,32 +43,32 @@ The `flow` package (`github.com/clubpay/ronykit/flow`) provides type-safe generi
 
 ```go
 var {{workflow_name}} = flow.NewWorkflow[MyRequest, MyResponse, *app.App](
-    "{{service_name}}/{{workflow_name}}", "{{service_name}}",
-    func(ctx *flow.WorkflowContext[MyRequest, MyResponse, *app.App], req MyRequest) (*MyResponse, error) {
-        // Execute activities in sequence
-        result1, err := DoStepOne.Execute(ctx.Context(), req.Input, flow.ExecuteActivityOptions{
-            StartToCloseTimeout: 30 * time.Second,
-        }).Get(ctx.Context())
-        if err != nil {
-            return nil, err
-        }
+"{{service_name}}/{{workflow_name}}", "{{service_name}}",
+func(ctx *flow.WorkflowContext[MyRequest, MyResponse, *app.App], req MyRequest) (*MyResponse, error) {
+// Execute activities in sequence
+result1, err := DoStepOne.Execute(ctx.Context(), req.Input, flow.ExecuteActivityOptions{
+StartToCloseTimeout: 30 * time.Second,
+}).Get(ctx.Context())
+if err != nil {
+return nil, err
+}
 
-        // Use timers for delays
-        _ = ctx.Sleep(5 * time.Minute)
+// Use timers for delays
+_ = ctx.Sleep(5 * time.Minute)
 
-        // Execute more activities
-        result2, err := DoStepTwo.Execute(ctx.Context(), result1.Output, flow.ExecuteActivityOptions{
-            StartToCloseTimeout: 60 * time.Second,
-            RetryPolicy: &flow.RetryPolicy{
-                MaximumAttempts: 3,
-            },
-        }).Get(ctx.Context())
-        if err != nil {
-            return nil, err
-        }
+// Execute more activities
+result2, err := DoStepTwo.Execute(ctx.Context(), result1.Output, flow.ExecuteActivityOptions{
+StartToCloseTimeout: 60 * time.Second,
+RetryPolicy: &flow.RetryPolicy{
+MaximumAttempts: 3,
+},
+}).Get(ctx.Context())
+if err != nil {
+return nil, err
+}
 
-        return &MyResponse{Result: result2.Value}, nil
-    },
+return &MyResponse{Result: result2.Value}, nil
+},
 )
 ```
 
@@ -70,16 +76,16 @@ var {{workflow_name}} = flow.NewWorkflow[MyRequest, MyResponse, *app.App](
 
 ```go
 var DoStepOne = flow.NewActivity[StepOneReq, StepOneRes, *app.App](
-	"{{service_name}}/DoStepOne", "{{service_name}}",
-	func(ctx *flow.ActivityContext[StepOneReq, StepOneRes, *app.App], req StepOneReq) (*StepOneRes, error) {
-		// Access service dependencies via typed state
-		db := ctx.S().AccountRepo
-		result, err := db.GetAccount(ctx.Context(), req.AccountID)
-		if err != nil {
-			return nil, err
-		}
-		return &StepOneRes{Account: result}, nil
-	},
+"{{service_name}}/DoStepOne", "{{service_name}}",
+func (ctx *flow.ActivityContext[StepOneReq, StepOneRes, *app.App], req StepOneReq) (*StepOneRes, error) {
+// Access service dependencies via typed state
+db := ctx.S().AccountRepo
+result, err := db.GetAccount(ctx.Context(), req.AccountID)
+if err != nil {
+return nil, err
+}
+return &StepOneRes{Account: result}, nil
+},
 )
 ```
 
@@ -87,14 +93,14 @@ var DoStepOne = flow.NewActivity[StepOneReq, StepOneRes, *app.App](
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
-	HostPort:  cfg.TemporalHostPort,
-	Namespace: cfg.TemporalNamespace,
-	TaskQueue: cfg.TemporalTaskQueue,
+HostPort:  cfg.TemporalHostPort,
+Namespace: cfg.TemporalNamespace,
+TaskQueue: cfg.TemporalTaskQueue,
 })
 
 sdk := flow.NewSDK(flow.SDKConfig{
-	DefaultBackend: backend,
-	Logger:         logger,
+DefaultBackend: backend,
+Logger:         logger,
 })
 
 // Register workflows/activities and inject shared state
@@ -117,8 +123,8 @@ var ApprovalSignal = flow.NewSignal[ApprovalPayload]("approval")
 // In workflow: wait for signal
 ch := ApprovalSignal.GetChannel(ctx.Context())
 sel := ctx.Selector()
-flow.SelectorAddReceive(sel, ch, func(payload ApprovalPayload) {
-	// handle approval
+flow.SelectorAddReceive(sel, ch, func (payload ApprovalPayload) {
+// handle approval
 })
 sel.Select(ctx.Context())
 ```
@@ -128,8 +134,8 @@ sel.Select(ctx.Context())
 ```go
 sel := ctx.Selector()
 timerFuture := ctx.Timer(24 * time.Hour)
-flow.SelectorAddFuture(sel, timerFuture, func() { /* timeout path */ })
-flow.SelectorAddReceive(sel, signalCh, func(val T) { /* signal path */ })
+flow.SelectorAddFuture(sel, timerFuture, func () { /* timeout path */ })
+flow.SelectorAddReceive(sel, signalCh, func (val T) { /* signal path */ })
 sel.Select(ctx.Context())
 ```
 
@@ -137,7 +143,7 @@ sel.Select(ctx.Context())
 
 ```go
 if ctx.GetVersion("v1", workflow.DefaultVersion, 1) == 1 {
-	return nil, ctx.ContinueAsNewError(updatedReq)
+return nil, ctx.ContinueAsNewError(updatedReq)
 }
 ```
 
@@ -145,7 +151,7 @@ if ctx.GetVersion("v1", workflow.DefaultVersion, 1) == 1 {
 
 ```go
 run := ChildWorkflow.ExecuteAsChild(ctx.Context(), childReq, flow.ExecuteChildWorkflowOptions{
-	WorkflowID: fmt.Sprintf("{{service_name}}/Child/%s", id),
+WorkflowID: fmt.Sprintf("{{service_name}}/Child/%s", id),
 })
 result, err := run.Get(ctx.Context())
 ```
@@ -162,7 +168,7 @@ result, err := run.Get(ctx.Context())
 1. Define request/response structs for the workflow and each activity.
 2. Define activities as package-level vars with `flow.NewActivity`.
 3. Define the workflow as a package-level var with `flow.NewWorkflow`.
-4. Keep workflows deterministic — no direct I/O, no time.Now(), no random.
+4. Keep workflows deterministic — no direct I/O, no time.Now(), no random, and no `go.temporal.io/sdk` imports (use `flow` wrappers only).
 5. Access dependencies in activities via `ctx.S()`.
 6. Wire the SDK in datasource module, call `InitWithState(app)`.
 7. Add retry policies to activities that call external services.

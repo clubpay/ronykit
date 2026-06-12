@@ -13,8 +13,9 @@ applies_to_files:
 
 ---
 
-When a feature requires durable orchestration, model it with `flow`:
+When a feature requires durable orchestration, model it with `flow` — never the raw `go.temporal.io/sdk`:
 
+- use `flow` exclusively; importing the Temporal SDK directly is forbidden (it loses determinism, typing, retry, and state-injection guarantees and fails `make lint`),
 - keep workflows deterministic,
 - move external I/O into typed activities,
 - register workflows/activities at package level,

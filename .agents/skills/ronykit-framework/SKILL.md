@@ -26,10 +26,10 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 2. **Documents** — Write SRS to `docs/design/<feature>-srs.md`, SDD to `docs/design/<feature>-sdd.md`; get user approval before scaffolding. Read `architecture/design-documents`, `srs-template`, `sdd-template`.
 3. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
 4. **Load knowledge** (read MCP resources before coding):
-   - Always: `architecture/service-structure`, `architecture/api-handler-files`
-   - Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
-   - Wiring: `architecture/module-wiring`, `architecture/settings-config`
-   - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
+- Always: `architecture/service-structure`, `architecture/api-handler-files`
+- Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`
+- Wiring: `architecture/module-wiring`, `architecture/settings-config`
+- Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
 5. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module.
 6. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
 7. **Finish** — `make gen-stub` in the feature after contract changes; run targeted tests, then workspace `make lint` / `make test` when appropriate.
@@ -50,10 +50,12 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 - Handlers thin; business logic in `internal/app`; persistence behind `internal/repo/port.go`.
 - Default storage: Postgres + sqlc in `internal/repo/v0` unless the user requests otherwise.
-- Use `x/di`, `x/settings`, `x/telemetry/*`, `rony/errs` — see MCP `packages/*` resources; avoid third-party substitutes.
+- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource. Use `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache`, `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and `rony/errs` — avoid third-party/stdlib substitutes.
+- **Workflows: `flow` only.** Never import `go.temporal.io/sdk` directly — it's denied by the workspace `.golangci.yml`.
 - Feature Go package name: `<feature>mod` (e.g. `authmod`, not `auth`).
 - After contract changes: `make gen-stub` in that feature module.
 - Inter-service calls: generated stubs, not hand-written HTTP clients.
+- `make lint` failures from `depguard` are design violations (forbidden imports), not formatting nits — fix by switching to the RonyKIT package.
 
 ## Validation
 

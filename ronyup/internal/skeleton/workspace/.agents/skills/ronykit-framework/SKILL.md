@@ -50,10 +50,12 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 - Handlers thin; business logic in `internal/app`; persistence behind `internal/repo/port.go`.
 - Default storage: Postgres + sqlc in `internal/repo/v0` unless the user requests otherwise.
-- Use `x/di`, `x/settings`, `x/telemetry/*`, `rony/errs` — see MCP `packages/*` resources; avoid third-party substitutes.
+- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource. Use `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache`, `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and `rony/errs` — avoid third-party/stdlib substitutes.
+- **Workflows: `flow` only.** Never import `go.temporal.io/sdk` directly — it's denied by the workspace `.golangci.yml`.
 - Feature Go package name: `<feature>mod` (e.g. `authmod`, not `auth`).
 - After contract changes: `make gen-stub` in that feature module.
 - Inter-service calls: generated stubs, not hand-written HTTP clients.
+- `make lint` failures from `depguard` are design violations (forbidden imports), not formatting nits — fix by switching to the RonyKIT package.
 
 ## Validation
 

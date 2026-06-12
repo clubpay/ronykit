@@ -1,0 +1,38 @@
+version: "2"
+# RonyKIT package-selection enforcement.
+# This config is intentionally minimal: it keeps golangci-lint's default linters
+# and adds `depguard` to fail the build when service code imports a third-party
+# or stdlib package that has a mandated RonyKIT replacement. See the ronyup MCP
+# resource `knowledge://ronyup/architecture/package-selection` for the full map.
+run:
+  tests: false
+linters:
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        ronykit:
+          list-mode: lax
+          files:
+            - $all
+            - "!$test"
+          deny:
+            - pkg: go.temporal.io/sdk
+              desc: "Do not use the Temporal SDK directly. Use github.com/clubpay/ronykit/flow for all durable workflows/activities."
+            - pkg: log
+              desc: "Do not use the standard log package. Use github.com/clubpay/ronykit/x/telemetry/logkit."
+            - pkg: log/slog
+              desc: "Do not use log/slog. Use github.com/clubpay/ronykit/x/telemetry/logkit."
+            - pkg: go.uber.org/zap
+              desc: "Do not use zap directly. Use github.com/clubpay/ronykit/x/telemetry/logkit."
+            - pkg: github.com/google/uuid
+              desc: "Do not use google/uuid. Use github.com/clubpay/ronykit/x/rkit (RandomID/RandomIDs/SecureRandomUint64)."
+            - pkg: io/ioutil
+              desc: "io/ioutil is deprecated; use io / os."
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

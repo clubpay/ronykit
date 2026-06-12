@@ -2,15 +2,15 @@
 name: write-service-code
 description: Guide an AI agent through writing RonyKIT service code following framework conventions.
 arguments:
-- name: service_name
-  description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger").
-  required: true
-- name: description
-  description: A brief description of what the service does.
-  required: true
-- name: characteristics
-  description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)."
-  required: false
+	- name: service_name
+	  description: The name of the service module (without the "mod" suffix, e.g. "auth", "ledger").
+	  required: true
+	- name: description
+	  description: A brief description of what the service does.
+	  required: true
+	- name: characteristics
+	  description: "Comma-separated traits (e.g. postgres, redis, cache, workflow, i18n)."
+	  required: false
 ---
 
 You are writing service code for a RonyKIT module called "{{service_name}}mod".
@@ -19,7 +19,9 @@ Service description: {{description}}
 
 ## Design input
 
-Before writing code, read the approved SDD at `docs/design/{{service_name}}-sdd.md` (if it exists). The SDD is the source of truth for API operations, domain types, repository ports, settings, and tests. If there is no SDD yet, stop and use the `write-sdd` prompt (after an approved SRS). Update the SDD when implementation reveals design gaps.
+Before writing code, read the approved SDD at `docs/design/{{service_name}}-sdd.md` (if it exists). The SDD is the source of truth for API
+operations, domain types, repository ports, settings, and tests. If there is no SDD yet, stop and use the `write-sdd` prompt (after an
+approved SRS). Update the SDD when implementation reveals design gaps.
 
 {{#if characteristics}} Requested characteristics: {{characteristics}} {{/if}}
 
@@ -55,12 +57,20 @@ Follow the RonyKIT service structure conventions below.
 1. **Thin handlers**: API handlers only validate input, call `app` methods, and map results to output DTOs.
 2. **Business logic in app**: All use-case behavior lives in `internal/app`.
 3. **Repo ports**: Persistence is abstracted behind interfaces in `internal/repo/port.go` using domain types.
-4. **DI wiring**: Use `x/di.RegisterService` in `service.go` init(). Wire DB/Redis params via `di.ProvideDBParams` and `di.ProvideRedisParams`.
+4. **DI wiring**: Use `x/di.RegisterService` in `service.go` init(). Wire DB/Redis params via `di.ProvideDBParams` and
+   `di.ProvideRedisParams`.
 5. **Settings**: Use `x/settings` with typed struct and `settings` tags for configuration.
 6. **Logging**: Use `x/telemetry/logkit` exclusively — never raw log/slog/zap.
-7. **Error handling**: Use `rony/errs` exclusively. Define domain errors with `errs.GenWrap(code, "ERROR_CODE")` or `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE.
-8. **Handlers DTO**: DTOs should have proper `json` tags
-9. **Handlers Signature**: Handlers should have a signature of `func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error)` **inputDTO MUST NOT be a pointer**
+7. **Error handling**: Use `rony/errs` exclusively. Define domain errors with `errs.GenWrap(code, "ERROR_CODE")` or
+   `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE.
+8. **Package selection (mandatory)**: Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent —
+   read `knowledge://ronyup/architecture/package-selection`. Common helpers (IDs, JSON/byte casts, string↔number, case transforms, slice/map
+   ops) → `x/rkit`; durable workflows → `flow` only (never `go.temporal.io/sdk`); infra connections → `x/datasource`;
+   cache/rate-limit/batch/pools → `x/cache`/`x/ratelimit`/`x/batch`/`x/p`. The workspace `.golangci.yml` (depguard) fails the build on
+   forbidden imports.
+9. **Handlers DTO**: DTOs should have proper `json` tags
+10. **Handlers Signature**: Handlers should have a signature of
+    `func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error)` **inputDTO MUST NOT be a pointer**
 
 ## Handler Signature Pattern
 
@@ -68,11 +78,11 @@ Follow the RonyKIT service structure conventions below.
 type RContext = rony.UnaryCtx[*State, Action]
 
 func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error) {
-	result, err := svc.app.DoSomething(ctx.Context(), in.Field)
-	if err != nil {
-		return nil, err
-	}
-	return toOutputDTO(result), nil
+result, err := svc.app.DoSomething(ctx.Context(), in.Field)
+if err != nil {
+return nil, err
+}
+return toOutputDTO(result), nil
 }
 ```
 
@@ -80,11 +90,11 @@ func (svc Service) HandlerName(ctx *RContext, in InputDTO) (*OutputDTO, error) {
 
 ```go
 func (svc Service) Desc() *desc.Service {
-	return rony.Setup[*State, Action](
-		"{{service_name}}",
-		rony.ToInitiateState[*State, Action](&State{}),
-		rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
-	)
+return rony.Setup[*State, Action](
+"{{service_name}}",
+rony.ToInitiateState[*State, Action](&State{}),
+rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
+)
 }
 ```
 
@@ -94,9 +104,9 @@ If the service has no shared state, use `rony.EMPTY` / `rony.NOP`:
 type RContext = rony.SUnaryCtx
 
 rony.Setup[rony.EMPTY, rony.NOP](
-	"{{service_name}}",
-	rony.EmptyState(),
-	rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
+"{{service_name}}",
+rony.EmptyState(),
+rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
 )
 ```
 
@@ -110,4 +120,5 @@ rony.Setup[rony.EMPTY, rony.NOP](
 6. Write integration tests using `x/testkit`.
 7. Run `make gen-stub` to generate client stubs.
 
-Use the `scaffold_feature` tool to create the module skeleton, then read the relevant `knowledge://ronyup/architecture/*`, `packages/*`, and `characteristics/*` resources for architecture hints and package recommendations before filling in the generated files.
+Use the `scaffold_feature` tool to create the module skeleton, then read the relevant `knowledge://ronyup/architecture/*`, `packages/*`, and
+`characteristics/*` resources for architecture hints and package recommendations before filling in the generated files.
