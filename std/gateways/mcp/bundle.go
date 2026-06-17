@@ -24,6 +24,7 @@ type bundle struct {
 
 	name         string
 	title        string
+	version      string
 	websiteURL   string
 	instructions string
 
@@ -66,6 +67,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 		&mcp.Implementation{
 			Name:       b.name,
 			Title:      b.title,
+			Version:    b.version,
 			WebsiteURL: b.websiteURL,
 		},
 		&optsCopy,
@@ -146,10 +148,18 @@ func (b *bundle) Register(
 	sel kit.RouteSelector,
 	input, output kit.Message,
 ) {
-	inputSchema := rkit.Must(jsonschema.ForType(reflect.Indirect(reflect.ValueOf(input)).Type(), &jsonschema.ForOptions{}))
+	inputSchema := rkit.Must(
+		jsonschema.ForType(
+			reflect.Indirect(reflect.ValueOf(input)).Type(),
+			&jsonschema.ForOptions{},
+		),
+	)
 
 	outputSchema := rkit.Must(
-		jsonschema.ForType(reflect.Indirect(reflect.ValueOf(output)).Type(), &jsonschema.ForOptions{}),
+		jsonschema.ForType(
+			reflect.Indirect(reflect.ValueOf(output)).Type(),
+			&jsonschema.ForOptions{},
+		),
 	)
 	if inputSchema.Type != "object" || outputSchema.Type != "object" {
 		return

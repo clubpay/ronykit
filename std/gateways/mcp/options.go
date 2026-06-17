@@ -22,6 +22,12 @@ func WithTitle(title string) Option {
 	}
 }
 
+func WithVersion(v string) Option {
+	return func(b *bundle) {
+		b.version = v
+	}
+}
+
 func WithWebsiteURL(url string) Option {
 	return func(b *bundle) {
 		b.websiteURL = url
