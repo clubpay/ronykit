@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/x/telemetry
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.25.3
-	github.com/clubpay/ronykit/x/rkit v0.4.3
+	github.com/clubpay/ronykit/kit v0.25.4
+	github.com/clubpay/ronykit/x/rkit v0.4.4
 	github.com/prometheus/client_golang v1.23.2
 	go.opentelemetry.io/contrib/bridges/otelzap v0.19.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.44.0

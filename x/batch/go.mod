@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/batch
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.4.3
+	github.com/clubpay/ronykit/x/rkit v0.4.4
 	github.com/onsi/ginkgo/v2 v2.29.0
 	github.com/onsi/gomega v1.41.0
 )
