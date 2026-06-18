@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/flow
 go 1.25.4
 
 require (
-	github.com/clubpay/ronykit/kit v0.25.2
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.25.2
-	github.com/clubpay/ronykit/x/rkit v0.4.2
-	github.com/clubpay/ronykit/x/telemetry v0.4.2
+	github.com/clubpay/ronykit/kit v0.25.3
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.25.3
+	github.com/clubpay/ronykit/x/rkit v0.4.3
+	github.com/clubpay/ronykit/x/telemetry v0.4.3
 	github.com/google/uuid v1.6.0
 	github.com/nexus-rpc/sdk-go v0.6.0
 	github.com/smartystreets/goconvey v1.8.1
