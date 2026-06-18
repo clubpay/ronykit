@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/clubpay/ronykit/kit v0.25.3
+	github.com/clubpay/ronykit/x/rkit v0.4.3
 	github.com/prometheus/client_golang v1.23.2
 	go.opentelemetry.io/contrib/bridges/otelzap v0.19.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.44.0
@@ -23,6 +24,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
 	go.uber.org/zap v1.28.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
@@ -37,6 +39,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
