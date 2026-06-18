@@ -48,6 +48,7 @@ func NewActivity[REQ, RES, STATE any](
 		Name: name,
 		Fn: func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
+
 			if cfg.CreateSpan {
 				var cf func()
 

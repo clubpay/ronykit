@@ -25,6 +25,8 @@ type config struct {
 	tp            kit.TracePropagator
 
 	readTimeout, writeTimeout, dialTimeout time.Duration
+	maxConnPerHost                         int
+	maxConnWaitTimeout                     time.Duration
 	proxy                                  *httpproxy.Config
 	dialFunc                               fasthttp.DialFunc
 	codec                                  kit.MessageCodec
@@ -136,5 +138,21 @@ func AddRootCAFromPEM(pemCerts ...[]byte) Option {
 func WithCertificatePool(certPool *x509.CertPool) Option {
 	return func(cfg *config) {
 		cfg.rootCAs = certPool
+	}
+}
+
+// WithMaxConnPerHost returns an Option that sets the maximum number of connections to keep open per host.
+// The default value is fasthttp.DefaultMaxConnsPerHost.
+func WithMaxConnPerHost(n int) Option {
+	return func(cfg *config) {
+		cfg.maxConnPerHost = n
+	}
+}
+
+// WithMaxConnWaitTimeout returns an Option that sets the maximum amount of time to wait for
+// a connection to become available. By default, will not wait, return fasthttp.ErrNoFreeConns immediately.
+func WithMaxConnWaitTimeout(d time.Duration) Option {
+	return func(cfg *config) {
+		cfg.maxConnWaitTimeout = d
 	}
 }

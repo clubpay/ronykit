@@ -50,6 +50,8 @@ func New(hostPort string, opts ...Option) *Stub {
 		Name:                          cfg.name,
 		ReadTimeout:                   cfg.readTimeout,
 		WriteTimeout:                  cfg.writeTimeout,
+		MaxConnsPerHost:               cfg.maxConnPerHost,
+		MaxConnWaitTimeout:            cfg.maxConnWaitTimeout,
 		DisableHeaderNamesNormalizing: true,
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: cfg.skipVerifyTLS, //nolint:gosec
