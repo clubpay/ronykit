@@ -116,7 +116,7 @@ func WithPoolBufferSize(reqBodyLimit, respBodyLimit int) Option {
 	}
 }
 
-// CompressionLevel is numeric representation of compression level
+// CompressionLevel is a numeric representation of the compression level
 type CompressionLevel int
 
 // Represents compression level that will be used in the middleware
@@ -140,5 +140,13 @@ func WithCompressionLevel(level CompressionLevel) Option {
 func WithAutoDecompressRequests(t bool) Option {
 	return func(b *bundle) {
 		b.autoDecompress = t
+	}
+}
+
+// WithServerConfigOverride allows overriding the default server configuration.
+// This is an advanced option that should be used with caution.
+func WithServerConfigOverride(fn func(srv *fasthttp.Server)) Option {
+	return func(b *bundle) {
+		fn(b.srv)
 	}
 }
