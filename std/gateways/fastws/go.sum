@@ -2,8 +2,8 @@ github.com/Masterminds/semver/v3 v3.5.0 h1:kQceYJfbupGfZOKZQg0kou0DgAKhzDg2NZPAw
 github.com/Masterminds/semver/v3 v3.5.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.25.5 h1:7T89b6y6PNKmIIsly7ZQIYYthG7gsvfWafljNTtdslw=
-github.com/clubpay/ronykit/kit v0.25.5/go.mod h1:hCgvqa/ADj4M5ar5G7+FHQvsk3qPdHqFUTXRfCHMBWI=
+github.com/clubpay/ronykit/kit v0.25.6 h1:9XN/V/xFF6Gk2D8GugB1Y4zU9BuSRbUWoRyg4UaDiM0=
+github.com/clubpay/ronykit/kit v0.25.6/go.mod h1:hCgvqa/ADj4M5ar5G7+FHQvsk3qPdHqFUTXRfCHMBWI=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
