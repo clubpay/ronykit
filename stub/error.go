@@ -35,7 +35,7 @@ func NewErrorWithMsg(msg kit.Message) *Error {
 	return wErr
 }
 
-func WrapError(err error) *Error {
+func WrapErrorOr(err error, code int, item string) *Error {
 	if err == nil {
 		return nil
 	}
@@ -44,13 +44,20 @@ func WrapError(err error) *Error {
 
 	if e, ok := err.(interface{ GetCode() int }); ok {
 		wErr.code = e.GetCode()
+	} else {
+		wErr.code = code
 	}
 
 	if e, ok := err.(interface{ GetItem() string }); ok {
 		wErr.item = e.GetItem()
+	} else {
+		wErr.item = item
 	}
 
 	return wErr
+}
+func WrapError(err error) *Error {
+	return WrapErrorOr(err, 0, "")
 }
 
 func (err Error) Error() string {

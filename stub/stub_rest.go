@@ -151,7 +151,7 @@ func (hc *RESTCtx) GetBodyWriter() io.Writer {
 func (hc *RESTCtx) SetGZipBody(body []byte) *RESTCtx {
 	_, err := fasthttp.WriteGzip(hc.req.BodyWriter(), body)
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_GZIP_BODY")
 
 		return hc
 	}
@@ -174,7 +174,7 @@ const (
 func (hc *RESTCtx) SetGZipBodyWithLevel(body []byte, lvl RequestCompressionLevel) *RESTCtx {
 	_, err := fasthttp.WriteGzipLevel(hc.req.BodyWriter(), body, int(lvl))
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_GZIP_BODY")
 
 		return hc
 	}
@@ -187,7 +187,7 @@ func (hc *RESTCtx) SetGZipBodyWithLevel(body []byte, lvl RequestCompressionLevel
 func (hc *RESTCtx) SetDeflateBody(body []byte) *RESTCtx {
 	_, err := fasthttp.WriteDeflate(hc.req.BodyWriter(), body)
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_DEFLATE_BODY")
 
 		return hc
 	}
@@ -200,7 +200,7 @@ func (hc *RESTCtx) SetDeflateBody(body []byte) *RESTCtx {
 func (hc *RESTCtx) SetDeflateBodyWithLevel(body []byte, lvl RequestCompressionLevel) *RESTCtx {
 	_, err := fasthttp.WriteDeflateLevel(hc.req.BodyWriter(), body, int(lvl))
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_DEFLATE_BODY")
 
 		return hc
 	}
@@ -217,7 +217,7 @@ func (hc *RESTCtx) SetMultipartForm(frm *multipart.Form, boundary string) *RESTC
 
 	err := fasthttp.WriteMultipartForm(hc.req.BodyWriter(), frm, boundary)
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_MULTIPART_FORM")
 
 		return hc
 	}
@@ -240,7 +240,7 @@ func (hc *RESTCtx) SetMultipartForm(frm *multipart.Form, boundary string) *RESTC
 //	restCtx.SetBody(b)
 func (hc *RESTCtx) SetBodyErr(body []byte, err error) *RESTCtx {
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, err.Error())
 
 		return hc
 	}
@@ -271,7 +271,10 @@ func (hc *RESTCtx) Run(ctx context.Context) *RESTCtx {
 	}
 
 	// execute the request
-	hc.err = WrapError(hc.c.DoTimeout(hc.req, hc.res, hc.timeout))
+	err := hc.c.DoTimeout(hc.req, hc.res, hc.timeout)
+	if err != nil {
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, err.Error())
+	}
 
 	if hc.dumpReq != nil {
 		_, _ = hc.req.WriteTo(hc.dumpReq) //nolint:errcheck
@@ -348,7 +351,7 @@ func (hc *RESTCtx) ReadResponseBody(w io.Writer) *RESTCtx {
 
 	_, err := w.Write(hc.res.Body())
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "CANNOT_READ_RESPONSE_BODY")
 	}
 
 	return hc
@@ -361,14 +364,14 @@ func (hc *RESTCtx) ReadUncompressedResponseBody(w io.Writer) *RESTCtx {
 
 	body, err := hc.res.BodyUncompressed()
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_READING_BODY")
 
 		return hc
 	}
 
 	_, err = w.Write(body)
 	if err != nil {
-		hc.err = WrapError(err)
+		hc.err = WrapErrorOr(err, http.StatusInternalServerError, "FAILED_WRITING_UNCOMPRESSED_BODY")
 	}
 
 	return hc
