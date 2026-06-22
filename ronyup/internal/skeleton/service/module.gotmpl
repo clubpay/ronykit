@@ -1,6 +1,7 @@
 package {{.PackageName}}mod
 
 import (
+	"io/fs"
 	"go.uber.org/fx"
 	"{{.RepositoryPath}}/{{.PackagePath}}/api"
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/app"
@@ -8,6 +9,7 @@ import (
 	"{{.RepositoryPath}}/{{.PackagePath}}/internal/settings"
 	"{{.RonyKitPath}}/x/datasource"
 	"{{.RonyKitPath}}/x/di"
+	"{{.RonyKitPath}}/x/rkit"
 )
 
 //nolint:gochecknoglobals
@@ -19,7 +21,7 @@ var appModule = fx.Module(
 		app.New,
 		api.New,
 	),
-	di.ProvideDBParams[settings.Settings](MigrationFS),
+	di.ProvideDBParams[settings.Settings](rkit.Must(fs.Sub(MigrationFS, "internal/repo/v0/data/db/migrations"))),
 	di.ProvideRedisParams[settings.Settings](),
 	datasource.InitDB("", ""),
 	datasource.InitRedis("", ""),

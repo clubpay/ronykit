@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/clubpay/ronykit/x/datasource"
-	"github.com/clubpay/ronykit/x/rkit"
 	"go.uber.org/fx"
 )
 
@@ -18,7 +17,7 @@ func ProvideDBParams[Settings any](migrationFS fs.FS) fx.Option {
 				User:       getField[string](set, "DB", "User"),
 				Pass:       getField[string](set, "DB", "Pass"),
 				DB:         getField[string](set, "DB", "DB"),
-				Migrations: rkit.Must(fs.Sub(migrationFS, "internal/repo/v0/data/db/migrations")),
+				Migrations: migrationFS,
 			}
 		},
 	)
