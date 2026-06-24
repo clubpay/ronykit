@@ -116,11 +116,16 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
 | `systematic-debugging` | Quality  | all kinds      | Find root cause before fixing; reproduce, verify, prevent     |
 | `code-review`          | Quality  | all kinds      | Prioritized review for correctness, design, and risk          |
+| `verification-before-completion` | Quality | all kinds | Require fresh evidence before claiming work is done       |
+| `writing-plans`        | Workflow | all kinds      | Plan multi-step work into small, testable tasks first         |
 | `conventional-commits` | Workflow | all kinds      | Atomic commits with the Conventional Commits format           |
 | `nextjs-modern`        | Frontend | fullstack only | Next.js 16 App Router, Server Components, Server Actions       |
 | `frontend-testing`     | Frontend | fullstack only | Vitest + Testing Library and Playwright e2e best practices     |
+| `storybook`            | Frontend | fullstack only | Ensure every UI component ships with a Storybook story         |
 
 The installed skills are listed in the workspace's `AGENTS.md` under a **Specialized Skills** section.
+
+> `verification-before-completion` and `writing-plans` are adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT).
 
 ### Workspace flags
 
