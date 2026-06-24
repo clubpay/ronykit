@@ -22,6 +22,17 @@
 
 ## Installation
 
+With [Homebrew](https://brew.sh/) (macOS/Linux):
+
+```bash
+brew install clubpay/tap/ronyup
+```
+
+This taps `clubpay/homebrew-tap` and builds `ronyup` from source (a Go toolchain
+is fetched automatically at install time). Upgrade later with `brew upgrade ronyup`.
+
+Or with the Go toolchain:
+
 ```bash
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
@@ -374,7 +385,8 @@ ronyup
 ├── text             Generate translation catalogs
 ├── template         Inspect Go source for template metadata
 │   └── generate     (stub — not yet implemented)
-└── mcp              Start the MCP server
+├── mcp              Start the MCP server
+└── version          Print the ronyup version
 ```
 
 ---

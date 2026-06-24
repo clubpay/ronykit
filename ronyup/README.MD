@@ -4,6 +4,12 @@
 
 ## Install
 
+With Homebrew (macOS/Linux):
+
+```bash
+brew install clubpay/tap/ronyup
+```
+
 From the repo root:
 
 ```bash
@@ -22,6 +28,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
 - `template`: parse Go source and print package/type/function metadata (generator stub).
 - `mcp`: run `ronyup` as a stdio MCP server for AI assistants.
+- `version`: print the `ronyup` version.
 
 Running `ronyup setup` or `ronyup text` with no flags triggers an interactive TUI.
 
@@ -159,6 +166,8 @@ Feature flags:
 ## Installation
 
 ```bash
+brew install clubpay/tap/ronyup
+# or
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
 

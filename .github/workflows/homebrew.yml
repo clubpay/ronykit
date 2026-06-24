@@ -1,0 +1,72 @@
+name: Bump Homebrew formula
+
+# Updates the `ronyup` formula in clubpay/homebrew-tap whenever a new
+# `ronyup/vX.Y.Z` tag is pushed (created by scripts/bump-workspace.sh).
+#
+# Requires a repository secret HOMEBREW_TAP_TOKEN: a PAT (or fine-grained token)
+# with `contents:write` on clubpay/homebrew-tap. The default GITHUB_TOKEN cannot
+# push to another repository.
+
+on:
+  push:
+    tags:
+      - "ronyup/v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "ronyup tag to publish (e.g. ronyup/v0.4.7)"
+        required: true
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag and version
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          # TAG looks like "ronyup/v0.4.7"; VERSION is "0.4.7".
+          VERSION="${TAG##*/v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compute source tarball checksum
+        id: sha
+        run: |
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.meta.outputs.tag }}.tar.gz"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          curl -fsSL "$URL" -o source.tar.gz
+          SHA="$(sha256sum source.tar.gz | cut -d' ' -f1)"
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap
+        uses: actions/checkout@v6
+        with:
+          repository: clubpay/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Update formula
+        run: |
+          FORMULA="tap/Formula/ronyup.rb"
+          sed -i -E "s|^  url \".*\"|  url \"${{ steps.sha.outputs.url }}\"|" "$FORMULA"
+          sed -i -E "s|^  sha256 \".*\"|  sha256 \"${{ steps.sha.outputs.sha256 }}\"|" "$FORMULA"
+          echo "----- updated formula -----"
+          cat "$FORMULA"
+
+      - name: Commit and push
+        run: |
+          cd tap
+          if git diff --quiet; then
+            echo "Formula already up to date; nothing to do."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/ronyup.rb
+          git commit -m "ronyup ${{ steps.meta.outputs.version }}"
+          git push

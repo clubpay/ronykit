@@ -12,6 +12,14 @@ A Go toolkit for building high-performance API servers. Define your contracts on
 
 ### 1. Install the scaffolding tool
 
+With Homebrew (macOS/Linux):
+
+```bash
+brew install clubpay/tap/ronyup
+```
+
+Or with Go:
+
 ```bash
 go install github.com/clubpay/ronykit/ronyup@latest
 ```

@@ -35,7 +35,7 @@ var Cmd = &cobra.Command{
 
 		server := newServer(ServerConfig{
 			name:         "RonyUP",
-			version:      "v0.0.1",
+			version:      internal.Version,
 			instructions: kb.ServerInstructions,
 			executable:   exePath,
 			skeletonFS:   internal.Skeleton,
