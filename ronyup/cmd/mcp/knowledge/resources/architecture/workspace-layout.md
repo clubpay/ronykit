@@ -33,4 +33,7 @@ Each module under `feature/<name>/` (or `feature/<template>/<name>/` when groupe
 
 ## Frontend (fullstack only)
 
-- `frontend/` — the web/mobile application. It is framework-agnostic by default (a placeholder `README.MD`); initialize it with the stack of your choice (React/Vite, Next.js, SvelteKit, …) and call the backend via its OpenAPI spec at `/docs`.
+- `frontend/` — holds the web/mobile application(s). It is framework-agnostic by default (a placeholder `README.MD`); initialize it with the stack of your choice (React/Vite, Next.js, SvelteKit, …) and call the backend via its OpenAPI spec at `/docs`.
+- **One app vs. many — always clarify first.** Do not assume a single frontend app. Before creating or editing anything under `frontend/`, ask the user whether there is one app or multiple.
+  - Single app: code may live directly under `frontend/`.
+  - Multiple apps: give each app its own directory, `frontend/<app-name>/` (e.g. `frontend/admin/`, `frontend/web/`). Confirm which app a change targets, and the app name/stack when initializing a new one, before proceeding.

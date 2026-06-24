@@ -39,6 +39,34 @@ auto-load when relevant:
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
 {{- end }}
 
+## Mandatory gates (do these first, no matter what is asked)
+
+These gates apply to **every** request that touches a backend feature or the
+frontend — even quick edits, prototypes, or "just write the code" asks. Do not
+skip them unless the user explicitly tells you to.
+
+1. **Backend features are document-first.** Before scaffolding or writing code
+   for any new or changed service feature, write a Software Requirements
+   Specification (SRS) and a Software Design Description (SDD) and get user
+   approval:
+   - `docs/design/<feature>-srs.md`, then `docs/design/<feature>-sdd.md`.
+   - Use the MCP prompts `design-new-service` (full flow) or `write-srs` /
+     `write-sdd`, and read `knowledge://ronyup/architecture/design-documents`.
+   - Write each with `status: draft`; only the **user** sets `status: approved`.
+     Never approve on the user's behalf.
+   - This is enforced: `scaffold_feature` refuses to run until both documents
+     exist and are `status: approved`.
+{{- if eq .Kind "fullstack" }}
+2. **Clarify frontend topology before any frontend work.** Do **not** assume a
+   single frontend app. Before creating or modifying anything under `frontend/`,
+   ask the user:
+   - Is there **one** frontend app or **multiple**?
+   - For multiple apps, each app lives in its own directory
+     (`frontend/<app-name>/`); confirm which app this change targets (and its
+     name/stack when initializing a new one).
+   - Only proceed once the target app and layout are confirmed.
+{{- end }}
+
 ## Core Rules
 
 - Keep changes scoped to the requested task.
@@ -80,16 +108,19 @@ For a new feature module:
 - Update settings and config templates when new dependencies are introduced.
 
 ## Suggested Workflow
-{{ if eq .Kind "fullstack" }}
-1. Scaffold feature (from `backend/`): `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
+
+1. Write and get approval for the SRS and SDD (`docs/design/<feature>-srs.md`,
+   `docs/design/<feature>-sdd.md`) — see "Mandatory gates" above. Do not skip.
+{{- if eq .Kind "fullstack" }}
+2. Scaffold feature (from `backend/`): `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
 {{- else }}
-1. Scaffold feature: `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
+2. Scaffold feature: `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
 {{- end }}
-2. Implement contracts and app use-cases.
-3. Run `make gen-stub` in the feature module after contract updates.
-4. In other service modules, consume the generated stubs for client calls.
-5. Add tests for app and API behavior.
-6. Run:
+3. Implement contracts and app use-cases.
+4. Run `make gen-stub` in the feature module after contract updates.
+5. In other service modules, consume the generated stubs for client calls.
+6. Add tests for app and API behavior.
+7. Run:
 	- `make tidy`
 	- `make lint`
 	- `make test`

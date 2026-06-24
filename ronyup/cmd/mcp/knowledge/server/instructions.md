@@ -6,7 +6,12 @@ Read `knowledge://ronyup/architecture/design-documents`.
 
 This gate is ENFORCED, not advisory: `scaffold_feature` refuses to run unless both `docs/design/<feature>-srs.md` and `docs/design/<feature>-sdd.md`
 exist with frontmatter `status: approved`. Write each document with `status: draft`; only the user sets `status: approved` after reviewing. Do
-not approve documents yourself, and do not pass `skipDesignGate=true` unless the user explicitly asks to skip the design documents.
+not approve documents yourself, and do not pass `skipDesignGate=true` unless the user explicitly asks to skip the design documents. This applies
+to EVERY backend feature request, including quick edits or "just write the code" asks — never skip the SRS/SDD step on your own initiative.
+
+Frontend topology (fullstack workspaces): never assume a single frontend app. Before creating or editing anything under `frontend/`, ask the
+user whether there is one frontend app or multiple. For multiple apps, each app lives in its own directory (`frontend/<app-name>/`); confirm
+which app (and its stack when initializing a new one) the change targets before proceeding.
 
 Follow layered service conventions:
 

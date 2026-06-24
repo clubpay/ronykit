@@ -48,6 +48,8 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 ## Hard rules
 
+- **Document-first, always.** Every new/changed backend feature requires an approved SRS + SDD (`docs/design/<feature>-srs.md`, `…-sdd.md`) before scaffolding or coding — even for quick edits or "just write the code" requests. Write with `status: draft`; only the user sets `status: approved`. `scaffold_feature` enforces this gate. Read `architecture/design-documents`.
+- **Clarify frontend topology before any frontend work.** Never assume a single frontend app. Before creating or editing anything under `frontend/`, ask whether there is one app or multiple; for multiple, each app lives in `frontend/<app-name>/` — confirm which app (and stack) this change targets before proceeding.
 - Handlers thin; business logic in `internal/app`; persistence behind `internal/repo/port.go`.
 - Default storage: Postgres + sqlc in `internal/repo/v0` unless the user requests otherwise.
 - **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource. Use `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache`, `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and `rony/errs` — avoid third-party/stdlib substitutes.

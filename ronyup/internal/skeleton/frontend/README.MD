@@ -16,10 +16,23 @@ keeping shared concerns at the repository root:
 └── .ai/ .agents/ .cursor/   # AI assistant config (shared)
 ```
 
+## One app or many?
+
+Decide the topology before initializing anything here:
+
+- **Single app** — initialize directly in this `frontend/` directory.
+- **Multiple apps** — give each app its own subdirectory, `frontend/<app-name>/`
+  (for example `frontend/web/`, `frontend/admin/`), and initialize each one
+  there.
+
+AI assistants must **ask** which case applies (and the target app's name/stack)
+before creating or editing frontend code — they should not assume a single app.
+
 ## Getting started
 
-This folder is intentionally framework-agnostic. Initialize it with the stack
-of your choice, for example:
+This folder is intentionally framework-agnostic. Initialize your app(s) with the
+stack of your choice. Run these in `frontend/` for a single app, or in
+`frontend/<app-name>/` for each app when you have multiple:
 
 ```bash
 # React + Vite
