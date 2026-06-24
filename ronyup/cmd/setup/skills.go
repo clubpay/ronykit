@@ -158,6 +158,14 @@ var skillCatalog = []SkillDef{
 		DefaultBackend:   false,
 		DefaultFullstack: true,
 	},
+	{
+		ID:               "dashboard-ui",
+		Name:             "Dashboard & Admin UI",
+		Description:      "Lay out dashboards/back-office apps: KPI strip, F-pattern, color discipline",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
 }
 
 // skillsSrcPrefix is the embedded source path that holds the bundled skills.

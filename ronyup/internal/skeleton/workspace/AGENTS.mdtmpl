@@ -93,8 +93,8 @@ report errors back to you, or confirm that a fix worked.
   up-to-date story is not done; create the story without being asked, and
   verify with `pnpm build-storybook`.
 - Use the installed frontend skills (`storybook`, `frontend-testing`,
-  `nextjs-modern`, `shadcn`, `verification-before-completion`) — they define the
-  quality bar for this loop.
+  `nextjs-modern`, `shadcn`, `dashboard-ui`, `verification-before-completion`) —
+  they define the quality bar for this loop.
 {{- end }}
 
 ## Core Rules

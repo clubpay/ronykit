@@ -26,6 +26,10 @@ need state, effects, event handlers, or browser-only APIs.
 - Don't put `'use client'` on a layout/page just to use one interactive child —
   split the child out.
 - Never import server-only code (DB clients, secrets) into a client component.
+- **Minimize the serialization boundary:** props crossing server → client are
+  serialized into the RSC payload. Pass only the minimal, serializable fields a
+  client component needs — not whole ORM rows or large objects. Non-serializable
+  values (functions, class instances, Dates in some setups) won't cross.
 
 ## Data fetching
 
@@ -35,10 +39,40 @@ need state, effects, event handlers, or browser-only APIs.
 - Stream slow data with `<Suspense>` and `loading.tsx`; colocate `error.tsx`.
 - Use `next/cache` (`revalidateTag`/`revalidatePath`) to invalidate after writes.
 
+### Avoid request waterfalls
+
+- Fetch independent data **in parallel**, not sequentially. Kick off the
+  requests, then await together:
+
+```tsx
+const [user, posts] = await Promise.all([getUser(id), getPosts(id)]);
+```
+
+- Don't `await` a request only to pass its result into the next independent one
+  — that serializes round-trips and inflates TTFB.
+- Stream non-critical sections behind their own `<Suspense>` so the shell
+  renders immediately.
+
+### Deduplicate requests
+
+- `fetch` is automatically deduped within a render pass — call it where the data
+  is needed instead of prop-drilling.
+- For non-`fetch` data sources (DB/ORM), wrap the loader in React `cache()` so
+  repeated calls in one render hit the source once:
+
+```tsx
+import { cache } from 'react';
+export const getUser = cache(async (id: string) => db.user.find(id));
+```
+
 ## Mutations — Server Actions
 
 - Use Server Actions for form submissions and mutations instead of hand-rolled
   API routes where possible.
+- **Authenticate and authorize inside every action.** A Server Action is a
+  public POST endpoint — hiding the button in the UI does not protect it. Re-check
+  the session and the caller's permission to act on the target resource at the
+  top of the action, before any mutation.
 - Validate input on the server (e.g. Zod) — never trust the client.
 - Revalidate or redirect after a successful mutation.
 
@@ -59,10 +93,17 @@ need state, effects, event handlers, or browser-only APIs.
 - Keep client bundles small; prefer Server Components and `next/dynamic` for
   heavy client-only widgets.
 - Use `next/image` (sizing, lazy loading) and avoid layout shift.
+- Pick the runtime deliberately: default Node.js runtime for full APIs; opt into
+  the Edge runtime (`export const runtime = 'edge'`) only for light, latency-
+  sensitive routes that don't need Node-only APIs.
+- Profile before optimizing — use the bundle analyzer and a Lighthouse pass to
+  confirm wins (TTFB, payload size) rather than guessing.
 
 ## Checklist
 
 - Default to Server Components; `'use client'` only where required and at leaves.
+- Independent data fetched in parallel; loaders deduped; no waterfalls.
 - Caching strategy chosen deliberately per fetch.
-- Mutations validated server-side and revalidate affected data.
+- Mutations authorize the caller, validate input server-side, and revalidate
+  affected data.
 - `pnpm lint`, `pnpm typecheck`, and tests pass.
