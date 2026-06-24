@@ -1,7 +1,9 @@
 .PHONY:  cleanup test lint vet format-md \
          new-version-patch new-version-minor \
          new-version-patch-dry new-version-minor-dry \
-         bump-workspace bump-workspace-dry
+         bump-workspace bump-workspace-dry \
+         bump-module bump-module-dry \
+         homebrew-release
 
 setup:
 	@echo "Install required tools"
@@ -46,8 +48,10 @@ test:
 
 # Workspace version bump helpers (uses scripts/bump-workspace.sh)
 # Usage:
-#   make bump-workspace PART=minor        # apply changes
-#   make bump-workspace-dry PART=patch    # dry-run only
+#   make bump-workspace PART=minor              # apply changes to all modules
+#   make bump-workspace-dry PART=patch          # dry-run only
+#   make bump-module MODULE=ronyup PART=minor   # bump a single module
+#   make bump-module-dry MODULE=ronyup          # dry-run a single module
 
 PART ?= patch
 
@@ -57,11 +61,31 @@ bump-workspace:
 bump-workspace-dry:
 	@bash ./scripts/bump-workspace.sh --part $(PART) --dry-run
 
+bump-module:
+	@test -n "$(MODULE)" || { echo "MODULE is required, e.g. make bump-module MODULE=ronyup"; exit 1; }
+	@bash ./scripts/bump-workspace.sh --part $(PART) --module $(MODULE)
+
+bump-module-dry:
+	@test -n "$(MODULE)" || { echo "MODULE is required, e.g. make bump-module-dry MODULE=ronyup"; exit 1; }
+	@bash ./scripts/bump-workspace.sh --part $(PART) --module $(MODULE) --dry-run
+
 github-release:
 	@bash ./scripts/github-release.sh --tag $(TAG)
 
 github-release-dry:
 	@bash ./scripts/github-release.sh --tag $(TAG) --dry-run
+
+# Trigger the "Bump Homebrew formula" GitHub Action for the latest ronyup tag.
+# Override the tag with: make homebrew-release TAG=ronyup/v0.4.7
+homebrew-release:
+	@command -v gh >/dev/null 2>&1 || { echo "gh (GitHub CLI) is required"; exit 1; }
+	@tag="$(TAG)"; \
+	if [ -z "$$tag" ]; then \
+		tag=$$(git tag --list 'ronyup/v*' --sort=-version:refname | head -n1); \
+	fi; \
+	if [ -z "$$tag" ]; then echo "No ronyup/v* tag found"; exit 1; fi; \
+	echo "Triggering Homebrew formula bump for $$tag"; \
+	gh workflow run homebrew.yml -f tag="$$tag"
 
 ################
 # RonyUP

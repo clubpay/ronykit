@@ -12,7 +12,11 @@
 # - Supports a dry-run mode that only prints actions without modifying anything.
 #
 # Usage
-#   scripts/bump-workspace.sh [--part patch|minor] [--dry-run]
+#   scripts/bump-workspace.sh [--part patch|minor] [--module <dir>] [--dry-run]
+#
+# - --module restricts the bump to a single workspace module (e.g. "ronyup" or
+#   "std/llms/ollama"). When set, only that module's tag is created/pushed and
+#   only its go.mod intra-workspace requires are considered.
 #
 # Notes
 # - Version tags are per-module using the directory path as prefix, e.g., "kit/v1.2.3".
@@ -28,6 +32,7 @@ cd "$ROOT_DIR"
 
 PART="patch"   # default bump kind
 DRY_RUN=0
+MODULE_FILTER=""   # when set, restrict bump to this single module dir
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -35,12 +40,16 @@ while [[ $# -gt 0 ]]; do
       PART=${2:-}
       shift 2
       ;;
+    --module|-m)
+      MODULE_FILTER=${2:-}
+      shift 2
+      ;;
     --dry-run|-n)
       DRY_RUN=1
       shift
       ;;
     -h|--help)
-      echo "Usage: $0 [--part patch|minor] [--dry-run]"; exit 0
+      echo "Usage: $0 [--part patch|minor] [--module <dir>] [--dry-run]"; exit 0
       ;;
     *)
       echo "Unknown argument: $1" >&2; exit 1
@@ -94,6 +103,24 @@ rm -f "$__tmp_mods"
 if [[ ${#MODULE_DIRS[@]} -eq 0 ]]; then
   echo "No module directories discovered from go.work" >&2
   exit 1
+fi
+
+# When a single module is requested, narrow MODULE_DIRS to just that one.
+# Accept both "ronyup" and "./ronyup" spellings.
+if [[ -n "$MODULE_FILTER" ]]; then
+  want="${MODULE_FILTER#./}"
+  FILTERED=()
+  for d in "${MODULE_DIRS[@]}"; do
+    if [[ "${d#./}" == "$want" ]]; then
+      FILTERED+=("$d")
+    fi
+  done
+  if [[ ${#FILTERED[@]} -eq 0 ]]; then
+    echo "Module '$MODULE_FILTER' not found in go.work (or is an excluded example)" >&2
+    exit 1
+  fi
+  MODULE_DIRS=("${FILTERED[@]}")
+  say "Restricting bump to single module: ${MODULE_DIRS[0]}"
 fi
 
 say "Discovered ${#MODULE_DIRS[@]} module directories from go.work (excluding example/*)"
