@@ -89,7 +89,15 @@ func runPrettier(gf GeneratedFile) (GeneratedFile, error) {
 			return gf, nil
 		}
 
-		return gf, fmt.Errorf("prettier failed: %w\n\n--- PRETTIER ERROR ---\n%s\n--- UNFORMATTED CODE ---\n%s\n------------------------", err, errBuf.String(), gf.Data)
+		return gf, fmt.Errorf(`
+prettier failed: %w
+
+--- PRETTIER ERROR ---
+%s
+--- UNFORMATTED CODE ---
+%s
+------------------------
+`, err, errBuf.String(), gf.Data)
 	}
 
 	gf.Data = out.Bytes()

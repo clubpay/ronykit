@@ -47,20 +47,24 @@ func endpointForAddr(t *testing.T, addr string) string {
 	return u.String()
 }
 
-func TestMCPGateway_StreamableHTTP_ToolLifecycle(t *testing.T) {
+func startHTTPTestGateway(t *testing.T, transport Transport, opts ...Option) (context.Context, string) {
+	t.Helper()
+
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	t.Cleanup(cancel)
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
 
-	gw := MustNew(
+	baseOpts := []Option{
 		WithName("TestServer"),
 		WithTitle("Test Server"),
+		WithTransport(transport),
 		WithListener(ln),
-	).(*bundle)
+	}
+	gw := MustNew(append(baseOpts, opts...)...).(*bundle)
 
 	srv := kit.NewServer(
 		kit.WithGateway(gw),
@@ -81,17 +85,56 @@ func TestMCPGateway_StreamableHTTP_ToolLifecycle(t *testing.T) {
 	)
 
 	srv.Start(ctx)
-	defer srv.Shutdown(context.Background())
+	t.Cleanup(func() { srv.Shutdown(context.Background()) })
 
 	addr := waitForAddr(t, gw)
 	endpoint := endpointForAddr(t, addr)
 
-	client := sdk.NewClient(&sdk.Implementation{Name: "client"}, nil)
-	cs, err := client.Connect(ctx, &sdk.StreamableClientTransport{Endpoint: endpoint}, nil)
-	if err != nil {
-		t.Fatalf("client connect: %v", err)
-	}
-	defer cs.Close()
+	return ctx, endpoint
+}
+
+func startStdioTestGateway(t *testing.T, serverTransport sdk.Transport) context.Context {
+	t.Helper()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	gw := MustNew(
+		WithName("TestServer"),
+		WithTitle("Test Server"),
+		WithTransport(TransportStdio),
+		WithStdioTransport(serverTransport),
+	)
+
+	srv := kit.NewServer(
+		kit.WithGateway(gw),
+		kit.WithServiceBuilder(
+			desc.NewService("svc").
+				AddContract(
+					desc.NewContract().
+						In(&sayHiInput{}).
+						Out(&sayHiOutput{}).
+						AddRoute(desc.Route("sayHi", Selector{
+							Name:        "SayHi",
+							Title:       "Say Hi",
+							Description: "says hi",
+						})).
+						SetHandler(sayHiHandler),
+				),
+		),
+	)
+
+	srv.Start(ctx)
+	t.Cleanup(func() { srv.Shutdown(context.Background()) })
+
+	// Give the stdio server time to begin accepting the transport connection.
+	time.Sleep(50 * time.Millisecond)
+
+	return ctx
+}
+
+func assertSayHiToolCall(t *testing.T, ctx context.Context, cs *sdk.ClientSession) {
+	t.Helper()
 
 	tools, err := cs.ListTools(ctx, nil)
 	if err != nil {
@@ -124,43 +167,48 @@ func TestMCPGateway_StreamableHTTP_ToolLifecycle(t *testing.T) {
 	t.Log("Tool call successful", rkit.ToJSONStr(res))
 }
 
-func TestMCPGateway_StreamableHTTP_InvalidToolArgs(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func TestMCPGateway_StreamableHTTP_ToolLifecycle(t *testing.T) {
+	ctx, endpoint := startHTTPTestGateway(t, TransportStreamableHTTP)
 
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	client := sdk.NewClient(&sdk.Implementation{Name: "client"}, nil)
+	cs, err := client.Connect(ctx, &sdk.StreamableClientTransport{Endpoint: endpoint}, nil)
 	if err != nil {
-		t.Fatalf("listen: %v", err)
+		t.Fatalf("client connect: %v", err)
 	}
+	defer cs.Close()
 
-	gw := MustNew(
-		WithName("TestServer"),
-		WithListener(ln),
-	).(*bundle)
+	assertSayHiToolCall(t, ctx, cs)
+}
 
-	srv := kit.NewServer(
-		kit.WithGateway(gw),
-		kit.WithServiceBuilder(
-			desc.NewService("svc").
-				AddContract(
-					desc.NewContract().
-						In(&sayHiInput{}).
-						Out(&sayHiOutput{}).
-						AddRoute(desc.Route("sayHi", Selector{
-							Name:        "SayHi",
-							Title:       "Say Hi",
-							Description: "says hi",
-						})).
-						SetHandler(sayHiHandler),
-				),
-		),
-	)
+func TestMCPGateway_SSE_ToolLifecycle(t *testing.T) {
+	ctx, endpoint := startHTTPTestGateway(t, TransportSSE)
 
-	srv.Start(ctx)
-	defer srv.Shutdown(context.Background())
+	client := sdk.NewClient(&sdk.Implementation{Name: "client"}, nil)
+	cs, err := client.Connect(ctx, &sdk.SSEClientTransport{Endpoint: endpoint}, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	defer cs.Close()
 
-	addr := waitForAddr(t, gw)
-	endpoint := endpointForAddr(t, addr)
+	assertSayHiToolCall(t, ctx, cs)
+}
+
+func TestMCPGateway_Stdio_ToolLifecycle(t *testing.T) {
+	clientTransport, serverTransport := sdk.NewInMemoryTransports()
+	ctx := startStdioTestGateway(t, serverTransport)
+
+	client := sdk.NewClient(&sdk.Implementation{Name: "client"}, nil)
+	cs, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatalf("client connect: %v", err)
+	}
+	defer cs.Close()
+
+	assertSayHiToolCall(t, ctx, cs)
+}
+
+func TestMCPGateway_StreamableHTTP_InvalidToolArgs(t *testing.T) {
+	ctx, endpoint := startHTTPTestGateway(t, TransportStreamableHTTP)
 
 	client := sdk.NewClient(&sdk.Implementation{Name: "client"}, nil)
 	cs, err := client.Connect(ctx, &sdk.StreamableClientTransport{Endpoint: endpoint}, nil)
@@ -178,5 +226,12 @@ func TestMCPGateway_StreamableHTTP_InvalidToolArgs(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatalf("expected invalid params error, got nil")
+	}
+}
+
+func TestNew_UnknownTransport(t *testing.T) {
+	_, err := New(WithTransport("unknown"))
+	if err == nil {
+		t.Fatalf("expected error for unknown transport")
 	}
 }

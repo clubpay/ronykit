@@ -78,11 +78,31 @@ func StreamOutputMeta(opt ...desc.MessageMetaOption) StreamOption {
 	}
 }
 
-// RPC is a StreamOption to set up an RPC handler.
+// RPC is a StreamOption to set up a websocket RPC handler.
 func RPC(predicate string, opt ...StreamSelectorOption) StreamOption {
 	return func(cfg *streamConfig) {
 		sCfg := genStreamSelectorConfig(opt...)
 		sCfg.Selector = fasthttp.RPC(predicate)
+
+		cfg.Selectors = append(cfg.Selectors, sCfg)
+	}
+}
+
+// SSE is a StreamOption to set up a Server-Sent Events stream handler.
+func SSE(path string, opt ...StreamSelectorOption) StreamOption {
+	return func(cfg *streamConfig) {
+		sCfg := genStreamSelectorConfig(opt...)
+		sCfg.Selector = fasthttp.SSE(path)
+
+		cfg.Selectors = append(cfg.Selectors, sCfg)
+	}
+}
+
+// SSEMethod is a StreamOption to set up an SSE stream handler with a custom HTTP method.
+func SSEMethod(method, path string, opt ...StreamSelectorOption) StreamOption {
+	return func(cfg *streamConfig) {
+		sCfg := genStreamSelectorConfig(opt...)
+		sCfg.Selector = fasthttp.SSEMethod(method, path)
 
 		cfg.Selectors = append(cfg.Selectors, sCfg)
 	}
@@ -109,7 +129,7 @@ type StreamOption func(*streamConfig)
 type streamSelectorConfig struct {
 	Decoder  fasthttp.DecoderFunc
 	Name     string
-	Selector kit.RPCRouteSelector
+	Selector kit.RouteSelector
 }
 
 type StreamSelectorOption func(*streamSelectorConfig)

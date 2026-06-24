@@ -150,13 +150,13 @@ func TestRegisterRPCAndREST(t *testing.T) {
 	b.Subscribe(delegate)
 
 	b.Register("svc", "c1", kit.JSON, RPC("pred"), kit.RawMessage{}, kit.RawMessage{})
-	if b.wsRoutes["pred"] == nil {
-		t.Fatalf("expected ws route to be registered")
+	if b.rpcRoutes["pred"] == nil {
+		t.Fatalf("expected rpc route to be registered")
 	}
 
 	b.registerRPC("svc", "c1", kit.JSON, Selector{}, kit.RawMessage{})
-	if len(b.wsRoutes) != 1 {
-		t.Fatalf("unexpected ws route count: %d", len(b.wsRoutes))
+	if len(b.rpcRoutes) != 1 {
+		t.Fatalf("unexpected rpc route count: %d", len(b.rpcRoutes))
 	}
 
 	customDec := func(_ *RequestCtx, data []byte) (kit.Message, error) {
@@ -281,19 +281,19 @@ func TestWSDispatchPaths(t *testing.T) {
 	gw, _ := New(WithPredicateKey("pred"))
 	b := gw.(*bundle) //nolint:forcetypeassert
 
-	b.wsRoutes["route"] = &routeData{
+	b.rpcRoutes["route"] = &routeData{
 		Predicate:   "route",
 		ServiceName: "svc",
 		ContractID:  "c1",
 		Factory:     kit.CreateMessageFactory(&wsPayload{}),
 	}
-	b.wsRoutes["raw"] = &routeData{
+	b.rpcRoutes["raw"] = &routeData{
 		Predicate:   "raw",
 		ServiceName: "svc",
 		ContractID:  "c2",
 		Factory:     kit.CreateMessageFactory(kit.RawMessage{}),
 	}
-	b.wsRoutes["form"] = &routeData{
+	b.rpcRoutes["form"] = &routeData{
 		Predicate:   "form",
 		ServiceName: "svc",
 		ContractID:  "c3",
@@ -301,13 +301,13 @@ func TestWSDispatchPaths(t *testing.T) {
 	}
 
 	ctx := newTestContext(&wsConn{kv: map[string]string{}})
-	_, err := b.wsDispatch(ctx, nil)
+	_, err := b.rpcDispatch(ctx, nil)
 	if !errors.Is(err, kit.ErrDecodeIncomingContainerFailed) {
 		t.Fatalf("expected decode container error, got %v", err)
 	}
 
 	missing, _ := json.Marshal(incomingEnvelope{ID: "1", Header: map[string]string{"pred": "missing"}})
-	_, err = b.wsDispatch(ctx, missing)
+	_, err = b.rpcDispatch(ctx, missing)
 	if !errors.Is(err, kit.ErrNoHandler) {
 		t.Fatalf("expected no handler error, got %v", err)
 	}
@@ -318,7 +318,7 @@ func TestWSDispatchPaths(t *testing.T) {
 		Header:  map[string]string{"pred": "route"},
 		Payload: payload,
 	})
-	arg, err := b.wsDispatch(ctx, enc)
+	arg, err := b.rpcDispatch(ctx, enc)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -333,7 +333,7 @@ func TestWSDispatchPaths(t *testing.T) {
 		Header:  map[string]string{"pred": "raw"},
 		Payload: base64.StdEncoding.EncodeToString(rawBody),
 	})
-	_, err = b.wsDispatch(ctx, encRaw)
+	_, err = b.rpcDispatch(ctx, encRaw)
 	if err != nil {
 		t.Fatalf("unexpected raw error: %v", err)
 	}
@@ -354,7 +354,7 @@ func TestWSDispatchPaths(t *testing.T) {
 		},
 		Payload: base64.StdEncoding.EncodeToString(body.Bytes()),
 	})
-	_, err = b.wsDispatch(ctx, encForm)
+	_, err = b.rpcDispatch(ctx, encForm)
 	if !errors.Is(err, kit.ErrDecodeIncomingMessageFailed) {
 		t.Fatalf("expected form decode error, got %v", err)
 	}

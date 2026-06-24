@@ -1,0 +1,6 @@
+{{/*
+Purpose: Description for the synthetic activate_skill tool exposed to the model.
+Used by: intent.activateSkillDefinition → ToolDefinition.Description.
+Data: prompt.ActivateSkillToolDescriptionData
+*/}}
+Load the full instructions for a skill before using its tools. Read the numbered routing list under {{printf "%q" .CatalogTitle}} in the system prompt — match the user's request to a skill's description, triggers, or examples, then pass that skill's exact name.

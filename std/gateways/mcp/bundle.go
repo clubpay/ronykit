@@ -28,6 +28,8 @@ type bundle struct {
 	websiteURL   string
 	instructions string
 
+	transport Transport
+
 	addr string
 	ln   net.Listener
 
@@ -35,6 +37,8 @@ type bundle struct {
 
 	serverOpts       mcp.ServerOptions
 	streamableOpts   mcp.StreamableHTTPOptions
+	sseOpts          mcp.SSEOptions
+	stdioTransport   mcp.Transport
 	serverConfigFns  []func(*mcp.Server)
 	nextConnID       atomic.Uint64
 	startedAddr      string
@@ -45,16 +49,24 @@ var _ kit.Gateway = (*bundle)(nil)
 
 func New(opts ...Option) (kit.Gateway, error) {
 	b := &bundle{
-		addr: ":8080",
+		addr:      ":8080",
+		transport: TransportStreamableHTTP,
 	}
 
 	for _, opt := range opts {
 		opt(b)
 	}
 
+	switch b.transport {
+	case TransportStreamableHTTP, TransportSSE, TransportStdio:
+	default:
+		return nil, fmt.Errorf("mcp gateway: unknown transport %q", b.transport)
+	}
+
 	// Default to an EventStore so stream replay/resumption is supported out of the box.
 	// This is memory-backed and bounded by the SDK default (10MiB).
-	if b.streamableOpts.EventStore == nil && !b.streamableOpts.Stateless {
+	if b.transport == TransportStreamableHTTP &&
+		b.streamableOpts.EventStore == nil && !b.streamableOpts.Stateless {
 		b.streamableOpts.EventStore = mcp.NewMemoryEventStore(nil)
 	}
 
@@ -88,18 +100,32 @@ func MustNew(opts ...Option) kit.Gateway {
 	return b
 }
 
-func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
-	_ = cfg // reserved for future use (reuseport is handled by providing a listener)
+func (b *bundle) Start(ctx context.Context, _ kit.GatewayStartConfig) error {
+	switch b.transport {
+	case TransportStdio:
+		return b.startStdio(ctx)
+	default:
+		return b.startHTTP(ctx)
+	}
+}
 
+func (b *bundle) startHTTP(ctx context.Context) error {
 	if b.httpSrv == nil {
 		b.httpSrv = &http.Server{}
 	}
 
-	handler := mcp.NewStreamableHTTPHandler(
-		func(req *http.Request) *mcp.Server { return b.srv },
-		&b.streamableOpts,
-	)
-	b.httpSrv.Handler = handler
+	switch b.transport {
+	case TransportSSE:
+		b.httpSrv.Handler = mcp.NewSSEHandler(
+			func(req *http.Request) *mcp.Server { return b.srv },
+			&b.sseOpts,
+		)
+	default:
+		b.httpSrv.Handler = mcp.NewStreamableHTTPHandler(
+			func(req *http.Request) *mcp.Server { return b.srv },
+			&b.streamableOpts,
+		)
+	}
 
 	if b.ln == nil {
 		listenCtx := context.WithoutCancel(ctx)
@@ -121,6 +147,29 @@ func (b *bundle) Start(ctx context.Context, cfg kit.GatewayStartConfig) error {
 		err := b.httpSrv.Serve(b.ln)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			// No logger in kit.Gateway; errors surface via tests/observability.
+			_ = err
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+
+		_ = b.Shutdown(ctx)
+	}()
+
+	return nil
+}
+
+func (b *bundle) startStdio(ctx context.Context) error {
+	transport := b.stdioTransport
+	if transport == nil {
+		transport = &mcp.StdioTransport{}
+	}
+
+	go func() {
+		// Run blocks until the client disconnects or ctx is cancelled.
+		err := b.srv.Run(ctx, transport)
+		if err != nil && !errors.Is(err, context.Canceled) {
 			_ = err
 		}
 	}()

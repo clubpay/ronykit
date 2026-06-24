@@ -25,6 +25,14 @@ type RESTRouteSelector interface {
 	GetPath() string
 }
 
+// StreamRouteSelector marks a REST route whose connection stays open for multiple outbound
+// messages (for example Server-Sent Events). Gateways use IsStream to upgrade the Conn to
+// a streaming implementation where Conn.Stream() returns true.
+type StreamRouteSelector interface {
+	RESTRouteSelector
+	IsStream() bool
+}
+
 // RPCRouteSelector defines the RouteSelector, which could be used in RPC operations.
 // Gateway implementation that handles RPC requests could check the selector if it supports RPC.
 // It is an interface that extends RouteSelector with a method specific to RPC operations. It is primarily

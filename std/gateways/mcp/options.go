@@ -10,6 +10,13 @@ import (
 
 type Option = func(*bundle)
 
+// WithTransport selects the MCP wire protocol. Default is TransportStreamableHTTP.
+func WithTransport(t Transport) Option {
+	return func(b *bundle) {
+		b.transport = t
+	}
+}
+
 func WithName(name string) Option {
 	return func(b *bundle) {
 		b.name = name
@@ -40,8 +47,8 @@ func WithInstructions(instructions string) Option {
 	}
 }
 
-// WithAddr sets the TCP listen address for the Streamable HTTP server.
-// Default is ":8080".
+// WithAddr sets the TCP listen address for HTTP-based transports (Streamable HTTP and SSE).
+// Default is ":8080". Ignored for TransportStdio.
 func WithAddr(addr string) Option {
 	return func(b *bundle) {
 		b.addr = addr
@@ -61,6 +68,24 @@ func WithListener(ln net.Listener) Option {
 func WithHTTPServer(srv *http.Server) Option {
 	return func(b *bundle) {
 		b.httpSrv = srv
+	}
+}
+
+type SSEOptions = mcp.SSEOptions
+
+// WithSSEOptions customizes the MCP SSE handler behavior.
+func WithSSEOptions(opts SSEOptions) Option {
+	return func(b *bundle) {
+		b.sseOpts = opts
+	}
+}
+
+// WithStdioTransport overrides the MCP transport used when TransportStdio is selected.
+// When unset, os.Stdin and os.Stdout are used via mcp.StdioTransport.
+// Useful for tests (for example mcp.NewInMemoryTransports).
+func WithStdioTransport(t mcp.Transport) Option {
+	return func(b *bundle) {
+		b.stdioTransport = t
 	}
 }
 
@@ -99,15 +124,22 @@ func WithStateless(enabled bool) Option {
 	}
 }
 
+type (
+	ServerOptions = mcp.ServerOptions
+	SchemaCache   = mcp.SchemaCache
+)
+
 // WithServerOptions customizes MCP server behavior (capabilities, logging, handlers, keepalive, etc).
-func WithServerOptions(opts mcp.ServerOptions) Option {
+func WithServerOptions(opts ServerOptions) Option {
 	return func(b *bundle) {
 		b.serverOpts = opts
 	}
 }
 
+type Server = mcp.Server
+
 // WithServerConfig allows last-mile mutations on the constructed MCP server.
-func WithServerConfig(fn func(*mcp.Server)) Option {
+func WithServerConfig(fn func(*Server)) Option {
 	return func(b *bundle) {
 		b.serverConfigFns = append(b.serverConfigFns, fn)
 	}

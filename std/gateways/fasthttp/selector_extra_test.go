@@ -34,6 +34,11 @@ func TestSelectorQueryAndString(t *testing.T) {
 	if sel.GetEncoding() != kit.JSON {
 		t.Fatalf("expected encoding to be set")
 	}
+
+	sse := SSE("/events")
+	if !sse.IsStream() || sse.Query(queryStream) != true {
+		t.Fatalf("expected SSE selector to be streaming")
+	}
 }
 
 func TestRPCs(t *testing.T) {

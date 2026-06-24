@@ -14,6 +14,35 @@ type streamOut struct {
 	OK bool `json:"ok"`
 }
 
+func TestSetupStreamSSEOption(t *testing.T) {
+	srv := NewServer()
+
+	handler := func(ctx *StreamCtx[EMPTY, NOP, streamOut], in streamIn) error {
+		ctx.Push(streamOut{OK: true})
+
+		return nil
+	}
+
+	opt := SetupOptionGroup[EMPTY, NOP](
+		WithStream[EMPTY, NOP, streamIn, streamOut](
+			handler,
+			SSE("/stream"),
+		),
+	)
+
+	Setup[EMPTY, NOP](srv, "svc", EmptyState(), opt)
+
+	svc := srv.cfg.services["svc"]
+	if svc == nil || len(svc.Contracts) != 1 {
+		t.Fatalf("unexpected contracts: %#v", svc)
+	}
+
+	sel := svc.Contracts[0].RouteSelectors[0].Selector
+	ss, ok := sel.(interface{ IsStream() bool })
+	if !ok || !ss.IsStream() {
+		t.Fatalf("expected SSE stream selector, got %#v", sel)
+	}
+}
 func TestSetupStreamOptions(t *testing.T) {
 	srv := NewServer()
 

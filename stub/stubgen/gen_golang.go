@@ -44,7 +44,13 @@ func (g golangGE) Generate(in *Input) ([]GeneratedFile, error) {
 
 	formattedContent, err := format.Source(utils.S2B(sb.String()))
 	if err != nil {
-		return nil, fmt.Errorf("formatting generated code failed: %w\n\n--- UNFORMATTED CODE ---\n%s\n------------------------", err, sb.String())
+		return nil, fmt.Errorf(`
+formatting generated code failed: %w
+
+--- UNFORMATTED CODE ---
+%s
+------------------------
+`, err, sb.String())
 	}
 
 	return []GeneratedFile{

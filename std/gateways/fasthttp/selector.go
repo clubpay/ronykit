@@ -17,12 +17,14 @@ type Selector struct {
 	Predicate string
 	Decoder   DecoderFunc
 	Encoding  kit.Encoding
+	Stream    bool
 }
 
 var (
-	_ kit.RouteSelector     = (*Selector)(nil)
-	_ kit.RESTRouteSelector = (*Selector)(nil)
-	_ kit.RPCRouteSelector  = (*Selector)(nil)
+	_ kit.RouteSelector       = (*Selector)(nil)
+	_ kit.RESTRouteSelector   = (*Selector)(nil)
+	_ kit.StreamRouteSelector = (*Selector)(nil)
+	_ kit.RPCRouteSelector    = (*Selector)(nil)
 )
 
 var legacyPathFormatRegEx = regexp.MustCompile(`/:([-_a-zA-Z0-9]*)[^/]`)
@@ -71,7 +73,22 @@ func DELETE(path string) Selector {
 	return REST(http.MethodDelete, path)
 }
 
-// RPC returns a Selector which acts on websocket requests
+// SSE returns a Selector for a Server-Sent Events route. The connection implements
+// kit.Conn with Stream() == true so handlers can push multiple envelopes on one request.
+// SSE is a shortcut for SSEMethod(http.MethodGet, path).
+func SSE(path string) Selector {
+	return SSEMethod(http.MethodGet, path)
+}
+
+// SSEMethod returns a streaming SSE Selector for the given HTTP method and path.
+func SSEMethod(method, path string) Selector {
+	s := REST(method, path)
+	s.Stream = true
+
+	return s
+}
+
+// RPC returns a Selector which acts on websocket RPC requests
 func RPC(predicate string) Selector {
 	return Selector{
 		Predicate: predicate,
@@ -116,6 +133,10 @@ func (r Selector) GetPredicate() string {
 	return r.Predicate
 }
 
+func (r Selector) IsStream() bool {
+	return r.Stream
+}
+
 func (r Selector) Query(q string) any {
 	switch q {
 	case queryDecoder:
@@ -126,6 +147,8 @@ func (r Selector) Query(q string) any {
 		return r.Path
 	case queryPredicate:
 		return r.Predicate
+	case queryStream:
+		return r.Stream
 	}
 
 	return nil

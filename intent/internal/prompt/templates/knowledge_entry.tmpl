@@ -1,0 +1,6 @@
+{{/*
+Purpose: Format a static or RAG-retrieved knowledge entry for injection into the prompt.
+Used by: runtime.formatKnowledge → buildContext (static prompts/facts and retrieved entries).
+Data: prompt.KnowledgeEntryData
+*/}}
+{{if .Name}}[{{.Name}}] {{end}}{{.Content}}{{if .Source}} (source: {{.Source}}){{end}}

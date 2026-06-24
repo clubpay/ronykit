@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/clubpay/ronykit/rony"
 	"github.com/clubpay/ronykit/rony/errs"
@@ -41,6 +42,10 @@ func main() {
 			count,
 			rony.GET("/count/{action}"),
 			rony.GET("/count"),
+		),
+		rony.WithStream(
+			countStream,
+			rony.SSE("/sse/count"),
 		),
 	)
 
@@ -90,7 +95,9 @@ type CounterResponseDTO struct {
 	Count int `json:"count"`
 }
 
-func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*CounterResponseDTO, error) {
+type UCtx = rony.UnaryCtx[*EchoCounter, string]
+
+func count(ctx *UCtx, req CounterRequestDTO) (*CounterResponseDTO, error) {
 	res := &CounterResponseDTO{}
 
 	fmt.Println(req.Action, req.Count)
@@ -112,4 +119,18 @@ func count(ctx *rony.UnaryCtx[*EchoCounter, string], req CounterRequestDTO) (*Co
 	}
 
 	return res, nil
+}
+
+type SCtx = rony.StreamCtx[*EchoCounter, string, CounterResponseDTO]
+
+func countStream(ctx *SCtx, _ CounterRequestDTO) error {
+	for {
+		ctx.Push(CounterResponseDTO{Count: ctx.State().Count})
+		time.Sleep(time.Second)
+		ctx.Push(CounterResponseDTO{Count: ctx.State().Count})
+		time.Sleep(time.Second)
+		break
+	}
+
+	return nil
 }

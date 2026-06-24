@@ -1,0 +1,80 @@
+@baseUrl = http://localhost:8082
+
+### Create a session
+# @name createSession
+POST {{baseUrl}}/session
+Content-Type: application/json
+Accept: application/json
+
+{}
+
+> {%
+  client.log(response.body)
+  client.global.set("sessionId", jsonPath(response.body, "$.sessionId"))
+%}
+
+### Chat (new session)
+# @name chat
+POST {{baseUrl}}/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "message": "Hello from the intent agent example"
+}
+
+> {%
+  client.log(response.body)
+%}
+
+### Chat (get time)
+POST {{baseUrl}}/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "message": "What time is it?"
+}
+
+> {%
+  client.log(response.body)
+%}
+
+### Chat that activates the "billing" skill (refund flow)
+# The agent advertises only the skill name + description up front. To honor this
+# request it should call activate_skill("billing") to load the refund policy,
+# which unlocks the gated issue_refund tool, then refund order 42.
+POST {{baseUrl}}/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "message": "I'd like a refund for order 42, please."
+}
+
+> {%
+  client.log(response.body)
+%}
+
+### Char (user thanks)
+POST {{baseUrl}}/chat
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "message": "Thanks!"
+}
+
+> {%
+  client.log(response.body)
+%}
+
+### Session history (run createSession or chat first)
+GET {{baseUrl}}/session/{{sessionId}}/history
+Accept: application/json
+
+> {% client.log(response.body) %}

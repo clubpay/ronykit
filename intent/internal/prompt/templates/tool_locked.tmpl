@@ -1,0 +1,6 @@
+{{/*
+Purpose: Tell the model a skill-scoped tool was called before its skill was activated.
+Used by: runtime.handleToolCall when skills.locked returns true.
+Data: prompt.ToolLockedData
+*/}}
+tool {{printf "%q" .ToolName}} requires the {{printf "%q" .SkillName}} skill{{if .SkillDescription}} ({{.SkillDescription}}){{end}}. Call {{.ActivateSkillTool}}({"name":{{printf "%q" .SkillName}}}) before using this tool.

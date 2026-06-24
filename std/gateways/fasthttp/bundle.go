@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -27,6 +28,7 @@ const (
 	queryPath      = "fasthttp.path"
 	queryDecoder   = "fasthttp.decoder"
 	queryPredicate = "fasthttp.predicate"
+	queryStream    = "fasthttp.stream"
 )
 
 var noExecuteArg = kit.ExecuteArg{}
@@ -47,7 +49,7 @@ type bundle struct {
 	autoDecompress   bool
 
 	wsUpgrade     websocket.FastHTTPUpgrader
-	wsRoutes      map[string]*routeData
+	rpcRoutes     map[string]*routeData
 	wsEndpoint    string
 	wsNextID      atomic.Uint64
 	predicateKey  string
@@ -61,7 +63,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 	r := &bundle{
 		httpRouter: router.New(),
 		compress:   CompressionLevelDefault,
-		wsRoutes:   map[string]*routeData{},
+		rpcRoutes:  map[string]*routeData{},
 		srv: &fasthttp.Server{
 			MaxRequestBodySize: fasthttp.DefaultMaxRequestBodySize,
 		},
@@ -133,6 +135,7 @@ type routeData struct {
 	ContractID  string
 	Decoder     DecoderFunc
 	Factory     kit.MessageFactoryFunc
+	Stream      bool
 }
 
 func (b *bundle) Register(
@@ -164,7 +167,7 @@ func (b *bundle) registerRPC(
 		Factory:     kit.CreateMessageFactory(input),
 	}
 
-	b.wsRoutes[rd.Predicate] = rd
+	b.rpcRoutes[rd.Predicate] = rd
 }
 
 func (b *bundle) registerREST(
@@ -184,6 +187,11 @@ func (b *bundle) registerREST(
 		decoder = reflectDecoder(enc, kit.CreateMessageFactory(input))
 	}
 
+	stream := false
+	if ss, ok := restSelector.(kit.StreamRouteSelector); ok {
+		stream = ss.IsStream()
+	}
+
 	b.httpRouter.Handle(
 		restSelector.GetMethod(), restSelector.GetPath(),
 		b.genHTTPHandler(
@@ -193,12 +201,17 @@ func (b *bundle) registerREST(
 				Method:      restSelector.GetMethod(),
 				Path:        restSelector.GetPath(),
 				Decoder:     decoder,
+				Stream:      stream,
 			},
 		),
 	)
 }
 
 func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
+	if rd.Stream {
+		return b.genSSEHTTPHandler(rd)
+	}
+
 	return func(ctx *fasthttp.RequestCtx) {
 		c, ok := b.connPool.Get().(*httpConn)
 		if !ok {
@@ -227,12 +240,55 @@ func (b *bundle) genHTTPHandler(rd routeData) fasthttp.RequestHandler {
 	}
 }
 
+func (b *bundle) genSSEHTTPHandler(rd routeData) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		b.cors.handle(ctx)
+
+		c := &sseHTTPConn{
+			httpConn: httpConn{
+				ctx: ctx,
+				rd:  &rd,
+			},
+			done: make(chan struct{}),
+		}
+
+		setSSEHeaders(ctx)
+		ctx.SetStatusCode(fasthttp.StatusOK)
+
+		ctx.SetBodyStreamWriter(func(w *bufio.Writer) {
+			defer func() {
+				b.d.OnClose(c.ConnID())
+			}()
+
+			c.attachWriter(w)
+			b.d.OnOpen(c)
+
+			var body []byte
+
+			if b.autoDecompress {
+				var err error
+
+				body, err = c.getBodyUncompressed()
+				if err != nil {
+					b.l.Errorf("[Gateway][fasthttp] could not uncompress the body: %v", err)
+
+					return
+				}
+			} else {
+				body = ctx.PostBody()
+			}
+
+			b.d.OnMessage(c, body)
+		})
+	}
+}
+
 func (b *bundle) Dispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	switch ctx.Conn().(type) {
-	case *httpConn:
+	case *httpConn, *sseHTTPConn:
 		return b.httpDispatch(ctx, in)
 	case *wsConn:
-		return b.wsDispatch(ctx, in)
+		return b.rpcDispatch(ctx, in)
 	default:
 		panic("BUG!! incorrect connection")
 	}
@@ -272,7 +328,7 @@ func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
 	buf.Release()
 }
 
-func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
+func (b *bundle) rpcDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
 	if len(in) == 0 {
 		return noExecuteArg, kit.ErrDecodeIncomingContainerFailed
 	}
@@ -284,7 +340,7 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 		return noExecuteArg, err
 	}
 
-	routeData := b.wsRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
+	routeData := b.rpcRoutes[inputMsgContainer.GetHdr(b.predicateKey)]
 	if routeData == nil {
 		return noExecuteArg, kit.ErrNoHandler
 	}
@@ -335,8 +391,16 @@ func (b *bundle) wsDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error)
 }
 
 func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error) {
-	//nolint:forcetypeassert
-	conn := ctx.Conn().(*httpConn)
+	var conn *httpConn
+
+	switch c := ctx.Conn().(type) {
+	case *httpConn:
+		conn = c
+	case *sseHTTPConn:
+		conn = &c.httpConn
+	default:
+		panic("BUG!! incorrect REST connection")
+	}
 
 	// Check CORS rules before even returning errRouteNotFound.
 	// This makes sure that we handle any CORS even for non-routable requests.

@@ -11,16 +11,29 @@ use (
 	./example/ex-09-mw
 	./example/ex-10-flow-codec
 	./example/ex-11-mcp
+	./example/ex-12-agent
 	./flow
+	./intent
 	./kit
 	./rony
 	./ronyup
 	./std/clusters/p2pcluster
 	./std/clusters/rediscluster
+	./std/embedders/langchaingo
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/mcp
 	./std/gateways/silverhttp
+	./std/knowledge/chromem
+	./std/knowledge/milvus
+	./std/knowledge/static
+	./std/llms/langchaingo
+	./std/llms/ollama
+	./std/mcpclients/gosdk
+	./std/memories/inmem
+	./std/memories/postgres
+	./std/memories/sqlite
+	./std/memories/sqlstore
 	./stub
 	./testenv
 	./x/apidoc

@@ -8,6 +8,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/mcp"
+	"github.com/clubpay/ronykit/x/telemetry/logkit"
 )
 
 func main() {
@@ -16,6 +17,12 @@ func main() {
 			mcp.MustNew(
 				mcp.WithName("SampleName"),
 				mcp.WithInstructions("This is a sample server just says hi"),
+				mcp.WithTransport(mcp.TransportSSE),
+				mcp.WithSSEOptions(mcp.SSEOptions{DisableLocalhostProtection: true}),
+				mcp.WithAddr(":9090"),
+				mcp.WithServerOptions(mcp.ServerOptions{
+					Logger: logkit.New(logkit.WithLevel(logkit.DebugLevel)).SLog(),
+				}),
 			),
 		),
 		kit.WithServiceBuilder(

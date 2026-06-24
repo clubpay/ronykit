@@ -1,0 +1,19 @@
+{{/*
+Purpose: Per-turn skill routing guide shown to the model as a numbered list.
+Used by: intent.FormatSkillCatalog → runtime.skillCatalogMessage (system message each turn).
+Data: prompt.SkillCatalogData, prompt.SkillRow
+*/}}
+## {{.Title}}
+
+Before calling any skill-scoped tool, you MUST call {{.ActivateSkillTool}} with the matching skill name.
+
+{{- range $i, $skill := .Skills}}
+{{add $i 1}}. **{{$skill.Name}}** — {{$skill.Description}}
+{{- if $skill.Triggers}}
+   - Use when: {{join $skill.Triggers ", "}}
+{{- end}}
+{{- range $skill.Examples}}
+   - Example: {{printf "%q" .}}
+{{- end}}
+   - Activate: {{$.ActivateSkillTool}}({"name":"{{$skill.Name}}"})
+{{- end}}

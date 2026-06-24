@@ -56,6 +56,7 @@ func WrapErrorOr(err error, code int, item string) *Error {
 
 	return wErr
 }
+
 func WrapError(err error) *Error {
 	return WrapErrorOr(err, 0, "")
 }
