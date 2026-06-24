@@ -55,7 +55,7 @@ jobs:
           - goos: windows
             goarch: amd64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v6
         with:
@@ -86,7 +86,7 @@ jobs:
           fi
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ronyup-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/ronyup_${{ needs.meta.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.*
@@ -95,7 +95,7 @@ jobs:
     needs: [meta, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: ronyup-*
@@ -105,7 +105,7 @@ jobs:
         run: ls -la dist/
 
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.meta.outputs.tag }}
           name: ronyup v${{ needs.meta.outputs.version }}
@@ -117,10 +117,10 @@ jobs:
     needs: [meta, build, release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: ronyup-*
@@ -146,7 +146,7 @@ jobs:
           cat "${RUNNER_TEMP}/ronyup.rb"
 
       - name: Checkout tap
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: clubpay/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
