@@ -114,31 +114,24 @@ jobs:
           files: dist/*
 
   homebrew:
-    needs: [meta, release]
+    needs: [meta, build, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - name: Download release assets and compute checksums
-        env:
-          TAG: ${{ needs.meta.outputs.tag }}
-          VERSION: ${{ needs.meta.outputs.version }}
-          REPO: ${{ github.repository }}
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: ronyup-*
+          merge-multiple: true
+
+      - name: Compute checksums from build artifacts
         run: |
-          set -euo pipefail
-          TAG_ENC="$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=""))' "$TAG")"
-          BASE_URL="https://github.com/${REPO}/releases/download/${TAG_ENC}"
-          CHECKSUMS_FILE="${RUNNER_TEMP}/checksums.env"
-          : > "$CHECKSUMS_FILE"
-          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
-            upper="$(echo "$platform" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
-            key="SHA256_${upper}"
-            file="ronyup_${VERSION}_${platform}.tar.gz"
-            curl -fsSL "${BASE_URL}/${file}" -o "$file"
-            sha="$(sha256sum "$file" | cut -d' ' -f1)"
-            echo "${key}=${sha}" >> "$CHECKSUMS_FILE"
-            echo "${key}=${sha}"
-          done
+          bash ./scripts/homebrew-checksums.sh \
+            --from-dir dist \
+            --version "${{ needs.meta.outputs.version }}" \
+            --output "${RUNNER_TEMP}/checksums.env"
 
       - name: Render formula
         env:

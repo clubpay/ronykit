@@ -87,7 +87,8 @@ ronyup-release:
 	echo "Triggering RonyUP release for $$tag"; \
 	gh workflow run ronyup-release.yml -f tag="$$tag"
 
-# Re-run only the Homebrew formula bump for an existing release (no rebuild).
+# Re-run only the Homebrew formula bump for an existing GitHub release (no rebuild).
+# Requires release assets from a prior `make ronyup-release` run.
 # Override the tag with: make homebrew-release TAG=ronyup/v0.4.7
 homebrew-release:
 	@command -v gh >/dev/null 2>&1 || { echo "gh (GitHub CLI) is required"; exit 1; }
