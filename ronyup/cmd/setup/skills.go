@@ -53,6 +53,10 @@ const (
 // skillCatalog is the curated set of skills bundled with ronyup. Backend
 // (Go/quality/workflow) skills default on for every workspace; frontend skills
 // default on only for fullstack scaffolds but remain selectable anywhere.
+//
+// When adding a skill, choose its structure deliberately (single self-contained
+// SKILL.md vs. a progressive-disclosure rules/ tree) per the heuristic in
+// internal/skeleton/skills/README.md — don't just copy a neighbor's shape.
 var skillCatalog = []SkillDef{
 	{
 		ID:               "go-modern",
@@ -162,6 +166,30 @@ var skillCatalog = []SkillDef{
 		ID:               "dashboard-ui",
 		Name:             "Dashboard & Admin UI",
 		Description:      "Lay out dashboards/back-office apps: KPI strip, F-pattern, color discipline",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "frontend-design",
+		Name:             "Frontend Design",
+		Description:      "Distinctive, production-grade UI that avoids generic AI aesthetics",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "react-performance",
+		Name:             "React Performance",
+		Description:      "70 React/Next.js perf rules: waterfalls, bundles, re-renders (Vercel, MIT)",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "composition-patterns",
+		Name:             "React Composition Patterns",
+		Description:      "Scalable component APIs: compound components, lifted state (Vercel, MIT)",
 		Category:         catFrontend,
 		DefaultBackend:   false,
 		DefaultFullstack: true,
