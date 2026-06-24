@@ -85,15 +85,53 @@ ronyup setup workspace \
     --kind fullstack
 ```
 
+### Pre-installed agent skills
+
+Every workspace ships with the `ronykit-framework` skill. On top of that, `setup workspace` can pre-install a curated set of general-purpose **agent skills** under `.agents/skills/` — focused on modern code, testing, formatting, debugging, review, and commits.
+
+Use `--skills` (or `-s`) to choose which to install. Pass a comma-separated list of skill IDs, or one of the tokens `default`, `all`, or `none`:
+
+```bash
+# install the defaults for the chosen kind (same as omitting the flag)
+ronyup setup workspace -r ./my-api -m github.com/you/my-api
+
+# install everything
+ronyup setup workspace -r ./my-api -m github.com/you/my-api --skills all
+
+# pick a specific set
+ronyup setup workspace -r ./my-api -m github.com/you/my-api \
+    --skills go-modern,go-testing,systematic-debugging
+
+# install none
+ronyup setup workspace -r ./my-api -m github.com/you/my-api --skills none
+```
+
+Running `ronyup setup` with no flags launches an interactive selector with the kind defaults pre-checked.
+
+| Skill ID               | Category | Default        | Description                                                   |
+|------------------------|----------|----------------|---------------------------------------------------------------|
+| `go-modern`            | Go       | all kinds      | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
+| `go-testing`           | Go       | all kinds      | Table-driven tests, Ginkgo/Gomega, benchmarks, race detector  |
+| `writing-tests`        | Quality  | all kinds      | Language-agnostic TDD discipline and the test pyramid         |
+| `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
+| `systematic-debugging` | Quality  | all kinds      | Find root cause before fixing; reproduce, verify, prevent     |
+| `code-review`          | Quality  | all kinds      | Prioritized review for correctness, design, and risk          |
+| `conventional-commits` | Workflow | all kinds      | Atomic commits with the Conventional Commits format           |
+| `nextjs-modern`        | Frontend | fullstack only | Next.js 16 App Router, Server Components, Server Actions       |
+| `frontend-testing`     | Frontend | fullstack only | Vitest + Testing Library and Playwright e2e best practices     |
+
+The installed skills are listed in the workspace's `AGENTS.md` under a **Specialized Skills** section.
+
 ### Workspace flags
 
-| Flag           | Short | Description                    | Default                |
-|----------------|-------|--------------------------------|------------------------|
-| `--repoDir`    | `-r`  | Destination directory          | `./my-repo`            |
-| `--repoModule` | `-m`  | Go module path                 | `github.com/your/repo` |
-| `--appName`    | `-a`  | Application name               | `myapp`                |
-| `--kind`       | `-k`  | Layout: `backend`/`fullstack`  | `backend`              |
-| `--force`      | `-f`  | Clean destination before setup | `false`                |
+| Flag           | Short | Description                                          | Default                |
+|----------------|-------|------------------------------------------------------|------------------------|
+| `--repoDir`    | `-r`  | Destination directory                                | `./my-repo`            |
+| `--repoModule` | `-m`  | Go module path                                       | `github.com/your/repo` |
+| `--appName`    | `-a`  | Application name                                     | `myapp`                |
+| `--kind`       | `-k`  | Layout: `backend`/`fullstack`                        | `backend`              |
+| `--skills`     | `-s`  | Skills to pre-install (IDs, or `default`/`all`/`none`)| kind defaults          |
+| `--force`      | `-f`  | Clean destination before setup                       | `false`                |
 
 ---
 
@@ -244,7 +282,7 @@ Add to your `.vscode/settings.json` or user settings:
 
 | Tool                 | Description                                                              |
 |----------------------|-------------------------------------------------------------------------|
-| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`) |
+| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`; optional `skills`: IDs or `default`/`all`/`none`) |
 | `scaffold_feature`   | Add a `feature/<name>/` module to a workspace                           |
 
 ### MCP Prompts

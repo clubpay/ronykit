@@ -49,6 +49,12 @@ var opt = struct {
 	Template        string
 	GroupByTemplate bool
 	Custom          map[string]string
+	// Skills holds the requested skill IDs for `setup workspace`. Empty means
+	// "use the kind defaults"; supports the special tokens default/all/none.
+	Skills []string
+	// resolvedSkills is the validated, ordered set of skill IDs to install,
+	// computed from Skills during runWorkspace.
+	resolvedSkills []string
 }{}
 
 func init() {
@@ -129,11 +135,27 @@ func init() {
 		KindBackend,
 		"workspace kind: backend | fullstack",
 	)
+	workspaceFlagSet.StringSliceVarP(
+		&opt.Skills,
+		"skills",
+		"s",
+		nil,
+		"agent skills to pre-install (comma-separated IDs, or default | all | none)",
+	)
 
 	_ = CmdSetupWorkspace.RegisterFlagCompletionFunc(
 		"kind",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{KindBackend, KindFullstack}, cobra.ShellCompDirectiveNoFileComp
+		},
+	)
+
+	_ = CmdSetupWorkspace.RegisterFlagCompletionFunc(
+		"skills",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			tokens := append([]string{skillTokenDefault, skillTokenAll, skillTokenNone}, allSkillIDs()...)
+
+			return tokens, cobra.ShellCompDirectiveNoFileComp
 		},
 	)
 
@@ -167,6 +189,9 @@ type TemplateInput struct {
 	// Kind is the workspace layout (KindBackend or KindFullstack); templates use
 	// it to render layout-specific guidance.
 	Kind string
+	// Skills lists the agent skills pre-installed into .agents/skills so
+	// templates (e.g. AGENTS.md) can reference them.
+	Skills []SkillInfo
 }
 
 var CmdSetupWorkspace = &cobra.Command{
@@ -190,6 +215,13 @@ func runWorkspace(cmd *cobra.Command) error {
 	if opt.Kind != KindBackend && opt.Kind != KindFullstack {
 		return fmt.Errorf("invalid workspace kind %q: must be %q or %q", opt.Kind, KindBackend, KindFullstack)
 	}
+
+	resolved, err := resolveSkillSelection(opt.Skills, opt.Kind)
+	if err != nil {
+		return err
+	}
+
+	opt.resolvedSkills = resolved
 
 	if err := createWorkspace(cmd.Context()); err != nil {
 		return err
@@ -283,6 +315,7 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		PackageName:     opt.FeatureName,
 		RonyKitPath:     "github.com/clubpay/ronykit",
 		Kind:            opt.Kind,
+		Skills:          selectedSkillInfos(opt.resolvedSkills),
 	}
 
 	rkit.Assert(z.CopyDir(
@@ -306,6 +339,11 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		copyFrontendTemplate(cmd, repoRoot, templateInput)
 		fixupBackendDevopsPath(cmd, repoRoot)
 	}
+
+	// Agent skills always live at the repository root under .agents/skills,
+	// alongside the bundled ronykit-framework skill (even for fullstack
+	// scaffolds, where AI config stays at the root).
+	installSkills(cmd, repoRoot)
 
 	cmd.Println("Workspace created successfully")
 
@@ -332,6 +370,24 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		z.RunCmd(cmd.Context(), p, "git", "add", ".")
 		z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
 	}
+}
+
+// installSkills copies the selected agent skills into the workspace's
+// .agents/skills directory and reports what was installed.
+func installSkills(cmd *cobra.Command, repoRoot string) {
+	if len(opt.resolvedSkills) == 0 {
+		cmd.Println("No optional agent skills installed")
+
+		return
+	}
+
+	rkit.Assert(copySkills(repoRoot, opt.resolvedSkills, func(filePath string, dir bool) {
+		if !dir {
+			cmd.Println("FILE: ", filePath, "created")
+		}
+	}))
+
+	cmd.Printf("Installed %d agent skill(s): %s\n", len(opt.resolvedSkills), strings.Join(opt.resolvedSkills, ", "))
 }
 
 // copyFrontendTemplate seeds the frontend/ application placeholder for

@@ -3,6 +3,7 @@ package scaffold
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/clubpay/ronykit/x/rkit"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -38,6 +39,15 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 					"default": "backend",
 					"enum":    []string{"backend", "fullstack"},
 				},
+				"skills": map[string]any{
+					"type": "array",
+					"items": map[string]any{
+						"type": "string",
+					},
+					"description": "Agent skills to pre-install into .agents/skills. Skill IDs or the " +
+						"tokens 'default' (kind defaults), 'all', or 'none'. Omit to install the " +
+						"defaults for the chosen kind.",
+				},
 			},
 			"required": []string{"path"},
 		},
@@ -47,8 +57,9 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 		tool,
 		func(ctx context.Context, request *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
 			var args struct {
-				Path string `json:"path"`
-				Kind string `json:"kind"`
+				Path   string   `json:"path"`
+				Kind   string   `json:"kind"`
+				Skills []string `json:"skills"`
 			}
 			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
 				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
@@ -61,6 +72,10 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 			cliArgs := []string{"setup", "workspace"}
 			if args.Kind != "" {
 				cliArgs = append(cliArgs, "--kind", args.Kind)
+			}
+
+			if len(args.Skills) > 0 {
+				cliArgs = append(cliArgs, "--skills", strings.Join(args.Skills, ","))
 			}
 
 			stdout, stderr, err := runner.Run(ctx, args.Path, executable, cliArgs...)

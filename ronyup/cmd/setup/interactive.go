@@ -1,9 +1,52 @@
 package setup
 
 import (
+	"fmt"
+
 	"charm.land/huh/v2"
 	"github.com/spf13/cobra"
 )
+
+// selectSkillsInteractive presents a multi-select of bundled agent skills with
+// the workspace-kind defaults pre-checked, and records the choice in opt.Skills
+// so runWorkspace resolves and installs exactly what the user picked.
+func selectSkillsInteractive() error {
+	defaults := map[string]bool{}
+	for _, id := range defaultSkillIDs(opt.Kind) {
+		defaults[id] = true
+	}
+
+	options := make([]huh.Option[string], 0, len(skillCatalog))
+	for _, s := range skillCatalog {
+		label := fmt.Sprintf("[%s] %s — %s", s.Category, s.Name, s.Description)
+		options = append(options, huh.NewOption(label, s.ID).Selected(defaults[s.ID]))
+	}
+
+	var selected []string
+
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewMultiSelect[string]().
+				Title("Agent Skills").
+				Description("Pre-install agent skills into .agents/skills (space to toggle)").
+				Options(options...).
+				Value(&selected),
+		),
+	).Run()
+	if err != nil {
+		return err
+	}
+
+	// Record the explicit choice. An empty selection must mean "none" so
+	// runWorkspace does not fall back to the kind defaults.
+	if len(selected) == 0 {
+		opt.Skills = []string{skillTokenNone}
+	} else {
+		opt.Skills = selected
+	}
+
+	return nil
+}
 
 func RunInteractive(cmd *cobra.Command) error {
 	var action string
@@ -59,6 +102,10 @@ func runWorkspaceInteractive(cmd *cobra.Command) error {
 		),
 	).Run()
 	if err != nil {
+		return err
+	}
+
+	if err := selectSkillsInteractive(); err != nil {
 		return err
 	}
 
