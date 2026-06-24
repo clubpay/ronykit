@@ -1,0 +1,36 @@
+class Ronyup < Formula
+  desc "CLI for scaffolding RonyKIT workspaces, features, and MCP tooling"
+  homepage "https://github.com/clubpay/ronykit/tree/main/ronyup"
+  version "{{VERSION}}"
+  license "BSD-3-Clause"
+
+  on_macos do
+    on_intel do
+      url "{{URL_DARWIN_AMD64}}"
+      sha256 "{{SHA256_DARWIN_AMD64}}"
+    end
+    on_arm do
+      url "{{URL_DARWIN_ARM64}}"
+      sha256 "{{SHA256_DARWIN_ARM64}}"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "{{URL_LINUX_AMD64}}"
+      sha256 "{{SHA256_LINUX_AMD64}}"
+    end
+    on_arm do
+      url "{{URL_LINUX_ARM64}}"
+      sha256 "{{SHA256_LINUX_ARM64}}"
+    end
+  end
+
+  def install
+    bin.install "ronyup"
+  end
+
+  test do
+    assert_match "ronyup", shell_output("#{bin}/ronyup --help")
+  end
+end

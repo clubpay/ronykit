@@ -1,0 +1,177 @@
+name: RonyUP Release
+
+# Builds precompiled ronyup binaries for common platforms, publishes a GitHub
+# release with assets, and updates the Homebrew formula in clubpay/homebrew-tap.
+#
+# Requires repository secret HOMEBREW_TAP_TOKEN (see homebrew job).
+
+on:
+  push:
+    tags:
+      - "ronyup/v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "ronyup tag to release (e.g. ronyup/v0.4.7)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Resolve tag and version
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          VERSION="${TAG##*/v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: meta
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ronyup/go.mod
+          cache-dependency-path: ronyup/go.sum
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          platform="${GOOS}_${GOARCH}"
+          out_dir="dist/${platform}"
+          mkdir -p "$out_dir"
+          binary="ronyup"
+          if [ "$GOOS" = "windows" ]; then
+            binary="ronyup.exe"
+          fi
+          CGO_ENABLED=0 go build -C ronyup -trimpath \
+            -ldflags "-s -w -X github.com/clubpay/ronykit/ronyup/internal.Version=v${VERSION}" \
+            -o "../${out_dir}/${binary}" .
+          if [ "$GOOS" = "windows" ]; then
+            (cd "$out_dir" && zip -q "../ronyup_${VERSION}_${platform}.zip" "$binary")
+          else
+            tar -C "$out_dir" -czf "dist/ronyup_${VERSION}_${platform}.tar.gz" "$binary"
+          fi
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ronyup-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/ronyup_${{ needs.meta.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.*
+
+  release:
+    needs: [meta, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: ronyup-*
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -la dist/
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          name: ronyup v${{ needs.meta.outputs.version }}
+          generate_release_notes: true
+          overwrite_files: true
+          files: dist/*
+
+  homebrew:
+    needs: [meta, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download release assets and compute checksums
+        env:
+          TAG: ${{ needs.meta.outputs.tag }}
+          VERSION: ${{ needs.meta.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAG_ENC="$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=""))' "$TAG")"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG_ENC}"
+          CHECKSUMS_FILE="${RUNNER_TEMP}/checksums.env"
+          : > "$CHECKSUMS_FILE"
+          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            upper="$(echo "$platform" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
+            key="SHA256_${upper}"
+            file="ronyup_${VERSION}_${platform}.tar.gz"
+            curl -fsSL "${BASE_URL}/${file}" -o "$file"
+            sha="$(sha256sum "$file" | cut -d' ' -f1)"
+            echo "${key}=${sha}" >> "$CHECKSUMS_FILE"
+            echo "${key}=${sha}"
+          done
+
+      - name: Render formula
+        env:
+          TAG: ${{ needs.meta.outputs.tag }}
+        run: |
+          bash ./scripts/render-homebrew-formula.sh \
+            --tag "$TAG" \
+            --repo "${{ github.repository }}" \
+            --checksums "${RUNNER_TEMP}/checksums.env" \
+            --output "${RUNNER_TEMP}/ronyup.rb"
+          echo "----- rendered formula -----"
+          cat "${RUNNER_TEMP}/ronyup.rb"
+
+      - name: Checkout tap
+        uses: actions/checkout@v6
+        with:
+          repository: clubpay/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Update formula
+        run: |
+          cp "${RUNNER_TEMP}/ronyup.rb" tap/Formula/ronyup.rb
+
+      - name: Commit and push
+        run: |
+          cd tap
+          if git diff --quiet; then
+            echo "Formula already up to date; nothing to do."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/ronyup.rb
+          git commit -m "ronyup ${{ needs.meta.outputs.version }}"
+          git push

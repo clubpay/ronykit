@@ -1,16 +1,13 @@
 name: Bump Homebrew formula
 
-# Updates the `ronyup` formula in clubpay/homebrew-tap whenever a new
-# `ronyup/vX.Y.Z` tag is pushed (created by scripts/bump-workspace.sh).
+# Re-run the Homebrew tap update for an existing ronyup GitHub release (no rebuild).
+# Normal releases use the "RonyUP Release" workflow, which builds binaries and
+# updates the tap in one pass.
 #
-# Requires a repository secret HOMEBREW_TAP_TOKEN: a PAT (or fine-grained token)
-# with `contents:write` on clubpay/homebrew-tap. The default GITHUB_TOKEN cannot
-# push to another repository.
+# Requires repository secret HOMEBREW_TAP_TOKEN: a PAT (or fine-grained token)
+# with `contents:write` on clubpay/homebrew-tap.
 
 on:
-  push:
-    tags:
-      - "ronyup/v*"
   workflow_dispatch:
     inputs:
       tag:
@@ -18,30 +15,51 @@ on:
         required: true
 
 jobs:
-  bump:
+  homebrew:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+
       - name: Resolve tag and version
         id: meta
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.tag }}"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-          fi
-          # TAG looks like "ronyup/v0.4.7"; VERSION is "0.4.7".
+          TAG="${{ github.event.inputs.tag }}"
           VERSION="${TAG##*/v}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Compute source tarball checksum
-        id: sha
+      - name: Download release assets and compute checksums
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          REPO: ${{ github.repository }}
         run: |
-          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.meta.outputs.tag }}.tar.gz"
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-          curl -fsSL "$URL" -o source.tar.gz
-          SHA="$(sha256sum source.tar.gz | cut -d' ' -f1)"
-          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          TAG_ENC="$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=""))' "$TAG")"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG_ENC}"
+          CHECKSUMS_FILE="${RUNNER_TEMP}/checksums.env"
+          : > "$CHECKSUMS_FILE"
+          for platform in darwin_amd64 darwin_arm64 linux_amd64 linux_arm64; do
+            upper="$(echo "$platform" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
+            key="SHA256_${upper}"
+            file="ronyup_${VERSION}_${platform}.tar.gz"
+            curl -fsSL "${BASE_URL}/${file}" -o "$file"
+            sha="$(sha256sum "$file" | cut -d' ' -f1)"
+            echo "${key}=${sha}" >> "$CHECKSUMS_FILE"
+            echo "${key}=${sha}"
+          done
+
+      - name: Render formula
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          bash ./scripts/render-homebrew-formula.sh \
+            --tag "$TAG" \
+            --repo "${{ github.repository }}" \
+            --checksums "${RUNNER_TEMP}/checksums.env" \
+            --output "${RUNNER_TEMP}/ronyup.rb"
+          echo "----- rendered formula -----"
+          cat "${RUNNER_TEMP}/ronyup.rb"
 
       - name: Checkout tap
         uses: actions/checkout@v6
@@ -52,11 +70,7 @@ jobs:
 
       - name: Update formula
         run: |
-          FORMULA="tap/Formula/ronyup.rb"
-          sed -i -E "s|^  url \".*\"|  url \"${{ steps.sha.outputs.url }}\"|" "$FORMULA"
-          sed -i -E "s|^  sha256 \".*\"|  sha256 \"${{ steps.sha.outputs.sha256 }}\"|" "$FORMULA"
-          echo "----- updated formula -----"
-          cat "$FORMULA"
+          cp "${RUNNER_TEMP}/ronyup.rb" tap/Formula/ronyup.rb
 
       - name: Commit and push
         run: |

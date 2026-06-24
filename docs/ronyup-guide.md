@@ -28,8 +28,11 @@ With [Homebrew](https://brew.sh/) (macOS/Linux):
 brew install clubpay/tap/ronyup
 ```
 
-This taps `clubpay/homebrew-tap` and builds `ronyup` from source (a Go toolchain
-is fetched automatically at install time). Upgrade later with `brew upgrade ronyup`.
+This taps `clubpay/homebrew-tap` and installs a prebuilt `ronyup` binary for your
+platform (macOS or Linux, Intel or ARM). Upgrade later with `brew upgrade ronyup`.
+
+Prebuilt binaries are also published on [GitHub Releases](https://github.com/clubpay/ronykit/releases)
+for tags like `ronyup/vX.Y.Z` (macOS, Linux, and Windows archives).
 
 Or with the Go toolchain:
 

@@ -3,7 +3,7 @@
          new-version-patch-dry new-version-minor-dry \
          bump-workspace bump-workspace-dry \
          bump-module bump-module-dry \
-         homebrew-release
+         ronyup-release homebrew-release
 
 setup:
 	@echo "Install required tools"
@@ -75,7 +75,19 @@ github-release:
 github-release-dry:
 	@bash ./scripts/github-release.sh --tag $(TAG) --dry-run
 
-# Trigger the "Bump Homebrew formula" GitHub Action for the latest ronyup tag.
+# Trigger the "RonyUP Release" workflow (build binaries, publish release, bump tap).
+# Override the tag with: make ronyup-release TAG=ronyup/v0.4.7
+ronyup-release:
+	@command -v gh >/dev/null 2>&1 || { echo "gh (GitHub CLI) is required"; exit 1; }
+	@tag="$(TAG)"; \
+	if [ -z "$$tag" ]; then \
+		tag=$$(git tag --list 'ronyup/v*' --sort=-version:refname | head -n1); \
+	fi; \
+	if [ -z "$$tag" ]; then echo "No ronyup/v* tag found"; exit 1; fi; \
+	echo "Triggering RonyUP release for $$tag"; \
+	gh workflow run ronyup-release.yml -f tag="$$tag"
+
+# Re-run only the Homebrew formula bump for an existing release (no rebuild).
 # Override the tag with: make homebrew-release TAG=ronyup/v0.4.7
 homebrew-release:
 	@command -v gh >/dev/null 2>&1 || { echo "gh (GitHub CLI) is required"; exit 1; }
