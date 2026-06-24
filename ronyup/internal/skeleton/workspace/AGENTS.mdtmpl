@@ -66,6 +66,36 @@ skip them unless the user explicitly tells you to.
      name/stack when initializing a new one).
    - Only proceed once the target app and layout are confirmed.
 {{- end }}
+{{- if eq .Kind "fullstack" }}
+
+## Frontend delivery — verify yourself, don't hand back
+
+Frontend work is **not done** when the code is written — it is done when it
+runs clean. Close the loop yourself; do **not** ask the user to run the app,
+report errors back to you, or confirm that a fix worked.
+
+- **Run the autonomous verify-and-fix loop** before reporting completion. The
+  canonical gate is `make -C frontend verify` (equivalently
+  `bash frontend/verify.sh`); it runs typecheck, lint, build, test,
+  `build-storybook`, and the stories-coverage check for every app under
+  `frontend/`. Read the full output, fix every error and meaningful warning,
+  then **re-run the gate**. Repeat until it passes. Only stop and ask the user
+  if you are genuinely blocked (missing secret, ambiguous product decision) —
+  not for ordinary type/lint/test/build failures.
+- This is **enforced**: a Cursor `stop` hook (`.cursor/hooks/frontend-verify.sh`)
+  re-runs `frontend/verify.sh` whenever you touch `frontend/` and loops you back
+  to fix any failures before the turn can complete.
+- **State results with evidence** (the command and its passing output). Never
+  claim "done", "fixed", or "should work" without a fresh passing run.
+- **Stories are mandatory.** Every new or changed reusable UI component ships a
+  co-located Storybook story (`Button.tsx` → `Button.stories.tsx`) in the same
+  change, covering its states/variants via `args`. A component without an
+  up-to-date story is not done; create the story without being asked, and
+  verify with `pnpm build-storybook`.
+- Use the installed frontend skills (`storybook`, `frontend-testing`,
+  `nextjs-modern`, `shadcn`, `verification-before-completion`) — they define the
+  quality bar for this loop.
+{{- end }}
 
 ## Core Rules
 

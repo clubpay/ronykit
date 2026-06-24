@@ -45,6 +45,28 @@ npx create-next-app@latest .
 npm create svelte@latest .
 ```
 
+## Verify gate (run before calling frontend work "done")
+
+`verify.sh` is the single source of truth for frontend quality. It detects each
+app (this directory for a single app, or each `frontend/<app>/` for multiple),
+runs whatever scripts the app defines (`typecheck`, `lint`, `build`, `test`,
+`build-storybook`), and checks that every UI component has a co-located
+`*.stories.tsx`. It is a no-op until an app is initialized.
+
+```bash
+make verify                 # or: bash verify.sh
+SKIP_STORIES_CHECK=1 make verify-no-stories   # skip stories-coverage
+```
+
+So the gate works, expose these npm scripts in each app's `package.json`:
+`typecheck`, `lint`, `build`, `test`, and (once Storybook is set up)
+`build-storybook`.
+
+This gate is also wired into a Cursor `stop` hook
+(`.cursor/hooks/frontend-verify.sh`): when an agent changes anything under
+`frontend/`, the hook re-runs `verify.sh` and loops the agent back to fix
+failures automatically — no manual "please fix this" round-trips.
+
 ## Talking to the backend
 
 - The backend service exposes an OpenAPI/Swagger spec at `/docs` when running

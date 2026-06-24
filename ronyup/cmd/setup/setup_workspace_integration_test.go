@@ -62,6 +62,16 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 	if !strings.Contains(makefile, "{{.Dir}}") {
 		t.Fatalf("Makefile template markers should stay untouched, got:\n%s", makefile)
 	}
+
+	// Backend-only workspaces still get a valid hooks.json, but with no
+	// frontend stop hook wired in.
+	hooks, err := os.ReadFile(filepath.Join(tmpDir, repoDir, ".cursor", "hooks.json"))
+	if err != nil {
+		t.Fatalf("ReadFile(.cursor/hooks.json) unexpected error: %v", err)
+	}
+	if strings.Contains(string(hooks), "frontend-verify.sh") {
+		t.Fatalf("backend-only hooks.json should not register the frontend stop hook, got:\n%s", hooks)
+	}
 }
 
 func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
@@ -122,11 +132,25 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 		}
 	}
 
-	// Shared concerns stay at the repository root.
-	for _, rel := range []string{"devops", "docs", "AGENTS.md", ".ai/mcp/mcp.json", "frontend/README.MD"} {
+	// Shared concerns stay at the repository root, and the frontend verify
+	// gate + enforcing stop hook are seeded.
+	for _, rel := range []string{
+		"devops", "docs", "AGENTS.md", ".ai/mcp/mcp.json",
+		"frontend/README.MD", "frontend/verify.sh", "frontend/Makefile",
+		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh",
+	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s to exist at the repo root: %v", rel, err)
 		}
+	}
+
+	// The fullstack stop hook must be wired to the frontend verify script.
+	hooks, err := os.ReadFile(filepath.Join(root, ".cursor", "hooks.json"))
+	if err != nil {
+		t.Fatalf("ReadFile(.cursor/hooks.json) unexpected error: %v", err)
+	}
+	if !strings.Contains(string(hooks), "frontend-verify.sh") {
+		t.Fatalf("fullstack hooks.json should register the frontend-verify stop hook, got:\n%s", hooks)
 	}
 
 	// The Go workspace must not be duplicated at the repository root.

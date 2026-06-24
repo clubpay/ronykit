@@ -1,0 +1,19 @@
+{{- if eq .Kind "fullstack" }}
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/frontend-verify.sh",
+        "timeout": 900,
+        "loop_limit": 5
+      }
+    ]
+  }
+}
+{{- else }}
+{
+  "version": 1,
+  "hooks": {}
+}
+{{- end }}

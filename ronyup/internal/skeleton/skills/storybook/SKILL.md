@@ -23,6 +23,12 @@ component's states.
 
 > New or changed component → add or update its story in the same change.
 
+This is **automatic and unprompted**: create the story as part of building the
+component, without waiting for the user to ask for it. Shipping a component
+without its story is incomplete work, not a follow-up task. After authoring or
+updating stories, run `pnpm build-storybook` and fix any failures yourself
+before reporting done.
+
 - Co-locate the story with the component: `Button.tsx` → `Button.stories.tsx`.
 - Cover the meaningful states: default, loading, disabled, error, empty, and
   each significant variant/size.

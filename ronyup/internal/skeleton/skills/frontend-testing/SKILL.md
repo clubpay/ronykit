@@ -11,6 +11,21 @@ description: >-
 Test what the user experiences, not implementation details. Query the DOM the
 way a user (or assistive tech) does.
 
+## Close the loop yourself (do not hand back to the user)
+
+Writing tests/code is not the finish line — a clean run is. Drive the
+verify-and-fix loop autonomously; never ask the user to run the app, paste
+errors back, or confirm a fix worked.
+
+1. Run `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` (and
+   `pnpm build-storybook` when present) for the target app.
+2. Read the full output, fix every error and meaningful warning, then re-run
+   from the failed step.
+3. Repeat until all steps pass. Only stop to ask the user when genuinely
+   blocked (missing secret, ambiguous product decision) — not for routine
+   type/lint/test/build failures.
+4. Report completion only with fresh passing output as evidence.
+
 ## When to use
 
 - Adding tests for React components, hooks, or Next.js routes.
