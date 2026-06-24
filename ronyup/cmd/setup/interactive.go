@@ -48,6 +48,14 @@ func runWorkspaceInteractive(cmd *cobra.Command) error {
 				Description("What is the application name?").
 				Placeholder("myapp").
 				Value(&opt.ApplicationName),
+			huh.NewSelect[string]().
+				Title("Workspace Kind").
+				Description("Backend only, or backend + frontend split").
+				Options(
+					huh.NewOption("Backend only", KindBackend),
+					huh.NewOption("Backend + Frontend", KindFullstack),
+				).
+				Value(&opt.Kind),
 		),
 	).Run()
 	if err != nil {

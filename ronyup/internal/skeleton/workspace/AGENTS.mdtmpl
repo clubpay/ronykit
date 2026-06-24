@@ -10,12 +10,25 @@ This file defines practical guidance for AI coding assistants in this workspace.
    `.agents/skills/ronykit-framework/references/mcp-map.md`.
 
 ## Repo Purpose
-
+{{ if eq .Kind "fullstack" }}
+- Fullstack project split into a Go backend and a separate frontend application.
+- Top-level layout:
+	- `backend/`: the RonyKIT Go workspace (`go.work`). Run Go commands and `ronyup setup feature` from here.
+	- `frontend/`: the web/mobile application (framework-agnostic; initialize with your stack of choice).
+	- `devops/`: docker-compose and deployment helpers (shared, stays at root).
+	- `docs/`: design documents (SRS/SDD) and guides (shared, stays at root).
+	- `.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`: AI assistant config (shared, stays at root).
+- Inside `backend/`:
+	- `cmd/service`: service process wiring and bootstrap.
+	- `feature/`: business modules.
+	- `pkg/`: shared libraries (cross-module, business-agnostic).
+{{- else }}
 - Go workspace for RonyKIT services.
 - Main folders in generated workspaces:
 	- `cmd/service`: service process wiring and bootstrap.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
+{{- end }}
 
 ## Core Rules
 
@@ -33,7 +46,7 @@ This file defines practical guidance for AI coding assistants in this workspace.
   `x/settings`. DI → `x/di` + `uber/fx`. Errors → `rony/errs`. DB/Redis/S3 → `x/datasource`. Cache → `x/cache`. Rate limiting →
   `x/ratelimit`. Batching → `x/batch`. Pools → `x/p`.
 - Durable workflows: use the `flow` package only — never import `go.temporal.io/sdk` directly.
-- The repo `.golangci.yml` enforces this with `depguard`; a forbidden-import lint failure is a design violation, not a formatting nit.
+- The backend `.golangci.yml` enforces this with `depguard`; a forbidden-import lint failure is a design violation, not a formatting nit.
 
 ## Architecture Conventions
 
@@ -58,8 +71,11 @@ For a new feature module:
 - Update settings and config templates when new dependencies are introduced.
 
 ## Suggested Workflow
-
+{{ if eq .Kind "fullstack" }}
+1. Scaffold feature (from `backend/`): `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
+{{- else }}
 1. Scaffold feature: `ronyup setup feature --featureDir <dir> --featureName <name> --template service`
+{{- end }}
 2. Implement contracts and app use-cases.
 3. Run `make gen-stub` in the feature module after contract updates.
 4. In other service modules, consume the generated stubs for client calls.

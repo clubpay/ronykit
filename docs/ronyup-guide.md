@@ -52,10 +52,38 @@ my-api/
 ├── Makefile
 ├── cmd/service/      # Entry point
 ├── pkg/i18n/         # Translation utilities
+├── devops/           # docker-compose and deployment helpers
+├── docs/             # design docs and guides
 └── .git/             # Initialized git repo
 ```
 
 The workspace is immediately runnable with `cd cmd/service && go run .`.
+
+### Workspace kinds
+
+Use `--kind` to choose the layout:
+
+- **`backend`** (default) — a Go-only workspace at `repoDir`, as shown above.
+- **`fullstack`** — a `backend/` + `frontend/` split:
+
+```
+my-api/
+├── backend/          # the Go workspace (go.work, cmd/service, pkg/, feature/, Makefile, .golangci.yml)
+├── frontend/         # web/mobile application (framework-agnostic placeholder)
+├── devops/           # docker-compose and deployment helpers (shared)
+├── docs/             # design docs and guides (shared)
+├── AGENTS.md         # agent guidance (shared)
+└── .ai/ .agents/ .cursor/   # AI assistant config (shared)
+```
+
+In `fullstack` mode the Go module paths are prefixed with `backend/` (for example `github.com/you/my-api/backend/cmd/service`). Run `ronyup setup feature` and `make`/`go` commands from the `backend/` directory.
+
+```bash
+ronyup setup workspace \
+    --repoDir ./my-api \
+    --repoModule github.com/you/my-api \
+    --kind fullstack
+```
 
 ### Workspace flags
 
@@ -63,6 +91,8 @@ The workspace is immediately runnable with `cd cmd/service && go run .`.
 |----------------|-------|--------------------------------|------------------------|
 | `--repoDir`    | `-r`  | Destination directory          | `./my-repo`            |
 | `--repoModule` | `-m`  | Go module path                 | `github.com/your/repo` |
+| `--appName`    | `-a`  | Application name               | `myapp`                |
+| `--kind`       | `-k`  | Layout: `backend`/`fullstack`  | `backend`              |
 | `--force`      | `-f`  | Clean destination before setup | `false`                |
 
 ---
@@ -212,10 +242,10 @@ Add to your `.vscode/settings.json` or user settings:
 
 ### Available MCP Tools
 
-| Tool                 | Description                                   |
-|----------------------|-----------------------------------------------|
-| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path`    |
-| `scaffold_feature`   | Add a `feature/<name>/` module to a workspace |
+| Tool                 | Description                                                              |
+|----------------------|-------------------------------------------------------------------------|
+| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`) |
+| `scaffold_feature`   | Add a `feature/<name>/` module to a workspace                           |
 
 ### MCP Prompts
 

@@ -14,10 +14,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Workspace kinds supported by `setup workspace`.
+const (
+	// KindBackend scaffolds a Go-only workspace at the repository root
+	// (the historical default).
+	KindBackend = "backend"
+	// KindFullstack scaffolds a backend/ + frontend/ split: the Go workspace
+	// is moved into backend/ while AI config, devops/ and docs/ stay at root.
+	KindFullstack = "fullstack"
+)
+
+// backendDir is the subdirectory that holds the Go workspace for fullstack
+// scaffolds.
+const backendDir = "backend"
+
+// frontendDir is the subdirectory that holds the frontend application for
+// fullstack scaffolds.
+const frontendDir = "frontend"
+
 var opt = struct {
 	ApplicationName    string
 	RepositoryRootDir  string
 	RepositoryGoModule string
+	// Kind selects the workspace layout: KindBackend or KindFullstack.
+	Kind string
 	// FeatureContainerFolder is the folder that the feature will be placed in.
 	FeatureContainerFolder string
 	// FeatureDir is the directory inside the feature container folder where the feature will be placed.
@@ -102,6 +122,20 @@ func init() {
 		"myapp",
 		"application name",
 	)
+	workspaceFlagSet.StringVarP(
+		&opt.Kind,
+		"kind",
+		"k",
+		KindBackend,
+		"workspace kind: backend | fullstack",
+	)
+
+	_ = CmdSetupWorkspace.RegisterFlagCompletionFunc(
+		"kind",
+		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			return []string{KindBackend, KindFullstack}, cobra.ShellCompDirectiveNoFileComp
+		},
+	)
 
 	Cmd.AddCommand(CmdSetupWorkspace, CmdSetupFeature)
 }
@@ -130,6 +164,9 @@ type TemplateInput struct {
 	PackageName string
 	// RonyKitPath is the address of the RonyKIT modules
 	RonyKitPath string
+	// Kind is the workspace layout (KindBackend or KindFullstack); templates use
+	// it to render layout-specific guidance.
+	Kind string
 }
 
 var CmdSetupWorkspace = &cobra.Command{
@@ -146,6 +183,14 @@ var CmdSetupWorkspace = &cobra.Command{
 }
 
 func runWorkspace(cmd *cobra.Command) error {
+	if opt.Kind == "" {
+		opt.Kind = KindBackend
+	}
+
+	if opt.Kind != KindBackend && opt.Kind != KindFullstack {
+		return fmt.Errorf("invalid workspace kind %q: must be %q or %q", opt.Kind, KindBackend, KindFullstack)
+	}
+
 	if err := createWorkspace(cmd.Context()); err != nil {
 		return err
 	}
@@ -153,6 +198,66 @@ func runWorkspace(cmd *cobra.Command) error {
 	copyWorkspaceTemplate(cmd)
 
 	return nil
+}
+
+// goRootRel returns the workspace-relative directory that holds the Go workspace
+// (go.work). For fullstack scaffolds this is backend/; otherwise the repo root.
+func goRootRel() string {
+	if opt.Kind == KindFullstack {
+		return backendDir
+	}
+
+	return "."
+}
+
+// goModulePrefix returns the module path that prefixes every Go module in the
+// workspace. Fullstack scaffolds nest the Go workspace under backend/.
+func goModulePrefix() string {
+	base := strings.TrimSuffix(opt.RepositoryGoModule, "/")
+	if opt.Kind == KindFullstack {
+		return path.Join(base, backendDir)
+	}
+
+	return base
+}
+
+// workspaceDestMapper routes skeleton entries for fullstack scaffolds: AI
+// config, devops/ and docs/ stay at the repository root while the Go workspace
+// is placed under backend/. For backend scaffolds it returns nil (default
+// behaviour copies everything to the repo root).
+func workspaceDestMapper(repoRoot string) func(string) (string, bool) {
+	if opt.Kind != KindFullstack {
+		return nil
+	}
+
+	rootLevel := map[string]bool{
+		".cursor":   true,
+		".agents":   true,
+		".ai":       true,
+		"devops":    true,
+		"docs":      true,
+		"AGENTS.md": true,
+	}
+
+	return func(relPath string) (string, bool) {
+		if relPath == "" {
+			return repoRoot, false
+		}
+
+		top := relPath
+		if before, _, ok := strings.Cut(relPath, "/"); ok {
+			top = before
+		}
+
+		// Normalize the template suffix so e.g. "AGENTS.mdtmpl" matches.
+		top = strings.TrimSuffix(top, "tmpl")
+
+		if rootLevel[top] {
+			return filepath.Join(repoRoot, relPath), false
+		}
+
+		return filepath.Join(repoRoot, backendDir, relPath), false
+	}
 }
 
 func createWorkspace(_ context.Context) error {
@@ -168,20 +273,25 @@ func createWorkspace(_ context.Context) error {
 }
 
 func copyWorkspaceTemplate(cmd *cobra.Command) {
+	repoRoot := filepath.Join(".", opt.RepositoryRootDir)
 	pathPrefix := filepath.Join("skeleton", "workspace")
+
+	templateInput := TemplateInput{
+		ApplicationName: opt.ApplicationName,
+		RepositoryPath:  goModulePrefix(),
+		PackagePath:     strings.Trim(opt.FeatureDir, "/"),
+		PackageName:     opt.FeatureName,
+		RonyKitPath:     "github.com/clubpay/ronykit",
+		Kind:            opt.Kind,
+	}
 
 	rkit.Assert(z.CopyDir(
 		z.CopyDirParams{
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  pathPrefix,
-			DestPathPrefix: filepath.Join(".", opt.RepositoryRootDir),
-			TemplateInput: TemplateInput{
-				ApplicationName: opt.ApplicationName,
-				RepositoryPath:  strings.TrimSuffix(opt.RepositoryGoModule, "/"),
-				PackagePath:     strings.Trim(opt.FeatureDir, "/"),
-				PackageName:     opt.FeatureName,
-				RonyKitPath:     "github.com/clubpay/ronykit",
-			},
+			DestPathPrefix: repoRoot,
+			TemplateInput:  templateInput,
+			DestMapper:     workspaceDestMapper(repoRoot),
 			Callback: func(filePath string, dir bool) {
 				if dir {
 					cmd.Println("DIR: ", filePath, "created")
@@ -192,27 +302,84 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		},
 	))
 
+	if opt.Kind == KindFullstack {
+		copyFrontendTemplate(cmd, repoRoot, templateInput)
+		fixupBackendDevopsPath(cmd, repoRoot)
+	}
+
 	cmd.Println("Workspace created successfully")
 
+	goRoot := filepath.Join(repoRoot, goRootRel())
+	modulePrefix := goModulePrefix()
+
 	packages := []string{"pkg/i18n", "cmd/service"}
-	p := z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
+	p := z.RunCmdParams{Dir: goRoot}
 	z.RunCmd(cmd.Context(), p, "go", "work", "init")
 
 	for _, pkg := range packages {
-		p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir, pkg)}
-		z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, pkg))
+		p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
+		z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(modulePrefix, pkg))
 		z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
 		z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
 		z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
 	}
 
-	p = z.RunCmdParams{Dir: filepath.Join(".", opt.RepositoryRootDir)}
+	p = z.RunCmdParams{Dir: repoRoot}
 
-	isGitRepo, err := isGitRepository(filepath.Join(".", opt.RepositoryRootDir))
+	isGitRepo, err := isGitRepository(repoRoot)
 	if err == nil && !isGitRepo {
 		z.RunCmd(cmd.Context(), p, "git", "init")
 		z.RunCmd(cmd.Context(), p, "git", "add", ".")
 		z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
+	}
+}
+
+// copyFrontendTemplate seeds the frontend/ application placeholder for
+// fullstack scaffolds.
+func copyFrontendTemplate(cmd *cobra.Command, repoRoot string, templateInput TemplateInput) {
+	rkit.Assert(z.CopyDir(
+		z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.Join("skeleton", "frontend"),
+			DestPathPrefix: filepath.Join(repoRoot, frontendDir),
+			TemplateInput:  templateInput,
+			Callback: func(filePath string, dir bool) {
+				if dir {
+					cmd.Println("DIR: ", filePath, "created")
+				} else {
+					cmd.Println("FILE: ", filePath, "created")
+				}
+			},
+		},
+	))
+}
+
+// fixupBackendDevopsPath rewrites the backend Makefile's docker-compose path so
+// it points at the repository-root devops/ directory, which stays at the root in
+// fullstack scaffolds.
+func fixupBackendDevopsPath(cmd *cobra.Command, repoRoot string) {
+	makefilePath := filepath.Join(repoRoot, backendDir, "Makefile")
+
+	content, err := os.ReadFile(makefilePath)
+	if err != nil {
+		cmd.PrintErrf("Warning: Could not read backend Makefile: %v\n", err)
+
+		return
+	}
+
+	updated := strings.Replace(
+		string(content),
+		"-f ./devops/docker-compose.yml",
+		"-f ../devops/docker-compose.yml",
+		1,
+	)
+
+	if updated == string(content) {
+		return
+	}
+
+	if err := os.WriteFile(makefilePath, []byte(updated), 0o644); err != nil {
+		cmd.PrintErrf("Warning: Could not update backend Makefile: %v\n", err)
 	}
 }
 

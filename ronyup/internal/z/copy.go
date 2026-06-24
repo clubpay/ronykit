@@ -18,6 +18,12 @@ type CopyDirParams struct {
 	DestPathPrefix string
 	TemplateInput  any
 	Callback       func(filePath string, dir bool)
+	// DestMapper optionally rewrites the destination for each entry. It
+	// receives the entry path relative to SrcPathPrefix (forward slashes, no
+	// leading separator; the root entry is the empty string) and returns the
+	// destination path. Returning skip=true omits the entry. When DestMapper is
+	// nil, the destination defaults to filepath.Join(DestPathPrefix, relPath).
+	DestMapper func(relPath string) (dest string, skip bool)
 }
 
 func CopyDir(params CopyDirParams) error {
@@ -28,8 +34,12 @@ func CopyDir(params CopyDirParams) error {
 				return err
 			}
 
-			srcPath := strings.TrimPrefix(currPath, params.SrcPathPrefix)
-			destPath := strings.TrimSuffix(filepath.Join(params.DestPathPrefix, srcPath), "tmpl")
+			relPath := strings.TrimPrefix(strings.TrimPrefix(currPath, params.SrcPathPrefix), "/")
+
+			destPath, skip := params.resolveDest(relPath)
+			if skip {
+				return nil
+			}
 
 			if d.IsDir() {
 				// Create a directory if it doesn't exist
@@ -40,6 +50,13 @@ func CopyDir(params CopyDirParams) error {
 				params.Callback(currPath, d.IsDir())
 			}
 
+			// Ensure the parent directory exists. When DestMapper reroutes
+			// entries (e.g. into backend/), the destination parent may not have
+			// been created by a preceding directory walk entry.
+			if err := os.MkdirAll(filepath.Dir(destPath), os.ModePerm); err != nil {
+				return err
+			}
+
 			return CopyFile(CopyFileParams{
 				FS:             params.FS,
 				SrcPath:        currPath,
@@ -48,6 +65,19 @@ func CopyDir(params CopyDirParams) error {
 				TemplateInput:  params.TemplateInput,
 			})
 		})
+}
+
+func (p CopyDirParams) resolveDest(relPath string) (string, bool) {
+	if p.DestMapper != nil {
+		dest, skip := p.DestMapper(relPath)
+		if skip {
+			return "", true
+		}
+
+		return strings.TrimSuffix(dest, "tmpl"), false
+	}
+
+	return strings.TrimSuffix(filepath.Join(p.DestPathPrefix, relPath), "tmpl"), false
 }
 
 type CopyFileParams struct {

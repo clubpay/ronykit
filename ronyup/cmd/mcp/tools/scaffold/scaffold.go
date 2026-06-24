@@ -30,6 +30,14 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 					"type":        "string",
 					"description": "The absolute or relative path to initialize the workspace.",
 				},
+				"kind": map[string]any{
+					"type": "string",
+					"description": "Workspace layout: 'backend' (Go-only at the root, default) or " +
+						"'fullstack' (backend/ + frontend/ split, with the Go workspace under backend/ " +
+						"and devops/, docs/ and AI config kept at the root).",
+					"default": "backend",
+					"enum":    []string{"backend", "fullstack"},
+				},
 			},
 			"required": []string{"path"},
 		},
@@ -40,6 +48,7 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 		func(ctx context.Context, request *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
 			var args struct {
 				Path string `json:"path"`
+				Kind string `json:"kind"`
 			}
 			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
 				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
@@ -49,7 +58,12 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				return errorResult(rkit.L("path is required")), nil
 			}
 
-			stdout, stderr, err := runner.Run(ctx, args.Path, executable, "setup", "workspace")
+			cliArgs := []string{"setup", "workspace"}
+			if args.Kind != "" {
+				cliArgs = append(cliArgs, "--kind", args.Kind)
+			}
+
+			stdout, stderr, err := runner.Run(ctx, args.Path, executable, cliArgs...)
 			if err != nil {
 				return errorResult(
 					rkit.L("failed to setup workspace: %v", err),

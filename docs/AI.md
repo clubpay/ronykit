@@ -49,6 +49,8 @@ ronyup setup feature --featureDir auth --featureName auth --template service
 
 Features are placed at `feature/<name>/` by default. Use `--featurePrefix` or `--groupByTemplate` for alternate layouts.
 
+Use `--kind fullstack` on `setup workspace` for a `backend/` + `frontend/` split: the Go workspace moves under `backend/` (run `setup feature` from there), while `devops/`, `docs/`, and AI config stay shared at the repository root.
+
 CI test scope (subset):
 
 ```sh

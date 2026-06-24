@@ -36,9 +36,11 @@ var requiredDesignDocs = []designDocSpec{
 func checkDesignGate(workspacePath, feature string) []string {
 	var problems []string
 
+	baseDir := designBaseDir(workspacePath)
+
 	for _, spec := range requiredDesignDocs {
 		rel := filepath.ToSlash(filepath.Join(designDir, feature+spec.suffix))
-		full := filepath.Join(workspacePath, designDir, feature+spec.suffix)
+		full := filepath.Join(baseDir, designDir, feature+spec.suffix)
 
 		data, err := os.ReadFile(full)
 		if err != nil {
@@ -63,6 +65,27 @@ func checkDesignGate(workspacePath, feature string) []string {
 	}
 
 	return problems
+}
+
+// designBaseDir returns the directory that contains the docs/design tree.
+//
+// In a fullstack scaffold the Go workspace (go.work) lives under <root>/backend
+// while docs/ stays at <root>. scaffold_feature is invoked from the workspace
+// (backend) directory, so when docs/design is not present there we fall back to
+// the parent directory.
+func designBaseDir(workspacePath string) string {
+	if _, err := os.Stat(filepath.Join(workspacePath, designDir)); err == nil {
+		return workspacePath
+	}
+
+	parent := filepath.Dir(workspacePath)
+	if parent != workspacePath {
+		if _, err := os.Stat(filepath.Join(parent, designDir)); err == nil {
+			return parent
+		}
+	}
+
+	return workspacePath
 }
 
 // designGateError builds an actionable error result explaining why

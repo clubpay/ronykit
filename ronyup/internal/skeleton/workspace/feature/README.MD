@@ -21,6 +21,7 @@ Workspace is the root of your services and should be created once.
 
 - Use `ronyup` CLI to create a new workspace.
 - Example: `ronyup setup workspace --repoDir ./your-repo --repoModule github.com/you/your-repo`
+- Add `--kind fullstack` for a `backend/` + `frontend/` split (the Go workspace lives under `backend/`; `devops/`, `docs/` and AI config stay at the root). In that layout, run `setup feature` from the `backend/` directory.
 
 ## How to Create a New Feature
 
