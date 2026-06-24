@@ -150,6 +150,14 @@ var skillCatalog = []SkillDef{
 		DefaultBackend:   false,
 		DefaultFullstack: true,
 	},
+	{
+		ID:               "shadcn",
+		Name:             "shadcn/ui",
+		Description:      "Find, install, compose, and theme shadcn/ui components correctly",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
 }
 
 // skillsSrcPrefix is the embedded source path that holds the bundled skills.

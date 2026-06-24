@@ -122,6 +122,7 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `nextjs-modern`        | Frontend | fullstack only | Next.js 16 App Router, Server Components, Server Actions       |
 | `frontend-testing`     | Frontend | fullstack only | Vitest + Testing Library and Playwright e2e best practices     |
 | `storybook`            | Frontend | fullstack only | Ensure every UI component ships with a Storybook story         |
+| `shadcn`               | Frontend | fullstack only | Find, install, compose, and theme shadcn/ui components correctly|
 
 The installed skills are listed in the workspace's `AGENTS.md` under a **Specialized Skills** section.
 
