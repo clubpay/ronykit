@@ -31,6 +31,28 @@ Prioritize feedback so the important things aren't lost in nits.
    non-obvious.
 6. **Style** — defer to the formatter/linter; don't hand-review spacing.
 
+## Watch for over-engineering
+
+Complexity is a cost, not a credential. Flag code built to impress (or "just in
+case") rather than to meet a real requirement — it compounds maintenance with
+no user value. Quick lenses:
+
+- **Deletion test** — if this were removed, who'd notice and when? "Only the
+  author" means it's not pulling its weight.
+- **Abstraction needs ≥3 uses** — one implementation behind an interface is
+  indirection, not abstraction. Don't add a layer for a hypothetical second case.
+- **Scale is actual, not imagined** — generality/caching/sharding for traffic
+  you don't have is speculation; prefer the simplest thing that fits today.
+- **Dependencies earn their keep** — a new library must save more than its
+  footprint and upgrade burden; prefer a workspace helper (`x/*`, `rony/*`).
+- **Premature optimization** — no micro-optimizations without a measurement;
+  readable beats clever on cold paths.
+
+Calibrate: a junior over-abstracting is learning; flag the pattern, propose the
+simpler alternative, and keep the person's dignity. Distinguish this from
+genuine, requirement-driven complexity — the point is fit, not minimalism for
+its own sake.
+
 ## How to give feedback
 
 - **Prioritize:** label comments `blocking`, `should`, or `nit` so intent is
@@ -53,3 +75,5 @@ Prioritize feedback so the important things aren't lost in nits.
 - Broad `try/catch`/`recover` swallowing errors.
 - New dependency where a workspace helper exists.
 - Commented-out code or unexplained magic numbers.
+- An abstraction/config layer with a single implementation, or generality built
+  for scale the system doesn't have yet.

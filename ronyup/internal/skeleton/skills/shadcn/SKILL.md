@@ -66,12 +66,35 @@ so you use the correct, version-specific API on the first try.
 - Dark mode through the `.dark` class / theme tokens, not duplicated styles.
 - Adjust radius/colors via the theme variables, not per-component overrides.
 
+For the deeper patterns — `next-themes` dark-mode setup, the v3-HSL vs
+v4-OKLCH/`@theme` token plumbing, multi-theme, and adding `cva` variants — read
+`references/theming.md`. For the token *architecture* behind it, see the
+`design-tokens` skill.
+
+## Accessibility
+
+Radix primitives give you keyboard nav, focus traps, and ARIA wiring for free —
+compose them rather than hand-rolling that logic. You still owe labels for
+icon-only triggers, wired-up form errors, an intact focus ring, and live
+regions for your own async updates. See `references/accessibility.md` for the
+per-component breakdown; `ux-quality` covers the general (non-shadcn) rules.
+
+## Reference files
+
+Open these for depth (progressive disclosure — they don't load until needed):
+
+- `references/theming.md` — dark mode (`next-themes`), the v3/v4 token systems,
+  color customization, multi-theme, and `cva` variant customization.
+- `references/accessibility.md` — what each Radix primitive handles vs. the
+  gaps you must fill (labels, form errors, focus ring, live regions).
+
 ## Checklist
 
 - Component API confirmed via `view`/`docs`/MCP before coding.
 - Components installed with `add` (deps resolved), not pasted by hand.
 - Semantic color tokens used; no stray hex values.
 - Forms/option-sets use the proper shadcn composition primitives.
+- Theming/dark-mode and a11y handled per the reference files when non-trivial.
 
 ## Learn more
 
