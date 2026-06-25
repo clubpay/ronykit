@@ -49,6 +49,8 @@ This copies the embedded workspace skeleton, initializes a `go.work`, and create
 
 Pass `--kind fullstack` to scaffold a `backend/` + `frontend/` split instead of a Go-only repo. The Go workspace (`go.work`, `cmd/service`, `pkg`, `feature`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. In fullstack mode, run `setup feature` and `make`/`go` commands from the `backend/` directory.
 
+Pass `--kind frontend` to scaffold a frontend-only repo: a `frontend/` application plus shared AI assistant config and `docs/` at the root, with no Go workspace, `devops/`, or backend verify gate.
+
 ### Add a feature
 
 ```bash
@@ -123,7 +125,7 @@ Workspace flags:
 
 - `--repoDir`, `-r`: destination directory for the workspace.
 - `--appName`, `-a`: application name (default `myapp`).
-- `--kind`, `-k`: workspace kind, `backend` (default) or `fullstack`.
+- `--kind`, `-k`: workspace kind, `backend` (default), `fullstack`, or `frontend`.
 
 Feature flags:
 
@@ -214,7 +216,7 @@ Flags:
 ```
 -r, --repoDir string    destination directory for the setup (default "./my-repo")
 -a, --appName string    application name (default "myapp")
--k, --kind string       workspace kind: backend | fullstack (default "backend")
+-k, --kind string       workspace kind: backend | fullstack | frontend (default "backend")
 ```
 
 What it does:
@@ -226,6 +228,7 @@ What it does:
 Kinds:
 - `backend` (default): a Go-only workspace at `repoDir`.
 - `fullstack`: a `backend/` + `frontend/` split. The Go workspace is created under `backend/` (modules are prefixed with `backend/`, e.g. `github.com/you/repo/backend/cmd/service`), while `devops/`, `docs/`, and AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root and are shared. Run `setup feature` from the `backend/` directory.
+- `frontend`: a frontend-only workspace — a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) and `docs/` at the root. No Go workspace, `devops/`, `Makefile`, or backend verify gate is created; only the frontend verify stop hook is installed.
 
 #### setup feature
 

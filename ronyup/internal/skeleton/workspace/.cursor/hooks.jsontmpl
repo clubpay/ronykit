@@ -2,18 +2,20 @@
   "version": 1,
   "hooks": {
     "stop": [
-{{- if eq .Kind "fullstack" }}
+{{- if ne .Kind "backend" }}
       {
         "command": "bash .cursor/hooks/frontend-verify.sh",
         "timeout": 900,
         "loop_limit": 5
-      },
+      }{{ if eq .Kind "fullstack" }},{{ end }}
 {{- end }}
+{{- if ne .Kind "frontend" }}
       {
         "command": "bash .cursor/hooks/backend-verify.sh",
         "timeout": 900,
         "loop_limit": 5
       }
+{{- end }}
     ]
   }
 }

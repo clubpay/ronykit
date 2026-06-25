@@ -22,7 +22,16 @@ const (
 	// KindFullstack scaffolds a backend/ + frontend/ split: the Go workspace
 	// is moved into backend/ while AI config, devops/ and docs/ stay at root.
 	KindFullstack = "fullstack"
+	// KindFrontend scaffolds a frontend-only workspace: a frontend/ application
+	// plus shared AI config and docs/ at the root, with no Go workspace.
+	KindFrontend = "frontend"
 )
+
+// hasBackend reports whether the workspace kind includes a Go backend.
+func hasBackend(kind string) bool { return kind != KindFrontend }
+
+// hasFrontend reports whether the workspace kind includes a frontend app.
+func hasFrontend(kind string) bool { return kind != KindBackend }
 
 // backendDir is the subdirectory that holds the Go workspace for fullstack
 // scaffolds.
@@ -133,7 +142,7 @@ func init() {
 		"kind",
 		"k",
 		KindBackend,
-		"workspace kind: backend | fullstack",
+		"workspace kind: backend | fullstack | frontend",
 	)
 	workspaceFlagSet.StringSliceVarP(
 		&opt.Skills,
@@ -146,7 +155,7 @@ func init() {
 	_ = CmdSetupWorkspace.RegisterFlagCompletionFunc(
 		"kind",
 		func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			return []string{KindBackend, KindFullstack}, cobra.ShellCompDirectiveNoFileComp
+			return []string{KindBackend, KindFullstack, KindFrontend}, cobra.ShellCompDirectiveNoFileComp
 		},
 	)
 
@@ -212,8 +221,13 @@ func runWorkspace(cmd *cobra.Command) error {
 		opt.Kind = KindBackend
 	}
 
-	if opt.Kind != KindBackend && opt.Kind != KindFullstack {
-		return fmt.Errorf("invalid workspace kind %q: must be %q or %q", opt.Kind, KindBackend, KindFullstack)
+	switch opt.Kind {
+	case KindBackend, KindFullstack, KindFrontend:
+	default:
+		return fmt.Errorf(
+			"invalid workspace kind %q: must be %q, %q or %q",
+			opt.Kind, KindBackend, KindFullstack, KindFrontend,
+		)
 	}
 
 	resolved, err := resolveSkillSelection(opt.Skills, opt.Kind)
@@ -253,15 +267,25 @@ func goModulePrefix() string {
 	return base
 }
 
-// workspaceDestMapper routes skeleton entries for fullstack scaffolds: AI
-// config, devops/ and docs/ stay at the repository root while the Go workspace
-// is placed under backend/. For backend scaffolds it returns nil (default
-// behaviour copies everything to the repo root).
+// workspaceDestMapper routes skeleton entries by workspace kind:
+//   - fullstack: AI config, devops/ and docs/ stay at the repository root while
+//     the Go workspace is placed under backend/.
+//   - frontend: only shared AI config and docs/ are copied to the root; the
+//     entire Go workspace (cmd/, pkg/, feature/, Makefile, .golangci.yml,
+//     verify.sh) and the backend stop hook are skipped.
+//   - backend: returns nil (default behaviour copies everything to the root).
 func workspaceDestMapper(repoRoot string) func(string) (string, bool) {
-	if opt.Kind != KindFullstack {
+	switch opt.Kind {
+	case KindFullstack:
+		return fullstackDestMapper(repoRoot)
+	case KindFrontend:
+		return frontendDestMapper(repoRoot)
+	default:
 		return nil
 	}
+}
 
+func fullstackDestMapper(repoRoot string) func(string) (string, bool) {
 	rootLevel := map[string]bool{
 		".cursor":   true,
 		".agents":   true,
@@ -276,20 +300,51 @@ func workspaceDestMapper(repoRoot string) func(string) (string, bool) {
 			return repoRoot, false
 		}
 
-		top := relPath
-		if before, _, ok := strings.Cut(relPath, "/"); ok {
-			top = before
-		}
-
-		// Normalize the template suffix so e.g. "AGENTS.mdtmpl" matches.
-		top = strings.TrimSuffix(top, "tmpl")
-
-		if rootLevel[top] {
+		if rootLevel[topSegment(relPath)] {
 			return filepath.Join(repoRoot, relPath), false
 		}
 
 		return filepath.Join(repoRoot, backendDir, relPath), false
 	}
+}
+
+func frontendDestMapper(repoRoot string) func(string) (string, bool) {
+	rootLevel := map[string]bool{
+		".cursor":   true,
+		".agents":   true,
+		".ai":       true,
+		"docs":      true,
+		"AGENTS.md": true,
+	}
+
+	return func(relPath string) (string, bool) {
+		if relPath == "" {
+			return repoRoot, false
+		}
+
+		// Skip the entire Go workspace; keep only shared AI config and docs/.
+		if !rootLevel[topSegment(relPath)] {
+			return "", true
+		}
+
+		// The backend verify stop hook is irrelevant without a Go workspace.
+		if strings.HasSuffix(filepath.ToSlash(relPath), "hooks/backend-verify.sh") {
+			return "", true
+		}
+
+		return filepath.Join(repoRoot, relPath), false
+	}
+}
+
+// topSegment returns the first path segment, with any "tmpl" template suffix
+// stripped so e.g. "AGENTS.mdtmpl" matches "AGENTS.md".
+func topSegment(relPath string) string {
+	top := relPath
+	if before, _, ok := strings.Cut(relPath, "/"); ok {
+		top = before
+	}
+
+	return strings.TrimSuffix(top, "tmpl")
 }
 
 func createWorkspace(_ context.Context) error {
@@ -335,8 +390,11 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		},
 	))
 
-	if opt.Kind == KindFullstack {
+	if hasFrontend(opt.Kind) {
 		copyFrontendTemplate(cmd, repoRoot, templateInput)
+	}
+
+	if opt.Kind == KindFullstack {
 		fixupBackendDevopsPath(cmd, repoRoot)
 	}
 
@@ -347,22 +405,25 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 
 	cmd.Println("Workspace created successfully")
 
-	goRoot := filepath.Join(repoRoot, goRootRel())
-	modulePrefix := goModulePrefix()
+	// Frontend-only workspaces have no Go workspace to initialize.
+	if hasBackend(opt.Kind) {
+		goRoot := filepath.Join(repoRoot, goRootRel())
+		modulePrefix := goModulePrefix()
 
-	packages := []string{"pkg/i18n", "cmd/service"}
-	p := z.RunCmdParams{Dir: goRoot}
-	z.RunCmd(cmd.Context(), p, "go", "work", "init")
+		packages := []string{"pkg/i18n", "cmd/service"}
+		p := z.RunCmdParams{Dir: goRoot}
+		z.RunCmd(cmd.Context(), p, "go", "work", "init")
 
-	for _, pkg := range packages {
-		p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
-		z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(modulePrefix, pkg))
-		z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
-		z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
-		z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+		for _, pkg := range packages {
+			p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
+			z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(modulePrefix, pkg))
+			z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
+			z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
+			z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+		}
 	}
 
-	p = z.RunCmdParams{Dir: repoRoot}
+	p := z.RunCmdParams{Dir: repoRoot}
 
 	isGitRepo, err := isGitRepository(repoRoot)
 	if err == nil && !isGitRepo {

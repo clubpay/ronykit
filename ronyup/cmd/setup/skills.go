@@ -239,9 +239,17 @@ func defaultSkillIDs(kind string) []string {
 	var ids []string
 
 	for _, s := range skillCatalog {
-		isDefault := s.DefaultBackend
-		if kind == KindFullstack {
+		var isDefault bool
+
+		switch kind {
+		case KindFullstack:
 			isDefault = s.DefaultFullstack
+		case KindFrontend:
+			// Frontend-only workspaces want the frontend defaults plus the
+			// language-agnostic quality/workflow skills, but not Go skills.
+			isDefault = s.DefaultFullstack && s.Category != catGo
+		default:
+			isDefault = s.DefaultBackend
 		}
 
 		if isDefault {

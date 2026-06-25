@@ -1,7 +1,8 @@
-`ronyup setup workspace` supports two layouts via `--kind` (default `backend`):
+`ronyup setup workspace` supports three layouts via `--kind` (default `backend`):
 
 - **`backend`** — a Go-only workspace at the repository root.
 - **`fullstack`** — a `backend/` + `frontend/` split. The Go workspace is moved into `backend/`, while AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`), `devops/`, and `docs/` stay at the repository root and are shared by both sides.
+- **`frontend`** — a frontend-only workspace: a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) and `docs/` at the repository root. There is **no** Go workspace, `devops/`, `Makefile`, or backend verify gate; only the frontend verify stop hook is installed.
 
 ## Backend layout (root of the Go workspace)
 
@@ -31,9 +32,9 @@ Each module under `feature/<name>/` (or `feature/<template>/<name>/` when groupe
 - In `backend` kind, modules are `<repoModule>/cmd/service`, `<repoModule>/feature/<name>`, etc.
 - In `fullstack` kind, the Go workspace is nested, so modules are `<repoModule>/backend/cmd/service`, `<repoModule>/backend/feature/<name>`, etc. Run `ronyup setup feature` (and `go`/`make` commands) from the `backend/` directory. `docs/design` still lives at the repository root, and the `scaffold_feature` design gate resolves it from the parent of `backend/` automatically.
 
-## Frontend (fullstack only)
+## Frontend (`fullstack` and `frontend` kinds)
 
-- `frontend/` — holds the web/mobile application(s). It is framework-agnostic by default (a placeholder `README.MD`); initialize it with the stack of your choice (React/Vite, Next.js, SvelteKit, …) and call the backend via its OpenAPI spec at `/docs`.
+- `frontend/` — holds the web/mobile application(s) at the repository root. It is framework-agnostic by default (a placeholder `README.MD`); initialize it with the stack of your choice (React/Vite, Next.js, SvelteKit, …). In `fullstack` workspaces it calls the backend via its OpenAPI spec at `/docs`; in `frontend`-only workspaces it talks to external services over their HTTP/OpenAPI APIs.
 - **One app vs. many — always clarify first.** Do not assume a single frontend app. Before creating or editing anything under `frontend/`, ask the user whether there is one app or multiple.
   - Single app: code may live directly under `frontend/`.
   - Multiple apps: give each app its own directory, `frontend/<app-name>/` (e.g. `frontend/admin/`, `frontend/web/`). Confirm which app a change targets, and the app name/stack when initializing a new one, before proceeding.

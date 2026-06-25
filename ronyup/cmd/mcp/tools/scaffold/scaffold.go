@@ -33,11 +33,12 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				},
 				"kind": map[string]any{
 					"type": "string",
-					"description": "Workspace layout: 'backend' (Go-only at the root, default) or " +
+					"description": "Workspace layout: 'backend' (Go-only at the root, default), " +
 						"'fullstack' (backend/ + frontend/ split, with the Go workspace under backend/ " +
-						"and devops/, docs/ and AI config kept at the root).",
+						"and devops/, docs/ and AI config kept at the root), or 'frontend' (frontend/ app " +
+						"plus shared AI config and docs/ at the root, with no Go workspace).",
 					"default": "backend",
-					"enum":    []string{"backend", "fullstack"},
+					"enum":    []string{"backend", "fullstack", "frontend"},
 				},
 				"skills": map[string]any{
 					"type": "array",

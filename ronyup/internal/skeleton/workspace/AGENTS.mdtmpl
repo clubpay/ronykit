@@ -44,6 +44,13 @@ Installed skills in this workspace:
 	- `cmd/service`: service process wiring and bootstrap.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
+{{- else if eq .Kind "frontend" }}
+- Frontend-only project: a web/mobile application with shared AI assistant config.
+- Top-level layout:
+	- `frontend/`: the web/mobile application(s) (framework-agnostic; initialize with your stack of choice).
+	- `docs/`: design documents (frontend design) and guides.
+	- `.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`: AI assistant config.
+- There is no Go backend in this workspace; talk to external/back-end services over their HTTP/OpenAPI APIs.
 {{- else }}
 - Go workspace for RonyKIT services.
 - Main folders in generated workspaces:
@@ -54,9 +61,23 @@ Installed skills in this workspace:
 
 ## Mandatory gates (do these first, no matter what is asked)
 
-These gates apply to **every** request that touches a backend feature or the
-frontend — even quick edits, prototypes, or "just write the code" asks. Do not
-skip them unless the user explicitly tells you to.
+These gates apply to **every** request — even quick edits, prototypes, or "just
+write the code" asks. Do not skip them unless the user explicitly tells you to.
+{{- if eq .Kind "frontend" }}
+
+1. **Clarify frontend topology before any frontend work.** Do **not** assume a
+   single frontend app. Before creating or modifying anything under `frontend/`,
+   ask the user whether there is **one** app or **multiple**. For multiple apps,
+   each lives in its own directory (`frontend/<app-name>/`); confirm which app a
+   change targets (and its name/stack when initializing a new one).
+2. **Frontend design is document-first.** Before running `create-next-app`,
+   `create vite`, or writing UI, ask aesthetic/design questions and write
+   `docs/design/<app>-frontend-design.md` (`web` for a single app at `frontend/`).
+   Read skills `frontend-design`, `design-tokens`, `typography` and MCP prompt
+   `design-frontend`. Write with `status: draft`; only the **user** sets
+   `status: approved`. This is enforced: `frontend/verify.sh` refuses to pass
+   until the approved design doc exists.
+{{- else if eq .Kind "fullstack" }}
 
 1. **Backend features are document-first.** Before scaffolding or writing code
    for any new or changed service feature, write a Software Requirements
@@ -69,7 +90,6 @@ skip them unless the user explicitly tells you to.
      Never approve on the user's behalf.
    - This is enforced: `scaffold_feature` refuses to run until both documents
      exist and are `status: approved`.
-{{- if eq .Kind "fullstack" }}
 2. **Clarify frontend topology before any frontend work.** Do **not** assume a
    single frontend app. Before creating or modifying anything under `frontend/`,
    ask the user:
@@ -98,6 +118,18 @@ skip them unless the user explicitly tells you to.
    Docker is available (otherwise the gate warns) — so run `make verify` with
    Docker up before merging.
 {{- else }}
+
+1. **Backend features are document-first.** Before scaffolding or writing code
+   for any new or changed service feature, write a Software Requirements
+   Specification (SRS) and a Software Design Description (SDD) and get user
+   approval:
+   - `docs/design/<feature>-srs.md`, then `docs/design/<feature>-sdd.md`.
+   - Use the MCP prompts `design-new-service` (full flow) or `write-srs` /
+     `write-sdd`, and read `knowledge://ronyup/architecture/design-documents`.
+   - Write each with `status: draft`; only the **user** sets `status: approved`.
+     Never approve on the user's behalf.
+   - This is enforced: `scaffold_feature` refuses to run until both documents
+     exist and are `status: approved`.
 2. **Repo integration tests are mandatory.** Every method on every repository
    port in `internal/repo/port.go` needs an `internal/repo/integration_test/`
    test using `x/testkit` (happy path, not-found, conflict) that you **run** and
@@ -111,7 +143,7 @@ skip them unless the user explicitly tells you to.
    Docker is available (otherwise the gate warns) — so run `make verify` with
    Docker up before merging.
 {{- end }}
-{{- if eq .Kind "fullstack" }}
+{{- if ne .Kind "backend" }}
 
 ## Frontend delivery — verify yourself, don't hand back
 
@@ -150,6 +182,7 @@ report errors back to you, or confirm that a fix worked.
 - Prefer targeted changes over broad refactors.
 - Do not run destructive git operations.
 - Run focused checks first, then broader checks.
+{{- if ne .Kind "frontend" }}
 
 ## Package Selection (mandatory)
 
@@ -201,9 +234,19 @@ For a new feature module:
 	- `make tidy`
 	- `make lint`
 	- `make test`
+{{- end }}
 
 ## Quality Expectations
+{{- if eq .Kind "frontend" }}
+
+- Responsive down to mobile (≥360px); no overflow or broken layout.
+- Accessible: visible keyboard focus, semantic HTML, labelled controls; respect `prefers-reduced-motion`.
+- Use semantic design tokens (no scattered raw hex/px); derive values from the approved design doc.
+- Every reusable UI component ships a co-located Storybook story.
+- `typecheck`, `lint`, `build`, and `test` pass via `frontend/verify.sh` before reporting done.
+{{- else }}
 
 - Idempotent behavior for retryable operations.
 - Validate input at API boundary.
 - Keep domain naming consistent across API, app, repo, and settings.
+{{- end }}
