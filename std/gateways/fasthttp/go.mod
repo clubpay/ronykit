@@ -15,9 +15,8 @@ require (
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/savsgio/gotils v0.0.0-20240704082632-aef3928b8a38 // indirect
 	golang.org/x/net v0.55.0 // indirect

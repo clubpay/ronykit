@@ -38,7 +38,7 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect

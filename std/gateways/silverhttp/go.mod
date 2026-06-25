@@ -17,8 +17,7 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.3.1 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	golang.org/x/sys v0.45.0 // indirect
