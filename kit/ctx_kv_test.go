@@ -1,91 +1,122 @@
 package kit_test
 
 import (
+	"testing"
+
 	"github.com/clubpay/ronykit/kit"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
-var _ = DescribeTable(
-	"GetString",
-	func(key string, val, def string) {
-		ctx := kit.NewContext(nil)
-		Expect(ctx.GetString(key, def)).To(Equal(def))
-		Expect(ctx.Set(key, val).GetString(key, def)).To(Equal(val))
-	},
-	Entry("", "key1", "val1", "defVal1"),
-	Entry("", "key2", "val2", "defVal2"),
-	Entry("", "key1", "val1", ""),
-	Entry("", "key1", "", "defVal1"),
-)
-
-var _ = DescribeTable(
-	"GetInt32",
-	func(key string, val, def int32) {
-		ctx := kit.NewContext(nil)
-		Expect(ctx.GetInt32(key, def)).To(Equal(def))
-		Expect(ctx.Set(key, val).GetInt32(key, def)).To(Equal(val))
-	},
-	Entry("", "key1", int32(100), int32(200)),
-	Entry("", "key2", int32(50), int32(0)),
-	Entry("", "key1", int32(0), int32(0)),
-	Entry("", "key1", int32(-1), int32(10000)),
-)
-
-var _ = DescribeTable(
-	"GetInt64",
-	func(key string, val, def int64) {
-		ctx := kit.NewContext(nil)
-		Expect(ctx.GetInt64(key, def)).To(Equal(def))
-		Expect(ctx.Set(key, val).GetInt64(key, def)).To(Equal(val))
-	},
-	Entry("", "key1", int64(100), int64(200)),
-	Entry("", "key2", int64(50), int64(0)),
-	Entry("", "key1", int64(0), int64(0)),
-	Entry("", "key1", int64(-1), int64(10000)),
-)
-
-var _ = DescribeTable(
-	"GetUInt64",
-	func(key string, val, def uint64) {
-		ctx := kit.NewContext(nil)
-		Expect(ctx.GetUint64(key, def)).To(Equal(def))
-		Expect(ctx.Set(key, val).GetUint64(key, def)).To(Equal(val))
-	},
-	Entry("", "key1", uint64(100), uint64(200)),
-	Entry("", "key2", uint64(50), uint64(0)),
-	Entry("", "key1", uint64(0), uint64(0)),
-)
-
-var _ = DescribeTable(
-	"GetUInt32",
-	func(key string, val, def uint32) {
-		ctx := kit.NewContext(nil)
-		Expect(ctx.GetUint32(key, def)).To(Equal(def))
-		Expect(ctx.Set(key, val).GetUint32(key, def)).To(Equal(val))
-	},
-	Entry("", "key1", uint32(100), uint32(200)),
-	Entry("", "key2", uint32(50), uint32(0)),
-	Entry("", "key1", uint32(0), uint32(0)),
-)
-
-var _ = Describe(
-	"Walk",
-	func() {
-		ctx := kit.NewContext(nil)
-		ctx.Set("k1", "v1")
-		ctx.Set("k2", "v2")
-
-		hdr := map[string]any{}
-		ctx.Walk(func(key string, val any) bool {
-			hdr[key] = val
-
-			return true
+func TestGetString(t *testing.T) {
+	tests := []struct {
+		key string
+		val string
+		def string
+	}{
+		{"key1", "val1", "defVal1"},
+		{"key2", "val2", "defVal2"},
+		{"key1", "val1", ""},
+		{"key1", "", "defVal1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key+"_"+tt.val+"_"+tt.def, func(t *testing.T) {
+			ctx := kit.NewContext(nil)
+			assert.Equal(t, tt.def, ctx.GetString(tt.key, tt.def))
+			assert.Equal(t, tt.val, ctx.Set(tt.key, tt.val).GetString(tt.key, tt.def))
 		})
+	}
+}
 
-		It("Should load all the header keys", func() {
-			Expect(hdr).To(HaveKeyWithValue("k1", "v1"))
-			Expect(hdr).To(HaveKeyWithValue("k2", "v2"))
+func TestGetInt32(t *testing.T) {
+	tests := []struct {
+		key string
+		val int32
+		def int32
+	}{
+		{"key1", 100, 200},
+		{"key2", 50, 0},
+		{"key1", 0, 0},
+		{"key1", -1, 10000},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			ctx := kit.NewContext(nil)
+			assert.Equal(t, tt.def, ctx.GetInt32(tt.key, tt.def))
+			assert.Equal(t, tt.val, ctx.Set(tt.key, tt.val).GetInt32(tt.key, tt.def))
 		})
-	},
-)
+	}
+}
+
+func TestGetInt64(t *testing.T) {
+	tests := []struct {
+		key string
+		val int64
+		def int64
+	}{
+		{"key1", 100, 200},
+		{"key2", 50, 0},
+		{"key1", 0, 0},
+		{"key1", -1, 10000},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			ctx := kit.NewContext(nil)
+			assert.Equal(t, tt.def, ctx.GetInt64(tt.key, tt.def))
+			assert.Equal(t, tt.val, ctx.Set(tt.key, tt.val).GetInt64(tt.key, tt.def))
+		})
+	}
+}
+
+func TestGetUint64(t *testing.T) {
+	tests := []struct {
+		key string
+		val uint64
+		def uint64
+	}{
+		{"key1", 100, 200},
+		{"key2", 50, 0},
+		{"key1", 0, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			ctx := kit.NewContext(nil)
+			assert.Equal(t, tt.def, ctx.GetUint64(tt.key, tt.def))
+			assert.Equal(t, tt.val, ctx.Set(tt.key, tt.val).GetUint64(tt.key, tt.def))
+		})
+	}
+}
+
+func TestGetUint32(t *testing.T) {
+	tests := []struct {
+		key string
+		val uint32
+		def uint32
+	}{
+		{"key1", 100, 200},
+		{"key2", 50, 0},
+		{"key1", 0, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.key, func(t *testing.T) {
+			ctx := kit.NewContext(nil)
+			assert.Equal(t, tt.def, ctx.GetUint32(tt.key, tt.def))
+			assert.Equal(t, tt.val, ctx.Set(tt.key, tt.val).GetUint32(tt.key, tt.def))
+		})
+	}
+}
+
+func TestWalk(t *testing.T) {
+	ctx := kit.NewContext(nil)
+	ctx.Set("k1", "v1")
+	ctx.Set("k2", "v2")
+
+	hdr := map[string]any{}
+	ctx.Walk(func(key string, val any) bool {
+		hdr[key] = val
+
+		return true
+	})
+
+	assert.Equal(t, "v1", hdr["k1"])
+	assert.Equal(t, "v2", hdr["k2"])
+}

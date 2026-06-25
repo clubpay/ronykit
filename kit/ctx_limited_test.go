@@ -1,21 +1,20 @@
 package kit_test
 
 import (
+	"testing"
+
 	"github.com/clubpay/ronykit/kit"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
-var _ = Describe("CtxLimited", func() {
+func TestCtxLimited(t *testing.T) {
 	ctx := kit.NewContext(nil)
 	conn := newTestConn(100, "", true)
 	ctx.SetConn(conn)
 
-	It("Should be synced with the main context", func() {
-		limitCtx := ctx.Limited()
-		Expect(limitCtx.Conn().ConnID()).To(Equal(conn.ConnID()))
-		Expect(limitCtx.ServiceName()).To(Equal(ctx.ServiceName()))
-		limitCtx.In().SetHdr("k1", "v1")
-		Expect(ctx.In().GetHdr("k1")).To(Equal("v1"))
-	})
-})
+	limitCtx := ctx.Limited()
+	assert.Equal(t, conn.ConnID(), limitCtx.Conn().ConnID())
+	assert.Equal(t, ctx.ServiceName(), limitCtx.ServiceName())
+	limitCtx.In().SetHdr("k1", "v1")
+	assert.Equal(t, "v1", ctx.In().GetHdr("k1"))
+}

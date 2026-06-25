@@ -2,10 +2,10 @@ package kit_test
 
 import (
 	"errors"
+	"testing"
 
 	"github.com/clubpay/ronykit/kit"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 type testContract struct {
@@ -90,8 +90,8 @@ func (t *testRESTConn) WalkQueryParams(fn func(key string, val string) bool) {
 	}
 }
 
-var _ = Describe("Context execution", func() {
-	It("should execute handlers in order", func() {
+func TestContextExecution(t *testing.T) {
+	t.Run("should execute handlers in order", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
 		ctx.SetConn(newTestConn(1, "", false))
 
@@ -104,10 +104,10 @@ var _ = Describe("Context execution", func() {
 		}
 
 		ctx.Exec(kit.ExecuteArg{}, ctr)
-		Expect(order).To(Equal([]string{"h1", "h2"}))
+		assert.Equal(t, []string{"h1", "h2"}, order)
 	})
 
-	It("should stop execution when requested", func() {
+	t.Run("should stop execution when requested", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
 		ctx.SetConn(newTestConn(1, "", false))
 
@@ -124,12 +124,12 @@ var _ = Describe("Context execution", func() {
 		}
 
 		ctx.Exec(kit.ExecuteArg{}, ctr)
-		Expect(order).To(Equal([]string{"h1", "h2"}))
+		assert.Equal(t, []string{"h1", "h2"}, order)
 	})
-})
+}
 
-var _ = Describe("Context headers and status", func() {
-	It("should apply preset headers to outgoing envelopes", func() {
+func TestContextHeadersAndStatus(t *testing.T) {
+	t.Run("should apply preset headers to outgoing envelopes", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
 		ctx.SetConn(newTestConn(1, "", false))
 		ctx.PresetHdr("k1", "v1")
@@ -139,11 +139,11 @@ var _ = Describe("Context headers and status", func() {
 		hdr["k2"] = "changed"
 
 		out := ctx.Out()
-		Expect(out.GetHdr("k1")).To(Equal("v1"))
-		Expect(out.GetHdr("k2")).To(Equal("v2"))
+		assert.Equal(t, "v1", out.GetHdr("k1"))
+		assert.Equal(t, "v2", out.GetHdr("k2"))
 	})
 
-	It("should sync status code with REST connections", func() {
+	t.Run("should sync status code with REST connections", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
 		rc := &testRESTConn{
 			testConn: newTestConn(1, "", false),
@@ -151,13 +151,13 @@ var _ = Describe("Context headers and status", func() {
 		ctx.SetConn(rc)
 		ctx.SetStatusCode(202)
 
-		Expect(ctx.GetStatusCode()).To(Equal(202))
-		Expect(rc.statusCode).To(Equal(202))
+		assert.Equal(t, 202, ctx.GetStatusCode())
+		assert.Equal(t, 202, rc.statusCode)
 	})
-})
+}
 
-var _ = Describe("Context modifiers and errors", func() {
-	It("should apply modifiers in LIFO order", func() {
+func TestContextModifiersAndErrors(t *testing.T) {
+	t.Run("should apply modifiers in LIFO order", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
 		conn := newTestConn(1, "", false)
 		ctx.SetConn(conn)
@@ -173,15 +173,15 @@ var _ = Describe("Context modifiers and errors", func() {
 		})
 
 		ctx.Out().SetMsg(kit.RawMessage("ok")).Send()
-		Expect(order).To(Equal([]string{"m2", "m1"}))
-		Expect(conn.ReadString()).To(Equal("ok"))
+		assert.Equal(t, []string{"m2", "m1"}, order)
+		assert.Equal(t, "ok", conn.buf.String())
 	})
 
-	It("should record errors", func() {
+	t.Run("should record errors", func(t *testing.T) {
 		ctx := kit.NewContext(nil)
-		Expect(ctx.HasError()).To(BeFalse())
+		assert.False(t, ctx.HasError())
 
-		Expect(ctx.Error(errors.New("boom"))).To(BeTrue())
-		Expect(ctx.HasError()).To(BeTrue())
+		assert.True(t, ctx.Error(errors.New("boom")))
+		assert.True(t, ctx.HasError())
 	})
-})
+}

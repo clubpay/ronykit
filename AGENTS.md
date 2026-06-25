@@ -87,7 +87,7 @@ make tidy        # go mod tidy all modules (excludes example/)
 
 ## Testing
 
-- Framework: **Ginkgo v2** with **Gomega** matchers (where used).
+- Framework: standard **`testing`** with **`github.com/stretchr/testify`** (`assert` / `require`). Prefer table-driven tests and `t.Run` subtests.
 - Test runner: `gotestsum` with `--format pkgname-and-test-fails`.
 - Coverage: `covermode=atomic`, generates `coverage.out` per module.
 - For logic changes, run targeted tests for affected modules first; use `make test` for broader validation when feasible.

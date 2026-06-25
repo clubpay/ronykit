@@ -9,17 +9,10 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/batch"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGateway(t *testing.T) {
-	RegisterFailHandler(Fail)
-
-	RunSpecs(t, "RonyKit/Kit/Utils Suite")
-}
-
-var _ = Describe("Flusher Without WaitTime", func() {
+func TestFlusherWithoutWaitTime(t *testing.T) {
 	var out, in int64
 	f := batch.NewMulti[int, batch.NA](
 		func(targetID string, entries []batch.Entry[int, batch.NA]) {
@@ -44,16 +37,15 @@ var _ = Describe("Flusher Without WaitTime", func() {
 		}()
 	}
 	wg.Wait()
-	It("should flush all entries", func() {
-		for _, q := range f.Pool() {
-			Expect(q.EntryChan()).To(BeEmpty())
-		}
-		Expect(in).To(Equal(total))
-		Expect(out).To(Equal(total))
-	})
-})
 
-var _ = Describe("Flusher With WaitTime", func() {
+	for _, q := range f.Pool() {
+		assert.Empty(t, q.EntryChan())
+	}
+	assert.Equal(t, total, in)
+	assert.Equal(t, total, out)
+}
+
+func TestFlusherWithWaitTime(t *testing.T) {
 	var out, in int64
 	f := batch.NewMulti[int, batch.NA](
 		func(targetID string, entries []batch.Entry[int, batch.NA]) {
@@ -83,16 +75,14 @@ var _ = Describe("Flusher With WaitTime", func() {
 	}
 	wg.Wait()
 
-	It("should flush all entries", func() {
-		for _, q := range f.Pool() {
-			Expect(q.EntryChan()).To(BeEmpty())
-		}
-		Expect(in).To(Equal(total))
-		Expect(out).To(Equal(total))
-	})
-})
+	for _, q := range f.Pool() {
+		assert.Empty(t, q.EntryChan())
+	}
+	assert.Equal(t, total, in)
+	assert.Equal(t, total, out)
+}
 
-var _ = Describe("Flusher With Callback", func() {
+func TestFlusherWithCallback(t *testing.T) {
 	var out, in int64
 	f := batch.NewMulti[int, int](
 		func(targetID string, entries []batch.Entry[int, int]) {
@@ -126,15 +116,13 @@ var _ = Describe("Flusher With Callback", func() {
 	}
 	wg.Wait()
 
-	It("should flush all entries", func() {
-		for _, q := range f.Pool() {
-			Expect(q.EntryChan()).To(BeEmpty())
-		}
-		Expect(in).To(Equal(total))
-		Expect(out).To(Equal(total))
-		Expect(sum).To(Equal(total * (total - 1) / 2))
-	})
-})
+	for _, q := range f.Pool() {
+		assert.Empty(t, q.EntryChan())
+	}
+	assert.Equal(t, total, in)
+	assert.Equal(t, total, out)
+	assert.Equal(t, total*(total-1)/2, sum)
+}
 
 func ExampleBatcher() {
 	averageAll := func(targetID string, entries []batch.Entry[float64, float64]) {

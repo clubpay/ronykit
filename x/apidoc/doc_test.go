@@ -12,8 +12,7 @@ import (
 	"github.com/clubpay/ronykit/x/apidoc"
 	"github.com/clubpay/ronykit/x/apidoc/internal/testdata/a"
 	"github.com/clubpay/ronykit/x/apidoc/internal/testdata/b"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 type embedded struct {
@@ -143,104 +142,100 @@ func ExampleGenerator_WritePostmanToFile() {
 	// Output: <nil>
 }
 
-func TestSwagger(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Swagger Suite")
-}
-
-var _ = Describe("ToSwaggerDefinition", func() {
+func TestToSwaggerDefinition(t *testing.T) {
 	ps := desc.Parse(testService{})
 	ps2 := desc.Parse(testService2{})
-	It("Check Request for Contract[0].Request (sampleReq)", func() {
+
+	t.Run("Check Request for Contract[0].Request (sampleReq)", func(t *testing.T) {
 		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
 		props := d.Properties.ToOrderedSchemaItems()
-		Expect(props[0].Name).To(Equal("others"))
-		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[1].Name).To(Equal("embedded"))
-		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[2].Name).To(Equal("tt"))
-		Expect(props[2].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[2].SchemaProps.Items.Schema.Type[0]).To(Equal("array"))
-		Expect(props[2].SchemaProps.Items.Schema.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[3].Name).To(Equal("x"))
-		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[4].Name).To(Equal("y"))
-		Expect(props[4].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[5].Name).To(Equal("z"))
-		Expect(props[5].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[5].SchemaProps.Description).To(Equal("[Deprecated] [Optional]"))
-		Expect(props[6].Name).To(Equal("w"))
-		Expect(props[6].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[6].SchemaProps.Items.Schema.Type[0]).To(Equal("string"))
-		Expect(props[7].Name).To(Equal("ms"))
-		Expect(props[7].SchemaProps.Type[0]).To(Equal("object"))
-		Expect(props[7].SchemaProps.AdditionalProperties.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
-		Expect(props[8].Name).To(Equal("mss"))
-		Expect(props[8].SchemaProps.Type[0]).To(Equal("object"))
-		Expect(props[9].Name).To(Equal("mis"))
-		Expect(props[9].SchemaProps.Type[0]).To(Equal("object"))
-		Expect(props[10].Name).To(Equal("mii"))
-		Expect(props[10].SchemaProps.Type[0]).To(Equal("object"))
-		Expect(props[11].Name).To(Equal("mia"))
-		Expect(props[11].SchemaProps.Type[0]).To(Equal("object"))
+		assert.Equal(t, "others", props[0].Name)
+		assert.Equal(t, "string", props[0].SchemaProps.Type[0])
+		assert.Equal(t, "embedded", props[1].Name)
+		assert.Equal(t, "string", props[1].SchemaProps.Type[0])
+		assert.Equal(t, "tt", props[2].Name)
+		assert.Equal(t, "array", props[2].SchemaProps.Type[0])
+		assert.Equal(t, "array", props[2].SchemaProps.Items.Schema.Type[0])
+		assert.Equal(t, "string", props[2].SchemaProps.Items.Schema.Items.Schema.Type[0])
+		assert.Equal(t, "x", props[3].Name)
+		assert.Equal(t, "string", props[3].SchemaProps.Type[0])
+		assert.Equal(t, "y", props[4].Name)
+		assert.Equal(t, "string", props[4].SchemaProps.Type[0])
+		assert.Equal(t, "z", props[5].Name)
+		assert.Equal(t, "integer", props[5].SchemaProps.Type[0])
+		assert.Equal(t, "[Deprecated] [Optional]", props[5].SchemaProps.Description)
+		assert.Equal(t, "w", props[6].Name)
+		assert.Equal(t, "array", props[6].SchemaProps.Type[0])
+		assert.Equal(t, "string", props[6].SchemaProps.Items.Schema.Type[0])
+		assert.Equal(t, "ms", props[7].Name)
+		assert.Equal(t, "object", props[7].SchemaProps.Type[0])
+		assert.Equal(t, "#/definitions/testService.subRes", props[7].SchemaProps.AdditionalProperties.Schema.Ref.String())
+		assert.Equal(t, "mss", props[8].Name)
+		assert.Equal(t, "object", props[8].SchemaProps.Type[0])
+		assert.Equal(t, "mis", props[9].Name)
+		assert.Equal(t, "object", props[9].SchemaProps.Type[0])
+		assert.Equal(t, "mii", props[10].Name)
+		assert.Equal(t, "object", props[10].SchemaProps.Type[0])
+		assert.Equal(t, "mia", props[11].Name)
+		assert.Equal(t, "object", props[11].SchemaProps.Type[0])
 	})
 
-	It("Check Request for Contract[0].Response (sampleRes)", func() {
+	t.Run("Check Request for Contract[0].Response (sampleRes)", func(t *testing.T) {
 		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
-		Expect(props[0].Name).To(Equal("out1"))
-		Expect(props[0].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[1].Name).To(Equal("out2"))
-		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[2].Name).To(Equal("sub"))
-		Expect(props[2].SchemaProps.Ref.String()).To(Equal("#/definitions/testService.subRes"))
-		Expect(props[3].Name).To(Equal("subs"))
-		Expect(props[3].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[3].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
-		Expect(props[4].Name).To(Equal("xSub"))
-		Expect(props[4].SchemaProps.Ref.String()).To(Equal("#/definitions/testService.subRes"))
-		Expect(props[4].SchemaProps.Description).To(Equal("[Optional]"))
-		Expect(props[5].Name).To(Equal("subs2"))
-		Expect(props[5].SchemaProps.Type[0]).To(Equal("array"))
-		Expect(props[5].SchemaProps.Items.Schema.Ref.String()).To(Equal("#/definitions/testService.subRes"))
+		assert.Equal(t, "out1", props[0].Name)
+		assert.Equal(t, "integer", props[0].SchemaProps.Type[0])
+		assert.Equal(t, "out2", props[1].Name)
+		assert.Equal(t, "string", props[1].SchemaProps.Type[0])
+		assert.Equal(t, "sub", props[2].Name)
+		assert.Equal(t, "#/definitions/testService.subRes", props[2].SchemaProps.Ref.String())
+		assert.Equal(t, "subs", props[3].Name)
+		assert.Equal(t, "array", props[3].SchemaProps.Type[0])
+		assert.Equal(t, "#/definitions/testService.subRes", props[3].SchemaProps.Items.Schema.Ref.String())
+		assert.Equal(t, "xSub", props[4].Name)
+		assert.Equal(t, "#/definitions/testService.subRes", props[4].SchemaProps.Ref.String())
+		assert.Equal(t, "[Optional]", props[4].SchemaProps.Description)
+		assert.Equal(t, "subs2", props[5].Name)
+		assert.Equal(t, "array", props[5].SchemaProps.Type[0])
+		assert.Equal(t, "#/definitions/testService.subRes", props[5].SchemaProps.Items.Schema.Ref.String())
 	})
 
-	It("Check Request for Contract[1].Response (anotherRes)", func() {
+	t.Run("Check Request for Contract[1].Response (anotherRes)", func(t *testing.T) {
 		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[1].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
-		Expect(props[0].Name).To(Equal("another"))
-		Expect(props[0].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[1].Name).To(Equal("some"))
-		Expect(props[1].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[2].Name).To(Equal("out1"))
-		Expect(props[2].SchemaProps.Type[0]).To(Equal("integer"))
-		Expect(props[2].Description).To(Equal("[Deprecated]"))
-		Expect(props[3].Name).To(Equal("out2"))
-		Expect(props[3].SchemaProps.Type[0]).To(Equal("string"))
-		Expect(props[3].Enum).To(Equal([]interface{}{"OUT1", "OUT2"}))
+		assert.Equal(t, "another", props[0].Name)
+		assert.Equal(t, "string", props[0].SchemaProps.Type[0])
+		assert.Equal(t, "some", props[1].Name)
+		assert.Equal(t, "string", props[1].SchemaProps.Type[0])
+		assert.Equal(t, "out1", props[2].Name)
+		assert.Equal(t, "integer", props[2].SchemaProps.Type[0])
+		assert.Equal(t, "[Deprecated]", props[2].Description)
+		assert.Equal(t, "out2", props[3].Name)
+		assert.Equal(t, "string", props[3].SchemaProps.Type[0])
+		assert.Equal(t, []interface{}{"OUT1", "OUT2"}, props[3].Enum)
 	})
 
-	It("Check Request for Contract[2].Response (kit.RawMessage)", func() {
+	t.Run("Check Request for Contract[2].Response (kit.RawMessage)", func(t *testing.T) {
 		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[2].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props
 	})
 
-	It("Check Request for Contract[3] (kit.MultipartForm)", func() {
+	t.Run("Check Request for Contract[3] (kit.MultipartForm)", func(t *testing.T) {
 		d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[3].Responses[0].Message)
 		props := d.Properties.ToOrderedSchemaItems()
 
 		_ = props
 	})
 
-	It("Name Collision from Multiple Package", func() {
-		Expect(ps2.Messages()).To(HaveLen(3))
+	t.Run("Name Collision from Multiple Package", func(t *testing.T) {
+		assert.Len(t, ps2.Messages(), 3)
 		fmt.Println(ps2.Messages())
 		err := apidoc.New("Test2", "", "").WriteSwagToFile("_swagger2.json", testService2{})
-		Expect(err).To(BeNil())
+		assert.NoError(t, err)
 	})
-})
+}
 
 func BenchmarkSwagger(b *testing.B) {
 	for i := 0; i < b.N; i++ {

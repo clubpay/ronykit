@@ -2,14 +2,14 @@ package desc_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
-var _ = Describe("Service - 1", func() {
+func TestService1(t *testing.T) {
 	d := desc.NewService("sample").
 		AddHandler(func(ctx *kit.Context) {}).
 		SetEncoding(kit.JSON).
@@ -25,17 +25,15 @@ var _ = Describe("Service - 1", func() {
 		)
 
 	svc := d.Build()
-	It("should build service", func() {
-		Expect(svc).NotTo(BeNil())
-		Expect(svc.Contracts()).To(HaveLen(2))
-		Expect(svc.Contracts()[0].Encoding()).To(Equal(kit.MSG))
-		Expect(svc.Contracts()[0].Input()).To(Equal(&NestedMessage{}))
-		Expect(svc.Contracts()[0].Output()).To(Equal(&FlatMessage{}))
-		Expect(svc.Contracts()[0].Handlers()).To(HaveLen(2))
-	})
-})
+	assert.NotNil(t, svc)
+	assert.Len(t, svc.Contracts(), 2)
+	assert.Equal(t, kit.MSG, svc.Contracts()[0].Encoding())
+	assert.Equal(t, &NestedMessage{}, svc.Contracts()[0].Input())
+	assert.Equal(t, &FlatMessage{}, svc.Contracts()[0].Output())
+	assert.Len(t, svc.Contracts()[0].Handlers(), 2)
+}
 
-var _ = Describe("Service - 2", func() {
+func TestService2(t *testing.T) {
 	d := desc.NewService("sample").
 		SetEncoding(kit.JSON).
 		SetVersion("v1.0.0").
@@ -52,27 +50,24 @@ var _ = Describe("Service - 2", func() {
 				SetHandler(func(ctx *kit.Context) {}),
 		)
 
-	It("should service description have", func() {
-		Expect(d.PossibleErrors).To(HaveLen(1))
-		Expect(d.Contracts).To(HaveLen(1))
-		Expect(d.PossibleErrors[0].Code).To(Equal(400))
-		Expect(d.PossibleErrors[0].Item).To(Equal("SOME_BUG"))
-		Expect(d.Contracts[0].PossibleErrors).To(HaveLen(1))
-		Expect(d.Contracts[0].PossibleErrors[0].Code).To(Equal(401))
-		Expect(d.Contracts[0].PossibleErrors[0].Item).To(Equal("SOME_ANOTHER_BUG"))
-		Expect(d.Contracts[0].RouteSelectors).To(HaveLen(2))
-		Expect(d.Contracts[0].RouteSelectors[0].Selector.GetEncoding()).To(Equal(kit.JSON))
-	})
+	assert.Len(t, d.PossibleErrors, 1)
+	assert.Len(t, d.Contracts, 1)
+	assert.Equal(t, 400, d.PossibleErrors[0].Code)
+	assert.Equal(t, "SOME_BUG", d.PossibleErrors[0].Item)
+	assert.Len(t, d.Contracts[0].PossibleErrors, 1)
+	assert.Equal(t, 401, d.Contracts[0].PossibleErrors[0].Code)
+	assert.Equal(t, "SOME_ANOTHER_BUG", d.Contracts[0].PossibleErrors[0].Item)
+	assert.Len(t, d.Contracts[0].RouteSelectors, 2)
+	assert.Equal(t, kit.JSON, d.Contracts[0].RouteSelectors[0].Selector.GetEncoding())
+
 	svc := d.Build()
-	It("should build service", func() {
-		Expect(svc).NotTo(BeNil())
-		Expect(svc.Contracts()).To(HaveLen(2))
-		Expect(svc.Contracts()[0].Encoding()).To(Equal(kit.JSON))
-		Expect(svc.Contracts()[0].Input()).To(Equal(&NestedMessage{}))
-		Expect(svc.Contracts()[0].Output()).To(Equal(&FlatMessage{}))
-		Expect(svc.Contracts()[0].Handlers()).To(HaveLen(1))
-	})
-})
+	assert.NotNil(t, svc)
+	assert.Len(t, svc.Contracts(), 2)
+	assert.Equal(t, kit.JSON, svc.Contracts()[0].Encoding())
+	assert.Equal(t, &NestedMessage{}, svc.Contracts()[0].Input())
+	assert.Equal(t, &FlatMessage{}, svc.Contracts()[0].Output())
+	assert.Len(t, svc.Contracts()[0].Handlers(), 1)
+}
 
 var _ kit.ErrorMessage = (*testError)(nil)
 

@@ -7,8 +7,9 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type dummyRESTSelector struct {
@@ -110,7 +111,7 @@ func (e *PtrErr) GetItem() string {
 	return e.Item
 }
 
-var _ = Describe("DescParser", func() {
+func TestDescParser(t *testing.T) {
 	d := desc.NewService("sample").
 		AddContract(
 			desc.NewContract().
@@ -122,131 +123,129 @@ var _ = Describe("DescParser", func() {
 				Out(&FlatMessage{}),
 		)
 
-	It("should parse the descriptor", func() {
-		pd := desc.ParseService(d)
-		contract0 := pd.Contracts[0]
-		contract1 := pd.Contracts[1]
-		Expect(pd.Contracts).To(HaveLen(2))
-		Expect(pd.Messages()).To(HaveLen(3))
-		Expect(pd.MessageByName("Err")).ToNot(BeNil())
-		Expect(pd.MessageByName("Err").ImplementError).To(BeTrue())
+	pd := desc.ParseService(d)
+	contract0 := pd.Contracts[0]
+	contract1 := pd.Contracts[1]
+	assert.Len(t, pd.Contracts, 2)
+	assert.Len(t, pd.Messages(), 3)
+	assert.NotNil(t, pd.MessageByName("Err"))
+	assert.True(t, pd.MessageByName("Err").ImplementError)
 
-		Expect(contract0.Name).To(Equal("s1"))
-		Expect(contract0.Type).To(Equal(desc.REST))
-		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(contract0.Path).To(Equal("/path1"))
-		Expect(contract0.Method).To(Equal("GET"))
-		Expect(contract0.GroupName).To(Equal("c1"))
-		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
-		Expect(contract0.Responses[0].Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(9))
+	assert.Equal(t, "s1", contract0.Name)
+	assert.Equal(t, desc.REST, contract0.Type)
+	assert.Equal(t, kit.JSON.Tag(), contract0.Encoding)
+	assert.Equal(t, "/path1", contract0.Path)
+	assert.Equal(t, "GET", contract0.Method)
+	assert.Equal(t, "c1", contract0.GroupName)
+	assert.Equal(t, "NestedMessage", contract0.Request.Message.Name)
+	assert.Len(t, contract0.Request.Message.Fields, 7)
+	assert.Equal(t, "FlatMessage", contract0.Responses[0].Message.Name)
+	assert.Len(t, contract0.Responses[0].Message.Fields, 9)
 
-		Expect(contract1.Name).To(Equal("s2"))
-		Expect(contract1.Type).To(Equal(desc.REST))
-		Expect(contract1.Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(contract1.Path).To(Equal("/path2"))
-		Expect(contract1.Method).To(Equal("POST"))
-		Expect(contract1.GroupName).To(Equal("c1"))
+	assert.Equal(t, "s2", contract1.Name)
+	assert.Equal(t, desc.REST, contract1.Type)
+	assert.Equal(t, kit.JSON.Tag(), contract1.Encoding)
+	assert.Equal(t, "/path2", contract1.Path)
+	assert.Equal(t, "POST", contract1.Method)
+	assert.Equal(t, "c1", contract1.GroupName)
 
-		Expect(contract0.Request.Message.Name).To(Equal("NestedMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
-		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("a"))
-		Expect(contract0.Request.Message.Fields[0].Element.Kind).To(Equal(desc.String))
-		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("b"))
-		Expect(contract0.Request.Message.Fields[1].Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[1].Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.Fields[1].Optional).To(BeFalse())
-		Expect(contract0.Request.Message.Fields[2].Name).To(Equal("ba"))
-		Expect(contract0.Request.Message.Fields[2].Element.Kind).To(Equal(desc.Array))
-		Expect(contract0.Request.Message.Fields[2].Element.Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[2].Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.Fields[2].Tag.OmitEmpty).To(BeTrue())
-		Expect(contract0.Request.Message.Fields[2].Optional).To(BeTrue())
-		Expect(contract0.Request.Message.Fields[3].Name).To(Equal("bm"))
-		Expect(contract0.Request.Message.Fields[3].Element.Kind).To(Equal(desc.Map))
-		Expect(contract0.Request.Message.Fields[3].Element.Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[3].Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.Fields[3].Optional).To(BeTrue())
-		Expect(contract0.Request.Message.Fields[3].Tag.OmitEmpty).To(BeFalse())
-		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("c"))
-		Expect(contract0.Request.Message.Fields[4].Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[4].Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.Fields[4].Optional).To(BeTrue())
-		Expect(contract0.Request.Message.FieldByName("ba").Element.Kind).To(Equal(desc.Array))
-		Expect(contract0.Request.Message.FieldByGoName("BA").Element.Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Kind).To(Equal(desc.Array))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PA").Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Kind).To(Equal(desc.Map))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Element.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.FieldByGoName("PMap").Element.Element.Message.Name).To(Equal("FlatMessage"))
+	assert.Equal(t, "NestedMessage", contract0.Request.Message.Name)
+	assert.Len(t, contract0.Request.Message.Fields, 7)
+	assert.Equal(t, "a", contract0.Request.Message.Fields[0].Name)
+	assert.Equal(t, desc.String, contract0.Request.Message.Fields[0].Element.Kind)
+	assert.Equal(t, "b", contract0.Request.Message.Fields[1].Name)
+	assert.Equal(t, desc.Object, contract0.Request.Message.Fields[1].Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.Fields[1].Element.Message.Name)
+	assert.False(t, contract0.Request.Message.Fields[1].Optional)
+	assert.Equal(t, "ba", contract0.Request.Message.Fields[2].Name)
+	assert.Equal(t, desc.Array, contract0.Request.Message.Fields[2].Element.Kind)
+	assert.Equal(t, desc.Object, contract0.Request.Message.Fields[2].Element.Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.Fields[2].Element.Element.Message.Name)
+	assert.True(t, contract0.Request.Message.Fields[2].Tag.OmitEmpty)
+	assert.True(t, contract0.Request.Message.Fields[2].Optional)
+	assert.Equal(t, "bm", contract0.Request.Message.Fields[3].Name)
+	assert.Equal(t, desc.Map, contract0.Request.Message.Fields[3].Element.Kind)
+	assert.Equal(t, desc.Object, contract0.Request.Message.Fields[3].Element.Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.Fields[3].Element.Element.Message.Name)
+	assert.True(t, contract0.Request.Message.Fields[3].Optional)
+	assert.False(t, contract0.Request.Message.Fields[3].Tag.OmitEmpty)
+	assert.Equal(t, "c", contract0.Request.Message.Fields[4].Name)
+	assert.Equal(t, desc.Object, contract0.Request.Message.Fields[4].Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.Fields[4].Element.Message.Name)
+	assert.True(t, contract0.Request.Message.Fields[4].Optional)
+	assert.Equal(t, desc.Array, contract0.Request.Message.FieldByName("ba").Element.Kind)
+	assert.Equal(t, desc.Object, contract0.Request.Message.FieldByGoName("BA").Element.Element.Kind)
+	assert.Equal(t, desc.Array, contract0.Request.Message.FieldByGoName("PA").Element.Kind)
+	assert.Equal(t, desc.Object, contract0.Request.Message.FieldByGoName("PA").Element.Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.FieldByGoName("PA").Element.Element.Message.Name)
+	assert.Equal(t, desc.Map, contract0.Request.Message.FieldByGoName("PMap").Element.Kind)
+	assert.Equal(t, desc.Object, contract0.Request.Message.FieldByGoName("PMap").Element.Element.Kind)
+	assert.Equal(t, "FlatMessage", contract0.Request.Message.FieldByGoName("PMap").Element.Element.Message.Name)
 
-		b := contract0.Request.Message.Fields[1]
-		Expect(b.Name).To(Equal("b"))
-		Expect(b.Element.Kind).To(Equal(desc.Object))
-		Expect(b.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(b.Element.Message.Fields).To(HaveLen(9))
-		Expect(b.Element.Message.Fields[0].Name).To(Equal("a"))
-		Expect(b.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
+	b := contract0.Request.Message.Fields[1]
+	assert.Equal(t, "b", b.Name)
+	assert.Equal(t, desc.Object, b.Element.Kind)
+	assert.Equal(t, "FlatMessage", b.Element.Message.Name)
+	assert.Len(t, b.Element.Message.Fields, 9)
+	assert.Equal(t, "a", b.Element.Message.Fields[0].Name)
+	assert.Equal(t, desc.String, b.Element.Message.Fields[0].Element.Kind)
 
-		ba := contract0.Request.Message.Fields[2]
-		Expect(ba.Name).To(Equal("ba"))
-		Expect(ba.Element.Kind).To(Equal(desc.Array))
-		Expect(ba.Element.Message).To(BeNil())
-		Expect(ba.Element.Element.Kind).To(Equal(desc.Object))
-		Expect(ba.Element.Element.Message.Name).To(Equal("FlatMessage"))
-		Expect(ba.Element.Element.Message.Fields).To(HaveLen(9))
-		Expect(ba.Element.Element.Message.Fields[0].Name).To(Equal("a"))
-		Expect(ba.Element.Element.Message.Fields[0].Element.Kind).To(Equal(desc.String))
+	ba := contract0.Request.Message.Fields[2]
+	assert.Equal(t, "ba", ba.Name)
+	assert.Equal(t, desc.Array, ba.Element.Kind)
+	assert.Nil(t, ba.Element.Message)
+	assert.Equal(t, desc.Object, ba.Element.Element.Kind)
+	assert.Equal(t, "FlatMessage", ba.Element.Element.Message.Name)
+	assert.Len(t, ba.Element.Element.Message.Fields, 9)
+	assert.Equal(t, "a", ba.Element.Element.Message.Fields[0].Name)
+	assert.Equal(t, desc.String, ba.Element.Element.Message.Fields[0].Element.Kind)
 
-		cField := contract0.Responses[0].Message.Fields[2]
-		Expect(cField.Name).To(Equal("c"))
-		Expect(cField.Element.Kind).To(Equal(desc.Map))
-		Expect(cField.Element.Element.Kind).To(Equal(desc.String))
-		Expect(cField.Element.Message).To(BeNil())
-		Expect(cField.Optional).To(BeTrue())
-		Expect(cField.Element.Message).To(BeNil())
-		Expect(cField.Element.Type).To(Equal("map[string]string"))
+	cField := contract0.Responses[0].Message.Fields[2]
+	assert.Equal(t, "c", cField.Name)
+	assert.Equal(t, desc.Map, cField.Element.Kind)
+	assert.Equal(t, desc.String, cField.Element.Element.Kind)
+	assert.Nil(t, cField.Element.Message)
+	assert.True(t, cField.Optional)
+	assert.Nil(t, cField.Element.Message)
+	assert.Equal(t, "map[string]string", cField.Element.Type)
 
-		dField := contract0.Responses[0].Message.Fields[3]
-		Expect(dField.Name).To(Equal("d"))
-		Expect(dField.Element.Kind).To(Equal(desc.Map))
-		Expect(dField.Element.Element.Kind).To(Equal(desc.Integer))
-		Expect(dField.Element.Message).To(BeNil())
-		Expect(dField.Optional).To(BeTrue())
-		Expect(dField.Element.Message).To(BeNil())
-		Expect(dField.Element.Type).To(Equal("map[string]int64"))
+	dField := contract0.Responses[0].Message.Fields[3]
+	assert.Equal(t, "d", dField.Name)
+	assert.Equal(t, desc.Map, dField.Element.Kind)
+	assert.Equal(t, desc.Integer, dField.Element.Element.Kind)
+	assert.Nil(t, dField.Element.Message)
+	assert.True(t, dField.Optional)
+	assert.Nil(t, dField.Element.Message)
+	assert.Equal(t, "map[string]int64", dField.Element.Type)
 
-		fField := contract0.Responses[0].Message.Fields[5]
-		Expect(fField.Name).To(Equal("f"))
-		Expect(fField.Element.Kind).To(Equal(desc.Map))
-		Expect(fField.Element.Message).To(BeNil())
-		Expect(fField.Optional).To(BeTrue())
-		Expect(fField.Element.Message).To(BeNil())
-		Expect(fField.Element.Type).To(Equal("map[string]any"))
+	fField := contract0.Responses[0].Message.Fields[5]
+	assert.Equal(t, "f", fField.Name)
+	assert.Equal(t, desc.Map, fField.Element.Kind)
+	assert.Nil(t, fField.Element.Message)
+	assert.True(t, fField.Optional)
+	assert.Nil(t, fField.Element.Message)
+	assert.Equal(t, "map[string]any", fField.Element.Type)
 
-		gField := contract0.Responses[0].Message.Fields[6]
-		Expect(gField.Name).To(Equal("g"))
-		Expect(gField.Element.Kind).To(Equal(desc.Array))
-		Expect(gField.Element.Element.Kind).To(Equal(desc.Array))
-		Expect(gField.Element.Element.Element.Kind).To(Equal(desc.String))
-		Expect(gField.Element.Element.Element.Message).To(BeNil())
-		Expect(gField.Element.Element.Message).To(BeNil())
+	gField := contract0.Responses[0].Message.Fields[6]
+	assert.Equal(t, "g", gField.Name)
+	assert.Equal(t, desc.Array, gField.Element.Kind)
+	assert.Equal(t, desc.Array, gField.Element.Element.Kind)
+	assert.Equal(t, desc.String, gField.Element.Element.Element.Kind)
+	assert.Nil(t, gField.Element.Element.Element.Message)
+	assert.Nil(t, gField.Element.Element.Message)
 
-		mField := contract0.Responses[0].Message.Fields[7]
-		Expect(mField.Name).To(Equal("m"))
-		Expect(mField.Element.Kind).To(Equal(desc.Map))
-		Expect(mField.Element.Element.Kind).To(Equal(desc.Map))
-		Expect(mField.Element.Element.Message).To(BeNil())
-		Expect(mField.Element.Element.Element.Kind).To(Equal(desc.String))
-		Expect(mField.Element.Element.Element.Message).To(BeNil())
+	mField := contract0.Responses[0].Message.Fields[7]
+	assert.Equal(t, "m", mField.Name)
+	assert.Equal(t, desc.Map, mField.Element.Kind)
+	assert.Equal(t, desc.Map, mField.Element.Element.Kind)
+	assert.Nil(t, mField.Element.Element.Message)
+	assert.Equal(t, desc.String, mField.Element.Element.Element.Kind)
+	assert.Nil(t, mField.Element.Element.Element.Message)
 
-	})
-})
+}
 
-var _ = Describe("DescParser edge cases", func() {
-	It("should return the actual field entry", func() {
+func TestDescParserEdgeCases(t *testing.T) {
+	t.Run("should return the actual field entry", func(t *testing.T) {
 		d := desc.NewService("sample").
 			AddContract(
 				desc.NewContract().
@@ -260,17 +259,17 @@ var _ = Describe("DescParser edge cases", func() {
 		msg := pd.Contracts[0].Request.Message
 
 		fieldByName := msg.FieldByName("a")
-		Expect(fieldByName).ToNot(BeNil())
-		Expect(fieldByName).To(BeEquivalentTo(&msg.Fields[0]))
-		Expect(fieldByName.GoName).To(Equal("A"))
+		assert.NotNil(t, fieldByName)
+		assert.Equal(t, &msg.Fields[0], fieldByName)
+		assert.Equal(t, "A", fieldByName.GoName)
 
 		fieldByGoName := msg.FieldByGoName("A")
-		Expect(fieldByGoName).ToNot(BeNil())
-		Expect(fieldByGoName).To(BeEquivalentTo(&msg.Fields[0]))
-		Expect(fieldByGoName.Name).To(Equal("a"))
+		assert.NotNil(t, fieldByGoName)
+		assert.Equal(t, &msg.Fields[0], fieldByGoName)
+		assert.Equal(t, "a", fieldByGoName.Name)
 	})
 
-	It("should mark pointer-receiver errors as implementing ErrorMessage", func() {
+	t.Run("should mark pointer-receiver errors as implementing ErrorMessage", func(t *testing.T) {
 		d := desc.NewService("sample").
 			AddContract(
 				desc.NewContract().
@@ -283,12 +282,12 @@ var _ = Describe("DescParser edge cases", func() {
 
 		pd := desc.ParseService(d)
 		errMsg := pd.MessageByName("PtrErr")
-		Expect(errMsg).ToNot(BeNil())
-		Expect(errMsg.ImplementError).To(BeTrue())
+		assert.NotNil(t, errMsg)
+		assert.True(t, errMsg.ImplementError)
 	})
-})
+}
 
-var _ = Describe("ParseMessage.JSON()", func() {
+func TestParseMessageJSON(t *testing.T) {
 	d := desc.NewService("sample").
 		AddContract(
 			desc.NewContract().
@@ -303,20 +302,18 @@ var _ = Describe("ParseMessage.JSON()", func() {
 				Out(&FlatMessage{}),
 		)
 
-	It("Parse Service", func() {
-		ps := desc.ParseService(d)
-		Expect(ps.Messages()).To(HaveLen(2))
-		Expect(ps.Contracts).To(HaveLen(2))
-		Expect(ps.Contracts[0].Type).To(Equal(desc.REST))
-		Expect(ps.Contracts[0].Request.Headers).To(HaveLen(2))
-		Expect(ps.Contracts[0].Request.Headers[0].Required).To(BeTrue())
-		Expect(ps.Contracts[0].Request.Headers[0].Name).To(Equal("hdr1"))
-		Expect(ps.Contracts[0].Request.Headers[1].Required).To(BeFalse())
-		Expect(ps.Contracts[0].Request.Headers[1].Name).To(Equal("optionalHdr1"))
-	})
-})
+	ps := desc.ParseService(d)
+	assert.Len(t, ps.Messages(), 2)
+	assert.Len(t, ps.Contracts, 2)
+	assert.Equal(t, desc.REST, ps.Contracts[0].Type)
+	assert.Len(t, ps.Contracts[0].Request.Headers, 2)
+	assert.True(t, ps.Contracts[0].Request.Headers[0].Required)
+	assert.Equal(t, "hdr1", ps.Contracts[0].Request.Headers[0].Name)
+	assert.False(t, ps.Contracts[0].Request.Headers[1].Required)
+	assert.Equal(t, "optionalHdr1", ps.Contracts[0].Request.Headers[1].Name)
+}
 
-var _ = Describe("RawMessage and MultipartForm", func() {
+func TestRawMessageAndMultipartForm(t *testing.T) {
 	d := desc.NewService("sample").
 		AddContract(
 			desc.NewContract().
@@ -333,39 +330,37 @@ var _ = Describe("RawMessage and MultipartForm", func() {
 				Out(kit.RawMessage{}),
 		)
 
-	It("should parse the descriptor", func() {
-		pd := desc.ParseService(d)
-		contract0 := pd.Contracts[0]
-		contract1 := pd.Contracts[1]
-		Expect(pd.Contracts).To(HaveLen(2))
+	pd := desc.ParseService(d)
+	contract0 := pd.Contracts[0]
+	contract1 := pd.Contracts[1]
+	assert.Len(t, pd.Contracts, 2)
 
-		Expect(contract0.Name).To(Equal("s1"))
-		Expect(contract0.Type).To(Equal(desc.REST))
-		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(contract0.Path).To(Equal("/raw1"))
-		Expect(contract0.Method).To(Equal("POST"))
-		Expect(contract0.GroupName).To(Equal("rawRequest"))
-		Expect(contract0.Request.Message.Name).To(Equal("RawMessage"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(0))
-		Expect(contract0.Request.Message.Kind).To(Equal(desc.KitRawMessage))
-		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
-		Expect(contract0.Responses[0].Message.Fields).To(HaveLen(0))
-		Expect(contract0.Responses[0].Message.Kind).To(Equal(desc.KitRawMessage))
+	assert.Equal(t, "s1", contract0.Name)
+	assert.Equal(t, desc.REST, contract0.Type)
+	assert.Equal(t, kit.JSON.Tag(), contract0.Encoding)
+	assert.Equal(t, "/raw1", contract0.Path)
+	assert.Equal(t, "POST", contract0.Method)
+	assert.Equal(t, "rawRequest", contract0.GroupName)
+	assert.Equal(t, "RawMessage", contract0.Request.Message.Name)
+	assert.Len(t, contract0.Request.Message.Fields, 0)
+	assert.Equal(t, desc.KitRawMessage, contract0.Request.Message.Kind)
+	assert.Equal(t, "RawMessage", contract0.Responses[0].Message.Name)
+	assert.Len(t, contract0.Responses[0].Message.Fields, 0)
+	assert.Equal(t, desc.KitRawMessage, contract0.Responses[0].Message.Kind)
 
-		Expect(contract1.Name).To(Equal("s2"))
-		Expect(contract1.Type).To(Equal(desc.REST))
-		Expect(contract1.Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(contract1.Path).To(Equal("/multipart/form"))
-		Expect(contract1.Method).To(Equal("POST"))
-		Expect(contract1.GroupName).To(Equal("multipartFormRequest"))
-		Expect(contract1.Request.Message.Name).To(Equal("MultipartFormMessage"))
-		Expect(contract1.Request.Message.Fields).To(HaveLen(0))
-		Expect(contract1.Request.Message.Kind).To(Equal(desc.KitMultipartFormMessage))
-		Expect(contract1.Responses[0].Message.Name).To(Equal("RawMessage"))
-		Expect(contract1.Responses[0].Message.Fields).To(HaveLen(0))
-		Expect(contract1.Responses[0].Message.Kind).To(Equal(desc.KitRawMessage))
-	})
-})
+	assert.Equal(t, "s2", contract1.Name)
+	assert.Equal(t, desc.REST, contract1.Type)
+	assert.Equal(t, kit.JSON.Tag(), contract1.Encoding)
+	assert.Equal(t, "/multipart/form", contract1.Path)
+	assert.Equal(t, "POST", contract1.Method)
+	assert.Equal(t, "multipartFormRequest", contract1.GroupName)
+	assert.Equal(t, "MultipartFormMessage", contract1.Request.Message.Name)
+	assert.Len(t, contract1.Request.Message.Fields, 0)
+	assert.Equal(t, desc.KitMultipartFormMessage, contract1.Request.Message.Kind)
+	assert.Equal(t, "RawMessage", contract1.Responses[0].Message.Name)
+	assert.Len(t, contract1.Responses[0].Message.Fields, 0)
+	assert.Equal(t, desc.KitRawMessage, contract1.Responses[0].Message.Kind)
+}
 
 type SpecialFields struct {
 	T       time.Time             `json:"t"`
@@ -377,7 +372,7 @@ type SpecialFields struct {
 	NUM     utils.Numeric         `json:"num"`
 }
 
-var _ = Describe("Time Fields", func() {
+func TestTimeFields(t *testing.T) {
 	d := desc.NewService("sample").
 		AddContract(
 			desc.NewContract().
@@ -387,36 +382,34 @@ var _ = Describe("Time Fields", func() {
 				Out(kit.RawMessage{}),
 		)
 
-	It("should parse the descriptor", func() {
-		pd := desc.ParseService(d)
-		contract0 := pd.Contracts[0]
-		Expect(pd.Contracts).To(HaveLen(1))
+	pd := desc.ParseService(d)
+	contract0 := pd.Contracts[0]
+	assert.Len(t, pd.Contracts, 1)
 
-		Expect(contract0.Name).To(Equal("s1"))
-		Expect(contract0.Type).To(Equal(desc.REST))
-		Expect(contract0.Encoding).To(Equal(kit.JSON.Tag()))
-		Expect(contract0.Path).To(Equal("/raw1"))
-		Expect(contract0.Method).To(Equal("POST"))
-		Expect(contract0.GroupName).To(Equal("rawRequest"))
-		Expect(contract0.Request.Message.Name).To(Equal("SpecialFields"))
-		Expect(contract0.Request.Message.Fields).To(HaveLen(7))
-		Expect(contract0.Request.Message.Kind).To(Equal(desc.Object))
-		Expect(contract0.Request.Message.Fields[0].Name).To(Equal("t"))
-		Expect(contract0.Request.Message.Fields[0].Element.RType).To(Equal(reflect.TypeOf(time.Time{})))
-		Expect(contract0.Request.Message.Fields[0].Element.Kind).To(Equal(desc.String))
-		Expect(contract0.Request.Message.Fields[1].Name).To(Equal("tPtr"))
-		Expect(contract0.Request.Message.Fields[1].Element.RType).To(Equal(reflect.TypeOf(&time.Time{})))
-		Expect(contract0.Request.Message.Fields[2].Name).To(Equal("tMap"))
-		Expect(contract0.Request.Message.Fields[2].Element.RType).To(Equal(reflect.TypeOf(map[string]time.Time{})))
-		Expect(contract0.Request.Message.Fields[3].Name).To(Equal("tMapPtr"))
-		Expect(contract0.Request.Message.Fields[3].Element.RType).To(Equal(reflect.TypeOf(map[string]*time.Time{})))
-		Expect(contract0.Request.Message.Fields[4].Name).To(Equal("tArr"))
-		Expect(contract0.Request.Message.Fields[4].Element.RType).To(Equal(reflect.TypeOf([]time.Time{})))
-		Expect(contract0.Request.Message.Fields[5].Name).To(Equal("tArrPtr"))
-		Expect(contract0.Request.Message.Fields[5].Element.RType).To(Equal(reflect.TypeOf([]*time.Time{})))
-		Expect(contract0.Request.Message.Fields[6].Name).To(Equal("num"))
-		Expect(contract0.Request.Message.Fields[6].Element.RType).To(Equal(reflect.TypeOf(utils.Numeric{})))
-		Expect(contract0.Request.Message.Fields[6].Element.Kind).To(Equal(desc.String))
-		Expect(contract0.Responses[0].Message.Name).To(Equal("RawMessage"))
-	})
-})
+	assert.Equal(t, "s1", contract0.Name)
+	assert.Equal(t, desc.REST, contract0.Type)
+	assert.Equal(t, kit.JSON.Tag(), contract0.Encoding)
+	assert.Equal(t, "/raw1", contract0.Path)
+	assert.Equal(t, "POST", contract0.Method)
+	assert.Equal(t, "rawRequest", contract0.GroupName)
+	assert.Equal(t, "SpecialFields", contract0.Request.Message.Name)
+	assert.Len(t, contract0.Request.Message.Fields, 7)
+	assert.Equal(t, desc.Object, contract0.Request.Message.Kind)
+	assert.Equal(t, "t", contract0.Request.Message.Fields[0].Name)
+	assert.Equal(t, reflect.TypeOf(time.Time{}), contract0.Request.Message.Fields[0].Element.RType)
+	assert.Equal(t, desc.String, contract0.Request.Message.Fields[0].Element.Kind)
+	assert.Equal(t, "tPtr", contract0.Request.Message.Fields[1].Name)
+	assert.Equal(t, reflect.TypeOf(&time.Time{}), contract0.Request.Message.Fields[1].Element.RType)
+	assert.Equal(t, "tMap", contract0.Request.Message.Fields[2].Name)
+	assert.Equal(t, reflect.TypeOf(map[string]time.Time{}), contract0.Request.Message.Fields[2].Element.RType)
+	assert.Equal(t, "tMapPtr", contract0.Request.Message.Fields[3].Name)
+	assert.Equal(t, reflect.TypeOf(map[string]*time.Time{}), contract0.Request.Message.Fields[3].Element.RType)
+	assert.Equal(t, "tArr", contract0.Request.Message.Fields[4].Name)
+	assert.Equal(t, reflect.TypeOf([]time.Time{}), contract0.Request.Message.Fields[4].Element.RType)
+	assert.Equal(t, "tArrPtr", contract0.Request.Message.Fields[5].Name)
+	assert.Equal(t, reflect.TypeOf([]*time.Time{}), contract0.Request.Message.Fields[5].Element.RType)
+	assert.Equal(t, "num", contract0.Request.Message.Fields[6].Name)
+	assert.Equal(t, reflect.TypeOf(utils.Numeric{}), contract0.Request.Message.Fields[6].Element.RType)
+	assert.Equal(t, desc.String, contract0.Request.Message.Fields[6].Element.Kind)
+	assert.Equal(t, "RawMessage", contract0.Responses[0].Message.Name)
+}

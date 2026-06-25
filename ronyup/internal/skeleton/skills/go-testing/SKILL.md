@@ -4,7 +4,7 @@ description: >-
   Write clear, fast, deterministic Go tests including mandatory repo integration
   tests (x/testkit) and app unit tests. Use when adding or fixing Go tests,
   implementing internal/repo or internal/app, designing table-driven tests,
-  writing benchmarks, using testify/Ginkgo, or improving coverage in this workspace.
+  writing benchmarks, using testify, or improving coverage in this workspace.
 ---
 
 # Go Testing
@@ -50,11 +50,18 @@ at the port boundary — not integration tests.
 
 ## Framework
 
-This repo uses **Ginkgo v2 + Gomega** where BDD style is established; plain
-`testing` + table tests elsewhere. Match the surrounding package's style — do
-not introduce a new framework into a package that already has one.
+Use standard **`testing`** with **`github.com/stretchr/testify`** (`assert` /
+`require`). Prefer table-driven tests and `t.Run` subtests. Match surrounding
+package style; do not introduce alternate assertion libraries.
 
 ```go
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
 func TestParse(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -70,17 +77,11 @@ func TestParse(t *testing.T) {
 			t.Parallel()
 			got, err := Parse(tc.in)
 			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("expected error, got nil")
-				}
+				assert.Error(t, err)
 				return
 			}
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if got != tc.want {
-				t.Errorf("Parse(%q) = %d, want %d", tc.in, got, tc.want)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }

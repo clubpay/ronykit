@@ -8,14 +8,9 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-func TestStub(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Stub Suite")
-}
 
 type ipInfoResponse struct {
 	IP       string `json:"ip"`
@@ -25,68 +20,64 @@ type ipInfoResponse struct {
 	Timezone string `json:"timezone"`
 }
 
-var _ = Describe("Stub Basic Functionality", func() {
+func TestStubBasicFunctionality(t *testing.T) {
 	ctx := context.Background()
 
-	It("should unmarshal response from json", func() {
-		s := stub.New("ipinfo.io", stub.Secure())
-		httpCtx := s.REST().
-			SetMethod(http.MethodGet).
-			SetPath("/json").
-			SetQuery("someKey", "someValue").
-			DefaultResponseHandler(
-				func(_ context.Context, r stub.RESTResponse) *stub.Error {
-					switch r.StatusCode() {
-					case http.StatusOK:
-						v := &ipInfoResponse{}
-						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
-						Expect(v.Readme).To(Not(BeEmpty()))
-						Expect(v.IP).To(Not(BeEmpty()))
-					default:
-						Skip("we got error from ipinfo.io")
-					}
+	s := stub.New("ipinfo.io", stub.Secure())
+	httpCtx := s.REST().
+		SetMethod(http.MethodGet).
+		SetPath("/json").
+		SetQuery("someKey", "someValue").
+		DefaultResponseHandler(
+			func(_ context.Context, r stub.RESTResponse) *stub.Error {
+				switch r.StatusCode() {
+				case http.StatusOK:
+					v := &ipInfoResponse{}
+					require.NoError(t, kit.UnmarshalMessage(r.GetBody(), v))
+					assert.NotEmpty(t, v.Readme)
+					assert.NotEmpty(t, v.IP)
+				default:
+					t.Skip("we got error from ipinfo.io")
+				}
 
-					return nil
-				},
-			).
-			SetHeader("SomeKey", "SomeValue").
-			Run(ctx)
-		defer httpCtx.Release()
+				return nil
+			},
+		).
+		SetHeader("SomeKey", "SomeValue").
+		Run(ctx)
+	defer httpCtx.Release()
 
-		Expect(httpCtx.Err()).To(BeNil())
-	})
-})
+	assert.Nil(t, httpCtx.Err())
+}
 
-var _ = Describe("Stub from URL", func() {
+func TestStubFromURL(t *testing.T) {
 	ctx := context.Background()
 
-	It("should unmarshal response from json", func() {
-		httpCtx, err := stub.HTTP("https://ipinfo.io/json?someKey=someValue")
-		Expect(err).To(BeNil())
-		httpCtx.
-			SetMethod(http.MethodGet).
-			DefaultResponseHandler(
-				func(_ context.Context, r stub.RESTResponse) *stub.Error {
-					switch r.StatusCode() {
-					case http.StatusOK:
-						v := &ipInfoResponse{}
-						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
-						Expect(v.Readme).To(Not(BeEmpty()))
-						Expect(v.IP).To(Not(BeEmpty()))
-					default:
-						Skip("we got error from ipinfo.io")
-					}
+	httpCtx, err := stub.HTTP("https://ipinfo.io/json?someKey=someValue")
+	require.NoError(t, err)
+	httpCtx.
+		SetMethod(http.MethodGet).
+		DefaultResponseHandler(
+			func(_ context.Context, r stub.RESTResponse) *stub.Error {
+				switch r.StatusCode() {
+				case http.StatusOK:
+					v := &ipInfoResponse{}
+					require.NoError(t, kit.UnmarshalMessage(r.GetBody(), v))
+					assert.NotEmpty(t, v.Readme)
+					assert.NotEmpty(t, v.IP)
+				default:
+					t.Skip("we got error from ipinfo.io")
+				}
 
-					return nil
-				},
-			).
-			SetHeader("SomeKey", "SomeValue").
-			Run(ctx)
-		defer httpCtx.Release()
+				return nil
+			},
+		).
+		SetHeader("SomeKey", "SomeValue").
+		Run(ctx)
+	defer httpCtx.Release()
 
-		Expect(httpCtx.Err()).To(BeNil())
-	})
-})
+	assert.Nil(t, httpCtx.Err())
+}
 
 type sampleRequest struct {
 	Name     string   `json:"name"`
@@ -103,45 +94,43 @@ type postEchoResponse struct {
 	URL     string            `json:"url"`
 }
 
-var _ = Describe("Stub AutoRun", func() {
+func TestStubAutoRun(t *testing.T) {
 	ctx := context.Background()
 
-	It("should handle pointer fields in the request", func() {
-		httpCtx, err := stub.HTTP("https://postman-echo.com")
-		Expect(err).To(BeNil())
-		httpCtx.
-			SetMethod(http.MethodGet).
-			DefaultResponseHandler(
-				func(_ context.Context, r stub.RESTResponse) *stub.Error {
-					switch r.StatusCode() {
-					case http.StatusOK:
-						v := &postEchoResponse{}
-						Expect(kit.UnmarshalMessage(r.GetBody(), v)).To(Succeed())
-						Expect(v.Args["name"]).To(Equal("someName"))
-						Expect(v.Args["value"]).To(Equal("12345"))
-						Expect(v.Args["namePtr"]).To(Equal("someName"))
-						Expect(v.Args["valuePtr"]).To(Equal("12345"))
-						Expect(v.Args["strings"]).To(HaveLen(3))
-						Expect(v.Args["ints"]).To(HaveLen(3))
-						Expect(v.Args["strings"].([]any)[0]).To(Equal("a"))
-					default:
-						return stub.NewError(http.StatusInternalServerError, "unexpected status code")
-					}
+	httpCtx, err := stub.HTTP("https://postman-echo.com")
+	require.NoError(t, err)
+	httpCtx.
+		SetMethod(http.MethodGet).
+		DefaultResponseHandler(
+			func(_ context.Context, r stub.RESTResponse) *stub.Error {
+				switch r.StatusCode() {
+				case http.StatusOK:
+					v := &postEchoResponse{}
+					require.NoError(t, kit.UnmarshalMessage(r.GetBody(), v))
+					assert.Equal(t, "someName", v.Args["name"])
+					assert.Equal(t, "12345", v.Args["value"])
+					assert.Equal(t, "someName", v.Args["namePtr"])
+					assert.Equal(t, "12345", v.Args["valuePtr"])
+					assert.Len(t, v.Args["strings"], 3)
+					assert.Len(t, v.Args["ints"], 3)
+					assert.Equal(t, "a", v.Args["strings"].([]any)[0])
+				default:
+					return stub.NewError(http.StatusInternalServerError, "unexpected status code")
+				}
 
-					return nil
-				},
-			).
-			SetHeader("SomeKey", "SomeValue").
-			AutoRun(ctx, "get", kit.JSON, sampleRequest{
-				Name:     "someName",
-				Value:    12345,
-				NamePtr:  utils.ValPtr("someName"),
-				ValuePtr: utils.ValPtr(12345),
-				Strings:  []string{"a", "b", "c"},
-				Ints:     []int64{1, 2, 3},
-			})
-		defer httpCtx.Release()
+				return nil
+			},
+		).
+		SetHeader("SomeKey", "SomeValue").
+		AutoRun(ctx, "get", kit.JSON, sampleRequest{
+			Name:     "someName",
+			Value:    12345,
+			NamePtr:  utils.ValPtr("someName"),
+			ValuePtr: utils.ValPtr(12345),
+			Strings:  []string{"a", "b", "c"},
+			Ints:     []int64{1, 2, 3},
+		})
+	defer httpCtx.Release()
 
-		Expect(httpCtx.Err()).To(BeNil())
-	})
-})
+	assert.Nil(t, httpCtx.Err())
+}

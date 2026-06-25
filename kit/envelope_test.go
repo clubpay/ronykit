@@ -2,13 +2,14 @@ package kit_test
 
 import (
 	"bytes"
+	"testing"
 
 	"github.com/clubpay/ronykit/kit"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var _ = Describe("Envelope", func() {
+func TestEnvelope(t *testing.T) {
 	tc := newTestConn(1, "", false)
 	ctx := kit.NewContext(nil)
 	e := kit.NewEnvelope(ctx, tc, true)
@@ -17,12 +18,10 @@ var _ = Describe("Envelope", func() {
 		SetHdr("K2", "V2").
 		SetMsg(kit.RawMessage("Some Random Message"))
 
-	It("should read header and message", func() {
-		Expect(e.GetHdr("K1")).To(Equal("V1"))
-		Expect(e.GetHdr("K2")).To(Equal("V2"))
-		Expect(e.GetMsg()).To(BeEquivalentTo("Some Random Message"))
-	})
-})
+	assert.Equal(t, "V1", e.GetHdr("K1"))
+	assert.Equal(t, "V2", e.GetHdr("K2"))
+	assert.Equal(t, kit.RawMessage("Some Random Message"), e.GetMsg())
+}
 
 type testMessage struct {
 	StringKey string   `json:"stringKey"`
@@ -33,7 +32,7 @@ type testMessage struct {
 	ArrBool   []bool   `json:"arrBool"`
 }
 
-var _ = Describe("Envelope Encode / Decode", func() {
+func TestEnvelopeEncodeDecode(t *testing.T) {
 	m := testMessage{
 		StringKey: "Some Random Message",
 		IntKey:    1,
@@ -44,10 +43,11 @@ var _ = Describe("Envelope Encode / Decode", func() {
 	}
 	const mJSON = `{"stringKey":"Some Random Message","intKey":1,"boolKey":true,"arrString":["Some Random Message"],"arrInt":[1,2,3],"arrBool":[true,false]}` //nolint:lll
 
-	It("should encode and decode", func() {
-		Expect(kit.MarshalMessage(m)).To(BeEquivalentTo(mJSON))
-		w := bytes.NewBuffer(nil)
-		Expect(kit.EncodeMessage(m, w)).To(BeNil())
-		Expect(w.String()[:w.Len()-1]).To(BeEquivalentTo(mJSON))
-	})
-})
+	b, err := kit.MarshalMessage(m)
+	require.NoError(t, err)
+	assert.Equal(t, mJSON, string(b))
+
+	w := bytes.NewBuffer(nil)
+	require.NoError(t, kit.EncodeMessage(m, w))
+	assert.Equal(t, mJSON, w.String()[:w.Len()-1])
+}

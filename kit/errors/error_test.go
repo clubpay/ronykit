@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/kit/errors"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -18,34 +17,29 @@ var (
 	errWrappedInternal = fmt.Errorf("wrapped error: %w", errInternal)
 )
 
-func TestError(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Ronykit Suite")
-}
-
-var _ = Describe("WrapError", func() {
+func TestWrapError(t *testing.T) {
 	we := errors.Wrap(errRuntime, errEndOfFile)
 
-	It("Wrap 1", func() {
-		Expect(builtinErr.Is(we, errRuntime)).To(BeTrue())
-		Expect(builtinErr.Is(we, errEndOfFile)).To(BeTrue())
-		Expect(we.Error()).To(BeEquivalentTo("runtime error: end of file"))
+	t.Run("Wrap 1", func(t *testing.T) {
+		assert.True(t, builtinErr.Is(we, errRuntime))
+		assert.True(t, builtinErr.Is(we, errEndOfFile))
+		assert.Equal(t, "runtime error: end of file", we.Error())
 	})
 
-	It("Wrap 2", func() {
+	t.Run("Wrap 2", func(t *testing.T) {
 		wwe := errors.Wrap(errInternal, we)
-		Expect(builtinErr.Is(wwe, errInternal)).To(BeTrue())
-		Expect(builtinErr.Is(wwe, errRuntime)).To(BeTrue())
-		Expect(builtinErr.Is(wwe, errEndOfFile)).To(BeTrue())
-		Expect(wwe.Error()).To(BeEquivalentTo("internal error: runtime error: end of file"))
+		assert.True(t, builtinErr.Is(wwe, errInternal))
+		assert.True(t, builtinErr.Is(wwe, errRuntime))
+		assert.True(t, builtinErr.Is(wwe, errEndOfFile))
+		assert.Equal(t, "internal error: runtime error: end of file", wwe.Error())
 	})
 
-	It("Wrap 3", func() {
+	t.Run("Wrap 3", func(t *testing.T) {
 		wwi := errors.Wrap(errWrappedInternal, we)
-		Expect(builtinErr.Is(wwi, errWrappedInternal)).To(BeTrue())
-		Expect(builtinErr.Is(wwi, errInternal)).To(BeTrue())
-		Expect(builtinErr.Is(wwi, errRuntime)).To(BeTrue())
-		Expect(builtinErr.Is(wwi, errEndOfFile)).To(BeTrue())
-		Expect(wwi.Error()).To(BeEquivalentTo("wrapped error: internal error: runtime error: end of file"))
+		assert.True(t, builtinErr.Is(wwi, errWrappedInternal))
+		assert.True(t, builtinErr.Is(wwi, errInternal))
+		assert.True(t, builtinErr.Is(wwi, errRuntime))
+		assert.True(t, builtinErr.Is(wwi, errEndOfFile))
+		assert.Equal(t, "wrapped error: internal error: runtime error: end of file", wwi.Error())
 	})
-})
+}

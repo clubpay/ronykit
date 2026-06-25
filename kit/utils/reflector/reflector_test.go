@@ -6,14 +6,9 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/reflector"
 	goreflect "github.com/goccy/go-reflect"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-func TestReflector(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Reflector Suite")
-}
 
 type testMessage struct {
 	testEmbed1
@@ -37,7 +32,7 @@ type testEmbed2 struct {
 	Y   int64  `json:"y2"`
 }
 
-var _ = Describe("Reflector", func() {
+func TestReflector(t *testing.T) {
 	r := reflector.New()
 	m := &testMessage{
 		testEmbed1: testEmbed1{
@@ -59,33 +54,49 @@ var _ = Describe("Reflector", func() {
 	}
 	rObj := r.Load(m, "json")
 
-	It("Load by Struct Fields", func() {
-		Expect(m.Y).To(Equal(int64(10)))
+	t.Run("Load by Struct Fields", func(t *testing.T) {
+		assert.Equal(t, int64(10), m.Y)
 		obj := rObj.Obj()
-		Expect(obj.GetInt64(m, "YY")).To(Equal(int64(123)))
-		Expect(obj.GetString(m, "MM")).To(Equal("mM"))
-		Expect(obj.GetInt64(m, "YYY")).To(Equal(int64(1234)))
-		Expect(obj.GetString(m, "MMM")).To(Equal("mMM"))
-		Expect(obj.GetStringDefault(m, "X", "")).To(Equal(m.X))
-		Expect(obj.GetInt64Default(m, "Y", 0)).To(Equal(m.Y))
-		Expect(obj.GetStringDefault(m, "z", "")).To(BeEmpty())
-		Expect(obj.Get(m, "M")).To(Equal(map[string]string{"x": "100"}))
-		Expect(obj.GetInt64(m, "Y")).To(Equal(int64(10)))
+
+		yy, err := obj.GetInt64(m, "YY")
+		require.NoError(t, err)
+		assert.Equal(t, int64(123), yy)
+
+		mm, err := obj.GetString(m, "MM")
+		require.NoError(t, err)
+		assert.Equal(t, "mM", mm)
+
+		yyy, err := obj.GetInt64(m, "YYY")
+		require.NoError(t, err)
+		assert.Equal(t, int64(1234), yyy)
+
+		mmm, err := obj.GetString(m, "MMM")
+		require.NoError(t, err)
+		assert.Equal(t, "mMM", mmm)
+
+		assert.Equal(t, m.X, obj.GetStringDefault(m, "X", ""))
+		assert.Equal(t, m.Y, obj.GetInt64Default(m, "Y", 0))
+		assert.Empty(t, obj.GetStringDefault(m, "z", ""))
+		assert.Equal(t, map[string]string{"x": "100"}, obj.Get(m, "M"))
+
+		y, err := obj.GetInt64(m, "Y")
+		require.NoError(t, err)
+		assert.Equal(t, int64(10), y)
 	})
 
-	It("Load by ToJSON tag", func() {
+	t.Run("Load by ToJSON tag", func(t *testing.T) {
 		byTag, ok := rObj.ByTag("json")
-		Expect(ok).To(BeTrue())
-		Expect(byTag.GetInt64Default(m, "y", 0)).To(Equal(int64(11)))
-		Expect(byTag.GetStringDefault(m, "xTag", "")).To(Equal(m.X))
-		Expect(byTag.GetInt64Default(m, "yTag", 0)).To(Equal(m.Y))
-		Expect(byTag.GetInt64Default(m, "yy", 0)).To(Equal(m.YY))
-		Expect(byTag.GetInt64Default(m, "yyy", 0)).To(Equal(m.YYY))
-		Expect(byTag.GetStringDefault(m, "mM", "")).To(Equal(m.MM))
-		Expect(byTag.GetStringDefault(m, "mMM", "")).To(Equal(m.MMM))
-		Expect(byTag.GetStringDefault(m, "z", "def")).To(Equal("def"))
+		assert.True(t, ok)
+		assert.Equal(t, int64(11), byTag.GetInt64Default(m, "y", 0))
+		assert.Equal(t, m.X, byTag.GetStringDefault(m, "xTag", ""))
+		assert.Equal(t, m.Y, byTag.GetInt64Default(m, "yTag", 0))
+		assert.Equal(t, m.YY, byTag.GetInt64Default(m, "yy", 0))
+		assert.Equal(t, m.YYY, byTag.GetInt64Default(m, "yyy", 0))
+		assert.Equal(t, m.MM, byTag.GetStringDefault(m, "mM", ""))
+		assert.Equal(t, m.MMM, byTag.GetStringDefault(m, "mMM", ""))
+		assert.Equal(t, "def", byTag.GetStringDefault(m, "z", "def"))
 	})
-})
+}
 
 /*
 Benchmark results:

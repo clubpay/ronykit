@@ -1,9 +1,10 @@
 package stub_test
 
 import (
+	"testing"
+
 	"github.com/clubpay/ronykit/stub"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 var keyValues = func(in string) string {
@@ -19,29 +20,31 @@ var keyValues = func(in string) string {
 	return in
 }
 
-var _ = DescribeTable(
-	"Fill URL Params",
-	func(in, out string, f func(string) string) {
-		Expect(stub.FillParams(in, f)).To(Equal(out))
-	},
-	Entry("",
-		"/some/{p1}/{p2}?something={p3}&boolean",
-		"/some/value1/value2?something=value3&boolean",
-		keyValues,
-	),
-	Entry("",
-		"/some/{p1}/{p2}?something={p3}&boolean",
-		"/some/value1/value2?something=value3&boolean",
-		keyValues,
-	),
-	Entry("",
-		"/some/{p1}{p2}/?something={p3}&boolean",
-		"/some/value1value2/?something=value3&boolean",
-		keyValues,
-	),
-	Entry("",
-		"/some/{p1}",
-		"/some/value1",
-		keyValues,
-	),
-)
+func TestFillURLParams(t *testing.T) {
+	tests := []struct {
+		in  string
+		out string
+	}{
+		{
+			"/some/{p1}/{p2}?something={p3}&boolean",
+			"/some/value1/value2?something=value3&boolean",
+		},
+		{
+			"/some/{p1}/{p2}?something={p3}&boolean",
+			"/some/value1/value2?something=value3&boolean",
+		},
+		{
+			"/some/{p1}{p2}/?something={p3}&boolean",
+			"/some/value1value2/?something=value3&boolean",
+		},
+		{
+			"/some/{p1}",
+			"/some/value1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			assert.Equal(t, tt.out, stub.FillParams(tt.in, keyValues))
+		})
+	}
+}

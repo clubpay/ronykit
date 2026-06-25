@@ -423,7 +423,7 @@ Client request
 
 - **Interface compile tests** — `var _ Interface = (*Impl)(nil)` in each `std/*` module
 - **In-memory integration tests** — Phase 1 loop with `std/memories/inmem` + mock LLM
-- **Framework:** Ginkgo v2 + Gomega (repo convention)
+- **Framework:** standard `testing` + testify (`assert` / `require`) (repo convention)
 - **No SDK calls in `intent` core tests** — mocks only
 
 ---

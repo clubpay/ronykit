@@ -3,10 +3,10 @@ package desc_test
 import (
 	"encoding/json"
 	"reflect"
+	"testing"
 
 	"github.com/clubpay/ronykit/kit/desc"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
 type customStruct struct {
@@ -37,14 +37,12 @@ type customInterface interface {
 	Method2() customStruct
 }
 
-var _ = Describe("Check Type", func() {
-	It("should detect types correctly", func() {
-		Expect(desc.TypeOf("", reflect.TypeOf(customStruct{}))).To(Equal("customStruct"))
-		Expect(desc.TypeOf("", reflect.TypeOf(new(customInterface)))).To(Equal("*customInterface"))
-		Expect(desc.TypeOf("", reflect.TypeOf(int64(0)))).To(Equal("int64"))
-		Expect(desc.TypeOf("", reflect.TypeOf([]int64{}))).To(Equal("[]int64"))
-		Expect(desc.TypeOf("", reflect.TypeOf([18]int64{}))).To(Equal("[18]int64"))
-		Expect(desc.TypeOf("", reflect.TypeOf(map[string]*customStruct{}))).To(Equal("map[string]*customStruct"))
-		Expect(desc.TypeOf("", reflect.TypeOf(map[string]any{}))).To(Equal("map[string]any"))
-	})
-})
+func TestCheckType(t *testing.T) {
+	assert.Equal(t, "customStruct", desc.TypeOf("", reflect.TypeOf(customStruct{})))
+	assert.Equal(t, "*customInterface", desc.TypeOf("", reflect.TypeOf(new(customInterface))))
+	assert.Equal(t, "int64", desc.TypeOf("", reflect.TypeOf(int64(0))))
+	assert.Equal(t, "[]int64", desc.TypeOf("", reflect.TypeOf([]int64{})))
+	assert.Equal(t, "[18]int64", desc.TypeOf("", reflect.TypeOf([18]int64{})))
+	assert.Equal(t, "map[string]*customStruct", desc.TypeOf("", reflect.TypeOf(map[string]*customStruct{})))
+	assert.Equal(t, "map[string]any", desc.TypeOf("", reflect.TypeOf(map[string]any{})))
+}

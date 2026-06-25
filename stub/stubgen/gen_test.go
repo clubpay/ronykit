@@ -8,8 +8,8 @@ import (
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/stub/stubgen"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type sampleInterface interface {
@@ -73,56 +73,47 @@ type ComplexResponse struct {
 	Complex []ComplexRequest `json:"complex"`
 }
 
-func TestStubCodeGenerator(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Stub Code Generator")
+func TestGolangGenerator(t *testing.T) {
+	svc := desc.ServiceDescFunc(func() *desc.Service {
+		return desc.NewService("testService").
+			AddContract(
+				desc.NewContract().
+					SetName("c1").
+					AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+					SetInput(&ComplexRequest{}).
+					SetOutput(&ComplexResponse{}).
+					SetHandler(nil),
+			)
+	})
+
+	in := stubgen.NewInput("test", svc)
+	in.AddTags("json")
+	files, err := stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "test"}).Generate(in)
+	require.NoError(t, err)
+	assert.NotNil(t, files)
+	assert.Greater(t, len(files), 0)
+	fmt.Println(string(files[0].Data))
 }
 
-var _ = Describe("GolangGenerator", func() {
-	It("generate dto code in golang (no comment)", func() {
-		svc := desc.ServiceDescFunc(func() *desc.Service {
-			return desc.NewService("testService").
-				AddContract(
-					desc.NewContract().
-						SetName("c1").
-						AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
-						SetInput(&ComplexRequest{}).
-						SetOutput(&ComplexResponse{}).
-						SetHandler(nil),
-				)
-		})
-
-		in := stubgen.NewInput("test", svc)
-		in.AddTags("json")
-		files, err := stubgen.NewGolangEngine(stubgen.GolangConfig{PkgName: "test"}).Generate(in)
-		Expect(err).To(BeNil())
-		Expect(files).ToNot(BeNil())
-		Expect(len(files)).To(BeNumerically(">", 0))
-		fmt.Println(string(files[0].Data))
+func TestTypeScriptGenerator(t *testing.T) {
+	svc := desc.ServiceDescFunc(func() *desc.Service {
+		return desc.NewService("testService").
+			AddContract(
+				desc.NewContract().
+					SetName("c1").
+					AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
+					SetInput(&ComplexRequest{}).
+					SetOutput(&ComplexResponse{}).
+					SetHandler(nil),
+			)
 	})
-})
 
-var _ = Describe("TypeScriptGenerator", func() {
-	It("generate dto code in typescript (no comment)", func() {
-		svc := desc.ServiceDescFunc(func() *desc.Service {
-			return desc.NewService("testService").
-				AddContract(
-					desc.NewContract().
-						SetName("c1").
-						AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1", "GET"))).
-						SetInput(&ComplexRequest{}).
-						SetOutput(&ComplexResponse{}).
-						SetHandler(nil),
-				)
-		})
-
-		in := stubgen.NewInput("test", svc)
-		in.AddTags("json")
-		in.AddExtraOptions(map[string]string{
-			"withHook": "yes",
-		})
-
-		_, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{}).Generate(in)
-		Expect(err).To(BeNil())
+	in := stubgen.NewInput("test", svc)
+	in.AddTags("json")
+	in.AddExtraOptions(map[string]string{
+		"withHook": "yes",
 	})
-})
+
+	_, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{}).Generate(in)
+	require.NoError(t, err)
+}

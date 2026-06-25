@@ -3,65 +3,66 @@ package kit_test
 import (
 	"bytes"
 	"reflect"
+	"testing"
 
 	"github.com/clubpay/ronykit/kit"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type factoryMsg struct {
 	A string `json:"a"`
 }
 
-var _ = Describe("MessageFactory", func() {
-	It("should build factories for special messages", func() {
+func TestMessageFactory(t *testing.T) {
+	t.Run("should build factories for special messages", func(t *testing.T) {
 		nilFactory := kit.CreateMessageFactory(nil)
-		Expect(nilFactory()).To(BeAssignableToTypeOf(kit.RawMessage{}))
+		assert.IsType(t, kit.RawMessage{}, nilFactory())
 
 		rawFactory := kit.CreateMessageFactory(kit.RawMessage{})
-		Expect(rawFactory()).To(BeAssignableToTypeOf(kit.RawMessage{}))
+		assert.IsType(t, kit.RawMessage{}, rawFactory())
 
 		multipartFactory := kit.CreateMessageFactory(kit.MultipartFormMessage{})
-		Expect(multipartFactory()).To(BeAssignableToTypeOf(kit.MultipartFormMessage{}))
+		assert.IsType(t, kit.MultipartFormMessage{}, multipartFactory())
 	})
 
-	It("should build factories for struct pointers", func() {
+	t.Run("should build factories for struct pointers", func(t *testing.T) {
 		f := kit.CreateMessageFactory(&factoryMsg{})
 		msg := f()
-		Expect(reflect.TypeOf(msg)).To(Equal(reflect.TypeOf(&factoryMsg{})))
+		assert.Equal(t, reflect.TypeOf(&factoryMsg{}), reflect.TypeOf(msg))
 	})
-})
+}
 
-var _ = Describe("Message codec helpers", func() {
-	It("should marshal and encode raw messages without JSON wrapping", func() {
+func TestMessageCodecHelpers(t *testing.T) {
+	t.Run("should marshal and encode raw messages without JSON wrapping", func(t *testing.T) {
 		raw := kit.RawMessage("abc")
 		b, err := kit.MarshalMessage(raw)
-		Expect(err).To(BeNil())
-		Expect(b).To(Equal([]byte("abc")))
+		require.NoError(t, err)
+		assert.Equal(t, []byte("abc"), b)
 
 		buf := bytes.NewBuffer(nil)
-		Expect(kit.EncodeMessage(raw, buf)).To(BeNil())
-		Expect(buf.String()).To(Equal("abc"))
+		require.NoError(t, kit.EncodeMessage(raw, buf))
+		assert.Equal(t, "abc", buf.String())
 	})
 
-	It("should cast raw messages into structured types", func() {
+	t.Run("should cast raw messages into structured types", func(t *testing.T) {
 		raw, err := kit.MarshalMessage(factoryMsg{A: "ok"})
-		Expect(err).To(BeNil())
+		require.NoError(t, err)
 
 		out, err := kit.CastRawMessage[factoryMsg](kit.RawMessage(raw))
-		Expect(err).To(BeNil())
-		Expect(out.A).To(Equal("ok"))
+		require.NoError(t, err)
+		assert.Equal(t, "ok", out.A)
 	})
 
-	It("should support RawMessage helpers", func() {
+	t.Run("should support RawMessage helpers", func(t *testing.T) {
 		var raw kit.RawMessage
 		raw.CopyFrom([]byte("copy"))
 
 		dst := make([]byte, 4)
 		raw.CopyTo(dst)
-		Expect(dst).To(Equal([]byte("copy")))
+		assert.Equal(t, []byte("copy"), dst)
 
 		cloned := raw.Clone(nil)
-		Expect(cloned).To(Equal([]byte("copy")))
+		assert.Equal(t, []byte("copy"), cloned)
 	})
-})
+}

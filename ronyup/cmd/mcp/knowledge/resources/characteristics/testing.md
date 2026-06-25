@@ -11,4 +11,4 @@ Write integration tests with x/testkit.Run: spin up fx with settings and Gnomock
 
 ## File-Level Hint
 
-Use x/testkit.Run with Gnomock containers; assert with Gomega matchers.
+Use x/testkit.Run with Gnomock containers; assert with testify (`assert` / `require`).
