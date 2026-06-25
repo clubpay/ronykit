@@ -79,6 +79,75 @@ var MyWorkflow = flow.NewWorkflow[MyRequest, MyResponse, flow.EMPTY](
 )
 ```
 
+#### Chain Workflow
+
+For pipelines where each activity receives the same data type, transforms it, and passes the result to the next step (visitor-style), use `NewChainWorkflow`. Activities must use `DATA` for both request and response:
+
+```go
+type OrderData struct {
+	ID     string
+	Status string
+	Total  int64
+}
+
+var ValidateOrder = flow.NewActivity[OrderData, OrderData, flow.EMPTY](
+	"ValidateOrder", "orders",
+	func(ctx *flow.ActivityContext[OrderData, OrderData, flow.EMPTY], data OrderData) (*OrderData, error) {
+		// validate and return updated data
+		return &data, nil
+	},
+)
+
+var ChargePayment = flow.NewActivity[OrderData, OrderData, flow.EMPTY](
+	"ChargePayment", "orders",
+	func(ctx *flow.ActivityContext[OrderData, OrderData, flow.EMPTY], data OrderData) (*OrderData, error) {
+		// charge and return updated data
+		return &data, nil
+	},
+)
+
+var ProcessOrderChain = flow.NewChainWorkflow[OrderData, flow.EMPTY](
+	"ProcessOrderChain", "orders",
+	flow.ChainStepOf(ValidateOrder, flow.ExecuteActivityOptions{StartToCloseTimeout: 30 * time.Second}),
+	flow.ChainStepOf(ChargePayment, flow.ExecuteActivityOptions{StartToCloseTimeout: time.Minute}),
+)
+
+// Or with shared options for every step:
+var ProcessOrderChain = flow.NewChainWorkflowWithOptions[OrderData, flow.EMPTY](
+	"ProcessOrderChain", "orders",
+	flow.ExecuteActivityOptions{StartToCloseTimeout: 30 * time.Second},
+	ValidateOrder, ChargePayment,
+)
+
+// Or pass raw functions — each step is registered as an activity via ToActivity:
+var ProcessOrderChain = flow.NewChainWorkflow[OrderData, flow.EMPTY](
+	"ProcessOrderChain", "orders",
+	flow.ChainStepFunc[OrderData, flow.EMPTY]("ValidateOrder", "orders",
+		func(ctx context.Context, data OrderData) (OrderData, error) {
+			// validate and return updated data
+			return data, nil
+		},
+		flow.ExecuteActivityOptions{StartToCloseTimeout: 30 * time.Second},
+	),
+	flow.ChainStepFunc[OrderData, flow.EMPTY]("ChargePayment", "orders",
+		func(ctx context.Context, data OrderData) (OrderData, error) {
+			// charge and return updated data
+			return data, nil
+		},
+		flow.ExecuteActivityOptions{StartToCloseTimeout: time.Minute},
+	),
+)
+
+// Use ChainStepActivityFunc when a step needs typed activity state:
+flow.ChainStepActivityFunc[OrderData, *AppState]("NotifyCustomer", "orders",
+	func(ctx *flow.ActivityContext[OrderData, OrderData, *AppState], data OrderData) (OrderData, error) {
+		_ = ctx.State()
+		return data, nil
+	},
+	flow.ExecuteActivityOptions{StartToCloseTimeout: 30 * time.Second},
+)
+```
+
 For workflows that don't return a result, use `NewWorkflowNoResult`:
 
 ```go

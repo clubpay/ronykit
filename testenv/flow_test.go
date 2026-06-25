@@ -69,6 +69,13 @@ func TestFlow(t *testing.T) {
 		for _, e := range histRes.Events {
 			c.Println(e.Payload)
 		}
+
+		chainWR, err := WFChainFuncs.Execute(ctx, "a", flow.ExecuteWorkflowOptions{})
+		c.So(err, ShouldBeNil)
+
+		chainRes, err := chainWR.Get(ctx)
+		c.So(err, ShouldBeNil)
+		c.So(*chainRes, ShouldEqual, "a b c StateName")
 	})
 }
 
@@ -153,3 +160,19 @@ func (s *State) GetName(ctx context.Context, req string) (*string, error) {
 
 	return &out, nil
 }
+
+var WFChainFuncs = flow.NewChainWorkflow[string, *State](
+	"ChainFuncs", "",
+	flow.ChainStepActivityFunc[string, *State]("GetName", "",
+		func(ctx *flow.ActivityContext[string, string, *State], req string) (string, error) {
+			return req + " " + ctx.State().Name, nil
+		},
+		flow.ExecuteActivityOptions{},
+	),
+	flow.ChainStepFunc[string, *State]("AppendB", "", func(_ context.Context, req string) (string, error) {
+		return req + " b", nil
+	}, flow.ExecuteActivityOptions{}),
+	flow.ChainStepFunc[string, *State]("AppendC", "", func(_ context.Context, req string) (string, error) {
+		return req + " c", nil
+	}, flow.ExecuteActivityOptions{}),
+)
