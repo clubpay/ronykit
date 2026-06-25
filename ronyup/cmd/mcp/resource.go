@@ -253,7 +253,7 @@ func knowledgeCategories() []string {
 	return []string{"packages", "architecture", "characteristics", "tools"}
 }
 
-const maxCompletionValues = 50
+const maxCompletionValues = 64
 
 func buildCompletionResult(candidates []string) *mcpsdk.CompleteResult {
 	if candidates == nil {

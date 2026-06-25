@@ -83,6 +83,33 @@ command -v node >/dev/null 2>&1 || {
 	exit 1
 }
 
+# design_doc_for <app_dir> — print path to required design doc (repo-root relative).
+design_doc_for() {
+	local app="$1" slug
+	if [ "$app" = "$FRONTEND_DIR" ]; then
+		slug="web"
+	else
+		slug="$(basename "$app")"
+	fi
+	echo "$(dirname "$FRONTEND_DIR")/docs/design/${slug}-frontend-design.md"
+}
+
+# check_design_doc <app_dir> — require approved frontend design doc once app exists.
+check_design_doc() {
+	local app="$1" doc
+	doc="$(design_doc_for "$app")"
+	if [ ! -f "$doc" ]; then
+		echo ">> ($app) MISSING design doc: $doc (write with MCP prompt design-frontend; user must approve)" >&2
+		return 1
+	fi
+	if ! grep -qE '^status:[[:space:]]*approved' "$doc"; then
+		echo ">> ($app) design doc must have frontmatter status: approved — $doc" >&2
+		return 1
+	fi
+	echo ">> ($app) design doc OK ($doc)."
+	return 0
+}
+
 # Discover apps.
 apps=""
 if [ -f "$FRONTEND_DIR/package.json" ]; then
@@ -101,6 +128,8 @@ fi
 fail=0
 for app in $apps; do
 	echo "=== Verifying app: $app ==="
+
+	check_design_doc "$app" || fail=1
 
 	if [ ! -d "$app/node_modules" ]; then
 		pm="$(pm_for "$app")"

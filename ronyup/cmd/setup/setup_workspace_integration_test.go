@@ -63,14 +63,22 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 		t.Fatalf("Makefile template markers should stay untouched, got:\n%s", makefile)
 	}
 
-	// Backend-only workspaces still get a valid hooks.json, but with no
-	// frontend stop hook wired in.
+	// Backend-only workspaces get the backend verify stop hook (no frontend hook).
 	hooks, err := os.ReadFile(filepath.Join(tmpDir, repoDir, ".cursor", "hooks.json"))
 	if err != nil {
 		t.Fatalf("ReadFile(.cursor/hooks.json) unexpected error: %v", err)
 	}
 	if strings.Contains(string(hooks), "frontend-verify.sh") {
 		t.Fatalf("backend-only hooks.json should not register the frontend stop hook, got:\n%s", hooks)
+	}
+	if !strings.Contains(string(hooks), "backend-verify.sh") {
+		t.Fatalf("backend-only hooks.json should register the backend stop hook, got:\n%s", hooks)
+	}
+
+	for _, rel := range []string{"verify.sh", ".cursor/hooks/backend-verify.sh"} {
+		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
+			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
+		}
 	}
 }
 
@@ -137,7 +145,8 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 	for _, rel := range []string{
 		"devops", "docs", "AGENTS.md", ".ai/mcp/mcp.json",
 		"frontend/README.MD", "frontend/verify.sh", "frontend/Makefile",
-		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh",
+		"backend/verify.sh", "backend/Makefile",
+		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh", ".cursor/hooks/backend-verify.sh",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s to exist at the repo root: %v", rel, err)
@@ -151,6 +160,9 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 	}
 	if !strings.Contains(string(hooks), "frontend-verify.sh") {
 		t.Fatalf("fullstack hooks.json should register the frontend-verify stop hook, got:\n%s", hooks)
+	}
+	if !strings.Contains(string(hooks), "backend-verify.sh") {
+		t.Fatalf("fullstack hooks.json should register the backend-verify stop hook, got:\n%s", hooks)
 	}
 
 	// The Go workspace must not be duplicated at the repository root.

@@ -1,4 +1,4 @@
-.PHONY: run test tidy vet lint
+.PHONY: run test tidy vet lint verify verify-integration
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
 DOCKER_COMPOSE := docker compose -f ./devops/docker-compose.yml
@@ -34,6 +34,12 @@ lint:
 		echo "lint $$dir..."; \
 		(cd $$dir && golangci-lint run --fix ./...); \
 	done
+
+verify:
+	@echo "Run backend verify gate"
+	@bash verify.sh
+
+verify-integration: verify
 
 dev-up:
 	@echo "Bring up dockers"

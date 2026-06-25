@@ -5,14 +5,27 @@ This file defines practical guidance for AI coding assistants in this workspace.
 ## AI assistants (Cursor / MCP)
 
 1. Enable the **`ronyup` MCP server** (`.cursor/mcp.json` or `.ai/mcp/mcp.json`).
-2. Invoke the **`ronykit-framework` skill** (`/ronykit-framework`) for orchestration workflows.
+2. **Start every RonyKit task** by reading `.agents/skills/ronykit-framework/SKILL.md` (invoke `/ronykit-framework` when your client supports skills).
 3. Read architecture and package guidance from **MCP knowledge resources** — do not invent service layout. Index:
    `.agents/skills/ronykit-framework/references/mcp-map.md`.
 {{ if .Skills }}
-## Specialized Skills
+## Skill routing (read SKILL.md — do not rely on memory)
 
-On-demand skills live under `.agents/skills/`. Invoke `/<name>` or let them
-auto-load when relevant:
+Specialized skills live under `.agents/skills/`. For each applicable row, **open and read** the skill file before coding — this is required even for small models that skip optional pointers.
+
+| Task | Read these skills (in order) |
+|------|------------------------------|
+| New backend feature | `ronykit-framework` → MCP `design-new-service` |
+| Repo / persistence | `go-testing` + MCP `architecture/integration-tests` |
+| Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` + MCP `design-frontend` |
+| Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
+| Next.js routes / data | `nextjs-modern`, `shadcn` |
+| UI components | `shadcn`, `storybook`, `ux-quality` |
+| Frontend tests | `frontend-testing`, `verification-before-completion` |
+| Go style / tests | `go-modern`, `go-testing`, `writing-tests` |
+| Before claiming done | `verification-before-completion`, `code-formatting` |
+
+Installed skills in this workspace:
 {{ range .Skills }}
 - **`{{ .Name }}`** (`.agents/skills/{{ .ID }}/`) — {{ .Description }}.
 {{- end }}
@@ -65,6 +78,38 @@ skip them unless the user explicitly tells you to.
      (`frontend/<app-name>/`); confirm which app this change targets (and its
      name/stack when initializing a new one).
    - Only proceed once the target app and layout are confirmed.
+3. **Frontend design is document-first.** Before running `create-next-app`,
+   `create vite`, or writing UI, ask aesthetic/design questions and write
+   `docs/design/<app>-frontend-design.md` (`web` for a single app at `frontend/`).
+   Read skills `frontend-design`, `design-tokens`, `typography` and MCP prompt
+   `design-frontend`. Write with `status: draft`; only the **user** sets
+   `status: approved`. This is enforced: `frontend/verify.sh` refuses to pass
+   until the approved design doc exists.
+4. **Repo integration tests are mandatory.** Every method on every repository
+   port in `internal/repo/port.go` needs an `internal/repo/integration_test/`
+   test using `x/testkit` (happy path, not-found, conflict) that you **run** and
+   confirm passes. Read MCP `architecture/integration-tests` and skill `go-testing`.
+5. **App unit tests are mandatory.** Every exported method on `internal/app.App`
+   needs a unit test in `internal/app/*_test.go`.
+6. **Backend verify gate.** Before reporting backend feature work done, run
+   `make verify` from `backend/`. This is **enforced**: `.cursor/hooks/backend-verify.sh`
+   re-runs `verify.sh` when feature code changes and loops you back to fix failures.
+   Test coverage is always enforced; the repo integration tests only **run** when
+   Docker is available (otherwise the gate warns) — so run `make verify` with
+   Docker up before merging.
+{{- else }}
+2. **Repo integration tests are mandatory.** Every method on every repository
+   port in `internal/repo/port.go` needs an `internal/repo/integration_test/`
+   test using `x/testkit` (happy path, not-found, conflict) that you **run** and
+   confirm passes. Read MCP `architecture/integration-tests` and skill `go-testing`.
+3. **App unit tests are mandatory.** Every exported method on `internal/app.App`
+   needs a unit test in `internal/app/*_test.go`.
+4. **Backend verify gate.** Before reporting backend feature work done, run
+   `make verify`. This is **enforced**: `.cursor/hooks/backend-verify.sh`
+   re-runs `verify.sh` when feature code changes and loops you back to fix failures.
+   Test coverage is always enforced; the repo integration tests only **run** when
+   Docker is available (otherwise the gate warns) — so run `make verify` with
+   Docker up before merging.
 {{- end }}
 {{- if eq .Kind "fullstack" }}
 
@@ -92,9 +137,10 @@ report errors back to you, or confirm that a fix worked.
   change, covering its states/variants via `args`. A component without an
   up-to-date story is not done; create the story without being asked, and
   verify with `pnpm build-storybook`.
-- Use the installed frontend skills (`storybook`, `frontend-testing`,
-  `nextjs-modern`, `shadcn`, `dashboard-ui`, `verification-before-completion`) —
-  they define the quality bar for this loop.
+- Use the installed frontend skills (`frontend-design`, `design-tokens`,
+  `typography`, `storybook`, `frontend-testing`, `nextjs-modern`, `shadcn`,
+  `dashboard-ui`, `ux-quality`, `verification-before-completion`) — read their
+  SKILL.md files per the routing table above.
 {{- end }}
 
 ## Core Rules
@@ -149,7 +195,8 @@ For a new feature module:
 3. Implement contracts and app use-cases.
 4. Run `make gen-stub` in the feature module after contract updates.
 5. In other service modules, consume the generated stubs for client calls.
-6. Add tests for app and API behavior.
+6. Add tests for app and API behavior; **run** `make verify` to confirm repo
+   integration tests and app unit tests pass.
 7. Run:
 	- `make tidy`
 	- `make lint`

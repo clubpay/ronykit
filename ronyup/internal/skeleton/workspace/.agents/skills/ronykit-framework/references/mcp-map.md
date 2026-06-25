@@ -19,6 +19,7 @@ Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`.
 | Prompt                | Purpose                                           |
 |-----------------------|---------------------------------------------------|
 | `design-new-service`  | Full workflow: SRS → SDD → scaffold → implement   |
+| `design-frontend`     | Frontend bootstrap: design doc → approval → init → implement |
 | `write-srs`           | Write SRS to `docs/design/<feature>-srs.md`       |
 | `write-sdd`           | Write SDD from approved SRS                       |
 | `design-api`          | Contracts, routes, handlers, API documentation    |
@@ -37,6 +38,8 @@ Read these when implementing or reviewing service code.
 |-------------------------|--------------------------------------------------|
 | `package-selection`     | Mandatory reach-for-X → use-Y package map        |
 | `design-documents`      | SRS/SDD workflow, paths, gate rules              |
+| `frontend-design-documents` | Frontend design doc workflow, paths, gate rules |
+| `frontend-design-template`  | Frontend design doc outline (tokens, rules)     |
 | `srs-template`          | SRS section outline (IEEE 830)                   |
 | `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
 | `workspace-layout`      | Repo layout, `cmd/service`, feature registration |

@@ -69,7 +69,7 @@ var skillCatalog = []SkillDef{
 	{
 		ID:               "go-testing",
 		Name:             "Go Testing",
-		Description:      "Table-driven tests, Ginkgo/Gomega, benchmarks, race detector",
+		Description:      "Table-driven tests, mandatory x/testkit repo integration tests, app unit tests, Ginkgo/Gomega",
 		Category:         catGo,
 		DefaultBackend:   true,
 		DefaultFullstack: true,
@@ -173,7 +173,7 @@ var skillCatalog = []SkillDef{
 	{
 		ID:               "frontend-design",
 		Name:             "Frontend Design",
-		Description:      "Distinctive, production-grade UI that avoids generic AI aesthetics",
+		Description:      "Required before UI bootstrap: ask design questions, token plan, avoid generic AI aesthetics",
 		Category:         catFrontend,
 		DefaultBackend:   false,
 		DefaultFullstack: true,
@@ -197,7 +197,7 @@ var skillCatalog = []SkillDef{
 	{
 		ID:               "design-tokens",
 		Name:             "Design Tokens",
-		Description:      "Architect primitive→semantic→component tokens, dark mode, and Tailwind/shadcn wiring",
+		Description:      "Required with frontend-design: primitive→semantic→component tokens, Tailwind/shadcn wiring",
 		Category:         catFrontend,
 		DefaultBackend:   false,
 		DefaultFullstack: true,

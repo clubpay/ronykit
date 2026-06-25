@@ -1,19 +1,19 @@
-{{- if eq .Kind "fullstack" }}
 {
   "version": 1,
   "hooks": {
     "stop": [
+{{- if eq .Kind "fullstack" }}
       {
         "command": "bash .cursor/hooks/frontend-verify.sh",
+        "timeout": 900,
+        "loop_limit": 5
+      },
+{{- end }}
+      {
+        "command": "bash .cursor/hooks/backend-verify.sh",
         "timeout": 900,
         "loop_limit": 5
       }
     ]
   }
 }
-{{- else }}
-{
-  "version": 1,
-  "hooks": {}
-}
-{{- end }}

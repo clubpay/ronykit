@@ -1,14 +1,34 @@
 ---
 name: go-testing
 description: >-
-  Write clear, fast, deterministic Go tests. Use when adding or fixing Go tests,
-  designing table-driven tests, writing benchmarks, using testify/Ginkgo, or
-  improving coverage and test reliability in this workspace.
+  Write clear, fast, deterministic Go tests including mandatory repo integration
+  tests (x/testkit) and app unit tests. Use when adding or fixing Go tests,
+  implementing internal/repo or internal/app, designing table-driven tests,
+  writing benchmarks, using testify/Ginkgo, or improving coverage in this workspace.
 ---
 
 # Go Testing
 
 Tests are documentation that runs. Make them readable, deterministic, and fast.
+
+## Repo integration tests (mandatory — enforced by verify.sh)
+
+Every method on every repository port in `internal/repo/port.go` **must** have an integration test in
+`internal/repo/integration_test/` using `x/testkit` against real Gnomock Postgres/Redis — not mocks.
+
+Per method, cover:
+
+- **Happy path** — creates/reads/updates as intended
+- **Not found** — missing row / empty result
+- **Conflict** — unique violation or constraint error
+
+Read MCP `architecture/integration-tests`. Scaffold provides `setup_test.go`; add `*_test.go` files per domain. **Run**
+`go test ./internal/repo/integration_test/...` and confirm green before treating the repo as done.
+
+## App unit tests (mandatory — enforced by verify.sh)
+
+Every exported method on `internal/app.App` needs a unit test in `internal/app/*_test.go`. Test business rules with injected fakes/mocks
+at the port boundary — not integration tests.
 
 ## When to use
 
@@ -86,3 +106,6 @@ go test ./... -bench . -benchmem    # benchmarks
 - Test names describe behavior, not implementation.
 - Failures print expected vs got with enough context to debug.
 - New behavior and every fixed bug has a covering test.
+- Every repo port method has a passing `x/testkit` integration test.
+- Every exported `App` method has a unit test.
+- `make verify` passes before reporting backend work done.

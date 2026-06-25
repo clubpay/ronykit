@@ -6,6 +6,9 @@ Integration tests for the repo layer are MANDATORY, not optional.
 - After writing them, RUN them and confirm they pass before considering the repo done — `go test ./internal/repo/...` (or `make test`). Do not
   report a repo method as implemented until its integration test has actually been executed and is green.
 
+Scaffolded workspaces enforce this mechanically: `verify.sh` (and the Cursor `backend-verify` stop hook) check that every port method has
+integration test coverage and that `go test ./internal/repo/integration_test/...` passes. Every exported `App` method must have a unit test.
+
 Write integration tests in `internal/repo/integration_test/` using `x/testkit`.
 
 Create a `setup_test.go` with:

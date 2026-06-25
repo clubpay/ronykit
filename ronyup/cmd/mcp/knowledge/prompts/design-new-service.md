@@ -63,9 +63,10 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 1. Follow the SDD as the source of truth.
 2. Read MCP architecture resources before editing generated files.
 3. Implement in order: `internal/domain/` → `internal/repo/port.go` → `internal/app/` → `api/` → wiring.
-4. Run `make gen-stub` in the feature module after contract changes.
-5. Add tests per the SDD testing section.
-6. Run targeted `go test` and workspace `make lint` when feasible.
+4. Write and **run** `x/testkit` integration tests for every repo port method; write unit tests for every `App` method. Read
+   `architecture/integration-tests` and skill `go-testing`.
+5. Run `make gen-stub` in the feature module after contract changes.
+6. Run `make verify` in the Go workspace, then targeted `go test` and workspace `make lint` when feasible.
 
 If implementation reveals design gaps, update the SDD (revision history) before or alongside code changes.
 

@@ -13,6 +13,11 @@ Frontend topology (fullstack workspaces): never assume a single frontend app. Be
 user whether there is one frontend app or multiple. For multiple apps, each app lives in its own directory (`frontend/<app-name>/`); confirm
 which app (and its stack when initializing a new one) the change targets before proceeding.
 
+Frontend design is document-first (enforced by `frontend/verify.sh`): before initializing a frontend stack or writing UI, ask aesthetic/design
+questions, read skills `frontend-design`, `design-tokens`, `typography`, and write `docs/design/<app>-frontend-design.md` with a token plan and
+design-system rules. Use MCP prompt `design-frontend`. Write with `status: draft`; only the user sets `status: approved`. Do not run framework
+CLIs until the design doc is approved.
+
 Follow layered service conventions:
 
 - keep API handlers thin,
@@ -27,15 +32,20 @@ For cross-service integration, consume those generated stubs from other services
 For data storage defaults, prefer Postgres with sqlc-managed repositories in `internal/repo/v0` unless the request explicitly requires
 another persistence stack.
 
-Three non-negotiable coding rules (read the linked resources before writing the corresponding code):
+Four non-negotiable coding rules (read the linked resources before writing the corresponding code):
 
 1. Model RICH domain entities — not anemic structs. Put behavior and invariants on the domain types: use entities (identity + guarded
    methods), value objects (immutable, validating constructors), and aggregates (a root owns its children and enforces cross-entity rules).
    Construct via `New...() (T, error)` so invalid instances can't exist. Read `knowledge://ronyup/architecture/domain-layer`.
 2. ALWAYS write integration tests for repo methods, and RUN them. Every repository port method needs an integration test against a real
    datastore via `x/testkit` (Gnomock Postgres/Redis) covering happy path, not-found, and conflict cases. Execute the tests and confirm they
-   pass before treating the repo as done. Read `knowledge://ronyup/architecture/integration-tests`.
-3. Write the repo layer's SQL as sqlc queries (never hand-rolled query strings or an ORM), and run `make sqlc` after any query/migration
+   pass before treating the repo as done. Read `knowledge://ronyup/architecture/integration-tests`. Enforced by `verify.sh` and the
+   `backend-verify` stop hook in scaffolded workspaces — `verify.sh` always enforces test coverage statically, and RUNS the repo integration
+   tests when a Docker daemon is reachable (Gnomock needs Docker); when Docker is unavailable it WARNS and skips only that run, so run
+   `make verify` with Docker up before merging.
+3. ALWAYS write unit tests for every exported `App` method in `internal/app/`, and RUN them. Enforced by `verify.sh` (app unit tests run
+   without Docker).
+4. Write the repo layer's SQL as sqlc queries (never hand-rolled query strings or an ORM), and run `make sqlc` after any query/migration
    change to regenerate the DAO code. Read `knowledge://ronyup/architecture/postgres-sqlc`.
 
 Service package naming: use the feature name suffixed with "mod" (e.g. authmod, ledgermod, notifmod).

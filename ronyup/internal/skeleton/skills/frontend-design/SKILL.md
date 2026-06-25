@@ -2,12 +2,24 @@
 name: frontend-design
 description: >-
   Design distinctive, production-grade frontend interfaces that don't read as
-  templated AI defaults. Use when building or restyling a landing page,
-  marketing site, hero, brand-forward product surface, or any UI where visual
-  identity matters — choosing palette, typography, layout, motion, and copy.
+  templated AI defaults. Use when bootstrapping a frontend app, building or
+  restyling a landing page, marketing site, hero, brand-forward product surface,
+  or any UI where visual identity matters — choosing palette, typography,
+  layout, motion, and copy. Required before running create-next-app or writing UI.
 ---
 
 # Frontend Design
+
+## Bootstrap gate (read this first — enforced)
+
+**Do not** run `create-next-app`, `create vite`, or write UI until:
+
+1. You have **asked** the user design questions (aesthetic, audience, light/dark, brand constraints, v1 screens).
+2. You have written `docs/design/<app>-frontend-design.md` with a token plan and design-system rules (MCP `design-frontend`, template
+   `architecture/frontend-design-template`).
+3. The user has set `status: approved` in the doc frontmatter.
+
+Also read `design-tokens` and `typography` skills before implementing. `frontend/verify.sh` enforces the approved design doc.
 
 Approach this as the design lead at a small studio: every client gets a visual
 identity that could not be mistaken for anyone else's. Make deliberate,

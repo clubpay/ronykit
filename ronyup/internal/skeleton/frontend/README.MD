@@ -28,6 +28,17 @@ Decide the topology before initializing anything here:
 AI assistants must **ask** which case applies (and the target app's name/stack)
 before creating or editing frontend code — they should not assume a single app.
 
+## Design-first bootstrap (enforced)
+
+Before running `create-next-app`, `create vite`, or writing any UI:
+
+1. Ask aesthetic/design questions (audience, mood, brand, light/dark, v1 screens).
+2. Write `docs/design/<app>-frontend-design.md` using MCP `design-frontend` and skills `frontend-design`, `design-tokens`, `typography`.
+   Use slug `web` for a single app at `frontend/`, or the directory name for `frontend/<app>/`.
+3. Get user approval (`status: approved` in frontmatter).
+
+`verify.sh` checks the approved design doc once `package.json` exists.
+
 ## Getting started
 
 This folder is intentionally framework-agnostic. Initialize your app(s) with the

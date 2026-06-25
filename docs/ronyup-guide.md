@@ -125,7 +125,7 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | Skill ID               | Category | Default        | Description                                                   |
 |------------------------|----------|----------------|---------------------------------------------------------------|
 | `go-modern`            | Go       | all kinds      | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
-| `go-testing`           | Go       | all kinds      | Table-driven tests, Ginkgo/Gomega, benchmarks, race detector  |
+| `go-testing`           | Go       | all kinds      | Table-driven tests, mandatory x/testkit repo integration + app unit tests |
 | `writing-tests`        | Quality  | all kinds      | Language-agnostic TDD discipline and the test pyramid         |
 | `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
 | `systematic-debugging` | Quality  | all kinds      | Find root cause before fixing; reproduce, verify, prevent     |
@@ -137,8 +137,23 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `frontend-testing`     | Frontend | fullstack only | Vitest + Testing Library and Playwright e2e best practices     |
 | `storybook`            | Frontend | fullstack only | Ensure every UI component ships with a Storybook story         |
 | `shadcn`               | Frontend | fullstack only | Find, install, compose, and theme shadcn/ui components correctly|
+| `frontend-design`      | Frontend | fullstack only | Required before UI bootstrap: design questions, token plan, aesthetics |
+| `design-tokens`        | Frontend | fullstack only | Token architecture (primitive→semantic→component), Tailwind/shadcn |
 
-The installed skills are listed in the workspace's `AGENTS.md` under a **Specialized Skills** section.
+The installed skills are listed in the workspace's `AGENTS.md` with a **skill routing** table (task → which `SKILL.md` files to read).
+
+### Agent enforcement gates
+
+Scaffolded workspaces ship mechanical gates so agents cannot skip design or testing by accident:
+
+| Gate | Enforced by | What it checks |
+|------|-------------|----------------|
+| Backend SRS/SDD | `scaffold_feature` MCP tool | Approved `docs/design/<feature>-{srs,sdd}.md` before scaffolding |
+| Frontend design doc | `frontend/verify.sh` | Approved `docs/design/<app>-frontend-design.md` before UI verify passes |
+| Backend repo/app tests | `verify.sh` + Cursor `backend-verify` hook | Integration test per repo port method; unit test per `App` method; tests run green |
+| Frontend quality | `frontend/verify.sh` + Cursor `frontend-verify` hook | typecheck, lint, build, test, Storybook stories |
+
+MCP prompt `design-frontend` orchestrates the frontend bootstrap workflow (ask → design doc → approval → init → implement). Backend integration test conventions live in `knowledge://ronyup/architecture/integration-tests`.
 
 > `verification-before-completion` and `writing-plans` are adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT).
 
