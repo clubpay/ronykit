@@ -5,6 +5,12 @@ keywords:
 - mysql
 - sql
 - database
+- partition
+- partitioning
+- retention
+- growth
+- scale
+- archive
 applies_to_files:
 - repo
 - migration
@@ -37,3 +43,7 @@ Wire DB params via `di.ProvideDBParams`.
 
 Write repo SQL as sqlc queries (no hand-written query strings / ORM); run `make sqlc` after any query/migration change to regenerate the DAO
 code.
+
+## Growing data / partitioning
+
+When SRS/SDD projects continuous growth (events, audit, ledger, logs, high-volume facts), read `knowledge://ronyup/architecture/table-partitioning` before finalizing schema. Default to PostgreSQL declarative RANGE partitioning on a timestamp, choose monthly vs quarterly granularity in SDD, and ship automated ahead-of-time partition creation plus retention drops via an idempotent SQL maintenance function. Drive it with exactly one scheduler: an in-process goroutine (run on startup + interval via fx lifecycle hook — the default), `pg_cron`, or a `flow` schedule when the module already uses `flow`.

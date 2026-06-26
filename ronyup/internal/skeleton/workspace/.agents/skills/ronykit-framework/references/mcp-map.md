@@ -48,6 +48,7 @@ Read these when implementing or reviewing service code.
 | `domain-layer`          | `internal/domain`, errors, types                 |
 | `repo-ports`            | Port interfaces and adapters                     |
 | `postgres-sqlc`         | Default DB + sqlc layout                         |
+| `table-partitioning`    | Growing tables: strategy, time partitions, automated maintenance |
 | `module-wiring`         | fx module, DB/Redis init                         |
 | `settings-config`       | `x/settings` structs and tags                    |
 | `middleware`            | Global middleware registration                   |
@@ -90,7 +91,7 @@ When the user mentions these topics, read the resource before coding.
 |--------------|-----------------------|
 | `api`        | rest, http, contract  |
 | `cache`      | redis, cache          |
-| `database`   | postgres, mysql       |
+| `database`   | postgres, mysql, partition, retention, growth |
 | `di`         | di, dependency inject |
 | `i18n`       | i18n, locale          |
 | `idempotent` | idempotent            |
@@ -105,6 +106,6 @@ When the user mentions these topics, read the resource before coding.
 3. `scaffold_feature` (tool)
 4. `architecture/service-structure`
 5. `architecture/api-handler-files`
-6. `architecture/repo-ports` + `architecture/postgres-sqlc`
+6. `architecture/repo-ports` + `architecture/postgres-sqlc` (+ `architecture/table-partitioning` if data grows over time)
 7. Prompt `write-service-code`
 8. On completion: `architecture/gen-stub` → run `make gen-stub`

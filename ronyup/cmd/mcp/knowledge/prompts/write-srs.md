@@ -26,7 +26,7 @@ User requirements and context:
 1. Read `knowledge://ronyup/architecture/design-documents` for document locations and gate rules.
 2. Read `knowledge://ronyup/architecture/srs-template` for the section outline.
 3. For each requested characteristic, read `knowledge://ronyup/characteristics/<name>`.
-4. Read relevant `knowledge://ronyup/architecture/*` resources (e.g. `inter-service-stubs`, `postgres-sqlc`, `flow-workflows`) when the requirements imply them.
+4. Read relevant `knowledge://ronyup/architecture/*` resources (e.g. `inter-service-stubs`, `postgres-sqlc`, `flow-workflows`, `table-partitioning`) when the requirements imply them — especially `table-partitioning` when data volume or retention will grow over time.
 5. Ask clarifying questions if requirements are ambiguous — do not invent unstated behavior.
 6. Write the SRS to **`docs/design/{{feature_name}}-srs.md`** in the workspace root.
 
@@ -37,7 +37,7 @@ User requirements and context:
 - Number functional requirements (FR-001, …) and non-functional requirements (NFR-001, …).
 - Every FR must have acceptance criteria.
 - Include an **API requirements** table: operation name, HTTP method + path (or RPC), auth, summary.
-- State persistence needs, inter-service dependencies, and configuration expectations.
+- State persistence needs, inter-service dependencies, and configuration expectations. For append-only or high-volume tables, capture retention, expected growth, and whether partitioning is required (NFR) so SDD can choose monthly/quarterly time partitions and automated maintenance.
 - List open questions in an appendix when information is missing.
 
 ## Output

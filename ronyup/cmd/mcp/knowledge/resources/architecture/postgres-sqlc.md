@@ -17,3 +17,5 @@ Pass `MigrationFS` to `di.ProvideDBParams[settings.Settings](MigrationFS)` in th
 
 After adding or changing any query or migration `.sql` file, run `make sqlc` to regenerate the DAO code, then build/test. Generated DAO code
 must always be in sync with the `.sql` sources — committing query changes without running `make sqlc` is a bug.
+
+For tables expected to grow without bound, plan partitioning in SDD and read `knowledge://ronyup/architecture/table-partitioning` (strategy selection, monthly/quarterly time partitions, maintenance SQL, scheduled execution).

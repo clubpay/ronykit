@@ -25,7 +25,7 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 ## Instructions
 
 1. Read the SRS file in the workspace.
-2. Read `knowledge://ronyup/architecture/design-documents`, `sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, and `error-handling`.
+2. Read `knowledge://ronyup/architecture/design-documents`, `sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, and `error-handling`. If the SRS implies continuous data growth (events, audit, ledger, logs, high write volume), also read `knowledge://ronyup/architecture/table-partitioning` and fill SDD §6.2 partitioning tables (strategy, monthly/quarterly granularity, ahead window, retention, maintenance scheduler).
 3. For each characteristic in the SRS or arguments, read `knowledge://ronyup/characteristics/<name>`.
 4. Write the SDD to **`docs/design/{{feature_name}}-sdd.md`**.
 

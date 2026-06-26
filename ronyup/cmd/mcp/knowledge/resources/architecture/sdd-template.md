@@ -103,6 +103,14 @@ Business rules, validation beyond API boundary, idempotency keys if applicable.
 | Table | Columns | Indexes | Notes |
 |-------|---------|---------|-------|
 
+If a table is expected to grow continuously, add a partitioning subsection:
+
+| Table | Partition key | Strategy | Granularity | Ahead window | Retention | Maintenance |
+|-------|---------------|----------|-------------|--------------|-----------|-------------|
+|       | e.g. `created_at` | RANGE / LIST / HASH | monthly / quarterly | e.g. 3 months | e.g. 24 months | SQL function + scheduler |
+
+Read `knowledge://ronyup/architecture/table-partitioning` when filling this section.
+
 ### 6.3 sqlc queries (outline)
 
 [List query names and purpose.]

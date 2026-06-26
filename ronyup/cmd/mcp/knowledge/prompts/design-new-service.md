@@ -43,7 +43,7 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 **Goal:** `docs/design/{{feature_name}}-sdd.md`
 
 1. Read the approved SRS (confirm its frontmatter is `status: approved`).
-2. Read `knowledge://ronyup/architecture/sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, `error-handling`.
+2. Read `knowledge://ronyup/architecture/sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, `error-handling`, and `table-partitioning` when SRS NFRs imply growing data.
 3. Write the SDD with the required `status: draft` frontmatter and requirement traceability to the SRS.
 4. Present a summary and **wait for user approval** before Phase 3.
 

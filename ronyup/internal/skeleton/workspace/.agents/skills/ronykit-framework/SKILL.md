@@ -42,7 +42,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 3. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
 4. **Load knowledge** (read MCP resources before coding):
 - Always: `architecture/service-structure`, `architecture/api-handler-files`
-- Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`, `architecture/integration-tests`
+- Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`, `architecture/integration-tests` (+ `architecture/table-partitioning` when data is expected to grow)
 - Wiring: `architecture/module-wiring`, `architecture/settings-config`
 - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
 5. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module.
