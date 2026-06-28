@@ -29,7 +29,11 @@ brew install clubpay/tap/ronyup
 ```
 
 This taps `clubpay/homebrew-tap` and installs a prebuilt `ronyup` binary for your
-platform (macOS or Linux, Intel or ARM). Upgrade later with `brew upgrade ronyup`.
+platform (macOS or Linux, Intel or ARM). On [Homebrew 6+](https://docs.brew.sh/Tap-Trust),
+third-party taps require explicit trust; the fully-qualified install above handles that
+automatically. Upgrade later with `brew upgrade clubpay/tap/ronyup`. If you tapped
+`clubpay/tap` separately and install by short name, run
+`brew trust --formula clubpay/tap/ronyup` first.
 
 Prebuilt binaries are also published on [GitHub Releases](https://github.com/clubpay/ronykit/releases)
 for tags like `ronyup/vX.Y.Z` (macOS, Linux, and Windows archives).

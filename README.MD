@@ -18,6 +18,10 @@ With Homebrew (macOS/Linux):
 brew install clubpay/tap/ronyup
 ```
 
+On [Homebrew 6+](https://docs.brew.sh/Tap-Trust), third-party taps require explicit trust. The
+fully-qualified name above trusts and installs `ronyup` in one step. Upgrade with
+`brew upgrade clubpay/tap/ronyup`.
+
 Or with Go:
 
 ```bash

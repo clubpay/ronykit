@@ -10,6 +10,10 @@ With Homebrew (macOS/Linux):
 brew install clubpay/tap/ronyup
 ```
 
+On [Homebrew 6+](https://docs.brew.sh/Tap-Trust), third-party taps require explicit trust. The
+fully-qualified name above trusts and installs `ronyup` in one step. Upgrade with
+`brew upgrade clubpay/tap/ronyup`.
+
 From the repo root:
 
 ```bash
@@ -172,6 +176,11 @@ brew install clubpay/tap/ronyup
 # or
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
+
+On Homebrew 6+, use the fully-qualified formula name so tap trust is handled automatically.
+Upgrade with `brew upgrade clubpay/tap/ronyup`. If you tapped `clubpay/tap` separately and
+install by short name, run `brew trust --formula clubpay/tap/ronyup` first. See
+[Tap Trust](https://docs.brew.sh/Tap-Trust).
 
 ## Usage
 
