@@ -228,6 +228,8 @@ type ExecuteWorkflowOptions struct {
 	SearchAttributes         SearchAttributes
 	Memo                     map[string]any
 	StaticDetails            string
+	// TaskQueue - Task queue to use for this activity. If not, set default task queue of SDK will be used.
+	TaskQueue string
 }
 
 type WorkflowRun[T any] struct {
@@ -254,7 +256,7 @@ func (w *Workflow[REQ, RES, STATE]) Execute(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:                       opts.ID,
-			TaskQueue:                w.backend.TaskQueue(),
+			TaskQueue:                rkit.Coalesce(opts.TaskQueue, w.backend.TaskQueue()),
 			WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 			WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 			WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,

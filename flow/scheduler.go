@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 	enumspb "go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 )
@@ -50,6 +51,8 @@ type CreateScheduleRequest struct {
 	RunTimeout       time.Duration
 	SearchAttributes SearchAttributes
 	TimezoneName     string
+	// TaskQueue - Task queue to use for this activity. If not, set default task queue of SDK will be used.
+	TaskQueue string
 }
 
 type ScheduleAction struct {
@@ -156,7 +159,7 @@ func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (
 		Action: &client.ScheduleWorkflowAction{
 			Workflow:                 req.Action.WorkflowName,
 			Args:                     []any{req.Action.WorkflowArg},
-			TaskQueue:                sdk.b.TaskQueue(),
+			TaskQueue:                rkit.Coalesce(req.TaskQueue, sdk.b.TaskQueue()),
 			WorkflowExecutionTimeout: req.ExecutionTimeout,
 			WorkflowRunTimeout:       req.RunTimeout,
 			TypedSearchAttributes:    req.Action.SearchAttributes,

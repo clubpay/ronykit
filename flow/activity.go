@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
@@ -205,6 +206,8 @@ type ExecuteActivityOptions struct {
 	StartToCloseTimeout time.Duration
 	HeartbeatTimeout    time.Duration
 	RetryPolicy         *RetryPolicy
+	// TaskQueue - Task queue to use for this activity. If not, set default task queue of SDK will be used.
+	TaskQueue string
 }
 
 func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
@@ -219,7 +222,7 @@ func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteAc
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
-			TaskQueue:              a.backend.TaskQueue(),
+			TaskQueue:              rkit.Coalesce(opts.TaskQueue, a.backend.TaskQueue()),
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,
@@ -272,7 +275,7 @@ func (a *ActivityFactory[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts Ex
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
-			TaskQueue:              a.act.backend.TaskQueue(),
+			TaskQueue:              rkit.Coalesce(opts.TaskQueue, a.act.backend.TaskQueue()),
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,
