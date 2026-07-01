@@ -2,8 +2,8 @@ github.com/andybalholm/brotli v1.2.1 h1:R+f5xP285VArJDRgowrfb9DqL18yVK0gKAW/F+eT
 github.com/andybalholm/brotli v1.2.1/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.25.8 h1:ARVoLCO+9EHyHLOWCq7BV/dBBzr1esI6ZotmXY9sFJk=
-github.com/clubpay/ronykit/kit v0.25.8/go.mod h1:K+IzMTr0XSYheBJ6I5Tq0508Kwti3wtSb77nyQYzje8=
+github.com/clubpay/ronykit/kit v0.25.9 h1:QxMQOkpAWoieHQptwxcZZeP1s+IS8r+fY6E9peMroCU=
+github.com/clubpay/ronykit/kit v0.25.9/go.mod h1:K+IzMTr0XSYheBJ6I5Tq0508Kwti3wtSb77nyQYzje8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fasthttp/router v1.5.4 h1:oxdThbBwQgsDIYZ3wR1IavsNl6ZS9WdjKukeMikOnC8=
