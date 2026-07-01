@@ -9,7 +9,7 @@ source "$ROOT/scripts/lib.sh"
 
 export_kubeconfig_env "$ROOT"
 
-"$ROOT/scripts/wait-k8s.sh"
+bash "$ROOT/scripts/wait-k8s.sh"
 
 kubectl create namespace devbox --dry-run=client -o yaml | kubectl apply -f -
 

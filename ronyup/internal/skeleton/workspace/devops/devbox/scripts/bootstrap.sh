@@ -61,4 +61,6 @@ if [[ "$mode" == "vagrant" ]]; then
   touch shared/.gitkeep
 fi
 
+chmod +x scripts/*.sh 2>/dev/null || true
+
 echo "Devbox bootstrap OK (cluster.mode=$mode)"
