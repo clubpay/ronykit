@@ -1,3 +1,6 @@
+# Devbox Helm releases. Which releases are applied is controlled by config.yaml
+# via scripts/helmfile-apply.sh (do not add {{ }} templates here — Helmfile v1
+# requires .gotmpl for that and is brittle across versions).
 repositories:
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
@@ -12,59 +15,59 @@ repositories:
   - name: grafana
     url: https://grafana.github.io/helm-charts
 
-environments:
-  default:
-    values:
-      - ../config.yaml
-
----
-
 releases:
   - name: postgres
     namespace: devbox
     chart: bitnami/postgresql
-    installed: {{ .Values.services.postgres | default false }}
+    labels:
+      devbox-service: postgres
     values:
       - values/postgres.yaml
 
   - name: redis
     namespace: devbox
     chart: bitnami/redis
-    installed: {{ .Values.services.redis | default false }}
+    labels:
+      devbox-service: redis
     values:
       - values/redis.yaml
 
   - name: temporal
     namespace: devbox
     chart: temporalio/temporal
-    installed: {{ .Values.services.temporal | default false }}
+    labels:
+      devbox-service: temporal
     values:
       - values/temporal.yaml
 
   - name: redpanda
     namespace: devbox
     chart: redpanda/redpanda
-    installed: {{ .Values.services.redpanda | default false }}
+    labels:
+      devbox-service: redpanda
     values:
       - values/redpanda.yaml
 
   - name: otel-collector
     namespace: devbox
     chart: open-telemetry/opentelemetry-collector
-    installed: {{ .Values.services.observability | default false }}
+    labels:
+      devbox-service: observability
     values:
       - values/otel-collector.yaml
 
   - name: jaeger
     namespace: devbox
     chart: jaegertracing/jaeger
-    installed: {{ .Values.services.observability | default false }}
+    labels:
+      devbox-service: observability
     values:
       - values/jaeger.yaml
 
   - name: grafana
     namespace: devbox
     chart: grafana/grafana
-    installed: {{ .Values.services.observability | default false }}
+    labels:
+      devbox-service: observability
     values:
       - values/grafana.yaml

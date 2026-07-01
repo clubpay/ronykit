@@ -71,7 +71,7 @@ export VAGRANT_DEFAULT_PROVIDER=utm
 | `resume` | n/a | wake suspended VM |
 | `destroy` | remove devbox Helm releases | destroy VM |
 | `kubeconfig` | n/a | refresh `shared/kubeconfig` |
-| `services` | re-apply Helmfile | re-apply Helmfile |
+| `services` | sync Helmfile releases from `config.yaml` toggles | same |
 | `status` | `kubectl get nodes` | vagrant + kubectl |
 
 ## Configuration
