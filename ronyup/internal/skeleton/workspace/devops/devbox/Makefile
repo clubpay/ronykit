@@ -13,7 +13,7 @@ help:
 	@echo "  make destroy    - destroy VM (vagrant) or remove devbox services (existing cluster)"
 	@echo "  make kubeconfig - refresh shared/kubeconfig (vagrant mode only)"
 	@echo "  make services   - install Helm releases from config.yaml"
-	@echo "  make dns        - sync host DNS for *.app.localdev (vagrant mode)"
+	@echo "  make dns        - install/start vagrant-dns for *.app.localdev (vagrant mode)"
 	@echo "  make status     - cluster / vagrant status"
 	@echo ""
 	@echo "Edit config.yaml: cluster.mode (existing|vagrant) and service toggles."
@@ -21,7 +21,7 @@ help:
 bootstrap:
 	@bash scripts/bootstrap.sh
 
-up: bootstrap
+up:
 	@bash scripts/up.sh
 
 down:
@@ -45,7 +45,7 @@ services:
 	@bash scripts/install-services.sh
 
 dns:
-	@bash scripts/sync-dns.sh
+	@bash scripts/dns.sh
 
 status:
 	@if [ "$$(yq -r '.cluster.mode // "existing"' config.yaml)" = "vagrant" ]; then vagrant status; fi

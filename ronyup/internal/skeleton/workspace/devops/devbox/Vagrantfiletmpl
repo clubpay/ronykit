@@ -26,6 +26,9 @@ Vagrant.configure("2") do |config|
 
   if Vagrant.has_plugin?("vagrant-dns")
     config.dns.tld = DNS_TLD
+    config.dns.patterns = [
+      /^(\w+\.)*#{Regexp.escape(APP_NAME)}\.#{Regexp.escape(DNS_TLD)}$/,
+    ]
   end
 
   config.vm.provider "virtualbox" do |vb|
@@ -51,9 +54,5 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
   config.vm.synced_folder "./shared", "/vagrant/shared", create: true
 
-  config.vm.provision "shell", path: "scripts/provision.sh", env: {
-    "DEVBOX_APP_NAME" => APP_NAME,
-    "DEVBOX_DNS_TLD" => DNS_TLD,
-    "DEVBOX_VM_IP" => VM_IP,
-  }
+  config.vm.provision "shell", path: "scripts/provision.sh"
 end

@@ -26,5 +26,4 @@ fi
 
 # Wait for API, then sync Helm releases and optional raw manifests from config.yaml.
 bash "$ROOT/scripts/wait-k8s.sh"
-bash "$ROOT/scripts/install-services.sh"
-bash "$ROOT/scripts/sync-dns.sh"
+bash "$ROOT/scripts/dns.sh"

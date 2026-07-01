@@ -63,10 +63,11 @@ fi
 # Register upstream chart repos so later helm installs do not fail.
 helm_repo_ensure refresh
 
-# Vagrant mode: optional guest-additions plugin and gitignored shared/ for kubeconfig.
+# Vagrant mode: plugins, host DNS resolver, and gitignored shared/ for kubeconfig.
 if [[ "$mode" == "vagrant" ]]; then
   vagrant plugin install vagrant-vbguest 2>/dev/null || true
-  vagrant plugin install vagrant-dns 2>/dev/null || true
+  vagrant plugin install vagrant-dns
+  bash "$ROOT/scripts/dns.sh"
   mkdir -p shared
   touch shared/.gitkeep
 fi

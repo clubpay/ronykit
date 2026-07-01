@@ -130,12 +130,6 @@ endpoint_fqdn() {
   echo "${host}.$(dns_base "$root")"
 }
 
-# devbox_vm_ip reads vm.ip from config.yaml (vagrant private network address).
-devbox_vm_ip() {
-  local root="${1:?}"
-  yq -r '.vm.ip // "192.168.56.10"' "$root/config.yaml"
-}
-
 # service_enabled checks a boolean toggle under services.* in config.yaml.
 service_enabled() {
   local root="${1:?}"

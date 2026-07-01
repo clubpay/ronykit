@@ -18,5 +18,5 @@ vagrant resume
 # Kubeconfig and API endpoint may need refresh after suspend/resume.
 bash "$ROOT/scripts/kubeconfig.sh"
 bash "$ROOT/scripts/wait-k8s.sh"
-bash "$ROOT/scripts/sync-dns.sh"
+bash "$ROOT/scripts/dns.sh"
 echo "Devbox VM resumed"

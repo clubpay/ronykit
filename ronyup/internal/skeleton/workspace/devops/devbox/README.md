@@ -131,12 +131,11 @@ Replace `demo` with your `app.name` from `config.yaml`.
 
 **How it works**
 
-1. `make bootstrap` installs the [vagrant-dns](https://github.com/bergsland/vagrant-dns) plugin (vagrant mode).
-2. `scripts/provision.sh` runs **dnsmasq** on the VM so `*.<app>.localdev` resolves to the VM IP.
-3. `make up` runs `scripts/sync-dns.sh` to point your host at the VM DNS (macOS `/etc/resolver/<app>.localdev`, or `/etc/hosts` fallback).
-4. `scripts/apply-exposure.sh` configures microk8s **nginx ingress** (HTTP routes + TCP passthrough for database ports).
+1. `make bootstrap` installs the [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns) plugin and registers the local TLD on your host (`vagrant dns --install` / `vagrant dns --start`).
+2. `make up` starts the VM; vagrant-dns resolves `*.<app>.localdev` to the VM IP (patterns in `Vagrantfile`).
+3. `scripts/apply-exposure.sh` configures microk8s **nginx ingress** (HTTP routes + TCP passthrough for database ports).
 
-After `make services`, the script prints the active endpoints. Re-run `make dns` if you add services or change `app.name`.
+After `make services`, the script prints the active endpoints. Re-run `make dns` if hostnames stop resolving.
 
 **Existing cluster mode:** ingress/TCP exposure is applied when your cluster has nginx ingress with a TCP configmap (`ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`). Use `kubectl port-forward` otherwise (see below).
 
@@ -185,6 +184,6 @@ devbox/
 - **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/helmfile-apply.sh` via `make services` (no Helmfile plugin).
 - **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
 - **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`.
-- **Hostnames do not resolve**: run `make dns` (vagrant mode). On macOS this writes `/etc/resolver/<app>.localdev`; Linux falls back to `/etc/hosts`.
+- **Hostnames do not resolve**: run `make dns` (vagrant mode). Re-run `make bootstrap` if you change `dns.tld` in `config.yaml`.
 - **TCP endpoint refused**: ensure microk8s ingress is enabled (`microk8s enable ingress`) and re-run `make services`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).
