@@ -1,0 +1,4 @@
+.vagrant/
+shared/kubeconfig
+shared/*.log
+services/.helmfile.cache/

@@ -1,0 +1,33 @@
+server:
+  replicaCount: 1
+
+cassandra:
+  enabled: false
+
+mysql:
+  enabled: false
+
+postgresql:
+  enabled: true
+
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+elasticsearch:
+  enabled: false
+
+schema:
+  createDatabase:
+    enabled: true
+  setup:
+    enabled: true
+  update:
+    enabled: true
+
+web:
+  enabled: true
+  ingress:
+    enabled: false

@@ -56,6 +56,7 @@ func RunInteractive(cmd *cobra.Command) error {
 		Options(
 			huh.NewOption("Setup a new workspace", "workspace"),
 			huh.NewOption("Add a new feature to existing workspace", "feature"),
+			huh.NewOption("Sync scaffold files in an existing workspace", "sync"),
 		).
 		Value(&action).
 		Run()
@@ -68,6 +69,8 @@ func RunInteractive(cmd *cobra.Command) error {
 		return runWorkspaceInteractive(cmd)
 	case "feature":
 		return runFeatureInteractive(cmd)
+	case "sync":
+		return runSyncInteractive(cmd)
 	}
 
 	return nil
@@ -174,4 +177,34 @@ func runFeatureInteractive(cmd *cobra.Command) error {
 	}
 
 	return runFeature(cmd)
+}
+
+func runSyncInteractive(cmd *cobra.Command) error {
+	overwrite := false
+
+	err := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Repository Directory").
+				Description("Root of the existing workspace").
+				Placeholder(".").
+				Value(&syncOpt.RepoDir),
+			huh.NewConfirm().
+				Title("Overwrite existing scaffold files").
+				Description("When off, only missing files are added").
+				Affirmative("YES").
+				Negative("NO").
+				Value(&overwrite),
+		),
+	).Run()
+	if err != nil {
+		return err
+	}
+
+	syncOpt.Overwrite = overwrite
+	syncOpt.Only = []string{syncSectionAll}
+	syncOpt.Kind = syncKindAuto
+	syncOpt.SkillsMode = []string{skillSyncInstalled}
+
+	return runSync(cmd)
 }

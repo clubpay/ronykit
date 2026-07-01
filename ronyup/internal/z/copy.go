@@ -18,6 +18,8 @@ type CopyDirParams struct {
 	DestPathPrefix string
 	TemplateInput  any
 	Callback       func(filePath string, dir bool)
+	// SkipExisting skips copying when the destination file already exists.
+	SkipExisting bool
 	// DestMapper optionally rewrites the destination for each entry. It
 	// receives the entry path relative to SrcPathPrefix (forward slashes, no
 	// leading separator; the root entry is the empty string) and returns the
@@ -44,6 +46,12 @@ func CopyDir(params CopyDirParams) error {
 			if d.IsDir() {
 				// Create a directory if it doesn't exist
 				return os.MkdirAll(destPath, os.ModePerm)
+			}
+
+			if params.SkipExisting {
+				if _, err := os.Stat(destPath); err == nil {
+					return nil
+				}
 			}
 
 			if params.Callback != nil {

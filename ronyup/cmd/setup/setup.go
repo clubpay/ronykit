@@ -348,10 +348,6 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		copyFrontendTemplate(repoRoot, templateInput, callback)
 	}
 
-	if opt.Kind == KindFullstack {
-		fixupBackendDevopsPath(cmd, repoRoot)
-	}
-
 	// Agent skills always live at the repository root under .agents/skills,
 	// alongside the bundled ronykit-framework skill (even for fullstack
 	// scaffolds, where AI config stays at the root).
@@ -439,35 +435,6 @@ func copyFrontendTemplate(
 			Callback:       callback,
 		},
 	))
-}
-
-// fixupBackendDevopsPath rewrites the backend Makefile's docker-compose path so
-// it points at the repository-root devops/ directory, which stays at the root in
-// fullstack scaffolds.
-func fixupBackendDevopsPath(cmd *cobra.Command, repoRoot string) {
-	makefilePath := filepath.Join(backendDestPrefix(repoRoot), "Makefile")
-
-	content, err := os.ReadFile(makefilePath)
-	if err != nil {
-		cmd.PrintErrf("Warning: Could not read backend Makefile: %v\n", err)
-
-		return
-	}
-
-	updated := strings.Replace(
-		string(content),
-		"-f ./devops/docker-compose.yml",
-		"-f ../devops/docker-compose.yml",
-		1,
-	)
-
-	if updated == string(content) {
-		return
-	}
-
-	if err := os.WriteFile(makefilePath, []byte(updated), 0o644); err != nil {
-		cmd.PrintErrf("Warning: Could not update backend Makefile: %v\n", err)
-	}
 }
 
 func isGitRepository(dir string) (bool, error) {

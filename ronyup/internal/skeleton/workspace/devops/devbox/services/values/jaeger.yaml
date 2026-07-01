@@ -1,0 +1,23 @@
+provisionDataStore:
+  cassandra: false
+  elasticsearch: false
+
+allInOne:
+  enabled: true
+
+collector:
+  enabled: true
+  service:
+    otlp:
+      grpc:
+        enabled: true
+      http:
+        enabled: true
+
+query:
+  enabled: true
+  service:
+    type: ClusterIP
+
+storage:
+  type: memory

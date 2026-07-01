@@ -1,0 +1,15 @@
+statefulset:
+  replicas: 1
+
+storage:
+  persistentVolume:
+    enabled: false
+
+console:
+  enabled: true
+
+external:
+  domain: redpanda.devbox.svc.cluster.local
+
+tls:
+  enabled: false

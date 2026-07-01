@@ -28,7 +28,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 
 ## Commands
 
-- `setup`: create a new workspace or add a feature to an existing workspace.
+- `setup`: create a new workspace, add a feature, or sync scaffold files into an existing workspace.
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
 - `template`: parse Go source and print package/type/function metadata (generator stub).
 - `mcp`: run `ronyup` as a stdio MCP server for AI assistants.
@@ -54,6 +54,44 @@ This copies the embedded workspace skeleton, initializes a `go.work`, and create
 Pass `--kind fullstack` to scaffold a `backend/` + `frontend/` split instead of a Go-only repo. The Go workspace (`go.work`, `cmd/service`, `pkg`, `feature`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. In fullstack mode, run `setup feature` and `make`/`go` commands from the `backend/` directory.
 
 Pass `--kind frontend` to scaffold a frontend-only repo: a `frontend/` application plus shared AI assistant config and `docs/` at the root, with no Go workspace, `devops/`, or backend verify gate.
+
+### Sync an existing workspace
+
+Refresh scaffold-managed boilerplate after upgrading `ronyup` (or to pick up new skeleton files such as `devops/devbox/`):
+
+```bash
+cd ./my-repo
+ronyup setup sync
+```
+
+By default only **missing** scaffold files are added. Pass `--overwrite` to replace existing scaffold files (for example `AGENTS.md`, hooks, or skill trees).
+
+```bash
+# Add only the new devbox folder without touching existing files
+ronyup setup sync --only devops
+
+# Refresh agent guidance and hooks from the latest skeleton
+ronyup setup sync --only agents,hooks --overwrite
+
+# Update skills already installed under .agents/skills/
+ronyup setup sync --only skills --overwrite --skills installed
+```
+
+Sections (`--only`):
+
+| Section | Updates |
+|---------|---------|
+| `agents` | `AGENTS.md` |
+| `ai` | `.ai/mcp/`, `.cursor/mcp.json` |
+| `hooks` | `.cursor/hooks/`, `hooks.json` |
+| `devops` | `devops/devbox/` |
+| `docs` | `docs/design/README.MD` |
+| `skills` | `.agents/skills/ronykit-framework` + installed catalog skills |
+| `backend` | `Makefile`, `verify.sh`, `.golangci.yml` (not `cmd/` or `feature/`) |
+| `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
+| `all` | all sections applicable to the detected workspace kind (default) |
+
+Workspace kind is auto-detected from `go.work`, `backend/go.work`, or `frontend/`. In fullstack repos you can run sync from the repository root or from `backend/`.
 
 ### Add a feature
 

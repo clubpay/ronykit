@@ -1,0 +1,24 @@
+# Devbox configuration — edit before `make up`.
+#
+# Cluster target:
+cluster:
+  # existing — use your Kubernetes cluster (default; respects KUBECONFIG or ~/.kube/config)
+  # vagrant  — provision a local Ubuntu VM with microk8s
+  mode: existing
+  # Optional kubeconfig path when mode is existing (empty = $KUBECONFIG or ~/.kube/config).
+  kubeconfig: ""
+
+# VM resources (only when cluster.mode is vagrant):
+vm:
+  memory: 8192   # MB — microk8s needs at least 4096 for a minimal stack
+  cpus: 4
+  ip: 192.168.56.10
+
+# Opt-in platform services (installed via Helmfile into the devbox namespace).
+services:
+  postgres: true
+  redis: true
+  temporal: false
+  redpanda: false
+  observability: false   # OpenTelemetry Collector + Jaeger + Grafana
+  tigerbeetle: false

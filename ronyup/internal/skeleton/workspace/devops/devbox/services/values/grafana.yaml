@@ -1,0 +1,18 @@
+adminUser: admin
+adminPassword: admin
+
+persistence:
+  enabled: false
+
+service:
+  type: ClusterIP
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Jaeger
+        type: jaeger
+        access: proxy
+        url: http://jaeger-query.devbox.svc.cluster.local:16686
+        isDefault: true

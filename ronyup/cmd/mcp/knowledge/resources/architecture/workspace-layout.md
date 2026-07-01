@@ -21,7 +21,7 @@ Each module under `feature/<name>/` (or `feature/<template>/<name>/` when groupe
 
 ## Shared root layout (always at the repository root)
 
-- `devops/` — Docker Compose and deployment helpers seeded by the scaffold.
+- `devops/` — `devops/devbox/` installs optional platform services (Postgres, Redis, Temporal, …) into a Kubernetes cluster via Helmfile. Default `cluster.mode: existing` uses your kubeconfig; set `vagrant` for a local microk8s VM.
 - `docs/` — design documents (`docs/design/<feature>-srs.md`, `…-sdd.md`) and guides.
 - `.ai/mcp/mcp.json`, `.cursor/mcp.json` — preconfigured client config so IDEs pick up the `ronyup mcp` server.
 - `.agents/skills/ronykit-framework/` — the agent skill.

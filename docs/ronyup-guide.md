@@ -70,7 +70,7 @@ my-api/
 ├── Makefile
 ├── cmd/service/      # Entry point
 ├── pkg/i18n/         # Translation utilities
-├── devops/           # docker-compose and deployment helpers
+├── devops/           # devbox: Helmfile-managed K8s services
 ├── docs/             # design docs and guides
 └── .git/             # Initialized git repo
 ```
@@ -88,7 +88,7 @@ Use `--kind` to choose the layout:
 my-api/
 ├── backend/          # the Go workspace (go.work, cmd/service, pkg/, feature/, Makefile, .golangci.yml)
 ├── frontend/         # web/mobile application (framework-agnostic placeholder)
-├── devops/           # docker-compose and deployment helpers (shared)
+├── devops/           # devbox: Helmfile-managed K8s services (shared)
 ├── docs/             # design docs and guides (shared)
 ├── AGENTS.md         # agent guidance (shared)
 └── .ai/ .agents/ .cursor/   # AI assistant config (shared)

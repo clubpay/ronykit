@@ -1,0 +1,11 @@
+auth:
+  username: dbUser
+  password: dbPass
+  database: user-db
+
+primary:
+  persistence:
+    enabled: false
+
+service:
+  type: ClusterIP

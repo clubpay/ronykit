@@ -37,7 +37,7 @@ Installed skills in this workspace:
 - Top-level layout:
 	- `backend/`: the RonyKIT Go workspace (`go.work`). Run Go commands and `ronyup setup feature` from here.
 	- `frontend/`: the web/mobile application (framework-agnostic; initialize with your stack of choice).
-	- `devops/`: docker-compose and deployment helpers (shared, stays at root).
+	- `devops/`: Kubernetes dev infrastructure via `devops/devbox/` (`make devbox-up` from `backend/`).
 	- `docs/`: design documents (SRS/SDD) and guides (shared, stays at root).
 	- `.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`: AI assistant config (shared, stays at root).
 - Inside `backend/`:
@@ -57,6 +57,7 @@ Installed skills in this workspace:
 	- `cmd/service`: service process wiring and bootstrap.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
+	- `devops/`: `devops/devbox/` Helmfile-managed services on Kubernetes (`make devbox-up`).
 {{- end }}
 
 ## Mandatory gates (do these first, no matter what is asked)

@@ -80,6 +80,14 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
 		}
 	}
+
+	for _, rel := range []string{
+		"devops/devbox/Makefile", "devops/devbox/Vagrantfile", "devops/devbox/config.yaml",
+	} {
+		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
+			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
+		}
+	}
 }
 
 func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
@@ -144,6 +152,7 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 	// gate + enforcing stop hook are seeded.
 	for _, rel := range []string{
 		"devops", "docs", "AGENTS.md", ".ai/mcp/mcp.json",
+		"devops/devbox/Makefile", "devops/devbox/Vagrantfile", "devops/devbox/config.yaml",
 		"frontend/README.MD", "frontend/verify.sh", "frontend/Makefile",
 		"backend/verify.sh", "backend/Makefile",
 		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh", ".cursor/hooks/backend-verify.sh",
@@ -170,13 +179,13 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 		t.Fatalf("did not expect cmd/ at the repo root in fullstack mode (err=%v)", err)
 	}
 
-	// Backend Makefile must point at the root-level devops/ directory.
+	// Backend Makefile must expose devbox helpers pointing at root devops/devbox.
 	makefile, err := os.ReadFile(filepath.Join(root, "backend", "Makefile"))
 	if err != nil {
 		t.Fatalf("ReadFile(backend Makefile) unexpected error: %v", err)
 	}
-	if !strings.Contains(string(makefile), "-f ../devops/docker-compose.yml") {
-		t.Fatalf("backend Makefile should reference ../devops/docker-compose.yml, got:\n%s", makefile)
+	if !strings.Contains(string(makefile), "../devops/devbox") {
+		t.Fatalf("backend Makefile should reference ../devops/devbox, got:\n%s", makefile)
 	}
 
 	// Root AGENTS.md must render the fullstack guidance.

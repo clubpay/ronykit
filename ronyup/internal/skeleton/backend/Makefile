@@ -1,7 +1,7 @@
-.PHONY: run test tidy vet lint verify verify-integration
+.PHONY: run test tidy vet lint verify verify-integration devbox-bootstrap devbox-up devbox-down devbox-destroy devbox-status
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
-DOCKER_COMPOSE := docker compose -f ./devops/docker-compose.yml
+DEVBOX_DIR := $(if $(wildcard ./devops/devbox/Makefile),./devops/devbox,../devops/devbox)
 
 run:
 	@echo "Run service"
@@ -41,18 +41,17 @@ verify:
 
 verify-integration: verify
 
-dev-up:
-	@echo "Bring up dockers"
-	@$(DOCKER_COMPOSE) up -d postgres
+devbox-bootstrap:
+	@$(MAKE) -C $(DEVBOX_DIR) bootstrap
 
-dev-down:
-	@echo "Bring down dockers"
-	@$(DOCKER_COMPOSE) down postgres
+devbox-up:
+	@$(MAKE) -C $(DEVBOX_DIR) up
 
-db-logs:
-	@$(DOCKER_COMPOSE) logs
+devbox-down:
+	@$(MAKE) -C $(DEVBOX_DIR) down
 
-run-service: dev-up
-	@echo "Run service"
-	@cd cmd/service && go run .
+devbox-destroy:
+	@$(MAKE) -C $(DEVBOX_DIR) destroy
 
+devbox-status:
+	@$(MAKE) -C $(DEVBOX_DIR) status

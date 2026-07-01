@@ -10,7 +10,7 @@ keeping shared concerns at the repository root:
 <repo-root>/
 ├── backend/    # RonyKIT Go workspace (go.work, cmd/service, feature/, pkg/)
 ├── frontend/   # this directory — your web/mobile app
-├── devops/     # docker-compose and deployment helpers (shared)
+├── devops/     # devbox: Kubernetes platform services (shared)
 ├── docs/       # design docs (SRS/SDD) and guides (shared)
 ├── AGENTS.md   # agent guidance (shared)
 └── .ai/ .agents/ .cursor/   # AI assistant config (shared)
@@ -84,4 +84,4 @@ failures automatically — no manual "please fix this" round-trips.
   (`cd ../backend && make run`).
 - Generate a typed client from the backend stubs, or call the documented HTTP
   endpoints directly.
-- Shared infrastructure (Postgres, Redis, …) is defined in `../devops/docker-compose.yml`.
+- Shared infrastructure (Postgres, Redis, …) is installed via `../devops/devbox/` into your Kubernetes cluster (`make devbox-up` from `../backend` or `make -C ../devops/devbox up`).

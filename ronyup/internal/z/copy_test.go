@@ -176,3 +176,58 @@ func TestCopyDir_RendersOnlyTemplateSuffixFiles(t *testing.T) {
 		t.Fatalf("go.mod template rendering mismatch, got: %q", string(goModData))
 	}
 }
+
+func TestCopyDir_SkipExistingLeavesDestination(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	sourceRoot := filepath.Join(root, "source")
+	destRoot := filepath.Join(root, "dest")
+
+	err := os.MkdirAll(filepath.Join(sourceRoot, "workspace"), 0o755)
+	if err != nil {
+		t.Fatalf("MkdirAll() unexpected error: %v", err)
+	}
+
+	err = os.WriteFile(
+		filepath.Join(sourceRoot, "workspace", "config.yaml"),
+		[]byte("new\n"),
+		0o644,
+	)
+	if err != nil {
+		t.Fatalf("WriteFile(config.yaml) unexpected error: %v", err)
+	}
+
+	err = os.MkdirAll(destRoot, 0o755)
+	if err != nil {
+		t.Fatalf("MkdirAll(dest) unexpected error: %v", err)
+	}
+
+	err = os.WriteFile(
+		filepath.Join(destRoot, "config.yaml"),
+		[]byte("old\n"),
+		0o644,
+	)
+	if err != nil {
+		t.Fatalf("WriteFile(dest) unexpected error: %v", err)
+	}
+
+	err = CopyDir(CopyDirParams{
+		FS:             os.DirFS(sourceRoot),
+		SrcPathPrefix:  "workspace",
+		DestPathPrefix: destRoot,
+		SkipExisting:   true,
+	})
+	if err != nil {
+		t.Fatalf("CopyDir() unexpected error: %v", err)
+	}
+
+	got, err := os.ReadFile(filepath.Join(destRoot, "config.yaml"))
+	if err != nil {
+		t.Fatalf("ReadFile() unexpected error: %v", err)
+	}
+
+	if string(got) != "old\n" {
+		t.Fatalf("SkipExisting should preserve destination, got %q", string(got))
+	}
+}
