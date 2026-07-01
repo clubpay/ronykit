@@ -26,8 +26,11 @@ usermod -aG microk8s root
 echo "==> Waiting for microk8s"
 microk8s status --wait-ready
 
-echo "==> Enabling microk8s addons"
-microk8s enable dns storage ingress helm3
+echo "==> Enabling microk8s addons (one at a time)"
+microk8s enable dns
+microk8s enable hostpath-storage
+microk8s enable ingress
+microk8s enable helm3
 
 echo "==> Creating devbox namespace"
 microk8s kubectl create namespace devbox --dry-run=client -o yaml | microk8s kubectl apply -f -

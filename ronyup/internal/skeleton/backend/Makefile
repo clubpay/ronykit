@@ -1,4 +1,4 @@
-.PHONY: run test tidy vet lint verify verify-integration devbox-bootstrap devbox-up devbox-down devbox-destroy devbox-status
+.PHONY: run test tidy vet lint verify verify-integration devbox-bootstrap devbox-up devbox-down devbox-suspend devbox-pause devbox-resume devbox-destroy devbox-status
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
 DEVBOX_DIR := $(if $(wildcard ./devops/devbox/Makefile),./devops/devbox,../devops/devbox)
@@ -49,6 +49,14 @@ devbox-up:
 
 devbox-down:
 	@$(MAKE) -C $(DEVBOX_DIR) down
+
+devbox-suspend:
+	@$(MAKE) -C $(DEVBOX_DIR) suspend
+
+devbox-pause: devbox-suspend
+
+devbox-resume:
+	@$(MAKE) -C $(DEVBOX_DIR) resume
 
 devbox-destroy:
 	@$(MAKE) -C $(DEVBOX_DIR) destroy

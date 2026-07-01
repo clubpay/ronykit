@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+# shellcheck source=lib.sh
+source "$ROOT/scripts/lib.sh"
+
+if [[ "$(cluster_mode "$ROOT")" != "vagrant" ]]; then
+  echo "resume applies only when cluster.mode is vagrant" >&2
+  exit 1
+fi
+
+vagrant resume
+bash "$ROOT/scripts/kubeconfig.sh"
+bash "$ROOT/scripts/wait-k8s.sh"
+echo "Devbox VM resumed"

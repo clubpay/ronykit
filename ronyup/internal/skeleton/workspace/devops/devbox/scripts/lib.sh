@@ -42,3 +42,25 @@ export_kubeconfig_env() {
   KUBECONFIG="$(resolve_kubeconfig "$root")"
   export KUBECONFIG
 }
+
+vagrant_running() {
+  vagrant status --machine-readable 2>/dev/null | grep -qE ',state,running$'
+}
+
+# wait_for_vagrant blocks until the VM reports running or times out.
+wait_for_vagrant() {
+  local root="${1:?}"
+  local attempts="${2:-60}"
+  local i
+
+  cd "$root"
+
+  for ((i = 1; i <= attempts; i++)); do
+    if vagrant_running; then
+      return 0
+    fi
+    sleep 2
+  done
+
+  return 1
+}

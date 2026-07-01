@@ -11,6 +11,10 @@ mode="$(cluster_mode "$ROOT")"
 
 if [[ "$mode" == "vagrant" ]]; then
   vagrant up
+  if ! wait_for_vagrant "$ROOT"; then
+    echo "devbox VM did not reach running state after vagrant up" >&2
+    exit 1
+  fi
   bash "$ROOT/scripts/kubeconfig.sh"
 else
   export_kubeconfig_env "$ROOT"

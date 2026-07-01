@@ -66,7 +66,9 @@ export VAGRANT_DEFAULT_PROVIDER=utm
 |--------|-------------------|----------------|
 | `bootstrap` | verify kubectl, helm, helmfile, yq | also verify vagrant |
 | `up` | install Helmfile releases | start VM + install releases |
-| `down` | remove devbox Helm releases | halt VM |
+| `down` | remove devbox Helm releases | halt VM (graceful shutdown) |
+| `suspend` / `pause` | n/a | save VM state (`vagrant suspend`) |
+| `resume` | n/a | wake suspended VM |
 | `destroy` | remove devbox Helm releases | destroy VM |
 | `kubeconfig` | n/a | refresh `shared/kubeconfig` |
 | `services` | re-apply Helmfile | re-apply Helmfile |
@@ -129,6 +131,6 @@ devbox/
 ## Troubleshooting
 
 - **Box not found (`ubuntu/noble64` 404)**: Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml` (the scaffold default) and run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
-- **kubectl can't connect**: check `cluster.kubeconfig` / `$KUBECONFIG` and `kubectl cluster-info`.
+- **kubectl can't connect after `make up`**: the VM is usually running — re-run `make kubeconfig`. If it still fails, `vagrant status` should show `running`.
 - **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down destroy status kubeconfig services ssh help
+.PHONY: bootstrap up down destroy suspend pause resume status kubeconfig services ssh help
 
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 export KUBECONFIG ?= $(shell bash "$(ROOT)/scripts/resolve-kubeconfig.sh")
@@ -8,6 +8,8 @@ help:
 	@echo "  make bootstrap  - verify host tools (kubectl, helm, helmfile, yq; + vagrant when cluster.mode=vagrant)"
 	@echo "  make up         - connect to cluster and install enabled services"
 	@echo "  make down       - halt VM (vagrant) or remove devbox services (existing cluster)"
+	@echo "  make suspend    - suspend VM, saving its state (vagrant only; alias: pause)"
+	@echo "  make resume     - resume a suspended VM (vagrant only)"
 	@echo "  make destroy    - destroy VM (vagrant) or remove devbox services (existing cluster)"
 	@echo "  make kubeconfig - refresh shared/kubeconfig (vagrant mode only)"
 	@echo "  make services   - apply Helmfile releases from config.yaml"
@@ -23,6 +25,14 @@ up: bootstrap
 
 down:
 	@bash scripts/down.sh
+
+suspend:
+	@bash scripts/suspend.sh
+
+pause: suspend
+
+resume:
+	@bash scripts/resume.sh
 
 destroy:
 	@bash scripts/destroy.sh

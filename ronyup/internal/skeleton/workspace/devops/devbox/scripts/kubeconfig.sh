@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
 
 # shellcheck source=lib.sh
 source "$ROOT/scripts/lib.sh"
@@ -13,17 +14,44 @@ fi
 
 mkdir -p "$ROOT/shared"
 
-if vagrant status --machine-readable 2>/dev/null | grep -q ',state,running,'; then
+fetch_kubeconfig_from_vm() {
   vagrant ssh -c "microk8s config" > "$ROOT/shared/kubeconfig.raw"
-else
-  if [[ ! -f "$ROOT/shared/kubeconfig.raw" ]]; then
-    echo "devbox VM is not running and no cached kubeconfig exists" >&2
+}
+
+# Provision writes kubeconfig into the synced folder; give the host a moment to see it.
+wait_for_kubeconfig_file() {
+  local attempts="${1:-60}"
+  local i
+
+  for ((i = 1; i <= attempts; i++)); do
+    if [[ -f "$ROOT/shared/kubeconfig.raw" || -f "$ROOT/shared/kubeconfig" ]]; then
+      return 0
+    fi
+    sleep 2
+  done
+
+  return 1
+}
+
+if ! wait_for_kubeconfig_file 5; then
+  if ! wait_for_vagrant "$ROOT"; then
+    echo "devbox VM did not reach running state" >&2
     exit 1
+  fi
+
+  if ! fetch_kubeconfig_from_vm; then
+    if ! wait_for_kubeconfig_file 30; then
+      echo "could not obtain kubeconfig from the VM or shared folder" >&2
+      exit 1
+    fi
   fi
 fi
 
 if [[ -f "$ROOT/shared/kubeconfig.raw" ]]; then
   cp "$ROOT/shared/kubeconfig.raw" "$ROOT/shared/kubeconfig"
+elif [[ ! -f "$ROOT/shared/kubeconfig" ]]; then
+  echo "kubeconfig file missing after sync" >&2
+  exit 1
 fi
 
 if grep -q 'server: https://' "$ROOT/shared/kubeconfig"; then
