@@ -1,6 +1,6 @@
 # Devbox
 
-Local development platform: install optional infrastructure services (Postgres, Redis, Temporal, …) into a **Kubernetes** cluster via **Helmfile**.
+Local development platform: install optional infrastructure services (Postgres, Redis, Temporal, …) into a **Kubernetes** cluster via **Helm**.
 
 Use your existing cluster (kind, minikube, cloud dev cluster, …) or optionally provision a local VM with Vagrant + microk8s.
 
@@ -8,7 +8,7 @@ Use your existing cluster (kind, minikube, cloud dev cluster, …) or optionally
 
 Always required on the host:
 
-- `kubectl`, `helm`, `helmfile`, `yq`
+- `kubectl`, `helm`, `yq`
 
 When `cluster.mode: vagrant` in `config.yaml`, you also need [Vagrant](https://developer.hashicorp.com/vagrant/install) and a provider (VirtualBox, UTM on Apple Silicon, libvirt, …).
 
@@ -64,14 +64,14 @@ export VAGRANT_DEFAULT_PROVIDER=utm
 
 | Target | `existing` cluster | `vagrant` mode |
 |--------|-------------------|----------------|
-| `bootstrap` | verify kubectl, helm, helmfile, yq | also verify vagrant |
-| `up` | install Helmfile releases | start VM + install releases |
+| `bootstrap` | verify kubectl, helm, yq; add chart repos | also verify vagrant |
+| `up` | install Helm releases | start VM + install releases |
 | `down` | remove devbox Helm releases | halt VM (graceful shutdown) |
 | `suspend` / `pause` | n/a | save VM state (`vagrant suspend`) |
 | `resume` | n/a | wake suspended VM |
 | `destroy` | remove devbox Helm releases | destroy VM |
 | `kubeconfig` | n/a | refresh `shared/kubeconfig` |
-| `services` | sync Helmfile releases from `config.yaml` toggles | same |
+| `services` | sync Helm releases from `config.yaml` toggles | same |
 | `status` | `kubectl get nodes` | vagrant + kubectl |
 
 ## Configuration
@@ -124,7 +124,7 @@ devbox/
 ├── Vagrantfile          # only used when cluster.mode=vagrant
 ├── Makefile
 ├── scripts/
-├── services/            # Helmfile + values
+├── services/            # Helm values + README (releases driven by scripts/)
 └── shared/              # kubeconfig (vagrant mode, gitignored)
 ```
 

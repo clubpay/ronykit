@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Refresh shared/kubeconfig so the host can reach microk8s inside the Vagrant VM.
+# Invoked by: make kubeconfig (also called from up.sh and resume.sh in vagrant mode).
+# Rewrites the API server URL to https://127.0.0.1:16443 (forwarded port on the host).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,6 +17,7 @@ fi
 
 mkdir -p "$ROOT/shared"
 
+# Fallback when the synced folder is empty: SSH into the VM and dump microk8s config.
 fetch_kubeconfig_from_vm() {
   vagrant ssh -c "microk8s config" > "$ROOT/shared/kubeconfig.raw"
 }
@@ -54,6 +58,7 @@ elif [[ ! -f "$ROOT/shared/kubeconfig" ]]; then
   exit 1
 fi
 
+# Normalize the API endpoint for host-side kubectl (Vagrant forwards 16443 → VM).
 if grep -q 'server: https://' "$ROOT/shared/kubeconfig"; then
   sed -i.bak 's|server: https://[^ ]*|server: https://127.0.0.1:16443|' "$ROOT/shared/kubeconfig"
   rm -f "$ROOT/shared/kubeconfig.bak"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Suspend the devbox Vagrant VM, preserving disk and memory state.
+# Invoked by: make suspend (alias: make pause). No-op for cluster.mode=existing.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

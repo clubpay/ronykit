@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Tear down devbox without deleting the cluster.
+# Invoked by: make down
+#   vagrant mode  → halt VM (services stay on disk inside the VM)
+#   existing mode → uninstall Helm releases and optional tigerbeetle manifest
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -20,6 +24,7 @@ cd "$ROOT"
 echo "Removing devbox Helm releases from the current cluster (cluster.mode=existing)"
 bash "$ROOT/scripts/helmfile-destroy.sh"
 
+# Tigerbeetle is applied outside Helm; remove it if it was enabled.
 if yq -e '.services.tigerbeetle == true' "$ROOT/config.yaml" >/dev/null 2>&1; then
   kubectl delete -f "$ROOT/services/manifests/tigerbeetle.yaml" --ignore-not-found
 fi

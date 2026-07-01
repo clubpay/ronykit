@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Block until kubectl can reach the cluster API (or timeout after ~5 minutes).
+# Invoked by: up.sh, install-services.sh, resume.sh.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,6 +16,7 @@ if [[ ! -f "$KUBECONFIG" ]]; then
   exit 1
 fi
 
+# Poll kubectl get nodes — works once the control plane is up and credentials are valid.
 for i in $(seq 1 60); do
   if kubectl get nodes >/dev/null 2>&1; then
     echo "Kubernetes API is ready"

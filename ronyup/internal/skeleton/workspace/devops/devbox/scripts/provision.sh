@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# First-boot provisioning for the devbox Vagrant VM (microk8s + devbox namespace).
+# Invoked by: Vagrantfile provisioner (not called directly from the Makefile).
+# Writes admin kubeconfig into /vagrant/shared for the host via synced folder.
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
@@ -39,7 +42,7 @@ echo "==> Exporting kubeconfig to shared folder"
 mkdir -p /vagrant/shared
 microk8s config > /vagrant/shared/kubeconfig.raw
 
-# Patch the API server address so the host can reach microk8s via the forwarded port.
+# Host kubectl uses the forwarded port; keep the server URL consistent with kubeconfig.sh.
 sed 's|https://127.0.0.1:16443|https://127.0.0.1:16443|g' /vagrant/shared/kubeconfig.raw > /vagrant/shared/kubeconfig
 chmod 0644 /vagrant/shared/kubeconfig
 

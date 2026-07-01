@@ -16,7 +16,7 @@ vm:
   cpus: 4
   ip: 192.168.56.10
 
-# Opt-in platform services (installed via Helmfile into the devbox namespace).
+# Opt-in platform services (installed via Helm into the devbox namespace).
 services:
   postgres: true
   redis: true

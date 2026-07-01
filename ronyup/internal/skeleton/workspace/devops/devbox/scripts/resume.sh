@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Resume a suspended devbox VM and wait for Kubernetes to become reachable again.
+# Invoked by: make resume. No-op for cluster.mode=existing.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,6 +15,7 @@ if [[ "$(cluster_mode "$ROOT")" != "vagrant" ]]; then
 fi
 
 vagrant resume
+# Kubeconfig and API endpoint may need refresh after suspend/resume.
 bash "$ROOT/scripts/kubeconfig.sh"
 bash "$ROOT/scripts/wait-k8s.sh"
 echo "Devbox VM resumed"

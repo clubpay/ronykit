@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Fully remove devbox infrastructure.
+# Invoked by: make destroy
+#   vagrant mode  → destroy VM and all its data (vagrant destroy -f)
+#   existing mode → same as make down (uninstall releases from the shared cluster)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
