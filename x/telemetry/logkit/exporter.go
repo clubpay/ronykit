@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/clubpay/ronykit/x/telemetry/logkit/exporter/terminal"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -22,6 +23,7 @@ const (
 	expOTLPGrpc  exporter = "otlp-grpc"
 	expSTD       exporter = "std"
 	expSTDPretty exporter = "std-pretty"
+	expTerminal  exporter = "terminal"
 )
 
 type Exporter struct {
@@ -48,6 +50,8 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 		b, err = otlpHTTP00Exporter(t.endpoint)
 	case expOTLPGrpc:
 		b, err = otlpGrpcExporter(t.endpoint)
+	case expTerminal:
+		b = terminal.New()
 	case expSTDPretty:
 		b, err = stdoutlog.New(stdoutlog.WithPrettyPrint())
 	case expSTD:

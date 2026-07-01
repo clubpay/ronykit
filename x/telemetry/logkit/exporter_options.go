@@ -30,6 +30,16 @@ func WithGrpcOTLP(endPoint string) ExporterOption {
 func WithTerminal(pretty bool) ExporterOption {
 	return func(t *Exporter) {
 		if pretty {
+			t.exp = expTerminal
+		} else {
+			t.exp = expSTD
+		}
+	}
+}
+
+func WithStdout(pretty bool) ExporterOption {
+	return func(t *Exporter) {
+		if pretty {
 			t.exp = expSTDPretty
 		} else {
 			t.exp = expSTD
