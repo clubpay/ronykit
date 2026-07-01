@@ -5,7 +5,7 @@ go 1.25.8
 require (
 	github.com/clubpay/ronykit/intent v0.0.3
 	github.com/clubpay/ronykit/std/memories/sqlstore v0.0.3
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/jackc/pgx/v5 v5.10.0
 )
 
 require (

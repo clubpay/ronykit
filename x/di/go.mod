@@ -68,6 +68,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	github.com/redis/go-redis/v9 v9.21.0 // indirect
+	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
