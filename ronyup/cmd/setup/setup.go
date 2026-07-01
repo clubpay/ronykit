@@ -267,67 +267,15 @@ func goModulePrefix() string {
 	return base
 }
 
-// workspaceDestMapper routes skeleton entries by workspace kind:
-//   - fullstack: AI config, devops/ and docs/ stay at the repository root while
-//     the Go workspace is placed under backend/.
-//   - frontend: only shared AI config and docs/ are copied to the root; the
-//     entire Go workspace (cmd/, pkg/, feature/, Makefile, .golangci.yml,
-//     verify.sh) and the backend stop hook are skipped.
-//   - backend: returns nil (default behaviour copies everything to the root).
-func workspaceDestMapper(repoRoot string) func(string) (string, bool) {
-	switch opt.Kind {
-	case KindFullstack:
-		return fullstackDestMapper(repoRoot)
-	case KindFrontend:
-		return frontendDestMapper(repoRoot)
-	default:
+// workspaceCommonDestMapper optionally filters shared skeleton entries. For
+// frontend-only workspaces the backend verify hook script is omitted because
+// there is no Go workspace to verify.
+func workspaceCommonDestMapper(repoRoot string) func(string) (string, bool) {
+	if opt.Kind != KindFrontend {
 		return nil
 	}
-}
-
-func fullstackDestMapper(repoRoot string) func(string) (string, bool) {
-	rootLevel := map[string]bool{
-		".cursor":   true,
-		".agents":   true,
-		".ai":       true,
-		"devops":    true,
-		"docs":      true,
-		"AGENTS.md": true,
-	}
 
 	return func(relPath string) (string, bool) {
-		if relPath == "" {
-			return repoRoot, false
-		}
-
-		if rootLevel[topSegment(relPath)] {
-			return filepath.Join(repoRoot, relPath), false
-		}
-
-		return filepath.Join(repoRoot, backendDir, relPath), false
-	}
-}
-
-func frontendDestMapper(repoRoot string) func(string) (string, bool) {
-	rootLevel := map[string]bool{
-		".cursor":   true,
-		".agents":   true,
-		".ai":       true,
-		"docs":      true,
-		"AGENTS.md": true,
-	}
-
-	return func(relPath string) (string, bool) {
-		if relPath == "" {
-			return repoRoot, false
-		}
-
-		// Skip the entire Go workspace; keep only shared AI config and docs/.
-		if !rootLevel[topSegment(relPath)] {
-			return "", true
-		}
-
-		// The backend verify stop hook is irrelevant without a Go workspace.
 		if strings.HasSuffix(filepath.ToSlash(relPath), "hooks/backend-verify.sh") {
 			return "", true
 		}
@@ -336,15 +284,14 @@ func frontendDestMapper(repoRoot string) func(string) (string, bool) {
 	}
 }
 
-// topSegment returns the first path segment, with any "tmpl" template suffix
-// stripped so e.g. "AGENTS.mdtmpl" matches "AGENTS.md".
-func topSegment(relPath string) string {
-	top := relPath
-	if before, _, ok := strings.Cut(relPath, "/"); ok {
-		top = before
+// backendDestPrefix is where skeleton/backend/ is copied: the repository root
+// for backend-only workspaces, or backend/ for fullstack.
+func backendDestPrefix(repoRoot string) string {
+	if opt.Kind == KindFullstack {
+		return filepath.Join(repoRoot, backendDir)
 	}
 
-	return strings.TrimSuffix(top, "tmpl")
+	return repoRoot
 }
 
 func createWorkspace(_ context.Context) error {
@@ -361,7 +308,6 @@ func createWorkspace(_ context.Context) error {
 
 func copyWorkspaceTemplate(cmd *cobra.Command) {
 	repoRoot := filepath.Join(".", opt.RepositoryRootDir)
-	pathPrefix := filepath.Join("skeleton", "workspace")
 
 	templateInput := TemplateInput{
 		ApplicationName: opt.ApplicationName,
@@ -373,25 +319,33 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		Skills:          selectedSkillInfos(opt.resolvedSkills),
 	}
 
+	callback := func(filePath string, dir bool) {
+		if dir {
+			cmd.Println("DIR: ", filePath, "created")
+		} else {
+			cmd.Println("FILE: ", filePath, "created")
+		}
+	}
+
+	// Shared workspace files (AI config, devops/, docs/, hooks) always land at
+	// the repository root.
 	rkit.Assert(z.CopyDir(
 		z.CopyDirParams{
 			FS:             internal.Skeleton,
-			SrcPathPrefix:  pathPrefix,
+			SrcPathPrefix:  filepath.Join("skeleton", "workspace"),
 			DestPathPrefix: repoRoot,
 			TemplateInput:  templateInput,
-			DestMapper:     workspaceDestMapper(repoRoot),
-			Callback: func(filePath string, dir bool) {
-				if dir {
-					cmd.Println("DIR: ", filePath, "created")
-				} else {
-					cmd.Println("FILE: ", filePath, "created")
-				}
-			},
+			DestMapper:     workspaceCommonDestMapper(repoRoot),
+			Callback:       callback,
 		},
 	))
 
+	if hasBackend(opt.Kind) {
+		copyBackendTemplate(repoRoot, templateInput, callback)
+	}
+
 	if hasFrontend(opt.Kind) {
-		copyFrontendTemplate(cmd, repoRoot, templateInput)
+		copyFrontendTemplate(repoRoot, templateInput, callback)
 	}
 
 	if opt.Kind == KindFullstack {
@@ -451,22 +405,38 @@ func installSkills(cmd *cobra.Command, repoRoot string) {
 	cmd.Printf("Installed %d agent skill(s): %s\n", len(opt.resolvedSkills), strings.Join(opt.resolvedSkills, ", "))
 }
 
-// copyFrontendTemplate seeds the frontend/ application placeholder for
-// fullstack scaffolds.
-func copyFrontendTemplate(cmd *cobra.Command, repoRoot string, templateInput TemplateInput) {
+// copyBackendTemplate seeds the Go workspace. Backend-only scaffolds copy
+// skeleton/backend/ to the repository root; fullstack scaffolds copy into
+// backend/.
+func copyBackendTemplate(
+	repoRoot string,
+	templateInput TemplateInput,
+	callback func(filePath string, dir bool),
+) {
+	rkit.Assert(z.CopyDir(
+		z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.Join("skeleton", "backend"),
+			DestPathPrefix: backendDestPrefix(repoRoot),
+			TemplateInput:  templateInput,
+			Callback:       callback,
+		},
+	))
+}
+
+// copyFrontendTemplate seeds the frontend/ application placeholder.
+func copyFrontendTemplate(
+	repoRoot string,
+	templateInput TemplateInput,
+	callback func(filePath string, dir bool),
+) {
 	rkit.Assert(z.CopyDir(
 		z.CopyDirParams{
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  filepath.Join("skeleton", "frontend"),
 			DestPathPrefix: filepath.Join(repoRoot, frontendDir),
 			TemplateInput:  templateInput,
-			Callback: func(filePath string, dir bool) {
-				if dir {
-					cmd.Println("DIR: ", filePath, "created")
-				} else {
-					cmd.Println("FILE: ", filePath, "created")
-				}
-			},
+			Callback:       callback,
 		},
 	))
 }
@@ -475,7 +445,7 @@ func copyFrontendTemplate(cmd *cobra.Command, repoRoot string, templateInput Tem
 // it points at the repository-root devops/ directory, which stays at the root in
 // fullstack scaffolds.
 func fixupBackendDevopsPath(cmd *cobra.Command, repoRoot string) {
-	makefilePath := filepath.Join(repoRoot, backendDir, "Makefile")
+	makefilePath := filepath.Join(backendDestPrefix(repoRoot), "Makefile")
 
 	content, err := os.ReadFile(makefilePath)
 	if err != nil {

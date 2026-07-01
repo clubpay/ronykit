@@ -152,7 +152,7 @@ See `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
 - **Bundled skills** live in `ronyup/internal/skeleton/skills/<id>/SKILL.md` and must be registered in `skillCatalog` (`ronyup/cmd/setup/skills.go`); authoring heuristic (single file vs. `rules/` tree) is in `internal/skeleton/skills/README.md`. `copySkills` ships the whole directory.
 - **Enforcement is gates and hooks, not prose** (small models ignore advisory text):
   - `ronyup/cmd/mcp/tools/scaffold/gate.go` — the SRS/SDD design gate that `scaffold_feature` enforces (portable across MCP clients).
-  - `ronyup/internal/skeleton/workspace/verify.sh` (backend) and `internal/skeleton/frontend/verify.sh` — the `make verify` quality gates (test coverage, design-doc, lint/build/stories).
+  - `ronyup/internal/skeleton/backend/verify.sh` and `internal/skeleton/frontend/verify.sh` — the `make verify` quality gates (test coverage, design-doc, lint/build/stories).
   - `ronyup/internal/skeleton/workspace/.cursor/hooks/*.sh` + `hooks.jsontmpl` — Cursor `stop` hooks that auto-loop the agent until a gate passes.
 - **Keep the layers consistent.** A behavior change usually touches several surfaces at once: `server/instructions.md`, the relevant `resources/`/`prompts/` doc, `AGENTS.mdtmpl`, the `ronykit-framework` skill (both `.agents/skills/.../SKILL.md` and the skeleton copy under `ronyup/internal/skeleton/workspace/.agents/skills/`), and `references/mcp-map.md`.
 - **Verify with** `cd ronyup && go test ./...` (the scaffold integration tests assert the generated gate/hook files exist).
