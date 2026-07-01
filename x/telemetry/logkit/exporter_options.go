@@ -27,12 +27,12 @@ func WithGrpcOTLP(endPoint string) ExporterOption {
 	}
 }
 
-func WithTerminal(pretty bool) ExporterOption {
+func WithTerminal(color bool) ExporterOption {
 	return func(t *Exporter) {
-		if pretty {
+		if color {
 			t.exp = expTerminal
 		} else {
-			t.exp = expSTD
+			t.exp = expTerminalColor
 		}
 	}
 }

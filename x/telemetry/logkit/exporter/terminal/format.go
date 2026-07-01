@@ -87,9 +87,9 @@ func formatHeader(record sdklog.Record, meta recordMeta, colors palette) string 
 	parts := []string{
 		colors.time(timeVal),
 		colors.level(level),
-		colors.traceID(traceID),
 		colors.location(filePath),
 		colors.location(line),
+		colors.traceID(traceID),
 	}
 
 	return strings.Join(parts, " - ")

@@ -12,6 +12,9 @@ import (
 )
 
 func main() {
+	l := logkit.New(logkit.WithLevel(logkit.DebugLevel))
+	_, _ = logkit.NewExporter("nested", logkit.WithTerminal(true))
+
 	defer kit.NewServer(
 		kit.WithGateway(
 			mcp.MustNew(
@@ -21,7 +24,7 @@ func main() {
 				mcp.WithSSEOptions(mcp.SSEOptions{DisableLocalhostProtection: true}),
 				mcp.WithAddr(":9090"),
 				mcp.WithServerOptions(mcp.ServerOptions{
-					Logger: logkit.New(logkit.WithLevel(logkit.DebugLevel)).SLog(),
+					Logger: l.SLog(),
 				}),
 			),
 		),
@@ -45,6 +48,8 @@ func main() {
 		Start(context.Background()).
 		PrintRoutesCompact(os.Stdout).
 		Shutdown(context.Background(), os.Interrupt)
+
+	l.Info("server started", logkit.String("x", "value"))
 }
 
 type SayHiInput struct {

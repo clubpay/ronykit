@@ -18,12 +18,13 @@ import (
 type exporter string
 
 const (
-	expOTLP      exporter = "otlp"
-	expOTLPHttp  exporter = "otlp-http"
-	expOTLPGrpc  exporter = "otlp-grpc"
-	expSTD       exporter = "std"
-	expSTDPretty exporter = "std-pretty"
-	expTerminal  exporter = "terminal"
+	expOTLP          exporter = "otlp"
+	expOTLPHttp      exporter = "otlp-http"
+	expOTLPGrpc      exporter = "otlp-grpc"
+	expSTD           exporter = "std"
+	expSTDPretty     exporter = "std-pretty"
+	expTerminal      exporter = "terminal"
+	expTerminalColor exporter = "terminal-color"
 )
 
 type Exporter struct {
@@ -52,6 +53,8 @@ func NewExporter(serviceName string, opts ...ExporterOption) (*Exporter, error) 
 		b, err = otlpGrpcExporter(t.endpoint)
 	case expTerminal:
 		b = terminal.New()
+	case expTerminalColor:
+		b = terminal.New(terminal.WithColor(true))
 	case expSTDPretty:
 		b, err = stdoutlog.New(stdoutlog.WithPrettyPrint())
 	case expSTD:
