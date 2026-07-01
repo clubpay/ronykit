@@ -87,12 +87,28 @@ Edit `config.yaml`:
 |---------|---------|-------|
 | `postgres` | on | Bitnami PostgreSQL (`dbUser` / `dbPass` / `user-db`) |
 | `redis` | on | Bitnami Redis (no auth in dev) |
-| `temporal` | off | Temporal server + bundled Postgres |
+| `temporal` | off | Temporal server + UI; requires `postgres` (uses same DB credentials) |
 | `redpanda` | off | Single-node Redpanda |
 | `observability` | off | OTel Collector → Jaeger + Grafana |
 | `tigerbeetle` | off | Raw manifest (StatefulSet) |
 
 After changing toggles, run `make services` (or `make up` from a cold start).
+
+### Service credentials (dev defaults)
+
+Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change them there for your environment.
+
+| Service | Auth | Default | Values file |
+|---------|------|---------|-------------|
+| PostgreSQL | user / password / database | `dbUser` / `dbPass` / `user-db` | `services/values/postgres.yaml` |
+| Redis | none (auth disabled) | — | `services/values/redis.yaml` |
+| Temporal | uses PostgreSQL above | same as PostgreSQL | `services/values/temporal.yaml` |
+| Redpanda | none (TLS disabled) | — | `services/values/redpanda.yaml` |
+| Grafana | admin user / password | `admin` / `admin` | `services/values/grafana.yaml` |
+| Jaeger | none (in-memory storage) | — | `services/values/jaeger.yaml` |
+| OTel Collector | none | — | `services/values/otel-collector.yaml` |
+
+`make services` only registers missing Helm chart repos; `make bootstrap` refreshes repo indexes.
 
 ## Kubernetes access
 
@@ -111,6 +127,7 @@ Port-forward as needed:
 ```sh
 kubectl -n devbox port-forward svc/postgres-postgresql 5432:5432
 kubectl -n devbox port-forward svc/redis-master 6379:6379
+kubectl -n devbox port-forward svc/temporal-web 8080:8080
 kubectl -n devbox port-forward svc/grafana 3000:80
 kubectl -n devbox port-forward svc/jaeger-query 16686:16686
 kubectl -n devbox port-forward svc/otel-collector-opentelemetry-collector 4317:4317
@@ -133,4 +150,7 @@ devbox/
 - **Box not found (`ubuntu/noble64` 404)**: Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml` (the scaffold default) and run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
 - **kubectl can't connect after `make up`**: the VM is usually running — re-run `make kubeconfig`. If it still fails, `vagrant status` should show `running`.
 - **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
+- **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/helmfile-apply.sh` via `make services` (no Helmfile plugin).
+- **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
+- **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

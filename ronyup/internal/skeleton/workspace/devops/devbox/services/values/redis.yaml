@@ -1,5 +1,6 @@
 architecture: standalone
 
+# Dev defaults — auth disabled; see devbox README.
 auth:
   enabled: false
 

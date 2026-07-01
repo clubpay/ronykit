@@ -1,3 +1,4 @@
+# Dev defaults — change adminUser/adminPassword for your environment.
 adminUser: admin
 adminPassword: admin
 

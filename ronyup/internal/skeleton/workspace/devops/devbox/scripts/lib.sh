@@ -70,15 +70,27 @@ wait_for_vagrant() {
   return 1
 }
 
-# helm_repo_ensure adds missing Helm repos and runs helm repo update.
+# helm_repo_exists returns 0 when the named Helm repo is already registered.
+helm_repo_exists() {
+  local name="${1:?}"
+  helm repo list -o json 2>/dev/null \
+    | yq -e ".[] | select(.name == \"$name\")" >/dev/null 2>&1
+}
+
+# helm_repo_ensure registers missing chart repos.
+# Pass "refresh" to run `helm repo update` (bootstrap); otherwise only adds missing repos.
 helm_repo_ensure() {
-  local name url
+  local refresh="${1:-}"
+  local name url added=0
 
   while IFS='|' read -r name url; do
     [[ -z "$name" ]] && continue
-    if ! helm repo list 2>/dev/null | awk -v n="$name" '$1 == n { found = 1 } END { exit !found }'; then
-      helm repo add "$name" "$url"
+    if helm_repo_exists "$name"; then
+      continue
     fi
+    echo "==> adding helm repo: $name"
+    helm repo add "$name" "$url"
+    added=1
   done <<'EOF'
 bitnami|https://charts.bitnami.com/bitnami
 temporalio|https://go.temporal.io/helm-charts
@@ -88,5 +100,7 @@ jaegertracing|https://jaegertracing.github.io/helm-charts
 grafana|https://grafana.github.io/helm-charts
 EOF
 
-  helm repo update
+  if [[ "$refresh" == "refresh" || "$added" -eq 1 ]]; then
+    helm repo update
+  fi
 }

@@ -1,3 +1,4 @@
+# Dev defaults — change auth.* for your environment (see devbox README).
 auth:
   username: dbUser
   password: dbPass

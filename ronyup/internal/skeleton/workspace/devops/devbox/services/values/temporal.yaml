@@ -1,31 +1,44 @@
+# Temporal server + UI. Persistence uses the devbox PostgreSQL release (see values/postgres.yaml).
+# Requires services.postgres=true in config.yaml.
 server:
   replicaCount: 1
-
-cassandra:
-  enabled: false
-
-mysql:
-  enabled: false
-
-postgresql:
-  enabled: true
-
-prometheus:
-  enabled: false
-
-grafana:
-  enabled: false
-
-elasticsearch:
-  enabled: false
+  config:
+    persistence:
+      defaultStore: default
+      visibilityStore: visibility
+      numHistoryShards: 4
+      datastores:
+        default:
+          sql:
+            createDatabase: true
+            manageSchema: true
+            pluginName: postgres12
+            driverName: postgres12
+            databaseName: temporal
+            connectAddr: "postgres-postgresql.devbox.svc.cluster.local:5432"
+            connectProtocol: tcp
+            user: dbUser
+            password: dbPass
+            maxConns: 20
+            maxIdleConns: 20
+            maxConnLifetime: "1h"
+        visibility:
+          sql:
+            createDatabase: true
+            manageSchema: true
+            pluginName: postgres12
+            driverName: postgres12
+            databaseName: temporal_visibility
+            connectAddr: "postgres-postgresql.devbox.svc.cluster.local:5432"
+            connectProtocol: tcp
+            user: dbUser
+            password: dbPass
+            maxConns: 20
+            maxIdleConns: 20
+            maxConnLifetime: "1h"
 
 schema:
-  createDatabase:
-    enabled: true
-  setup:
-    enabled: true
-  update:
-    enabled: true
+  useHelmHooks: true
 
 web:
   enabled: true

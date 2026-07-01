@@ -55,9 +55,17 @@ sync_release() {
 
 helm_repo_ensure
 
+require_postgres_for_temporal() {
+  if service_enabled temporal && ! service_enabled postgres; then
+    echo "services.temporal requires services.postgres (Temporal uses the devbox PostgreSQL release)" >&2
+    exit 1
+  fi
+}
+
 # Per-service releases: install when enabled, uninstall when disabled.
 sync_release postgres postgres bitnami/postgresql values/postgres.yaml
 sync_release redis redis bitnami/redis values/redis.yaml
+require_postgres_for_temporal
 sync_release temporal temporal temporalio/temporal values/temporal.yaml
 sync_release redpanda redpanda redpanda/redpanda values/redpanda.yaml
 

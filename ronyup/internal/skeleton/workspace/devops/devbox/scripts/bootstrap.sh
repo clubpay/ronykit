@@ -61,7 +61,7 @@ if [[ "$missing" -ne 0 ]]; then
 fi
 
 # Register upstream chart repos so later helm installs do not fail.
-helm_repo_ensure
+helm_repo_ensure refresh
 
 # Vagrant mode: optional guest-additions plugin and gitignored shared/ for kubeconfig.
 if [[ "$mode" == "vagrant" ]]; then
