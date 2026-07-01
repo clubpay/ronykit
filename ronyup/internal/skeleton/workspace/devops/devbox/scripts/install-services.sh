@@ -18,6 +18,8 @@ kubectl create namespace devbox --dry-run=client -o yaml | kubectl apply -f -
 
 bash "$ROOT/scripts/helmfile-apply.sh"
 
+bash "$ROOT/scripts/apply-exposure.sh"
+
 # Tigerbeetle is deployed via raw manifest, not Helm.
 if yq -e '.services.tigerbeetle == true' "$ROOT/config.yaml" >/dev/null 2>&1; then
   kubectl apply -f "$ROOT/services/manifests/tigerbeetle.yaml"

@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down destroy suspend pause resume status kubeconfig services ssh help
+.PHONY: bootstrap up down destroy suspend pause resume status kubeconfig services dns ssh help
 
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 export KUBECONFIG ?= $(shell bash "$(ROOT)/scripts/resolve-kubeconfig.sh")
@@ -13,6 +13,7 @@ help:
 	@echo "  make destroy    - destroy VM (vagrant) or remove devbox services (existing cluster)"
 	@echo "  make kubeconfig - refresh shared/kubeconfig (vagrant mode only)"
 	@echo "  make services   - install Helm releases from config.yaml"
+	@echo "  make dns        - sync host DNS for *.app.localdev (vagrant mode)"
 	@echo "  make status     - cluster / vagrant status"
 	@echo ""
 	@echo "Edit config.yaml: cluster.mode (existing|vagrant) and service toggles."
@@ -42,6 +43,9 @@ kubeconfig:
 
 services:
 	@bash scripts/install-services.sh
+
+dns:
+	@bash scripts/sync-dns.sh
 
 status:
 	@if [ "$$(yq -r '.cluster.mode // "existing"' config.yaml)" = "vagrant" ]; then vagrant status; fi

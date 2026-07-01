@@ -8,6 +8,14 @@ cluster:
   # Optional kubeconfig path when mode is existing (empty = $KUBECONFIG or ~/.kube/config).
   kubeconfig: ""
 
+# Application identity (used for *.{{ kebabcase .ApplicationName }}.localdev hostnames in vagrant mode).
+app:
+  name: {{ kebabcase .ApplicationName }}
+
+# Local DNS suffix for vagrant mode (service host: db.<app.name>.<dns.tld>).
+dns:
+  tld: localdev
+
 # VM resources (only when cluster.mode is vagrant):
 vm:
   # Canonical no longer publishes ubuntu/noble64 on Vagrant Cloud; bento is well-maintained.

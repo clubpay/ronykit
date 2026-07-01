@@ -80,6 +80,8 @@ Edit `config.yaml`:
 
 - **`cluster.mode`**: `existing` (default) or `vagrant`
 - **`cluster.kubeconfig`**: optional path when using an existing cluster
+- **`app.name`**: application slug used in local hostnames (scaffold sets this from your project name)
+- **`dns.tld`**: local DNS suffix (default `localdev`)
 - **`vm`**: Vagrant VM sizing (only for `vagrant` mode)
 - **`services`**: boolean toggles per platform component
 
@@ -110,6 +112,34 @@ Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change t
 
 `make services` only registers missing Helm chart repos; `make bootstrap` refreshes repo indexes.
 
+## Service endpoints (vagrant mode)
+
+With `cluster.mode: vagrant`, devbox exposes enabled services on predictable hostnames:
+
+| Service | Host (default app name `demo`) | Port |
+|---------|--------------------------------|------|
+| PostgreSQL | `db.demo.localdev` | 5432 |
+| Redis | `redis.demo.localdev` | 6379 |
+| Temporal gRPC | `temporal.demo.localdev` | 7233 |
+| Temporal UI | `http://temporal-ui.demo.localdev/` | 80 |
+| Grafana | `http://grafana.demo.localdev/` | 80 |
+| Jaeger | `http://jaeger.demo.localdev/` | 80 |
+| OTel gRPC | `otel.demo.localdev` | 4317 |
+| Redpanda Kafka | `redpanda.demo.localdev` | 9092 |
+
+Replace `demo` with your `app.name` from `config.yaml`.
+
+**How it works**
+
+1. `make bootstrap` installs the [vagrant-dns](https://github.com/bergsland/vagrant-dns) plugin (vagrant mode).
+2. `scripts/provision.sh` runs **dnsmasq** on the VM so `*.<app>.localdev` resolves to the VM IP.
+3. `make up` runs `scripts/sync-dns.sh` to point your host at the VM DNS (macOS `/etc/resolver/<app>.localdev`, or `/etc/hosts` fallback).
+4. `scripts/apply-exposure.sh` configures microk8s **nginx ingress** (HTTP routes + TCP passthrough for database ports).
+
+After `make services`, the script prints the active endpoints. Re-run `make dns` if you add services or change `app.name`.
+
+**Existing cluster mode:** ingress/TCP exposure is applied when your cluster has nginx ingress with a TCP configmap (`ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`). Use `kubectl port-forward` otherwise (see below).
+
 ## Kubernetes access
 
 **Existing cluster:** uses your kubeconfig (`cluster.kubeconfig`, `$KUBECONFIG`, or `~/.kube/config`).
@@ -122,7 +152,9 @@ kubectl -n devbox get pods
 
 ### Reach services from the host
 
-Port-forward as needed:
+**Vagrant mode:** use the `*.<app.name>.localdev` hostnames from the table above (no port-forward needed).
+
+**Existing cluster** (or when ingress TCP is unavailable), port-forward as needed:
 
 ```sh
 kubectl -n devbox port-forward svc/postgres-postgresql 5432:5432
@@ -137,11 +169,11 @@ kubectl -n devbox port-forward svc/otel-collector-opentelemetry-collector 4317:4
 
 ```
 devbox/
-├── config.yaml          # cluster mode + service toggles
+├── config.yaml          # cluster mode + app/dns + service toggles
 ├── Vagrantfile          # only used when cluster.mode=vagrant
 ├── Makefile
 ├── scripts/
-├── services/            # Helm values + README (releases driven by scripts/)
+├── services/            # Helm values, exposure.yaml, manifests/
 └── shared/              # kubeconfig (vagrant mode, gitignored)
 ```
 
@@ -153,4 +185,6 @@ devbox/
 - **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/helmfile-apply.sh` via `make services` (no Helmfile plugin).
 - **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
 - **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`.
+- **Hostnames do not resolve**: run `make dns` (vagrant mode). On macOS this writes `/etc/resolver/<app>.localdev`; Linux falls back to `/etc/hosts`.
+- **TCP endpoint refused**: ensure microk8s ingress is enabled (`microk8s enable ingress`) and re-run `make services`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

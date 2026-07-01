@@ -66,6 +66,7 @@ helm_repo_ensure refresh
 # Vagrant mode: optional guest-additions plugin and gitignored shared/ for kubeconfig.
 if [[ "$mode" == "vagrant" ]]; then
   vagrant plugin install vagrant-vbguest 2>/dev/null || true
+  vagrant plugin install vagrant-dns 2>/dev/null || true
   mkdir -p shared
   touch shared/.gitkeep
 fi

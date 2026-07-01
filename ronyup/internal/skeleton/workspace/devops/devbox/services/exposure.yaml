@@ -1,0 +1,83 @@
+# Maps config.yaml service toggles to hostnames and Kubernetes backends.
+# Host FQDN pattern: <host>.<app.name>.<dns.tld>  (e.g. db.myapp.localdev:5432)
+
+endpoints:
+  postgres:
+    config_key: postgres
+    host: db
+    port: 5432
+    protocol: tcp
+    service: postgres-postgresql
+    targetPort: 5432
+
+  redis:
+    config_key: redis
+    host: redis
+    port: 6379
+    protocol: tcp
+    service: redis-master
+    targetPort: 6379
+
+  temporal:
+    config_key: temporal
+    host: temporal
+    port: 7233
+    protocol: tcp
+    service: temporal-frontend
+    targetPort: 7233
+
+  temporal-ui:
+    config_key: temporal
+    host: temporal-ui
+    port: 80
+    protocol: http
+    service: temporal-web
+    targetPort: 8080
+
+  redpanda:
+    config_key: redpanda
+    host: redpanda
+    port: 9092
+    protocol: tcp
+    service: redpanda
+    targetPort: 9092
+
+  redpanda-console:
+    config_key: redpanda
+    host: redpanda-console
+    port: 80
+    protocol: http
+    service: redpanda-console
+    targetPort: 8080
+
+  grafana:
+    config_key: observability
+    host: grafana
+    port: 80
+    protocol: http
+    service: grafana
+    targetPort: 80
+
+  jaeger:
+    config_key: observability
+    host: jaeger
+    port: 80
+    protocol: http
+    service: jaeger
+    targetPort: 16686
+
+  otel:
+    config_key: observability
+    host: otel
+    port: 4317
+    protocol: tcp
+    service: otel-collector-opentelemetry-collector
+    targetPort: 4317
+
+  tigerbeetle:
+    config_key: tigerbeetle
+    host: tigerbeetle
+    port: 3000
+    protocol: tcp
+    service: tigerbeetle
+    targetPort: 3000

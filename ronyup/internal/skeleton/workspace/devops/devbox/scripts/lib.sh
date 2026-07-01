@@ -104,3 +104,41 @@ EOF
     helm repo update
   fi
 }
+
+# app_name reads app.name from config.yaml (scaffold default: app).
+app_name() {
+  local root="${1:?}"
+  yq -r '.app.name // "app"' "$root/config.yaml"
+}
+
+# dns_tld reads dns.tld from config.yaml (default: localdev).
+dns_tld() {
+  local root="${1:?}"
+  yq -r '.dns.tld // "localdev"' "$root/config.yaml"
+}
+
+# dns_base returns <app.name>.<dns.tld> (e.g. myapp.localdev).
+dns_base() {
+  local root="${1:?}"
+  echo "$(app_name "$root").$(dns_tld "$root")"
+}
+
+# endpoint_fqdn returns <host>.<dns.base> (e.g. db.myapp.localdev).
+endpoint_fqdn() {
+  local host="${1:?}"
+  local root="${2:?}"
+  echo "${host}.$(dns_base "$root")"
+}
+
+# devbox_vm_ip reads vm.ip from config.yaml (vagrant private network address).
+devbox_vm_ip() {
+  local root="${1:?}"
+  yq -r '.vm.ip // "192.168.56.10"' "$root/config.yaml"
+}
+
+# service_enabled checks a boolean toggle under services.* in config.yaml.
+service_enabled() {
+  local root="${1:?}"
+  local key="${2:?}"
+  yq -e ".services.${key} == true" "$root/config.yaml" >/dev/null 2>&1
+}

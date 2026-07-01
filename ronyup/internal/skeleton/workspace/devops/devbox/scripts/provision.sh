@@ -35,6 +35,21 @@ microk8s enable hostpath-storage
 microk8s enable ingress
 microk8s enable helm3
 
+APP_NAME="${DEVBOX_APP_NAME:-app}"
+DNS_TLD="${DEVBOX_DNS_TLD:-localdev}"
+VM_IP="${DEVBOX_VM_IP:-192.168.56.10}"
+
+echo "==> Configuring dnsmasq for *.${APP_NAME}.${DNS_TLD}"
+apt-get install -y dnsmasq
+cat > /etc/dnsmasq.d/devbox.conf <<EOF
+# Wildcard DNS: any <service>.${APP_NAME}.${DNS_TLD} resolves to the devbox VM.
+listen-address=127.0.0.1,${VM_IP}
+bind-interfaces
+address=/.${APP_NAME}.${DNS_TLD}/${VM_IP}
+EOF
+systemctl enable dnsmasq
+systemctl restart dnsmasq
+
 echo "==> Creating devbox namespace"
 microk8s kubectl create namespace devbox --dry-run=client -o yaml | microk8s kubectl apply -f -
 
