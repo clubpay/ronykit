@@ -10,6 +10,8 @@ cluster:
 
 # VM resources (only when cluster.mode is vagrant):
 vm:
+  # Canonical no longer publishes ubuntu/noble64 on Vagrant Cloud; bento is well-maintained.
+  box: bento/ubuntu-24.04
   memory: 8192   # MB — microk8s needs at least 4096 for a minimal stack
   cpus: 4
   ip: 192.168.56.10

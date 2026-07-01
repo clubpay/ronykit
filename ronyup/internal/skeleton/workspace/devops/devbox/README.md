@@ -12,6 +12,13 @@ Always required on the host:
 
 When `cluster.mode: vagrant` in `config.yaml`, you also need [Vagrant](https://developer.hashicorp.com/vagrant/install) and a provider (VirtualBox, UTM on Apple Silicon, libvirt, …).
 
+The default box is **`bento/ubuntu-24.04`** (Canonical no longer publishes `ubuntu/noble64` on Vagrant Cloud). Override `vm.box` in `config.yaml` if needed.
+
+```sh
+# Pre-fetch the box (optional)
+vagrant box add bento/ubuntu-24.04 --provider=virtualbox
+```
+
 Run `make bootstrap` to verify tools.
 
 ## Quick start (existing cluster)
@@ -43,9 +50,11 @@ Set in `config.yaml`:
 ```yaml
 cluster:
   mode: vagrant
+vm:
+  box: bento/ubuntu-24.04   # default; change if your provider needs another box
 ```
 
-Then `make up` provisions an Ubuntu VM with microk8s and writes `shared/kubeconfig`. On Apple Silicon:
+Then `make up` provisions an Ubuntu 24.04 VM with microk8s and writes `shared/kubeconfig`. On Apple Silicon:
 
 ```sh
 export VAGRANT_DEFAULT_PROVIDER=utm
@@ -119,6 +128,7 @@ devbox/
 
 ## Troubleshooting
 
+- **Box not found (`ubuntu/noble64` 404)**: Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml` (the scaffold default) and run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
 - **kubectl can't connect**: check `cluster.kubeconfig` / `$KUBECONFIG` and `kubectl cluster-info`.
 - **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

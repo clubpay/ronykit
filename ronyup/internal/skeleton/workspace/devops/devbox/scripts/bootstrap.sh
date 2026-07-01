@@ -33,6 +33,7 @@ EOF
     cat >&2 <<EOF
 
 For cluster.mode vagrant, also install Vagrant + a provider (VirtualBox, UTM, libvirt, …).
+Default box: bento/ubuntu-24.04 (see config.yaml vm.box).
 On Apple Silicon: export VAGRANT_DEFAULT_PROVIDER=utm
 EOF
   fi
