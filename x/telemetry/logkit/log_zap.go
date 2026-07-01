@@ -8,8 +8,6 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"go.opentelemetry.io/contrib/bridges/otelzap"
-	"go.opentelemetry.io/otel/log/global"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -22,7 +20,7 @@ type Logger struct {
 	prefix          string
 	skipCaller      int
 	z               *zap.Logger
-	otel            *otelzap.Core
+	otel            Core
 	lvl             zap.AtomicLevel
 	createSpanEvent bool
 }
@@ -59,7 +57,7 @@ func New(opts ...Option) *Logger {
 		)
 	}
 
-	l.otel = otelzap.NewCore("otel", otelzap.WithLoggerProvider(global.GetLoggerProvider()))
+	l.otel = newOtelCore()
 	cores = append(cores, l.otel)
 	core := zapcore.NewTee(
 		append(cores, cfg.cores...)...,

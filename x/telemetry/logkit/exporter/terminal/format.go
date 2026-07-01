@@ -26,6 +26,15 @@ var systemAttrs = map[string]struct{}{
 	string(semconv.ExceptionTypeKey):       {},
 }
 
+func attrDisplayKey(key string) (string, bool) {
+	switch key {
+	case string(semconv.ExceptionMessageKey), "error":
+		return "error", true
+	default:
+		return key, false
+	}
+}
+
 type recordMeta struct {
 	filePath string
 	line     string
@@ -116,13 +125,8 @@ func collectMeta(record sdklog.Record) recordMeta {
 			return true
 		}
 
-		if kv.Key == string(semconv.ExceptionMessageKey) {
-			meta.attrs = append(meta.attrs, formatAttrPair("error", kv.Value.AsString()))
-
-			return true
-		}
-
-		meta.attrs = append(meta.attrs, formatAttrPair(kv.Key, formatValue(kv.Value)))
+		displayKey, _ := attrDisplayKey(kv.Key)
+		meta.attrs = append(meta.attrs, formatAttrPair(displayKey, formatValue(kv.Value)))
 
 		return true
 	})

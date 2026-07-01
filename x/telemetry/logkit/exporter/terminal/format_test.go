@@ -32,11 +32,37 @@ func TestFormatRecord(t *testing.T) {
 	}.NewRecord()
 
 	got := formatRecord(record, palette{enabled: false})
-	want := "26-07-01T15:04:05 - INFO - 4bf92f3577b34da6a3ce929d0e0e4736 - main.go - 128\n" +
+	want := "26-07-01T15:04:05 - INFO - main.go - 128 - 4bf92f3577b34da6a3ce929d0e0e4736\n" +
 		"request completed\n" +
 		`<user_id=42>	<count=3>	<error="connection refused">`
 
 	assert.Equal(t, want, got)
+}
+
+func TestFormatRecordErrorKey(t *testing.T) {
+	record := logtest.RecordFactory{
+		Body: log.StringValue("failed"),
+		Attributes: []log.KeyValue{
+			log.String("error", "connection refused"),
+		},
+	}.NewRecord()
+
+	got := formatRecord(record, palette{enabled: false})
+	assert.Contains(t, got, `<error="connection refused">`)
+}
+
+func TestFormatRecordExceptionStacktraceOnlyRegression(t *testing.T) {
+	record := logtest.RecordFactory{
+		Body: log.StringValue("failed"),
+		Attributes: []log.KeyValue{
+			log.String(string(semconv.ExceptionMessageKey), "connection refused"),
+			log.String(string(semconv.ExceptionStacktraceKey), "goroutine 1 [running]:"),
+		},
+	}.NewRecord()
+
+	got := formatRecord(record, palette{enabled: false})
+	assert.Contains(t, got, `<error="connection refused">`)
+	assert.NotContains(t, got, "goroutine 1")
 }
 
 func TestFormatRecordMissingFields(t *testing.T) {
