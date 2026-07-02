@@ -1,12 +1,29 @@
-# Dev defaults — change auth.* for your environment (see devbox README).
-auth:
-  username: dbUser
-  password: dbPass
-  database: user-db
+# CloudNativePG cluster (provisioned by the cnpg operator; see devbox README).
+# Dev defaults — credentials come from the `postgres-app` secret created by
+# scripts/services.sh (dbUser / dbPass). Change them there for your environment.
 
-primary:
-  persistence:
-    enabled: false
+# Force the Cluster name to `postgres` so services are postgres-rw / -ro / -r
+# (without this the cnpg/cluster chart names them postgres-cluster-*).
+fullnameOverride: postgres
 
-service:
-  type: ClusterIP
+cluster:
+  instances: 1
+
+  # CNPG always uses a PVC — the cluster needs a default StorageClass.
+  storage:
+    size: 1Gi
+
+  # Application database + owner. `secret` points at the basic-auth secret
+  # created by services.sh; its username must match `owner`.
+  initdb:
+    database: user-db
+    owner: dbUser
+    secret:
+      name: postgres-app
+    # Let the app role create databases so Temporal (createDatabase: true) works.
+    postInitSQL:
+      - ALTER ROLE "dbUser" WITH CREATEDB;
+
+# Object-store backups are off for local dev.
+backups:
+  enabled: false

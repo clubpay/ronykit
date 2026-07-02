@@ -18,12 +18,14 @@ Dev defaults live in `values/*.yaml`:
 
 | File | Settings |
 |------|----------|
-| `postgres.yaml` | `auth.username`, `auth.password`, `auth.database` |
-| `redis.yaml` | `auth.enabled: false` |
-| `temporal.yaml` | Reuses PostgreSQL user/password; connects in-cluster to `postgres-postgresql.devbox.svc.cluster.local` |
+| `postgres.yaml` | `cluster.initdb.database` / `.owner`; the owner password lives in the `postgres-app` secret (created by `../scripts/services.sh`) |
+| `dragonfly.yaml` | no auth in dev (`storage.enabled: false`) |
+| `temporal.yaml` | Reuses PostgreSQL user/password; connects in-cluster to `postgres-rw.devbox.svc.cluster.local` |
 | `grafana.yaml` | `adminUser`, `adminPassword` |
 | `jaeger.yaml` | In-memory storage, no login |
 | `redpanda.yaml` | TLS disabled for local dev |
 | `otel-collector.yaml` | Exports traces to Jaeger in-cluster |
+
+PostgreSQL is provisioned by the [CloudNativePG](https://cloudnative-pg.io/) operator: `services.sh` installs the operator into `cnpg-system`, applies the `postgres-app` credentials secret, then installs the `cnpg/cluster` chart (services `postgres-rw` / `-ro` / `-r`). DragonflyDB is a Redis-compatible store installed from its OCI chart.
 
 When enabling Temporal, also enable PostgreSQL in `config.yaml` — the chart no longer bundles a database sub-chart.

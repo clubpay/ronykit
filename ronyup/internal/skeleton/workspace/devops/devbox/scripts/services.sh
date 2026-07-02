@@ -17,6 +17,14 @@ source "$ROOT/scripts/lib.sh"
 readonly DEVBOX_NS=devbox
 readonly SERVICES_DIR="$ROOT/services"
 
+# CloudNativePG operator (cluster-scoped; installs CRDs into its own namespace).
+readonly CNPG_NS=cnpg-system
+readonly CNPG_OPERATOR_RELEASE=cnpg
+# DragonflyDB ships as an OCI chart (no classic repo). Pinned for reproducible
+# installs — bump this tag to upgrade; set empty to track the latest chart.
+readonly DRAGONFLY_CHART="oci://ghcr.io/dragonflydb/dragonfly/helm/dragonfly"
+readonly DRAGONFLY_VERSION="v1.39.0"
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") <command>
@@ -44,9 +52,10 @@ helm_install_release() {
 
 helm_remove_release() {
   local name="$1"
+  local ns="${2:-$DEVBOX_NS}"
 
   echo "==> removing $name"
-  helm uninstall "$name" --namespace "$DEVBOX_NS" 2>/dev/null || true
+  helm uninstall "$name" --namespace "$ns" 2>/dev/null || true
 }
 
 helm_sync_release() {
@@ -62,6 +71,52 @@ helm_sync_release() {
   fi
 }
 
+# sync_postgres installs the CloudNativePG operator, the app credentials secret,
+# and the Postgres Cluster (or tears the cluster + operator down when disabled).
+sync_postgres() {
+  if service_enabled "$ROOT" postgres; then
+    echo "==> installing CloudNativePG operator ($CNPG_OPERATOR_RELEASE)"
+    helm upgrade --install "$CNPG_OPERATOR_RELEASE" cnpg/cloudnative-pg \
+      --namespace "$CNPG_NS" \
+      --create-namespace \
+      --wait \
+      --timeout 15m
+
+    echo "==> applying postgres credentials secret (postgres-app)"
+    kubectl create secret generic postgres-app \
+      --namespace "$DEVBOX_NS" \
+      --type=kubernetes.io/basic-auth \
+      --from-literal=username=dbUser \
+      --from-literal=password=dbPass \
+      --dry-run=client -o yaml | kubectl apply -f -
+
+    helm_install_release postgres cnpg/cluster values/postgres.yaml
+  else
+    helm_remove_release postgres
+    helm_remove_release "$CNPG_OPERATOR_RELEASE" "$CNPG_NS"
+  fi
+}
+
+# sync_dragonfly installs the Redis-compatible DragonflyDB store (OCI chart).
+sync_dragonfly() {
+  if service_enabled "$ROOT" redis; then
+    local -a args=(
+      upgrade --install dragonfly "$DRAGONFLY_CHART"
+      --namespace "$DEVBOX_NS"
+      --create-namespace
+      -f values/dragonfly.yaml
+      --wait
+      --timeout 15m
+    )
+    [[ -n "$DRAGONFLY_VERSION" ]] && args+=(--version "$DRAGONFLY_VERSION")
+
+    echo "==> installing dragonfly ($DRAGONFLY_CHART)"
+    helm "${args[@]}"
+  else
+    helm_remove_release dragonfly
+  fi
+}
+
 require_postgres_for_temporal() {
   if service_enabled "$ROOT" temporal && ! service_enabled "$ROOT" postgres; then
     echo "services.temporal requires services.postgres (Temporal uses the devbox PostgreSQL release)" >&2
@@ -73,8 +128,8 @@ helm_sync_all() {
   cd "$SERVICES_DIR"
   helm_repo_ensure
 
-  helm_sync_release postgres postgres bitnami/postgresql values/postgres.yaml
-  helm_sync_release redis redis bitnami/redis values/redis.yaml
+  sync_postgres
+  sync_dragonfly
   require_postgres_for_temporal
   helm_sync_release temporal temporal temporalio/temporal values/temporal.yaml
   helm_sync_release redpanda redpanda redpanda/redpanda values/redpanda.yaml
@@ -97,9 +152,10 @@ helm_remove_all() {
 
   cd "$SERVICES_DIR"
 
-  for release in grafana jaeger otel-collector redpanda temporal redis postgres; do
+  for release in grafana jaeger otel-collector redpanda temporal dragonfly postgres; do
     helm_remove_release "$release"
   done
+  helm_remove_release "$CNPG_OPERATOR_RELEASE" "$CNPG_NS"
 
   echo "Helm releases removed"
 }

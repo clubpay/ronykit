@@ -87,8 +87,8 @@ Edit `config.yaml`:
 
 | Service | Default | Notes |
 |---------|---------|-------|
-| `postgres` | on | Bitnami PostgreSQL (`dbUser` / `dbPass` / `user-db`) |
-| `redis` | on | Bitnami Redis (no auth in dev) |
+| `postgres` | on | CloudNativePG cluster (`dbUser` / `dbPass` / `user-db`); installs the cnpg operator + a PVC |
+| `redis` | on | DragonflyDB, Redis-compatible (no auth in dev) |
 | `temporal` | off | Temporal server + UI; requires `postgres` (uses same DB credentials) |
 | `redpanda` | off | Single-node Redpanda |
 | `observability` | off | OTel Collector → Jaeger + Grafana |
@@ -98,12 +98,12 @@ After changing toggles, run `make services` (or `make up` from a cold start).
 
 ### Service credentials (dev defaults)
 
-Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change them there for your environment.
+Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change them there for your environment. PostgreSQL is the exception: its user/password live in the `postgres-app` secret created by `scripts/services.sh` (username must match `cluster.initdb.owner` in `postgres.yaml`).
 
 | Service | Auth | Default | Values file |
 |---------|------|---------|-------------|
-| PostgreSQL | user / password / database | `dbUser` / `dbPass` / `user-db` | `services/values/postgres.yaml` |
-| Redis | none (auth disabled) | — | `services/values/redis.yaml` |
+| PostgreSQL | user / password / database | `dbUser` / `dbPass` / `user-db` | `services/values/postgres.yaml` (+ `postgres-app` secret) |
+| DragonflyDB | none (auth disabled) | — | `services/values/dragonfly.yaml` |
 | Temporal | uses PostgreSQL above | same as PostgreSQL | `services/values/temporal.yaml` |
 | Redpanda | none (TLS disabled) | — | `services/values/redpanda.yaml` |
 | Grafana | admin user / password | `admin` / `admin` | `services/values/grafana.yaml` |
@@ -156,8 +156,8 @@ kubectl -n devbox get pods
 **Existing cluster** (or when ingress TCP is unavailable), port-forward as needed:
 
 ```sh
-kubectl -n devbox port-forward svc/postgres-postgresql 5432:5432
-kubectl -n devbox port-forward svc/redis-master 6379:6379
+kubectl -n devbox port-forward svc/postgres-rw 5432:5432
+kubectl -n devbox port-forward svc/dragonfly 6379:6379
 kubectl -n devbox port-forward svc/temporal-web 8080:8080
 kubectl -n devbox port-forward svc/grafana 3000:80
 kubectl -n devbox port-forward svc/jaeger-query 16686:16686
@@ -186,7 +186,9 @@ devbox/
 - **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
 - **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/services.sh sync` via `make services` (no Helmfile plugin).
 - **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
-- **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`.
+- **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`. Temporal creates its own databases; `postgres.yaml` grants the app role `CREATEDB` via `initdb.postInitSQL` so this works out of the box.
+- **Postgres pod stuck `Pending`**: CloudNativePG always provisions a PVC — the cluster needs a default `StorageClass` (microk8s: `microk8s enable hostpath-storage`; kind ships `local-path`). Check with `kubectl get sc`.
+- **`postgresql.cnpg.io` CRD not found**: the cnpg operator install failed or was skipped. Re-run `make services` with `services.postgres: true`; verify `kubectl -n cnpg-system get pods`.
 - **Hostnames do not resolve**: run `make dns` (vagrant mode). Re-run `make bootstrap` if you change `dns.tld` in `config.yaml`.
 - **TCP endpoint refused**: ensure microk8s ingress is enabled (`microk8s enable ingress`) and re-run `make services`.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

@@ -26,8 +26,8 @@ vm:
 
 # Opt-in platform services (installed via Helm into the devbox namespace).
 services:
-  postgres: true
-  redis: true
+  postgres: true         # CloudNativePG (cnpg operator + Postgres cluster)
+  redis: true            # DragonflyDB (Redis-compatible)
   temporal: false
   redpanda: false
   observability: false   # OpenTelemetry Collector + Jaeger + Grafana

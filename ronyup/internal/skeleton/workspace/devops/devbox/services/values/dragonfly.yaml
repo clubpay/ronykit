@@ -1,0 +1,14 @@
+# DragonflyDB — Redis-compatible in-memory store (see devbox README).
+# Dev defaults — no auth, no persistence. Set a password via `passwordFromSecret`
+# and enable `storage` for a StatefulSet when you need durability.
+fullnameOverride: dragonfly   # -> service `dragonfly` on port 6379
+
+replicaCount: 1
+
+# No PVC in dev (default). Enabling this provisions a StatefulSet instead.
+storage:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 6379

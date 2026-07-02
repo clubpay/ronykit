@@ -92,7 +92,7 @@ helm_repo_ensure() {
     helm repo add "$name" "$url"
     added=1
   done <<'EOF'
-bitnami|https://charts.bitnami.com/bitnami
+cnpg|https://cloudnative-pg.github.io/charts
 temporalio|https://go.temporal.io/helm-charts
 redpanda|https://charts.redpanda.com
 open-telemetry|https://open-telemetry.github.io/opentelemetry-helm-charts
