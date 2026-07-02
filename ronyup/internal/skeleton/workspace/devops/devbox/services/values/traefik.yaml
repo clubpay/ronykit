@@ -1,0 +1,72 @@
+# Traefik ingress controller for the devbox VM (installed by scripts/provision.sh
+# into the `traefik` namespace). Replaces the microk8s nginx ingress addon.
+#
+# Single-node dev VM: run on the host network so every entrypoint binds directly
+# on the VM IP (e.g. db.<app>.localdev:5432) — the Traefik equivalent of the
+# nginx ingress hostPort DaemonSet. No Service / LoadBalancer needed.
+#
+# IMPORTANT: the TCP `ports` below must stay in sync with the tcp endpoints in
+# services/exposure.yaml — apply-exposure.sh creates one IngressRouteTCP per tcp
+# endpoint and references the entrypoint by the endpoint id (name == id, same
+# port). Add a tcp endpoint there → add a matching port here → re-provision.
+
+deployment:
+  kind: Deployment
+  replicas: 1
+
+# Bind entrypoints on the node network (VM IP) instead of a cluster Service.
+hostNetwork: true
+service:
+  enabled: false
+
+# Traefik binds 80/443; the image carries the cap_net_bind_service file cap.
+securityContext:
+  capabilities:
+    add:
+      - NET_BIND_SERVICE
+    drop:
+      - ALL
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+
+# Register the `traefik` IngressClass and make it the cluster default so plain
+# Ingress objects (HTTP endpoints) route through Traefik.
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+providers:
+  kubernetesIngress:
+    enabled: true
+  kubernetesCRD:
+    enabled: true          # IngressRouteTCP (raw TCP passthrough)
+
+# HTTP(S) plus one dedicated TCP entrypoint per devbox tcp service. With
+# hostNetwork the container listens on `port`, so these are the host-facing
+# ports. Names must match the tcp endpoint ids in exposure.yaml.
+ports:
+  web:
+    port: 80
+    protocol: TCP
+  websecure:
+    port: 443
+    protocol: TCP
+  postgres:
+    port: 5432
+    protocol: TCP
+  redis:
+    port: 6379
+    protocol: TCP
+  temporal:
+    port: 7233
+    protocol: TCP
+  otel:
+    port: 4317
+    protocol: TCP
+  redpanda:
+    port: 9092
+    protocol: TCP
+  tigerbeetle:
+    port: 3000
+    protocol: TCP

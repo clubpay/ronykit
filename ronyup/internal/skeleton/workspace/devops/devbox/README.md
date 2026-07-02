@@ -133,11 +133,11 @@ Replace `demo` with your `app.name` from `config.yaml`.
 
 1. `make bootstrap` installs the [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns) plugin and registers the local TLD on your host (`vagrant dns --install` / `vagrant dns --start`).
 2. `make up` starts the VM; vagrant-dns resolves `*.<app>.localdev` to the VM IP (patterns in `Vagrantfile`).
-3. `scripts/apply-exposure.sh` configures microk8s **nginx ingress** (HTTP routes + TCP passthrough for database ports).
+3. `scripts/apply-exposure.sh` configures **Traefik** (HTTP `Ingress` routes + `IngressRouteTCP` passthrough for database ports). Traefik is installed by `provision.sh` and runs on the VM's host network, so each port binds on the VM IP.
 
 After `make services`, the script prints the active endpoints. Re-run `make dns` if hostnames stop resolving.
 
-**Existing cluster mode:** ingress/TCP exposure is applied when your cluster has nginx ingress with a TCP configmap (`ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`). Use `kubectl port-forward` otherwise (see below).
+**Existing cluster mode:** HTTP ingress is applied against your cluster's ingress class. TCP exposure uses Traefik `IngressRouteTCP` when the Traefik CRDs are present, or an nginx TCP configmap (`ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`) if you run nginx. Use `kubectl port-forward` otherwise (see below).
 
 ## Kubernetes access
 
@@ -190,5 +190,5 @@ devbox/
 - **Postgres pod stuck `Pending`**: CloudNativePG always provisions a PVC — the cluster needs a default `StorageClass` (microk8s: `microk8s enable hostpath-storage`; kind ships `local-path`). Check with `kubectl get sc`.
 - **`postgresql.cnpg.io` CRD not found**: the cnpg operator install failed or was skipped. Re-run `make services` with `services.postgres: true`; verify `kubectl -n cnpg-system get pods`.
 - **Hostnames do not resolve**: run `make dns` (vagrant mode). Re-run `make bootstrap` if you change `dns.tld` in `config.yaml`.
-- **TCP endpoint refused**: ensure microk8s ingress is enabled (`microk8s enable ingress`) and re-run `make services`.
+- **TCP endpoint refused**: check Traefik is healthy (`kubectl -n traefik get pods`) and re-run `make services`. Adding a new TCP service also needs a matching entrypoint in `services/values/traefik.yaml` — re-provision the VM (`make up`) after editing it.
 - **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).

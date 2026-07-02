@@ -177,6 +177,12 @@ remove_tigerbeetle_manifest() {
 remove_exposure() {
   kubectl delete ingress devbox-exposure-http -n "$DEVBOX_NS" --ignore-not-found
 
+  # Traefik TCP routes (present only when the Traefik CRDs are installed).
+  if kubectl get crd ingressroutetcps.traefik.io >/dev/null 2>&1; then
+    kubectl delete ingressroutetcp -n "$DEVBOX_NS" \
+      -l app.kubernetes.io/component=exposure --ignore-not-found >/dev/null 2>&1 || true
+  fi
+
   if kubectl get configmap nginx-ingress-tcp-microk8s-conf -n ingress >/dev/null 2>&1; then
     kubectl patch configmap nginx-ingress-tcp-microk8s-conf -n ingress \
       --type merge -p '{"data":{}}' >/dev/null 2>&1 || true

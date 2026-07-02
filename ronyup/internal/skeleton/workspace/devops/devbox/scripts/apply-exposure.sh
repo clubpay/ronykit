@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Expose enabled devbox services via ingress (HTTP) and nginx TCP passthrough.
-# Hostnames: <host>.<app.name>.<dns.tld> (see services/exposure.yaml).
+# Expose enabled devbox services: HTTP via a standard Ingress, raw TCP via
+# Traefik IngressRouteTCP (or an nginx tcp-services configmap on clusters that
+# still run nginx). Hostnames: <host>.<app.name>.<dns.tld> (see exposure.yaml).
 # Invoked by: services.sh sync after Helm releases are synced.
 set -euo pipefail
 
@@ -17,13 +18,18 @@ BASE="$(dns_base "$ROOT")"
 ingress_class() {
   local class
   class="$(kubectl get ingressclass -o json 2>/dev/null \
-    | yq -r '.items[] | select(.metadata.name == "public" or .metadata.name == "nginx" or .metadata.name == "nginx-microk8s") | .metadata.name' \
+    | yq -r '.items[] | select(.metadata.name == "traefik" or .metadata.name == "public" or .metadata.name == "nginx" or .metadata.name == "nginx-microk8s") | .metadata.name' \
     | head -n1)"
   if [[ -n "$class" && "$class" != "null" ]]; then
     echo "$class"
     return
   fi
-  echo "public"
+  echo "traefik"
+}
+
+# traefik_available returns 0 when the Traefik IngressRouteTCP CRD is installed.
+traefik_available() {
+  kubectl get crd ingressroutetcps.traefik.io >/dev/null 2>&1
 }
 
 ingress_tcp_configmap() {
@@ -114,6 +120,53 @@ apply_tcp_to_ingress_controller() {
   kubectl create configmap "$cm_name" -n "$cm_ns" "${literals[@]}" --dry-run=client -o yaml | kubectl apply -f -
 }
 
+# render_traefik_tcp emits one IngressRouteTCP per enabled tcp endpoint. The
+# entrypoint name matches the endpoint id (defined in services/values/traefik.yaml);
+# HostSNI(`*`) forwards all traffic on that dedicated port to the backend.
+render_traefik_tcp() {
+  local id service target_port
+
+  for id in $(enabled_endpoints); do
+    [[ "$(yq -r ".endpoints.${id}.protocol" "$EXPOSURE")" == "tcp" ]] || continue
+    service="$(yq -r ".endpoints.${id}.service" "$EXPOSURE")"
+    target_port="$(yq -r ".endpoints.${id}.targetPort" "$EXPOSURE")"
+    cat <<EOF
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: devbox-tcp-${id}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/part-of: devbox
+    app.kubernetes.io/component: exposure
+spec:
+  entryPoints:
+    - ${id}
+  routes:
+    - match: HostSNI(\`*\`)
+      services:
+        - name: ${service}
+          port: ${target_port}
+EOF
+  done
+}
+
+apply_traefik_tcp() {
+  local docs
+  # Clear stale routes first so toggled-off services are removed.
+  kubectl delete ingressroutetcp -n "$NS" \
+    -l app.kubernetes.io/component=exposure --ignore-not-found >/dev/null 2>&1 || true
+
+  docs="$(render_traefik_tcp)"
+  if [[ -n "$docs" ]]; then
+    echo "$docs" | kubectl apply -f -
+    echo "TCP exposure applied via Traefik IngressRouteTCP"
+  else
+    echo "no TCP services enabled"
+  fi
+}
+
 print_endpoints() {
   local id host port protocol fqdn
   echo ""
@@ -135,16 +188,20 @@ print_endpoints() {
 export_kubeconfig_env "$ROOT"
 
 CLASS="$(ingress_class)"
-TCP_CM="$(ingress_tcp_configmap)"
 
 render_http_ingress "$CLASS" | kubectl apply -f -
 
-if [[ -n "$TCP_CM" ]]; then
-  apply_tcp_to_ingress_controller "$TCP_CM"
-  echo "TCP exposure applied via ${TCP_CM}"
+if traefik_available; then
+  apply_traefik_tcp
 else
-  echo "warning: no nginx ingress TCP configmap found; TCP services are cluster-internal only" >&2
-  echo "         enable microk8s ingress (vagrant mode) or install nginx ingress with tcp-services" >&2
+  TCP_CM="$(ingress_tcp_configmap)"
+  if [[ -n "$TCP_CM" ]]; then
+    apply_tcp_to_ingress_controller "$TCP_CM"
+    echo "TCP exposure applied via ${TCP_CM}"
+  else
+    echo "warning: no Traefik CRDs or nginx TCP configmap found; TCP services are cluster-internal only" >&2
+    echo "         use vagrant mode (Traefik) or install an ingress controller with TCP support" >&2
+  fi
 fi
 
 print_endpoints

@@ -2,7 +2,7 @@
 
 Releases are installed by `../scripts/services.sh sync` using plain `helm upgrade --install` (no Helmfile or helm-diff plugin).
 
-Host exposure is configured by `../scripts/apply-exposure.sh` using `exposure.yaml` (HTTP ingress + nginx TCP passthrough).
+Host exposure is configured by `../scripts/apply-exposure.sh` using `exposure.yaml` (HTTP `Ingress` + Traefik `IngressRouteTCP` passthrough; falls back to an nginx TCP configmap on clusters running nginx). Traefik itself is installed on the VM by `../scripts/provision.sh` from `values/traefik.yaml`.
 
 Toggle services in `../config.yaml`, then run `make services`.
 

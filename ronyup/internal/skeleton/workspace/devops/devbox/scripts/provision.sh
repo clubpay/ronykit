@@ -20,7 +20,7 @@ apt-get install -y \
 
 echo "==> Installing microk8s"
 if ! snap list microk8s >/dev/null 2>&1; then
-  snap install microk8s --classic --channel=1.32/stable
+  snap install microk8s --classic --channel=1.35/stable
 fi
 
 usermod -aG microk8s vagrant
@@ -32,8 +32,20 @@ microk8s status --wait-ready
 echo "==> Enabling microk8s addons (one at a time)"
 microk8s enable dns
 microk8s enable hostpath-storage
-microk8s enable ingress
 microk8s enable helm3
+
+echo "==> Installing Traefik ingress (Helm)"
+# Traefik replaces the microk8s nginx ingress addon: it handles HTTP ingress and
+# raw TCP passthrough (IngressRouteTCP) for the database ports. Values define the
+# entrypoints; see services/values/traefik.yaml (synced at /vagrant).
+microk8s helm3 repo add traefik https://traefik.github.io/charts
+microk8s helm3 repo update
+microk8s helm3 upgrade --install traefik traefik/traefik \
+  --namespace traefik \
+  --create-namespace \
+  -f /vagrant/services/values/traefik.yaml \
+  --wait \
+  --timeout 15m
 
 echo "==> Creating devbox namespace"
 microk8s kubectl create namespace devbox --dry-run=client -o yaml | microk8s kubectl apply -f -
