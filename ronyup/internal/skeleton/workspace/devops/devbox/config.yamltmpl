@@ -4,7 +4,7 @@
 cluster:
   # existing — use your Kubernetes cluster (default; respects KUBECONFIG or ~/.kube/config)
   # vagrant  — provision a local Ubuntu VM with microk8s
-  mode: existing
+  mode: vagrant
   # Optional kubeconfig path when mode is existing (empty = $KUBECONFIG or ~/.kube/config).
   kubeconfig: ""
 

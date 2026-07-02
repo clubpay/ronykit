@@ -78,7 +78,7 @@ render_http_ingress() {
   done
 
   if [[ -z "$rules" ]]; then
-    kubectl delete ingress devbox-exposure-http -n "$NS" --ignore-not-found
+    kubectl delete ingress devbox-exposure-http -n "$NS" --ignore-not-found >/dev/null
     return 0
   fi
 
@@ -189,7 +189,12 @@ export_kubeconfig_env "$ROOT"
 
 CLASS="$(ingress_class)"
 
-render_http_ingress "$CLASS" | kubectl apply -f -
+http_docs="$(render_http_ingress "$CLASS")"
+if [[ -n "$http_docs" ]]; then
+  printf '%s\n' "$http_docs" | kubectl apply -f -
+else
+  echo "no HTTP services enabled"
+fi
 
 if traefik_available; then
   apply_traefik_tcp
