@@ -19,7 +19,9 @@ hostNetwork: true
 service:
   enabled: false
 
-# Traefik binds 80/443; the image carries the cap_net_bind_service file cap.
+# Traefik binds 80/443 on the VM host network. Keep the container non-root, add
+# the bind-service capability, and lower the pod's unprivileged port floor so
+# low-port binding works consistently across microk8s/containerd versions.
 securityContext:
   capabilities:
     add:
@@ -29,6 +31,16 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 65532
   runAsGroup: 65532
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+  sysctls:
+    - name: net.ipv4.ip_unprivileged_port_start
+      value: "0"
 
 # Register the `traefik` IngressClass and make it the cluster default so plain
 # Ingress objects (HTTP endpoints) route through Traefik.
