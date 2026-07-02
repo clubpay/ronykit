@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
   if Vagrant.has_plugin?("vagrant-dns")
     config.dns.tld = DNS_TLD
     config.dns.patterns = [
-      /^(\w+\.)*#{Regexp.escape(APP_NAME)}\.#{Regexp.escape(DNS_TLD)}$/,
+      /^([A-Za-z0-9-]+\.)*#{Regexp.escape(APP_NAME)}\.#{Regexp.escape(DNS_TLD)}$/,
     ]
   end
 
