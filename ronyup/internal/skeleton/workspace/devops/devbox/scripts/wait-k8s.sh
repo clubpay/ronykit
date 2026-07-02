@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Block until kubectl can reach the cluster API (or timeout after ~5 minutes).
-# Invoked by: up.sh, install-services.sh, resume.sh.
+# Invoked by: cluster.sh and services.sh sync.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

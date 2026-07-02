@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Expose enabled devbox services via ingress (HTTP) and nginx TCP passthrough.
 # Hostnames: <host>.<app.name>.<dns.tld> (see services/exposure.yaml).
-# Invoked by: install-services.sh after Helm releases are synced.
+# Invoked by: services.sh sync after Helm releases are synced.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

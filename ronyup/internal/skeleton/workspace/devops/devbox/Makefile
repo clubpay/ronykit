@@ -22,27 +22,27 @@ bootstrap:
 	@bash scripts/bootstrap.sh
 
 up:
-	@bash scripts/up.sh
+	@bash scripts/cluster.sh up
 
 down:
-	@bash scripts/down.sh
+	@bash scripts/cluster.sh down
 
 suspend:
-	@bash scripts/suspend.sh
+	@bash scripts/cluster.sh suspend
 
 pause: suspend
 
 resume:
-	@bash scripts/resume.sh
+	@bash scripts/cluster.sh resume
 
 destroy:
-	@bash scripts/destroy.sh
+	@bash scripts/cluster.sh destroy
 
 kubeconfig:
 	@bash scripts/kubeconfig.sh
 
 services:
-	@bash scripts/install-services.sh
+	@bash scripts/services.sh sync
 
 dns:
 	@bash scripts/dns.sh

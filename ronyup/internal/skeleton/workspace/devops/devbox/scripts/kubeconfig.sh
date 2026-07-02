@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Refresh shared/kubeconfig so the host can reach microk8s inside the Vagrant VM.
-# Invoked by: make kubeconfig (also called from up.sh and resume.sh in vagrant mode).
+# Invoked by: make kubeconfig (also called from cluster.sh in vagrant mode).
 # Rewrites the API server URL to https://127.0.0.1:16443 (forwarded port on the host).
 set -euo pipefail
 
@@ -10,10 +10,7 @@ cd "$ROOT"
 # shellcheck source=lib.sh
 source "$ROOT/scripts/lib.sh"
 
-if [[ "$(cluster_mode "$ROOT")" != "vagrant" ]]; then
-  echo "kubeconfig refresh applies only when cluster.mode is vagrant" >&2
-  exit 1
-fi
+require_vagrant_mode "$ROOT" "kubeconfig refresh"
 
 mkdir -p "$ROOT/shared"
 

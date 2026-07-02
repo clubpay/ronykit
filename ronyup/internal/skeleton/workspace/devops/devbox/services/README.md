@@ -1,6 +1,6 @@
 # Helm chart values for devbox services
 
-Releases are installed by `../scripts/helmfile-apply.sh` using plain `helm upgrade --install` (no Helmfile or helm-diff plugin).
+Releases are installed by `../scripts/services.sh sync` using plain `helm upgrade --install` (no Helmfile or helm-diff plugin).
 
 Host exposure is configured by `../scripts/apply-exposure.sh` using `exposure.yaml` (HTTP ingress + nginx TCP passthrough).
 

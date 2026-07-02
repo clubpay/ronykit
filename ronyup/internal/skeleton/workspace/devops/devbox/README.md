@@ -172,6 +172,9 @@ devbox/
 ├── Vagrantfile          # only used when cluster.mode=vagrant
 ├── Makefile
 ├── scripts/
+│   ├── cluster.sh       # VM/cluster lifecycle (up, down, suspend, resume, destroy)
+│   ├── services.sh      # Helm releases + exposure (sync, remove)
+│   └── …                # bootstrap, dns, kubeconfig, provision, …
 ├── services/            # Helm values, exposure.yaml, manifests/
 └── shared/              # kubeconfig (vagrant mode, gitignored)
 ```
@@ -181,7 +184,7 @@ devbox/
 - **Box not found (`ubuntu/noble64` 404)**: Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml` (the scaffold default) and run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
 - **kubectl can't connect after `make up`**: the VM is usually running — re-run `make kubeconfig`. If it still fails, `vagrant status` should show `running`.
 - **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
-- **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/helmfile-apply.sh` via `make services` (no Helmfile plugin).
+- **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/services.sh sync` via `make services` (no Helmfile plugin).
 - **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
 - **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`.
 - **Hostnames do not resolve**: run `make dns` (vagrant mode). Re-run `make bootstrap` if you change `dns.tld` in `config.yaml`.

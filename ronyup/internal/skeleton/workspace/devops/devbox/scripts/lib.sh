@@ -136,3 +136,23 @@ service_enabled() {
   local key="${2:?}"
   yq -e ".services.${key} == true" "$root/config.yaml" >/dev/null 2>&1
 }
+
+# require_vagrant_mode exits unless cluster.mode is vagrant.
+require_vagrant_mode() {
+  local root="${1:?}"
+  local action="${2:?}"
+
+  if [[ "$(cluster_mode "$root")" != "vagrant" ]]; then
+    echo "${action} applies only when cluster.mode is vagrant (see config.yaml)" >&2
+    exit 1
+  fi
+}
+
+# devbox_script runs another script from the devbox scripts/ directory.
+devbox_script() {
+  local root="${1:?}"
+  local name="${2:?}"
+  shift 2
+
+  bash "$root/scripts/$name" "$@"
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Register and start the vagrant-dns resolver for *.app.localdev (vagrant mode).
-# Invoked by: bootstrap.sh, up.sh, resume.sh, and make dns.
+# Invoked by: bootstrap.sh, cluster.sh, and make dns.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
