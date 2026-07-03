@@ -12,6 +12,90 @@ type rawIn struct {
 	Payload string `json:"payload"`
 }
 
+func TestJoinRESTPath(t *testing.T) {
+	tests := []struct {
+		base string
+		path string
+		want string
+	}{
+		{base: "", path: "/clusters", want: "/clusters"},
+		{base: "/v1", path: "/clusters", want: "/v1/clusters"},
+		{base: "/v1", path: "clusters", want: "/v1/clusters"},
+		{base: "/v1/", path: "clusters", want: "/v1/clusters"},
+		{base: "/v1", path: "/clusters/{id}", want: "/v1/clusters/{id}"},
+	}
+
+	for _, tc := range tests {
+		if got := joinRESTPath(tc.base, tc.path); got != tc.want {
+			t.Fatalf("joinRESTPath(%q, %q) = %q, want %q", tc.base, tc.path, got, tc.want)
+		}
+	}
+}
+
+func TestWithBasePathPrefixesUnaryRoutes(t *testing.T) {
+	srv := NewServer()
+
+	handler := func(_ *UnaryCtx[EMPTY, NOP], _ goodIn) (*goodOut, error) {
+		return &goodOut{OK: true}, nil
+	}
+
+	Setup[EMPTY, NOP](
+		srv,
+		"svc",
+		EmptyState(),
+		SetupOptionGroup[EMPTY, NOP](
+			WithBasePath[EMPTY, NOP]("/v1"),
+			WithUnary[EMPTY, NOP, goodIn, goodOut](
+				handler,
+				POST("clusters", UnaryName("CreateCluster")),
+			),
+		),
+		WithUnary[EMPTY, NOP, goodIn, goodOut](
+			handler,
+			GET("/health", UnaryName("Health")),
+		),
+	)
+
+	svc := srv.cfg.services["svc"]
+	if svc == nil || len(svc.Contracts) != 2 {
+		t.Fatalf("unexpected contracts: %#v", svc)
+	}
+
+	var (
+		createPath string
+		healthPath string
+	)
+
+	for _, contract := range svc.Contracts {
+		if len(contract.RouteSelectors) != 1 {
+			t.Fatalf("unexpected route selectors: %#v", contract.RouteSelectors)
+		}
+
+		rest, ok := contract.RouteSelectors[0].Selector.(interface {
+			GetPath() string
+		})
+		if !ok {
+			t.Fatal("expected REST route selector")
+		}
+
+		switch contract.RouteSelectors[0].Name {
+		case "CreateCluster":
+			createPath = rest.GetPath()
+		case "Health":
+			healthPath = rest.GetPath()
+		default:
+			t.Fatalf("unexpected route name: %s", contract.RouteSelectors[0].Name)
+		}
+	}
+
+	if createPath != "/v1/clusters" {
+		t.Fatalf("unexpected create path: %s", createPath)
+	}
+	if healthPath != "/health" {
+		t.Fatalf("unexpected health path: %s", healthPath)
+	}
+}
+
 func TestUnaryOptionHelpers(t *testing.T) {
 	cfg := unaryConfig{}
 

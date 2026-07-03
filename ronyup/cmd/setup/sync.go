@@ -269,7 +269,7 @@ func resolveSyncSections(only []string, kind string) ([]string, error) {
 	set := map[string]bool{}
 
 	for _, raw := range only {
-		for _, part := range strings.Split(raw, ",") {
+		for part := range strings.SplitSeq(raw, ",") {
 			part = strings.TrimSpace(part)
 			if part == "" {
 				continue
@@ -534,7 +534,7 @@ func resolveSyncSkills(repoRoot string, modes []string, kind string) ([]string, 
 	set := map[string]bool{}
 
 	for _, raw := range modes {
-		for _, token := range strings.Split(raw, ",") {
+		for token := range strings.SplitSeq(raw, ",") {
 			token = strings.TrimSpace(token)
 			if token == "" {
 				continue

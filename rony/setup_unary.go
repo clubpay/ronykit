@@ -42,6 +42,7 @@ func registerUnary[IN, OUT Message, S State[A], A Action](
 	handlers = append(handlers, setupCtx.mw...)
 
 	cfg := genUnaryConfig(opt...)
+	applyRESTBasePath(cfg.Selectors, setupCtx.basePath)
 	handlers = append(handlers, cfg.Middlewares...)
 
 	c := desc.NewContract().
@@ -112,6 +113,7 @@ func registerRawUnary[IN Message, S State[A], A Action](
 	handlers = append(handlers, setupCtx.mw...)
 
 	cfg := genUnaryConfig(opt...)
+	applyRESTBasePath(cfg.Selectors, setupCtx.basePath)
 	handlers = append(handlers, cfg.Middlewares...)
 
 	c := desc.NewContract()
@@ -362,4 +364,37 @@ func genUnarySelectorConfig(opt ...UnarySelectorOption) unarySelectorConfig {
 	}
 
 	return cfg
+}
+
+func applyRESTBasePath(selectors []unarySelectorConfig, basePath string) {
+	if basePath == "" {
+		return
+	}
+
+	for idx := range selectors {
+		sel, ok := selectors[idx].Selector.(fasthttp.Selector)
+		if !ok || sel.Path == "" {
+			continue
+		}
+
+		sel.Path = joinRESTPath(basePath, sel.Path)
+		selectors[idx].Selector = sel
+	}
+}
+
+func joinRESTPath(base, path string) string {
+	if base == "" {
+		return path
+	}
+
+	base = strings.TrimRight(base, "/")
+	if path == "" {
+		return base
+	}
+
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	return base + path
 }

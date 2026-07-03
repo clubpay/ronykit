@@ -59,7 +59,8 @@ type SetupContext[S State[A], A Action] struct {
 	cfg     *serverConfig
 	nodeSel NodeSelectorFunc
 
-	mw []StatelessMiddleware
+	mw       []StatelessMiddleware
+	basePath string
 }
 
 type SetupOption[S State[A], A Action] func(ctx *SetupContext[S, A])
@@ -68,6 +69,11 @@ type SetupOption[S State[A], A Action] func(ctx *SetupContext[S, A])
 // them as a single SetupOption.
 func SetupOptionGroup[S State[A], A Action](opt ...SetupOption[S, A]) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
+		savedBasePath := ctx.basePath
+		defer func() {
+			ctx.basePath = savedBasePath
+		}()
+
 		for _, o := range opt {
 			o(ctx)
 		}
@@ -184,5 +190,14 @@ func WithMiddleware[S State[A], A Action, M Middleware[S, A]](
 func WithCoordinator[S State[A], A Action](sel NodeSelectorFunc) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		ctx.nodeSel = sel
+	}
+}
+
+// WithBasePath sets a path prefix for REST routes registered by subsequent WithUnary
+// and WithRawUnary options. When used inside SetupOptionGroup, the prefix applies only
+// to handlers registered within that group.
+func WithBasePath[S State[A], A Action](path string) SetupOption[S, A] {
+	return func(ctx *SetupContext[S, A]) {
+		ctx.basePath = path
 	}
 }
