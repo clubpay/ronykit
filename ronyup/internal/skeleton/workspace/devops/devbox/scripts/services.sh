@@ -24,6 +24,7 @@ readonly CNPG_OPERATOR_RELEASE=cnpg
 # installs — bump this tag to upgrade; set empty to track the latest chart.
 readonly DRAGONFLY_CHART="oci://ghcr.io/dragonflydb/dragonfly/helm/dragonfly"
 readonly DRAGONFLY_VERSION="v1.39.0"
+readonly RUSTFS_VERSION="0.8.0"
 
 usage() {
   cat <<EOF
@@ -97,6 +98,26 @@ sync_postgres() {
   fi
 }
 
+# sync_rustfs installs RustFS (S3-compatible object storage).
+sync_rustfs() {
+  if service_enabled "$ROOT" rustfs; then
+    local -a args=(
+      upgrade --install rustfs rustfs/rustfs
+      --namespace "$DEVBOX_NS"
+      --create-namespace
+      -f values/rustfs.yaml
+      --wait
+      --timeout 15m
+    )
+    [[ -n "$RUSTFS_VERSION" ]] && args+=(--version "$RUSTFS_VERSION")
+
+    echo "==> installing rustfs (rustfs/rustfs)"
+    helm "${args[@]}"
+  else
+    helm_remove_release rustfs
+  fi
+}
+
 # sync_dragonfly installs the Redis-compatible DragonflyDB store (OCI chart).
 sync_dragonfly() {
   if service_enabled "$ROOT" redis; then
@@ -130,6 +151,7 @@ helm_sync_all() {
 
   sync_postgres
   sync_dragonfly
+  sync_rustfs
   require_postgres_for_temporal
   helm_sync_release temporal temporal temporalio/temporal values/temporal.yaml
   helm_sync_release redpanda redpanda redpanda/redpanda values/redpanda.yaml
@@ -152,7 +174,7 @@ helm_remove_all() {
 
   cd "$SERVICES_DIR"
 
-  for release in grafana jaeger otel-collector redpanda temporal dragonfly postgres; do
+  for release in grafana jaeger otel-collector redpanda temporal rustfs dragonfly postgres; do
     helm_remove_release "$release"
   done
   helm_remove_release "$CNPG_OPERATOR_RELEASE" "$CNPG_NS"

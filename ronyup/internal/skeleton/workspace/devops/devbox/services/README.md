@@ -24,8 +24,11 @@ Dev defaults live in `values/*.yaml`:
 | `grafana.yaml` | `adminUser`, `adminPassword` |
 | `jaeger.yaml` | In-memory storage, no login |
 | `redpanda.yaml` | TLS disabled for local dev |
+| `rustfs.yaml` | `secret.rustfs.access_key` / `.secret_key`; standalone mode |
 | `otel-collector.yaml` | Exports traces to Jaeger in-cluster |
 
 PostgreSQL is provisioned by the [CloudNativePG](https://cloudnative-pg.io/) operator: `services.sh` installs the operator into `cnpg-system`, applies the `postgres-app` credentials secret, then installs the `cnpg/cluster` chart (services `postgres-rw` / `-ro` / `-r`). DragonflyDB is a Redis-compatible store installed from its OCI chart.
 
 When enabling Temporal, also enable PostgreSQL in `config.yaml` — the chart no longer bundles a database sub-chart.
+
+RustFS is an S3-compatible object store installed from the [RustFS Helm chart](https://charts.rustfs.com/) in standalone mode (single pod + PVC). Use `rustfs.<app>.localdev:9000` for the S3 API and `http://rustfs-console.<app>.localdev/` for the web console when exposure is configured.

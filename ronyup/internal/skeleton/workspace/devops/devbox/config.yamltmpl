@@ -32,3 +32,4 @@ services:
   redpanda: false
   observability: false   # OpenTelemetry Collector + Jaeger + Grafana
   tigerbeetle: false
+  rustfs: false          # RustFS (S3-compatible object storage)

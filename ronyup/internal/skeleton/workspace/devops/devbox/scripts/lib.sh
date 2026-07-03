@@ -98,6 +98,7 @@ redpanda|https://charts.redpanda.com
 open-telemetry|https://open-telemetry.github.io/opentelemetry-helm-charts
 jaegertracing|https://jaegertracing.github.io/helm-charts
 grafana|https://grafana.github.io/helm-charts
+rustfs|https://charts.rustfs.com
 EOF
 
   if [[ "$refresh" == "refresh" || "$added" -eq 1 ]]; then

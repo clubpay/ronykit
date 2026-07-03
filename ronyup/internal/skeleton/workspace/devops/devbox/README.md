@@ -93,6 +93,7 @@ Edit `config.yaml`:
 | `redpanda` | off | Single-node Redpanda |
 | `observability` | off | OTel Collector → Jaeger + Grafana |
 | `tigerbeetle` | off | Raw manifest (StatefulSet) |
+| `rustfs` | off | RustFS S3-compatible object storage (standalone) |
 
 After changing toggles, run `make services` (or `make up` from a cold start).
 
@@ -109,6 +110,7 @@ Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change t
 | Grafana | admin user / password | `admin` / `admin` | `services/values/grafana.yaml` |
 | Jaeger | none (in-memory storage) | — | `services/values/jaeger.yaml` |
 | OTel Collector | none | — | `services/values/otel-collector.yaml` |
+| RustFS | access key / secret key | `s3User` / `s3Pass` | `services/values/rustfs.yaml` |
 
 `make services` only registers missing Helm chart repos; `make bootstrap` refreshes repo indexes.
 
@@ -126,6 +128,8 @@ With `cluster.mode: vagrant`, devbox exposes enabled services on predictable hos
 | Jaeger | `http://jaeger.demo.localdev/` | 80 |
 | OTel gRPC | `otel.demo.localdev` | 4317 |
 | Redpanda Kafka | `redpanda.demo.localdev` | 9092 |
+| RustFS S3 API | `rustfs.demo.localdev` | 9000 |
+| RustFS console | `http://rustfs-console.demo.localdev/` | 80 |
 
 Replace `demo` with your `app.name` from `config.yaml`.
 
@@ -162,6 +166,8 @@ kubectl -n devbox port-forward svc/temporal-web 8080:8080
 kubectl -n devbox port-forward svc/grafana 3000:80
 kubectl -n devbox port-forward svc/jaeger-query 16686:16686
 kubectl -n devbox port-forward svc/otel-collector-opentelemetry-collector 4317:4317
+kubectl -n devbox port-forward svc/rustfs-svc 9000:9000
+kubectl -n devbox port-forward svc/rustfs-svc 9001:9001
 ```
 
 ## Layout

@@ -81,3 +81,19 @@ endpoints:
     protocol: tcp
     service: tigerbeetle
     targetPort: 3000
+
+  rustfs:
+    config_key: rustfs
+    host: rustfs
+    port: 9000
+    protocol: tcp
+    service: rustfs-svc
+    targetPort: 9000
+
+  rustfs-console:
+    config_key: rustfs
+    host: rustfs-console
+    port: 80
+    protocol: http
+    service: rustfs-svc
+    targetPort: 9001

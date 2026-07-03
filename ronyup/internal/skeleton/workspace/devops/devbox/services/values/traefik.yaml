@@ -88,3 +88,7 @@ ports:
     port: 3000
     hostPort: 3000
     protocol: TCP
+  rustfs:
+    port: 9000
+    hostPort: 9000
+    protocol: TCP

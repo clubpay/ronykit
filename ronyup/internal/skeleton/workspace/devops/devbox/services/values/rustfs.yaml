@@ -1,0 +1,35 @@
+# RustFS — S3-compatible object storage (see devbox README).
+# Dev defaults — standalone mode, single replica, fixed credentials.
+replicaCount: 1
+
+mode:
+  standalone:
+    enabled: true
+  distributed:
+    enabled: false
+
+secret:
+  allowInsecureDefaults: true
+  rustfs:
+    access_key: s3User
+    secret_key: s3Pass
+
+config:
+  rustfs:
+    console_enable: "true"
+    obs_environment: "development"
+
+storageclass:
+  name: local-path
+  dataStorageSize: 5Gi
+  logStorageSize: 1Gi
+
+affinity:
+  podAntiAffinity:
+    enabled: false
+
+ingress:
+  enabled: false
+
+tls:
+  enabled: false
