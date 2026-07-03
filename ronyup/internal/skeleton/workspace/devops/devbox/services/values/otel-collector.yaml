@@ -15,7 +15,7 @@ config:
     batch: {}
   exporters:
     otlp/jaeger:
-      endpoint: jaeger-collector.devbox.svc.cluster.local:4317
+      endpoint: jaeger.devbox.svc.cluster.local:4317
       tls:
         insecure: true
     debug:
