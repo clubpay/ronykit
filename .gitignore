@@ -117,7 +117,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-_*
+example/**/_*
+x/apidoc/**/_*
 *.pprof
 go.work.sum
 /.ai/mcp/mcp.json
