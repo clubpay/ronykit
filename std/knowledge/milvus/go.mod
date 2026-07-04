@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/knowledge/milvus
 go 1.25.8
 
 require (
-	github.com/clubpay/ronykit/intent v0.0.3
-	github.com/clubpay/ronykit/x/rkit v0.4.9
+	github.com/clubpay/ronykit/intent v0.1.0
+	github.com/clubpay/ronykit/x/rkit v0.5.0
 	github.com/milvus-io/milvus-sdk-go/v2 v2.4.2
 )
 
@@ -15,11 +15,11 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/kit v0.25.9 // indirect
-	github.com/clubpay/ronykit/rony v0.25.9 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.25.9 // indirect
-	github.com/clubpay/ronykit/stub v0.25.9 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.4.9 // indirect
+	github.com/clubpay/ronykit/kit v0.26.0 // indirect
+	github.com/clubpay/ronykit/rony v0.26.0 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.0 // indirect
+	github.com/clubpay/ronykit/stub v0.26.0 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.5.0 // indirect
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20211118104740-dabe8e521a4f // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
