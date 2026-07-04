@@ -30,6 +30,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Repo / persistence | `go-testing` → MCP `architecture/integration-tests` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` → MCP `design-frontend` |
 | Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
+| Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |
 | Next.js / routes | `nextjs-modern`, `shadcn` |
 | UI components | `shadcn`, `storybook`, `ux-quality` |
 | Frontend tests | `frontend-testing`, `verification-before-completion` |

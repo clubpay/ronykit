@@ -218,6 +218,14 @@ var skillCatalog = []SkillDef{
 		DefaultBackend:   false,
 		DefaultFullstack: true,
 	},
+	{
+		ID:               "webmcp",
+		Name:             "WebMCP",
+		Description:      "Expose frontend apps as agent-callable tools via document.modelContext (W3C WebMCP)",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
 }
 
 // skillsSrcPrefix is the embedded source path that holds the bundled skills.

@@ -15,7 +15,8 @@ which app (and its stack when initializing a new one) the change targets before 
 
 Frontend design is document-first (enforced by `frontend/verify.sh`): before initializing a frontend stack or writing UI, ask aesthetic/design
 questions, read skills `frontend-design`, `design-tokens`, `typography`, and write `docs/design/<app>-frontend-design.md` with a token plan and
-design-system rules. Use MCP prompt `design-frontend`. Write with `status: draft`; only the user sets `status: approved`. Do not run framework
+design-system rules. For admin/dashboard/ops UIs that agents should automate, also read skill `webmcp` and plan tools in the design doc (§8).
+Use MCP prompt `design-frontend`. Write with `status: draft`; only the user sets `status: approved`. Do not run framework
 CLIs until the design doc is approved.
 
 Follow layered service conventions:

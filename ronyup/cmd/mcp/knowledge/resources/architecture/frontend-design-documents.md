@@ -45,6 +45,8 @@ The approved doc is the source of truth for all UI work on that app. It must inc
 - **Layout rules** — grid/max-width, section rhythm, navigation pattern
 - **Component rules** — shadcn/Tailwind usage, button/card/input variants, status colors
 - **Motion** — what animates, what stays static; `prefers-reduced-motion` policy
+- **WebMCP tools** (when the app should be agent-friendly) — tool catalog table: name,
+  read/write, description, mapping to shared app logic; see template §8 and skill `webmcp`
 - **Quality floor** — responsive ≥360px, keyboard focus, semantic HTML, Storybook for reusable components
 
 After approval, wire tokens into the app (`globals.css`, Tailwind theme, shadcn variables) before building pages.
@@ -58,6 +60,7 @@ Use the `design-frontend` prompt for the full bootstrap workflow.
 | Need                         | Skills                                              |
 |------------------------------|-----------------------------------------------------|
 | Bootstrap / aesthetic        | `frontend-design`, `design-tokens`, `typography`    |
+| Agent-friendly / WebMCP      | `webmcp`, `nextjs-modern`, `ux-quality`             |
 | Dashboard / admin            | `dashboard-ui`, `shadcn`, `ux-quality`            |
 | Implementation               | `nextjs-modern`, `shadcn`, `react-performance`    |
 | Stories & tests              | `storybook`, `frontend-testing`                     |

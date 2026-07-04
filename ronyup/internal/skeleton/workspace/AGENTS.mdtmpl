@@ -19,6 +19,7 @@ Specialized skills live under `.agents/skills/`. For each applicable row, **open
 | Repo / persistence | `go-testing` + MCP `architecture/integration-tests` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` + MCP `design-frontend` |
 | Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
+| Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |
 | Next.js routes / data | `nextjs-modern`, `shadcn` |
 | UI components | `shadcn`, `storybook`, `ux-quality` |
 | Frontend tests | `frontend-testing`, `verification-before-completion` |
@@ -172,7 +173,7 @@ report errors back to you, or confirm that a fix worked.
   verify with `pnpm build-storybook`.
 - Use the installed frontend skills (`frontend-design`, `design-tokens`,
   `typography`, `storybook`, `frontend-testing`, `nextjs-modern`, `shadcn`,
-  `dashboard-ui`, `ux-quality`, `verification-before-completion`) — read their
+  `dashboard-ui`, `webmcp`, `ux-quality`, `verification-before-completion`) — read their
   SKILL.md files per the routing table above.
 {{- end }}
 

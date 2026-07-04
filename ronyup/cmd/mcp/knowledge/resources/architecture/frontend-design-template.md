@@ -94,15 +94,40 @@ updated: <YYYY-MM-DD>
 |--------------|---------|-------|
 |              |         |       |
 
-## 8. Quality floor (non-negotiable)
+## 8. WebMCP tools (agent-friendly surface)
+
+<!-- Skip this section only when the app explicitly does not need in-browser agent automation. -->
+
+**Agent goal:** <!-- one sentence: what agents should accomplish on this app -->
+
+| Tool | R/W | Description | Maps to |
+|------|-----|-------------|---------|
+| <!-- e.g. orders_filter --> | read / write | <!-- plain-language: inputs, side effects, return shape --> | <!-- hook, Server Action, or shared function --> |
+
+Rules for the tool catalog:
+
+- Name tools after **journeys** (`dashboard_set_date_range`), not DOM (`click_save`).
+- W3C name constraints: 1–128 chars, `[A-Za-z0-9_.-]` only, `snake_case`.
+- **Read** tools: `readOnlyHint: true` — list, search, get KPIs.
+- **Write** tools: same auth/validation as the human UI; state description mentions side effects.
+- Handlers call the **same logic** as buttons/forms — no duplicated business rules.
+- After agent mutations, the visible UI must update the same way as human clicks.
+
+Implementation: read skill `webmcp` (`.agents/skills/webmcp/SKILL.md`). Default stack:
+`@mcp-b/global`, `@mcp-b/react-webmcp`, `zod`. Reference example:
+`example/ex-13-webmcp/` in the RonyKit monorepo.
+
+## 9. Quality floor (non-negotiable)
 
 - Responsive ≥360px; no horizontal overflow
 - Visible keyboard focus; semantic HTML; labelled controls
 - Semantic design tokens in components (no scattered raw hex)
 - Reusable components ship co-located Storybook stories
 - `pnpm lint`, `pnpm typecheck`, `pnpm build` pass via `frontend/verify.sh`
+- WebMCP tools (when listed in §8) tested via shared handler unit tests; optional
+  `modelContextTesting` smoke in dev (see `webmcp` skill)
 
-## 9. Revision history
+## 10. Revision history
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
