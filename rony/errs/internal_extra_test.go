@@ -43,6 +43,34 @@ func TestJSONIterEncoder(t *testing.T) {
 	}
 }
 
+func TestErrmarshallingRoundTrip(t *testing.T) {
+	err := B().
+		Code(NotFound).
+		Msg("missing").
+		Meta("k", "v").
+		Cause(errors.New("root")).
+		Err()
+
+	restored, uerr := errmarshalling.Unmarshal(errmarshalling.Marshal(err))
+	if uerr != nil {
+		t.Fatal(uerr)
+	}
+
+	var got *Error
+	if !errors.As(restored, &got) {
+		t.Fatalf("expected *Error, got %T", restored)
+	}
+	if got.Code != NotFound || got.Item != "missing" {
+		t.Fatalf("unexpected restored error: %+v", got)
+	}
+	if got.Meta["k"] != "v" {
+		t.Fatalf("unexpected meta: %v", got.Meta)
+	}
+	if got.Unwrap() == nil || got.Unwrap().Error() != "root" {
+		t.Fatalf("unexpected underlying: %v", got.Unwrap())
+	}
+}
+
 func TestInternalIteratorUnmarshal(t *testing.T) {
 	wrapped := errmarshalling.Marshal(errors.New("root"))
 	data := fmt.Sprintf(`{"code":5,"codeName":"not_found","item":"missing","meta":{"k":"v"},"wraps":%s}`, string(wrapped))

@@ -79,7 +79,7 @@ func HTTPStatus(err error) int {
 func writeErrorFieldsToInternalStream(e *Error, stream *jsoniter.Stream) {
 	stream.WriteObjectField("code")
 	stream.WriteInt(int(e.Code))
-
+	stream.WriteMore()
 	stream.WriteObjectField("codeName")
 	stream.WriteString(e.Code.String())
 

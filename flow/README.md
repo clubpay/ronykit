@@ -44,7 +44,7 @@ defer sdk.Stop()
 
 ### Backend
 
-`Backend` wraps a Temporal client and worker for a single cluster. It is created via `NewBackend` and handles namespace auto-creation, TLS, custom `DataConverter`, and `worker.Options` passthrough.
+`Backend` wraps a Temporal client and worker for a single cluster. It is created via `NewBackend` and handles namespace auto-creation, TLS, custom `DataConverter`, default `FailureConverter` for `*rony/errs.Error`, and `worker.Options` passthrough.
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
@@ -55,6 +55,7 @@ backend, err := flow.NewBackend(flow.BackendConfig{
 	TaskQueue:     "payment-tasks",
 	DataConverter: flow.EncryptedDataConverter("my-secret-key"),
 	Logger:        flow.NewZapAdapter(zapLogger),
+	// FailureConverter is optional; defaults to flow.DefaultFailureConverter()
 })
 ```
 
@@ -590,6 +591,32 @@ logger := flow.NewZapAdapter(zap.Must(zap.NewProduction()))
 ```
 
 ## Error Utilities
+
+`NewBackend` installs `flow.DefaultFailureConverter()` on the Temporal client by default (the worker inherits it from the client). The converter round-trips `*rony/errs.Error` values across activity, workflow, and client boundaries using `errmarshalling`, so `errors.As(err, &(*errs.Error))` and `errs.Code(err)` keep working after Temporal propagates failures. Business-domain `errs` codes (for example `NotFound`, `InvalidArgument`, `PermissionDenied`) are marked non-retryable in Temporal failures; infrastructure codes such as `Unavailable` and `Internal` remain retryable.
+
+```go
+import "github.com/clubpay/ronykit/rony/errs"
+
+// Optional override when constructing a backend
+backend, err := flow.NewBackend(flow.BackendConfig{
+	HostPort:         "localhost:7233",
+	Namespace:        "my-namespace",
+	TaskQueue:        "my-task-queue",
+	FailureConverter: flow.DefaultFailureConverter(),
+})
+
+// In an activity
+return errs.B().Code(errs.NotFound).Msg("order not found").Err()
+
+// In a workflow after activity.Get(...)
+var domainErr *errs.Error
+if errors.As(err, &domainErr) {
+	switch errs.Code(err) {
+	case errs.NotFound:
+		// handle missing entity without retries
+	}
+}
+```
 
 ```go
 // Wrap errors with the current OpenTelemetry trace ID for correlation

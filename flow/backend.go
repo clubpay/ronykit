@@ -41,15 +41,16 @@ type Backend interface { //nolint:interfacebloat
 }
 
 type BackendConfig struct {
-	HostPort      string
-	Secure        bool
-	Namespace     string
-	Group         string
-	TaskQueue     string
-	DataConverter converter.DataConverter
-	Credentials   client.Credentials
-	Logger        log.Logger
-	WorkerOptions worker.Options
+	HostPort         string
+	Secure           bool
+	Namespace        string
+	Group            string
+	TaskQueue        string
+	DataConverter    converter.DataConverter
+	FailureConverter converter.FailureConverter
+	Credentials      client.Credentials
+	Logger           log.Logger
+	WorkerOptions    worker.Options
 }
 
 var _ Backend = (*realBackend)(nil)
@@ -60,6 +61,7 @@ type realBackend struct {
 	nsCli client.NamespaceClient
 	creds client.Credentials
 	dc    converter.DataConverter
+	fc    converter.FailureConverter
 	w     worker.Worker
 	wOpts worker.Options
 
@@ -74,9 +76,20 @@ func NewBackend(cfg BackendConfig) (Backend, error) {
 	// This worker option is forced to be true according to temporal-go-sdk.
 	cfg.WorkerOptions.DisableRegistrationAliasing = true
 
+	fc := cfg.FailureConverter
+	if fc == nil {
+		fcOpts := make([]FailureConverterOption, 0, 1)
+		if cfg.DataConverter != nil {
+			fcOpts = append(fcOpts, WithFailureConverterDataConverter(cfg.DataConverter))
+		}
+
+		fc = DefaultFailureConverter(fcOpts...)
+	}
+
 	b := &realBackend{
 		l:        cfg.Logger,
 		dc:       cfg.DataConverter,
+		fc:       fc,
 		creds:    cfg.Credentials,
 		ns:       cfg.Namespace,
 		group:    cfg.Group,
@@ -125,6 +138,7 @@ func (r *realBackend) init() error {
 		ConnectionOptions: connOpt,
 		Namespace:         r.ns,
 		DataConverter:     r.dc,
+		FailureConverter:  r.fc,
 		Credentials:       r.creds,
 		Logger:            r.l,
 	}
