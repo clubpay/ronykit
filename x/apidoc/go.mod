@@ -29,7 +29,6 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect
