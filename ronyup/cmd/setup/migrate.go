@@ -25,18 +25,20 @@ var CmdSetupMigrate = &cobra.Command{
 
 var CmdSetupMigrateBundles = &cobra.Command{
 	Use:   "bundles",
-	Short: "Migrate a legacy workspace to the bundle + internal/runner layout",
+	Short: "Migrate a legacy workspace to the bundle + cmd/runner layout",
 	Long: `Upgrade workspaces created before executable bundles were introduced.
 
 The command is idempotent: safe to run multiple times. It will:
 
-  - add internal/runner/ (shared bootstrap) when missing or outdated
-  - rewrite cmd/service/main.go to delegate to internal/runner
+  - add cmd/runner/ (shared bootstrap) when missing or outdated
+  - rewrite cmd/service/main.go to delegate to cmd/runner
   - remove legacy cmd/service/middleware.go and healthz.go
+  - remove legacy internal/runner/ when present
   - create bundles.yaml when missing (default service bundle uses "*")
-  - register internal/runner in go.work and refresh bundle features.go files
+  - register cmd/runner in go.work and refresh bundle features.go files
 
-Run from the Go workspace root (repository root for backend workspaces, or backend/ in fullstack).
+Run from the Go workspace root (directory with go.work) or from the repository
+root in a fullstack workspace (where go.work lives under backend/).
 
 Examples:
   ronyup setup migrate bundles
@@ -59,17 +61,22 @@ func init() {
 }
 
 type bundleLayoutStatus struct {
-	HasRunnerModule  bool
-	HasRunnerPackage bool
-	HasBundlesYAML   bool
-	UsesRunnerMain   bool
-	LegacyMain       bool
-	LegacyMiddleware bool
-	LegacyHealthz    bool
+	HasRunnerModule         bool
+	HasRunnerPackage        bool
+	HasLegacyInternalRunner bool
+	HasBundlesYAML          bool
+	UsesRunnerMain          bool
+	LegacyMain              bool
+	LegacyMiddleware        bool
+	LegacyHealthz           bool
 }
 
 func (s bundleLayoutStatus) NeedsMigration() bool {
 	if s.LegacyMiddleware || s.LegacyHealthz || s.LegacyMain {
+		return true
+	}
+
+	if s.HasLegacyInternalRunner {
 		return true
 	}
 
@@ -86,15 +93,17 @@ func (s bundleLayoutStatus) IsCurrent() bool {
 
 func detectBundleLayout(goRoot string) bundleLayoutStatus {
 	status := bundleLayoutStatus{
-		HasRunnerModule:  fileExists(filepath.Join(goRoot, "internal", "runner", "go.mod")),
-		HasRunnerPackage: fileExists(filepath.Join(goRoot, "internal", "runner", "runner.go")),
-		HasBundlesYAML:   fileExists(bundlesManifestPath(goRoot)),
+		HasRunnerModule:         fileExists(filepath.Join(runnerDir(goRoot), "go.mod")),
+		HasRunnerPackage:        fileExists(filepath.Join(runnerDir(goRoot), "runner.go")),
+		HasLegacyInternalRunner: fileExists(filepath.Join(legacyRunnerDir(goRoot), "runner.go")),
+		HasBundlesYAML:          fileExists(bundlesManifestPath(goRoot)),
 	}
 
 	mainPath := filepath.Join(goRoot, "cmd", defaultBundleName, "main.go")
 	if content, err := os.ReadFile(mainPath); err == nil {
 		text := string(content)
-		status.UsesRunnerMain = strings.Contains(text, "/internal/runner") &&
+		status.UsesRunnerMain = (strings.Contains(text, "/cmd/runner") ||
+			strings.Contains(text, "/internal/runner")) &&
 			strings.Contains(text, "runner.Execute")
 		status.LegacyMain = strings.Contains(text, "genServerProvider") ||
 			strings.Contains(text, "newRootCommand") ||
@@ -108,19 +117,13 @@ func detectBundleLayout(goRoot string) bundleLayoutStatus {
 }
 
 func runMigrateBundles(cmd *cobra.Command) error {
-	cwd := rkit.GetCurrentDir()
-
-	ok, err := isGoWorkspaceRoot(cwd)
+	goRoot, err := resolveGoWorkspace(rkit.GetCurrentDir())
 	if err != nil {
 		return err
 	}
 
-	if !ok {
-		return fmt.Errorf("run this command in a go workspace root directory")
-	}
-
 	if f := cmd.Flag("repoModule"); f == nil || !f.Changed {
-		detected, err := detectGoModule(cwd)
+		detected, err := detectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
@@ -128,11 +131,13 @@ func runMigrateBundles(cmd *cobra.Command) error {
 		opt.RepositoryGoModule = detected
 	}
 
-	status := detectBundleLayout(cwd)
+	cmd.Printf("Go workspace: %s\n", goRoot)
+
+	status := detectBundleLayout(goRoot)
 
 	cmdCtx := workspaceCommandContext{
 		cmd:        cmd,
-		goRoot:     cwd,
+		goRoot:     goRoot,
 		repoModule: opt.RepositoryGoModule,
 	}
 
@@ -146,7 +151,7 @@ func runMigrateBundles(cmd *cobra.Command) error {
 		return syncAllBundleFeatures(cmdCtx)
 	}
 
-	appName, err := detectApplicationName(cwd)
+	appName, err := detectApplicationName(goRoot)
 	if err != nil {
 		return err
 	}
@@ -183,13 +188,17 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	var steps []string
 
 	if !status.HasRunnerPackage {
-		steps = append(steps, "copy internal/runner/ from scaffold")
+		steps = append(steps, "copy cmd/runner/ from scaffold")
 	} else if status.LegacyMiddleware || status.LegacyHealthz || status.LegacyMain {
-		steps = append(steps, "refresh internal/runner/ scaffold files")
+		steps = append(steps, "refresh cmd/runner/ scaffold files")
+	}
+
+	if status.HasLegacyInternalRunner {
+		steps = append(steps, "remove legacy internal/runner/")
 	}
 
 	if status.LegacyMain || !status.UsesRunnerMain {
-		steps = append(steps, "rewrite cmd/service/main.go to use internal/runner")
+		steps = append(steps, "rewrite cmd/service/main.go to use cmd/runner")
 	}
 
 	if status.LegacyMiddleware {
@@ -205,7 +214,7 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	}
 
 	if !status.HasRunnerModule {
-		steps = append(steps, "initialize internal/runner go module and go work use")
+		steps = append(steps, "initialize cmd/runner go module and go work use")
 	}
 
 	steps = append(steps, "regenerate bundle features.go files")
@@ -247,6 +256,10 @@ func applyMigrateBundles(
 		cmdCtx.cmd.Printf("Removed cmd/service/%s\n", rel)
 	}
 
+	if err := removeLegacyInternalRunner(cmdCtx); err != nil {
+		return err
+	}
+
 	if !status.HasBundlesYAML {
 		if err := seedBundlesManifest(cmdCtx.goRoot); err != nil {
 			return err
@@ -267,11 +280,11 @@ func applyMigrateBundles(
 }
 
 func copyRunnerScaffold(goRoot string, templateInput TemplateInput, overwrite bool) error {
-	dest := filepath.Join(goRoot, "internal", "runner")
+	dest := runnerDir(goRoot)
 
 	return z.CopyDir(z.CopyDirParams{
 		FS:             internal.Skeleton,
-		SrcPathPrefix:  filepath.Join("skeleton", "backend", "internal", "runner"),
+		SrcPathPrefix:  filepath.Join("skeleton", "backend", "cmd", "runner"),
 		DestPathPrefix: dest,
 		TemplateInput:  templateInput,
 		SkipExisting:   !overwrite,
@@ -308,7 +321,8 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 		return nil
 	}
 
-	if strings.Contains(string(content), "/internal/runner") {
+	if strings.Contains(string(content), "/cmd/runner") ||
+		strings.Contains(string(content), "/internal/runner") {
 		return nil
 	}
 
@@ -338,21 +352,40 @@ func seedBundlesManifest(goRoot string) error {
 }
 
 func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
-	runnerDir := filepath.Join(cmdCtx.goRoot, "internal", "runner")
-	modulePath := path.Join(opt.RepositoryGoModule, "internal", "runner")
-	p := z.RunCmdParams{Dir: runnerDir}
+	dir := runnerDir(cmdCtx.goRoot)
+	modulePath := path.Join(opt.RepositoryGoModule, runnerRelDir)
+	p := z.RunCmdParams{Dir: dir}
 
-	if !fileExists(filepath.Join(runnerDir, "go.mod")) {
+	if !fileExists(filepath.Join(dir, "go.mod")) {
 		z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
 		z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
-		cmdCtx.cmd.Println("Initialized internal/runner module")
+		cmdCtx.cmd.Println("Initialized cmd/runner module")
 	}
 
 	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
 	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./internal/runner")
+	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+runnerRelDir)
+	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
+
+	return nil
+}
+
+func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
+	legacy := legacyRunnerDir(cmdCtx.goRoot)
+	if !fileExists(filepath.Join(legacy, "runner.go")) {
+		return nil
+	}
+
+	if err := os.RemoveAll(legacy); err != nil {
+		return fmt.Errorf("remove legacy internal/runner: %w", err)
+	}
+
+	cmdCtx.cmd.Println("Removed legacy internal/runner/")
+
+	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
 
 	return nil
 }

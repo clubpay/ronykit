@@ -1,4 +1,4 @@
-Register global middlewares via `di.RegisterMiddleware(mw1, mw2, mw3)` in `internal/runner` (shared bootstrap imported by every executable).
+Register global middlewares via `di.RegisterMiddleware(mw1, mw2, mw3)` in `cmd/runner` (shared bootstrap imported by every executable).
 
 Standard middleware stack:
 

@@ -10,8 +10,8 @@ In `backend` kind this is the repository root; in `fullstack` kind it is `backen
 
 - `go.work` — lists every Go module in the workspace.
 - `bundles.yaml` — declares executable bundles and which feature modules each one compiles in. The default `service` bundle uses `"*"` (all features). Additional bundles live under `cmd/<bundle>/`.
-- `internal/runner/` — shared bootstrap (cobra/fx/rony wiring, middleware, health check) used by every executable.
-- `cmd/service/` — the default all-in-one dev executable. `main.go` delegates to `internal/runner`; registered services start via `di.AllServices()` unless filtered with `--service` or the `SERVICES` env var (`settings.ModuleName` values, e.g. `feature/auth`).
+- `cmd/runner/` — shared bootstrap (cobra/fx/rony wiring, middleware, health check) used by every executable.
+- `cmd/service/` — the default all-in-one dev executable. `main.go` delegates to `cmd/runner`; registered services start via `di.AllServices()` unless filtered with `--service` or the `SERVICES` env var (`settings.ModuleName` values, e.g. `feature/auth`).
 - `cmd/service/features.go` — blank imports trigger each feature module's `init()` (`di.RegisterService`). `ronyup setup feature` appends imports here and refreshes matching bundles in `bundles.yaml`.
 - `cmd/<bundle>/` — optional production bundles created with `ronyup setup bundle`. Each bundle has its own selective `features.go` for compile-time mix-and-match.
 - `feature/` — business modules (default parent directory; override with `--featurePrefix`). By default, a service named `auth` lives at `feature/auth/`. With `--groupByTemplate`, it lives at `feature/service/auth/`; job and gateway templates would use `feature/job/<name>/` or `feature/gateway/<name>/`.
@@ -30,7 +30,9 @@ ronyup setup migrate bundles
 ronyup setup sync --only backend   # optional: refresh Makefile bundle targets
 ```
 
-`setup sync` refreshes shared boilerplate (AGENTS.md, devops, Makefile, `bundles.yaml` when missing) but does **not** rewrite `cmd/service/main.go` or add `internal/runner/`. See `knowledge://ronyup/tools/migrate_bundles` and `knowledge://ronyup/architecture/executable-bundles`.
+`setup sync` refreshes shared boilerplate (AGENTS.md, devops, Makefile, `bundles.yaml` when missing) but does **not** rewrite `cmd/service/main.go` or add `cmd/runner/`. See `knowledge://ronyup/tools/migrate_bundles` and `knowledge://ronyup/architecture/executable-bundles`.
+
+Command locations: `knowledge://ronyup/architecture/workspace-commands` (Go workspace root or fullstack repo root for feature/bundle/migrate; repository root for sync).
 
 ## Shared root layout (always at the repository root)
 

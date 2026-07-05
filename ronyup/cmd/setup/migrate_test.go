@@ -49,7 +49,7 @@ func TestDetectBundleLayout_Current(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	runnerDir := filepath.Join(root, "internal", "runner")
+	runnerDir := filepath.Join(root, "cmd", "runner")
 	serviceDir := filepath.Join(root, "cmd", "service")
 
 	for _, dir := range []string{runnerDir, serviceDir} {
@@ -60,7 +60,7 @@ func TestDetectBundleLayout_Current(t *testing.T) {
 
 	currentMain := `package main
 
-import "github.com/example/app/internal/runner"
+import "github.com/example/app/cmd/runner"
 
 func main() {
 	runner.Execute(runner.Config{})
@@ -68,7 +68,7 @@ func main() {
 `
 	files := map[string]string{
 		filepath.Join(runnerDir, "runner.go"): "package runner\n",
-		filepath.Join(runnerDir, "go.mod"):    "module github.com/example/app/internal/runner\n\ngo 1.25\n",
+		filepath.Join(runnerDir, "go.mod"):    "module github.com/example/app/cmd/runner\n\ngo 1.25\n",
 		filepath.Join(serviceDir, "main.go"):  currentMain,
 		bundlesManifestPath(root):             "bundles:\n  service:\n    services: [\"*\"]\n",
 	}
@@ -98,7 +98,7 @@ func TestBuildMigratePlan_Legacy(t *testing.T) {
 	joined := strings.Join(plan, "\n")
 
 	for _, want := range []string{
-		"copy internal/runner/",
+		"copy cmd/runner/",
 		"rewrite cmd/service/main.go",
 		"remove cmd/service/middleware.go",
 		"remove cmd/service/healthz.go",
@@ -128,7 +128,7 @@ func TestRunMigrateBundles_DryRunLegacy(t *testing.T) {
 	}
 
 	if fileExists(filepath.Join(root, "internal", "runner", "runner.go")) {
-		t.Fatal("dry-run should not create internal/runner")
+		t.Fatal("dry-run should not create cmd/runner")
 	}
 }
 
@@ -158,7 +158,7 @@ func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 	}
 
 	for _, rel := range []string{
-		"internal/runner/runner.go",
+		"cmd/runner/runner.go",
 		"bundles.yaml",
 		"cmd/service/main.go",
 	} {
@@ -178,8 +178,50 @@ func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 		t.Fatalf("ReadFile main.go: %v", err)
 	}
 
-	if !strings.Contains(string(main), "internal/runner") {
-		t.Fatalf("expected migrated main.go to import internal/runner, got:\n%s", main)
+	if !strings.Contains(string(main), "cmd/runner") {
+		t.Fatalf("expected migrated main.go to import cmd/runner, got:\n%s", main)
+	}
+}
+
+func TestRunMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
+	root := scaffoldLegacyBundleWorkspace(t)
+	backend := filepath.Join(root, backendDir)
+	if err := os.MkdirAll(filepath.Join(backend, "cmd"), 0o755); err != nil {
+		t.Fatalf("MkdirAll backend/cmd: %v", err)
+	}
+
+	for _, rel := range []string{"go.work", "cmd/service", "feature"} {
+		src := filepath.Join(root, rel)
+		dst := filepath.Join(backend, rel)
+		if err := os.Rename(src, dst); err != nil {
+			t.Fatalf("Rename %s: %v", rel, err)
+		}
+	}
+
+	stubBinDir := filepath.Join(t.TempDir(), "bin")
+	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll(stub bin): %v", err)
+	}
+
+	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
+		t.Fatalf("writeExecutable(go): %v", err)
+	}
+
+	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	oldOpt := opt
+	t.Cleanup(func() { opt = oldOpt })
+
+	chdir(t, root)
+	opt.RepositoryGoModule = "github.com/example/legacy-repo/backend"
+
+	cmd := newSilentCommand(t)
+	if err := runMigrateBundles(cmd); err != nil {
+		t.Fatalf("runMigrateBundles(fullstack root): %v", err)
+	}
+
+	if _, err := os.Stat(filepath.Join(backend, "cmd/runner/runner.go")); err != nil {
+		t.Fatalf("expected cmd/runner under backend: %v", err)
 	}
 }
 

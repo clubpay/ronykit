@@ -362,7 +362,7 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		goRoot := filepath.Join(repoRoot, goRootRel())
 		modulePrefix := goModulePrefix()
 
-		packages := []string{"pkg/i18n", "internal/runner", "cmd/service"}
+		packages := []string{"pkg/i18n", "cmd/runner", "cmd/service"}
 		p := z.RunCmdParams{Dir: goRoot}
 		z.RunCmd(cmd.Context(), p, "go", "work", "init")
 
@@ -473,21 +473,15 @@ var CmdSetupFeature = &cobra.Command{
 }
 
 func runFeature(cmd *cobra.Command) error {
-	cwd := rkit.GetCurrentDir()
-
-	ok, err := isGoWorkspaceRoot(cwd)
+	goRoot, err := resolveGoWorkspace(rkit.GetCurrentDir())
 	if err != nil {
 		return err
 	}
 
-	if !ok {
-		return fmt.Errorf("run this command in a go workspace root directory")
-	}
-
-	opt.RepositoryRootDir = cwd
+	opt.RepositoryRootDir = goRoot
 
 	if f := cmd.Flag("repoModule"); f == nil || !f.Changed {
-		detected, err := detectGoModule(cwd)
+		detected, err := detectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
@@ -495,6 +489,7 @@ func runFeature(cmd *cobra.Command) error {
 		opt.RepositoryGoModule = detected
 	}
 
+	cmd.Printf("Go workspace: %s\n", goRoot)
 	cmd.Printf("Repository module: %s\n", opt.RepositoryGoModule)
 
 	if err := createFeature(cmd.Context()); err != nil {
@@ -506,7 +501,7 @@ func runFeature(cmd *cobra.Command) error {
 
 	cmdCtx := workspaceCommandContext{
 		cmd:        cmd,
-		goRoot:     cwd,
+		goRoot:     goRoot,
 		repoModule: opt.RepositoryGoModule,
 	}
 

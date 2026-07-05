@@ -7,7 +7,7 @@ Scaffolded workspaces compile feature modules into one or more executables.
 | Path | Purpose |
 |------|---------|
 | `bundles.yaml` | Build-time manifest: which features each executable includes |
-| `internal/runner/` | Shared runtime bootstrap (cobra/fx/rony, middleware, health check) |
+| `cmd/runner/` | Shared runtime bootstrap (cobra/fx/rony, middleware, health check) |
 | `cmd/service/` | Default all-in-one **dev** binary (`services: ["*"]`) |
 | `cmd/<name>/` | Optional production bundles (compile-time mix-and-match) |
 
@@ -57,4 +57,4 @@ See `knowledge://ronyup/tools/migrate_bundles`.
 
 - `ronyup setup feature` adds a blank import to `cmd/service/features.go`.
 - Bundles in `bundles.yaml` that list the feature (or `"*"`) get their `cmd/<bundle>/features.go` refreshed automatically.
-- Global middleware registers in `internal/runner` via `di.RegisterMiddleware`.
+- Global middleware registers in `cmd/runner` via `di.RegisterMiddleware`.

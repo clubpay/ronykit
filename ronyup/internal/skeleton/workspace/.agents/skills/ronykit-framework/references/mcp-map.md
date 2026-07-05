@@ -45,6 +45,7 @@ Read these when implementing or reviewing service code.
 | `srs-template`          | SRS section outline (IEEE 830)                   |
 | `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
 | `workspace-layout`      | Repo layout, bundles, `cmd/service`, feature registration |
+| `workspace-commands`    | Where to run `ronyup setup` commands (go root vs repo root) |
 | `executable-bundles`    | Compile-time bundles, runtime `--service`, Makefile targets |
 | `service-structure`     | `service.go`, `module.go`, `migration.go`        |
 | `api-handler-files`     | `api/service.go`, `api/api_*.go` handlers        |

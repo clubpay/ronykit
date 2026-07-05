@@ -19,7 +19,7 @@ ronyup setup bundle --remove auth-api
 ## Side effects
 
 - Updates `bundles.yaml` at the Go workspace root.
-- Creates `cmd/<name>/main.go` (delegates to `internal/runner`) and selective `features.go`.
+- Creates `cmd/<name>/main.go` (delegates to `cmd/runner`) and selective `features.go`.
 - Initializes a Go module and runs `go work use ./cmd/<name>`.
 - `ronyup setup feature` refreshes bundles that list the new feature (or use `"*"`).
 

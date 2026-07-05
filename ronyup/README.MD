@@ -98,7 +98,7 @@ Workspace kind is auto-detected from `go.work`, `backend/go.work`, or `frontend/
 Workspaces created before executable bundles need a **one-time** migration (sync alone does not rewrite `cmd/service/main.go`):
 
 ```bash
-cd ./my-repo   # or backend/ in fullstack
+cd ./my-repo   # backend-only repo root, or fullstack repo root (backend/ resolved automatically)
 ronyup setup migrate bundles
 ronyup setup sync --only backend   # optional: Makefile bundle targets
 ```
@@ -342,7 +342,7 @@ Requirements and side effects:
 
 #### setup migrate bundles
 
-Upgrades workspaces scaffolded before executable bundles to the current layout (`internal/runner`, `bundles.yaml`, thin `cmd/service/main.go`).
+Upgrades workspaces scaffolded before executable bundles to the current layout (`cmd/runner`, `bundles.yaml`, thin `cmd/service/main.go`).
 
 ```bash
 ronyup setup migrate bundles
@@ -356,9 +356,9 @@ Flags:
 ```
 
 Requirements and side effects:
-- Must be run from a Go workspace root.
+- Must be run from a Go workspace root **or** the repository root in fullstack workspaces.
 - Idempotent — safe to run multiple times; already-migrated workspaces only refresh bundle `features.go` files.
-- Copies `internal/runner/`, rewrites `cmd/service/main.go`, removes legacy `middleware.go`/`healthz.go`, creates `bundles.yaml` when missing, runs `go work use ./internal/runner`.
+- Copies `cmd/runner/`, rewrites `cmd/service/main.go`, removes legacy `middleware.go`/`healthz.go` and `internal/runner/` when present, creates `bundles.yaml` when missing, runs `go work use ./cmd/runner`.
 - Backs up a monolithic main to `cmd/service/main.go.legacy`.
 - Does not modify feature modules under `feature/*`.
 

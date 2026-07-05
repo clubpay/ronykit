@@ -71,7 +71,7 @@ my-api/
 ├── go.work              # Go workspace file
 ├── bundles.yaml         # executable bundle manifest
 ├── Makefile
-├── internal/runner/     # shared bootstrap for all executables
+├── cmd/runner/     # shared bootstrap for all executables
 ├── cmd/service/         # default all-in-one dev entry point
 ├── pkg/i18n/            # Translation utilities
 ├── devops/              # devbox: Helm-managed K8s services
@@ -241,7 +241,7 @@ After upgrading `ronyup`, refresh shared boilerplate and migrate bundle layout o
 
 ```bash
 ronyup setup sync
-ronyup setup migrate bundles
+ronyup setup migrate bundles    # from repo root (fullstack) or backend/ — both work
 ronyup setup sync --only backend   # optional Makefile bundle targets
 ```
 

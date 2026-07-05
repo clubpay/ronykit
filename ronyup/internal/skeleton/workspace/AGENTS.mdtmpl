@@ -43,7 +43,7 @@ Installed skills in this workspace:
 	- `.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`: AI assistant config (shared, stays at root).
 - Inside `backend/`:
 	- `bundles.yaml`: executable bundle manifest (default `service` = all-in-one dev binary).
-	- `internal/runner`: shared bootstrap for every executable.
+	- `cmd/runner`: shared bootstrap for every executable.
 	- `cmd/service`: default all-in-one dev executable; additional bundles under `cmd/<name>/`.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
@@ -58,7 +58,7 @@ Installed skills in this workspace:
 - Go workspace for RonyKIT services.
 - Main folders in generated workspaces:
 	- `bundles.yaml`: executable bundle manifest (default `service` = all-in-one dev binary).
-	- `internal/runner`: shared bootstrap for every executable.
+	- `cmd/runner`: shared bootstrap for every executable.
 	- `cmd/service`: default all-in-one dev executable; additional bundles under `cmd/<name>/`.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
@@ -67,7 +67,7 @@ Installed skills in this workspace:
 
 ## Upgrading from an older ronyup
 
-If this workspace was created before executable bundles, run once from the Go workspace root:
+If this workspace was created before executable bundles, run once from the Go workspace root **or** the fullstack repository root:
 
 ```bash
 ronyup setup migrate bundles

@@ -61,19 +61,13 @@ func init() {
 }
 
 func runBundle(cmd *cobra.Command) error {
-	cwd := rkit.GetCurrentDir()
-
-	ok, err := isGoWorkspaceRoot(cwd)
+	goRoot, err := resolveGoWorkspace(rkit.GetCurrentDir())
 	if err != nil {
 		return err
 	}
 
-	if !ok {
-		return fmt.Errorf("run this command in a go workspace root directory")
-	}
-
 	if f := cmd.Flag("repoModule"); f == nil || !f.Changed {
-		detected, err := detectGoModule(cwd)
+		detected, err := detectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
@@ -83,9 +77,11 @@ func runBundle(cmd *cobra.Command) error {
 
 	cmdCtx := workspaceCommandContext{
 		cmd:        cmd,
-		goRoot:     cwd,
+		goRoot:     goRoot,
 		repoModule: opt.RepositoryGoModule,
 	}
+
+	cmd.Printf("Go workspace: %s\n", goRoot)
 
 	if bundleOpt.Gen {
 		return syncAllBundleFeatures(cmdCtx)
