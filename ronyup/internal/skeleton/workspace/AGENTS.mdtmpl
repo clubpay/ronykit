@@ -42,7 +42,9 @@ Installed skills in this workspace:
 	- `docs/`: design documents (SRS/SDD) and guides (shared, stays at root).
 	- `.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`: AI assistant config (shared, stays at root).
 - Inside `backend/`:
-	- `cmd/service`: service process wiring and bootstrap.
+	- `bundles.yaml`: executable bundle manifest (default `service` = all-in-one dev binary).
+	- `internal/runner`: shared bootstrap for every executable.
+	- `cmd/service`: default all-in-one dev executable; additional bundles under `cmd/<name>/`.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
 {{- else if eq .Kind "frontend" }}
@@ -55,11 +57,24 @@ Installed skills in this workspace:
 {{- else }}
 - Go workspace for RonyKIT services.
 - Main folders in generated workspaces:
-	- `cmd/service`: service process wiring and bootstrap.
+	- `bundles.yaml`: executable bundle manifest (default `service` = all-in-one dev binary).
+	- `internal/runner`: shared bootstrap for every executable.
+	- `cmd/service`: default all-in-one dev executable; additional bundles under `cmd/<name>/`.
 	- `feature/`: business modules.
 	- `pkg/`: shared libraries (cross-module, business-agnostic).
 	- `devops/`: `devops/devbox/` Helmfile-managed services on Kubernetes (`make devbox-up`).
 {{- end }}
+
+## Upgrading from an older ronyup
+
+If this workspace was created before executable bundles, run once from the Go workspace root:
+
+```bash
+ronyup setup migrate bundles
+ronyup setup sync --only backend
+```
+
+See MCP `migrate_bundles` and `architecture/executable-bundles`.
 
 ## Mandatory gates (do these first, no matter what is asked)
 

@@ -46,7 +46,13 @@ Examples:
 func init() {
 	flags := CmdSetupBundle.Flags()
 	flags.StringVarP(&bundleOpt.Name, "name", "n", "", "bundle name (cmd/<name>/ directory)")
-	flags.StringSliceVarP(&bundleOpt.Services, "services", "s", nil, "feature module paths (settings.ModuleName), or * for all")
+	flags.StringSliceVarP(
+		&bundleOpt.Services,
+		"services",
+		"s",
+		nil,
+		"feature module paths (settings.ModuleName), or * for all",
+	)
 	flags.StringVar(&bundleOpt.Description, "description", "", "optional bundle description stored in bundles.yaml")
 	flags.BoolVar(&bundleOpt.Gen, "gen", false, "regenerate features.go for every bundle from bundles.yaml")
 	flags.BoolVar(&bundleOpt.Remove, "remove", false, "remove a bundle from bundles.yaml and delete cmd/<name>/")

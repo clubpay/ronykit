@@ -12,7 +12,9 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 | `scaffold_workspace` | New Go workspace (`ronyup setup workspace` at `path`)                             |
 | `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`) |
 
-Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`.
+CLI-only (read `knowledge://ronyup/tools/*` docs): `sync_workspace`, `setup_bundle`, `migrate_bundles`.
+
+Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`.
 
 ## Prompts
 
@@ -42,7 +44,8 @@ Read these when implementing or reviewing service code.
 | `frontend-design-template`  | Frontend design doc outline (tokens, rules)     |
 | `srs-template`          | SRS section outline (IEEE 830)                   |
 | `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
-| `workspace-layout`      | Repo layout, `cmd/service`, feature registration |
+| `workspace-layout`      | Repo layout, bundles, `cmd/service`, feature registration |
+| `executable-bundles`    | Compile-time bundles, runtime `--service`, Makefile targets |
 | `service-structure`     | `service.go`, `module.go`, `migration.go`        |
 | `api-handler-files`     | `api/service.go`, `api/api_*.go` handlers        |
 | `domain-layer`          | `internal/domain`, errors, types                 |

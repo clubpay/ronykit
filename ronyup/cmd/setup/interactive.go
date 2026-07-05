@@ -57,6 +57,7 @@ func RunInteractive(cmd *cobra.Command) error {
 			huh.NewOption("Setup a new workspace", "workspace"),
 			huh.NewOption("Add a new feature to existing workspace", "feature"),
 			huh.NewOption("Sync scaffold files in an existing workspace", "sync"),
+			huh.NewOption("Migrate an older workspace to bundle layout", "migrate"),
 		).
 		Value(&action).
 		Run()
@@ -71,6 +72,8 @@ func RunInteractive(cmd *cobra.Command) error {
 		return runFeatureInteractive(cmd)
 	case "sync":
 		return runSyncInteractive(cmd)
+	case "migrate":
+		return runMigrateBundles(cmd)
 	}
 
 	return nil

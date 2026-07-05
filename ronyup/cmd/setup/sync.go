@@ -463,6 +463,7 @@ func syncBackendBoilerplate(
 		"Makefile":          true,
 		"verify.sh":         true,
 		".golangci.yml":     true,
+		"bundles.yaml":      true,
 		"feature/README.MD": true,
 	}
 

@@ -119,3 +119,7 @@ resource. Quick decision table (left = what you might reach for, right = what yo
   timers/waitgroups/byte buffers → `x/p`.
 - Localization → `x/i18n`. API docs → `x/apidoc` / `rony.WithAPIDocs`. Inter-service calls → generated stubs via `di.StubProvider` (never
   hand-written HTTP clients).
+
+Workspaces scaffolded before executable bundles: run `ronyup setup migrate bundles` once after upgrading `ronyup` (read
+`knowledge://ronyup/tools/migrate_bundles`). Use `ronyup setup sync` for AGENTS.md/devops/Makefile drift — sync does not rewrite
+`cmd/service/main.go`.

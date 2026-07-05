@@ -195,6 +195,8 @@ type TemplateInput struct {
 	PackageName string
 	// RonyKitPath is the address of the RonyKIT modules
 	RonyKitPath string
+	// BundleName is the executable bundle name for cmd/<name>/ entrypoints.
+	BundleName string
 	// Kind is the workspace layout (KindBackend or KindFullstack); templates use
 	// it to render layout-specific guidance.
 	Kind string
@@ -360,7 +362,7 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		goRoot := filepath.Join(repoRoot, goRootRel())
 		modulePrefix := goModulePrefix()
 
-		packages := []string{"pkg/i18n", "cmd/service"}
+		packages := []string{"pkg/i18n", "internal/runner", "cmd/service"}
 		p := z.RunCmdParams{Dir: goRoot}
 		z.RunCmd(cmd.Context(), p, "go", "work", "init")
 
@@ -501,6 +503,16 @@ func runFeature(cmd *cobra.Command) error {
 
 	copyFeatureTemplate(cmd)
 	sideEffectImportModule(cmd)
+
+	cmdCtx := workspaceCommandContext{
+		cmd:        cmd,
+		goRoot:     cwd,
+		repoModule: opt.RepositoryGoModule,
+	}
+
+	if err := syncBundlesForFeature(cmdCtx, resolveFeaturePackagePath()); err != nil {
+		cmd.PrintErrf("Warning: could not sync bundles: %v\n", err)
+	}
 
 	return nil
 }

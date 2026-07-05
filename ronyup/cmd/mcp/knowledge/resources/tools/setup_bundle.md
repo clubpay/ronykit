@@ -32,4 +32,7 @@ go run . --service feature/auth,feature/user
 SERVICES=feature/auth go run .
 ```
 
-Service names match `settings.ModuleName` (typically `feature/<name>`).
+## Related
+
+- `knowledge://ronyup/architecture/executable-bundles` — bundle layout overview.
+- `knowledge://ronyup/tools/migrate_bundles` — upgrade legacy workspaces before creating bundles.

@@ -25,7 +25,7 @@ inside the `appModule` (or a dedicated `diDatasource` `fx.Options` block) to ext
 
 For inter-service clients, use `di.StubProvider[Settings, IStub, Stub](moduleName, hostPortField, constructor)` to expose a typed stub with B3 trace propagation; the host/port is read from `settings.Services.<hostPortField>`.
 
-Register global middlewares via `di.RegisterMiddleware` in the `cmd/service` entrypoint `init()`.
+Register global middlewares via `di.RegisterMiddleware` in `internal/runner` (imported by every `cmd/<bundle>/` executable).
 
 Services are discovered at runtime via:
 

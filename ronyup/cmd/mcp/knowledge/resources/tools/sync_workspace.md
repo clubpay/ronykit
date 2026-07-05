@@ -19,7 +19,8 @@ Run from the repository root, or from `backend/` in a fullstack workspace.
 
 ## Behaviour
 
-- **Does not touch** application code: `cmd/service/`, `feature/*` modules, `pkg/*` (except scaffold README), or user design docs under `docs/design/`.
+- **Does not touch** application code: `cmd/service/main.go`, `feature/*` modules, `pkg/*` (except scaffold README), or user design docs under `docs/design/`.
+- For the bundle + `internal/runner` layout, run `ronyup setup migrate bundles` once after upgrading `ronyup`.
 - **Default**: add missing scaffold files only (`--overwrite` replaces existing scaffold files).
 - **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `--kind` if needed.
 
@@ -33,7 +34,7 @@ Run from the repository root, or from `backend/` in a fullstack workspace.
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
 | `skills` | `.agents/skills/ronykit-framework` + `--skills` selection |
-| `backend` | `Makefile`, `verify.sh`, `.golangci.yml` |
+| `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all applicable sections (default) |
 
@@ -48,4 +49,7 @@ ronyup setup sync --only agents --overwrite
 
 # Update installed agent skills
 ronyup setup sync --only skills --overwrite --skills installed
+
+# Migrate an older workspace to bundle layout (one-time)
+ronyup setup migrate bundles
 ```

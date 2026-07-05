@@ -7,6 +7,8 @@
 - [Installation](#installation)
 - [Create a Workspace](#create-a-workspace)
 - [Add a Feature](#add-a-feature)
+- [Executable Bundles](#executable-bundles)
+- [Upgrade an Older Workspace](#upgrade-an-older-workspace)
 - [Feature Templates](#feature-templates)
 - [Translation Catalogs](#translation-catalogs)
 - [MCP Server](#mcp-server)
@@ -66,16 +68,18 @@ This creates:
 
 ```
 my-api/
-├── go.work           # Go workspace file
+├── go.work              # Go workspace file
+├── bundles.yaml         # executable bundle manifest
 ├── Makefile
-├── cmd/service/      # Entry point
-├── pkg/i18n/         # Translation utilities
-├── devops/           # devbox: Helmfile-managed K8s services
-├── docs/             # design docs and guides
-└── .git/             # Initialized git repo
+├── internal/runner/     # shared bootstrap for all executables
+├── cmd/service/         # default all-in-one dev entry point
+├── pkg/i18n/            # Translation utilities
+├── devops/              # devbox: Helm-managed K8s services
+├── docs/                # design docs and guides
+└── .git/                # Initialized git repo
 ```
 
-The workspace is immediately runnable with `cd cmd/service && go run .`.
+The workspace is immediately runnable with `make run` or `cd cmd/service && go run .`.
 
 ### Workspace kinds
 
@@ -212,6 +216,36 @@ By default, features are placed at `{featurePrefix}/{featureDir}/` (for example 
 | `--groupByTemplate` | `-g`  | Group under `{featurePrefix}/{template}/` | `false`                |
 | `--repoModule`      | `-m`  | Repository Go module path (auto-detected) | `github.com/your/repo` |
 | `--force`           | `-f`  | Replace existing feature directory        | `false`                |
+
+Matching bundles in `bundles.yaml` have their import lists refreshed automatically.
+
+---
+
+## Executable Bundles
+
+Workspaces compile feature modules into one or more executables. The default `cmd/service` binary is an all-in-one dev entry point; production bundles mix and match features at compile time.
+
+```bash
+ronyup setup bundle --name auth-api --services feature/auth,feature/session
+ronyup setup bundle --gen
+cd cmd/service && go run . --service feature/auth
+```
+
+See `bundles.yaml` at the Go workspace root. Makefile: `make run`, `make run-bundle BUNDLE=auth-api`, `make build-bundle BUNDLE=auth-api`.
+
+---
+
+## Upgrade an Older Workspace
+
+After upgrading `ronyup`, refresh shared boilerplate and migrate bundle layout once:
+
+```bash
+ronyup setup sync
+ronyup setup migrate bundles
+ronyup setup sync --only backend   # optional Makefile bundle targets
+```
+
+`setup sync` does not rewrite `cmd/service/main.go`. Use `setup migrate bundles` (preview with `--dry-run`).
 
 ---
 
@@ -403,7 +437,11 @@ When adding a feature interactively, you can set the **Feature Parent Directory*
 ronyup
 ├── setup
 │   ├── workspace    Create a new Go workspace
-│   └── feature      Add a feature module to an existing workspace
+│   ├── feature      Add a feature module to an existing workspace
+│   ├── bundle       Create or refresh executable bundles
+│   ├── migrate
+│   │   └── bundles  Upgrade legacy workspaces to bundle layout
+│   └── sync         Refresh scaffold boilerplate in an existing workspace
 ├── text             Generate translation catalogs
 ├── template         Inspect Go source for template metadata
 │   └── generate     (stub — not yet implemented)

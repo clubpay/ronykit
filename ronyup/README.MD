@@ -28,7 +28,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 
 ## Commands
 
-- `setup`: create a new workspace, add a feature, or sync scaffold files into an existing workspace.
+- `setup`: create a new workspace, add a feature, migrate bundle layout, sync scaffold files, or manage bundles.
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
 - `template`: parse Go source and print package/type/function metadata (generator stub).
 - `mcp`: run `ronyup` as a stdio MCP server for AI assistants.
@@ -87,11 +87,23 @@ Sections (`--only`):
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
 | `skills` | `.agents/skills/ronykit-framework` + installed catalog skills |
-| `backend` | `Makefile`, `verify.sh`, `.golangci.yml` (not `cmd/` or `feature/`) |
+| `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing; does not migrate `cmd/service`) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all sections applicable to the detected workspace kind (default) |
 
 Workspace kind is auto-detected from `go.work`, `backend/go.work`, or `frontend/`. In fullstack repos you can run sync from the repository root or from `backend/`.
+
+### Migrate an older workspace to bundle layout
+
+Workspaces created before executable bundles need a **one-time** migration (sync alone does not rewrite `cmd/service/main.go`):
+
+```bash
+cd ./my-repo   # or backend/ in fullstack
+ronyup setup migrate bundles
+ronyup setup sync --only backend   # optional: Makefile bundle targets
+```
+
+Preview changes with `--dry-run`. The command is idempotent. See [setup migrate bundles](#setup-migrate-bundles) below.
 
 ### Add a feature
 
@@ -301,6 +313,54 @@ Requirements and side effects:
 - Initializes a Go module for the feature, sets `go` to `1.25`, runs `go mod tidy`, `go fmt`, and adds the module to `go.work`.
 - Adds a side-effect import to `cmd/service/features.go` and runs `go mod tidy` + `go fmt` in `cmd/service`.
 - Use `--force` to replace a non-empty feature directory.
+
+#### setup bundle
+
+Creates or refreshes executable bundles under `cmd/<name>/` that compile in only the selected feature modules. The default `service` bundle remains the all-in-one dev binary.
+
+```bash
+ronyup setup bundle --name auth-api --services feature/auth,feature/session
+ronyup setup bundle --gen
+ronyup setup bundle --remove auth-api
+```
+
+Flags:
+
+```
+-n, --name string             bundle name (cmd/<name>/ directory)
+-s, --services strings        feature module paths (settings.ModuleName), or * for all
+    --description string      optional description stored in bundles.yaml
+    --gen                     regenerate features.go for every bundle from bundles.yaml
+    --remove                  remove a bundle and delete cmd/<name>/
+```
+
+Requirements and side effects:
+- Must be run from a Go workspace root (a `go.work` file must exist).
+- Updates `bundles.yaml`, generates `cmd/<name>/main.go` and selective `features.go`, initializes a Go module, and runs `go work use`.
+- `ronyup setup feature` also refreshes bundles that include the new feature (or use `"*"`).
+- Runtime subsetting within a compiled binary: `go run . --service feature/auth` or `SERVICES=feature/auth,feature/user`.
+
+#### setup migrate bundles
+
+Upgrades workspaces scaffolded before executable bundles to the current layout (`internal/runner`, `bundles.yaml`, thin `cmd/service/main.go`).
+
+```bash
+ronyup setup migrate bundles
+ronyup setup migrate bundles --dry-run
+```
+
+Flags:
+
+```
+    --dry-run    print planned changes without writing files
+```
+
+Requirements and side effects:
+- Must be run from a Go workspace root.
+- Idempotent — safe to run multiple times; already-migrated workspaces only refresh bundle `features.go` files.
+- Copies `internal/runner/`, rewrites `cmd/service/main.go`, removes legacy `middleware.go`/`healthz.go`, creates `bundles.yaml` when missing, runs `go work use ./internal/runner`.
+- Backs up a monolithic main to `cmd/service/main.go.legacy`.
+- Does not modify feature modules under `feature/*`.
 
 ### text
 

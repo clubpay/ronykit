@@ -1,11 +1,21 @@
-.PHONY: run test tidy vet lint verify verify-integration devbox-bootstrap devbox-up devbox-down devbox-suspend devbox-pause devbox-resume devbox-destroy devbox-status
+.PHONY: run test tidy vet lint verify verify-integration devbox-bootstrap devbox-up devbox-down devbox-suspend devbox-pause devbox-resume devbox-destroy devbox-status build-bundle run-bundle
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
 DEVBOX_DIR := $(if $(wildcard ./devops/devbox/Makefile),./devops/devbox,../devops/devbox)
+BUNDLE ?= service
 
 run:
-	@echo "Run service"
+	@echo "Run service (all compiled-in features)"
 	@cd cmd/service && go run .
+
+run-bundle:
+	@echo "Run bundle $(BUNDLE)"
+	@cd cmd/$(BUNDLE) && go run .
+
+build-bundle:
+	@echo "Build bundle $(BUNDLE)"
+	@mkdir -p bin
+	@cd cmd/$(BUNDLE) && go build -o ../../bin/$(BUNDLE) .
 
 test:
 	@echo "Run tests"
