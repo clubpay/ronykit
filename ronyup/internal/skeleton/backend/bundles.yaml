@@ -1,0 +1,16 @@
+# Service bundles declare which feature modules are compiled into each executable.
+# The default "service" bundle is the all-in-one dev binary under cmd/service/.
+#
+# services:
+#   - "*"            — include every feature imported in cmd/service/features.go
+#   - feature/<name> — include a specific feature module (matches settings.ModuleName)
+#
+# Create additional bundles with:
+#   ronyup setup bundle --name auth-api --services feature/auth,feature/session
+# Regenerate all bundle features.go files after manual edits with:
+#   ronyup setup bundle --gen
+bundles:
+  service:
+    description: All-in-one dev binary (imports every feature)
+    services:
+      - "*"

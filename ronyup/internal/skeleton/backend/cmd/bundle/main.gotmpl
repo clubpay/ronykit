@@ -1,0 +1,11 @@
+package main
+
+import "{{.RepositoryPath}}/internal/runner"
+
+func main() {
+	runner.Execute(runner.Config{
+		ApplicationName: "{{.ApplicationName}}",
+		DisplayName:     "{{.ApplicationName}} ({{.BundleName}})",
+		PackageName:     "{{.PackageName}}",
+	})
+}

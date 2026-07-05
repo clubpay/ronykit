@@ -1,0 +1,301 @@
+package runner
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/spf13/cobra"
+	"go.uber.org/fx"
+	"{{.RonyKitPath}}/kit"
+	"{{.RonyKitPath}}/rony"
+	"{{.RonyKitPath}}/rony/errs"
+	"{{.RonyKitPath}}/x/cache"
+	"{{.RonyKitPath}}/x/di"
+	"{{.RonyKitPath}}/x/rkit"
+	"{{.RonyKitPath}}/x/settings"
+	"{{.RonyKitPath}}/x/telemetry/logkit"
+	"{{.RonyKitPath}}/x/telemetry/meterkit"
+	"{{.RonyKitPath}}/x/telemetry/tracekit"
+)
+
+// Config holds bootstrap values baked in at scaffold time for each executable.
+type Config struct {
+	ApplicationName string
+	DisplayName     string
+	PackageName     string
+}
+
+// Execute runs the cobra root command with retry logic.
+func Execute(cfg Config) {
+	if cfg.DisplayName == "" {
+		cfg.DisplayName = cfg.ApplicationName
+	}
+
+	root := newRootCommand(cfg)
+
+	const maxRetries = 10
+	const retryDelay = 5 * time.Second
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		err := root.Execute()
+		if err == nil {
+			break
+		}
+
+		fmt.Printf("got error: %v\n", err)
+		if attempt < maxRetries {
+			fmt.Printf("Retrying in %v... (attempt %d/%d)\n", retryDelay, attempt, maxRetries)
+			time.Sleep(retryDelay)
+		} else {
+			fmt.Printf("Failed after %d attempts\n", maxRetries)
+			os.Exit(1)
+		}
+	}
+}
+
+func newRootCommand(cfg Config) *cobra.Command {
+	cmd := &cobra.Command{
+		RunE: func(cmd *cobra.Command, args []string) error {
+			listenPort, _ := cmd.Flags().GetInt("port")
+			listenIP, _ := cmd.Flags().GetString("listenIP")
+			services, _ := cmd.Flags().GetStringSlice("service")
+
+			if len(services) == 0 {
+				if env := strings.TrimSpace(os.Getenv("SERVICES")); env != "" {
+					services = splitServices(env)
+				}
+			}
+
+			if len(services) > 0 {
+				cmd.Println("Services:", services)
+			}
+
+			opts := []fx.Option{
+				fx.Options(
+					fx.RecoverFromPanics(),
+					fx.Provide(
+						settings.New,
+						fx.Annotate(
+							genServerProvider(cfg, listenIP, listenPort),
+							fx.ResultTags(`name:"service"`),
+						),
+					),
+					fx.Invoke(traceExporter(cfg), metricExporter(cfg), logExporter),
+				),
+			}
+
+			moduleOpts := fx.Options(
+				fx.Supply(
+					logkit.New(logkit.WithLevel(logkit.InfoLevel)),
+				),
+				fx.Provide(
+					settings.New,
+					func() (*cache.Cache, error) {
+						return cache.New(
+							cache.Config{
+								NumCounters: 100_000,
+								MaxCost:     10_000,
+								BufferItems: 64,
+							},
+						)
+					},
+				),
+			)
+
+			if len(services) == 0 {
+				for _, m := range di.AllServices() {
+					opts = append(opts, m(moduleOpts))
+				}
+			} else {
+				for _, svc := range services {
+					m := di.GetService("service", svc)
+					if m == nil {
+						return fmt.Errorf("service %q not found", svc)
+					}
+
+					opts = append(opts, m(moduleOpts))
+				}
+			}
+
+			app := fx.New(opts...)
+			startCtx, cf := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cf()
+
+			err := app.Start(startCtx)
+			if err != nil {
+				cmd.Println(rkit.Ok(fx.VisualizeError(err)))
+
+				return err
+			}
+
+			cmd.Println(fmt.Sprintf("Server[Service] listening on http://%s:%d", listenIP, listenPort))
+			cmd.Println(fmt.Sprintf("API Docs: http://%s:%d/docs", listenIP, listenPort))
+			cmd.Println("Press Ctrl+C to stop.")
+
+			<-app.Wait()
+
+			stopCtx, cf := context.WithTimeout(context.Background(), time.Minute)
+			defer cf()
+
+			err = app.Stop(stopCtx)
+			if err != nil {
+				panic(err)
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().String("listenIP", "0.0.0.0", "listen ip")
+	cmd.Flags().Int("port", 8586, "service port")
+	cmd.Flags().StringSlice("service", []string{}, "service(s) to run (settings.ModuleName); empty runs all compiled-in services. Also reads SERVICES env (comma-separated).")
+
+	return cmd
+}
+
+func splitServices(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+
+	return out
+}
+
+func genServerProvider(cfg Config, host string, port int) func(lc fx.Lifecycle) *rony.Server {
+	return func(lc fx.Lifecycle) *rony.Server {
+		srv := rony.NewServer(
+			rony.WithAPIDocs("/docs"),
+			rony.WithServerName(cfg.DisplayName+" (powered by RonyKIT)"),
+			rony.WithVersion("v0.0.1"),
+			rony.Listen(fmt.Sprintf("%s:%d", host, port)),
+			rony.WithTracer(tracekit.B3(cfg.DisplayName+" [gateways]")),
+			rony.WithCORS(rony.CORSConfig{
+				IgnoreEmptyOrigin: true,
+			}),
+			rony.WithErrorHandler(func(ctx *kit.Context, err error) {
+				if ctx == nil {
+					return
+				}
+
+				ctx.SetStatusCode(http.StatusBadRequest)
+				ctx.Out().SetMsg(
+					errs.B().Cause(err).Code(errs.InvalidArgument).Msg("COULD_NOT_PARSE_PAYLOAD").Err(),
+				).Send()
+			}),
+		)
+
+		lc.Append(fx.Hook{
+			OnStart: func(ctx context.Context) error {
+				rony.Setup(
+					srv, "Health", rony.EmptyState(),
+					rony.WithUnary[rony.EMPTY, rony.NOP, HealthInput, HealthOutput](
+						Healthz,
+						rony.GET("/healthz", rony.UnaryName("Healthz")),
+					),
+				)
+
+				err := srv.Start(ctx)
+				if err != nil {
+					return err
+				}
+
+				srv.PrintRoutesCompact(os.Stdout)
+
+				return nil
+			},
+			OnStop: func(ctx context.Context) error {
+				srv.Stop(ctx)
+
+				return nil
+			},
+		})
+
+		return srv
+	}
+}
+
+func traceExporter(cfg Config) func(lc fx.Lifecycle, set settings.Settings) error {
+	return func(lc fx.Lifecycle, set settings.Settings) error {
+		var opts []tracekit.ExporterOption
+		if otlp := set.GetString("OTLP_HOSTPORT"); otlp != "" {
+			opts = append(opts, tracekit.WithGrpcOTLP(otlp))
+		}
+
+		if len(opts) == 0 {
+			opts = append(opts, tracekit.WithTerminal(true))
+		}
+
+		opts = append(
+			opts,
+			tracekit.WithCustomSampler(
+				tracekit.NewSampler(cfg.PackageName).
+					AddDrop(
+						"GET /healthz",
+					),
+			),
+		)
+
+		exp, err := tracekit.NewExporter(cfg.ApplicationName, opts...)
+		if err != nil {
+			return err
+		}
+
+		lc.Append(fx.Hook{
+			OnStop: func(ctx context.Context) error {
+				return exp.Shutdown(ctx)
+			},
+		})
+
+		return nil
+	}
+}
+
+func metricExporter(cfg Config) func(lc fx.Lifecycle) error {
+	return func(lc fx.Lifecycle) error {
+		exp, err := meterkit.NewExporter(
+			meterkit.WithName(cfg.ApplicationName),
+			meterkit.WithPrometheus("/", 2374),
+		)
+		if err != nil {
+			return err
+		}
+
+		exp.SetAsGlobal()
+
+		lc.Append(fx.Hook{
+			OnStop: func(ctx context.Context) error {
+				return exp.Shutdown(ctx)
+			},
+		})
+
+		return nil
+	}
+}
+
+func logExporter(lc fx.Lifecycle, set settings.Settings) error {
+	var opts []logkit.ExporterOption
+	if otlp := set.GetString("OTLP_HOSTPORT"); otlp != "" {
+		opts = append(opts, logkit.WithGrpcOTLP(otlp))
+	}
+
+	if len(opts) == 0 {
+		opts = append(opts, logkit.WithTerminal(true))
+	}
+
+	_, err := logkit.NewExporter("{{.ApplicationName}}", opts...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
