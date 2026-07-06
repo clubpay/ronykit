@@ -29,8 +29,8 @@ These commands target shared files outside the Go workspace (AI config, devops, 
 ```
 my-repo/                 ← setup sync, docs/, devops/, AGENTS.md
 ├── backend/             ← go.work lives here; make/go/feature/bundle/migrate
-│   ├── cmd/runner/
-│   ├── cmd/service/
+│   ├── pkg/runner/
+│   ├── cmd/all-in-one/
 │   ├── bundles.yaml
 │   └── feature/
 └── frontend/

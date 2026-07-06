@@ -52,7 +52,7 @@ ronyup setup feature -p auth -n auth -t service
 ### 4. Run it
 
 ```bash
-cd cmd/service && go run .
+cd cmd/all-in-one && go run .
 ```
 
 That's it — you have a running API server with a scaffolded project structure, dependency injection, database migrations, and generated client stubs.

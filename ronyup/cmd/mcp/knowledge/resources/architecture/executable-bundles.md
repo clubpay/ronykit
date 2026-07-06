@@ -7,8 +7,8 @@ Scaffolded workspaces compile feature modules into one or more executables.
 | Path | Purpose |
 |------|---------|
 | `bundles.yaml` | Build-time manifest: which features each executable includes |
-| `cmd/runner/` | Shared runtime bootstrap (cobra/fx/rony, middleware, health check) |
-| `cmd/service/` | Default all-in-one **dev** binary (`services: ["*"]`) |
+| `pkg/runner/` | Shared runtime bootstrap (cobra/fx/rony, middleware, health check) |
+| `cmd/all-in-one/` | Default all-in-one **dev** binary (`services: ["*"]`) |
 | `cmd/<name>/` | Optional production bundles (compile-time mix-and-match) |
 
 ## Runtime vs compile-time
@@ -25,7 +25,7 @@ Service names match `settings.ModuleName` (typically `feature/<name>`).
 ```bash
 # Default dev binary (all compiled-in features)
 make run
-cd cmd/service && go run .
+cd cmd/all-in-one && go run .
 
 # Create a production bundle
 ronyup setup bundle --name auth-api --services feature/auth,feature/session
@@ -55,6 +55,6 @@ See `knowledge://ronyup/tools/migrate_bundles`.
 
 ## Feature registration
 
-- `ronyup setup feature` adds a blank import to `cmd/service/features.go`.
+- `ronyup setup feature` adds a blank import to `cmd/all-in-one/features.go`.
 - Bundles in `bundles.yaml` that list the feature (or `"*"`) get their `cmd/<bundle>/features.go` refreshed automatically.
-- Global middleware registers in `cmd/runner` via `di.RegisterMiddleware`.
+- Global middleware registers in `pkg/runner` via `di.RegisterMiddleware`.

@@ -362,7 +362,7 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		goRoot := filepath.Join(repoRoot, goRootRel())
 		modulePrefix := goModulePrefix()
 
-		packages := []string{"pkg/i18n", "cmd/runner", "cmd/service"}
+		packages := []string{"pkg/i18n", "pkg/runner", "cmd/" + defaultBundleName}
 		p := z.RunCmdParams{Dir: goRoot}
 		z.RunCmd(cmd.Context(), p, "go", "work", "init")
 
@@ -695,7 +695,7 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 }
 
 func sideEffectImportModule(cmd *cobra.Command) {
-	featuresFilePath := filepath.Join(".", "cmd", "service", "features.go")
+	featuresFilePath := filepath.Join(".", "cmd", defaultBundleName, "features.go")
 
 	// Read the existing file
 	content, err := os.ReadFile(featuresFilePath)
@@ -779,7 +779,7 @@ func sideEffectImportModule(cmd *cobra.Command) {
 
 	cmd.Println("Feature import added to features.go")
 
-	p := z.RunCmdParams{Dir: filepath.Join("./cmd/service")}
+	p := z.RunCmdParams{Dir: filepath.Join("./cmd", defaultBundleName)}
 	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
 	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
 }

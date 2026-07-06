@@ -14,10 +14,19 @@ import (
 )
 
 const (
-	defaultBundleName   = "service"
-	bundlesManifestName = "bundles.yaml"
-	wildcardService     = "*"
+	defaultBundleName       = "all-in-one"
+	legacyDefaultBundleName = "service"
+	bundlesManifestName     = "bundles.yaml"
+	wildcardService         = "*"
 )
+
+func defaultBundleDir(goRoot string) string {
+	return filepath.Join(goRoot, "cmd", defaultBundleName)
+}
+
+func legacyDefaultBundleDir(goRoot string) string {
+	return filepath.Join(goRoot, "cmd", legacyDefaultBundleName)
+}
 
 type BundlesConfig struct {
 	Bundles map[string]BundleSpec `yaml:"bundles"`

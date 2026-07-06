@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 )
 
-const runnerRelDir = "cmd/runner"
+const runnerRelDir = "pkg/runner"
+
+const legacyCmdRunnerRelDir = "cmd/runner"
 
 // resolveGoWorkspace finds the directory that contains go.work.
 // For backend workspaces that is the current directory; for fullstack workspaces
@@ -36,4 +38,8 @@ func runnerDir(goRoot string) string {
 
 func legacyRunnerDir(goRoot string) string {
 	return filepath.Join(goRoot, "internal", "runner")
+}
+
+func legacyCmdRunnerDir(goRoot string) string {
+	return filepath.Join(goRoot, legacyCmdRunnerRelDir)
 }

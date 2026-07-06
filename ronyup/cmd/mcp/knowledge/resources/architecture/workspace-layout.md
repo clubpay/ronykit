@@ -1,21 +1,25 @@
+---
+name: workspace_layout
+---
+
 `ronyup setup workspace` supports three layouts via `--kind` (default `backend`):
 
 - **`backend`** — a Go-only workspace at the repository root.
 - **`fullstack`** — a `backend/` + `frontend/` split. The Go workspace is moved into `backend/`, while AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`), `devops/`, and `docs/` stay at the repository root and are shared by both sides.
-- **`frontend`** — a frontend-only workspace: a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) and `docs/` at the repository root. There is **no** Go workspace, `devops/`, `Makefile`, or backend verify gate; only the frontend verify stop hook is installed.
+- **`frontend`** — a frontend-only workspace: a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) and `docs/` at the repository root. There is **no** Go backend, `devops/`, `Makefile`, or backend verify gate; only the frontend verify stop hook is installed.
 
 ## Backend layout (root of the Go workspace)
 
 In `backend` kind this is the repository root; in `fullstack` kind it is `backend/`:
 
 - `go.work` — lists every Go module in the workspace.
-- `bundles.yaml` — declares executable bundles and which feature modules each one compiles in. The default `service` bundle uses `"*"` (all features). Additional bundles live under `cmd/<bundle>/`.
-- `cmd/runner/` — shared bootstrap (cobra/fx/rony wiring, middleware, health check) used by every executable.
-- `cmd/service/` — the default all-in-one dev executable. `main.go` delegates to `cmd/runner`; registered services start via `di.AllServices()` unless filtered with `--service` or the `SERVICES` env var (`settings.ModuleName` values, e.g. `feature/auth`).
-- `cmd/service/features.go` — blank imports trigger each feature module's `init()` (`di.RegisterService`). `ronyup setup feature` appends imports here and refreshes matching bundles in `bundles.yaml`.
+- `bundles.yaml` — declares executable bundles and which feature modules each one compiles in. The default `all-in-one` bundle uses `"*"` (all features). Additional bundles live under `cmd/<bundle>/`.
+- `pkg/runner/` — shared bootstrap (cobra/fx/rony wiring, middleware, health check) used by every executable.
+- `cmd/all-in-one/` — the default all-in-one dev executable. `main.go` delegates to `pkg/runner`; registered services start via `di.AllServices()` unless filtered with `--service` or the `SERVICES` env var (`settings.ModuleName` values, e.g. `feature/auth`).
+- `cmd/all-in-one/features.go` — blank imports trigger each feature module's `init()` (`di.RegisterService`). `ronyup setup feature` appends imports here and refreshes matching bundles in `bundles.yaml`.
 - `cmd/<bundle>/` — optional production bundles created with `ronyup setup bundle`. Each bundle has its own selective `features.go` for compile-time mix-and-match.
 - `feature/` — business modules (default parent directory; override with `--featurePrefix`). By default, a service named `auth` lives at `feature/auth/`. With `--groupByTemplate`, it lives at `feature/service/auth/`; job and gateway templates would use `feature/job/<name>/` or `feature/gateway/<name>/`.
-- `pkg/` — shared internal libraries (`pkg/i18n` is created by `setup workspace`; add others such as `bkit`, `log`, `datasource`, `msg` as needed). Keep `pkg/*` free of feature-specific business logic.
+- `pkg/` — shared internal libraries (`pkg/i18n` and `pkg/runner` are created by `setup workspace`; add others such as `bkit`, `log`, `datasource`, `msg` as needed). Keep `pkg/*` free of feature-specific business logic.
 - `.golangci.yml` — package-selection enforcement (depguard).
 - `Makefile` — workspace tasks (`make run`, `make test`, `make lint`, …).
 
@@ -30,7 +34,7 @@ ronyup setup migrate bundles
 ronyup setup sync --only backend   # optional: refresh Makefile bundle targets
 ```
 
-`setup sync` refreshes shared boilerplate (AGENTS.md, devops, Makefile, `bundles.yaml` when missing) but does **not** rewrite `cmd/service/main.go` or add `cmd/runner/`. See `knowledge://ronyup/tools/migrate_bundles` and `knowledge://ronyup/architecture/executable-bundles`.
+`setup sync` refreshes shared boilerplate (AGENTS.md, devops, Makefile, `bundles.yaml` when missing) but does **not** rewrite `cmd/all-in-one/main.go` or add `pkg/runner/`. See `knowledge://ronyup/tools/migrate_bundles` and `knowledge://ronyup/architecture/executable-bundles`.
 
 Command locations: `knowledge://ronyup/architecture/workspace-commands` (Go workspace root or fullstack repo root for feature/bundle/migrate; repository root for sync).
 
@@ -44,8 +48,8 @@ Command locations: `knowledge://ronyup/architecture/workspace-commands` (Go work
 
 ## Module paths and command location
 
-- In `backend` kind, modules are `<repoModule>/cmd/service`, `<repoModule>/feature/<name>`, etc.
-- In `fullstack` kind, the Go workspace is nested, so modules are `<repoModule>/backend/cmd/service`, `<repoModule>/backend/feature/<name>`, etc. Run `ronyup setup feature` (and `go`/`make` commands) from the `backend/` directory. `docs/design` still lives at the repository root, and the `scaffold_feature` design gate resolves it from the parent of `backend/` automatically.
+- In `backend` kind, modules are `<repoModule>/cmd/all-in-one`, `<repoModule>/feature/<name>`, etc.
+- In `fullstack` kind, the Go workspace is nested, so modules are `<repoModule>/backend/cmd/all-in-one`, `<repoModule>/backend/feature/<name>`, etc. Run `ronyup setup feature` (and `go`/`make` commands) from the `backend/` directory. `docs/design` still lives at the repository root, and the `scaffold_feature` design gate resolves it from the parent of `backend/` automatically.
 
 ## Frontend (`fullstack` and `frontend` kinds)
 

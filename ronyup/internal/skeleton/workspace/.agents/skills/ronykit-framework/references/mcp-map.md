@@ -44,7 +44,7 @@ Read these when implementing or reviewing service code.
 | `frontend-design-template`  | Frontend design doc outline (tokens, rules)     |
 | `srs-template`          | SRS section outline (IEEE 830)                   |
 | `sdd-template`          | SDD section outline mapped to RonyKIT modules    |
-| `workspace-layout`      | Repo layout, bundles, `cmd/service`, feature registration |
+| `workspace-layout`      | Repo layout, bundles, `cmd/all-in-one`, feature registration |
 | `workspace-commands`    | Where to run `ronyup setup` commands (go root vs repo root) |
 | `executable-bundles`    | Compile-time bundles, runtime `--service`, Makefile targets |
 | `service-structure`     | `service.go`, `module.go`, `migration.go`        |

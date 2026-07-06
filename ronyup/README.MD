@@ -49,11 +49,15 @@ ronyup setup workspace \
 This copies the embedded workspace skeleton, initializes a `go.work`, and creates module roots for:
 
 - `pkg/i18n`
-- `cmd/service`
+- `cmd/all-in-one`
 
-Pass `--kind fullstack` to scaffold a `backend/` + `frontend/` split instead of a Go-only repo. The Go workspace (`go.work`, `cmd/service`, `pkg`, `feature`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. In fullstack mode, run `setup feature` and `make`/`go` commands from the `backend/` directory.
+Pass `--kind fullstack` to scaffold a `backend/` + `frontend/` split instead of a Go-only repo. The Go workspace (`go.work`, `cmd/all-in-one`,
+`pkg`, `feature`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`,
+`.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. In fullstack mode, run `setup feature` and `make`/`go` commands from the `backend/`
+directory.
 
-Pass `--kind frontend` to scaffold a frontend-only repo: a `frontend/` application plus shared AI assistant config and `docs/` at the root, with no Go workspace, `devops/`, or backend verify gate.
+Pass `--kind frontend` to scaffold a frontend-only repo: a `frontend/` application plus shared AI assistant config and `docs/` at the root,
+with no Go workspace, `devops/`, or backend verify gate.
 
 ### Sync an existing workspace
 
@@ -64,7 +68,8 @@ cd ./my-repo
 ronyup setup sync
 ```
 
-By default only **missing** scaffold files are added. Pass `--overwrite` to replace existing scaffold files (for example `AGENTS.md`, hooks, or skill trees).
+By default only **missing** scaffold files are added. Pass `--overwrite` to replace existing scaffold files (for example `AGENTS.md`, hooks,
+or skill trees).
 
 ```bash
 # Add only the new devbox folder without touching existing files
@@ -79,23 +84,24 @@ ronyup setup sync --only skills --overwrite --skills installed
 
 Sections (`--only`):
 
-| Section | Updates |
-|---------|---------|
-| `agents` | `AGENTS.md` |
-| `ai` | `.ai/mcp/`, `.cursor/mcp.json` |
-| `hooks` | `.cursor/hooks/`, `hooks.json` |
-| `devops` | `devops/devbox/` |
-| `docs` | `docs/design/README.MD` |
-| `skills` | `.agents/skills/ronykit-framework` + installed catalog skills |
-| `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing; does not migrate `cmd/service`) |
-| `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
-| `all` | all sections applicable to the detected workspace kind (default) |
+| Section    | Updates                                                                                                 |
+|------------|---------------------------------------------------------------------------------------------------------|
+| `agents`   | `AGENTS.md`                                                                                             |
+| `ai`       | `.ai/mcp/`, `.cursor/mcp.json`                                                                          |
+| `hooks`    | `.cursor/hooks/`, `hooks.json`                                                                          |
+| `devops`   | `devops/devbox/`                                                                                        |
+| `docs`     | `docs/design/README.MD`                                                                                 |
+| `skills`   | `.agents/skills/ronykit-framework` + installed catalog skills                                           |
+| `backend`  | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing; does not migrate `cmd/all-in-one`) |
+| `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD`                                                           |
+| `all`      | all sections applicable to the detected workspace kind (default)                                        |
 
-Workspace kind is auto-detected from `go.work`, `backend/go.work`, or `frontend/`. In fullstack repos you can run sync from the repository root or from `backend/`.
+Workspace kind is auto-detected from `go.work`, `backend/go.work`, or `frontend/`. In fullstack repos you can run sync from the repository
+root or from `backend/`.
 
 ### Migrate an older workspace to bundle layout
 
-Workspaces created before executable bundles need a **one-time** migration (sync alone does not rewrite `cmd/service/main.go`):
+Workspaces created before executable bundles need a **one-time** migration (sync alone does not rewrite `cmd/all-in-one/main.go`):
 
 ```bash
 cd ./my-repo   # backend-only repo root, or fullstack repo root (backend/ resolved automatically)
@@ -114,7 +120,8 @@ ronyup setup feature \
   --template service
 ```
 
-The feature is copied from the embedded templates in `internal/skeleton/feature` into `feature/auth/` by default. Use `--featurePrefix` to change the parent directory, or `--groupByTemplate` (or `-g`) for `feature/service/auth/`.
+The feature is copied from the embedded templates in `internal/skeleton/feature` into `feature/auth/` by default. Use `--featurePrefix` to
+change the parent directory, or `--groupByTemplate` (or `-g`) for `feature/service/auth/`.
 
 ### Generate translation catalogs
 
@@ -259,6 +266,7 @@ Global flags for `setup`:
 ```
 
 Notes:
+
 - `--custom` is parsed but not currently applied in the template renderer.
 - Running `ronyup setup` with no args/flags starts the interactive prompt.
 
@@ -279,19 +287,26 @@ Flags:
 ```
 
 What it does:
+
 - Copies the embedded workspace skeleton to `repoDir`.
-- Creates `go.work`, initializes `pkg/i18n` and `cmd/service` modules.
+- Creates `go.work`, initializes `pkg/i18n` and `cmd/all-in-one` modules.
 - Sets `go` version to `1.25`, runs `go mod tidy` and `go work use .`.
 - Initializes a git repo and makes an initial commit.
 
 Kinds:
+
 - `backend` (default): a Go-only workspace at `repoDir`.
-- `fullstack`: a `backend/` + `frontend/` split. The Go workspace is created under `backend/` (modules are prefixed with `backend/`, e.g. `github.com/you/repo/backend/cmd/service`), while `devops/`, `docs/`, and AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root and are shared. Run `setup feature` from the `backend/` directory.
-- `frontend`: a frontend-only workspace — a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) and `docs/` at the root. No Go workspace, `devops/`, `Makefile`, or backend verify gate is created; only the frontend verify stop hook is installed.
+- `fullstack`: a `backend/` + `frontend/` split. The Go workspace is created under `backend/` (modules are prefixed with `backend/`, e.g.
+  `github.com/you/repo/backend/cmd/all-in-one`), while `devops/`, `docs/`, and AI assistant config (`.ai/`, `.agents/`, `.cursor/`,
+  `AGENTS.md`) stay at the root and are shared. Run `setup feature` from the `backend/` directory.
+- `frontend`: a frontend-only workspace — a `frontend/` application plus shared AI assistant config (`.ai/`, `.agents/`, `.cursor/`,
+  `AGENTS.md`) and `docs/` at the root. No Go workspace, `devops/`, `Makefile`, or backend verify gate is created; only the frontend verify
+  stop hook is installed.
 
 #### setup feature
 
-Adds a new feature module under `{featurePrefix}/{featureDir}/` by default (for example `feature/auth/`). Pass `--groupByTemplate` (or `-g`) to place the module at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/auth/`).
+Adds a new feature module under `{featurePrefix}/{featureDir}/` by default (for example `feature/auth/`). Pass `--groupByTemplate` (or `-g`)
+to place the module at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/auth/`).
 
 ```bash
 ronyup setup feature -m github.com/you/myrepo -p auth -n auth -t service
@@ -308,15 +323,18 @@ Flags:
 ```
 
 Requirements and side effects:
+
 - Must be run from a Go workspace root (a `go.work` file must exist).
-- Writes into `{featurePrefix}/{featureDir}/` in the current directory (or `{featurePrefix}/{template}/{featureDir}/` when `--groupByTemplate` is set).
+- Writes into `{featurePrefix}/{featureDir}/` in the current directory (or `{featurePrefix}/{template}/{featureDir}/` when
+  `--groupByTemplate` is set).
 - Initializes a Go module for the feature, sets `go` to `1.25`, runs `go mod tidy`, `go fmt`, and adds the module to `go.work`.
-- Adds a side-effect import to `cmd/service/features.go` and runs `go mod tidy` + `go fmt` in `cmd/service`.
+- Adds a side-effect import to `cmd/all-in-one/features.go` and runs `go mod tidy` + `go fmt` in `cmd/all-in-one`.
 - Use `--force` to replace a non-empty feature directory.
 
 #### setup bundle
 
-Creates or refreshes executable bundles under `cmd/<name>/` that compile in only the selected feature modules. The default `service` bundle remains the all-in-one dev binary.
+Creates or refreshes executable bundles under `cmd/<name>/` that compile in only the selected feature modules. The default `all-in-one` bundle
+remains the all-in-one dev binary.
 
 ```bash
 ronyup setup bundle --name auth-api --services feature/auth,feature/session
@@ -335,6 +353,7 @@ Flags:
 ```
 
 Requirements and side effects:
+
 - Must be run from a Go workspace root (a `go.work` file must exist).
 - Updates `bundles.yaml`, generates `cmd/<name>/main.go` and selective `features.go`, initializes a Go module, and runs `go work use`.
 - `ronyup setup feature` also refreshes bundles that include the new feature (or use `"*"`).
@@ -342,7 +361,7 @@ Requirements and side effects:
 
 #### setup migrate bundles
 
-Upgrades workspaces scaffolded before executable bundles to the current layout (`cmd/runner`, `bundles.yaml`, thin `cmd/service/main.go`).
+Upgrades workspaces scaffolded before executable bundles to the current layout (`pkg/runner`, `bundles.yaml`, thin `cmd/all-in-one/main.go`).
 
 ```bash
 ronyup setup migrate bundles
@@ -356,10 +375,12 @@ Flags:
 ```
 
 Requirements and side effects:
+
 - Must be run from a Go workspace root **or** the repository root in fullstack workspaces.
 - Idempotent — safe to run multiple times; already-migrated workspaces only refresh bundle `features.go` files.
-- Copies `cmd/runner/`, rewrites `cmd/service/main.go`, removes legacy `middleware.go`/`healthz.go` and `internal/runner/` when present, creates `bundles.yaml` when missing, runs `go work use ./cmd/runner`.
-- Backs up a monolithic main to `cmd/service/main.go.legacy`.
+- Copies `pkg/runner/`, rewrites `cmd/all-in-one/main.go`, removes legacy `middleware.go`/`healthz.go`, `cmd/runner/`, and `internal/runner/` when present,
+  creates `bundles.yaml` when missing, runs `go work use ./pkg/runner`.
+- Backs up a monolithic main to `cmd/all-in-one/main.go.legacy`.
 - Does not modify feature modules under `feature/*`.
 
 ### text
@@ -382,6 +403,7 @@ Flags:
 ```
 
 Behavior:
+
 - If `go.work` exists, it loads all workspace modules (or those in `--modules-filter`).
 - Otherwise it scans the current module.
 - Prints detected package list before extraction.
@@ -404,6 +426,7 @@ Flags:
 ```
 
 Behavior:
+
 - Parses Go packages under the current directory and prints counts of files, types, functions, and comments.
 
 #### template generate
@@ -438,20 +461,23 @@ Flags:
 ```
 
 Exposed MCP tools:
+
 - `list_templates`: list embedded files under `internal/skeleton`.
 - `read_template`: read one embedded template file.
 - `create_workspace`: delegates to `ronyup setup workspace`.
 - `create_feature`: delegates to `ronyup setup feature`.
 - `plan_service`: dry-run plan for implementing a service feature in workspace structure.
 - `implement_service`: writes base implementation into `api/service.go`, `internal/app/app.go`, and `internal/repo/port.go`.
-  - Supports multi-contract generation via `contracts` input.
-  - Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
+	- Supports multi-contract generation via `contracts` input.
+	- Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
 
 Knowledge and prompt for migration:
+
 - `knowledge://ronyup/architecture/migrating-kit-to-rony`: phased migration guide from direct `kit` to `rony`.
 - `migrate-kit-to-rony`: MCP prompt template to generate a scoped migration plan.
 
 Default MCP service conventions:
+
 - Prefer Postgres + `sqlc` for repository management and DB access by default.
 - Use a different persistence stack only when the request explicitly asks for it.
 - Regenerate stubs with `make gen-stub` after contract changes.
@@ -474,12 +500,12 @@ Create (or update) `.cursor/mcp.json` in your project:
 
 ```json
 {
-  "mcpServers": {
-    "ronyup": {
-      "command": "ronyup",
-      "args": ["mcp"]
-    }
-  }
+	"mcpServers": {
+		"ronyup": {
+			"command": "ronyup",
+			"args": ["mcp"]
+		}
+	}
 }
 ```
 
@@ -492,12 +518,13 @@ GoLand MCP setup is done from Settings/Preferences:
 1. Open `Settings` (`Preferences` on macOS).
 2. Search for `MCP` in settings search.
 3. Add a new **stdio** MCP server with:
-   - Name: `ronyup`
-   - Command: `ronyup`
-   - Arguments: `mcp`
+	- Name: `ronyup`
+	- Command: `ronyup`
+	- Arguments: `mcp`
 4. Save settings and restart GoLand if tools do not appear immediately.
 
-After setup, verify from the IDE MCP/AI tools view that server `ronyup` is connected and its tools are listed (`list_templates`, `create_workspace`, etc).
+After setup, verify from the IDE MCP/AI tools view that server `ronyup` is connected and its tools are listed (`list_templates`,
+`create_workspace`, etc).
 
 ## Examples
 

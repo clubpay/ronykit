@@ -25,17 +25,18 @@ var CmdSetupMigrate = &cobra.Command{
 
 var CmdSetupMigrateBundles = &cobra.Command{
 	Use:   "bundles",
-	Short: "Migrate a legacy workspace to the bundle + cmd/runner layout",
+	Short: "Migrate a legacy workspace to the bundle + pkg/runner layout",
 	Long: `Upgrade workspaces created before executable bundles were introduced.
 
 The command is idempotent: safe to run multiple times. It will:
 
-  - add cmd/runner/ (shared bootstrap) when missing or outdated
-  - rewrite cmd/service/main.go to delegate to cmd/runner
-  - remove legacy cmd/service/middleware.go and healthz.go
-  - remove legacy internal/runner/ when present
-  - create bundles.yaml when missing (default service bundle uses "*")
-  - register cmd/runner in go.work and refresh bundle features.go files
+  - add pkg/runner/ (shared bootstrap) when missing or outdated
+  - rewrite cmd/all-in-one/main.go to delegate to pkg/runner
+  - remove legacy cmd/all-in-one/middleware.go and healthz.go (or the same under cmd/service/)
+  - rename legacy cmd/service/ to cmd/all-in-one/ when present
+  - remove legacy internal/runner/ and cmd/runner/ when present
+  - create bundles.yaml when missing (default all-in-one bundle uses "*")
+  - register pkg/runner in go.work and refresh bundle features.go files
 
 Run from the Go workspace root (directory with go.work) or from the repository
 root in a fullstack workspace (where go.work lives under backend/).
@@ -61,14 +62,18 @@ func init() {
 }
 
 type bundleLayoutStatus struct {
-	HasRunnerModule         bool
-	HasRunnerPackage        bool
-	HasLegacyInternalRunner bool
-	HasBundlesYAML          bool
-	UsesRunnerMain          bool
-	LegacyMain              bool
-	LegacyMiddleware        bool
-	LegacyHealthz           bool
+	HasRunnerModule              bool
+	HasRunnerPackage             bool
+	HasLegacyCmdRunner           bool
+	HasLegacyInternalRunner      bool
+	HasBundlesYAML               bool
+	HasDefaultBundle             bool
+	HasLegacyServiceBundle       bool
+	HasLegacyServiceBundleInYAML bool
+	UsesRunnerMain               bool
+	LegacyMain                   bool
+	LegacyMiddleware             bool
+	LegacyHealthz                bool
 }
 
 func (s bundleLayoutStatus) NeedsMigration() bool {
@@ -76,7 +81,15 @@ func (s bundleLayoutStatus) NeedsMigration() bool {
 		return true
 	}
 
-	if s.HasLegacyInternalRunner {
+	if s.HasLegacyInternalRunner || s.HasLegacyCmdRunner {
+		return true
+	}
+
+	if s.HasLegacyServiceBundle && !s.HasDefaultBundle {
+		return true
+	}
+
+	if s.HasLegacyServiceBundleInYAML {
 		return true
 	}
 
@@ -95,14 +108,22 @@ func detectBundleLayout(goRoot string) bundleLayoutStatus {
 	status := bundleLayoutStatus{
 		HasRunnerModule:         fileExists(filepath.Join(runnerDir(goRoot), "go.mod")),
 		HasRunnerPackage:        fileExists(filepath.Join(runnerDir(goRoot), "runner.go")),
+		HasLegacyCmdRunner:      fileExists(filepath.Join(legacyCmdRunnerDir(goRoot), "runner.go")),
 		HasLegacyInternalRunner: fileExists(filepath.Join(legacyRunnerDir(goRoot), "runner.go")),
 		HasBundlesYAML:          fileExists(bundlesManifestPath(goRoot)),
+		HasDefaultBundle:        fileExists(filepath.Join(defaultBundleDir(goRoot), "main.go")),
+		HasLegacyServiceBundle:  fileExists(filepath.Join(legacyDefaultBundleDir(goRoot), "main.go")),
 	}
 
-	mainPath := filepath.Join(goRoot, "cmd", defaultBundleName, "main.go")
+	if cfg, err := loadBundlesConfig(goRoot); err == nil {
+		_, status.HasLegacyServiceBundleInYAML = cfg.Bundles[legacyDefaultBundleName]
+	}
+
+	mainPath := defaultBundleMainPath(goRoot)
 	if content, err := os.ReadFile(mainPath); err == nil {
 		text := string(content)
-		status.UsesRunnerMain = (strings.Contains(text, "/cmd/runner") ||
+		status.UsesRunnerMain = (strings.Contains(text, "/pkg/runner") ||
+			strings.Contains(text, "/cmd/runner") ||
 			strings.Contains(text, "/internal/runner")) &&
 			strings.Contains(text, "runner.Execute")
 		status.LegacyMain = strings.Contains(text, "genServerProvider") ||
@@ -110,10 +131,26 @@ func detectBundleLayout(goRoot string) bundleLayoutStatus {
 			(strings.Contains(text, "cobra.Command") && !status.UsesRunnerMain)
 	}
 
-	status.LegacyMiddleware = fileExists(filepath.Join(goRoot, "cmd", defaultBundleName, "middleware.go"))
-	status.LegacyHealthz = fileExists(filepath.Join(goRoot, "cmd", defaultBundleName, "healthz.go"))
+	for _, bundleDir := range []string{defaultBundleDir(goRoot), legacyDefaultBundleDir(goRoot)} {
+		if !status.LegacyMiddleware && fileExists(filepath.Join(bundleDir, "middleware.go")) {
+			status.LegacyMiddleware = true
+		}
+
+		if !status.LegacyHealthz && fileExists(filepath.Join(bundleDir, "healthz.go")) {
+			status.LegacyHealthz = true
+		}
+	}
 
 	return status
+}
+
+func defaultBundleMainPath(goRoot string) string {
+	mainPath := filepath.Join(defaultBundleDir(goRoot), "main.go")
+	if fileExists(mainPath) {
+		return mainPath
+	}
+
+	return filepath.Join(legacyDefaultBundleDir(goRoot), "main.go")
 }
 
 func runMigrateBundles(cmd *cobra.Command) error {
@@ -188,33 +225,45 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	var steps []string
 
 	if !status.HasRunnerPackage {
-		steps = append(steps, "copy cmd/runner/ from scaffold")
+		steps = append(steps, "copy pkg/runner/ from scaffold")
 	} else if status.LegacyMiddleware || status.LegacyHealthz || status.LegacyMain {
-		steps = append(steps, "refresh cmd/runner/ scaffold files")
+		steps = append(steps, "refresh pkg/runner/ scaffold files")
 	}
 
 	if status.HasLegacyInternalRunner {
 		steps = append(steps, "remove legacy internal/runner/")
 	}
 
-	if status.LegacyMain || !status.UsesRunnerMain {
-		steps = append(steps, "rewrite cmd/service/main.go to use cmd/runner")
+	if status.HasLegacyCmdRunner {
+		steps = append(steps, "remove legacy cmd/runner/")
+	}
+
+	if status.HasLegacyServiceBundle && !status.HasDefaultBundle {
+		steps = append(steps, fmt.Sprintf("rename cmd/%s/ to cmd/%s/", legacyDefaultBundleName, defaultBundleName))
+	}
+
+	if status.HasLegacyServiceBundleInYAML {
+		steps = append(steps, fmt.Sprintf("rename %q bundle to %q in bundles.yaml", legacyDefaultBundleName, defaultBundleName))
+	}
+
+	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner {
+		steps = append(steps, fmt.Sprintf("rewrite cmd/%s/main.go to use pkg/runner", defaultBundleName))
 	}
 
 	if status.LegacyMiddleware {
-		steps = append(steps, "remove cmd/service/middleware.go")
+		steps = append(steps, fmt.Sprintf("remove cmd/%s/middleware.go", defaultBundleName))
 	}
 
 	if status.LegacyHealthz {
-		steps = append(steps, "remove cmd/service/healthz.go")
+		steps = append(steps, fmt.Sprintf("remove cmd/%s/healthz.go", defaultBundleName))
 	}
 
 	if !status.HasBundlesYAML {
-		steps = append(steps, "create bundles.yaml with default service bundle")
+		steps = append(steps, "create bundles.yaml with default all-in-one bundle")
 	}
 
 	if !status.HasRunnerModule {
-		steps = append(steps, "initialize cmd/runner go module and go work use")
+		steps = append(steps, "initialize pkg/runner go module and go work use")
 	}
 
 	steps = append(steps, "regenerate bundle features.go files")
@@ -231,32 +280,42 @@ func applyMigrateBundles(
 		return err
 	}
 
-	if status.LegacyMain || !status.UsesRunnerMain {
+	if err := renameLegacyServiceBundle(cmdCtx); err != nil {
+		return err
+	}
+
+	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner {
 		if err := backupLegacyMain(cmdCtx); err != nil {
 			return err
 		}
 
-		if err := renderServiceMain(filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName), templateInput); err != nil {
+		if err := renderDefaultBundleMain(defaultBundleDir(cmdCtx.goRoot), templateInput); err != nil {
 			return err
 		}
 
-		cmdCtx.cmd.Println("Updated cmd/service/main.go")
+		cmdCtx.cmd.Printf("Updated cmd/%s/main.go\n", defaultBundleName)
 	}
 
 	for _, rel := range []string{"middleware.go", "healthz.go"} {
-		path := filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName, rel)
-		if !fileExists(path) {
-			continue
-		}
+		for _, bundleDir := range []string{defaultBundleDir(cmdCtx.goRoot), legacyDefaultBundleDir(cmdCtx.goRoot)} {
+			path := filepath.Join(bundleDir, rel)
+			if !fileExists(path) {
+				continue
+			}
 
-		if err := os.Remove(path); err != nil {
-			return fmt.Errorf("remove cmd/service/%s: %w", rel, err)
-		}
+			if err := os.Remove(path); err != nil {
+				return fmt.Errorf("remove %s: %w", path, err)
+			}
 
-		cmdCtx.cmd.Printf("Removed cmd/service/%s\n", rel)
+			cmdCtx.cmd.Printf("Removed %s\n", path)
+		}
 	}
 
 	if err := removeLegacyInternalRunner(cmdCtx); err != nil {
+		return err
+	}
+
+	if err := removeLegacyCmdRunner(cmdCtx); err != nil {
 		return err
 	}
 
@@ -272,7 +331,7 @@ func applyMigrateBundles(
 		return err
 	}
 
-	if err := tidyServiceModule(cmdCtx); err != nil {
+	if err := tidyDefaultBundleModule(cmdCtx); err != nil {
 		return err
 	}
 
@@ -284,15 +343,15 @@ func copyRunnerScaffold(goRoot string, templateInput TemplateInput, overwrite bo
 
 	return z.CopyDir(z.CopyDirParams{
 		FS:             internal.Skeleton,
-		SrcPathPrefix:  filepath.Join("skeleton", "backend", "cmd", "runner"),
+		SrcPathPrefix:  filepath.Join("skeleton", "backend", "pkg", "runner"),
 		DestPathPrefix: dest,
 		TemplateInput:  templateInput,
 		SkipExisting:   !overwrite,
 	})
 }
 
-func renderServiceMain(bundleDir string, templateInput TemplateInput) error {
-	srcPath := filepath.Join("skeleton", "backend", "cmd", "service", "main.gotmpl")
+func renderDefaultBundleMain(bundleDir string, templateInput TemplateInput) error {
+	srcPath := filepath.Join("skeleton", "backend", "cmd", defaultBundleName, "main.gotmpl")
 	destPath := filepath.Join(bundleDir, "main.go")
 
 	return z.CopyFile(z.CopyFileParams{
@@ -305,7 +364,7 @@ func renderServiceMain(bundleDir string, templateInput TemplateInput) error {
 }
 
 func backupLegacyMain(cmdCtx workspaceCommandContext) error {
-	mainPath := filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName, "main.go")
+	mainPath := defaultBundleMainPath(cmdCtx.goRoot)
 	backupPath := mainPath + ".legacy"
 
 	content, err := os.ReadFile(mainPath)
@@ -321,7 +380,8 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 		return nil
 	}
 
-	if strings.Contains(string(content), "/cmd/runner") ||
+	if strings.Contains(string(content), "/pkg/runner") ||
+		strings.Contains(string(content), "/cmd/runner") ||
 		strings.Contains(string(content), "/internal/runner") {
 		return nil
 	}
@@ -330,7 +390,7 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 		return fmt.Errorf("backup legacy main.go: %w", err)
 	}
 
-	cmdCtx.cmd.Println("Backed up legacy main.go to cmd/service/main.go.legacy")
+	cmdCtx.cmd.Printf("Backed up legacy main.go to cmd/%s/main.go.legacy\n", defaultBundleName)
 
 	return nil
 }
@@ -359,7 +419,7 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 	if !fileExists(filepath.Join(dir, "go.mod")) {
 		z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
 		z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
-		cmdCtx.cmd.Println("Initialized cmd/runner module")
+		cmdCtx.cmd.Println("Initialized pkg/runner module")
 	}
 
 	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
@@ -367,7 +427,26 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
 	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+runnerRelDir)
+	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
 	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
+
+	return nil
+}
+
+func removeLegacyCmdRunner(cmdCtx workspaceCommandContext) error {
+	legacy := legacyCmdRunnerDir(cmdCtx.goRoot)
+	if !fileExists(filepath.Join(legacy, "runner.go")) {
+		return nil
+	}
+
+	if err := os.RemoveAll(legacy); err != nil {
+		return fmt.Errorf("remove legacy cmd/runner: %w", err)
+	}
+
+	cmdCtx.cmd.Println("Removed legacy cmd/runner/")
+
+	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
 
 	return nil
 }
@@ -390,10 +469,77 @@ func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
 	return nil
 }
 
-func tidyServiceModule(cmdCtx workspaceCommandContext) error {
-	p := z.RunCmdParams{Dir: filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName)}
+func tidyDefaultBundleModule(cmdCtx workspaceCommandContext) error {
+	p := z.RunCmdParams{Dir: defaultBundleDir(cmdCtx.goRoot)}
 	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
 	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
+
+	return nil
+}
+
+func renameLegacyServiceBundle(cmdCtx workspaceCommandContext) error {
+	legacy := legacyDefaultBundleDir(cmdCtx.goRoot)
+	current := defaultBundleDir(cmdCtx.goRoot)
+
+	if fileExists(filepath.Join(legacy, "main.go")) {
+		if fileExists(filepath.Join(current, "main.go")) {
+			if err := os.RemoveAll(legacy); err != nil {
+				return fmt.Errorf("remove legacy cmd/%s: %w", legacyDefaultBundleName, err)
+			}
+
+			cmdCtx.cmd.Printf("Removed legacy cmd/%s/\n", legacyDefaultBundleName)
+		} else if err := os.Rename(legacy, current); err != nil {
+			return fmt.Errorf("rename cmd/%s to cmd/%s: %w", legacyDefaultBundleName, defaultBundleName, err)
+		} else {
+			cmdCtx.cmd.Printf("Renamed cmd/%s/ to cmd/%s/\n", legacyDefaultBundleName, defaultBundleName)
+		}
+
+		goModPath := filepath.Join(current, "go.mod")
+		if content, err := os.ReadFile(goModPath); err == nil {
+			oldMod := path.Join(opt.RepositoryGoModule, "cmd", legacyDefaultBundleName)
+			newMod := path.Join(opt.RepositoryGoModule, "cmd", defaultBundleName)
+			updated := strings.ReplaceAll(string(content), oldMod, newMod)
+
+			if err := os.WriteFile(goModPath, []byte(updated), 0o644); err != nil {
+				return fmt.Errorf("update cmd/%s/go.mod: %w", defaultBundleName, err)
+			}
+		}
+
+		workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+		z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
+		z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/"+legacyDefaultBundleName)
+	}
+
+	return migrateLegacyBundlesManifest(cmdCtx)
+}
+
+func migrateLegacyBundlesManifest(cmdCtx workspaceCommandContext) error {
+	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+	if err != nil {
+		return err
+	}
+
+	spec, ok := cfg.Bundles[legacyDefaultBundleName]
+	if !ok {
+		return nil
+	}
+
+	if _, exists := cfg.Bundles[defaultBundleName]; !exists {
+		cfg.Bundles[defaultBundleName] = spec
+	}
+
+	delete(cfg.Bundles, legacyDefaultBundleName)
+
+	if err := saveBundlesConfig(cmdCtx.goRoot, cfg); err != nil {
+		return err
+	}
+
+	cmdCtx.cmd.Printf(
+		"Renamed %q bundle to %q in %s\n",
+		legacyDefaultBundleName,
+		defaultBundleName,
+		bundlesManifestName,
+	)
 
 	return nil
 }

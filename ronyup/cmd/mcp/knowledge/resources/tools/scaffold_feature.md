@@ -31,6 +31,6 @@ Default layout: `feature/<name>/`. With `groupByTemplate: true`: `feature/<templ
 
 The result contains `service.go`, `module.go`, `migration.go`, `api/`, `internal/{app,domain,repo,settings}/`, and a `gen/stub/` generator.
 
-A side-effect blank import is added to `cmd/service/features.go` so the new module's `init()` registers it via `di.RegisterService`. Matching bundles in `bundles.yaml` (those listing the feature or `"*"`) have their `cmd/<bundle>/features.go` refreshed automatically.
+A side-effect blank import is added to `cmd/all-in-one/features.go` so the new module's `init()` registers it via `di.RegisterService`. Matching bundles in `bundles.yaml` (those listing the feature or `"*"`) have their `cmd/<bundle>/features.go` refreshed automatically.
 
 After scaffolding, run `make gen-stub` inside the feature whenever contracts change.

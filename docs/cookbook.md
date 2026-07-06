@@ -30,7 +30,7 @@ For production services, organize your code in layers. The `ronyup` scaffolding 
 ```
 my-service/
 ├── go.work
-├── cmd/service/
+├── cmd/all-in-one/
 │   └── main.go                # Entry point
 ├── feature/users/
 │   ├── go.mod
@@ -527,7 +527,7 @@ func init() {
 ### Main entry point discovers modules
 
 ```go
-// cmd/service/main.go
+// cmd/all-in-one/main.go
 
 func main() {
 	srv := rony.NewServer(

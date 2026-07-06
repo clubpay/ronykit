@@ -27,7 +27,7 @@ var CmdSetupBundle = &cobra.Command{
 	Short: "Create or refresh executable bundles that mix and match feature services",
 	Long: `Bundles declare which feature modules are compiled into each cmd/<name>/ executable.
 
-The default "service" bundle is the all-in-one dev binary. Additional bundles get their
+The default "all-in-one" bundle is the all-in-one dev binary. Additional bundles get their
 own cmd/<name>/ module with a selective features.go import list.
 
 Examples:

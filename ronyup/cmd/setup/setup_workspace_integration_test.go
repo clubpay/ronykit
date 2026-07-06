@@ -83,7 +83,7 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 
 	for _, rel := range []string{
 		"devops/devbox/Makefile", "devops/devbox/Vagrantfile", "devops/devbox/config.yaml",
-		"bundles.yaml", "cmd/runner/runner.go", "cmd/service/main.go",
+		"bundles.yaml", "pkg/runner/runner.go", "cmd/all-in-one/main.go",
 	} {
 		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
 			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
@@ -143,7 +143,7 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 	root := filepath.Join(tmpDir, repoDir)
 
 	// Go workspace lives under backend/.
-	for _, rel := range []string{"backend/cmd/service", "backend/pkg/i18n", "backend/cmd/runner", "backend/bundles.yaml", "backend/feature", "backend/Makefile", "backend/.golangci.yml"} {
+	for _, rel := range []string{"backend/cmd/all-in-one", "backend/pkg/i18n", "backend/pkg/runner", "backend/bundles.yaml", "backend/feature", "backend/Makefile", "backend/.golangci.yml"} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s to exist under backend: %v", rel, err)
 		}

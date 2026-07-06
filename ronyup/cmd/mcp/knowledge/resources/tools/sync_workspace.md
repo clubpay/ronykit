@@ -19,8 +19,8 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 
 ## Behaviour
 
-- **Does not touch** application code: `cmd/service/main.go`, `feature/*` modules, `pkg/*` (except scaffold README), or user design docs under `docs/design/`.
-- For the bundle + `cmd/runner` layout, run `ronyup setup migrate bundles` once after upgrading `ronyup`.
+- **Does not touch** application code: `cmd/all-in-one/main.go`, `feature/*` modules, `pkg/*` (except scaffold README), or user design docs under `docs/design/`.
+- For the bundle + `pkg/runner` layout, run `ronyup setup migrate bundles` once after upgrading `ronyup`.
 - **Default**: add missing scaffold files only (`--overwrite` replaces existing scaffold files).
 - **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `--kind` if needed.
 

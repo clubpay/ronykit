@@ -71,15 +71,15 @@ my-api/
 ├── go.work              # Go workspace file
 ├── bundles.yaml         # executable bundle manifest
 ├── Makefile
-├── cmd/runner/     # shared bootstrap for all executables
-├── cmd/service/         # default all-in-one dev entry point
+├── pkg/runner/     # shared bootstrap for all executables
+├── cmd/all-in-one/         # default all-in-one dev entry point
 ├── pkg/i18n/            # Translation utilities
 ├── devops/              # devbox: Helm-managed K8s services
 ├── docs/                # design docs and guides
 └── .git/                # Initialized git repo
 ```
 
-The workspace is immediately runnable with `make run` or `cd cmd/service && go run .`.
+The workspace is immediately runnable with `make run` or `cd cmd/all-in-one && go run .`.
 
 ### Workspace kinds
 
@@ -90,7 +90,7 @@ Use `--kind` to choose the layout:
 
 ```
 my-api/
-├── backend/          # the Go workspace (go.work, cmd/service, pkg/, feature/, Makefile, .golangci.yml)
+├── backend/          # the Go workspace (go.work, cmd/all-in-one, pkg/, feature/, Makefile, .golangci.yml)
 ├── frontend/         # web/mobile application (framework-agnostic placeholder)
 ├── devops/           # devbox: Helmfile-managed K8s services (shared)
 ├── docs/             # design docs and guides (shared)
@@ -98,7 +98,7 @@ my-api/
 └── .ai/ .agents/ .cursor/   # AI assistant config (shared)
 ```
 
-In `fullstack` mode the Go module paths are prefixed with `backend/` (for example `github.com/you/my-api/backend/cmd/service`). Run `ronyup setup feature` and `make`/`go` commands from the `backend/` directory.
+In `fullstack` mode the Go module paths are prefixed with `backend/` (for example `github.com/you/my-api/backend/cmd/all-in-one`). Run `ronyup setup feature` and `make`/`go` commands from the `backend/` directory.
 
 ```bash
 ronyup setup workspace \
@@ -201,7 +201,7 @@ This creates a fully structured feature module under `feature/users/` with:
 - Migration setup
 - Stub code generator
 
-The feature is automatically added to `go.work` and registered in `cmd/service/features.go`.
+The feature is automatically added to `go.work` and registered in `cmd/all-in-one/features.go`.
 
 By default, features are placed at `{featurePrefix}/{featureDir}/` (for example `feature/users/`). Pass `--groupByTemplate` (or `-g`) to place them at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/users/`).
 
@@ -223,12 +223,12 @@ Matching bundles in `bundles.yaml` have their import lists refreshed automatical
 
 ## Executable Bundles
 
-Workspaces compile feature modules into one or more executables. The default `cmd/service` binary is an all-in-one dev entry point; production bundles mix and match features at compile time.
+Workspaces compile feature modules into one or more executables. The default `cmd/all-in-one` binary is an all-in-one dev entry point; production bundles mix and match features at compile time.
 
 ```bash
 ronyup setup bundle --name auth-api --services feature/auth,feature/session
 ronyup setup bundle --gen
-cd cmd/service && go run . --service feature/auth
+cd cmd/all-in-one && go run . --service feature/auth
 ```
 
 See `bundles.yaml` at the Go workspace root. Makefile: `make run`, `make run-bundle BUNDLE=auth-api`, `make build-bundle BUNDLE=auth-api`.
@@ -245,7 +245,7 @@ ronyup setup migrate bundles    # from repo root (fullstack) or backend/ — bot
 ronyup setup sync --only backend   # optional Makefile bundle targets
 ```
 
-`setup sync` does not rewrite `cmd/service/main.go`. Use `setup migrate bundles` (preview with `--dry-run`).
+`setup sync` does not rewrite `cmd/all-in-one/main.go`. Use `setup migrate bundles` (preview with `--dry-run`).
 
 ---
 

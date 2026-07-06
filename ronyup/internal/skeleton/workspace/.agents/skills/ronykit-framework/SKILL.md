@@ -18,7 +18,7 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 | Workspace                                                 | Approach                                                                                                                                       |
 |-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | **RonyKit monorepo** (`github.com/clubpay/ronykit`)       | Framework work: follow `AGENTS.md` / `CLAUDE.md`, respect `go.work` module boundaries. Do not scaffold into this repo unless testing `ronyup`. |
-| **Scaffolded app** (`go.work`, `cmd/service`, `feature/`) | MCP knowledge + tools are the source of truth. Fullstack scaffolds nest the Go workspace under `backend/` (run `go`/`make`/`ronyup setup feature` there); `docs/`, `devops/` and AI config stay at the repo root. See `architecture/workspace-layout`. |
+| **Scaffolded app** (`go.work`, `cmd/all-in-one`, `feature/`) | MCP knowledge + tools are the source of truth. Fullstack scaffolds nest the Go workspace under `backend/` (run `go`/`make`/`ronyup setup feature` there); `docs/`, `devops/` and AI config stay at the repo root. See `architecture/workspace-layout`. |
 
 ## Skill routing (read SKILL.md — required)
 

@@ -2,11 +2,11 @@
 
 MODULE_DIRS := $(shell go list -f '{{.Dir}}' -m all | grep -v '/pkg/mod/')
 DEVBOX_DIR := $(if $(wildcard ./devops/devbox/Makefile),./devops/devbox,../devops/devbox)
-BUNDLE ?= service
+BUNDLE ?= all-in-one
 
 run:
-	@echo "Run service (all compiled-in features)"
-	@cd cmd/service && go run .
+	@echo "Run all-in-one bundle (all compiled-in features)"
+	@cd cmd/all-in-one && go run .
 
 run-bundle:
 	@echo "Run bundle $(BUNDLE)"

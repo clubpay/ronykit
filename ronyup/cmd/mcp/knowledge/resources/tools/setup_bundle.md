@@ -11,7 +11,7 @@ ronyup setup bundle --remove auth-api
 ## Flags
 
 - `--name` / `-n` — bundle name (`cmd/<name>/` directory)
-- `--services` / `-s` — feature module paths (`settings.ModuleName`), comma-separated, or `*` for all features in `cmd/service/features.go`
+- `--services` / `-s` — feature module paths (`settings.ModuleName`), comma-separated, or `*` for all features in `cmd/all-in-one/features.go`
 - `--description` — optional text stored in `bundles.yaml`
 - `--gen` — regenerate every bundle's `features.go` from `bundles.yaml`
 - `--remove` — delete a bundle from `bundles.yaml` and remove `cmd/<name>/`
@@ -19,7 +19,7 @@ ronyup setup bundle --remove auth-api
 ## Side effects
 
 - Updates `bundles.yaml` at the Go workspace root.
-- Creates `cmd/<name>/main.go` (delegates to `cmd/runner`) and selective `features.go`.
+- Creates `cmd/<name>/main.go` (delegates to `pkg/runner`) and selective `features.go`.
 - Initializes a Go module and runs `go work use ./cmd/<name>`.
 - `ronyup setup feature` refreshes bundles that list the new feature (or use `"*"`).
 

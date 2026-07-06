@@ -120,7 +120,7 @@ func TestPathAllowed(t *testing.T) {
 		t.Fatal("expected devops child path")
 	}
 
-	if pathAllowed("cmd/service/main.go", allowed) {
+	if pathAllowed("cmd/all-in-one/main.go", allowed) {
 		t.Fatal("did not expect cmd path")
 	}
 }

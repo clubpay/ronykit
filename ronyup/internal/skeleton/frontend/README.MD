@@ -8,7 +8,7 @@ keeping shared concerns at the repository root:
 
 ```
 <repo-root>/
-├── backend/    # RonyKIT Go workspace (go.work, cmd/service, feature/, pkg/)
+├── backend/    # RonyKIT Go workspace (go.work, cmd/all-in-one, feature/, pkg/)
 ├── frontend/   # this directory — your web/mobile app
 ├── devops/     # devbox: Kubernetes platform services (shared)
 ├── docs/       # design docs (SRS/SDD) and guides (shared)
