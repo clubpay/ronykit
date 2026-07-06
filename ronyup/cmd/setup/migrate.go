@@ -408,6 +408,11 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 }
 
 func seedBundlesManifest(goRoot string) error {
+	dest := bundlesManifestPath(goRoot)
+	if fileExists(dest) {
+		return nil
+	}
+
 	data, err := internal.Skeleton.ReadFile(filepath.Join("skeleton", "backend", bundlesManifestName))
 	if err != nil {
 		return saveBundlesConfig(goRoot, BundlesConfig{
