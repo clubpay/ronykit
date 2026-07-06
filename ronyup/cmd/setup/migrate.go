@@ -266,6 +266,10 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 		steps = append(steps, "initialize pkg/runner go module and go work use")
 	}
 
+	if !status.HasDefaultBundle {
+		steps = append(steps, fmt.Sprintf("initialize cmd/%s module and features.go", defaultBundleName))
+	}
+
 	steps = append(steps, "regenerate bundle features.go files")
 
 	return steps
@@ -284,7 +288,11 @@ func applyMigrateBundles(
 		return err
 	}
 
-	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner {
+	if err := ensureDefaultBundleModule(cmdCtx); err != nil {
+		return err
+	}
+
+	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner || !status.HasDefaultBundle {
 		if err := backupLegacyMain(cmdCtx); err != nil {
 			return err
 		}
@@ -351,6 +359,10 @@ func copyRunnerScaffold(goRoot string, templateInput TemplateInput, overwrite bo
 }
 
 func renderDefaultBundleMain(bundleDir string, templateInput TemplateInput) error {
+	if err := os.MkdirAll(bundleDir, 0o755); err != nil {
+		return fmt.Errorf("create %s: %w", bundleDir, err)
+	}
+
 	srcPath := filepath.Join("skeleton", "backend", "cmd", defaultBundleName, "main.gotmpl")
 	destPath := filepath.Join(bundleDir, "main.go")
 
@@ -470,9 +482,85 @@ func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
 }
 
 func tidyDefaultBundleModule(cmdCtx workspaceCommandContext) error {
-	p := z.RunCmdParams{Dir: defaultBundleDir(cmdCtx.goRoot)}
+	bundleDir := defaultBundleDir(cmdCtx.goRoot)
+	if !fileExists(filepath.Join(bundleDir, "go.mod")) {
+		return nil
+	}
+
+	p := z.RunCmdParams{Dir: bundleDir}
 	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
 	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
+
+	return nil
+}
+
+func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
+	bundleDir := defaultBundleDir(cmdCtx.goRoot)
+	if err := os.MkdirAll(bundleDir, 0o755); err != nil {
+		return fmt.Errorf("create cmd/%s: %w", defaultBundleName, err)
+	}
+
+	if err := ensureDefaultBundleFeaturesGo(cmdCtx); err != nil {
+		return err
+	}
+
+	modulePath := path.Join(opt.RepositoryGoModule, "cmd", defaultBundleName)
+	p := z.RunCmdParams{Dir: bundleDir}
+
+	if !fileExists(filepath.Join(bundleDir, "go.mod")) {
+		z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
+		z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
+		cmdCtx.cmd.Printf("Initialized cmd/%s module\n", defaultBundleName)
+	}
+
+	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
+	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/"+legacyDefaultBundleName)
+
+	return nil
+}
+
+func ensureDefaultBundleFeaturesGo(cmdCtx workspaceCommandContext) error {
+	featuresPath := filepath.Join(defaultBundleDir(cmdCtx.goRoot), "features.go")
+	if fileExists(featuresPath) {
+		return nil
+	}
+
+	legacyPath := filepath.Join(legacyDefaultBundleDir(cmdCtx.goRoot), "features.go")
+	if fileExists(legacyPath) {
+		content, err := os.ReadFile(legacyPath)
+		if err != nil {
+			return fmt.Errorf("read cmd/%s/features.go: %w", legacyDefaultBundleName, err)
+		}
+
+		if err := os.WriteFile(featuresPath, content, 0o644); err != nil {
+			return err
+		}
+
+		cmdCtx.cmd.Printf("Copied features.go from cmd/%s/\n", legacyDefaultBundleName)
+
+		return nil
+	}
+
+	imports, err := discoverFeatureModuleImports(cmdCtx.goRoot, cmdCtx.repoModule)
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(featuresPath, []byte(renderFeaturesGo(imports)), 0o644); err != nil {
+		return err
+	}
+
+	if len(imports) > 0 {
+		cmdCtx.cmd.Printf(
+			"Created cmd/%s/features.go with %d feature import(s) discovered under %s/\n",
+			defaultBundleName,
+			len(imports),
+			opt.FeatureContainerFolder,
+		)
+	} else {
+		cmdCtx.cmd.Printf("Created empty cmd/%s/features.go\n", defaultBundleName)
+	}
 
 	return nil
 }

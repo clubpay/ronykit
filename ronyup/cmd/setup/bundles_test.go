@@ -105,6 +105,41 @@ func TestRenderFeaturesGo(t *testing.T) {
 	}
 }
 
+func TestDiscoverFeatureModuleImports(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	for _, featurePath := range []string{"feature/auth", "feature/agent"} {
+		dir := filepath.Join(root, featurePath)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+
+		if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example\n"), 0o644); err != nil {
+			t.Fatalf("WriteFile go.mod: %v", err)
+		}
+	}
+
+	imports, err := discoverFeatureModuleImports(root, "github.com/example/app")
+	if err != nil {
+		t.Fatalf("discoverFeatureModuleImports(): %v", err)
+	}
+
+	want := []string{
+		"github.com/example/app/feature/agent",
+		"github.com/example/app/feature/auth",
+	}
+	if len(imports) != len(want) {
+		t.Fatalf("got %v, want %v", imports, want)
+	}
+
+	for i, imp := range imports {
+		if imp != want[i] {
+			t.Fatalf("imports[%d] = %q, want %q", i, imp, want[i])
+		}
+	}
+}
+
 func TestLoadBundlesConfig_DefaultWhenMissing(t *testing.T) {
 	t.Parallel()
 

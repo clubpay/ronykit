@@ -159,9 +159,9 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	allImports, err := parseFeatureImports(filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName, "features.go"))
+	allImports, err := loadDefaultBundleFeatureImports(cmdCtx)
 	if err != nil {
-		return fmt.Errorf("read cmd/%s/features.go: %w", defaultBundleName, err)
+		return err
 	}
 
 	spec := cfg.Bundles[bundleOpt.Name]

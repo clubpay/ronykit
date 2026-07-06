@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -206,9 +207,9 @@ func syncAllBundleFeatures(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	allImports, err := parseFeatureImports(filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName, "features.go"))
+	allImports, err := loadDefaultBundleFeatureImports(cmdCtx)
 	if err != nil {
-		return fmt.Errorf("read cmd/%s/features.go: %w", defaultBundleName, err)
+		return err
 	}
 
 	for name, spec := range cfg.Bundles {
@@ -228,9 +229,9 @@ func syncBundlesForFeature(cmdCtx workspaceCommandContext, featurePackagePath st
 		return err
 	}
 
-	allImports, err := parseFeatureImports(filepath.Join(cmdCtx.goRoot, "cmd", defaultBundleName, "features.go"))
+	allImports, err := loadDefaultBundleFeatureImports(cmdCtx)
 	if err != nil {
-		return fmt.Errorf("read cmd/%s/features.go: %w", defaultBundleName, err)
+		return err
 	}
 
 	for name, spec := range cfg.Bundles {
@@ -272,4 +273,62 @@ func resolveFeaturePackagePath() string {
 	}
 
 	return path.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
+}
+
+func loadDefaultBundleFeatureImports(cmdCtx workspaceCommandContext) ([]string, error) {
+	for _, bundleName := range []string{defaultBundleName, legacyDefaultBundleName} {
+		featuresPath := filepath.Join(cmdCtx.goRoot, "cmd", bundleName, "features.go")
+		imports, err := parseFeatureImports(featuresPath)
+		if err == nil {
+			return imports, nil
+		}
+
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("read cmd/%s/features.go: %w", bundleName, err)
+		}
+	}
+
+	return nil, fmt.Errorf(
+		"read cmd/%s/features.go: no such file or directory (run `ronyup setup migrate bundles`)",
+		defaultBundleName,
+	)
+}
+
+func discoverFeatureModuleImports(goRoot, repoModule string) ([]string, error) {
+	featureRoot := filepath.Join(goRoot, opt.FeatureContainerFolder)
+	if !fileExists(featureRoot) {
+		return nil, nil
+	}
+
+	imports := make([]string, 0)
+
+	err := filepath.WalkDir(featureRoot, func(walkPath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		if !entry.IsDir() || walkPath == featureRoot {
+			return nil
+		}
+
+		if !fileExists(filepath.Join(walkPath, "go.mod")) {
+			return nil
+		}
+
+		rel, err := filepath.Rel(goRoot, walkPath)
+		if err != nil {
+			return err
+		}
+
+		imports = append(imports, path.Join(repoModule, filepath.ToSlash(rel)))
+
+		return filepath.SkipDir
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	slices.Sort(imports)
+
+	return imports, nil
 }

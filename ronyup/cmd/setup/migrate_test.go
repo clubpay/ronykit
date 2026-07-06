@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -386,6 +387,73 @@ import (
 
 	if _, ok := cfg.Bundles[legacyDefaultBundleName]; ok {
 		t.Fatalf("expected legacy %q bundle removed from bundles.yaml", legacyDefaultBundleName)
+	}
+}
+
+func TestRunMigrateBundles_RecreatesMissingDefaultBundle(t *testing.T) {
+	root := t.TempDir()
+
+	for _, dir := range []string{"feature/auth", "feature/agent"} {
+		full := filepath.Join(root, dir)
+		if err := os.MkdirAll(full, 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+
+		mod := fmt.Sprintf("module github.com/example/legacy-repo/%s\n\ngo 1.25\n", dir)
+		if err := os.WriteFile(filepath.Join(full, "go.mod"), []byte(mod), 0o644); err != nil {
+			t.Fatalf("WriteFile go.mod: %v", err)
+		}
+	}
+
+	if err := os.WriteFile(filepath.Join(root, "go.work"), []byte("go 1.25\n\nuse ./feature/auth\nuse ./feature/agent\n"), 0o644); err != nil {
+		t.Fatalf("WriteFile go.work: %v", err)
+	}
+
+	if err := os.WriteFile(filepath.Join(root, "bundles.yaml"), []byte("bundles:\n  all-in-one:\n    services: [\"*\"]\n"), 0o644); err != nil {
+		t.Fatalf("WriteFile bundles.yaml: %v", err)
+	}
+
+	stubBinDir := filepath.Join(t.TempDir(), "bin")
+	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll(stub bin): %v", err)
+	}
+
+	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
+		t.Fatalf("writeExecutable(go): %v", err)
+	}
+
+	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	oldOpt := opt
+	t.Cleanup(func() { opt = oldOpt })
+
+	chdir(t, root)
+	opt.RepositoryGoModule = "github.com/example/legacy-repo"
+
+	cmd := newSilentCommand(t)
+	if err := runMigrateBundles(cmd); err != nil {
+		t.Fatalf("runMigrateBundles(): %v", err)
+	}
+
+	for _, rel := range []string{
+		"cmd/all-in-one/main.go",
+		"cmd/all-in-one/features.go",
+		"pkg/runner/runner.go",
+	} {
+		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
+			t.Fatalf("expected %s after migration: %v", rel, err)
+		}
+	}
+
+	features, err := os.ReadFile(filepath.Join(root, "cmd/all-in-one/features.go"))
+	if err != nil {
+		t.Fatalf("ReadFile features.go: %v", err)
+	}
+
+	for _, want := range []string{"feature/auth", "feature/agent"} {
+		if !strings.Contains(string(features), want) {
+			t.Fatalf("expected features.go to import %s, got:\n%s", want, features)
+		}
 	}
 }
 
