@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -63,6 +64,13 @@ func newRootCommand(cfg Config) *cobra.Command {
 			listenPort, _ := cmd.Flags().GetInt("port")
 			listenIP, _ := cmd.Flags().GetString("listenIP")
 			services, _ := cmd.Flags().GetStringSlice("service")
+			configDir, _ := cmd.Flags().GetString("configDir")
+
+			if configDir != "" {
+				di.ConfigSearchPath = func(kind string) string {
+					return filepath.Join(configDir, kind)
+				}
+			}
 
 			if len(services) == 0 {
 				if env := strings.TrimSpace(os.Getenv("SERVICES")); env != "" {
@@ -81,7 +89,7 @@ func newRootCommand(cfg Config) *cobra.Command {
 						settings.New,
 						fx.Annotate(
 							genServerProvider(cfg, listenIP, listenPort),
-							fx.ResultTags(`name:"service"`),
+							fx.ResultTags("name:\"service\""),
 						),
 					),
 					fx.Invoke(traceExporter(cfg), metricExporter(cfg), logExporter),
@@ -153,6 +161,7 @@ func newRootCommand(cfg Config) *cobra.Command {
 	cmd.Flags().String("listenIP", "0.0.0.0", "listen ip")
 	cmd.Flags().Int("port", 8586, "service port")
 	cmd.Flags().StringSlice("service", []string{}, "service(s) to run (settings.ModuleName); empty runs all compiled-in services. Also reads SERVICES env (comma-separated).")
+	cmd.Flags().String("configDir", os.Getenv("CONFIG_DIR"), "path to the config directory")
 
 	return cmd
 }

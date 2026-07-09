@@ -28,3 +28,21 @@ func TestGetField(t *testing.T) {
 		t.Fatalf("User = %q, want %q", got, "redis-user")
 	}
 }
+
+func TestConfigSearchPath(t *testing.T) {
+	// 1. Without CONFIG_DIR env variable
+	t.Setenv("CONFIG_DIR", "")
+	got := ConfigSearchPath("test_kind")
+	want := "./config/test_kind"
+	if got != want {
+		t.Errorf("ConfigSearchPath() without CONFIG_DIR = %q, want %q", got, want)
+	}
+
+	// 2. With CONFIG_DIR env variable
+	t.Setenv("CONFIG_DIR", "/custom/config/dir")
+	got = ConfigSearchPath("test_kind")
+	want = "/custom/config/dir/test_kind"
+	if got != want {
+		t.Errorf("ConfigSearchPath() with CONFIG_DIR = %q, want %q", got, want)
+	}
+}

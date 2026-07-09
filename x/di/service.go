@@ -2,6 +2,8 @@ package di
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -80,7 +82,13 @@ var (
 
 		return strings.ToLower(name) + ".local"
 	}
-	ConfigSearchPath = func(kind string) string { return fmt.Sprintf("./config/%s", kind) }
+	ConfigSearchPath = func(kind string) string {
+		if env := os.Getenv("CONFIG_DIR"); env != "" {
+			return filepath.Join(env, kind)
+		}
+
+		return fmt.Sprintf("./config/%s", kind)
+	}
 )
 
 func genModule[
