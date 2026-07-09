@@ -3,11 +3,11 @@ module github.com/clubpay/ronykit/flow
 go 1.25.4
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.1
-	github.com/clubpay/ronykit/rony v0.26.1
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.1
-	github.com/clubpay/ronykit/x/rkit v0.5.1
-	github.com/clubpay/ronykit/x/telemetry v0.5.1
+	github.com/clubpay/ronykit/kit v0.26.3
+	github.com/clubpay/ronykit/rony v0.26.3
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.3
+	github.com/clubpay/ronykit/x/rkit v0.5.3
+	github.com/clubpay/ronykit/x/telemetry v0.5.3
 	github.com/google/uuid v1.6.0
 	github.com/nexus-rpc/sdk-go v0.6.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -24,7 +24,7 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/stub v0.26.1 // indirect
+	github.com/clubpay/ronykit/stub v0.26.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
