@@ -76,7 +76,7 @@ func LoadSettings(filename string, searchPaths ...string) {
 func init() {
 	di.RegisterService[Service](
 		di.RegisterServiceParams{
-			Kind:     "service",
+			Kind:     "{{.Template}}",
 			Name:     settings.ModuleName,
 			InitFn:   LoadSettings,
 			ModuleFn: Module,

@@ -9,7 +9,7 @@
 In `backend` kind this is the repository root; in `fullstack` kind it is `backend/`:
 
 - `go.work` — lists every Go module in the workspace.
-- `cmd/service/` — the executable entrypoint module (cobra-based). `main.go` builds a `rony.Server`, wires observability exporters (`tracekit`, `meterkit`, `logkit`), and starts every registered service via `di.AllServices()` (or a filtered subset via `di.GetService("service", name)`).
+- `cmd/service/` — the executable entrypoint module (cobra-based). `main.go` builds a `rony.Server`, wires observability exporters (`tracekit`, `meterkit`, `logkit`), and starts every registered service via `di.AllServices()` (or a filtered subset via `di.GetService("service", name)`). Pass `--config-dir` to set the bundled config base directory (default `./config`); per-service files are resolved as `<config-dir>/<kind>/<service>.local` (for example `config/service/auth.local`).
 - `cmd/service/features.go` — a `package main` file whose blank imports trigger each feature module's `init()` (which calls `di.RegisterService`). `ronyup setup feature` rewrites this file when adding a feature.
 - `cmd/service/middleware.go` — registers global middlewares (panic recovery, base headers, tracing/logging) via `di.RegisterMiddleware` in `init()`.
 - `feature/` — business modules (default parent directory; override with `--featurePrefix`). By default, a service named `auth` lives at `feature/auth/`. With `--groupByTemplate`, it lives at `feature/service/auth/`; job and gateway templates would use `feature/job/<name>/` or `feature/gateway/<name>/`.

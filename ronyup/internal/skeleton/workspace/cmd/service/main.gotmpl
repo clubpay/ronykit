@@ -55,6 +55,9 @@ var rootCmd = &cobra.Command{
 		listenPort, _ := cmd.Flags().GetInt("port")
 		listenIP, _ := cmd.Flags().GetString("listenIP")
 		services, _ := cmd.Flags().GetStringSlice("service")
+		configDir, _ := cmd.Flags().GetString("config-dir")
+
+		di.SetConfigRoot(configDir)
 
 		cmd.Println("Services:", services)
 
@@ -262,4 +265,5 @@ func init() {
 	rootCmd.Flags().String("listenIP", "0.0.0.0", "listen ip")
 	rootCmd.Flags().Int("port", 8586, "service port")
 	rootCmd.Flags().StringSlice("service", []string{}, "service(s) to run")
+	rootCmd.Flags().String("config-dir", "./config", "base directory for bundled service config files (<config-dir>/<kind>/<service>.local)")
 }

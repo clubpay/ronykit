@@ -19,4 +19,4 @@ Use the datasource param helpers exported by `x/di`:
 
 For inter-service dependencies, use `di.StubProvider[Settings, IStub, Stub](moduleName, hostPortField, constructor)` to provide a typed stub client with trace propagation.
 
-In `service.go`, define `LoadSettings(filename string, searchPaths ...string)` that sets the `settings.ConfigName` and `settings.ConfigPaths` package-level variables; `di.RegisterService` will call it with the runtime config path before `Module()` is executed.
+In `service.go`, define `LoadSettings(filename string, searchPaths ...string)` that sets the `settings.ConfigName` and `settings.ConfigPaths` package-level variables; `di.RegisterService` will call it with the runtime config path before `Module()` is executed. In bundled entrypoints, call `di.SetConfigRoot(dir)` (or use the scaffolded `--config-dir` flag) before `fx.New` so services load from `<config-root>/<kind>/<service>.local`.

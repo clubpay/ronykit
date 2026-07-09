@@ -33,4 +33,6 @@ The result contains `service.go`, `module.go`, `migration.go`, `api/`, `internal
 
 A side-effect blank import is added to `cmd/service/features.go` so the new module's `init()` registers it via `di.RegisterService`.
 
+A bundle-ready config file is also created at `config/<template>/<service>.local.yaml` (for example `config/service/auth.local.yaml`) so the all-in-one `cmd/service` entrypoint can load settings via `x/di` without manual copying. Standalone `App()` runs still use `internal/settings/config.local.yaml`.
+
 After scaffolding, run `make gen-stub` inside the feature whenever contracts change.

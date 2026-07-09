@@ -2,6 +2,7 @@ package di
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -72,6 +73,29 @@ func GetServiceByKind(kind string) map[string]ServiceOption {
 	return _Services[kind]
 }
 
+// configRoot is the base directory for bundled runtime config files. Bundled
+// entrypoints (for example cmd/service) resolve per-kind paths under this root
+// via ConfigSearchPath. Override with SetConfigRoot before fx starts.
+var configRoot = "./config"
+
+// SetConfigRoot sets the base directory used by ConfigSearchPath. Call this from
+// a bundle entrypoint (for example after parsing a --config-dir flag) before
+// starting the fx application.
+func SetConfigRoot(root string) {
+	if root == "" {
+		configRoot = "./config"
+
+		return
+	}
+
+	configRoot = root
+}
+
+// ConfigRoot returns the current bundled config base directory.
+func ConfigRoot() string {
+	return configRoot
+}
+
 var (
 	ConfigFilename = func(name string) string {
 		if idx := strings.LastIndex(name, "/"); idx != -1 {
@@ -80,7 +104,9 @@ var (
 
 		return strings.ToLower(name) + ".local"
 	}
-	ConfigSearchPath = func(kind string) string { return fmt.Sprintf("./config/%s", kind) }
+	ConfigSearchPath = func(kind string) string {
+		return filepath.Join(configRoot, kind)
+	}
 )
 
 func genModule[

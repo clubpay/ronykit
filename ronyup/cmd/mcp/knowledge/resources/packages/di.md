@@ -32,3 +32,5 @@ Services are discovered at runtime via:
 - `di.AllServices()` — every registered service.
 - `di.GetService(kind, name)` — a specific registered service.
 - `di.GetServiceByKind(kind)` — all services of a given kind.
+
+Bundled entrypoints resolve per-service config under `<config-root>/<kind>/<service>.local`. Set the base directory with `di.SetConfigRoot(dir)` before starting fx (the scaffolded `cmd/service` exposes `--config-dir`, default `./config`).

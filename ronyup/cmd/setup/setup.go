@@ -10,6 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
+	"github.com/clubpay/ronykit/x/di"
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/spf13/cobra"
 )
@@ -198,6 +199,9 @@ type TemplateInput struct {
 	// Kind is the workspace layout (KindBackend or KindFullstack); templates use
 	// it to render layout-specific guidance.
 	Kind string
+	// Template is the feature template kind (service, job, gateway) used when
+	// scaffolding a feature module.
+	Template string
 	// Skills lists the agent skills pre-installed into .agents/skills so
 	// templates (e.g. AGENTS.md) can reference them.
 	Skills []SkillInfo
@@ -563,6 +567,11 @@ func runFeature(cmd *cobra.Command) error {
 	}
 
 	copyFeatureTemplate(cmd)
+
+	if err := copyBundledConfig(cmd); err != nil {
+		return err
+	}
+
 	sideEffectImportModule(cmd)
 
 	return nil
@@ -729,6 +738,7 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 				PackagePath:    strings.Trim(path.Join(packagePath), "/"),
 				PackageName:    opt.FeatureName,
 				RonyKitPath:    "github.com/clubpay/ronykit",
+				Template:       opt.Template,
 			},
 			Callback: func(filePath string, dir bool) {
 				if dir {
@@ -748,6 +758,49 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
 	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
 	z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+}
+
+func featurePackagePath() string {
+	groupFolder := ""
+	if opt.GroupByTemplate {
+		groupFolder = opt.Template
+	}
+
+	return strings.Trim(path.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir), "/")
+}
+
+func copyBundledConfig(cmd *cobra.Command) error {
+	packagePath := featurePackagePath()
+	configName := di.ConfigFilename(packagePath)
+	destDir := filepath.Join("config", opt.Template)
+	destPath := filepath.Join(destDir, configName+".yaml")
+
+	if _, err := os.Stat(destPath); err == nil {
+		cmd.Printf("Bundled config already exists: %s\n", destPath)
+
+		return nil
+	}
+
+	if err := os.MkdirAll(destDir, 0o755); err != nil {
+		return fmt.Errorf("create bundled config directory: %w", err)
+	}
+
+	err := z.CopyFile(z.CopyFileParams{
+		FS:             internal.Skeleton,
+		SrcPath:        filepath.Join("skeleton", "service", "internal", "settings", "config.local.yamltmpl"),
+		DestPath:       destPath,
+		TemplateSuffix: "tmpl",
+		TemplateInput: TemplateInput{
+			PackageName: opt.FeatureName,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("write bundled config %s: %w", destPath, err)
+	}
+
+	cmd.Printf("Bundled config created: %s\n", destPath)
+
+	return nil
 }
 
 func sideEffectImportModule(cmd *cobra.Command) {
