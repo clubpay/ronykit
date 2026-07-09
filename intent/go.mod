@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/intent
 go 1.25.8
 
 require (
-	github.com/clubpay/ronykit/kit v0.25.7
-	github.com/clubpay/ronykit/rony v0.25.7
-	github.com/clubpay/ronykit/x/rkit v0.4.7
+	github.com/clubpay/ronykit/kit v0.26.2
+	github.com/clubpay/ronykit/rony v0.26.2
+	github.com/clubpay/ronykit/x/rkit v0.5.2
 )
 
 require (
@@ -15,9 +15,9 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.25.7 // indirect
-	github.com/clubpay/ronykit/stub v0.25.7 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.4.7 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.2 // indirect
+	github.com/clubpay/ronykit/stub v0.26.2 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.5.2 // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect
