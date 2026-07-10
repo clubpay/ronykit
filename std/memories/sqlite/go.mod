@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/memories/sqlite
 go 1.25.8
 
 require (
-	github.com/clubpay/ronykit/intent v0.1.3
-	github.com/clubpay/ronykit/std/memories/sqlstore v0.1.3
+	github.com/clubpay/ronykit/intent v0.1.4
+	github.com/clubpay/ronykit/std/memories/sqlstore v0.1.4
 	modernc.org/sqlite v1.46.1
 )
 
@@ -15,12 +15,12 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/kit v0.26.3 // indirect
-	github.com/clubpay/ronykit/rony v0.26.3 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.3 // indirect
-	github.com/clubpay/ronykit/stub v0.26.3 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.5.3 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.5.3 // indirect
+	github.com/clubpay/ronykit/kit v0.26.4 // indirect
+	github.com/clubpay/ronykit/rony v0.26.4 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.4 // indirect
+	github.com/clubpay/ronykit/stub v0.26.4 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.5.4 // indirect
+	github.com/clubpay/ronykit/x/rkit v0.5.4 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
