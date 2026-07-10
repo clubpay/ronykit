@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/clubpay/ronykit/kit"
 )
@@ -114,7 +113,7 @@ func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 					continue
 				}
 
-				idx := strings.IndexFunc(v, unicode.IsPunct)
+				idx := strings.IndexByte(v, ',')
 				if idx != -1 {
 					v = v[:idx]
 				}
