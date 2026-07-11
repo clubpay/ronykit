@@ -111,3 +111,7 @@ func (w *wsConn) Set(key string, val string) {
 	w.kv[key] = val
 	w.Unlock()
 }
+
+func (w *wsConn) GetUnderlyingConn() *websocket.Conn {
+	return w.c
+}

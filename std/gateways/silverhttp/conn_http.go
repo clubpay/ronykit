@@ -118,3 +118,7 @@ func (c *httpConn) GetPath() string {
 func (c *httpConn) Redirect(statusCode int, url string) {
 	c.ctx.Redirect(statusCode, url)
 }
+
+func (c *httpConn) GetUnderlyingConn() *silverlining.Context {
+	return c.ctx
+}
