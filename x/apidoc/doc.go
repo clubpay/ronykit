@@ -15,6 +15,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/kit/utils"
+
 	"github.com/go-openapi/spec"
 	"github.com/rbretecher/go-postman-collection"
 )
@@ -218,7 +219,10 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			spec.NewResponse().
 				WithSchema(
 					spec.RefProperty(
-						fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.DefaultError.Message.Name)),
+						fmt.Sprintf(
+							"#/definitions/%s",
+							definitionName(serviceName, c.DefaultError.Message.Name),
+						),
 					),
 				),
 		)
@@ -244,7 +248,9 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
+					spec.RefProperty(
+						fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name)),
+					),
 				),
 			)
 		}
@@ -255,7 +261,9 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
+					spec.RefProperty(
+						fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name)),
+					),
 				),
 			)
 		}
@@ -266,7 +274,9 @@ func addSwagOp(swag *spec.Swagger, serviceName string, c desc.ParsedContract) {
 			op.AddParam(
 				spec.BodyParam(
 					c.Request.Message.Name,
-					spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name))),
+					spec.RefProperty(
+						fmt.Sprintf("#/definitions/%s", definitionName(serviceName, c.Request.Message.Name)),
+					),
 				),
 			)
 		}
@@ -389,7 +399,12 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 
 		switch kind {
 		default:
-			setProperty(&def, p.Name, wrapFuncChain.Apply(spec.MapProperty(spec.MapProperty(spec.StringProperty()))), idx)
+			setProperty(
+				&def,
+				p.Name,
+				wrapFuncChain.Apply(spec.MapProperty(spec.MapProperty(spec.StringProperty()))),
+				idx,
+			)
 		case desc.Object:
 			if p.Embedded {
 				for _, f := range p.Element.Message.Fields {
@@ -404,8 +419,11 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 					)
 				} else {
 					setProperty(
-						&def, p.Name,
-						wrapFuncChain.Apply(spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(svcName, name)))),
+						&def,
+						p.Name,
+						wrapFuncChain.Apply(
+							spec.RefProperty(fmt.Sprintf("#/definitions/%s", definitionName(svcName, name))),
+						),
 						idx,
 					)
 				}

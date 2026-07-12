@@ -10,6 +10,7 @@ import (
 	"github.com/clubpay/ronykit/intent"
 	"github.com/clubpay/ronykit/intent/errs"
 	"github.com/clubpay/ronykit/x/rkit"
+
 	milvusclient "github.com/milvus-io/milvus-sdk-go/v2/client"
 	"github.com/milvus-io/milvus-sdk-go/v2/entity"
 )

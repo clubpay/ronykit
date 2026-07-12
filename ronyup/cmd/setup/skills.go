@@ -303,7 +303,11 @@ func resolveSkillSelection(requested []string, kind string) ([]string, error) {
 				}
 			default:
 				if !skillExists(id) {
-					return nil, fmt.Errorf("unknown skill %q (available: %s)", id, strings.Join(allSkillIDs(), ", "))
+					return nil, fmt.Errorf(
+						"unknown skill %q (available: %s)",
+						id,
+						strings.Join(allSkillIDs(), ", "),
+					)
 				}
 
 				wanted[id] = true

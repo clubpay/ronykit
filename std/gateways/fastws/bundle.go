@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
+
 	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
 )

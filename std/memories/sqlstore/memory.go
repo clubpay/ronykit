@@ -30,7 +30,13 @@ type Memory struct {
 }
 
 // New opens a Memory store over db. migrate must be true on first use to create tables.
-func New(ctx context.Context, db *sql.DB, dialect Dialect, embedder intent.Embedder, migrate bool) (*Memory, error) {
+func New(
+	ctx context.Context,
+	db *sql.DB,
+	dialect Dialect,
+	embedder intent.Embedder,
+	migrate bool,
+) (*Memory, error) {
 	if db == nil {
 		return nil, fmt.Errorf("sqlstore: database is nil")
 	}

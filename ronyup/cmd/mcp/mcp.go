@@ -8,6 +8,7 @@ import (
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/x/telemetry/logkit"
+
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )

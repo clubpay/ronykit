@@ -48,7 +48,10 @@ const (
 //
 // Decoder will be passed a *jsoniter.Iterator before the object has been read.
 // allowing calls to ReadObjectCB to read the fields of the object.
-func RegisterErrorMarshaller[T error](encoder func(T, *jsoniter.Stream), decoder func(T, *jsoniter.Iterator)) {
+func RegisterErrorMarshaller[T error](
+	encoder func(T, *jsoniter.Stream),
+	decoder func(T, *jsoniter.Iterator),
+) {
 	var zero T
 
 	typ := reflect2.TypeOf(zero)

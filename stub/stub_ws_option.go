@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
+
 	"github.com/fasthttp/websocket"
 )
 

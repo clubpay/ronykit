@@ -12,16 +12,18 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type DBParams struct {

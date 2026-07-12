@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/spf13/cobra"
 )
 
@@ -53,9 +54,19 @@ func init() {
 		nil,
 		"feature module paths (settings.ModuleName), or * for all",
 	)
-	flags.StringVar(&bundleOpt.Description, "description", "", "optional bundle description stored in bundles.yaml")
+	flags.StringVar(
+		&bundleOpt.Description,
+		"description",
+		"",
+		"optional bundle description stored in bundles.yaml",
+	)
 	flags.BoolVar(&bundleOpt.Gen, "gen", false, "regenerate features.go for every bundle from bundles.yaml")
-	flags.BoolVar(&bundleOpt.Remove, "remove", false, "remove a bundle from bundles.yaml and delete cmd/<name>/")
+	flags.BoolVar(
+		&bundleOpt.Remove,
+		"remove",
+		false,
+		"remove a bundle from bundles.yaml and delete cmd/<name>/",
+	)
 
 	Cmd.AddCommand(CmdSetupBundle)
 }
@@ -100,7 +111,10 @@ func runBundle(cmd *cobra.Command) error {
 	}
 
 	if bundleOpt.Name == defaultBundleName {
-		return fmt.Errorf("bundle %q is managed by setup workspace; use --gen to refresh it", defaultBundleName)
+		return fmt.Errorf(
+			"bundle %q is managed by setup workspace; use --gen to refresh it",
+			defaultBundleName,
+		)
 	}
 
 	if len(bundleOpt.Services) == 0 {
@@ -165,7 +179,13 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 	}
 
 	spec := cfg.Bundles[bundleOpt.Name]
-	if err := syncBundleFeatures(cmdCtx.goRoot, cmdCtx.repoModule, bundleOpt.Name, spec, allImports); err != nil {
+	if err := syncBundleFeatures(
+		cmdCtx.goRoot,
+		cmdCtx.repoModule,
+		bundleOpt.Name,
+		spec,
+		allImports,
+	); err != nil {
 		return err
 	}
 

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
+
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )

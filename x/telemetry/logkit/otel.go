@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
+
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"

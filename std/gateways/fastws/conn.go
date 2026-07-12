@@ -8,6 +8,7 @@ import (
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/kit/utils/buf"
+
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/panjf2000/gnet/v2"
@@ -192,7 +193,11 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 
 			tmpBuff := buf.GetLen(8192)
 			stPos := wsc.msgBuff.Len()
-			written, err := io.CopyBuffer(wsc.msgBuff, io.LimitReader(wsc.readBuff, wsc.currHead.Length), *tmpBuff.Bytes())
+			written, err := io.CopyBuffer(
+				wsc.msgBuff,
+				io.LimitReader(wsc.readBuff, wsc.currHead.Length),
+				*tmpBuff.Bytes(),
+			)
 			tmpBuff.Release()
 
 			if err != nil {

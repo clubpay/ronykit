@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+
 	"github.com/valyala/fasthttp"
 )
 

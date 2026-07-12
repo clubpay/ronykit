@@ -28,7 +28,8 @@ var xClientIPHeader = http.CanonicalHeaderKey("X-Client-IP")
 var xRealIPHeader = http.CanonicalHeaderKey("X-Real-IP")
 
 // Cloudflare.
-// @see https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
+// @see
+// https://support.cloudflare.com/hc/en-us/articles/200170986-How-does-Cloudflare-handle-HTTP-Request-headers-
 // CF-Connecting-IP - applied to every request to the origin.
 var cfConnectingIPHeader = http.CanonicalHeaderKey("CF-Connecting-IP")
 

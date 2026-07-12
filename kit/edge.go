@@ -16,6 +16,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
+
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 )
@@ -297,7 +298,14 @@ func (s *EdgeServer) startup(ctx context.Context) {
 	for idx := range s.nb {
 		for _, svc := range s.svc {
 			for _, c := range svc.Contracts() {
-				s.nb[idx].gw.Register(svc.Name(), c.ID(), c.Encoding(), c.RouteSelector(), c.Input(), c.Output())
+				s.nb[idx].gw.Register(
+					svc.Name(),
+					c.ID(),
+					c.Encoding(),
+					c.RouteSelector(),
+					c.Input(),
+					c.Output(),
+				)
 			}
 		}
 

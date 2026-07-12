@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/kit/errors"
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
+
 	"github.com/go-www/silverlining"
 	"github.com/go-www/silverlining/h1"
 	reuse "github.com/libp2p/go-reuseport"

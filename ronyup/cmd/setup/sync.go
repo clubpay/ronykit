@@ -8,6 +8,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
+
 	"github.com/spf13/cobra"
 )
 
@@ -36,8 +37,20 @@ var syncOpt = struct {
 
 func init() {
 	flags := CmdSetupSync.Flags()
-	flags.StringVarP(&syncOpt.RepoDir, "repoDir", "r", ".", "repository root to sync (default: current directory)")
-	flags.StringVarP(&syncOpt.Kind, "kind", "k", syncKindAuto, "workspace kind: auto | backend | fullstack | frontend")
+	flags.StringVarP(
+		&syncOpt.RepoDir,
+		"repoDir",
+		"r",
+		".",
+		"repository root to sync (default: current directory)",
+	)
+	flags.StringVarP(
+		&syncOpt.Kind,
+		"kind",
+		"k",
+		syncKindAuto,
+		"workspace kind: auto | backend | fullstack | frontend",
+	)
 	flags.StringSliceVarP(
 		&syncOpt.Only,
 		"only",
@@ -69,7 +82,12 @@ func init() {
 	_ = CmdSetupSync.RegisterFlagCompletionFunc(
 		"kind",
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-			return []string{syncKindAuto, KindBackend, KindFullstack, KindFrontend}, cobra.ShellCompDirectiveNoFileComp
+			return []string{
+				syncKindAuto,
+				KindBackend,
+				KindFullstack,
+				KindFrontend,
+			}, cobra.ShellCompDirectiveNoFileComp
 		},
 	)
 
@@ -231,7 +249,8 @@ func detectWorkspaceLayout(abs string) (workspaceLayout, error) {
 
 	if fileExists(filepath.Join(abs, "go.work")) {
 		parent := filepath.Dir(abs)
-		if isDir(filepath.Join(parent, backendDir)) && fileExists(filepath.Join(parent, backendDir, "go.work")) &&
+		if isDir(filepath.Join(parent, backendDir)) &&
+			fileExists(filepath.Join(parent, backendDir, "go.work")) &&
 			filepath.Base(abs) == backendDir {
 			return workspaceLayout{
 				Kind:     KindFullstack,
@@ -360,7 +379,14 @@ func syncSection(
 	case syncSectionAI:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, ".ai", ".cursor/mcp.json")
 	case syncSectionHooks:
-		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, ".cursor/hooks", ".cursor/hooks.jsontmpl")
+		return syncWorkspacePaths(
+			layout,
+			templateInput,
+			skipExisting,
+			callback,
+			".cursor/hooks",
+			".cursor/hooks.jsontmpl",
+		)
 	case syncSectionDevops:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "devops")
 	case syncSectionDocs:

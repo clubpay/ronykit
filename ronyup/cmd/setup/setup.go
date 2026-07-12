@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +51,8 @@ var opt = struct {
 	// FeatureContainerFolder is the folder that the feature will be placed in.
 	FeatureContainerFolder string
 	// FeatureDir is the directory inside the feature container folder where the feature will be placed.
-	// The go module will be placed inside this directory. {RepositoryRootDir}/{FeatureContainerFolder}/{FeatureDir}/go.mod
+	// The go module will be placed inside this directory.
+	// {RepositoryRootDir}/{FeatureContainerFolder}/{FeatureDir}/go.mod
 	FeatureDir  string
 	FeatureName string
 
@@ -76,7 +78,13 @@ func init() {
 		"go module for the repository",
 	)
 	rootFlagSet.BoolVarP(&opt.Force, "force", "f", false, "clean destination directory before setup")
-	rootFlagSet.StringToStringVarP(&opt.Custom, "custom", "c", map[string]string{}, "custom values for the template")
+	rootFlagSet.StringToStringVarP(
+		&opt.Custom,
+		"custom",
+		"c",
+		map[string]string{},
+		"custom values for the template",
+	)
 
 	featureFlagSet := CmdSetupFeature.Flags()
 	featureFlagSet.StringVarP(
@@ -400,7 +408,11 @@ func installSkills(cmd *cobra.Command, repoRoot string) {
 		}
 	}))
 
-	cmd.Printf("Installed %d agent skill(s): %s\n", len(opt.resolvedSkills), strings.Join(opt.resolvedSkills, ", "))
+	cmd.Printf(
+		"Installed %d agent skill(s): %s\n",
+		len(opt.resolvedSkills),
+		strings.Join(opt.resolvedSkills, ", "),
+	)
 }
 
 // copyBackendTemplate seeds the Go workspace. Backend-only scaffolds copy
@@ -746,7 +758,8 @@ func sideEffectImportModule(cmd *cobra.Command) {
 					break
 				}
 
-				if strings.TrimSpace(lines[j]) != "" && !strings.HasPrefix(strings.TrimSpace(lines[j]), "//") {
+				if strings.TrimSpace(lines[j]) != "" &&
+					!strings.HasPrefix(strings.TrimSpace(lines[j]), "//") {
 					break
 				}
 			}

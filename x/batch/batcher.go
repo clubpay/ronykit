@@ -3,9 +3,10 @@ package batch
 import (
 	"sync/atomic"
 	"time"
-	_ "unsafe"
 
 	"github.com/clubpay/ronykit/x/rkit"
+
+	_ "unsafe"
 )
 
 /*

@@ -82,7 +82,8 @@ func (ch Channel[T]) Receive(ctx Context) (value T, more bool) {
 	return value, more
 }
 
-// ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
+// ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to
+// the
 // provided pointer.
 // Returns more value of false when Channel is closed.
 // Returns ok value of false when no value was found in the channel for the duration of timeout or
@@ -155,7 +156,8 @@ func (ch SignalChannel[T]) Receive(ctx Context) (value T, more bool) {
 	return value, more
 }
 
-// ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to the
+// ReceiveWithTimeout blocks up to timeout until it receives a value, and then assigns the received value to
+// the
 // provided pointer.
 // Returns more value of false when Channel is closed.
 // Returns ok value of false when no value was found in the channel for the duration of timeout or

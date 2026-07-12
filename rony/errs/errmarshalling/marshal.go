@@ -137,8 +137,12 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 	//
 	// (We could have simply used the subtream to check for errors, and then rewritten
 	// the same object into the main stream, but this would be less efficient)
-	currentPtr := unsafe.Pointer(reflect.Indirect(reflect.ValueOf(stream)).FieldByName("indention").UnsafeAddr())
-	subStreamPtr := unsafe.Pointer(reflect.Indirect(reflect.ValueOf(subStream)).FieldByName("indention").UnsafeAddr())
+	currentPtr := unsafe.Pointer(
+		reflect.Indirect(reflect.ValueOf(stream)).FieldByName("indention").UnsafeAddr(),
+	)
+	subStreamPtr := unsafe.Pointer(
+		reflect.Indirect(reflect.ValueOf(subStream)).FieldByName("indention").UnsafeAddr(),
+	)
 	indent := *(*int)(currentPtr)
 	*((*int)(subStreamPtr)) = indent
 

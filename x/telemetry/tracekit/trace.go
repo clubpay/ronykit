@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
+
 	"go.opentelemetry.io/contrib/propagators/b3"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/spf13/cobra"
 )
 
@@ -239,11 +240,17 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	}
 
 	if status.HasLegacyServiceBundle && !status.HasDefaultBundle {
-		steps = append(steps, fmt.Sprintf("rename cmd/%s/ to cmd/%s/", legacyDefaultBundleName, defaultBundleName))
+		steps = append(
+			steps,
+			fmt.Sprintf("rename cmd/%s/ to cmd/%s/", legacyDefaultBundleName, defaultBundleName),
+		)
 	}
 
 	if status.HasLegacyServiceBundleInYAML {
-		steps = append(steps, fmt.Sprintf("rename %q bundle to %q in bundles.yaml", legacyDefaultBundleName, defaultBundleName))
+		steps = append(
+			steps,
+			fmt.Sprintf("rename %q bundle to %q in bundles.yaml", legacyDefaultBundleName, defaultBundleName),
+		)
 	}
 
 	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner {
@@ -520,7 +527,15 @@ func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
 	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
-	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/"+legacyDefaultBundleName)
+	z.RunCmd(
+		context.Background(),
+		workDir,
+		"go",
+		"work",
+		"edit",
+		"-dropuse",
+		"./cmd/"+legacyDefaultBundleName,
+	)
 
 	return nil
 }
@@ -600,7 +615,15 @@ func renameLegacyServiceBundle(cmdCtx workspaceCommandContext) error {
 
 		workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
 		z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
-		z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/"+legacyDefaultBundleName)
+		z.RunCmd(
+			context.Background(),
+			workDir,
+			"go",
+			"work",
+			"edit",
+			"-dropuse",
+			"./cmd/"+legacyDefaultBundleName,
+		)
 	}
 
 	return migrateLegacyBundlesManifest(cmdCtx)

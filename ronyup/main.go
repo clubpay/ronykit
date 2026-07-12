@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/ronyup/cmd/text"
 	"github.com/clubpay/ronykit/ronyup/cmd/version"
 	"github.com/clubpay/ronykit/ronyup/internal"
+
 	"github.com/spf13/cobra"
 )
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
+
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/workflow"
 )
@@ -188,19 +189,22 @@ type ExecuteActivityOptions struct {
 	// Either this option or StartToCloseTimeout is required: Defaults to unlimited.
 	ScheduleToCloseTimeout time.Duration
 
-	// ScheduleToStartTimeout - Time that the Activity Task can stay in the Task Queue before it is picked up by
-	// a Worker. Do not specify this timeout unless using host-specific Task Queues for Activity Tasks are being
-	// used for routing. In almost all situations that don't involve routing activities to specific hosts, it is
+	// ScheduleToStartTimeout - Time that the Activity Task can stay in the Task Queue before it is picked up
+	// by a Worker. Do not specify this timeout unless using host-specific Task Queues for Activity Tasks are
+	// being used for routing. In almost all situations that don't involve routing activities to specific
+	// hosts, it is
 	// better to rely on the default value.
-	// ScheduleToStartTimeout is always non-retryable. Retrying after this timeout doesn't make sense, as it would
+	// ScheduleToStartTimeout is always non-retryable. Retrying after this timeout doesn't make sense, as it
+	// would
 	// just put the Activity Task back into the same Task Queue.
 	// Optional: Defaults to unlimited.
 	ScheduleToStartTimeout time.Duration
 
 	// StartToCloseTimeout - Maximum time of a single Activity execution attempt.
-	// Note that the Temporal Server doesn't detect Worker process failures directly. It relies on this timeout
-	// to detect that an Activity that didn't complete on time. So this timeout should be as short as the longest
-	// possible execution of the Activity body. Potentially long-running Activities must specify HeartbeatTimeout
+	// Note that the Temporal Server doesn't detect Worker process failures directly. It relies on this
+	// timeout to detect that an Activity that didn't complete on time. So this timeout should be as short as
+	// the longest possible execution of the Activity body. Potentially long-running Activities must specify
+	// HeartbeatTimeout
 	// and call Activity.RecordHeartbeat(ctx, "my-heartbeat") periodically for timely failure detection.
 	// Either this option or ScheduleToCloseTimeout is required: Defaults to the ScheduleToCloseTimeout value.
 	StartToCloseTimeout time.Duration
@@ -236,7 +240,11 @@ func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteAc
 	}
 }
 
-func (a *Activity[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func (a *Activity[REQ, RES, STATE]) ExecuteLocal(
+	ctx Context,
+	req REQ,
+	opts ExecuteActivityOptions,
+) Future[RES] {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
@@ -263,7 +271,11 @@ type ActivityFactory[REQ, RES, STATE any] struct {
 	act *Activity[REQ, RES, STATE]
 }
 
-func (a *ActivityFactory[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func (a *ActivityFactory[REQ, RES, STATE]) Execute(
+	ctx Context,
+	req REQ,
+	opts ExecuteActivityOptions,
+) Future[RES] {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
@@ -288,7 +300,11 @@ func (a *ActivityFactory[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts Ex
 	}
 }
 
-func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(
+	ctx Context,
+	req REQ,
+	opts ExecuteActivityOptions,
+) Future[RES] {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}

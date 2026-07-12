@@ -16,12 +16,14 @@ import (
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+
 	"github.com/orlangure/gnomock"
 	redisContainer "github.com/orlangure/gnomock/preset/redis"
 	"github.com/redis/go-redis/v9"
-	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var (

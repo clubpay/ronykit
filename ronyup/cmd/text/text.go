@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/text/language"
@@ -27,7 +28,13 @@ var opt = struct {
 func init() {
 	flagSet := Cmd.Flags()
 	flagSet.StringVarP(&opt.SourceLang, "src-lang", "s", "en-US", "source language")
-	flagSet.StringSliceVarP(&opt.Languages, "dst-lang", "l", []string{"en-US", "fa-IR", "ar-AR"}, "languages to generate")
+	flagSet.StringSliceVarP(
+		&opt.Languages,
+		"dst-lang",
+		"l",
+		[]string{"en-US", "fa-IR", "ar-AR"},
+		"languages to generate",
+	)
 	flagSet.StringVarP(&opt.DstDir, "out-dir", "o", ".", "output path")
 	flagSet.StringVarP(
 		&opt.GenPackageName,

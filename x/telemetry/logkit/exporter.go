@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/telemetry/logkit/exporter/terminal"
+
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"

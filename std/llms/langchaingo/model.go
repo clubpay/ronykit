@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/intent"
+
 	lclang "github.com/tmc/langchaingo/llms"
 )
 

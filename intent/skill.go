@@ -195,9 +195,11 @@ func activateSkillDefinition(cards []SkillCard) ToolDefinition {
 			"type": "object",
 			"properties": map[string]any{
 				"name": map[string]any{
-					"type":        "string",
-					"enum":        names,
-					"description": prompt.ActivateSkillNameDescription(prompt.ActivateSkillNameDescriptionData(catalog)),
+					"type": "string",
+					"enum": names,
+					"description": prompt.ActivateSkillNameDescription(
+						prompt.ActivateSkillNameDescriptionData(catalog),
+					),
 				},
 			},
 			"required": []string{"name"},

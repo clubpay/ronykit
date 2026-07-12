@@ -108,7 +108,11 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 
 		if c.DefaultError != nil {
 			pc.DefaultError = &ParsedResponse{
-				Message: ps.parseMessage(c.DefaultError.Message, c.DefaultError.Meta, s.Selector.GetEncoding()),
+				Message: ps.parseMessage(
+					c.DefaultError.Message,
+					c.DefaultError.Meta,
+					s.Selector.GetEncoding(),
+				),
 				ErrCode: c.DefaultError.Code,
 				ErrItem: c.DefaultError.Item,
 			}
@@ -165,10 +169,11 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 		fields = append(
 			fields,
 			ParsedField{
-				GoName:   f.Name,
-				Name:     ptn.Value,
-				Tag:      ptn,
-				Optional: ft.Kind() == reflect.Pointer || ft.Kind() == reflect.Slice || ft.Kind() == reflect.Map,
+				GoName: f.Name,
+				Name:   ptn.Value,
+				Tag:    ptn,
+				Optional: ft.Kind() == reflect.Pointer || ft.Kind() == reflect.Slice ||
+					ft.Kind() == reflect.Map,
 				Embedded: f.Anonymous,
 				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
 				Exported: f.IsExported(),

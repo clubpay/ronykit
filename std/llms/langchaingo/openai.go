@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/intent"
+
 	lcopenai "github.com/tmc/langchaingo/llms/openai"
 )
 

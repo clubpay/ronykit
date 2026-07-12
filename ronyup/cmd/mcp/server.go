@@ -15,6 +15,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/tools/scaffold"
+
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

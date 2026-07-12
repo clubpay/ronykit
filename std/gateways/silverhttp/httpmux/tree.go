@@ -289,7 +289,9 @@ func (n *node) insertChild(path, fullPath string, handle *RouteData) {
 		}
 
 		if len(n.path) > 0 && n.path[len(n.path)-1] == '/' {
-			panic("catch-all conflicts with existing handle for the path segment root in path '" + fullPath + "'")
+			panic(
+				"catch-all conflicts with existing handle for the path segment root in path '" + fullPath + "'",
+			)
 		}
 
 		// Currently, fixed width 1 for '/'

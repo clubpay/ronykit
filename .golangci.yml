@@ -70,6 +70,21 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
+    - golines
+  settings:
+    gci:
+      sections:
+        - standard
+        - prefix(github.com/clubpay/ronykit)
+        - default
+        - blank
+        - dot
+      custom-order: true
+    golines:
+      max-len: 110
+      shorten-comments: true
+      reformat-tags: true
+      chain-split-dots: true
   exclusions:
     generated: lax
     paths:

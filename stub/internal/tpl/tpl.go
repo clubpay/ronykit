@@ -1,12 +1,14 @@
 package tpl
 
 import (
-	_ "embed"
 	"fmt"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/clubpay/ronykit/kit/utils"
+
+	"github.com/Masterminds/sprig/v3"
+
+	_ "embed"
 )
 
 var (
@@ -25,7 +27,9 @@ var (
 func init() {
 	GoStub = template.Must(template.New("stub").Funcs(sprig.FuncMap()).Funcs(FuncMaps).Parse(goFileStub))
 	TSStub = template.Must(template.New("stub").Funcs(sprig.FuncMap()).Funcs(FuncMaps).Parse(tsFileStub))
-	TSSWRHooks = template.Must(template.New("swrHooks").Funcs(sprig.FuncMap()).Funcs(FuncMaps).Parse(tsFileSWRHooks))
+	TSSWRHooks = template.Must(
+		template.New("swrHooks").Funcs(sprig.FuncMap()).Funcs(FuncMaps).Parse(tsFileSWRHooks),
+	)
 }
 
 var FuncMaps = map[string]any{

@@ -2,6 +2,7 @@ package fastws
 
 import (
 	"github.com/clubpay/ronykit/kit"
+
 	"github.com/gobwas/ws"
 )
 

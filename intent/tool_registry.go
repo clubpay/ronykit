@@ -145,7 +145,11 @@ func (r *DefaultToolRegistry) Execute(ctx context.Context, call ToolCall) (Messa
 	}
 }
 
-func (r *DefaultToolRegistry) executeMCP(ctx context.Context, call ToolCall, binding mcpToolBinding) (Message, error) {
+func (r *DefaultToolRegistry) executeMCP(
+	ctx context.Context,
+	call ToolCall,
+	binding mcpToolBinding,
+) (Message, error) {
 	result, err := binding.server.CallTool(ctx, binding.tool.Name, json.RawMessage(call.Arguments))
 	if err != nil {
 		return Message{}, err

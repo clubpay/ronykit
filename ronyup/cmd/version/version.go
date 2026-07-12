@@ -2,6 +2,7 @@ package version
 
 import (
 	"github.com/clubpay/ronykit/ronyup/internal"
+
 	"github.com/spf13/cobra"
 )
 

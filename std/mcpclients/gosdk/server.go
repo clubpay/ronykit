@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/clubpay/ronykit/intent"
+
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -105,7 +106,11 @@ func (s *Server) ListTools(ctx context.Context) ([]intent.MCPTool, error) {
 	return out, nil
 }
 
-func (s *Server) CallTool(ctx context.Context, name string, args json.RawMessage) (intent.MCPToolResult, error) {
+func (s *Server) CallTool(
+	ctx context.Context,
+	name string,
+	args json.RawMessage,
+) (intent.MCPToolResult, error) {
 	if err := s.requireSession(); err != nil {
 		return intent.MCPToolResult{}, err
 	}
@@ -194,7 +199,11 @@ func (s *Server) ListPrompts(ctx context.Context) ([]intent.MCPPromptSummary, er
 	return out, nil
 }
 
-func (s *Server) GetPrompt(ctx context.Context, name string, args map[string]string) (intent.MCPPromptResult, error) {
+func (s *Server) GetPrompt(
+	ctx context.Context,
+	name string,
+	args map[string]string,
+) (intent.MCPPromptResult, error) {
 	if err := s.requireSession(); err != nil {
 		return intent.MCPPromptResult{}, err
 	}

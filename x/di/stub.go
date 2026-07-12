@@ -4,6 +4,7 @@ import (
 	"github.com/clubpay/ronykit/stub"
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/telemetry/tracekit"
+
 	"go.uber.org/fx"
 )
 

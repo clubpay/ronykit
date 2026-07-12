@@ -1,6 +1,7 @@
 // Package errs provides structured error handling for Encore applications.
 //
-// See https://encore.dev/docs/develop/errors for more information about how errors work within Encore applications.
+// See https://encore.dev/docs/develop/errors for more information about how errors work within Encore
+// applications.
 package errs
 
 import (
@@ -11,6 +12,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+
 	jsoniter "github.com/json-iterator/go"
 )
 

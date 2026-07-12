@@ -17,6 +17,7 @@ import (
 	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+
 	"github.com/fasthttp/router"
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"

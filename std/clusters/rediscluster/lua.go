@@ -1,9 +1,9 @@
 package rediscluster
 
 import (
-	_ "embed"
-
 	"github.com/redis/go-redis/v9"
+
+	_ "embed"
 )
 
 var (

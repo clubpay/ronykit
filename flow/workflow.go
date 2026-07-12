@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/google/uuid"
 	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
@@ -300,13 +301,15 @@ type ExecuteChildWorkflowOptions struct {
 	// Optional: defaults to WorkflowExecutionTimeout
 	WorkflowRunTimeout time.Duration
 
-	// WorkflowTaskTimeout - Maximum execution time of a single Workflow Task. In the majority of cases there is
-	// no need to change this timeout. Note that this timeout is not related to the overall Workflow duration in
+	// WorkflowTaskTimeout - Maximum execution time of a single Workflow Task. In the majority of cases there
+	// is no need to change this timeout. Note that this timeout is not related to the overall Workflow
+	// duration in
 	// any way. It defines for how long the Workflow can get blocked in the case of a Workflow Worker crash.
 	// Default is 10 seconds. The Maximum value allowed by the Temporal Server is 1 minute.
 	WorkflowTaskTimeout time.Duration
 
-	// WaitForCancellation - Whether to wait for a canceled child workflow to be ended (child workflow can be ended
+	// WaitForCancellation - Whether to wait for a canceled child workflow to be ended (child workflow can be
+	// ended
 	// as: completed/failed/timeout/terminated/canceled)
 	// Optional: default false
 	WaitForCancellation bool
@@ -369,7 +372,10 @@ type SearchWorkflowResponse struct {
 	NextPageToken []byte
 }
 
-func (sdk *SDK) SearchWorkflows(ctx context.Context, req SearchWorkflowRequest) (*SearchWorkflowResponse, error) {
+func (sdk *SDK) SearchWorkflows(
+	ctx context.Context,
+	req SearchWorkflowRequest,
+) (*SearchWorkflowResponse, error) {
 	cliReq := &workflowservice.ListWorkflowExecutionsRequest{
 		Namespace:     sdk.b.Namespace(),
 		PageSize:      100,
@@ -399,7 +405,10 @@ type CountWorkflowResponse struct {
 	Counts map[string]int64
 }
 
-func (sdk *SDK) CountWorkflows(ctx context.Context, req CountWorkflowRequest) (*CountWorkflowResponse, error) {
+func (sdk *SDK) CountWorkflows(
+	ctx context.Context,
+	req CountWorkflowRequest,
+) (*CountWorkflowResponse, error) {
 	res, err := sdk.b.Client().CountWorkflow(
 		ctx,
 		&workflowservice.CountWorkflowExecutionsRequest{
@@ -575,7 +584,10 @@ type CancelWorkflowResponse struct {
 	Success bool
 }
 
-func (sdk *SDK) CancelWorkflow(ctx context.Context, req CancelWorkflowRequest) (*CancelWorkflowResponse, error) {
+func (sdk *SDK) CancelWorkflow(
+	ctx context.Context,
+	req CancelWorkflowRequest,
+) (*CancelWorkflowResponse, error) {
 	err := sdk.b.Client().CancelWorkflow(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
 		var notFoundErr *serviceerror.NotFound

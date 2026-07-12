@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/clubpay/ronykit/intent"
+
 	lcemb "github.com/tmc/langchaingo/embeddings"
 )
 

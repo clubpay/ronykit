@@ -119,7 +119,8 @@ func StrTruncate(s string, maxSize int) string {
 }
 
 // Numeric represents float64 number which is decodable from string, int or float.
-// It's useful when a struct field should be numeric but form of the data being decoded from is unknown or variable.
+// It's useful when a struct field should be numeric but form of the data being decoded from is unknown or
+// variable.
 type Numeric struct {
 	value     float64
 	precision int

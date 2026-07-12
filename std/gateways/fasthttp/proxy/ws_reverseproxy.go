@@ -91,7 +91,12 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	// http://tools.ietf.org/html/draft-ietf-hybi-websocket-multiplexing-01
 	connBackend, respBackend, err := dialer.Dial(w.option.target.String(), forwardHeader)
 	if err != nil {
-		errorf(w.option.logger, "websocketproxy: couldn't dial to remote backend(%s): %v", w.option.target.String(), err)
+		errorf(
+			w.option.logger,
+			"websocketproxy: couldn't dial to remote backend(%s): %v",
+			w.option.target.String(),
+			err,
+		)
 
 		if respBackend != nil {
 			err = wsCopyResponse(resp, respBackend)
@@ -208,7 +213,13 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 		msgType, msg, err := src.ReadMessage()
 		if err != nil {
 			// true: handle websocket close error
-			errorf(logger, "replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+			errorf(
+				logger,
+				"replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v",
+				msgType,
+				msg,
+				err,
+			)
 
 			var ce *websocket.CloseError
 			if errors.As(err, &ce) {
@@ -230,7 +241,13 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 
 		err = dst.WriteMessage(msgType, msg)
 		if err != nil {
-			errorf(logger, "replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v", msgType, msg, err)
+			errorf(
+				logger,
+				"replicateWebsocketConn: dst.WriteMessage failed, msgType=%d, msg=%s, err=%v",
+				msgType,
+				msg,
+				err,
+			)
 
 			errChan <- err
 

@@ -123,7 +123,13 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	}
 
 	c := p.getClient()
-	debugf(p.opt.debug, p.opt.logger, "rev request headers to proxy, addr = %s, headers = %s", c.Addr, req.Header.String())
+	debugf(
+		p.opt.debug,
+		p.opt.logger,
+		"rev request headers to proxy, addr = %s, headers = %s",
+		c.Addr,
+		req.Header.String(),
+	)
 
 	// assign the host to support virtual hosting, aka shared web hosting (one IP, multiple domains)
 	req.SetHost(c.Addr)
@@ -156,7 +162,11 @@ func (p *ReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 }
 
 // doWithTimeout calls fasthttp.HostClient Do or DoTimeout, this is depends on p.opt.timeout
-func (p *ReverseProxy) doWithTimeout(pc *fasthttp.HostClient, req *fasthttp.Request, res *fasthttp.Response) error {
+func (p *ReverseProxy) doWithTimeout(
+	pc *fasthttp.HostClient,
+	req *fasthttp.Request,
+	res *fasthttp.Response,
+) error {
 	if p.opt.timeout <= 0 {
 		return pc.Do(req, res)
 	}

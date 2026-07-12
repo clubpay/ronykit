@@ -84,7 +84,12 @@ func (c *client) chat(ctx context.Context, req chatRequest) (chatResponse, error
 		return chatResponse{}, err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/chat", bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		c.baseURL+"/api/chat",
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return chatResponse{}, err
 	}

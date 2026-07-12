@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/utils"
+
 	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
 )
@@ -93,7 +94,11 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	if !wsc.isUpgraded() {
 		err := wsc.upgrade(c)
 		if err != nil {
-			gw.b.l.Debugf("faild to upgrade websocket connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
+			gw.b.l.Debugf(
+				"faild to upgrade websocket connID(%d): %v",
+				utils.TryCast[uint64](c.Context()),
+				err,
+			)
 
 			return gnet.Close
 		}
@@ -103,7 +108,11 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 
 	err := wsc.readBuffer(c)
 	if err != nil {
-		gw.b.l.Debugf("faild to read buffer websocket connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
+		gw.b.l.Debugf(
+			"faild to read buffer websocket connID(%d): %v",
+			utils.TryCast[uint64](c.Context()),
+			err,
+		)
 
 		return gnet.Close
 	}

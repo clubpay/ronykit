@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/intent"
 	"github.com/clubpay/ronykit/std/memories/sqlstore"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 

@@ -13,12 +13,14 @@ import (
 
 	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/settings"
-	_ "github.com/jackc/pgx/v5/stdlib" // required by InitDB
+
 	"github.com/orlangure/gnomock"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
+
+	_ "github.com/jackc/pgx/v5/stdlib" // required by InitDB
 )
 
 func Run(t *testing.T, opts ...fx.Option) {
@@ -115,7 +117,9 @@ func InitRedis(containerName string, params InitRedisParams) fx.Option {
 			),
 			fx.Annotate(
 				func(c *gnomock.Container) (*redis.Client, error) {
-					opt, err := redis.ParseURL("redis://" + net.JoinHostPort(c.Host, rkit.IntToStr(c.DefaultPort())))
+					opt, err := redis.ParseURL(
+						"redis://" + net.JoinHostPort(c.Host, rkit.IntToStr(c.DefaultPort())),
+					)
 					if err != nil {
 						return nil, err
 					}
