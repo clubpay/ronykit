@@ -111,6 +111,7 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	// Also pass the header that we gathered from the Dial handshake.
 	err = upgrader.Upgrade(ctx, func(connPub *websocket.Conn) {
 		defer connPub.Close()
+		defer connBackend.Close()
 
 		var (
 			errClient  = make(chan error, 1)
@@ -123,23 +124,28 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		go replicateWebsocketConn(w.option.logger, connPub, connBackend, errClient)  // response
 		go replicateWebsocketConn(w.option.logger, connBackend, connPub, errBackend) // request
 
-		for {
-			select {
-			case err = <-errClient:
-				message = "websocketproxy: Error when copying response: %v"
-			case err = <-errBackend:
-				message = "websocketproxy: Error when copying request: %v"
-			}
+		// Wait for either side to finish. The deferred Close calls then unblock the
+		// other replicate goroutine so it can exit as well.
+		select {
+		case err = <-errClient:
+			message = "websocketproxy: error when copying response: %v"
+		case err = <-errBackend:
+			message = "websocketproxy: error when copying request: %v"
+		}
 
-			// log error except '*websocket.CloseError'
-			closeError := &websocket.CloseError{}
-			if errors.As(err, &closeError) {
-				errorf(w.option.logger, "websocketproxy: error when copying %s: %v", message, err)
-			}
+		// log error except '*websocket.CloseError'
+		closeError := &websocket.CloseError{}
+		if err != nil && !errors.As(err, &closeError) {
+			errorf(w.option.logger, message, err)
 		}
 	})
 	if err != nil {
 		errorf(w.option.logger, "websocketproxy: couldn't upgrade %s", err)
+
+		// Upgrade failed before Hijack scheduled the handler, so the deferred
+		// connBackend.Close never runs. Close it here to avoid leaking the
+		// already-dialed upstream connection.
+		_ = connBackend.Close()
 	}
 
 	return
