@@ -29,8 +29,8 @@ ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
 ## Core Concepts
 
 - **State**: a shared, reducer-style state per service. Implement `Name()` and `Reduce(action) error`. If you do not need state, use `rony.EmptyState()`.
-- **Handlers**: unary or streaming functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO, then return a response DTO.
-- **Contracts**: route definitions that bind handlers to REST or RPC selectors.
+- **Handlers**: unary, streaming, or relay functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO, then return a response DTO. Relay handlers receive `*rony.RelayCtx` and return `error` after calling `ctx.Relay(targetURL, cfg)`.
+- **Contracts**: route definitions that bind handlers to REST or RPC selectors. Use `WithRelay` for passthrough proxy routes (not `WithUnary`).
 
 State interface signature:
 

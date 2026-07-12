@@ -84,7 +84,7 @@ A logical grouping of contracts. One EdgeServer can host multiple services. Serv
 
 ### Contract
 
-A single API operation. Defines the input/output types, route selectors, and handler. In the `rony` layer, contracts are created implicitly with `rony.WithUnary()` and `rony.WithStream()`.
+A single API operation. Defines the input/output types, route selectors, and handler. In the `rony` layer, contracts are created implicitly with `rony.WithUnary()`, `rony.WithStream()`, or `rony.WithRelay()` (passthrough HTTP/WebSocket proxy).
 
 ### Context
 

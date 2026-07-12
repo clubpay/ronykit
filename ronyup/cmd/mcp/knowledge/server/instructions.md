@@ -119,6 +119,9 @@ resource. Quick decision table (left = what you might reach for, right = what yo
   timers/waitgroups/byte buffers → `x/p`.
 - Localization → `x/i18n`. API docs → `x/apidoc` / `rony.WithAPIDocs`. Inter-service calls → generated stubs via `di.StubProvider` (never
   hand-written HTTP clients).
+- **Dynamic HTTP/WebSocket relay** (session-scoped passthrough after handler auth) → `rony.WithRelay` + `RelayCtx.Relay()` with `kit.RelayConfig`.
+  Read `knowledge://ronyup/architecture/handler-relay`. Do **not** use `WithUnary`/`WithRawUnary` for relay routes. **Static** gateway proxy →
+  `rony.WithReverseProxy` (unchanged).
 
 Workspaces scaffolded before executable bundles: run `ronyup setup migrate bundles` once after upgrading `ronyup` (read
 `knowledge://ronyup/tools/migrate_bundles`). Run from the Go workspace root or the fullstack repository root. Use `ronyup setup sync` for

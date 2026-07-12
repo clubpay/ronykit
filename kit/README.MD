@@ -126,6 +126,10 @@ When developing an API server, you often need to store data with different lifec
 | Local      | Shared between contracts and services, stored in the server's memory    |
 | Cluster    | Shared between EdgeServer instances, requires a Cluster bundle          |
 
+## Handler relay
+
+`kit.RelayConn` lets a **handler** forward the inbound HTTP or WebSocket request to a dynamic upstream URL (after auth or session logic). Helpers: `kit.Relay`, `kit.RelayHTTP`, `kit.RelayWebSocket`, `kit.RelayConfig`. Implemented on `std/gateways/fasthttp` connections. In application services, prefer `rony.WithRelay` and `RelayCtx` (see `docs/cookbook.md` and ronyup MCP `architecture/handler-relay`). For **static** gateway proxy paths, use `rony.WithReverseProxy` instead.
+
 ## KIT Standard Implementations
 
 This repository contains standard gateway and cluster bundles for Kit. You can mix and match the Gateway and Cluster that suit your needs, or use the batteries-included [rony](../rony/README.MD) package.

@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
 )
 
 type docUI string
@@ -131,6 +132,12 @@ func WithPredicateKey(key string) ServerOption {
 func WithWebsocketEndpoint(endpoint string) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithWebsocketEndpoint(endpoint))
+	}
+}
+
+func WithReverseProxy(path string, opt ...proxy.Option) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithReverseProxy(path, opt...))
 	}
 }
 

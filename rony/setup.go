@@ -86,6 +86,7 @@ func SetupOptionGroup[S State[A], A Action](opt ...SetupOption[S, A]) SetupOptio
 // - WithState: to set up state
 // - WithUnary: to set up unary handler
 // - WithStream: to set up stream handler
+// - WithRelay: to set up HTTP/WebSocket relay handler
 func Setup[S State[A], A Action](
 	srv *Server,
 	name string,
@@ -154,6 +155,17 @@ func WithStream[S State[A], A Action, IN, OUT Message](
 	}
 }
 
+// WithRelay registers a handler-initiated HTTP/WebSocket relay route.
+// Use RelayCtx.Relay from the handler; relay routes must not use WithUnary.
+func WithRelay[S State[A], A Action](
+	h RelayHandler[S, A],
+	opt ...RelayOption,
+) SetupOption[S, A] {
+	return func(ctx *SetupContext[S, A]) {
+		registerRelay[S, A](ctx, h, opt...)
+	}
+}
+
 // WithContract is a SetupOption to set up a legacy desc.Contract directly.
 // This method is useful when you are migrating your old code to rony.
 func WithContract[S State[A], A Action](
@@ -193,9 +205,9 @@ func WithCoordinator[S State[A], A Action](sel NodeSelectorFunc) SetupOption[S, 
 	}
 }
 
-// WithBasePath sets a path prefix for REST routes registered by subsequent WithUnary
-// and WithRawUnary options. When used inside SetupOptionGroup, the prefix applies only
-// to handlers registered within that group.
+// WithBasePath sets a path prefix for REST routes registered by subsequent WithUnary,
+// WithRawUnary, and WithRelay options. When used inside SetupOptionGroup, the prefix
+// applies only to handlers registered within that group.
 func WithBasePath[S State[A], A Action](path string) SetupOption[S, A] {
 	return func(ctx *SetupContext[S, A]) {
 		ctx.basePath = path

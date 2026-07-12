@@ -56,6 +56,7 @@ Read these when implementing or reviewing service code.
 | `module-wiring`         | fx module, DB/Redis init                         |
 | `settings-config`       | `x/settings` structs and tags                    |
 | `middleware`            | Global middleware registration                   |
+| `handler-relay`         | Dynamic HTTP/WebSocket relay (`WithRelay`)       |
 | `error-handling`        | `rony/errs` patterns                             |
 | `logging`               | `logkit` usage                                   |
 | `tracing-metrics`       | `tracekit`, `meterkit`                           |
@@ -93,7 +94,7 @@ When the user mentions these topics, read the resource before coding.
 
 | Resource     | Keywords (partial)    |
 |--------------|-----------------------|
-| `api`        | rest, http, contract  |
+| `api`        | rest, http, api, relay, proxy |
 | `cache`      | redis, cache          |
 | `database`   | postgres, mysql, partition, retention, growth |
 | `di`         | di, dependency inject |

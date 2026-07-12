@@ -76,7 +76,7 @@ go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
 
 ## API description and stubs
 
-- `rony` supports declarative routes using `rony.WithUnary/WithStream` and REST/RPC selectors (`GET`, `POST`, `RPC`, etc).
+- `rony` supports declarative routes using `rony.WithUnary`, `rony.WithStream`, and `rony.WithRelay` (dynamic HTTP/WebSocket relay), plus REST/RPC selectors (`GET`, `POST`, `RPC`, etc).
 - Use `srv.ExportDesc()` and `stub/stubgen` to generate Go/TS clients.
 - For raw descriptor control, use `kit/desc`.
 

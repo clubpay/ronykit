@@ -278,6 +278,7 @@ func resolveFeaturePackagePath() string {
 func loadDefaultBundleFeatureImports(cmdCtx workspaceCommandContext) ([]string, error) {
 	for _, bundleName := range []string{defaultBundleName, legacyDefaultBundleName} {
 		featuresPath := filepath.Join(cmdCtx.goRoot, "cmd", bundleName, "features.go")
+
 		imports, err := parseFeatureImports(featuresPath)
 		if err == nil {
 			return imports, nil

@@ -97,6 +97,11 @@ func (testCtx *TestContext) RunREST() error {
 	return testCtx.run(conn)
 }
 
+// RunWithConn simulates a request using the provided connection.
+func (testCtx *TestContext) RunWithConn(conn Conn) error {
+	return testCtx.run(conn)
+}
+
 func (testCtx *TestContext) run(conn Conn) error {
 	ctx := newContext(&testCtx.ls)
 	ctx.conn = conn
@@ -110,12 +115,12 @@ func (testCtx *TestContext) run(conn Conn) error {
 	var out []*Envelope
 
 	switch conn := conn.(type) {
-	default:
-		panic("BUG! unknown conn type")
 	case *testRESTConn:
 		out = conn.out
 	case *testConn:
 		out = conn.out
+	default:
+		out = nil
 	}
 
 	if testCtx.receiverFunc != nil {

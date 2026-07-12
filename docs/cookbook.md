@@ -750,6 +750,42 @@ rony.NewServer(
 
 ---
 
+## Handler relay (dynamic reverse proxy)
+
+Use **`rony.WithRelay`** when the handler must authenticate, resolve a dynamic upstream (e.g. k8s port-forward), and forward the raw HTTP or WebSocket request. This is separate from **`rony.WithReverseProxy`**, which registers a static gateway-level proxy.
+
+```go
+func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
+	return rony.SetupOptionGroup(
+		rony.WithMiddleware[rony.EMPTY, rony.NOP](svc.CheckSessionToken),
+
+		rony.WithRelay(
+			svc.RelaySessionAPI,
+			rony.ANY("/deploy/v1/sessions/:sessionId/api/{path:*}"),
+		),
+	)
+}
+
+func (svc *Service) RelaySessionAPI(ctx *rony.SRelayCtx) error {
+	sessionID := /* from route param via ctx.RESTConn() or app helper */
+	target, err := svc.app.ResolveSessionUpstream(ctx.Context(), sessionID)
+	if err != nil {
+		return err
+	}
+	return ctx.Relay(target, kit.RelayConfig{
+		DropQueryParams: []string{"token"},
+	})
+}
+```
+
+- **`RelayCtx`** only — `UnaryCtx` has no `Relay()` method.
+- Success writes the upstream response directly (no JSON envelope).
+- Errors return `error`; the relay wrapper sends the standard error envelope.
+
+See `knowledge://ronyup/architecture/handler-relay` (MCP) and `std/gateways/fasthttp/proxy/README.md`.
+
+---
+
 ## Next Steps
 
 - [Getting Started](./getting-started.md) — core concepts and first server

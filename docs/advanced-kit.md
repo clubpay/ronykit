@@ -197,6 +197,10 @@ type Gateway interface {
 
 See `std/gateways/fasthttp` for a reference implementation.
 
+### Handler relay
+
+When a **handler** (not the gateway router) must forward the inbound HTTP or WebSocket request to a dynamic upstream after auth or session resolution, use `kit.RelayConn` and `kit.Relay` / `kit.RelayHTTP` / `kit.RelayWebSocket`. In `rony` services, register routes with `rony.WithRelay` and `RelayCtx` — see MCP `architecture/handler-relay` and `docs/cookbook.md`.
+
 ---
 
 ## When to Use Kit

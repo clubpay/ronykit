@@ -8,7 +8,7 @@ import (
 	"github.com/clubpay/ronykit/kit/utils"
 )
 
-// BaseCtx is a base context object used by UnaryCtx and StreamCtx
+// BaseCtx is a base context object used by UnaryCtx, StreamCtx, and RelayCtx
 // to provide common functionality.
 type BaseCtx[S State[A], A Action] struct {
 	ctx *kit.Context
@@ -218,4 +218,52 @@ func (c *StreamCtx[S, A, M]) PushTo(conn kit.Conn, m M, opt ...PushOpt) {
 	}
 
 	e.Send()
+}
+
+/*
+	RelayCtx
+*/
+
+type RelayCtx[S State[A], A Action] struct {
+	BaseCtx[S, A]
+}
+
+// SRelayCtx is alias for RelayCtx when we don't need State.
+type SRelayCtx = RelayCtx[EMPTY, NOP]
+
+func newRelayCtx[S State[A], A Action](
+	ctx *kit.Context, s *S, sl sync.Locker,
+) *RelayCtx[S, A] {
+	return &RelayCtx[S, A]{
+		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+	}
+}
+
+// Relay forwards the inbound HTTP or WebSocket request to targetURL.
+func (c *RelayCtx[S, A]) Relay(targetURL string, cfg kit.RelayConfig) error {
+	return kit.Relay(c.ctx, targetURL, cfg)
+}
+
+// InputBody returns the inbound request body.
+func (c *RelayCtx[S, A]) InputBody() ([]byte, error) {
+	return c.ctx.InputBody()
+}
+
+// RESTConn returns the underlying RESTConn if the connection is RESTConn.
+func (c *RelayCtx[S, A]) RESTConn() (kit.RESTConn, bool) {
+	if c.ctx.IsREST() {
+		return c.ctx.RESTConn(), true
+	}
+
+	return nil, false
+}
+
+// IsWebSocketUpgrade reports whether the inbound request is a WebSocket upgrade.
+func (c *RelayCtx[S, A]) IsWebSocketUpgrade() bool {
+	rc, ok := c.ctx.RelayConn()
+	if !ok {
+		return false
+	}
+
+	return rc.IsWebSocketUpgrade()
 }

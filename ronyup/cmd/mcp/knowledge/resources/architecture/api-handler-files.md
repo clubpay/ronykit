@@ -7,7 +7,8 @@ Each `api_*.go` file defines its input/output DTOs at the top (with `json` and `
 
 Handler methods use:
 
-- `func (svc Service) MethodName(ctx *RContext, input InputType) (*OutputType, error)`
+- `func (svc Service) MethodName(ctx *RContext, input InputType) (*OutputType, error)` for unary JSON APIs
+- `func (svc Service) RelaySessionAPI(ctx *rony.SRelayCtx) error` for passthrough HTTP/WebSocket relay routes (`rony.WithRelay`)
 
 Keep API handlers thin:
 
@@ -20,3 +21,5 @@ Use helper functions (`toAccount`, `toWalletAccount`) for domain-to-API type con
 Use `rony.UnaryInputMeta` with `desc.WithField(name, desc.FieldMeta{Enum: ...})` for enum documentation and field-level metadata on input DTOs.
 
 Never use types from domain or other packages for DTOs. Always make sure DTOs fields have `json` tags, otherwise stub generation will fail.
+
+For dynamic reverse proxy endpoints (session relay, port-forward passthrough), read `handler-relay` and register with `rony.WithRelay` — not `WithUnary`.

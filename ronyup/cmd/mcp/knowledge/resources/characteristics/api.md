@@ -9,7 +9,9 @@ applies_to_files:
 
 ---
 
-Focus on api/service.go contracts, request validation, and route semantics. Generate API docs with x/apidoc and serve Swagger UI, ReDoc, or Scalar.
+Focus on api/service.go contracts, request validation, and route semantics. Generate API docs with x/apidoc.
+
+For passthrough HTTP/WebSocket proxy routes, use `rony.WithRelay` and read `architecture/handler-relay` — not `WithUnary`.
 
 ## File-Level Hint
 

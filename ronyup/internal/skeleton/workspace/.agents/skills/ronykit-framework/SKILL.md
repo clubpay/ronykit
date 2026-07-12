@@ -58,6 +58,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | New service module           | `design-new-service` or `write-srs` → `write-sdd` → `scaffold_feature` → `write-service-code` |
 | Bootstrap frontend           | `design-frontend` → `architecture/frontend-design-documents`                                  |
 | API / contract design        | `design-api` prompt                                                                           |
+| Session / passthrough proxy  | `architecture/handler-relay` + `rony.WithRelay` (not `WithUnary`)                             |
 | Architecture review          | `review-architecture` prompt                                                                  |
 | Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow`                                          |
 | Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                                             |
@@ -78,6 +79,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 - Feature Go package name: `<feature>mod` (e.g. `authmod`, not `auth`).
 - After contract changes: `make gen-stub` in that feature module.
 - Inter-service calls: generated stubs, not hand-written HTTP clients.
+- **Passthrough HTTP/WebSocket proxy routes** use `rony.WithRelay` + `RelayCtx.Relay()` only — never `WithUnary`/`WithRawUnary` or `kit.RawMessage` hacks. Read `architecture/handler-relay`. Static gateway proxy: `rony.WithReverseProxy`.
 - `make lint` failures from `depguard` are design violations (forbidden imports), not formatting nits — fix by switching to the RonyKIT package.
 
 ## Validation

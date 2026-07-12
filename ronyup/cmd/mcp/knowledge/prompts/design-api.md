@@ -196,6 +196,10 @@ For standalone OpenAPI/Postman generation outside the server, use `x/apidoc` (`a
 - Keep related CRUD endpoints in the same `api_<domain>.go` file
 - One handler file per logical domain concept (accounts, transfers, policies, etc.)
 
+## Passthrough relay routes
+
+For endpoints that authenticate then forward raw HTTP/WebSocket to a dynamic upstream (session relay, port-forward proxy), design **`rony.WithRelay`** routes — not `WithUnary`. Handler: `func(ctx *rony.SRelayCtx) error` calling `ctx.Relay(targetURL, kit.RelayConfig{...})`. Read `architecture/handler-relay`. Static fixed upstream at gateway level remains `rony.WithReverseProxy`.
+
 ## Checklist
 
 1. Define route paths following REST conventions (nouns, not verbs).

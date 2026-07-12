@@ -102,6 +102,26 @@ func main() {
 - [fasthttp/websocket](https://github.com/fasthttp/websocket)
 - [koding/websocketproxy](https://github.com/koding/websocketproxy)
 
+## Handler relay vs gateway reverse proxy (RonyKIT)
+
+RonyKIT exposes two complementary mechanisms:
+
+| Mechanism | Where | Target | Registration |
+|-----------|--------|--------|--------------|
+| **Gateway reverse proxy** | Gateway router, before contracts | Fixed upstream address(es) | `rony.WithReverseProxy(path, proxy.WithAddress(...))` or `fasthttp.WithReverseProxy` |
+| **Handler relay** | Inside a contract handler | Dynamic per request (`targetURL` string) | `rony.WithRelay` + `RelayCtx.Relay()` (or `kit.Relay` on `*kit.Context`) |
+
+Use **gateway reverse proxy** for static assets or a single known backend path. Use **handler relay** when the handler must validate a session/token, resolve a port-forward or pod address, rewrite paths, or strip sensitive query params before forwarding.
+
+Implementation details:
+
+- Handler relay is implemented on `std/gateways/fasthttp` `*httpConn` via `kit.RelayConn`.
+- Shared hop-by-hop header list: `proxy.HopHeaders()`.
+- Dynamic relay entry points: `proxy.RelayHTTP`, `proxy.RelayWebSocket` (used internally; prefer `kit.Relay` / `RelayCtx.Relay` in application code).
+- Successful relay returns `kit.ErrRelayCompleted` and stops the handler chain — no JSON envelope is written to the client.
+
+See also: `ronyup` MCP resource `architecture/handler-relay`, `kit/CHANGELOG.md`, `docs/cookbook.md` (Handler relay).
+
 ## Thanks
 
 <a href="https://www.jetbrains.com/?from=fasthttp-reverse-proxy" _blank="#">
