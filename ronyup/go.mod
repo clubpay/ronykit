@@ -5,8 +5,8 @@ go 1.25.8
 require (
 	charm.land/huh/v2 v2.0.3
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/clubpay/ronykit/x/rkit v0.5.4
-	github.com/clubpay/ronykit/x/telemetry v0.5.4
+	github.com/clubpay/ronykit/x/rkit v0.5.5
+	github.com/clubpay/ronykit/x/telemetry v0.5.5
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/mod v0.37.0
@@ -36,7 +36,7 @@ require (
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/kit v0.26.4 // indirect
+	github.com/clubpay/ronykit/kit v0.26.5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
