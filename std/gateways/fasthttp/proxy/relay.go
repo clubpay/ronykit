@@ -140,21 +140,30 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 	}
 
 	err = upgrader.Upgrade(ctx, func(connPub *websocket.Conn) {
-		defer connPub.Close()
-		defer connBackend.Close()
-
 		errClient := make(chan error, 1)
 		errBackend := make(chan error, 1)
 
-		go replicateWebsocketConn(&nopLogger{}, connPub, connBackend, errClient)
-		go replicateWebsocketConn(&nopLogger{}, connBackend, connPub, errBackend)
+		var wg sync.WaitGroup
 
-		// Wait for either side to finish; the deferred Close calls unblock the other
-		// replicate goroutine so it can exit as well.
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			replicateWebsocketConn(&nopLogger{}, connPub, connBackend, errClient)
+		}()
+
+		go func() {
+			defer wg.Done()
+			replicateWebsocketConn(&nopLogger{}, connBackend, connPub, errBackend)
+		}()
+
 		select {
 		case <-errClient:
 		case <-errBackend:
 		}
+
+		_ = connPub.Close()
+		_ = connBackend.Close()
+		wg.Wait()
 	})
 	if err != nil {
 		// Upgrade failed before Hijack scheduled the handler (e.g. rejected origin),

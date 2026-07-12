@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
@@ -115,22 +116,26 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	// Now upgrade the existing incoming request to a WebSocket connection.
 	// Also pass the header that we gathered from the Dial handshake.
 	err = upgrader.Upgrade(ctx, func(connPub *websocket.Conn) {
-		defer connPub.Close()
-		defer connBackend.Close()
-
 		var (
 			errClient  = make(chan error, 1)
 			errBackend = make(chan error, 1)
+			wg         sync.WaitGroup
 			message    string
 		)
 
 		debugf(w.option.debug, w.option.logger, "websocketproxy: upgrade handler working")
 
-		go replicateWebsocketConn(w.option.logger, connPub, connBackend, errClient)  // response
-		go replicateWebsocketConn(w.option.logger, connBackend, connPub, errBackend) // request
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			replicateWebsocketConn(w.option.logger, connPub, connBackend, errClient) // response
+		}()
 
-		// Wait for either side to finish. The deferred Close calls then unblock the
-		// other replicate goroutine so it can exit as well.
+		go func() {
+			defer wg.Done()
+			replicateWebsocketConn(w.option.logger, connBackend, connPub, errBackend) // request
+		}()
+
 		select {
 		case err = <-errClient:
 			message = "websocketproxy: error when copying response: %v"
@@ -138,7 +143,13 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 			message = "websocketproxy: error when copying request: %v"
 		}
 
-		// log error except '*websocket.CloseError'
+		// Close both sides to unblock the peer replicator, then wait until both
+		// goroutines exit before returning. fasthttp nils hijacked conns on handler
+		// return when KeepHijackedConns is false (the default).
+		_ = connPub.Close()
+		_ = connBackend.Close()
+		wg.Wait()
+
 		closeError := &websocket.CloseError{}
 		if err != nil && !errors.As(err, &closeError) {
 			errorf(w.option.logger, message, err)
@@ -206,37 +217,27 @@ func builtinForwardHeaderHandler(ctx *fasthttp.RequestCtx) (forwardHeader http.H
 	return forwardHeader
 }
 
-// replicateWebsocketConn to
-// copy message from src to dst
+// replicateWebsocketConn copies messages from src to dst until one side fails.
+// It does not write close frames to dst; the upgrade handler closes both
+// connections after the first error so the peer replicator can exit cleanly.
 func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan chan error) {
 	for {
 		msgType, msg, err := src.ReadMessage()
 		if err != nil {
-			// true: handle websocket close error
-			errorf(
-				logger,
-				"replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v",
-				msgType,
-				msg,
-				err,
-			)
-
-			var ce *websocket.CloseError
-			if errors.As(err, &ce) {
-				msg = websocket.FormatCloseMessage(ce.Code, ce.Text)
-			} else {
-				errorf(logger, "replicateWebsocketConn: src.ReadMessage failed, err=%v", err)
-				msg = websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, err.Error())
+			var closeErr *websocket.CloseError
+			if !errors.As(err, &closeErr) {
+				errorf(
+					logger,
+					"replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v",
+					msgType,
+					msg,
+					err,
+				)
 			}
 
-			errChan <- err
+			reportReplicateError(errChan, err)
 
-			err = dst.WriteMessage(websocket.CloseMessage, msg)
-			if err != nil {
-				errorf(logger, "replicateWebsocketConn: dst.WriteMessage failed, err=%v", err)
-			}
-
-			break
+			return
 		}
 
 		err = dst.WriteMessage(msgType, msg)
@@ -249,10 +250,17 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 				err,
 			)
 
-			errChan <- err
+			reportReplicateError(errChan, err)
 
-			break
+			return
 		}
+	}
+}
+
+func reportReplicateError(errChan chan error, err error) {
+	select {
+	case errChan <- err:
+	default:
 	}
 }
 

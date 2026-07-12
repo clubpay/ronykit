@@ -220,6 +220,53 @@ func TestRelayWebSocket_echo(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 }
 
+func TestRelayWebSocket_abruptCloseDoesNotPanic(t *testing.T) {
+	upgrader := websocket.Upgrader{CheckOrigin: func(_ *http.Request) bool { return true }}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := upgrader.Upgrade(w, r, nil)
+		require.NoError(t, err)
+		defer c.Close()
+
+		for {
+			mt, msg, err := c.ReadMessage()
+			if err != nil {
+				return
+			}
+
+			require.NoError(t, c.WriteMessage(mt, msg))
+		}
+	}))
+	t.Cleanup(upstream.Close)
+
+	target := "ws" + strings.TrimPrefix(upstream.URL, "http")
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = ln.Close() })
+
+	srv := &fasthttp.Server{
+		Handler: func(ctx *fasthttp.RequestCtx) {
+			conn := &httpConn{ctx: ctx}
+			err := conn.RelayWebSocket(target, kit.RelayConfig{})
+			require.ErrorIs(t, err, kit.ErrRelayCompleted)
+		},
+	}
+	go func() { _ = srv.Serve(ln) }()
+	t.Cleanup(func() { _ = srv.Shutdown() })
+
+	for i := 0; i < 5; i++ {
+		client, _, err := websocket.DefaultDialer.Dial("ws://"+ln.Addr().String()+"/", nil)
+		require.NoError(t, err)
+
+		require.NoError(t, client.WriteMessage(websocket.TextMessage, []byte("ping")))
+		_, msg, err := client.ReadMessage()
+		require.NoError(t, err)
+		assert.Equal(t, "ping", string(msg))
+
+		require.NoError(t, client.UnderlyingConn().Close())
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
 func TestRelayWebSocket_subprotocols(t *testing.T) {
 	var gotProtocol string
 	upgrader := websocket.Upgrader{
