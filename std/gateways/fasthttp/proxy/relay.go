@@ -114,6 +114,8 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 		return errors.New("targetURL must use ws:// or wss://")
 	}
 
+	u = dropQueryParams(u, cfg.DropQueryParams)
+
 	dialer := DefaultDialer
 	if cfg.TLSConfig != nil {
 		dialer = &websocket.Dialer{TLSClientConfig: cfg.TLSConfig}
@@ -121,7 +123,10 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 
 	upgrader := cloneWSUpgrader(cfg)
 
-	forwardHeader := builtinForwardHeaderHandler(ctx)
+	forwardHeader, err := buildRelayWebSocketDialHeaders(ctx, u, cfg)
+	if err != nil {
+		return err
+	}
 
 	connBackend, respBackend, err := dialer.Dial(u.String(), forwardHeader)
 	if err != nil {
@@ -161,6 +166,48 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 	}
 
 	return kit.ErrRelayCompleted
+}
+
+// wsDialStripHeaders removes WebSocket handshake headers that must not be forwarded
+// to websocket.Dialer; the dialer generates its own values for these fields.
+var wsDialStripHeaders = []string{
+	"Sec-Websocket-Key",
+	"Sec-Websocket-Version",
+	"Sec-Websocket-Extensions",
+}
+
+func buildRelayWebSocketDialHeaders(
+	ctx *fasthttp.RequestCtx,
+	u *url.URL,
+	cfg kit.RelayConfig,
+) (http.Header, error) {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	copyRelayRequestHeaders(ctx, req, cfg)
+	req.Header.SetMethod(http.MethodGet)
+	setRequestURI(req, u)
+	req.SetHost(u.Host)
+
+	if cfg.RewriteRequest != nil {
+		view := &kit.RelayRequestView{
+			Method: http.MethodGet,
+			URL:    u,
+			Header: requestHeaderToHTTP(&req.Header),
+		}
+		if err := cfg.RewriteRequest(view); err != nil {
+			return nil, err
+		}
+
+		applyRelayRequestView(req, view)
+	}
+
+	hdr := requestHeaderToHTTP(&req.Header)
+	for _, h := range wsDialStripHeaders {
+		hdr.Del(h)
+	}
+
+	return hdr, nil
 }
 
 func copyRelayRequestHeaders(ctx *fasthttp.RequestCtx, req *fasthttp.Request, cfg kit.RelayConfig) {

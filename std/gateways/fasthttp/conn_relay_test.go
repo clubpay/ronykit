@@ -269,6 +269,104 @@ func TestRelayWebSocket_subprotocols(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 }
 
+func TestRelayWebSocket_extraRequestHeaders(t *testing.T) {
+	var gotHost string
+	upgrader := websocket.Upgrader{CheckOrigin: func(_ *http.Request) bool { return true }}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHost = r.Host
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer c.Close()
+		_ = c.WriteMessage(websocket.TextMessage, []byte("ok"))
+	}))
+	t.Cleanup(upstream.Close)
+
+	upstreamHost := strings.TrimPrefix(upstream.URL, "http://")
+	target := "ws://" + upstreamHost + "/ws"
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = ln.Close() })
+
+	srv := &fasthttp.Server{
+		Handler: func(ctx *fasthttp.RequestCtx) {
+			conn := &httpConn{ctx: ctx}
+			err := conn.RelayWebSocket(target, kit.RelayConfig{
+				ExtraRequestHeaders: map[string]string{"Host": upstreamHost},
+			})
+			require.ErrorIs(t, err, kit.ErrRelayCompleted)
+		},
+	}
+	go func() { _ = srv.Serve(ln) }()
+	t.Cleanup(func() { _ = srv.Shutdown() })
+
+	clientHeader := http.Header{}
+	clientHeader.Set("Host", "localhost:8586")
+	client, _, err := websocket.DefaultDialer.Dial("ws://"+ln.Addr().String()+"/", clientHeader)
+	require.NoError(t, err)
+	defer client.Close()
+
+	deadline := time.Now().Add(2 * time.Second)
+	require.NoError(t, client.SetReadDeadline(deadline))
+	_, _, err = client.ReadMessage()
+	require.NoError(t, err)
+	assert.Equal(t, upstreamHost, gotHost)
+	assert.NotEqual(t, "localhost:8586", gotHost)
+
+	require.NoError(t, client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")))
+	time.Sleep(50 * time.Millisecond)
+}
+
+func TestRelayWebSocket_rewriteRequest(t *testing.T) {
+	var gotHeader string
+	upgrader := websocket.Upgrader{CheckOrigin: func(_ *http.Request) bool { return true }}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-Rewritten")
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer c.Close()
+		_ = c.WriteMessage(websocket.TextMessage, []byte("ok"))
+	}))
+	t.Cleanup(upstream.Close)
+
+	target := "ws" + strings.TrimPrefix(upstream.URL, "http") + "/ws"
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = ln.Close() })
+
+	srv := &fasthttp.Server{
+		Handler: func(ctx *fasthttp.RequestCtx) {
+			conn := &httpConn{ctx: ctx}
+			err := conn.RelayWebSocket(target, kit.RelayConfig{
+				RewriteRequest: func(req *kit.RelayRequestView) error {
+					req.Header.Set("X-Rewritten", "yes")
+
+					return nil
+				},
+			})
+			require.ErrorIs(t, err, kit.ErrRelayCompleted)
+		},
+	}
+	go func() { _ = srv.Serve(ln) }()
+	t.Cleanup(func() { _ = srv.Shutdown() })
+
+	client, _, err := websocket.DefaultDialer.Dial("ws://"+ln.Addr().String()+"/", nil)
+	require.NoError(t, err)
+	defer client.Close()
+
+	deadline := time.Now().Add(2 * time.Second)
+	require.NoError(t, client.SetReadDeadline(deadline))
+	_, _, err = client.ReadMessage()
+	require.NoError(t, err)
+	assert.Equal(t, "yes", gotHeader)
+
+	require.NoError(t, client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")))
+	time.Sleep(50 * time.Millisecond)
+}
+
 func TestRelay_completedStopsExecution(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
