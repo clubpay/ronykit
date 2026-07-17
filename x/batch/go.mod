@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/batch
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.5.8
+	github.com/clubpay/ronykit/x/rkit v0.5.9
 	github.com/stretchr/testify v1.11.1
 )
 
