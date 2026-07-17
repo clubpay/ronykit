@@ -74,7 +74,11 @@ func New(opts ...Option) *Logger {
 }
 
 func newNOP() *Logger {
-	l := &Logger{}
+	// AtomicLevel must be non-nil: slogHandler.Enabled and SetLevel call into it.
+	// InvalidLevel disables every valid log level so the nop logger stays silent.
+	l := &Logger{
+		lvl: zap.NewAtomicLevelAt(zapcore.InvalidLevel),
+	}
 	l.z = zap.NewNop()
 
 	return l

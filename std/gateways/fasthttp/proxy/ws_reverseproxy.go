@@ -128,11 +128,13 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
+
 			replicateWebsocketConn(w.option.logger, connPub, connBackend, errClient) // response
 		}()
 
 		go func() {
 			defer wg.Done()
+
 			replicateWebsocketConn(w.option.logger, connBackend, connPub, errBackend) // request
 		}()
 
@@ -148,6 +150,7 @@ func (w *WSReverseProxy) ServeHTTP(ctx *fasthttp.RequestCtx) {
 		// return when KeepHijackedConns is false (the default).
 		_ = connPub.Close()
 		_ = connBackend.Close()
+
 		wg.Wait()
 
 		closeError := &websocket.CloseError{}

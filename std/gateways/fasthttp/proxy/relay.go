@@ -148,11 +148,13 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 		wg.Add(2)
 		go func() {
 			defer wg.Done()
+
 			replicateWebsocketConn(&nopLogger{}, connPub, connBackend, errClient)
 		}()
 
 		go func() {
 			defer wg.Done()
+
 			replicateWebsocketConn(&nopLogger{}, connBackend, connPub, errBackend)
 		}()
 
@@ -163,6 +165,7 @@ func RelayWebSocket(ctx *fasthttp.RequestCtx, targetURL string, cfg kit.RelayCon
 
 		_ = connPub.Close()
 		_ = connBackend.Close()
+
 		wg.Wait()
 	})
 	if err != nil {
