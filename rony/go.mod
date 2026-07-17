@@ -3,10 +3,10 @@ module github.com/clubpay/ronykit/rony
 go 1.25.1
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.7
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.7
-	github.com/clubpay/ronykit/stub v0.26.7
-	github.com/clubpay/ronykit/x/apidoc v0.5.7
+	github.com/clubpay/ronykit/kit v0.26.8
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.8
+	github.com/clubpay/ronykit/stub v0.26.8
+	github.com/clubpay/ronykit/x/apidoc v0.5.8
 	github.com/json-iterator/go v1.1.12
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/stretchr/testify v1.11.1
