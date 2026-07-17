@@ -1,9 +1,9 @@
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.8 h1:7zw/k32vABEwBbhTyayB5LidRNTo1hjerHT+w6Fqk1w=
-github.com/clubpay/ronykit/kit v0.26.8/go.mod h1:TUUO7X+MGhkHGTSJLSdvQ7a6F4IID62ZnWvLKZ7jcvE=
-github.com/clubpay/ronykit/x/rkit v0.5.8 h1:jz9PqqBM4HtdGGdnCrTYUdXbnseNT/FnNRGwvwRDPL4=
-github.com/clubpay/ronykit/x/rkit v0.5.8/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
+github.com/clubpay/ronykit/kit v0.26.9 h1:czw1VA242O6fUMZn8Hi3z2QVbMfL2OtgqPfxzstmWuw=
+github.com/clubpay/ronykit/kit v0.26.9/go.mod h1:TUUO7X+MGhkHGTSJLSdvQ7a6F4IID62ZnWvLKZ7jcvE=
+github.com/clubpay/ronykit/x/rkit v0.5.9 h1:BVyduhmGRGB6x6QdnSHZ21oQF30sygHfWKKs+4DWDbQ=
+github.com/clubpay/ronykit/x/rkit v0.5.9/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=

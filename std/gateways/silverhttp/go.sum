@@ -1,7 +1,7 @@
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.8 h1:7zw/k32vABEwBbhTyayB5LidRNTo1hjerHT+w6Fqk1w=
-github.com/clubpay/ronykit/kit v0.26.8/go.mod h1:TUUO7X+MGhkHGTSJLSdvQ7a6F4IID62ZnWvLKZ7jcvE=
+github.com/clubpay/ronykit/kit v0.26.9 h1:czw1VA242O6fUMZn8Hi3z2QVbMfL2OtgqPfxzstmWuw=
+github.com/clubpay/ronykit/kit v0.26.9/go.mod h1:TUUO7X+MGhkHGTSJLSdvQ7a6F4IID62ZnWvLKZ7jcvE=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
