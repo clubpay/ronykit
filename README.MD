@@ -30,10 +30,12 @@ go install github.com/clubpay/ronykit/ronyup@latest
 
 ### 2. Create a new Project/Workspace
 
+Requires **Go 1.25+**.
+
 For interactive setup, use:
 
 ```bash
-rony setup
+ronyup setup
 ```
 
 Or specify all options directly:
@@ -119,6 +121,7 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 - **One handler, multiple protocols** — serve REST and RPC (WebSocket) from the same handler
 - **Production-ready scaffolding** — `ronyup` generates projects with DI, repo layers, config, and migrations
 - **AI-assisted development** — `ronyup mcp` integrates with Cursor, GoLand, and other MCP-capable IDEs
+- **Agent framework** — `intent` composes LLMs, skills, knowledge, memory, and MCP for goal-driven agents
 - **Minimal overhead** — built for performance with pluggable gateways (fasthttp, silverhttp)
 
 ## Documentation
@@ -129,6 +132,7 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 | [Cookbook](./docs/cookbook.md)               | Authentication, pagination, validation, error handling, and more |
 | [ronyup Guide](./docs/ronyup-guide.md)       | Scaffolding CLI and MCP server for AI-assisted development       |
 | [Architecture](./docs/architecture.md)       | How RonyKit works, project layout, component overview            |
+| [Intent (Agents)](./intent/README.md)        | Goal-driven agent framework (LLM, skills, knowledge, MCP)        |
 | [Advanced: Kit](./docs/advanced-kit.md)      | Low-level toolkit for custom gateways and protocols              |
 
 ## AI-Powered Development with ronyup MCP
@@ -157,13 +161,16 @@ RonyKIT is designed for high throughput with minimal framework overhead. See the
 ```
 rony/           Batteries-included framework (start here)
 kit/            Low-level core (advanced users)
+intent/         Goal-driven agent framework (LLM, skills, knowledge, MCP)
 ronyup/         Scaffolding CLI + MCP server
 std/gateways/   Gateway implementations (fasthttp, silverhttp, fastws, mcp)
 std/clusters/   Cluster implementations (redis, p2p)
+std/            Agent stdlib (llms, knowledge, memories, embedders, mcpclients)
 stub/           Client stub generation (Go, TypeScript)
 flow/           Workflow helpers (Temporal integration)
+testenv/        Shared test environment helpers
 x/              Extended utilities (di, telemetry, cache, i18n, apidoc, and more)
-example/        Runnable examples
+example/        Runnable examples (incl. agent and MCP demos)
 ```
 
 ## Examples
