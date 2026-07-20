@@ -33,7 +33,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 For interactive setup, use:
 
 ```bash
-rony setup
+ronyup setup
 ```
 
 Or specify all options directly:
@@ -119,6 +119,7 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 - **One handler, multiple protocols** — serve REST and RPC (WebSocket) from the same handler
 - **Production-ready scaffolding** — `ronyup` generates projects with DI, repo layers, config, and migrations
 - **AI-assisted development** — `ronyup mcp` integrates with Cursor, GoLand, and other MCP-capable IDEs
+- **Agent framework** — `intent` composes LLMs, tools, skills, memory, and knowledge on top of `rony.Server`
 - **Minimal overhead** — built for performance with pluggable gateways (fasthttp, silverhttp)
 
 ## Documentation
@@ -130,6 +131,8 @@ Open http://localhost:8080/docs for auto-generated Swagger UI.
 | [ronyup Guide](./docs/ronyup-guide.md)       | Scaffolding CLI and MCP server for AI-assisted development       |
 | [Architecture](./docs/architecture.md)       | How RonyKit works, project layout, component overview            |
 | [Advanced: Kit](./docs/advanced-kit.md)      | Low-level toolkit for custom gateways and protocols              |
+| [AI Guide](./docs/AI.md)                     | Repo context for AI assistants and agent workflows               |
+| [Intent](./intent/README.md)                 | Goal-driven agent framework (LLM pools, tools, skills, knowledge)|
 
 ## AI-Powered Development with ronyup MCP
 
@@ -157,18 +160,22 @@ RonyKIT is designed for high throughput with minimal framework overhead. See the
 ```
 rony/           Batteries-included framework (start here)
 kit/            Low-level core (advanced users)
+intent/         Goal-driven agent framework (LLM pools, tools, skills, knowledge)
 ronyup/         Scaffolding CLI + MCP server
 std/gateways/   Gateway implementations (fasthttp, silverhttp, fastws, mcp)
 std/clusters/   Cluster implementations (redis, p2p)
+std/            AI adapters under std/<kind>/<name> (llms, knowledge, memories,
+                embedders, mcpclients)
 stub/           Client stub generation (Go, TypeScript)
 flow/           Workflow helpers (Temporal integration)
+testenv/        Integration testing utilities
 x/              Extended utilities (di, telemetry, cache, i18n, apidoc, and more)
-example/        Runnable examples
+example/        Runnable examples (ex-01 … ex-13)
 ```
 
 ## Examples
 
-Browse production-style patterns in the [Cookbook](./docs/cookbook.md) or explore the [runnable examples](./example) directory.
+Browse production-style patterns in the [Cookbook](./docs/cookbook.md) or explore the [runnable examples](./example) directory. Notable entries: `ex-11-mcp` (MCP gateway), `ex-12-agent` (intent agent), `ex-13-webmcp` (WebMCP demo).
 
 ## Build Commands
 
