@@ -36,10 +36,11 @@ type SkillInfo struct {
 
 // Skill categories used to group entries in the interactive selector.
 const (
-	catGo       = "Go"
-	catQuality  = "Quality"
-	catWorkflow = "Workflow"
-	catFrontend = "Frontend"
+	catGo           = "Go"
+	catArchitecture = "Architecture"
+	catQuality      = "Quality"
+	catWorkflow     = "Workflow"
+	catFrontend     = "Frontend"
 )
 
 // Special tokens accepted by the --skills flag.
@@ -71,6 +72,38 @@ var skillCatalog = []SkillDef{
 		Name:             "Go Testing",
 		Description:      "Table-driven tests, mandatory x/testkit repo integration tests, app unit tests, Ginkgo/Gomega",
 		Category:         catGo,
+		DefaultBackend:   true,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "clean-architecture",
+		Name:             "Clean Architecture",
+		Description:      "Dependency Rule and layer boundaries — maps to handler/app/repo in RonyKit features",
+		Category:         catArchitecture,
+		DefaultBackend:   true,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "refactoring-patterns",
+		Name:             "Refactoring Patterns",
+		Description:      "Named smell-driven refactorings — small steps, tests green between each",
+		Category:         catArchitecture,
+		DefaultBackend:   true,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "working-with-legacy-code",
+		Name:             "Working with Legacy Code",
+		Description:      "Seams and characterization tests before changing untested code",
+		Category:         catArchitecture,
+		DefaultBackend:   true,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "release-it",
+		Name:             "Release It! (Production Resilience)",
+		Description:      "Timeouts, circuit breakers, bulkheads, health checks, and observability for production",
+		Category:         catArchitecture,
 		DefaultBackend:   true,
 		DefaultFullstack: true,
 	},

@@ -26,8 +26,12 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 
 | Task | Read (in order) |
 |------|-----------------|
-| New backend feature | this skill → MCP `design-new-service` |
+| New backend feature | this skill → MCP `design-new-service` → `clean-architecture` |
 | Repo / persistence | `go-testing` → MCP `architecture/integration-tests` |
+| Layer / boundary review | `clean-architecture`, `code-review` |
+| Refactoring (tests exist) | `refactoring-patterns`, `verification-before-completion` |
+| Untested / legacy code | `working-with-legacy-code` → `go-testing` → `refactoring-patterns` |
+| Production hardening | `release-it` → MCP `characteristics/telemetry` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` → MCP `design-frontend` |
 | Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
 | Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |

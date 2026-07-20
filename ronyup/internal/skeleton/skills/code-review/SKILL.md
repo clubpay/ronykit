@@ -24,7 +24,9 @@ Prioritize feedback so the important things aren't lost in nits.
 2. **Security & safety** — input validation, authz checks, injection, secrets in
    code/logs, unsafe defaults.
 3. **Design fit** — right layer/abstraction; follows existing architecture and
-   package-selection rules; no leaking concerns across boundaries.
+   package-selection rules; no leaking concerns across boundaries. For RonyKit
+   features, read `clean-architecture` — handlers thin, logic in `internal/app`,
+   persistence behind `internal/repo/port.go`.
 4. **Tests** — meaningful tests for new behavior and fixed bugs; deterministic;
    assert behavior not internals.
 5. **Readability** — clear names, small functions, comments only where intent is
@@ -77,3 +79,7 @@ its own sake.
 - Commented-out code or unexplained magic numbers.
 - An abstraction/config layer with a single implementation, or generality built
   for scale the system doesn't have yet.
+
+For smell names and fixes (Long Method, Feature Envy, etc.), read
+`refactoring-patterns` → `references/smell-catalog.md`. For untested code being
+changed, require `working-with-legacy-code` first.

@@ -13,7 +13,8 @@ breaks, and tells you exactly what broke.
 
 ## When to use
 
-- Before/while writing new behavior (TDD), or backfilling tests for legacy code.
+- Before/while writing new behavior (TDD), or backfilling tests for legacy code
+  (read `working-with-legacy-code` when there is no safety net yet).
 - Deciding what deserves a test and at which level.
 - A bug was found — write the failing test first, then fix it.
 

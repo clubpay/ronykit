@@ -60,7 +60,9 @@ Otherwise, keep it one file.
 - Cross-reference sibling skills by name instead of duplicating their content.
 - Vendored material: keep upstream license/attribution (e.g. a metadata file and
   an `## Attribution` section), and prefer the granular source files over a
-  single giant concatenated document.
+  single giant concatenated document. Architecture skills (`clean-architecture`,
+  `refactoring-patterns`, `release-it`, `working-with-legacy-code`) are adapted
+  from [`wondelai/skills`](https://github.com/wondelai/skills) (MIT).
 - Wrap prose at ~80 columns to match the other skills.
 
 ## Registering a skill

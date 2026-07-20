@@ -22,6 +22,9 @@ the best way. Target the workspace Go version (1.25+/1.26).
 
 - **Accept interfaces, return structs.** Keep interfaces small and defined by the
   consumer, not the producer.
+- **Names reveal intent.** Prefer `elapsedDays` over `d`; booleans as predicates
+  (`isActive`, `hasPermission`); functions as verb+noun. See
+  `refactoring-patterns` when renaming is part of a structural cleanup.
 - **Errors:** wrap with `fmt.Errorf("...: %w", err)`; inspect with `errors.Is` /
   `errors.As`. In this workspace prefer `rony/errs` for domain errors.
 - **Context first.** `ctx context.Context` is the first parameter; never store it

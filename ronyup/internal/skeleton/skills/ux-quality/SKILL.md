@@ -157,6 +157,25 @@ much* personality; this governs *mechanics*.)
    polish; design them for every data surface.
 8. Animating `width`/`height` (jank) and ignoring `prefers-reduced-motion`.
 
+## Heuristic audit (Nielsen + Krug)
+
+When doing a usability pass (not just accessibility), scan with these lenses:
+
+- **Don't make me think** — labels and CTAs self-evident; no jargon or clever
+  marketing copy on controls users must operate.
+- **Clicks are fine if each is painless** — three obvious steps beat one
+  ambiguous step; show progress on multi-step flows.
+- **Nielsen's top heuristics** — system status visible (loading/saving/errors);
+  speak the user's language; user control (undo, cancel, back); consistency;
+  error prevention over error messages; recognition over recall (visible options,
+  not memorized commands).
+- **Severity triage** — catastrophic (blocks core task) before cosmetic; fix
+  blockers before polish.
+
+For a full heuristic catalog and severity scale, see the `ux-heuristics` skill
+in [`wondelai/skills`](https://github.com/wondelai/skills) if installed; the
+rules above cover the highest-frequency gaps in scaffolded apps.
+
 ## Checklist before "done"
 
 - Operable by keyboard alone; visible focus everywhere; tab order = visual order.
