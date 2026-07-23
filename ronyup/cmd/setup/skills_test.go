@@ -4,7 +4,10 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
+
+	"github.com/clubpay/ronykit/ronyup/internal"
 )
 
 func TestResolveSkillSelection(t *testing.T) {
@@ -113,4 +116,91 @@ func TestCatalogSkillsExistInEmbedFS(t *testing.T) {
 			t.Fatalf("catalog skill %q has no embedded SKILL.md: %v", s.ID, err)
 		}
 	}
+}
+
+func TestSkillFrontmatter(t *testing.T) {
+	// Bundled ronykit-framework skill (copied with the workspace skeleton) plus
+	// every catalog skill. Regression for markdownfmt stripping YAML frontmatter
+	// into a markdown heading (see format-markdown.sh).
+	paths := []struct {
+		id   string
+		path string
+	}{
+		{
+			id:   "ronykit-framework",
+			path: "skeleton/workspace/.agents/skills/ronykit-framework/SKILL.md",
+		},
+	}
+	for _, s := range skillCatalog {
+		paths = append(paths, struct {
+			id   string
+			path string
+		}{
+			id:   s.ID,
+			path: filepath.ToSlash(filepath.Join(skillsSrcPrefix, s.ID, "SKILL.md")),
+		})
+	}
+
+	for _, tc := range paths {
+		t.Run(tc.id, func(t *testing.T) {
+			data, err := internal.Skeleton.ReadFile(tc.path)
+			if err != nil {
+				t.Fatalf("read %s: %v", tc.path, err)
+			}
+
+			name, desc, ok := parseSkillFrontmatter(string(data))
+			if !ok {
+				t.Fatalf("%s: missing YAML frontmatter delimited by --- (got leading content %q)",
+					tc.path, preview(string(data), 80))
+			}
+
+			if name != tc.id {
+				t.Fatalf("%s: frontmatter name = %q, want %q", tc.path, name, tc.id)
+			}
+
+			if strings.TrimSpace(desc) == "" {
+				t.Fatalf("%s: frontmatter description is empty", tc.path)
+			}
+		})
+	}
+}
+
+func parseSkillFrontmatter(content string) (name, description string, ok bool) {
+	if !strings.HasPrefix(content, "---\n") {
+		return "", "", false
+	}
+
+	rest := content[len("---\n"):]
+	end := strings.Index(rest, "\n---\n")
+	if end < 0 {
+		return "", "", false
+	}
+
+	fm := rest[:end]
+	for line := range strings.SplitSeq(fm, "\n") {
+		switch {
+		case strings.HasPrefix(line, "name:"):
+			name = strings.TrimSpace(strings.TrimPrefix(line, "name:"))
+		case strings.HasPrefix(line, "description:"):
+			description = strings.TrimSpace(strings.TrimPrefix(line, "description:"))
+			if description == ">-" || description == "|" || description == ">" {
+				description = "folded" // non-empty marker for block scalars
+			}
+		}
+	}
+
+	if name == "" || description == "" {
+		return name, description, false
+	}
+
+	return name, description, true
+}
+
+func preview(s string, n int) string {
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	if len(s) > n {
+		return s[:n] + "..."
+	}
+
+	return s
 }

@@ -1,6 +1,12 @@
 ---
-
-## name: ronykit-framework description: >- Orchestrates RonyKit service development using the ronyup MCP server (knowledge resources, prompts, scaffold tools). Use when the user mentions RonyKit, ronyup, EdgeServer, contracts, scaffolding a workspace or feature, implementing API handlers and services, frontend bootstrap, integration tests, or design documents in RonyKit style.
+name: ronykit-framework
+description: >-
+  Orchestrates RonyKit service development using the ronyup MCP server
+  (knowledge resources, prompts, scaffold tools). Use when the user mentions
+  RonyKit, ronyup, EdgeServer, contracts, scaffolding a workspace or feature,
+  implementing API handlers and services, frontend bootstrap, integration
+  tests, or design documents in RonyKit style.
+---
 
 # RonyKit (agent playbook)
 
