@@ -93,28 +93,12 @@ func (l Limiter) AllowN(
 		return nil, err
 	}
 
-	values, _ = v.([]any)
-
-	retryAfter, err := strconv.ParseFloat(values[2].(string), 64)
-	if err != nil {
-		return nil, err
+	values, ok := v.([]any)
+	if !ok || len(values) < 4 {
+		return nil, fmt.Errorf("ratelimit: unexpected redis result %T", v)
 	}
 
-	resetAfter, err := strconv.ParseFloat(values[3].(string), 64)
-	if err != nil {
-		return nil, err
-	}
-
-	//nolint:forcetypeassert
-	res := &Result{
-		Limit:      limit,
-		Allowed:    int(values[0].(int64)),
-		Remaining:  int(values[1].(int64)),
-		RetryAfter: dur(retryAfter),
-		ResetAfter: dur(resetAfter),
-	}
-
-	return res, nil
+	return parseAllowResult(limit, values)
 }
 
 // AllowAtMost reports whether at most n events may happen at time now.
@@ -132,28 +116,74 @@ func (l Limiter) AllowAtMost(
 		return nil, err
 	}
 
-	values, _ = v.([]any)
-
-	retryAfter, err := strconv.ParseFloat(values[2].(string), 64)
-	if err != nil {
-		return nil, err
+	values, ok := v.([]any)
+	if !ok || len(values) < 4 {
+		return nil, fmt.Errorf("ratelimit: unexpected redis result %T", v)
 	}
 
-	resetAfter, err := strconv.ParseFloat(values[3].(string), 64)
+	return parseAllowResult(limit, values)
+}
+
+func parseAllowResult(limit Limit, values []any) (*Result, error) {
+	allowed, err := redisInt(values[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ratelimit allowed: %w", err)
+	}
+	remaining, err := redisInt(values[1])
+	if err != nil {
+		return nil, fmt.Errorf("ratelimit remaining: %w", err)
 	}
 
-	//nolint:forcetypeassert
-	res := &Result{
+	retryAfter, err := redisFloat(values[2])
+	if err != nil {
+		return nil, fmt.Errorf("ratelimit retry_after: %w", err)
+	}
+	resetAfter, err := redisFloat(values[3])
+	if err != nil {
+		return nil, fmt.Errorf("ratelimit reset_after: %w", err)
+	}
+
+	return &Result{
 		Limit:      limit,
-		Allowed:    int(values[0].(int64)),
-		Remaining:  int(values[1].(int64)),
+		Allowed:    allowed,
+		Remaining:  remaining,
 		RetryAfter: dur(retryAfter),
 		ResetAfter: dur(resetAfter),
-	}
+	}, nil
+}
 
-	return res, nil
+// redisInt converts Redis Lua numeric results. Whole numbers often arrive as
+// int64; allow_n.lua returns remaining as a float (division), which go-redis
+// surfaces as float64 — a hard int64 assert panics on every successful Allow.
+func redisInt(v any) (int, error) {
+	switch n := v.(type) {
+	case int64:
+		return int(n), nil
+	case int:
+		return n, nil
+	case float64:
+		return int(n), nil
+	case string:
+		i, err := strconv.Atoi(n)
+		return i, err
+	default:
+		return 0, fmt.Errorf("unsupported numeric type %T", v)
+	}
+}
+
+func redisFloat(v any) (float64, error) {
+	switch n := v.(type) {
+	case string:
+		return strconv.ParseFloat(n, 64)
+	case float64:
+		return n, nil
+	case int64:
+		return float64(n), nil
+	case int:
+		return float64(n), nil
+	default:
+		return 0, fmt.Errorf("unsupported float type %T", v)
+	}
 }
 
 // Reset gets a key and reset all limitations and previous usages
