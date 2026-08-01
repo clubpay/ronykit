@@ -9,7 +9,19 @@ Refresh scaffold-managed files in an **existing** workspace from the embedded sk
 - The workspace was created with an older `ronyup` and is missing newer boilerplate (for example `devops/devbox/`, stop hooks, or skill updates).
 - You want to refresh `AGENTS.md`, Makefiles, or devops assets without re-scaffolding the repo.
 
-## Command
+## Extended Guidance
+
+Available as the MCP tool `sync_workspace` (in-process; equivalent to `ronyup setup sync`):
+
+| Argument        | CLI flag     | Default       |
+|-----------------|--------------|---------------|
+| `workspacePath` | `--repoDir`  | (required)    |
+| `kind`          | `--kind`     | `auto`        |
+| `only`          | `--only`     | `all`         |
+| `overwrite`     | `--overwrite`| `false`       |
+| `skills`        | `--skills`   | `installed`   |
+
+CLI equivalent:
 
 ```bash
 ronyup setup sync [--repoDir .] [--only all] [--overwrite] [--skills installed]
@@ -20,11 +32,11 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 ## Behaviour
 
 - **Does not touch** application code: `cmd/all-in-one/main.go`, `feature/*` modules, `pkg/*` (except scaffold README), or user design docs under `docs/design/`.
-- For the bundle + `pkg/runner` layout, run `ronyup setup migrate bundles` once after upgrading `ronyup`.
-- **Default**: add missing scaffold files only (`--overwrite` replaces existing scaffold files).
-- **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `--kind` if needed.
+- For the bundle + `pkg/runner` layout, run `migrate_bundles` (or `ronyup setup migrate bundles`) once after upgrading `ronyup`.
+- **Default**: add missing scaffold files only (`overwrite: true` replaces existing scaffold files).
+- **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `kind` if needed.
 
-## Sections (`--only`)
+## Sections (`only`)
 
 | Section | Path(s) |
 |---------|---------|
@@ -33,7 +45,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 | `hooks` | `.cursor/hooks/`, `hooks.json` |
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
-| `skills` | `.agents/skills/ronykit-framework` + `--skills` selection |
+| `skills` | `.agents/skills/ronykit-framework` + `skills` selection |
 | `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all applicable sections (default) |

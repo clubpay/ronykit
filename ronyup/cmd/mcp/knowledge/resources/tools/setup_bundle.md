@@ -1,6 +1,23 @@
+---
+name: setup_bundle
+---
+
 Creates or refreshes executable bundles under `cmd/<name>/` that compile in only selected feature modules.
 
-## Usage
+## Extended Guidance
+
+Available as the MCP tool `setup_bundle` (in-process; equivalent to `ronyup setup bundle`):
+
+| Argument        | CLI flag        | Default    |
+|-----------------|-----------------|------------|
+| `workspacePath` | (cwd)           | (required) |
+| `name`          | `--name`        | required unless `gen` |
+| `services`      | `--services`    | required when creating |
+| `description`   | `--description` |            |
+| `gen`           | `--gen`         | `false`    |
+| `remove`        | `--remove`      | `false`    |
+
+CLI equivalent:
 
 ```bash
 ronyup setup bundle --name auth-api --services feature/auth,feature/session

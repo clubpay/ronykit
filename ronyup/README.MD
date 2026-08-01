@@ -145,11 +145,12 @@ Starts a stdio MCP server (or streamable HTTP with `--port`). Exposed tools:
 
 - `scaffold_workspace` — initialize a workspace at the given path (shared in-process scaffold API)
 - `scaffold_feature` — add a feature module (gated on approved SRS/SDD design docs unless `skipDesignGate=true`)
+- `sync_workspace` — refresh scaffold boilerplate in an existing workspace (same as `setup sync`)
+- `setup_bundle` — create/remove executable bundles or regenerate `features.go` (same as `setup bundle`)
+- `migrate_bundles` — upgrade a legacy workspace to the bundle layout (same as `setup migrate bundles`)
 
 Knowledge resources are served under `knowledge://ronyup/{architecture,packages,characteristics,tools}/…`, and workflow prompts include
 `design-new-service`, `write-srs`, `write-sdd`, `design-frontend`, and `migrate-kit-to-rony`.
-
-CLI-only commands (`setup sync`, `setup bundle`, `setup migrate bundles`) are documented as knowledge resources but are not MCP tools.
 
 ## Flags
 
@@ -409,6 +410,9 @@ Exposed MCP tools:
 - `scaffold_workspace`: create a workspace at `path` (`kind`: `backend` | `fullstack` | `frontend`; optional `skills`).
 - `scaffold_feature`: create a feature in an existing workspace. Requires approved SRS/SDD under `docs/design/` unless
   `skipDesignGate=true` (only when the user explicitly asks to skip).
+- `sync_workspace`: refresh scaffold-managed boilerplate at `workspacePath` (`only`, `overwrite`, `skills`).
+- `setup_bundle`: create (`name` + `services`), `remove`, or `gen` executable bundles at `workspacePath`.
+- `migrate_bundles`: upgrade a legacy workspace to the bundle layout at `workspacePath` (`dryRun` supported).
 
 Knowledge resources use URIs like `knowledge://ronyup/architecture/service-structure`. Prompts cover design and migration workflows
 (e.g. `design-new-service`, `migrate-kit-to-rony`).

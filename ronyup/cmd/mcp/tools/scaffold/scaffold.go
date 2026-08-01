@@ -29,6 +29,7 @@ type featureArgs struct {
 func Register(srv *mcpsdk.Server) {
 	registerSetupWorkspace(srv)
 	registerSetupFeature(srv)
+	registerLifecycle(srv)
 }
 
 func registerSetupWorkspace(srv *mcpsdk.Server) {
@@ -36,32 +37,32 @@ func registerSetupWorkspace(srv *mcpsdk.Server) {
 		Name:        "scaffold_workspace",
 		Description: "Initialize a new ronykit workspace at the specified directory.",
 		InputSchema: map[string]any{
-			"type": "object",
-			"properties": map[string]any{
+			schemaKeyType: schemaKeyObject,
+			schemaKeyProperties: map[string]any{
 				"path": map[string]any{
-					"type":        "string",
-					"description": "The absolute or relative path to initialize the workspace.",
+					schemaKeyType:        schemaTypeString,
+					schemaKeyDescription: "The absolute or relative path to initialize the workspace.",
 				},
 				"kind": map[string]any{
-					"type": "string",
-					"description": "Workspace layout: 'backend' (Go-only at the root, default), " +
+					schemaKeyType: schemaTypeString,
+					schemaKeyDescription: "Workspace layout: 'backend' (Go-only at the root, default), " +
 						"'fullstack' (backend/ + frontend/ split, with the Go workspace under backend/ " +
 						"and devops/, docs/ and AI config kept at the root), or 'frontend' (frontend/ app " +
 						"plus shared AI config and docs/ at the root, with no Go workspace).",
-					"default": "backend",
-					"enum":    appscaffold.WorkspaceKinds,
+					schemaKeyDefault: "backend",
+					"enum":           appscaffold.WorkspaceKinds,
 				},
 				"skills": map[string]any{
-					"type": "array",
+					schemaKeyType: schemaTypeArray,
 					"items": map[string]any{
-						"type": "string",
+						schemaKeyType: schemaTypeString,
 					},
-					"description": "Agent skills to pre-install into .agents/skills. Skill IDs or the " +
+					schemaKeyDescription: "Agent skills to pre-install into .agents/skills. Skill IDs or the " +
 						"tokens 'default' (kind defaults), 'all', or 'none'. Omit to install the " +
 						"defaults for the chosen kind.",
 				},
 			},
-			"required": []string{"path"},
+			schemaKeyRequired: []string{"path"},
 		},
 	}
 
@@ -79,6 +80,7 @@ func registerSetupWorkspace(srv *mcpsdk.Server) {
 			}
 
 			log := &appscaffold.BufferLogger{}
+
 			err = appscaffold.SetupWorkspace(ctx, appscaffold.WorkspaceRequest{
 				Path:   absPath,
 				Kind:   args.Kind,
@@ -108,40 +110,40 @@ func registerSetupFeature(srv *mcpsdk.Server) {
 			"and write-sdd prompts first; only set skipDesignGate=true when the user " +
 			"explicitly asks to skip the design documents.",
 		InputSchema: map[string]any{
-			"type": "object",
-			"properties": map[string]any{
+			schemaKeyType: schemaKeyObject,
+			schemaKeyProperties: map[string]any{
 				"workspacePath": map[string]any{
-					"type":        "string",
-					"description": "The path to the existing workspace.",
+					schemaKeyType:        schemaTypeString,
+					schemaKeyDescription: "The path to the existing workspace.",
 				},
 				"name": map[string]any{
-					"type":        "string",
-					"description": "The name of the feature to create.",
+					schemaKeyType:        schemaTypeString,
+					schemaKeyDescription: "The name of the feature to create.",
 				},
 				"template": map[string]any{
-					"type":        "string",
-					"description": "Feature template: service, job, or gateway.",
-					"default":     "service",
-					"enum":        appscaffold.FeatureTemplates,
+					schemaKeyType:        schemaTypeString,
+					schemaKeyDescription: "Feature template: service, job, or gateway.",
+					schemaKeyDefault:     "service",
+					"enum":               appscaffold.FeatureTemplates,
 				},
 				"featurePrefix": map[string]any{
-					"type":        "string",
-					"description": "Parent directory for feature modules.",
-					"default":     appscaffold.DefaultFeaturePrefix,
+					schemaKeyType:        schemaTypeString,
+					schemaKeyDescription: "Parent directory for feature modules.",
+					schemaKeyDefault:     appscaffold.DefaultFeaturePrefix,
 				},
 				"groupByTemplate": map[string]any{
-					"type":        "boolean",
-					"description": "When true, place the module under {featurePrefix}/{template}/{name}/.",
-					"default":     false,
+					schemaKeyType:        schemaTypeBoolean,
+					schemaKeyDescription: "When true, place the module under {featurePrefix}/{template}/{name}/.",
+					schemaKeyDefault:     false,
 				},
 				"skipDesignGate": map[string]any{
-					"type": "boolean",
-					"description": "Bypass the approved SRS/SDD requirement. Only set to true " +
+					schemaKeyType: schemaTypeBoolean,
+					schemaKeyDescription: "Bypass the approved SRS/SDD requirement. Only set to true " +
 						"when the user explicitly asks to skip the design documents.",
-					"default": false,
+					schemaKeyDefault: false,
 				},
 			},
-			"required": []string{"workspacePath", "name"},
+			schemaKeyRequired: []string{"workspacePath", "name"},
 		},
 	}
 
@@ -169,6 +171,7 @@ func registerSetupFeature(srv *mcpsdk.Server) {
 			}
 
 			log := &appscaffold.BufferLogger{}
+
 			err = appscaffold.SetupFeature(ctx, appscaffold.FeatureRequest{
 				StartDir:        startDir,
 				FeatureDir:      args.Name,

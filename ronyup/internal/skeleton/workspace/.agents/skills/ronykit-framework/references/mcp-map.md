@@ -11,8 +11,9 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 |----------------------|-----------------------------------------------------------------------------------|
 | `scaffold_workspace` | New workspace at `path` (in-process scaffold API; same as `ronyup setup workspace`) |
 | `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`)   |
-
-CLI-only (read `knowledge://ronyup/tools/*` docs): `sync_workspace`, `setup_bundle`, `migrate_bundles`.
+| `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`ronyup setup sync`)         |
+| `setup_bundle`       | Create/remove executable bundles, regenerate features.go (`ronyup setup bundle`)    |
+| `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`ronyup setup migrate bundles`)    |
 
 Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`.
 

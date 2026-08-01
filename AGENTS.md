@@ -149,7 +149,7 @@ See `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
   - `server/instructions.md` — always injected on MCP connect (the portable, cross-agent backbone).
   - `resources/{architecture,packages,characteristics,tools}/*.md` — read on demand (`knowledge://ronyup/<category>/<name>`).
   - `prompts/*.md` — workflow prompts (e.g. `design-new-service`, `design-frontend`).
-- **Bundled skills** live in `ronyup/internal/skeleton/skills/<id>/SKILL.md` and must be registered in `skillCatalog` (`ronyup/cmd/setup/skills.go`); authoring heuristic (single file vs. `rules/` tree) is in `internal/skeleton/skills/README.md`. `copySkills` ships the whole directory.
+- **Bundled skills** live in `ronyup/internal/skeleton/skills/<id>/SKILL.md` and must be registered in `skillCatalog` (`ronyup/internal/scaffold/skills.go`); authoring heuristic (single file vs. `rules/` tree) is in `internal/skeleton/skills/README.md`. `copySkills` ships the whole directory.
 - **Enforcement is gates and hooks, not prose** (small models ignore advisory text):
   - `ronyup/cmd/mcp/tools/scaffold/gate.go` — the SRS/SDD design gate that `scaffold_feature` enforces (portable across MCP clients).
   - `ronyup/internal/skeleton/backend/verify.sh` and `internal/skeleton/frontend/verify.sh` — the `make verify` quality gates (test coverage, design-doc, lint/build/stories).

@@ -1,13 +1,12 @@
-package setup
+package scaffold
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 )
 
 func TestDetectBundleLayout_Legacy(t *testing.T) {
@@ -53,7 +52,7 @@ func TestDetectBundleLayout_Current(t *testing.T) {
 
 	root := t.TempDir()
 	runnerDir := filepath.Join(root, "pkg", "runner")
-	bundleDir := filepath.Join(root, "cmd", scaffold.DefaultBundleName)
+	bundleDir := filepath.Join(root, "cmd", DefaultBundleName)
 
 	for _, dir := range []string{runnerDir, bundleDir} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -73,7 +72,7 @@ func main() {
 		filepath.Join(runnerDir, "runner.go"): "package runner\n",
 		filepath.Join(runnerDir, "go.mod"):    "module github.com/example/app/pkg/runner\n\ngo 1.25\n",
 		filepath.Join(bundleDir, "main.go"):   currentMain,
-		scaffold.BundlesManifestPath(root):    "bundles:\n  all-in-one:\n    services: [\"*\"]\n",
+		BundlesManifestPath(root):             "bundles:\n  all-in-one:\n    services: [\"*\"]\n",
 	}
 	for path, content := range files {
 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
@@ -91,7 +90,7 @@ func main() {
 func TestBuildMigratePlan_Legacy(t *testing.T) {
 	t.Parallel()
 
-	status := bundleLayoutStatus{
+	status := BundleLayoutStatus{
 		LegacyMain:       true,
 		LegacyMiddleware: true,
 		LegacyHealthz:    true,
@@ -113,51 +112,33 @@ func TestBuildMigratePlan_Legacy(t *testing.T) {
 	}
 }
 
-func TestRunMigrateBundles_DryRunLegacy(t *testing.T) {
+func TestMigrateBundles_DryRunLegacy(t *testing.T) {
 	root := scaffoldLegacyBundleWorkspace(t)
 
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo"
-
-	cmd := newSilentCommand(t)
-	migrateOpt.DryRun = true
-	t.Cleanup(func() { migrateOpt.DryRun = false })
-
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(dry-run): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo",
+		DryRun:   true,
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(dry-run): %v", err)
 	}
 
-	if scaffold.FileExists(filepath.Join(root, "pkg", "runner", "runner.go")) {
+	if FileExists(filepath.Join(root, "pkg", "runner", "runner.go")) {
 		t.Fatal("dry-run should not create pkg/runner")
 	}
 }
 
-func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
+func TestMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 	root := scaffoldLegacyBundleWorkspace(t)
+	stubGoToolchain(t)
 
-	stubBinDir := filepath.Join(t.TempDir(), "bin")
-	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
-		t.Fatalf("MkdirAll(stub bin): %v", err)
-	}
-
-	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
-		t.Fatalf("writeExecutable(go): %v", err)
-	}
-
-	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo"
-
-	cmd := newSilentCommand(t)
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo",
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(): %v", err)
 	}
 
 	for _, rel := range []string{
@@ -170,7 +151,10 @@ func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 		}
 	}
 
-	for _, rel := range []string{"cmd/all-in-one/middleware.go", "cmd/all-in-one/healthz.go", "cmd/service/middleware.go", "cmd/service/healthz.go"} {
+	for _, rel := range []string{
+		"cmd/all-in-one/middleware.go", "cmd/all-in-one/healthz.go",
+		"cmd/service/middleware.go", "cmd/service/healthz.go",
+	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); !os.IsNotExist(err) {
 			t.Fatalf("expected %s removed after migration: %v", rel, err)
 		}
@@ -186,7 +170,7 @@ func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 	}
 }
 
-func TestRunMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
+func TestMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
 	root := scaffoldLegacyBundleWorkspace(t)
 	backend := filepath.Join(root, "backend")
 	if err := os.MkdirAll(filepath.Join(backend, "cmd"), 0o755); err != nil {
@@ -201,26 +185,14 @@ func TestRunMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
 		}
 	}
 
-	stubBinDir := filepath.Join(t.TempDir(), "bin")
-	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
-		t.Fatalf("MkdirAll(stub bin): %v", err)
-	}
+	stubGoToolchain(t)
 
-	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
-		t.Fatalf("writeExecutable(go): %v", err)
-	}
-
-	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo/backend"
-
-	cmd := newSilentCommand(t)
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(fullstack root): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo/backend",
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(fullstack root): %v", err)
 	}
 
 	if _, err := os.Stat(filepath.Join(backend, "pkg/runner/runner.go")); err != nil {
@@ -228,7 +200,7 @@ func TestRunMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
 	}
 }
 
-func TestRunMigrateBundles_FromLegacyCmdRunnerLayout(t *testing.T) {
+func TestMigrateBundles_FromLegacyCmdRunnerLayout(t *testing.T) {
 	root := t.TempDir()
 
 	runnerDir := filepath.Join(root, "cmd", "runner")
@@ -266,26 +238,14 @@ import (
 		}
 	}
 
-	stubBinDir := filepath.Join(t.TempDir(), "bin")
-	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
-		t.Fatalf("MkdirAll(stub bin): %v", err)
-	}
+	stubGoToolchain(t)
 
-	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
-		t.Fatalf("writeExecutable(go): %v", err)
-	}
-
-	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo"
-
-	cmd := newSilentCommand(t)
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo",
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(): %v", err)
 	}
 
 	if _, err := os.Stat(filepath.Join(root, "pkg/runner/runner.go")); err != nil {
@@ -310,7 +270,7 @@ import (
 	}
 }
 
-func TestRunMigrateBundles_RenamesLegacyServiceBundle(t *testing.T) {
+func TestMigrateBundles_RenamesLegacyServiceBundle(t *testing.T) {
 	root := t.TempDir()
 
 	runnerDir := filepath.Join(root, "pkg", "runner")
@@ -348,26 +308,14 @@ import (
 		}
 	}
 
-	stubBinDir := filepath.Join(t.TempDir(), "bin")
-	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
-		t.Fatalf("MkdirAll(stub bin): %v", err)
-	}
+	stubGoToolchain(t)
 
-	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
-		t.Fatalf("writeExecutable(go): %v", err)
-	}
-
-	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo"
-
-	cmd := newSilentCommand(t)
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo",
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(): %v", err)
 	}
 
 	if _, err := os.Stat(filepath.Join(root, "cmd/all-in-one/main.go")); err != nil {
@@ -378,21 +326,21 @@ import (
 		t.Fatalf("expected legacy cmd/service removed: %v", err)
 	}
 
-	cfg, err := scaffold.LoadBundlesConfig(root)
+	cfg, err := LoadBundlesConfig(root)
 	if err != nil {
-		t.Fatalf("scaffold.LoadBundlesConfig(): %v", err)
+		t.Fatalf("LoadBundlesConfig(): %v", err)
 	}
 
-	if _, ok := cfg.Bundles[scaffold.DefaultBundleName]; !ok {
-		t.Fatalf("expected %q bundle in bundles.yaml", scaffold.DefaultBundleName)
+	if _, ok := cfg.Bundles[DefaultBundleName]; !ok {
+		t.Fatalf("expected %q bundle in bundles.yaml", DefaultBundleName)
 	}
 
-	if _, ok := cfg.Bundles[scaffold.LegacyDefaultBundleName]; ok {
-		t.Fatalf("expected legacy %q bundle removed from bundles.yaml", scaffold.LegacyDefaultBundleName)
+	if _, ok := cfg.Bundles[LegacyDefaultBundleName]; ok {
+		t.Fatalf("expected legacy %q bundle removed from bundles.yaml", LegacyDefaultBundleName)
 	}
 }
 
-func TestRunMigrateBundles_RecreatesMissingDefaultBundle(t *testing.T) {
+func TestMigrateBundles_RecreatesMissingDefaultBundle(t *testing.T) {
 	root := t.TempDir()
 
 	for _, dir := range []string{"feature/auth", "feature/agent"} {
@@ -415,26 +363,14 @@ func TestRunMigrateBundles_RecreatesMissingDefaultBundle(t *testing.T) {
 		t.Fatalf("WriteFile bundles.yaml: %v", err)
 	}
 
-	stubBinDir := filepath.Join(t.TempDir(), "bin")
-	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
-		t.Fatalf("MkdirAll(stub bin): %v", err)
-	}
+	stubGoToolchain(t)
 
-	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
-		t.Fatalf("writeExecutable(go): %v", err)
-	}
-
-	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-
-	oldOpt := opt
-	t.Cleanup(func() { opt = oldOpt })
-
-	chdir(t, root)
-	opt.RepositoryGoModule = "github.com/example/legacy-repo"
-
-	cmd := newSilentCommand(t)
-	if err := runMigrateBundles(cmd); err != nil {
-		t.Fatalf("runMigrateBundles(): %v", err)
+	err := MigrateBundles(context.Background(), MigrateBundlesRequest{
+		StartDir: root,
+		Module:   "github.com/example/legacy-repo",
+	}, DiscardLogger{})
+	if err != nil {
+		t.Fatalf("MigrateBundles(): %v", err)
 	}
 
 	for _, rel := range []string{
@@ -499,4 +435,29 @@ import (
 	}
 
 	return root
+}
+
+// stubGoToolchain shadows the real go binary with a no-op so migration tests
+// never touch the network or the real toolchain.
+func stubGoToolchain(t *testing.T) {
+	t.Helper()
+
+	stubBinDir := filepath.Join(t.TempDir(), "bin")
+	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll(stub bin): %v", err)
+	}
+
+	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
+		t.Fatalf("writeExecutable(go): %v", err)
+	}
+
+	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
+func writeExecutable(path, content string) error {
+	if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
+		return err
+	}
+
+	return nil
 }

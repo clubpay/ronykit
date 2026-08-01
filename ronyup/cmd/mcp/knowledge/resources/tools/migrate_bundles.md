@@ -12,7 +12,16 @@ Upgrade an **existing** workspace created before executable bundles to the curre
 - The repo still uses the legacy `cmd/service/` bundle name and needs `cmd/all-in-one/`.
 - You upgraded `ronyup` and want bundle support without re-scaffolding the repository.
 
-## Command
+## Extended Guidance
+
+Available as the MCP tool `migrate_bundles` (in-process; equivalent to `ronyup setup migrate bundles`):
+
+| Argument        | CLI flag   | Default    |
+|-----------------|------------|------------|
+| `workspacePath` | (cwd)      | (required) |
+| `dryRun`        | `--dry-run`| `false`    |
+
+CLI equivalent:
 
 ```bash
 ronyup setup migrate bundles [--dry-run]
@@ -25,7 +34,7 @@ Run from the Go workspace root (directory with `go.work`) **or** from the reposi
 - **Idempotent** — safe to run multiple times. If already migrated, refreshes bundle `features.go` files only.
 - **Does not touch** feature business code under `feature/*` or other `pkg/*` modules (except `go work use` for `pkg/runner`).
 - Creates a backup `cmd/all-in-one/main.go.legacy` when replacing a monolithic main.
-- After migration, use `ronyup setup bundle` to add production bundles and `ronyup setup sync --only backend` for Makefile targets.
+- After migration, use `setup_bundle` to add production bundles and `sync_workspace` (`only: ["backend"]`) for Makefile targets.
 
 ## Steps performed
 

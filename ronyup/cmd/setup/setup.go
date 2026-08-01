@@ -14,11 +14,6 @@ const (
 	KindFrontend  = scaffold.KindFrontend
 )
 
-const frontendDir = "frontend"
-
-// TemplateInput is the scaffold template context (re-exported for migrate/bundle).
-type TemplateInput = scaffold.TemplateInput
-
 var opt = struct {
 	ApplicationName        string
 	RepositoryRootDir      string

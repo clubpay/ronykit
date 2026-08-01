@@ -2,7 +2,7 @@
 
 These are the agent skills `ronyup` installs into a workspace's
 `.agents/skills/<id>/`. Each directory is a self-contained skill; register it in
-the catalog (`ronyup/cmd/setup/skills.go`) so it can be selected. `copySkills`
+the catalog (`ronyup/internal/scaffold/skills.go`) so it can be selected. `copySkills`
 copies the **whole** skill directory, so a `rules/` (or `references/`) subfolder
 ships automatically — no extra wiring.
 
@@ -67,7 +67,7 @@ Otherwise, keep it one file.
 
 ## Registering a skill
 
-Add an entry to `skillCatalog` in `ronyup/cmd/setup/skills.go` (id, name,
+Add an entry to `skillCatalog` in `ronyup/internal/scaffold/skills.go` (id, name,
 one-line description, `Category`, and the `DefaultBackend`/`DefaultFullstack`
 flags). `TestCatalogSkillsExistInEmbedFS` verifies every catalog entry has an
 embedded `SKILL.md`.

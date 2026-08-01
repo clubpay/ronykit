@@ -73,7 +73,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Temporal / long-running work | `write-workflow` prompt + `characteristics/workflow`                                          |
 | Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                                             |
 | Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony`                           |
-| Upgrade old workspace layout | `migrate_bundles` tool doc → `ronyup setup migrate bundles`                                   |
+| Upgrade old workspace layout | MCP `migrate_bundles` → `ronyup setup migrate bundles`                                        |
 
 ## Hard rules
 
