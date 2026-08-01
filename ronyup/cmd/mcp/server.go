@@ -3,15 +3,9 @@ package mcp
 import (
 	"bytes"
 	"context"
-	"errors"
-	"fmt"
-	"io/fs"
 	"log/slog"
 	"os"
 	"os/exec"
-	"path"
-	"regexp"
-	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/tools/scaffold"
@@ -24,7 +18,6 @@ type ServerConfig struct {
 	version      string
 	instructions string
 	executable   string
-	skeletonFS   fs.FS
 	cmdRunner    runner
 	kb           *knowledge.Base
 	logger       *slog.Logger
@@ -96,37 +89,4 @@ func (r defaultRunner) Run(ctx context.Context, cwd, name string, args ...string
 	err := cmd.Run()
 
 	return stdout.String(), stderr.String(), err
-}
-
-// ---------------------------------------------------------------------------
-// Shared validation helpers
-// ---------------------------------------------------------------------------
-
-var goIdentifierPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-
-func normalizeRelativePath(v string) (string, error) {
-	v = strings.TrimSpace(v)
-	if v == "" {
-		return "", errors.New(errPathRequired)
-	}
-
-	cleanPath := path.Clean(strings.TrimPrefix(v, "/"))
-	if cleanPath == "." || cleanPath == ".." || strings.HasPrefix(cleanPath, "../") {
-		return "", fmt.Errorf(errPathTraversal, v)
-	}
-
-	return cleanPath, nil
-}
-
-func normalizeFeatureName(v string) (string, error) {
-	v = strings.TrimSpace(v)
-	if v == "" {
-		return "", errors.New(errFeatureNameRequired)
-	}
-
-	if !goIdentifierPattern.MatchString(v) {
-		return "", fmt.Errorf(errFeatureNameInvalid, v)
-	}
-
-	return v, nil
 }

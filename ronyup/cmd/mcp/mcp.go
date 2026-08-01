@@ -39,7 +39,6 @@ var Cmd = &cobra.Command{
 			version:      internal.Version,
 			instructions: kb.ServerInstructions,
 			executable:   exePath,
-			skeletonFS:   internal.Skeleton,
 			cmdRunner:    defaultRunner{},
 			kb:           kb,
 			logger:       l.With("MCP").SLog(),

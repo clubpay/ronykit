@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp"
 	"github.com/clubpay/ronykit/ronyup/cmd/setup"
-	"github.com/clubpay/ronykit/ronyup/cmd/template"
 	"github.com/clubpay/ronykit/ronyup/cmd/text"
 	"github.com/clubpay/ronykit/ronyup/cmd/version"
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -17,7 +16,7 @@ var RootCmd = &cobra.Command{
 }
 
 func main() {
-	RootCmd.AddCommand(setup.Cmd, text.Cmd, template.Cmd, mcp.Cmd, version.Cmd)
+	RootCmd.AddCommand(setup.Cmd, text.Cmd, mcp.Cmd, version.Cmd)
 
 	err := RootCmd.Execute()
 	if err != nil {

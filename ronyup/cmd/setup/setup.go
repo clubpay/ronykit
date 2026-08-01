@@ -251,9 +251,7 @@ func runWorkspace(cmd *cobra.Command) error {
 		return err
 	}
 
-	copyWorkspaceTemplate(cmd)
-
-	return nil
+	return copyWorkspaceTemplate(cmd)
 }
 
 // goRootRel returns the workspace-relative directory that holds the Go workspace
@@ -316,7 +314,7 @@ func createWorkspace(_ context.Context) error {
 	return nil
 }
 
-func copyWorkspaceTemplate(cmd *cobra.Command) {
+func copyWorkspaceTemplate(cmd *cobra.Command) error {
 	repoRoot := filepath.Join(".", opt.RepositoryRootDir)
 
 	templateInput := TemplateInput{
@@ -371,15 +369,36 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 		modulePrefix := goModulePrefix()
 
 		packages := []string{"pkg/i18n", "pkg/runner", "cmd/" + defaultBundleName}
+
 		p := z.RunCmdParams{Dir: goRoot}
-		z.RunCmd(cmd.Context(), p, "go", "work", "init")
+		if err := z.RunCmd(cmd.Context(), p, "go", "work", "init"); err != nil {
+			return fmt.Errorf("go work init: %w", err)
+		}
 
 		for _, pkg := range packages {
 			p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
-			z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(modulePrefix, pkg))
-			z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
-			z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e")
-			z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+			if err := z.RunCmd(
+				cmd.Context(),
+				p,
+				"go",
+				"mod",
+				"init",
+				path.Join(modulePrefix, pkg),
+			); err != nil {
+				return fmt.Errorf("go mod init %s: %w", pkg, err)
+			}
+
+			if err := z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25"); err != nil {
+				return fmt.Errorf("go mod edit %s: %w", pkg, err)
+			}
+
+			if err := z.RunCmd(cmd.Context(), p, "go", "mod", "tidy", "-e"); err != nil {
+				return fmt.Errorf("go mod tidy %s: %w", pkg, err)
+			}
+
+			if err := z.RunCmd(cmd.Context(), p, "go", "work", "use", "."); err != nil {
+				return fmt.Errorf("go work use %s: %w", pkg, err)
+			}
 		}
 	}
 
@@ -387,10 +406,13 @@ func copyWorkspaceTemplate(cmd *cobra.Command) {
 
 	isGitRepo, err := isGitRepository(repoRoot)
 	if err == nil && !isGitRepo {
-		z.RunCmd(cmd.Context(), p, "git", "init")
-		z.RunCmd(cmd.Context(), p, "git", "add", ".")
-		z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
+		// Best-effort: git may be unavailable in some environments.
+		_ = z.RunCmd(cmd.Context(), p, "git", "init")
+		_ = z.RunCmd(cmd.Context(), p, "git", "add", ".")
+		_ = z.RunCmd(cmd.Context(), p, "git", "commit", "-m", "Workspace created")
 	}
+
+	return nil
 }
 
 // installSkills copies the selected agent skills into the workspace's
@@ -504,12 +526,17 @@ func runFeature(cmd *cobra.Command) error {
 	cmd.Printf("Go workspace: %s\n", goRoot)
 	cmd.Printf("Repository module: %s\n", opt.RepositoryGoModule)
 
-	if err := createFeature(cmd.Context()); err != nil {
+	if err := createFeature(cmd.Context(), goRoot); err != nil {
 		return err
 	}
 
-	copyFeatureTemplate(cmd)
-	sideEffectImportModule(cmd)
+	if err := copyFeatureTemplate(cmd, goRoot); err != nil {
+		return err
+	}
+
+	if err := sideEffectImportModule(cmd, goRoot); err != nil {
+		return err
+	}
 
 	cmdCtx := workspaceCommandContext{
 		cmd:        cmd,
@@ -522,26 +549,6 @@ func runFeature(cmd *cobra.Command) error {
 	}
 
 	return nil
-}
-
-func isGoWorkspaceRoot(dir string) (bool, error) {
-	absPath, err := filepath.Abs(dir)
-	if err != nil {
-		return false, err
-	}
-
-	goWorkPath := filepath.Join(absPath, "go.work")
-
-	_, err = os.Stat(goWorkPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	return true, nil
 }
 
 // detectGoModule reads go.work to find use directives, then reads the first
@@ -637,19 +644,14 @@ func parseModulePath(goModContent string) string {
 	return ""
 }
 
-func createFeature(_ context.Context) error {
+func createFeature(_ context.Context, goRoot string) error {
 	if opt.FeatureDir == "" {
 		return fmt.Errorf("project directory is required")
 	}
 
-	groupFolder := ""
-	if opt.GroupByTemplate {
-		groupFolder = opt.Template
-	}
-
 	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, "/")
 	opt.FeatureDir = strings.TrimPrefix(opt.FeatureDir, opt.FeatureContainerFolder)
-	projectPath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
+	projectPath := filepath.Join(goRoot, filepath.FromSlash(resolveFeaturePackagePath()))
 
 	_ = os.MkdirAll(projectPath, 0o755)
 	if z.IsEmptyDir(projectPath) {
@@ -666,23 +668,19 @@ func createFeature(_ context.Context) error {
 	return nil
 }
 
-func copyFeatureTemplate(cmd *cobra.Command) {
-	groupFolder := ""
-	if opt.GroupByTemplate {
-		groupFolder = opt.Template
-	}
-
+func copyFeatureTemplate(cmd *cobra.Command, goRoot string) error {
 	pathPrefix := filepath.Join("skeleton", opt.Template)
-	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
+	packagePath := resolveFeaturePackagePath()
+	destPath := filepath.Join(goRoot, filepath.FromSlash(packagePath))
 
 	rkit.Assert(z.CopyDir(
 		z.CopyDirParams{
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  pathPrefix,
-			DestPathPrefix: filepath.Join(".", packagePath),
+			DestPathPrefix: destPath,
 			TemplateInput: TemplateInput{
 				RepositoryPath: strings.TrimSuffix(opt.RepositoryGoModule, "/"),
-				PackagePath:    strings.Trim(path.Join(packagePath), "/"),
+				PackagePath:    strings.Trim(packagePath, "/"),
 				PackageName:    opt.FeatureName,
 				RonyKitPath:    "github.com/clubpay/ronykit",
 			},
@@ -697,40 +695,57 @@ func copyFeatureTemplate(cmd *cobra.Command) {
 	))
 
 	cmd.Println("Feature created successfully")
-	cmd.Println("Feature path:", packagePath)
-	p := z.RunCmdParams{Dir: filepath.Join(packagePath)}
-	z.RunCmd(cmd.Context(), p, "go", "mod", "init", path.Join(opt.RepositoryGoModule, packagePath))
-	z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25")
-	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
-	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
-	z.RunCmd(cmd.Context(), p, "go", "work", "use", ".")
+	cmd.Println("Feature path:", destPath)
+
+	p := z.RunCmdParams{Dir: destPath}
+	if err := z.RunCmd(
+		cmd.Context(),
+		p,
+		"go",
+		"mod",
+		"init",
+		path.Join(opt.RepositoryGoModule, packagePath),
+	); err != nil {
+		return fmt.Errorf("go mod init: %w", err)
+	}
+
+	if err := z.RunCmd(cmd.Context(), p, "go", "mod", "edit", "-go=1.25"); err != nil {
+		return fmt.Errorf("go mod edit: %w", err)
+	}
+
+	if err := z.RunCmd(cmd.Context(), p, "go", "mod", "tidy"); err != nil {
+		return fmt.Errorf("go mod tidy: %w", err)
+	}
+
+	if err := z.RunCmd(cmd.Context(), p, "go", "fmt", "./..."); err != nil {
+		return fmt.Errorf("go fmt: %w", err)
+	}
+
+	work := z.RunCmdParams{Dir: goRoot}
+	if err := z.RunCmd(cmd.Context(), work, "go", "work", "use", "./"+packagePath); err != nil {
+		return fmt.Errorf("go work use: %w", err)
+	}
+
+	return nil
 }
 
-func sideEffectImportModule(cmd *cobra.Command) {
-	featuresFilePath := filepath.Join(".", "cmd", defaultBundleName, "features.go")
+func sideEffectImportModule(cmd *cobra.Command, goRoot string) error {
+	featuresFilePath := filepath.Join(goRoot, "cmd", defaultBundleName, "features.go")
 
-	// Read the existing file
 	content, err := os.ReadFile(featuresFilePath)
 	if err != nil {
 		cmd.PrintErrf("Warning: Could not read features.go: %v\n", err)
 
-		return
+		return nil
 	}
 
-	// Create the import statement for the feature
-	groupFolder := ""
-	if opt.GroupByTemplate {
-		groupFolder = opt.Template
-	}
-
-	packagePath := filepath.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
+	packagePath := resolveFeaturePackagePath()
 	importPath := fmt.Sprintf("\t_ \"%s/%s\"\n", opt.RepositoryGoModule, packagePath)
 
-	// Check if the import already exists
 	if strings.Contains(string(content), importPath) {
 		cmd.Println("Import already exists in features.go")
 
-		return
+		return nil
 	}
 
 	lines := strings.Split(string(content), "\n")
@@ -748,7 +763,6 @@ func sideEffectImportModule(cmd *cobra.Command) {
 
 		// Add import after "package main" declaration
 		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "package main") {
-			// Check if the import block exists
 			hasImport := false
 
 			for j := i + 1; j < len(lines); j++ {
@@ -774,7 +788,6 @@ func sideEffectImportModule(cmd *cobra.Command) {
 			}
 		}
 
-		// Add to the existing import block
 		if !importAdded && strings.HasPrefix(strings.TrimSpace(line), "import (") {
 			newContent.WriteString(importPath)
 
@@ -782,17 +795,23 @@ func sideEffectImportModule(cmd *cobra.Command) {
 		}
 	}
 
-	// Write back to the file
 	err = os.WriteFile(featuresFilePath, []byte(newContent.String()), 0o644)
 	if err != nil {
 		cmd.PrintErrf("Warning: Could not write to features.go: %v\n", err)
 
-		return
+		return nil
 	}
 
 	cmd.Println("Feature import added to features.go")
 
-	p := z.RunCmdParams{Dir: filepath.Join("./cmd", defaultBundleName)}
-	z.RunCmd(cmd.Context(), p, "go", "mod", "tidy")
-	z.RunCmd(cmd.Context(), p, "go", "fmt", "./...")
+	p := z.RunCmdParams{Dir: filepath.Join(goRoot, "cmd", defaultBundleName)}
+	if err := z.RunCmd(cmd.Context(), p, "go", "mod", "tidy"); err != nil {
+		return fmt.Errorf("go mod tidy cmd/%s: %w", defaultBundleName, err)
+	}
+
+	if err := z.RunCmd(cmd.Context(), p, "go", "fmt", "./..."); err != nil {
+		return fmt.Errorf("go fmt cmd/%s: %w", defaultBundleName, err)
+	}
+
+	return nil
 }

@@ -190,12 +190,27 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 	}
 
 	modulePath := path.Join(opt.RepositoryGoModule, "cmd", bundleOpt.Name)
+
 	p := z.RunCmdParams{Dir: bundleDir}
-	z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
-	z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
-	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
-	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
-	z.RunCmd(context.Background(), p, "go", "work", "use", ".")
+	if err := z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25"); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e"); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "fmt", "./..."); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "work", "use", "."); err != nil {
+		return err
+	}
 
 	cmdCtx.cmd.Printf("Bundle %q created at cmd/%s/\n", bundleOpt.Name, bundleOpt.Name)
 
@@ -228,7 +243,8 @@ func removeBundle(cmdCtx workspaceCommandContext) error {
 	}
 
 	p := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), p, "go", "work", "edit", "-dropuse", "./cmd/"+bundleOpt.Name)
+	// Best-effort: the use directive may already be absent.
+	_ = z.RunCmd(context.Background(), p, "go", "work", "edit", "-dropuse", "./cmd/"+bundleOpt.Name)
 
 	cmdCtx.cmd.Printf("Removed bundle %q\n", bundleOpt.Name)
 

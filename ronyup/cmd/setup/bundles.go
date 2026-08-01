@@ -106,10 +106,6 @@ func parseFeatureImports(featuresGoPath string) ([]string, error) {
 	return imports, nil
 }
 
-func featureImportPath(repoModule, featurePackagePath string) string {
-	return path.Join(repoModule, featurePackagePath)
-}
-
 func importSuffix(importPath, repoModule string) string {
 	repoModule = strings.TrimSuffix(repoModule, "/")
 	if after, ok := strings.CutPrefix(importPath, repoModule+"/"); ok {

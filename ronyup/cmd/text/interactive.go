@@ -84,5 +84,6 @@ func runExtractInteractive(cmd *cobra.Command) error {
 
 	cmd.Printf("Extracting translations for %v...\n", opt.Languages)
 
-	return runText(cmd)
+	// Options are set; Cmd.RunE invokes runText once after interactive returns.
+	return nil
 }

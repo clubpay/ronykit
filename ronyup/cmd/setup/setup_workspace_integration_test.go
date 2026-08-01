@@ -297,6 +297,100 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 	}
 }
 
+func TestSetupFeatureCommand_FromFullstackRepoRoot(t *testing.T) {
+	tmpDir := t.TempDir()
+	repoDir := "fs-feature-repo"
+	repoModule := "github.com/example/fs-feature-repo"
+
+	stubBinDir := filepath.Join(tmpDir, "bin")
+	if err := os.MkdirAll(stubBinDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll(stub bin) unexpected error: %v", err)
+	}
+	if err := writeExecutable(filepath.Join(stubBinDir, "go"), "#!/bin/sh\nexit 0\n"); err != nil {
+		t.Fatalf("writeExecutable(go) unexpected error: %v", err)
+	}
+	if err := writeExecutable(filepath.Join(stubBinDir, "git"), "#!/bin/sh\nexit 0\n"); err != nil {
+		t.Fatalf("writeExecutable(git) unexpected error: %v", err)
+	}
+	t.Setenv("PATH", stubBinDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	oldOpt := opt
+	t.Cleanup(func() { opt = oldOpt })
+
+	oldWD, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd() unexpected error: %v", err)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("Chdir(tmpDir) unexpected error: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(oldWD) })
+
+	opt.RepositoryRootDir = repoDir
+	opt.RepositoryGoModule = repoModule
+	opt.ApplicationName = "demo"
+	opt.Kind = KindFullstack
+
+	Cmd.SetOut(os.Stdout)
+	Cmd.SetErr(os.Stderr)
+	Cmd.SetArgs([]string{"workspace"})
+	if err := Cmd.Execute(); err != nil {
+		t.Fatalf("setup workspace: %v", err)
+	}
+
+	repoRoot := filepath.Join(tmpDir, repoDir)
+	backend := filepath.Join(repoRoot, "backend")
+
+	// Stub go exits 0 without creating files; seed the Go workspace markers
+	// that resolveGoWorkspace / detectGoModule need.
+	if err := os.WriteFile(filepath.Join(backend, "go.work"), []byte("go 1.25\n\nuse ./cmd/all-in-one\n"), 0o644); err != nil {
+		t.Fatalf("WriteFile(go.work): %v", err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(backend, "cmd", "all-in-one", "go.mod"),
+		[]byte("module "+repoModule+"/backend/cmd/all-in-one\n\ngo 1.25\n"),
+		0o644,
+	); err != nil {
+		t.Fatalf("WriteFile(go.mod): %v", err)
+	}
+
+	if err := os.Chdir(repoRoot); err != nil {
+		t.Fatalf("Chdir(repoRoot) unexpected error: %v", err)
+	}
+
+	opt.FeatureDir = "billing"
+	opt.FeatureName = "billing"
+	opt.Template = "service"
+	opt.FeatureContainerFolder = "feature"
+	opt.GroupByTemplate = false
+	opt.Force = false
+
+	Cmd.SetArgs([]string{"feature"})
+	if err := Cmd.Execute(); err != nil {
+		t.Fatalf("setup feature from fullstack repo root: %v", err)
+	}
+
+	wantFeature := filepath.Join(repoRoot, "backend", "feature", "billing")
+	if _, err := os.Stat(wantFeature); err != nil {
+		t.Fatalf("expected feature under backend/: %v", err)
+	}
+
+	wrongFeature := filepath.Join(repoRoot, "feature", "billing")
+	if _, err := os.Stat(wrongFeature); !os.IsNotExist(err) {
+		t.Fatalf("did not expect feature at repo root feature/billing (err=%v)", err)
+	}
+
+	featuresGo := filepath.Join(repoRoot, "backend", "cmd", "all-in-one", "features.go")
+	content, err := os.ReadFile(featuresGo)
+	if err != nil {
+		t.Fatalf("ReadFile(features.go): %v", err)
+	}
+	if !strings.Contains(string(content), repoModule+"/backend/feature/billing") &&
+		!strings.Contains(string(content), "feature/billing") {
+		t.Fatalf("features.go should import the new feature, got:\n%s", content)
+	}
+}
+
 func writeExecutable(path, content string) error {
 	if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
 		return err

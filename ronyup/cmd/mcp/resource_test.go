@@ -5,7 +5,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/clubpay/ronykit/ronyup/internal"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -401,7 +400,6 @@ func TestCompletionE2E(t *testing.T) {
 		name:         "ronyup-test",
 		version:      "v0.0.0-test",
 		instructions: "test",
-		skeletonFS:   internal.Skeleton,
 		cmdRunner:    defaultRunner{},
 		kb:           kb,
 	})

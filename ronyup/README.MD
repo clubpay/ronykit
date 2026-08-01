@@ -30,8 +30,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 
 - `setup`: create a new workspace, add a feature, migrate bundle layout, sync scaffold files, or manage bundles.
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
-- `template`: parse Go source and print package/type/function metadata (generator stub).
-- `mcp`: run `ronyup` as a stdio MCP server for AI assistants.
+- `mcp`: run `ronyup` as a stdio or streamable-HTTP MCP server for AI assistants.
 - `version`: print the `ronyup` version.
 
 Running `ronyup setup` or `ronyup text` with no flags triggers an interactive TUI.
@@ -53,8 +52,8 @@ This copies the embedded workspace skeleton, initializes a `go.work`, and create
 
 Pass `--kind fullstack` to scaffold a `backend/` + `frontend/` split instead of a Go-only repo. The Go workspace (`go.work`, `cmd/all-in-one`,
 `pkg`, `feature`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`,
-`.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. In fullstack mode, run `setup feature` and `make`/`go` commands from the `backend/`
-directory.
+`.agents/`, `.cursor/`, `AGENTS.md`) stay at the root. You can run `setup feature` from the repository root or from `backend/`; feature modules
+are always written under the Go workspace root (`backend/` in fullstack mode).
 
 Pass `--kind frontend` to scaffold a frontend-only repo: a `frontend/` application plus shared AI assistant config and `docs/` at the root,
 with no Go workspace, `devops/`, or backend verify gate.
@@ -136,41 +135,21 @@ ronyup text \
 
 If a `go.work` file is present, the command loads packages from each `use` entry (filtered by `--modules-filter`).
 
-### Inspect Go source
-
-```bash
-ronyup template
-```
-
-This parses packages under the current directory and prints collected metadata (packages, types, functions, comments).
-
 ### Run MCP server
 
 ```bash
 ronyup mcp
 ```
 
-Starts a stdio MCP server that exposes tools for:
+Starts a stdio MCP server (or streamable HTTP with `--port`). Exposed tools:
 
-- Listing embedded scaffold templates (`list_templates`)
-- Reading template file contents (`read_template`)
-- Creating workspaces via existing setup flow (`create_workspace`)
-- Adding feature modules via existing setup flow (`create_feature`)
-- Planning service implementation with characteristic hints (`plan_service`)
-- Implementing service starter code in scaffolded features (`implement_service`)
+- `scaffold_workspace` — initialize a workspace at the given path (delegates to `ronyup setup workspace --repoDir .`)
+- `scaffold_feature` — add a feature module (gated on approved SRS/SDD design docs unless `skipDesignGate=true`)
 
-Migration knowledge is available at:
+Knowledge resources are served under `knowledge://ronyup/{architecture,packages,characteristics,tools}/…`, and workflow prompts include
+`design-new-service`, `write-srs`, `write-sdd`, `design-frontend`, and `migrate-kit-to-rony`.
 
-- `knowledge://ronyup/architecture/migrating-kit-to-rony`
-- `migrate-kit-to-rony` prompt template for scoped migration planning
-
-Default MCP guidance for service generation:
-
-- Keep persistence behind `internal/repo/port.go` and `internal/repo/v0` adapters.
-- Prefer Postgres + `sqlc` as the default repository/data storage stack.
-- Use another storage stack only when explicitly requested by the user.
-- After contract changes, run `make gen-stub` in each feature module.
-- For inter-service calls, consume generated stubs instead of hand-written transport clients.
+CLI-only commands (`setup sync`, `setup bundle`, `setup migrate bundles`) are documented as knowledge resources but are not MCP tools.
 
 ## Flags
 
@@ -411,77 +390,28 @@ Behavior:
 
 Run `ronyup text` with no args/flags to enter the interactive prompt.
 
-### template
-
-Inspect Go packages for template metadata (WIP).
-
-```bash
-ronyup template [flags]
-```
-
-Flags:
-
-```
--c, --custom stringToString    custom values for the template
-```
-
-Behavior:
-
-- Parses Go packages under the current directory and prints counts of files, types, functions, and comments.
-
-#### template generate
-
-```bash
-ronyup template generate [flags]
-```
-
-Flags:
-
-```
--r, --templateRepo string   if not set we use the standard templates repo embedded into the binary
--t, --template string       possible values: dto | dao | serializer (default "service")
-```
-
-Note: the `generate` subcommand is currently a no-op in the source.
-
 ### mcp
 
-Run `ronyup` as a stdio MCP server:
+Run `ronyup` as an MCP server over stdio (default) or streamable HTTP:
 
 ```bash
-ronyup mcp [flags]
+ronyup mcp [--port N]
 ```
 
 Flags:
 
 ```
-    --name string           MCP server name (default "ronyup")
-    --version string        MCP server version (default "v0.1.0")
-    --instructions string   MCP server instructions advertised to clients
+    --port int   Port for streamable HTTP. If 0 (default), use stdio.
 ```
 
 Exposed MCP tools:
 
-- `list_templates`: list embedded files under `internal/skeleton`.
-- `read_template`: read one embedded template file.
-- `create_workspace`: delegates to `ronyup setup workspace`.
-- `create_feature`: delegates to `ronyup setup feature`.
-- `plan_service`: dry-run plan for implementing a service feature in workspace structure.
-- `implement_service`: writes base implementation into `api/service.go`, `internal/app/app.go`, and `internal/repo/port.go`.
-	- Supports multi-contract generation via `contracts` input.
-	- Derives a runtime profile (`database`, `cache`, `http`, `idempotent`) from characteristics.
+- `scaffold_workspace`: create a workspace at `path` (`kind`: `backend` | `fullstack` | `frontend`; optional `skills`).
+- `scaffold_feature`: create a feature in an existing workspace. Requires approved SRS/SDD under `docs/design/` unless
+  `skipDesignGate=true` (only when the user explicitly asks to skip).
 
-Knowledge and prompt for migration:
-
-- `knowledge://ronyup/architecture/migrating-kit-to-rony`: phased migration guide from direct `kit` to `rony`.
-- `migrate-kit-to-rony`: MCP prompt template to generate a scoped migration plan.
-
-Default MCP service conventions:
-
-- Prefer Postgres + `sqlc` for repository management and DB access by default.
-- Use a different persistence stack only when the request explicitly asks for it.
-- Regenerate stubs with `make gen-stub` after contract changes.
-- Use generated stubs for cross-service calls.
+Knowledge resources use URIs like `knowledge://ronyup/architecture/service-structure`. Prompts cover design and migration workflows
+(e.g. `design-new-service`, `migrate-kit-to-rony`).
 
 ## Use `ronyup` MCP in IDEs
 
@@ -489,7 +419,7 @@ Before configuring any IDE, make sure `ronyup` is installed and available on you
 
 ```bash
 go install github.com/clubpay/ronykit/ronyup@latest
-ronyup mcp --name ronyup
+ronyup mcp
 ```
 
 If the second command starts and waits for input, the MCP server is ready.
@@ -523,8 +453,8 @@ GoLand MCP setup is done from Settings/Preferences:
 	- Arguments: `mcp`
 4. Save settings and restart GoLand if tools do not appear immediately.
 
-After setup, verify from the IDE MCP/AI tools view that server `ronyup` is connected and its tools are listed (`list_templates`,
-`create_workspace`, etc).
+After setup, verify from the IDE MCP/AI tools view that server `ronyup` is connected and its tools are listed (`scaffold_workspace`,
+`scaffold_feature`).
 
 ## Examples
 

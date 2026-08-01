@@ -4,10 +4,12 @@ For new service features, follow the document-first workflow: write and get appr
 `docs/design/<feature>-sdd.md`), then scaffold and implement. MCP prompts: `design-new-service` (full workflow), `write-srs`, `write-sdd`.
 Read `knowledge://ronyup/architecture/design-documents`.
 
-This gate is ENFORCED, not advisory: `scaffold_feature` refuses to run unless both `docs/design/<feature>-srs.md` and `docs/design/<feature>-sdd.md`
-exist with frontmatter `status: approved`. Write each document with `status: draft`; only the user sets `status: approved` after reviewing. Do
-not approve documents yourself, and do not pass `skipDesignGate=true` unless the user explicitly asks to skip the design documents. This applies
-to EVERY backend feature request, including quick edits or "just write the code" asks — never skip the SRS/SDD step on your own initiative.
+This gate is ENFORCED for the MCP `scaffold_feature` tool, not advisory: it refuses to run unless both `docs/design/<feature>-srs.md` and
+`docs/design/<feature>-sdd.md` exist with frontmatter `status: approved`. Write each document with `status: draft`; only the user sets
+`status: approved` after reviewing. Do not approve documents yourself, and do not pass `skipDesignGate=true` unless the user explicitly asks
+to skip the design documents. This applies to EVERY backend feature request, including quick edits or "just write the code" asks — never skip
+the SRS/SDD step on your own initiative. (Direct CLI `ronyup setup feature` is a power-user escape hatch and does not run this gate; agents
+must still use the MCP tool path so the gate applies.)
 
 Frontend topology (fullstack workspaces): never assume a single frontend app. Before creating or editing anything under `frontend/`, ask the
 user whether there is one frontend app or multiple. For multiple apps, each app lives in its own directory (`frontend/<app-name>/`); confirm

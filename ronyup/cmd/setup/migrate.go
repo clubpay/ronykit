@@ -441,18 +441,32 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 	p := z.RunCmdParams{Dir: dir}
 
 	if !fileExists(filepath.Join(dir, "go.mod")) {
-		z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
-		z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
+		if err := z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath); err != nil {
+			return err
+		}
+
+		if err := z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25"); err != nil {
+			return err
+		}
+
 		cmdCtx.cmd.Println("Initialized pkg/runner module")
 	}
 
-	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
-	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
+	if err := z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e"); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "fmt", "./..."); err != nil {
+		return err
+	}
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+runnerRelDir)
-	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
-	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
+	if err := z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+runnerRelDir); err != nil {
+		return err
+	}
+	// Best-effort cleanup of legacy use directives.
+	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
+	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
 
 	return nil
 }
@@ -470,7 +484,7 @@ func removeLegacyCmdRunner(cmdCtx workspaceCommandContext) error {
 	cmdCtx.cmd.Println("Removed legacy cmd/runner/")
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
+	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
 
 	return nil
 }
@@ -488,7 +502,7 @@ func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
 	cmdCtx.cmd.Println("Removed legacy internal/runner/")
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
+	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
 
 	return nil
 }
@@ -500,8 +514,13 @@ func tidyDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 	}
 
 	p := z.RunCmdParams{Dir: bundleDir}
-	z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e")
-	z.RunCmd(context.Background(), p, "go", "fmt", "./...")
+	if err := z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e"); err != nil {
+		return err
+	}
+
+	if err := z.RunCmd(context.Background(), p, "go", "fmt", "./..."); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -520,14 +539,30 @@ func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 	p := z.RunCmdParams{Dir: bundleDir}
 
 	if !fileExists(filepath.Join(bundleDir, "go.mod")) {
-		z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath)
-		z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25")
+		if err := z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath); err != nil {
+			return err
+		}
+
+		if err := z.RunCmd(context.Background(), p, "go", "mod", "edit", "-go=1.25"); err != nil {
+			return err
+		}
+
 		cmdCtx.cmd.Printf("Initialized cmd/%s module\n", defaultBundleName)
 	}
 
 	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
-	z.RunCmd(
+	if err := z.RunCmd(
+		context.Background(),
+		workDir,
+		"go",
+		"work",
+		"use",
+		"./cmd/"+defaultBundleName,
+	); err != nil {
+		return err
+	}
+
+	_ = z.RunCmd(
 		context.Background(),
 		workDir,
 		"go",
@@ -614,8 +649,18 @@ func renameLegacyServiceBundle(cmdCtx workspaceCommandContext) error {
 		}
 
 		workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-		z.RunCmd(context.Background(), workDir, "go", "work", "use", "./cmd/"+defaultBundleName)
-		z.RunCmd(
+		if err := z.RunCmd(
+			context.Background(),
+			workDir,
+			"go",
+			"work",
+			"use",
+			"./cmd/"+defaultBundleName,
+		); err != nil {
+			return err
+		}
+
+		_ = z.RunCmd(
 			context.Background(),
 			workDir,
 			"go",

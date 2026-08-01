@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -77,14 +78,14 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				return errorResult(rkit.L("path is required")), nil, nil
 			}
 
-			cliArgs := []string{"setup", "workspace"}
-			if args.Kind != "" {
-				cliArgs = append(cliArgs, "--kind", args.Kind)
+			// Create the destination first so the subprocess can use it as cwd.
+			// setup workspace defaults --repoDir to ./my-repo; pass "." so the
+			// workspace lands at args.Path itself (not args.Path/my-repo).
+			if err := os.MkdirAll(args.Path, 0o755); err != nil {
+				return errorResult(rkit.L("failed to create path %s: %v", args.Path, err)), nil, nil
 			}
 
-			if len(args.Skills) > 0 {
-				cliArgs = append(cliArgs, "--skills", strings.Join(args.Skills, ","))
-			}
+			cliArgs := workspaceCLIArgs(args)
 
 			stdout, stderr, err := runner.Run(ctx, args.Path, executable, cliArgs...)
 			if err != nil {
@@ -100,6 +101,19 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				rkit.L("%s", stdout),
 			), nil, nil
 		})
+}
+
+func workspaceCLIArgs(args workspaceArgs) []string {
+	cliArgs := []string{"setup", "workspace", "--repoDir", "."}
+	if args.Kind != "" {
+		cliArgs = append(cliArgs, "--kind", args.Kind)
+	}
+
+	if len(args.Skills) > 0 {
+		cliArgs = append(cliArgs, "--skills", strings.Join(args.Skills, ","))
+	}
+
+	return cliArgs
 }
 
 func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) {
@@ -126,7 +140,7 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 					"type":        "string",
 					"description": "Feature template: service, job, or gateway.",
 					"default":     "service",
-					"enum":        []string{"service"},
+					"enum":        []string{"service", "job", "gateway"},
 				},
 				"featurePrefix": map[string]any{
 					"type":        "string",
@@ -175,16 +189,7 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				args.FeaturePrefix = "feature"
 			}
 
-			cliArgs := []string{
-				"setup", "feature",
-				"--featureDir", args.Name,
-				"--featureName", args.Name,
-				"--template", args.Template,
-				"--featurePrefix", args.FeaturePrefix,
-			}
-			if args.GroupByTemplate {
-				cliArgs = append(cliArgs, "--groupByTemplate")
-			}
+			cliArgs := featureCLIArgs(args)
 
 			stdout, stderr, err := runner.Run(ctx, args.WorkspacePath, executable, cliArgs...)
 			if err != nil {
@@ -200,6 +205,21 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				rkit.L("%s", stdout),
 			), nil, nil
 		})
+}
+
+func featureCLIArgs(args featureArgs) []string {
+	cliArgs := []string{
+		"setup", "feature",
+		"--featureDir", args.Name,
+		"--featureName", args.Name,
+		"--template", args.Template,
+		"--featurePrefix", args.FeaturePrefix,
+	}
+	if args.GroupByTemplate {
+		cliArgs = append(cliArgs, "--groupByTemplate")
+	}
+
+	return cliArgs
 }
 
 func errorResult(lines ...rkit.StrLine) *mcpsdk.CallToolResult {
