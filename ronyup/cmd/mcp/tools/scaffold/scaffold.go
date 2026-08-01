@@ -2,7 +2,6 @@ package scaffold
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -13,6 +12,21 @@ import (
 // Runner abstracts the command execution
 type Runner interface {
 	Run(ctx context.Context, cwd, name string, args ...string) (stdout, stderr string, err error)
+}
+
+type workspaceArgs struct {
+	Path   string   `json:"path"`
+	Kind   string   `json:"kind"`
+	Skills []string `json:"skills"`
+}
+
+type featureArgs struct {
+	WorkspacePath   string `json:"workspacePath"`
+	Name            string `json:"name"`
+	Template        string `json:"template"`
+	FeaturePrefix   string `json:"featurePrefix"`
+	GroupByTemplate bool   `json:"groupByTemplate"`
+	SkipDesignGate  bool   `json:"skipDesignGate"`
 }
 
 // Register registers all scaffold-related tools to the given MCP server.
@@ -55,20 +69,12 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 		},
 	}
 
-	srv.AddTool(
-		tool,
-		func(ctx context.Context, request *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
-			var args struct {
-				Path   string   `json:"path"`
-				Kind   string   `json:"kind"`
-				Skills []string `json:"skills"`
-			}
-			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
-				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
-			}
-
+	mcpsdk.AddTool(srv, tool,
+		func(ctx context.Context, _ *mcpsdk.CallToolRequest, args workspaceArgs) (
+			*mcpsdk.CallToolResult, any, error,
+		) {
 			if args.Path == "" {
-				return errorResult(rkit.L("path is required")), nil
+				return errorResult(rkit.L("path is required")), nil, nil
 			}
 
 			cliArgs := []string{"setup", "workspace"}
@@ -85,14 +91,14 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				return errorResult(
 					rkit.L("failed to setup workspace: %v", err),
 					rkit.L("Stderr: %s", stderr),
-				), nil
+				), nil, nil
 			}
 
 			return textResult(
 				rkit.L("Workspace successfully setup at %s.", args.Path),
 				rkit.L("Stdout:"),
 				rkit.L("%s", stdout),
-			), nil
+			), nil, nil
 		})
 }
 
@@ -143,32 +149,21 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 		},
 	}
 
-	srv.AddTool(
-		tool,
-		func(ctx context.Context, request *mcpsdk.CallToolRequest) (*mcpsdk.CallToolResult, error) {
-			var args struct {
-				WorkspacePath   string `json:"workspacePath"`
-				Name            string `json:"name"`
-				Template        string `json:"template"`
-				FeaturePrefix   string `json:"featurePrefix"`
-				GroupByTemplate bool   `json:"groupByTemplate"`
-				SkipDesignGate  bool   `json:"skipDesignGate"`
-			}
-			if err := json.Unmarshal(request.Params.Arguments, &args); err != nil {
-				return errorResult(rkit.L("failed to parse arguments: %v", err)), nil
-			}
-
+	mcpsdk.AddTool(srv, tool,
+		func(ctx context.Context, _ *mcpsdk.CallToolRequest, args featureArgs) (
+			*mcpsdk.CallToolResult, any, error,
+		) {
 			if args.WorkspacePath == "" {
-				return errorResult(rkit.L("workspacePath is required")), nil
+				return errorResult(rkit.L("workspacePath is required")), nil, nil
 			}
 
 			if args.Name == "" {
-				return errorResult(rkit.L("name is required")), nil
+				return errorResult(rkit.L("name is required")), nil, nil
 			}
 
 			if !args.SkipDesignGate {
 				if problems := checkDesignGate(args.WorkspacePath, args.Name); len(problems) > 0 {
-					return designGateError(args.Name, problems), nil
+					return designGateError(args.Name, problems), nil, nil
 				}
 			}
 
@@ -196,14 +191,14 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				return errorResult(
 					rkit.L("failed to setup feature: %v", err),
 					rkit.L("Stderr: %s", stderr),
-				), nil
+				), nil, nil
 			}
 
 			return textResult(
 				rkit.L("Feature '%s' successfully created in workspace %s.", args.Name, args.WorkspacePath),
 				rkit.L("Stdout:"),
 				rkit.L("%s", stdout),
-			), nil
+			), nil, nil
 		})
 }
 

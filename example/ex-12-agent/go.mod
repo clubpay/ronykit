@@ -3,9 +3,9 @@ module ex12
 go 1.25.8
 
 require (
-	github.com/clubpay/ronykit/intent v0.1.9
-	github.com/clubpay/ronykit/kit v0.26.9
-	github.com/clubpay/ronykit/rony v0.26.9
+	github.com/clubpay/ronykit/intent v0.1.11
+	github.com/clubpay/ronykit/kit v0.26.11
+	github.com/clubpay/ronykit/rony v0.26.11
 	github.com/clubpay/ronykit/std/knowledge/static v0.0.0
 	github.com/clubpay/ronykit/std/llms/langchaingo v0.0.0
 	github.com/clubpay/ronykit/std/llms/ollama v0.0.0
@@ -22,10 +22,10 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.9 // indirect
-	github.com/clubpay/ronykit/stub v0.26.9 // indirect
-	github.com/clubpay/ronykit/x/apidoc v0.5.9 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.5.9 // indirect
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.11 // indirect
+	github.com/clubpay/ronykit/stub v0.26.11 // indirect
+	github.com/clubpay/ronykit/x/apidoc v0.5.11 // indirect
+	github.com/clubpay/ronykit/x/rkit v0.5.11 // indirect
 	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect

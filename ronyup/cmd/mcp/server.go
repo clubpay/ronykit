@@ -46,8 +46,11 @@ func newServer(cfg ServerConfig) *Server {
 			Instructions:      cfg.instructions,
 			CompletionHandler: completionHandler(cfg.kb),
 			Logger:            cfg.logger,
-			InitializedHandler: func(ctx context.Context, request *mcpsdk.InitializedRequest) {
-			},
+			// Empty Capabilities disables the historical default {"logging":{}}
+			// advertisement (logging is deprecated as of protocol 2026-07-28).
+			// tools/prompts/resources capabilities are still inferred from
+			// registered features.
+			Capabilities: &mcpsdk.ServerCapabilities{},
 		},
 	)
 
