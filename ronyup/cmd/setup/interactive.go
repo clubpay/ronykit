@@ -3,6 +3,8 @@ package setup
 import (
 	"fmt"
 
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
+
 	"charm.land/huh/v2"
 	"github.com/spf13/cobra"
 )
@@ -12,12 +14,12 @@ import (
 // so runWorkspace resolves and installs exactly what the user picked.
 func selectSkillsInteractive() error {
 	defaults := map[string]bool{}
-	for _, id := range defaultSkillIDs(opt.Kind) {
+	for _, id := range scaffold.DefaultSkillIDs(opt.Kind) {
 		defaults[id] = true
 	}
 
-	options := make([]huh.Option[string], 0, len(skillCatalog))
-	for _, s := range skillCatalog {
+	options := make([]huh.Option[string], 0, len(scaffold.SkillCatalog()))
+	for _, s := range scaffold.SkillCatalog() {
 		label := fmt.Sprintf("[%s] %s — %s", s.Category, s.Name, s.Description)
 		options = append(options, huh.NewOption(label, s.ID).Selected(defaults[s.ID]))
 	}
@@ -40,7 +42,7 @@ func selectSkillsInteractive() error {
 	// Record the explicit choice. An empty selection must mean "none" so
 	// runWorkspace does not fall back to the kind defaults.
 	if len(selected) == 0 {
-		opt.Skills = []string{skillTokenNone}
+		opt.Skills = []string{scaffold.SkillTokenNone}
 	} else {
 		opt.Skills = selected
 	}
@@ -101,9 +103,9 @@ func runWorkspaceInteractive(cmd *cobra.Command) error {
 				Title("Workspace Kind").
 				Description("Backend only, backend + frontend split, or frontend only").
 				Options(
-					huh.NewOption("Backend only", KindBackend),
-					huh.NewOption("Backend + Frontend", KindFullstack),
-					huh.NewOption("Frontend only", KindFrontend),
+					huh.NewOption("Backend only", scaffold.KindBackend),
+					huh.NewOption("Backend + Frontend", scaffold.KindFullstack),
+					huh.NewOption("Frontend only", scaffold.KindFrontend),
 				).
 				Value(&opt.Kind),
 		),

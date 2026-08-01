@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,7 +26,7 @@ func TestDetectWorkspaceLayout(t *testing.T) {
 		t.Fatalf("detectWorkspaceLayout(backend-only): %v", err)
 	}
 
-	if layout.Kind != KindBackend || layout.GoRoot != layout.RepoRoot {
+	if layout.Kind != scaffold.KindBackend || layout.GoRoot != layout.RepoRoot {
 		t.Fatalf("backend layout: %+v", layout)
 	}
 
@@ -44,7 +45,7 @@ func TestDetectWorkspaceLayout(t *testing.T) {
 		t.Fatalf("detectWorkspaceLayout(fullstack root): %v", err)
 	}
 
-	if layout.Kind != KindFullstack || layout.GoRoot != filepath.Join(fsRoot, "backend") {
+	if layout.Kind != scaffold.KindFullstack || layout.GoRoot != filepath.Join(fsRoot, "backend") {
 		t.Fatalf("fullstack root layout: %+v", layout)
 	}
 
@@ -54,7 +55,7 @@ func TestDetectWorkspaceLayout(t *testing.T) {
 		t.Fatalf("detectWorkspaceLayout(fullstack backend): %v", err)
 	}
 
-	if layout.Kind != KindFullstack || layout.RepoRoot != fsRoot {
+	if layout.Kind != scaffold.KindFullstack || layout.RepoRoot != fsRoot {
 		t.Fatalf("fullstack backend cwd layout: %+v", layout)
 	}
 
@@ -69,7 +70,7 @@ func TestDetectWorkspaceLayout(t *testing.T) {
 		t.Fatalf("detectWorkspaceLayout(frontend): %v", err)
 	}
 
-	if layout.Kind != KindFrontend || layout.GoRoot != "" {
+	if layout.Kind != scaffold.KindFrontend || layout.GoRoot != "" {
 		t.Fatalf("frontend layout: %+v", layout)
 	}
 }
@@ -77,7 +78,7 @@ func TestDetectWorkspaceLayout(t *testing.T) {
 func TestResolveSyncSections(t *testing.T) {
 	t.Parallel()
 
-	sections, err := resolveSyncSections([]string{"devops", "agents"}, KindBackend)
+	sections, err := resolveSyncSections([]string{"devops", "agents"}, scaffold.KindBackend)
 	if err != nil {
 		t.Fatalf("resolveSyncSections: %v", err)
 	}
@@ -86,7 +87,7 @@ func TestResolveSyncSections(t *testing.T) {
 		t.Fatalf("unexpected sections: %v", sections)
 	}
 
-	_, err = resolveSyncSections([]string{"nope"}, KindBackend)
+	_, err = resolveSyncSections([]string{"nope"}, scaffold.KindBackend)
 	if err == nil {
 		t.Fatal("expected error for unknown section")
 	}
@@ -101,7 +102,7 @@ func TestResolveSyncSkillsInstalled(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ids, err := resolveSyncSkills(root, []string{"installed"}, KindBackend)
+	ids, err := resolveSyncSkills(root, []string{"installed"}, scaffold.KindBackend)
 	if err != nil {
 		t.Fatalf("resolveSyncSkills: %v", err)
 	}

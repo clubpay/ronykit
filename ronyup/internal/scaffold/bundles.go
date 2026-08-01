@@ -1,4 +1,4 @@
-package setup
+package scaffold
 
 import (
 	"fmt"
@@ -15,10 +15,26 @@ import (
 )
 
 const (
-	defaultBundleName       = "all-in-one"
-	legacyDefaultBundleName = "service"
-	bundlesManifestName     = "bundles.yaml"
-	wildcardService         = "*"
+	// DefaultBundleName is the primary executable bundle (cmd/all-in-one).
+	DefaultBundleName = "all-in-one"
+	// LegacyDefaultBundleName is the pre-migration default bundle name.
+	LegacyDefaultBundleName = "service"
+	// DefaultFeaturePrefix is the default parent directory for feature modules.
+	DefaultFeaturePrefix = "feature"
+	// BundlesManifestName is the bundles config filename under the Go workspace root.
+	BundlesManifestName = "bundles.yaml"
+	// WildcardService selects every feature module in a bundle.
+	WildcardService = "*"
+)
+
+const (
+	bundlesManifestName = BundlesManifestName
+	wildcardService     = WildcardService
+)
+
+const (
+	defaultBundleName       = DefaultBundleName
+	legacyDefaultBundleName = LegacyDefaultBundleName
 )
 
 func defaultBundleDir(goRoot string) string {
@@ -27,6 +43,25 @@ func defaultBundleDir(goRoot string) string {
 
 func legacyDefaultBundleDir(goRoot string) string {
 	return filepath.Join(goRoot, "cmd", legacyDefaultBundleName)
+}
+
+// DefaultBundleDir returns cmd/<DefaultBundleName> under goRoot.
+func DefaultBundleDir(goRoot string) string { return defaultBundleDir(goRoot) }
+
+// LegacyDefaultBundleDir returns cmd/<LegacyDefaultBundleName> under goRoot.
+func LegacyDefaultBundleDir(goRoot string) string { return legacyDefaultBundleDir(goRoot) }
+
+// LoadBundlesConfig reads bundles.yaml (or returns the default config).
+func LoadBundlesConfig(goRoot string) (BundlesConfig, error) { return loadBundlesConfig(goRoot) }
+
+// SaveBundlesConfig writes bundles.yaml.
+func SaveBundlesConfig(goRoot string, cfg BundlesConfig) error { return saveBundlesConfig(goRoot, cfg) }
+
+// SyncBundleFeatures writes features.go for one bundle.
+func SyncBundleFeatures(
+	goRoot, repoModule, bundleName string, bundle BundleSpec, allImports []string,
+) error {
+	return syncBundleFeatures(goRoot, repoModule, bundleName, bundle, allImports)
 }
 
 type BundlesConfig struct {
@@ -38,9 +73,15 @@ type BundleSpec struct {
 	Services    []string `yaml:"services"`
 }
 
+// BundlesManifestPath returns goRoot/bundles.yaml.
+func BundlesManifestPath(goRoot string) string { return bundlesManifestPath(goRoot) }
+
 func bundlesManifestPath(goRoot string) string {
 	return filepath.Join(goRoot, bundlesManifestName)
 }
+
+// RenderFeaturesGo renders the blank-import features.go contents.
+func RenderFeaturesGo(imports []string) string { return renderFeaturesGo(imports) }
 
 func loadBundlesConfig(goRoot string) (BundlesConfig, error) {
 	data, err := os.ReadFile(bundlesManifestPath(goRoot))
@@ -197,8 +238,29 @@ func syncBundleFeatures(
 	return writeFeaturesGo(bundleDir, imports)
 }
 
-func syncAllBundleFeatures(cmdCtx workspaceCommandContext) error {
-	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+// WorkspaceContext carries Go workspace location and a progress logger for
+// bundle/migrate operations.
+type WorkspaceContext struct {
+	Log        Logger
+	GoRoot     string
+	RepoModule string
+}
+
+func (c WorkspaceContext) log() Logger {
+	if c.Log == nil {
+		return DiscardLogger{}
+	}
+
+	return c.Log
+}
+
+// SyncAllBundleFeatures regenerates features.go for every bundle in bundles.yaml.
+func SyncAllBundleFeatures(cmdCtx WorkspaceContext) error {
+	return syncAllBundleFeatures(cmdCtx)
+}
+
+func syncAllBundleFeatures(cmdCtx WorkspaceContext) error {
+	cfg, err := loadBundlesConfig(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
@@ -209,18 +271,23 @@ func syncAllBundleFeatures(cmdCtx workspaceCommandContext) error {
 	}
 
 	for name, spec := range cfg.Bundles {
-		if err := syncBundleFeatures(cmdCtx.goRoot, cmdCtx.repoModule, name, spec, allImports); err != nil {
+		if err := syncBundleFeatures(cmdCtx.GoRoot, cmdCtx.RepoModule, name, spec, allImports); err != nil {
 			return fmt.Errorf("bundle %q: %w", name, err)
 		}
 
-		cmdCtx.cmd.Printf("Synced cmd/%s/features.go\n", name)
+		cmdCtx.log().Printf("Synced cmd/%s/features.go\n", name)
 	}
 
 	return nil
 }
 
-func syncBundlesForFeature(cmdCtx workspaceCommandContext, featurePackagePath string) error {
-	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+// SyncBundlesForFeature updates non-default bundles that include the feature.
+func SyncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) error {
+	return syncBundlesForFeature(cmdCtx, featurePackagePath)
+}
+
+func syncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) error {
+	cfg, err := loadBundlesConfig(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
@@ -240,40 +307,38 @@ func syncBundlesForFeature(cmdCtx workspaceCommandContext, featurePackagePath st
 			continue
 		}
 
-		if err := syncBundleFeatures(cmdCtx.goRoot, cmdCtx.repoModule, name, spec, allImports); err != nil {
+		if err := syncBundleFeatures(cmdCtx.GoRoot, cmdCtx.RepoModule, name, spec, allImports); err != nil {
 			return fmt.Errorf("bundle %q: %w", name, err)
 		}
 
-		cmdCtx.cmd.Printf("Updated cmd/%s/features.go\n", name)
+		cmdCtx.log().Printf("Updated cmd/%s/features.go\n", name)
 	}
 
 	return nil
 }
 
-type workspaceCommandContext struct {
-	cmd        commandPrinter
-	goRoot     string
-	repoModule string
-}
-
-type commandPrinter interface {
-	Printf(format string, args ...any)
-	Println(args ...any)
-	PrintErrf(format string, args ...any)
-}
-
-func resolveFeaturePackagePath() string {
-	groupFolder := ""
-	if opt.GroupByTemplate {
-		groupFolder = opt.Template
+// FeaturePackagePath returns the workspace-relative feature module path.
+func FeaturePackagePath(prefix, template, featureDir string, groupByTemplate bool) string {
+	if prefix == "" {
+		prefix = DefaultFeaturePrefix
 	}
 
-	return path.Join(opt.FeatureContainerFolder, groupFolder, opt.FeatureDir)
+	groupFolder := ""
+	if groupByTemplate {
+		groupFolder = template
+	}
+
+	return path.Join(prefix, groupFolder, featureDir)
 }
 
-func loadDefaultBundleFeatureImports(cmdCtx workspaceCommandContext) ([]string, error) {
+// LoadDefaultBundleFeatureImports reads feature imports from the default bundle.
+func LoadDefaultBundleFeatureImports(cmdCtx WorkspaceContext) ([]string, error) {
+	return loadDefaultBundleFeatureImports(cmdCtx)
+}
+
+func loadDefaultBundleFeatureImports(cmdCtx WorkspaceContext) ([]string, error) {
 	for _, bundleName := range []string{defaultBundleName, legacyDefaultBundleName} {
-		featuresPath := filepath.Join(cmdCtx.goRoot, "cmd", bundleName, "features.go")
+		featuresPath := filepath.Join(cmdCtx.GoRoot, "cmd", bundleName, "features.go")
 
 		imports, err := parseFeatureImports(featuresPath)
 		if err == nil {
@@ -291,8 +356,17 @@ func loadDefaultBundleFeatureImports(cmdCtx workspaceCommandContext) ([]string, 
 	)
 }
 
-func discoverFeatureModuleImports(goRoot, repoModule string) ([]string, error) {
-	featureRoot := filepath.Join(goRoot, opt.FeatureContainerFolder)
+// DiscoverFeatureModuleImports finds feature modules under featurePrefix.
+func DiscoverFeatureModuleImports(goRoot, repoModule, featurePrefix string) ([]string, error) {
+	return discoverFeatureModuleImports(goRoot, repoModule, featurePrefix)
+}
+
+func discoverFeatureModuleImports(goRoot, repoModule, featurePrefix string) ([]string, error) {
+	if featurePrefix == "" {
+		featurePrefix = DefaultFeaturePrefix
+	}
+
+	featureRoot := filepath.Join(goRoot, featurePrefix)
 	if !fileExists(featureRoot) {
 		return nil, nil
 	}

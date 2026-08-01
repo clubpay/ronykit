@@ -143,7 +143,7 @@ ronyup mcp
 
 Starts a stdio MCP server (or streamable HTTP with `--port`). Exposed tools:
 
-- `scaffold_workspace` — initialize a workspace at the given path (delegates to `ronyup setup workspace --repoDir .`)
+- `scaffold_workspace` — initialize a workspace at the given path (shared in-process scaffold API)
 - `scaffold_feature` — add a feature module (gated on approved SRS/SDD design docs unless `skipDesignGate=true`)
 
 Knowledge resources are served under `knowledge://ronyup/{architecture,packages,characteristics,tools}/…`, and workflow prompts include
@@ -158,7 +158,7 @@ CLI-only commands (`setup sync`, `setup bundle`, `setup migrate bundles`) are do
 Global flags:
 
 - `--repoModule`, `-m`: Go module path for the repository.
-- `--force`, `-f`: clean destination directory before setup.
+- `--force`, `-f`: replace a non-empty workspace or feature destination before scaffolding.
 - `--custom`, `-c`: custom key/value map for templates.
 
 Workspace flags:
@@ -240,7 +240,7 @@ Global flags for `setup`:
 
 ```
 -m, --repoModule string        go module for the repository (default "github.com/your/repo")
--f, --force                    clean destination directory before setup
+-f, --force                    replace a non-empty destination directory before setup
 -c, --custom stringToString    custom values for the template
 ```
 

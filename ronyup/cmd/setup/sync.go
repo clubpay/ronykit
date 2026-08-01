@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 
 	"github.com/spf13/cobra"
@@ -84,9 +85,9 @@ func init() {
 		func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 			return []string{
 				syncKindAuto,
-				KindBackend,
-				KindFullstack,
-				KindFrontend,
+				scaffold.KindBackend,
+				scaffold.KindFullstack,
+				scaffold.KindFrontend,
 			}, cobra.ShellCompDirectiveNoFileComp
 		},
 	)
@@ -151,7 +152,7 @@ func runSync(cmd *cobra.Command) error {
 	if f := cmd.Flag("repoModule"); f != nil && f.Changed {
 		// keep explicit --repoModule from parent persistent flags
 	} else if layout.GoRoot != "" {
-		module, err := detectGoModule(layout.GoRoot)
+		module, err := scaffold.DetectGoModule(layout.GoRoot)
 		if err != nil {
 			return fmt.Errorf("detect repository module: %w", err)
 		}
@@ -173,16 +174,14 @@ func runSync(cmd *cobra.Command) error {
 		return err
 	}
 
-	opt.resolvedSkills = skillIDs
-
-	templateInput := TemplateInput{
+	templateInput := scaffold.TemplateInput{
 		ApplicationName: opt.ApplicationName,
-		RepositoryPath:  goModulePrefix(),
+		RepositoryPath:  scaffold.GoModulePrefix(opt.RepositoryGoModule, layout.Kind),
 		PackagePath:     strings.Trim(opt.FeatureDir, "/"),
 		PackageName:     opt.FeatureName,
-		RonyKitPath:     "github.com/clubpay/ronykit",
+		RonyKitPath:     scaffold.RonyKitModulePath,
 		Kind:            layout.Kind,
-		Skills:          selectedSkillInfos(skillIDs),
+		Skills:          scaffold.SelectedSkillInfos(skillIDs),
 	}
 
 	skipExisting := !syncOpt.Overwrite
@@ -194,7 +193,7 @@ func runSync(cmd *cobra.Command) error {
 	cmd.Printf("Sections: %s\n", strings.Join(sections, ", "))
 
 	for _, section := range sections {
-		if err := syncSection(section, layout, templateInput, skipExisting, callback); err != nil {
+		if err := syncSection(section, layout, templateInput, skillIDs, skipExisting, callback); err != nil {
 			return fmt.Errorf("sync %s: %w", section, err)
 		}
 	}
@@ -220,11 +219,11 @@ func resolveWorkspaceLayout(repoDir, kindFlag string) (workspaceLayout, error) {
 	}
 
 	switch kindFlag {
-	case KindBackend, KindFullstack, KindFrontend:
+	case scaffold.KindBackend, scaffold.KindFullstack, scaffold.KindFrontend:
 	default:
 		return workspaceLayout{}, fmt.Errorf(
 			"invalid workspace kind %q: must be auto, %q, %q or %q",
-			kindFlag, KindBackend, KindFullstack, KindFrontend,
+			kindFlag, scaffold.KindBackend, scaffold.KindFullstack, scaffold.KindFrontend,
 		)
 	}
 
@@ -239,36 +238,36 @@ func resolveWorkspaceLayout(repoDir, kindFlag string) (workspaceLayout, error) {
 }
 
 func detectWorkspaceLayout(abs string) (workspaceLayout, error) {
-	if isDir(filepath.Join(abs, backendDir)) && fileExists(filepath.Join(abs, backendDir, "go.work")) {
+	if scaffold.IsDir(filepath.Join(abs, "backend")) && scaffold.FileExists(filepath.Join(abs, "backend", "go.work")) {
 		return workspaceLayout{
-			Kind:     KindFullstack,
+			Kind:     scaffold.KindFullstack,
 			RepoRoot: abs,
-			GoRoot:   filepath.Join(abs, backendDir),
+			GoRoot:   filepath.Join(abs, "backend"),
 		}, nil
 	}
 
-	if fileExists(filepath.Join(abs, "go.work")) {
+	if scaffold.FileExists(filepath.Join(abs, "go.work")) {
 		parent := filepath.Dir(abs)
-		if isDir(filepath.Join(parent, backendDir)) &&
-			fileExists(filepath.Join(parent, backendDir, "go.work")) &&
-			filepath.Base(abs) == backendDir {
+		if scaffold.IsDir(filepath.Join(parent, "backend")) &&
+			scaffold.FileExists(filepath.Join(parent, "backend", "go.work")) &&
+			filepath.Base(abs) == "backend" {
 			return workspaceLayout{
-				Kind:     KindFullstack,
+				Kind:     scaffold.KindFullstack,
 				RepoRoot: parent,
 				GoRoot:   abs,
 			}, nil
 		}
 
 		return workspaceLayout{
-			Kind:     KindBackend,
+			Kind:     scaffold.KindBackend,
 			RepoRoot: abs,
 			GoRoot:   abs,
 		}, nil
 	}
 
-	if isDir(filepath.Join(abs, frontendDir)) {
+	if scaffold.IsDir(filepath.Join(abs, frontendDir)) {
 		return workspaceLayout{
-			Kind:     KindFrontend,
+			Kind:     scaffold.KindFrontend,
 			RepoRoot: abs,
 			GoRoot:   "",
 		}, nil
@@ -306,11 +305,11 @@ func resolveSyncSections(only []string, kind string) ([]string, error) {
 				return nil, fmt.Errorf("unknown sync section %q", part)
 			}
 
-			if part == syncSectionBackend && !hasBackend(kind) {
+			if part == syncSectionBackend && !scaffold.HasBackend(kind) {
 				continue
 			}
 
-			if part == syncSectionFrontend && !hasFrontend(kind) {
+			if part == syncSectionFrontend && !scaffold.HasFrontend(kind) {
 				continue
 			}
 
@@ -345,11 +344,11 @@ func defaultSyncSections(kind string) []string {
 		syncSectionSkills,
 	}
 
-	if hasBackend(kind) {
+	if scaffold.HasBackend(kind) {
 		sections = append(sections, syncSectionBackend)
 	}
 
-	if hasFrontend(kind) {
+	if scaffold.HasFrontend(kind) {
 		sections = append(sections, syncSectionFrontend)
 	}
 
@@ -370,6 +369,7 @@ func syncSection(
 	section string,
 	layout workspaceLayout,
 	templateInput TemplateInput,
+	skillIDs []string,
 	skipExisting bool,
 	callback func(string, bool),
 ) error {
@@ -392,7 +392,7 @@ func syncSection(
 	case syncSectionDocs:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "docs/design/README.MD")
 	case syncSectionSkills:
-		return syncSkills(layout, templateInput, skipExisting, callback)
+		return syncSkills(layout, templateInput, skillIDs, skipExisting, callback)
 	case syncSectionBackend:
 		return syncBackendBoilerplate(layout, templateInput, skipExisting, callback)
 	case syncSectionFrontend:
@@ -429,7 +429,7 @@ func workspacePathFilter(repoRoot, kind string, allowed map[string]bool) func(st
 	return func(relPath string) (string, bool) {
 		rel := filepath.ToSlash(relPath)
 
-		if kind == KindFrontend && strings.HasSuffix(rel, "hooks/backend-verify.sh") {
+		if kind == scaffold.KindFrontend && strings.HasSuffix(rel, "hooks/backend-verify.sh") {
 			return "", true
 		}
 
@@ -444,6 +444,7 @@ func workspacePathFilter(repoRoot, kind string, allowed map[string]bool) func(st
 func syncSkills(
 	layout workspaceLayout,
 	templateInput TemplateInput,
+	skillIDs []string,
 	skipExisting bool,
 	callback func(string, bool),
 ) error {
@@ -459,14 +460,14 @@ func syncSkills(
 
 	dest := filepath.Join(layout.RepoRoot, ".agents", "skills")
 
-	for _, id := range opt.resolvedSkills {
-		if id == "ronykit-framework" || !skillExists(id) {
+	for _, id := range skillIDs {
+		if id == "ronykit-framework" || !scaffold.SkillExists(id) {
 			continue
 		}
 
 		err := z.CopyDir(z.CopyDirParams{
 			FS:             internal.Skeleton,
-			SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
+			SrcPathPrefix:  filepath.ToSlash(filepath.Join(scaffold.SkillsSrcPrefix, id)),
 			DestPathPrefix: filepath.Join(dest, id),
 			SkipExisting:   skipExisting,
 			Callback:       callback,
@@ -493,7 +494,7 @@ func syncBackendBoilerplate(
 		"feature/README.MD": true,
 	}
 
-	dest := backendDestPrefix(layout.RepoRoot)
+	dest := scaffold.BackendDestPrefix(layout.RepoRoot, layout.Kind)
 
 	return z.CopyDir(z.CopyDirParams{
 		FS:             internal.Skeleton,
@@ -570,22 +571,22 @@ func resolveSyncSkills(repoRoot string, modes []string, kind string) ([]string, 
 			switch token {
 			case skillSyncInstalled:
 				for _, id := range installed {
-					if skillExists(id) {
+					if scaffold.SkillExists(id) {
 						set[id] = true
 					}
 				}
-			case skillTokenDefault, skillTokenDefaults:
-				for _, id := range defaultSkillIDs(kind) {
+			case scaffold.SkillTokenDefault, scaffold.SkillTokenDefaults:
+				for _, id := range scaffold.DefaultSkillIDs(kind) {
 					set[id] = true
 				}
-			case skillTokenAll:
-				for _, id := range allSkillIDs() {
+			case scaffold.SkillTokenAll:
+				for _, id := range scaffold.AllSkillIDs() {
 					set[id] = true
 				}
-			case skillTokenNone:
+			case scaffold.SkillTokenNone:
 				set = map[string]bool{}
 			default:
-				if !skillExists(token) {
+				if !scaffold.SkillExists(token) {
 					return nil, fmt.Errorf("unknown skill %q", token)
 				}
 
@@ -594,7 +595,7 @@ func resolveSyncSkills(repoRoot string, modes []string, kind string) ([]string, 
 		}
 	}
 
-	return filterCatalogOrder(set), nil
+	return scaffold.FilterCatalogOrder(set), nil
 }
 
 func listInstalledSkillIDs(repoRoot string) []string {
@@ -630,19 +631,4 @@ func appNameFromModule(module string) string {
 
 func appNameFromPath(dir string) string {
 	return strings.NewReplacer("_", "-").Replace(filepath.Base(dir))
-}
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-
-	return err == nil
-}
-
-func isDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-
-	return info.IsDir()
 }

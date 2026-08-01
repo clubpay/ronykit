@@ -6,8 +6,8 @@ Initialize a new RonyKIT workspace at the given directory by delegating to `rony
 
 ## Extended Guidance
 
-The tool creates `path` if needed, then runs `ronyup setup workspace --repoDir .` with `path` as the working directory so the workspace is
-initialized at `path` itself (not a nested `my-repo` subdirectory). The `kind` argument selects the layout:
+The tool calls the shared scaffolding API in-process and initializes the workspace at `path` itself (not a nested `my-repo`
+subdirectory). The `kind` argument selects the layout:
 
 - **`backend`** (default) — a Go-only workspace at `path`, containing `go.work`, `bundles.yaml`, `pkg/runner/`, `cmd/all-in-one/`, `pkg/i18n/`, an empty `feature/` tree, `devops/` (optional `devops/devbox/` Kubernetes cluster), `docs/`, and a `.ai/mcp/mcp.json` for IDE integration.
 - **`fullstack`** — a `backend/` + `frontend/` split. The Go workspace (`go.work`, `bundles.yaml`, `pkg/runner/`, `cmd/all-in-one/`, `pkg/`, `feature/`, `Makefile`, `.golangci.yml`) is created under `backend/`, while `devops/`, `docs/`, and the AI assistant config (`.ai/`, `.agents/`, `.cursor/`, `AGENTS.md`) stay at the root and are shared. A framework-agnostic `frontend/` placeholder is created for the web/mobile app.

@@ -19,7 +19,6 @@ func TestNewServer_DoesNotPanicOnSchemaTags(t *testing.T) {
 		name:         "ronyup",
 		version:      "v0.0.0-test",
 		instructions: "test",
-		cmdRunner:    defaultRunner{},
 		kb:           kb,
 	})
 }

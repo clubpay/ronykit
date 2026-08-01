@@ -2,18 +2,13 @@ package scaffold
 
 import (
 	"context"
-	"os"
-	"strings"
+	"path/filepath"
 
+	appscaffold "github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"github.com/clubpay/ronykit/x/rkit"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
-
-// Runner abstracts the command execution
-type Runner interface {
-	Run(ctx context.Context, cwd, name string, args ...string) (stdout, stderr string, err error)
-}
 
 type workspaceArgs struct {
 	Path   string   `json:"path"`
@@ -30,13 +25,13 @@ type featureArgs struct {
 	SkipDesignGate  bool   `json:"skipDesignGate"`
 }
 
-// Register registers all scaffold-related tools to the given MCP server.
-func Register(srv *mcpsdk.Server, runner Runner, executable string) {
-	registerSetupWorkspace(srv, runner, executable)
-	registerSetupFeature(srv, runner, executable)
+// Register registers scaffold MCP tools that call internal/scaffold in-process.
+func Register(srv *mcpsdk.Server) {
+	registerSetupWorkspace(srv)
+	registerSetupFeature(srv)
 }
 
-func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string) {
+func registerSetupWorkspace(srv *mcpsdk.Server) {
 	tool := &mcpsdk.Tool{
 		Name:        "scaffold_workspace",
 		Description: "Initialize a new ronykit workspace at the specified directory.",
@@ -54,7 +49,7 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 						"and devops/, docs/ and AI config kept at the root), or 'frontend' (frontend/ app " +
 						"plus shared AI config and docs/ at the root, with no Go workspace).",
 					"default": "backend",
-					"enum":    []string{"backend", "fullstack", "frontend"},
+					"enum":    appscaffold.WorkspaceKinds,
 				},
 				"skills": map[string]any{
 					"type": "array",
@@ -78,45 +73,32 @@ func registerSetupWorkspace(srv *mcpsdk.Server, runner Runner, executable string
 				return errorResult(rkit.L("path is required")), nil, nil
 			}
 
-			// Create the destination first so the subprocess can use it as cwd.
-			// setup workspace defaults --repoDir to ./my-repo; pass "." so the
-			// workspace lands at args.Path itself (not args.Path/my-repo).
-			if err := os.MkdirAll(args.Path, 0o755); err != nil {
-				return errorResult(rkit.L("failed to create path %s: %v", args.Path, err)), nil, nil
+			absPath, err := filepath.Abs(args.Path)
+			if err != nil {
+				return errorResult(rkit.L("invalid path %s: %v", args.Path, err)), nil, nil
 			}
 
-			cliArgs := workspaceCLIArgs(args)
-
-			stdout, stderr, err := runner.Run(ctx, args.Path, executable, cliArgs...)
+			log := &appscaffold.BufferLogger{}
+			err = appscaffold.SetupWorkspace(ctx, appscaffold.WorkspaceRequest{
+				Path:   absPath,
+				Kind:   args.Kind,
+				Skills: args.Skills,
+			}, log)
 			if err != nil {
 				return errorResult(
 					rkit.L("failed to setup workspace: %v", err),
-					rkit.L("Stderr: %s", stderr),
+					rkit.L("%s", log.String()),
 				), nil, nil
 			}
 
 			return textResult(
-				rkit.L("Workspace successfully setup at %s.", args.Path),
-				rkit.L("Stdout:"),
-				rkit.L("%s", stdout),
+				rkit.L("Workspace successfully setup at %s.", absPath),
+				rkit.L("%s", log.String()),
 			), nil, nil
 		})
 }
 
-func workspaceCLIArgs(args workspaceArgs) []string {
-	cliArgs := []string{"setup", "workspace", "--repoDir", "."}
-	if args.Kind != "" {
-		cliArgs = append(cliArgs, "--kind", args.Kind)
-	}
-
-	if len(args.Skills) > 0 {
-		cliArgs = append(cliArgs, "--skills", strings.Join(args.Skills, ","))
-	}
-
-	return cliArgs
-}
-
-func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) {
+func registerSetupFeature(srv *mcpsdk.Server) {
 	tool := &mcpsdk.Tool{
 		Name: "scaffold_feature",
 		Description: "Create a new feature in the current workspace. " +
@@ -140,12 +122,12 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 					"type":        "string",
 					"description": "Feature template: service, job, or gateway.",
 					"default":     "service",
-					"enum":        []string{"service", "job", "gateway"},
+					"enum":        appscaffold.FeatureTemplates,
 				},
 				"featurePrefix": map[string]any{
 					"type":        "string",
 					"description": "Parent directory for feature modules.",
-					"default":     "feature",
+					"default":     appscaffold.DefaultFeaturePrefix,
 				},
 				"groupByTemplate": map[string]any{
 					"type":        "boolean",
@@ -181,45 +163,32 @@ func registerSetupFeature(srv *mcpsdk.Server, runner Runner, executable string) 
 				}
 			}
 
-			if args.Template == "" {
-				args.Template = "service"
+			startDir, err := filepath.Abs(args.WorkspacePath)
+			if err != nil {
+				return errorResult(rkit.L("invalid workspacePath %s: %v", args.WorkspacePath, err)), nil, nil
 			}
 
-			if args.FeaturePrefix == "" {
-				args.FeaturePrefix = "feature"
-			}
-
-			cliArgs := featureCLIArgs(args)
-
-			stdout, stderr, err := runner.Run(ctx, args.WorkspacePath, executable, cliArgs...)
+			log := &appscaffold.BufferLogger{}
+			err = appscaffold.SetupFeature(ctx, appscaffold.FeatureRequest{
+				StartDir:        startDir,
+				FeatureDir:      args.Name,
+				FeatureName:     args.Name,
+				Template:        args.Template,
+				FeaturePrefix:   args.FeaturePrefix,
+				GroupByTemplate: args.GroupByTemplate,
+			}, log)
 			if err != nil {
 				return errorResult(
 					rkit.L("failed to setup feature: %v", err),
-					rkit.L("Stderr: %s", stderr),
+					rkit.L("%s", log.String()),
 				), nil, nil
 			}
 
 			return textResult(
-				rkit.L("Feature '%s' successfully created in workspace %s.", args.Name, args.WorkspacePath),
-				rkit.L("Stdout:"),
-				rkit.L("%s", stdout),
+				rkit.L("Feature '%s' successfully created in workspace %s.", args.Name, startDir),
+				rkit.L("%s", log.String()),
 			), nil, nil
 		})
-}
-
-func featureCLIArgs(args featureArgs) []string {
-	cliArgs := []string{
-		"setup", "feature",
-		"--featureDir", args.Name,
-		"--featureName", args.Name,
-		"--template", args.Template,
-		"--featurePrefix", args.FeaturePrefix,
-	}
-	if args.GroupByTemplate {
-		cliArgs = append(cliArgs, "--groupByTemplate")
-	}
-
-	return cliArgs
 }
 
 func errorResult(lines ...rkit.StrLine) *mcpsdk.CallToolResult {

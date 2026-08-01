@@ -400,7 +400,6 @@ func TestCompletionE2E(t *testing.T) {
 		name:         "ronyup-test",
 		version:      "v0.0.0-test",
 		instructions: "test",
-		cmdRunner:    defaultRunner{},
 		kb:           kb,
 	})
 

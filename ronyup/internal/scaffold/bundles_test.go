@@ -1,4 +1,4 @@
-package setup
+package scaffold
 
 import (
 	"os"
@@ -120,7 +120,7 @@ func TestDiscoverFeatureModuleImports(t *testing.T) {
 		}
 	}
 
-	imports, err := discoverFeatureModuleImports(root, "github.com/example/app")
+	imports, err := discoverFeatureModuleImports(root, "github.com/example/app", DefaultFeaturePrefix)
 	if err != nil {
 		t.Fatalf("discoverFeatureModuleImports(): %v", err)
 	}

@@ -3,7 +3,6 @@ package mcp
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -27,19 +26,12 @@ var Cmd = &cobra.Command{
 			return fmt.Errorf("load knowledge base: %w", err)
 		}
 
-		exePath, err := os.Executable()
-		if err != nil {
-			return err
-		}
-
 		l := logkit.New()
 
 		server := newServer(ServerConfig{
 			name:         "RonyUP",
 			version:      internal.Version,
 			instructions: kb.ServerInstructions,
-			executable:   exePath,
-			cmdRunner:    defaultRunner{},
 			kb:           kb,
 			logger:       l.With("MCP").SLog(),
 		})

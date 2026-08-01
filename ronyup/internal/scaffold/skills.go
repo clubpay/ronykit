@@ -1,4 +1,4 @@
-package setup
+package scaffold
 
 import (
 	"fmt"
@@ -45,10 +45,19 @@ const (
 
 // Special tokens accepted by the --skills flag.
 const (
-	skillTokenNone     = "none"
-	skillTokenAll      = "all"
-	skillTokenDefault  = "default"
-	skillTokenDefaults = "defaults"
+	SkillTokenNone    = "none"
+	SkillTokenAll     = "all"
+	SkillTokenDefault = "default"
+)
+
+// SkillTokenDefaults is an alias accepted by --skills.
+const SkillTokenDefaults = "defaults"
+
+const (
+	skillTokenNone     = SkillTokenNone
+	skillTokenAll      = SkillTokenAll
+	skillTokenDefault  = SkillTokenDefault
+	skillTokenDefaults = SkillTokenDefaults
 )
 
 // skillCatalog is the curated set of skills bundled with ronyup. Backend
@@ -261,8 +270,13 @@ var skillCatalog = []SkillDef{
 	},
 }
 
-// skillsSrcPrefix is the embedded source path that holds the bundled skills.
-const skillsSrcPrefix = "skeleton/skills"
+// SkillsSrcPrefix is the embedded source path that holds the bundled skills.
+const SkillsSrcPrefix = "skeleton/skills"
+
+const skillsSrcPrefix = SkillsSrcPrefix
+
+// SkillExists reports whether id is in the bundled catalog.
+func SkillExists(id string) bool { return skillExists(id) }
 
 func skillExists(id string) bool {
 	for _, s := range skillCatalog {
@@ -274,8 +288,10 @@ func skillExists(id string) bool {
 	return false
 }
 
-// defaultSkillIDs returns the skill IDs selected by default for the given
+// DefaultSkillIDs returns the skill IDs selected by default for the given
 // workspace kind.
+func DefaultSkillIDs(kind string) []string { return defaultSkillIDs(kind) }
+
 func defaultSkillIDs(kind string) []string {
 	var ids []string
 
@@ -301,7 +317,7 @@ func defaultSkillIDs(kind string) []string {
 	return ids
 }
 
-// resolveSkillSelection turns the raw --skills values into a validated, ordered
+// ResolveSkillSelection turns the raw --skills values into a validated, ordered
 // (catalog order), de-duplicated list of skill IDs. Supported special tokens:
 //
 //	default  -> the defaults for the workspace kind
@@ -309,6 +325,10 @@ func defaultSkillIDs(kind string) []string {
 //	none / "" -> no skills
 //
 // When requested is empty (flag not set), the kind defaults are used.
+func ResolveSkillSelection(requested []string, kind string) ([]string, error) {
+	return resolveSkillSelection(requested, kind)
+}
+
 func resolveSkillSelection(requested []string, kind string) ([]string, error) {
 	if len(requested) == 0 {
 		return defaultSkillIDs(kind), nil
@@ -351,6 +371,9 @@ func resolveSkillSelection(requested []string, kind string) ([]string, error) {
 	return filterCatalogOrder(wanted), nil
 }
 
+// AllSkillIDs returns every catalog skill ID in catalog order.
+func AllSkillIDs() []string { return allSkillIDs() }
+
 func allSkillIDs() []string {
 	ids := make([]string, 0, len(skillCatalog))
 	for _, s := range skillCatalog {
@@ -360,7 +383,17 @@ func allSkillIDs() []string {
 	return ids
 }
 
-// filterCatalogOrder returns the IDs present in the set, in catalog order.
+// SkillCatalog returns the bundled skill definitions.
+func SkillCatalog() []SkillDef {
+	out := make([]SkillDef, len(skillCatalog))
+	copy(out, skillCatalog)
+
+	return out
+}
+
+// FilterCatalogOrder returns the IDs present in the set, in catalog order.
+func FilterCatalogOrder(set map[string]bool) []string { return filterCatalogOrder(set) }
+
 func filterCatalogOrder(set map[string]bool) []string {
 	var ids []string
 
@@ -373,8 +406,10 @@ func filterCatalogOrder(set map[string]bool) []string {
 	return ids
 }
 
-// selectedSkillInfos returns template-facing metadata for the given IDs, in
+// SelectedSkillInfos returns template-facing metadata for the given IDs, in
 // catalog order, so AGENTS.md can list the installed skills.
+func SelectedSkillInfos(ids []string) []SkillInfo { return selectedSkillInfos(ids) }
+
 func selectedSkillInfos(ids []string) []SkillInfo {
 	set := map[string]bool{}
 	for _, id := range ids {
@@ -392,10 +427,12 @@ func selectedSkillInfos(ids []string) []SkillInfo {
 	return infos
 }
 
-// copySkills copies the selected skill directories from the embedded FS into
-// <skillsRoot>/.agents/skills/<id>. skillsRoot is the directory that holds the
-// workspace's .agents folder (the repository root for both backend and
-// fullstack scaffolds).
+// CopySkills copies the selected skill directories from the embedded FS into
+// <skillsRoot>/.agents/skills/<id>.
+func CopySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
+	return copySkills(skillsRoot, ids, callback)
+}
+
 func copySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
 	dest := filepath.Join(skillsRoot, ".agents", "skills")
 

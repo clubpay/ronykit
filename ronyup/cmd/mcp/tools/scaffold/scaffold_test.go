@@ -1,56 +1,44 @@
 package scaffold
 
 import (
-	"slices"
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
+
+	appscaffold "github.com/clubpay/ronykit/ronyup/internal/scaffold"
 )
 
-func TestWorkspaceCLIArgs_IncludesRepoDirDot(t *testing.T) {
-	t.Parallel()
+func TestSetupWorkspace_InProcessCreatesAtPath(t *testing.T) {
+	tmp := t.TempDir()
+	dest := filepath.Join(tmp, "ws")
 
-	got := workspaceCLIArgs(workspaceArgs{
-		Path:   "/tmp/ws",
-		Kind:   "fullstack",
-		Skills: []string{"all"},
-	})
-	want := []string{
-		"setup", "workspace", "--repoDir", ".",
-		"--kind", "fullstack",
-		"--skills", "all",
+	stubBin := filepath.Join(tmp, "bin")
+	if err := os.MkdirAll(stubBin, 0o755); err != nil {
+		t.Fatal(err)
 	}
-	if !slices.Equal(got, want) {
-		t.Fatalf("workspaceCLIArgs: got %v want %v", got, want)
+	for _, name := range []string{"go", "git"} {
+		path := filepath.Join(stubBin, name)
+		if err := os.WriteFile(path, []byte("#!/bin/sh\nexit 0\n"), 0o755); err != nil {
+			t.Fatal(err)
+		}
 	}
-}
+	t.Setenv("PATH", stubBin+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-func TestWorkspaceCLIArgs_Defaults(t *testing.T) {
-	t.Parallel()
-
-	got := workspaceCLIArgs(workspaceArgs{Path: "/tmp/ws"})
-	want := []string{"setup", "workspace", "--repoDir", "."}
-	if !slices.Equal(got, want) {
-		t.Fatalf("workspaceCLIArgs: got %v want %v", got, want)
+	err := appscaffold.SetupWorkspace(context.Background(), appscaffold.WorkspaceRequest{
+		Path:   dest,
+		Module: "github.com/example/ws",
+		Kind:   appscaffold.KindBackend,
+		Skills: []string{appscaffold.SkillTokenNone},
+	}, appscaffold.DiscardLogger{})
+	if err != nil {
+		t.Fatalf("SetupWorkspace: %v", err)
 	}
-}
 
-func TestFeatureCLIArgs(t *testing.T) {
-	t.Parallel()
-
-	got := featureCLIArgs(featureArgs{
-		Name:            "billing",
-		Template:        "service",
-		FeaturePrefix:   "feature",
-		GroupByTemplate: true,
-	})
-	want := []string{
-		"setup", "feature",
-		"--featureDir", "billing",
-		"--featureName", "billing",
-		"--template", "service",
-		"--featurePrefix", "feature",
-		"--groupByTemplate",
+	if _, err := os.Stat(filepath.Join(dest, "AGENTS.md")); err != nil {
+		t.Fatalf("expected workspace at %s, not a nested my-repo: %v", dest, err)
 	}
-	if !slices.Equal(got, want) {
-		t.Fatalf("featureCLIArgs: got %v want %v", got, want)
+	if _, err := os.Stat(filepath.Join(dest, "my-repo")); !os.IsNotExist(err) {
+		t.Fatalf("did not expect nested my-repo under destination")
 	}
 }

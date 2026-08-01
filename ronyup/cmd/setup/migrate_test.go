@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 )
 
 func TestDetectBundleLayout_Legacy(t *testing.T) {
@@ -51,7 +53,7 @@ func TestDetectBundleLayout_Current(t *testing.T) {
 
 	root := t.TempDir()
 	runnerDir := filepath.Join(root, "pkg", "runner")
-	bundleDir := filepath.Join(root, "cmd", defaultBundleName)
+	bundleDir := filepath.Join(root, "cmd", scaffold.DefaultBundleName)
 
 	for _, dir := range []string{runnerDir, bundleDir} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -71,7 +73,7 @@ func main() {
 		filepath.Join(runnerDir, "runner.go"): "package runner\n",
 		filepath.Join(runnerDir, "go.mod"):    "module github.com/example/app/pkg/runner\n\ngo 1.25\n",
 		filepath.Join(bundleDir, "main.go"):   currentMain,
-		bundlesManifestPath(root):             "bundles:\n  all-in-one:\n    services: [\"*\"]\n",
+		scaffold.BundlesManifestPath(root):    "bundles:\n  all-in-one:\n    services: [\"*\"]\n",
 	}
 	for path, content := range files {
 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
@@ -128,7 +130,7 @@ func TestRunMigrateBundles_DryRunLegacy(t *testing.T) {
 		t.Fatalf("runMigrateBundles(dry-run): %v", err)
 	}
 
-	if fileExists(filepath.Join(root, "pkg", "runner", "runner.go")) {
+	if scaffold.FileExists(filepath.Join(root, "pkg", "runner", "runner.go")) {
 		t.Fatal("dry-run should not create pkg/runner")
 	}
 }
@@ -186,7 +188,7 @@ func TestRunMigrateBundles_UpgradesLegacyWorkspace(t *testing.T) {
 
 func TestRunMigrateBundles_FromFullstackRepoRoot(t *testing.T) {
 	root := scaffoldLegacyBundleWorkspace(t)
-	backend := filepath.Join(root, backendDir)
+	backend := filepath.Join(root, "backend")
 	if err := os.MkdirAll(filepath.Join(backend, "cmd"), 0o755); err != nil {
 		t.Fatalf("MkdirAll backend/cmd: %v", err)
 	}
@@ -376,17 +378,17 @@ import (
 		t.Fatalf("expected legacy cmd/service removed: %v", err)
 	}
 
-	cfg, err := loadBundlesConfig(root)
+	cfg, err := scaffold.LoadBundlesConfig(root)
 	if err != nil {
-		t.Fatalf("loadBundlesConfig(): %v", err)
+		t.Fatalf("scaffold.LoadBundlesConfig(): %v", err)
 	}
 
-	if _, ok := cfg.Bundles[defaultBundleName]; !ok {
-		t.Fatalf("expected %q bundle in bundles.yaml", defaultBundleName)
+	if _, ok := cfg.Bundles[scaffold.DefaultBundleName]; !ok {
+		t.Fatalf("expected %q bundle in bundles.yaml", scaffold.DefaultBundleName)
 	}
 
-	if _, ok := cfg.Bundles[legacyDefaultBundleName]; ok {
-		t.Fatalf("expected legacy %q bundle removed from bundles.yaml", legacyDefaultBundleName)
+	if _, ok := cfg.Bundles[scaffold.LegacyDefaultBundleName]; ok {
+		t.Fatalf("expected legacy %q bundle removed from bundles.yaml", scaffold.LegacyDefaultBundleName)
 	}
 }
 

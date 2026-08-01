@@ -9,8 +9,8 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 
 | Tool                 | When to use                                                                       |
 |----------------------|-----------------------------------------------------------------------------------|
-| `scaffold_workspace` | New Go workspace (`ronyup setup workspace` at `path`)                             |
-| `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`) |
+| `scaffold_workspace` | New workspace at `path` (in-process scaffold API; same as `ronyup setup workspace`) |
+| `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`)   |
 
 CLI-only (read `knowledge://ronyup/tools/*` docs): `sync_workspace`, `setup_bundle`, `migrate_bundles`.
 

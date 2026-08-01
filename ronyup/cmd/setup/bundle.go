@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
 
@@ -72,13 +73,13 @@ func init() {
 }
 
 func runBundle(cmd *cobra.Command) error {
-	goRoot, err := resolveGoWorkspace(rkit.GetCurrentDir())
+	goRoot, err := scaffold.ResolveGoWorkspace(rkit.GetCurrentDir())
 	if err != nil {
 		return err
 	}
 
 	if f := cmd.Flag("repoModule"); f == nil || !f.Changed {
-		detected, err := detectGoModule(goRoot)
+		detected, err := scaffold.DetectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
@@ -86,16 +87,16 @@ func runBundle(cmd *cobra.Command) error {
 		opt.RepositoryGoModule = detected
 	}
 
-	cmdCtx := workspaceCommandContext{
-		cmd:        cmd,
-		goRoot:     goRoot,
-		repoModule: opt.RepositoryGoModule,
+	cmdCtx := scaffold.WorkspaceContext{
+		Log:        cmd,
+		GoRoot:     goRoot,
+		RepoModule: opt.RepositoryGoModule,
 	}
 
 	cmd.Printf("Go workspace: %s\n", goRoot)
 
 	if bundleOpt.Gen {
-		return syncAllBundleFeatures(cmdCtx)
+		return scaffold.SyncAllBundleFeatures(cmdCtx)
 	}
 
 	if bundleOpt.Remove {
@@ -110,10 +111,10 @@ func runBundle(cmd *cobra.Command) error {
 		return fmt.Errorf("--name is required")
 	}
 
-	if bundleOpt.Name == defaultBundleName {
+	if bundleOpt.Name == scaffold.DefaultBundleName {
 		return fmt.Errorf(
 			"bundle %q is managed by setup workspace; use --gen to refresh it",
-			defaultBundleName,
+			scaffold.DefaultBundleName,
 		)
 	}
 
@@ -124,13 +125,13 @@ func runBundle(cmd *cobra.Command) error {
 	return createBundle(cmdCtx)
 }
 
-func createBundle(cmdCtx workspaceCommandContext) error {
-	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+func createBundle(cmdCtx scaffold.WorkspaceContext) error {
+	cfg, err := scaffold.LoadBundlesConfig(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
 
-	bundleDir := filepath.Join(cmdCtx.goRoot, "cmd", bundleOpt.Name)
+	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", bundleOpt.Name)
 	if z.IsEmptyDir(bundleDir) {
 		if err := os.MkdirAll(bundleDir, 0o755); err != nil {
 			return err
@@ -147,25 +148,25 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 		}
 	}
 
-	cfg.Bundles[bundleOpt.Name] = BundleSpec{
+	cfg.Bundles[bundleOpt.Name] = scaffold.BundleSpec{
 		Description: bundleOpt.Description,
 		Services:    append([]string(nil), bundleOpt.Services...),
 	}
 
-	if err := saveBundlesConfig(cmdCtx.goRoot, cfg); err != nil {
+	if err := scaffold.SaveBundlesConfig(cmdCtx.GoRoot, cfg); err != nil {
 		return err
 	}
 
-	appName, err := detectApplicationName(cmdCtx.goRoot)
+	appName, err := detectApplicationName(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
 
-	templateInput := TemplateInput{
+	templateInput := scaffold.TemplateInput{
 		ApplicationName: appName,
 		RepositoryPath:  strings.TrimSuffix(opt.RepositoryGoModule, "/"),
 		PackageName:     appName,
-		RonyKitPath:     "github.com/clubpay/ronykit",
+		RonyKitPath:     scaffold.RonyKitModulePath,
 		BundleName:      bundleOpt.Name,
 	}
 
@@ -173,15 +174,15 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	allImports, err := loadDefaultBundleFeatureImports(cmdCtx)
+	allImports, err := scaffold.LoadDefaultBundleFeatureImports(cmdCtx)
 	if err != nil {
 		return err
 	}
 
 	spec := cfg.Bundles[bundleOpt.Name]
-	if err := syncBundleFeatures(
-		cmdCtx.goRoot,
-		cmdCtx.repoModule,
+	if err := scaffold.SyncBundleFeatures(
+		cmdCtx.GoRoot,
+		cmdCtx.RepoModule,
 		bundleOpt.Name,
 		spec,
 		allImports,
@@ -212,41 +213,41 @@ func createBundle(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	cmdCtx.cmd.Printf("Bundle %q created at cmd/%s/\n", bundleOpt.Name, bundleOpt.Name)
+	cmdCtx.Log.Printf("Bundle %q created at cmd/%s/\n", bundleOpt.Name, bundleOpt.Name)
 
 	return nil
 }
 
-func removeBundle(cmdCtx workspaceCommandContext) error {
-	if bundleOpt.Name == defaultBundleName {
-		return fmt.Errorf("cannot remove the default %q bundle", defaultBundleName)
+func removeBundle(cmdCtx scaffold.WorkspaceContext) error {
+	if bundleOpt.Name == scaffold.DefaultBundleName {
+		return fmt.Errorf("cannot remove the default %q bundle", scaffold.DefaultBundleName)
 	}
 
-	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+	cfg, err := scaffold.LoadBundlesConfig(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
 
 	if _, ok := cfg.Bundles[bundleOpt.Name]; !ok {
-		return fmt.Errorf("bundle %q not found in %s", bundleOpt.Name, bundlesManifestName)
+		return fmt.Errorf("bundle %q not found in %s", bundleOpt.Name, scaffold.BundlesManifestName)
 	}
 
 	delete(cfg.Bundles, bundleOpt.Name)
 
-	if err := saveBundlesConfig(cmdCtx.goRoot, cfg); err != nil {
+	if err := scaffold.SaveBundlesConfig(cmdCtx.GoRoot, cfg); err != nil {
 		return err
 	}
 
-	bundleDir := filepath.Join(cmdCtx.goRoot, "cmd", bundleOpt.Name)
+	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", bundleOpt.Name)
 	if err := os.RemoveAll(bundleDir); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
-	p := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	p := z.RunCmdParams{Dir: cmdCtx.GoRoot}
 	// Best-effort: the use directive may already be absent.
 	_ = z.RunCmd(context.Background(), p, "go", "work", "edit", "-dropuse", "./cmd/"+bundleOpt.Name)
 
-	cmdCtx.cmd.Printf("Removed bundle %q\n", bundleOpt.Name)
+	cmdCtx.Log.Printf("Removed bundle %q\n", bundleOpt.Name)
 
 	return nil
 }
@@ -269,7 +270,7 @@ func detectApplicationName(goRoot string) (string, error) {
 		return opt.ApplicationName, nil
 	}
 
-	module, err := detectGoModule(goRoot)
+	module, err := scaffold.DetectGoModule(goRoot)
 	if err != nil {
 		return "", err
 	}

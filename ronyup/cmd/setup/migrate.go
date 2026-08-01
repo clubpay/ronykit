@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
 
@@ -107,17 +108,17 @@ func (s bundleLayoutStatus) IsCurrent() bool {
 
 func detectBundleLayout(goRoot string) bundleLayoutStatus {
 	status := bundleLayoutStatus{
-		HasRunnerModule:         fileExists(filepath.Join(runnerDir(goRoot), "go.mod")),
-		HasRunnerPackage:        fileExists(filepath.Join(runnerDir(goRoot), "runner.go")),
-		HasLegacyCmdRunner:      fileExists(filepath.Join(legacyCmdRunnerDir(goRoot), "runner.go")),
-		HasLegacyInternalRunner: fileExists(filepath.Join(legacyRunnerDir(goRoot), "runner.go")),
-		HasBundlesYAML:          fileExists(bundlesManifestPath(goRoot)),
-		HasDefaultBundle:        fileExists(filepath.Join(defaultBundleDir(goRoot), "main.go")),
-		HasLegacyServiceBundle:  fileExists(filepath.Join(legacyDefaultBundleDir(goRoot), "main.go")),
+		HasRunnerModule:         scaffold.FileExists(filepath.Join(scaffold.RunnerDir(goRoot), "go.mod")),
+		HasRunnerPackage:        scaffold.FileExists(filepath.Join(scaffold.RunnerDir(goRoot), "runner.go")),
+		HasLegacyCmdRunner:      scaffold.FileExists(filepath.Join(scaffold.LegacyCmdRunnerDir(goRoot), "runner.go")),
+		HasLegacyInternalRunner: scaffold.FileExists(filepath.Join(scaffold.LegacyRunnerDir(goRoot), "runner.go")),
+		HasBundlesYAML:          scaffold.FileExists(scaffold.BundlesManifestPath(goRoot)),
+		HasDefaultBundle:        scaffold.FileExists(filepath.Join(scaffold.DefaultBundleDir(goRoot), "main.go")),
+		HasLegacyServiceBundle:  scaffold.FileExists(filepath.Join(scaffold.LegacyDefaultBundleDir(goRoot), "main.go")),
 	}
 
-	if cfg, err := loadBundlesConfig(goRoot); err == nil {
-		_, status.HasLegacyServiceBundleInYAML = cfg.Bundles[legacyDefaultBundleName]
+	if cfg, err := scaffold.LoadBundlesConfig(goRoot); err == nil {
+		_, status.HasLegacyServiceBundleInYAML = cfg.Bundles[scaffold.LegacyDefaultBundleName]
 	}
 
 	mainPath := defaultBundleMainPath(goRoot)
@@ -132,12 +133,12 @@ func detectBundleLayout(goRoot string) bundleLayoutStatus {
 			(strings.Contains(text, "cobra.Command") && !status.UsesRunnerMain)
 	}
 
-	for _, bundleDir := range []string{defaultBundleDir(goRoot), legacyDefaultBundleDir(goRoot)} {
-		if !status.LegacyMiddleware && fileExists(filepath.Join(bundleDir, "middleware.go")) {
+	for _, bundleDir := range []string{scaffold.DefaultBundleDir(goRoot), scaffold.LegacyDefaultBundleDir(goRoot)} {
+		if !status.LegacyMiddleware && scaffold.FileExists(filepath.Join(bundleDir, "middleware.go")) {
 			status.LegacyMiddleware = true
 		}
 
-		if !status.LegacyHealthz && fileExists(filepath.Join(bundleDir, "healthz.go")) {
+		if !status.LegacyHealthz && scaffold.FileExists(filepath.Join(bundleDir, "healthz.go")) {
 			status.LegacyHealthz = true
 		}
 	}
@@ -146,22 +147,22 @@ func detectBundleLayout(goRoot string) bundleLayoutStatus {
 }
 
 func defaultBundleMainPath(goRoot string) string {
-	mainPath := filepath.Join(defaultBundleDir(goRoot), "main.go")
-	if fileExists(mainPath) {
+	mainPath := filepath.Join(scaffold.DefaultBundleDir(goRoot), "main.go")
+	if scaffold.FileExists(mainPath) {
 		return mainPath
 	}
 
-	return filepath.Join(legacyDefaultBundleDir(goRoot), "main.go")
+	return filepath.Join(scaffold.LegacyDefaultBundleDir(goRoot), "main.go")
 }
 
 func runMigrateBundles(cmd *cobra.Command) error {
-	goRoot, err := resolveGoWorkspace(rkit.GetCurrentDir())
+	goRoot, err := scaffold.ResolveGoWorkspace(rkit.GetCurrentDir())
 	if err != nil {
 		return err
 	}
 
 	if f := cmd.Flag("repoModule"); f == nil || !f.Changed {
-		detected, err := detectGoModule(goRoot)
+		detected, err := scaffold.DetectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
@@ -173,10 +174,10 @@ func runMigrateBundles(cmd *cobra.Command) error {
 
 	status := detectBundleLayout(goRoot)
 
-	cmdCtx := workspaceCommandContext{
-		cmd:        cmd,
-		goRoot:     goRoot,
-		repoModule: opt.RepositoryGoModule,
+	cmdCtx := scaffold.WorkspaceContext{
+		Log:        cmd,
+		GoRoot:     goRoot,
+		RepoModule: opt.RepositoryGoModule,
 	}
 
 	if status.IsCurrent() {
@@ -186,7 +187,7 @@ func runMigrateBundles(cmd *cobra.Command) error {
 			return nil
 		}
 
-		return syncAllBundleFeatures(cmdCtx)
+		return scaffold.SyncAllBundleFeatures(cmdCtx)
 	}
 
 	appName, err := detectApplicationName(goRoot)
@@ -194,11 +195,11 @@ func runMigrateBundles(cmd *cobra.Command) error {
 		return err
 	}
 
-	templateInput := TemplateInput{
+	templateInput := scaffold.TemplateInput{
 		ApplicationName: appName,
 		RepositoryPath:  strings.TrimSuffix(opt.RepositoryGoModule, "/"),
 		PackageName:     appName,
-		RonyKitPath:     "github.com/clubpay/ronykit",
+		RonyKitPath:     scaffold.RonyKitModulePath,
 	}
 
 	plan := buildMigratePlan(status)
@@ -242,27 +243,27 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	if status.HasLegacyServiceBundle && !status.HasDefaultBundle {
 		steps = append(
 			steps,
-			fmt.Sprintf("rename cmd/%s/ to cmd/%s/", legacyDefaultBundleName, defaultBundleName),
+			fmt.Sprintf("rename cmd/%s/ to cmd/%s/", scaffold.LegacyDefaultBundleName, scaffold.DefaultBundleName),
 		)
 	}
 
 	if status.HasLegacyServiceBundleInYAML {
 		steps = append(
 			steps,
-			fmt.Sprintf("rename %q bundle to %q in bundles.yaml", legacyDefaultBundleName, defaultBundleName),
+			fmt.Sprintf("rename %q bundle to %q in bundles.yaml", scaffold.LegacyDefaultBundleName, scaffold.DefaultBundleName),
 		)
 	}
 
 	if status.LegacyMain || !status.UsesRunnerMain || status.HasLegacyCmdRunner {
-		steps = append(steps, fmt.Sprintf("rewrite cmd/%s/main.go to use pkg/runner", defaultBundleName))
+		steps = append(steps, fmt.Sprintf("rewrite cmd/%s/main.go to use pkg/runner", scaffold.DefaultBundleName))
 	}
 
 	if status.LegacyMiddleware {
-		steps = append(steps, fmt.Sprintf("remove cmd/%s/middleware.go", defaultBundleName))
+		steps = append(steps, fmt.Sprintf("remove cmd/%s/middleware.go", scaffold.DefaultBundleName))
 	}
 
 	if status.LegacyHealthz {
-		steps = append(steps, fmt.Sprintf("remove cmd/%s/healthz.go", defaultBundleName))
+		steps = append(steps, fmt.Sprintf("remove cmd/%s/healthz.go", scaffold.DefaultBundleName))
 	}
 
 	if !status.HasBundlesYAML {
@@ -274,7 +275,7 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 	}
 
 	if !status.HasDefaultBundle {
-		steps = append(steps, fmt.Sprintf("initialize cmd/%s module and features.go", defaultBundleName))
+		steps = append(steps, fmt.Sprintf("initialize cmd/%s module and features.go", scaffold.DefaultBundleName))
 	}
 
 	steps = append(steps, "regenerate bundle features.go files")
@@ -283,11 +284,11 @@ func buildMigratePlan(status bundleLayoutStatus) []string {
 }
 
 func applyMigrateBundles(
-	cmdCtx workspaceCommandContext,
+	cmdCtx scaffold.WorkspaceContext,
 	status bundleLayoutStatus,
 	templateInput TemplateInput,
 ) error {
-	if err := copyRunnerScaffold(cmdCtx.goRoot, templateInput, true); err != nil {
+	if err := copyRunnerScaffold(cmdCtx.GoRoot, templateInput, true); err != nil {
 		return err
 	}
 
@@ -304,17 +305,17 @@ func applyMigrateBundles(
 			return err
 		}
 
-		if err := renderDefaultBundleMain(defaultBundleDir(cmdCtx.goRoot), templateInput); err != nil {
+		if err := renderDefaultBundleMain(scaffold.DefaultBundleDir(cmdCtx.GoRoot), templateInput); err != nil {
 			return err
 		}
 
-		cmdCtx.cmd.Printf("Updated cmd/%s/main.go\n", defaultBundleName)
+		cmdCtx.Log.Printf("Updated cmd/%s/main.go\n", scaffold.DefaultBundleName)
 	}
 
 	for _, rel := range []string{"middleware.go", "healthz.go"} {
-		for _, bundleDir := range []string{defaultBundleDir(cmdCtx.goRoot), legacyDefaultBundleDir(cmdCtx.goRoot)} {
+		for _, bundleDir := range []string{scaffold.DefaultBundleDir(cmdCtx.GoRoot), scaffold.LegacyDefaultBundleDir(cmdCtx.GoRoot)} {
 			path := filepath.Join(bundleDir, rel)
-			if !fileExists(path) {
+			if !scaffold.FileExists(path) {
 				continue
 			}
 
@@ -322,7 +323,7 @@ func applyMigrateBundles(
 				return fmt.Errorf("remove %s: %w", path, err)
 			}
 
-			cmdCtx.cmd.Printf("Removed %s\n", path)
+			cmdCtx.Log.Printf("Removed %s\n", path)
 		}
 	}
 
@@ -335,11 +336,11 @@ func applyMigrateBundles(
 	}
 
 	if !status.HasBundlesYAML {
-		if err := seedBundlesManifest(cmdCtx.goRoot); err != nil {
+		if err := seedBundlesManifest(cmdCtx.GoRoot); err != nil {
 			return err
 		}
 
-		cmdCtx.cmd.Println("Created bundles.yaml")
+		cmdCtx.Log.Println("Created bundles.yaml")
 	}
 
 	if err := ensureRunnerModule(cmdCtx); err != nil {
@@ -350,11 +351,11 @@ func applyMigrateBundles(
 		return err
 	}
 
-	return syncAllBundleFeatures(cmdCtx)
+	return scaffold.SyncAllBundleFeatures(cmdCtx)
 }
 
 func copyRunnerScaffold(goRoot string, templateInput TemplateInput, overwrite bool) error {
-	dest := runnerDir(goRoot)
+	dest := scaffold.RunnerDir(goRoot)
 
 	return z.CopyDir(z.CopyDirParams{
 		FS:             internal.Skeleton,
@@ -370,7 +371,7 @@ func renderDefaultBundleMain(bundleDir string, templateInput TemplateInput) erro
 		return fmt.Errorf("create %s: %w", bundleDir, err)
 	}
 
-	srcPath := filepath.Join("skeleton", "backend", "cmd", defaultBundleName, "main.gotmpl")
+	srcPath := filepath.Join("skeleton", "backend", "cmd", scaffold.DefaultBundleName, "main.gotmpl")
 	destPath := filepath.Join(bundleDir, "main.go")
 
 	return z.CopyFile(z.CopyFileParams{
@@ -382,8 +383,8 @@ func renderDefaultBundleMain(bundleDir string, templateInput TemplateInput) erro
 	})
 }
 
-func backupLegacyMain(cmdCtx workspaceCommandContext) error {
-	mainPath := defaultBundleMainPath(cmdCtx.goRoot)
+func backupLegacyMain(cmdCtx scaffold.WorkspaceContext) error {
+	mainPath := defaultBundleMainPath(cmdCtx.GoRoot)
 	backupPath := mainPath + ".legacy"
 
 	content, err := os.ReadFile(mainPath)
@@ -395,7 +396,7 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	if fileExists(backupPath) {
+	if scaffold.FileExists(backupPath) {
 		return nil
 	}
 
@@ -409,38 +410,38 @@ func backupLegacyMain(cmdCtx workspaceCommandContext) error {
 		return fmt.Errorf("backup legacy main.go: %w", err)
 	}
 
-	cmdCtx.cmd.Printf("Backed up legacy main.go to cmd/%s/main.go.legacy\n", defaultBundleName)
+	cmdCtx.Log.Printf("Backed up legacy main.go to cmd/%s/main.go.legacy\n", scaffold.DefaultBundleName)
 
 	return nil
 }
 
 func seedBundlesManifest(goRoot string) error {
-	dest := bundlesManifestPath(goRoot)
-	if fileExists(dest) {
+	dest := scaffold.BundlesManifestPath(goRoot)
+	if scaffold.FileExists(dest) {
 		return nil
 	}
 
-	data, err := internal.Skeleton.ReadFile(filepath.Join("skeleton", "backend", bundlesManifestName))
+	data, err := internal.Skeleton.ReadFile(filepath.Join("skeleton", "backend", scaffold.BundlesManifestName))
 	if err != nil {
-		return saveBundlesConfig(goRoot, BundlesConfig{
-			Bundles: map[string]BundleSpec{
-				defaultBundleName: {
+		return scaffold.SaveBundlesConfig(goRoot, scaffold.BundlesConfig{
+			Bundles: map[string]scaffold.BundleSpec{
+				scaffold.DefaultBundleName: {
 					Description: "All-in-one dev binary (imports every feature)",
-					Services:    []string{wildcardService},
+					Services:    []string{scaffold.WildcardService},
 				},
 			},
 		})
 	}
 
-	return os.WriteFile(bundlesManifestPath(goRoot), data, 0o644)
+	return os.WriteFile(scaffold.BundlesManifestPath(goRoot), data, 0o644)
 }
 
-func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
-	dir := runnerDir(cmdCtx.goRoot)
-	modulePath := path.Join(opt.RepositoryGoModule, runnerRelDir)
+func ensureRunnerModule(cmdCtx scaffold.WorkspaceContext) error {
+	dir := scaffold.RunnerDir(cmdCtx.GoRoot)
+	modulePath := path.Join(opt.RepositoryGoModule, scaffold.RunnerRelDir)
 	p := z.RunCmdParams{Dir: dir}
 
-	if !fileExists(filepath.Join(dir, "go.mod")) {
+	if !scaffold.FileExists(filepath.Join(dir, "go.mod")) {
 		if err := z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath); err != nil {
 			return err
 		}
@@ -449,7 +450,7 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 			return err
 		}
 
-		cmdCtx.cmd.Println("Initialized pkg/runner module")
+		cmdCtx.Log.Println("Initialized pkg/runner module")
 	}
 
 	if err := z.RunCmd(context.Background(), p, "go", "mod", "tidy", "-e"); err != nil {
@@ -460,8 +461,8 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 		return err
 	}
 
-	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
-	if err := z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+runnerRelDir); err != nil {
+	workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
+	if err := z.RunCmd(context.Background(), workDir, "go", "work", "use", "./"+scaffold.RunnerRelDir); err != nil {
 		return err
 	}
 	// Best-effort cleanup of legacy use directives.
@@ -471,9 +472,9 @@ func ensureRunnerModule(cmdCtx workspaceCommandContext) error {
 	return nil
 }
 
-func removeLegacyCmdRunner(cmdCtx workspaceCommandContext) error {
-	legacy := legacyCmdRunnerDir(cmdCtx.goRoot)
-	if !fileExists(filepath.Join(legacy, "runner.go")) {
+func removeLegacyCmdRunner(cmdCtx scaffold.WorkspaceContext) error {
+	legacy := scaffold.LegacyCmdRunnerDir(cmdCtx.GoRoot)
+	if !scaffold.FileExists(filepath.Join(legacy, "runner.go")) {
 		return nil
 	}
 
@@ -481,17 +482,17 @@ func removeLegacyCmdRunner(cmdCtx workspaceCommandContext) error {
 		return fmt.Errorf("remove legacy cmd/runner: %w", err)
 	}
 
-	cmdCtx.cmd.Println("Removed legacy cmd/runner/")
+	cmdCtx.Log.Println("Removed legacy cmd/runner/")
 
-	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
 	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./cmd/runner")
 
 	return nil
 }
 
-func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
-	legacy := legacyRunnerDir(cmdCtx.goRoot)
-	if !fileExists(filepath.Join(legacy, "runner.go")) {
+func removeLegacyInternalRunner(cmdCtx scaffold.WorkspaceContext) error {
+	legacy := scaffold.LegacyRunnerDir(cmdCtx.GoRoot)
+	if !scaffold.FileExists(filepath.Join(legacy, "runner.go")) {
 		return nil
 	}
 
@@ -499,17 +500,17 @@ func removeLegacyInternalRunner(cmdCtx workspaceCommandContext) error {
 		return fmt.Errorf("remove legacy internal/runner: %w", err)
 	}
 
-	cmdCtx.cmd.Println("Removed legacy internal/runner/")
+	cmdCtx.Log.Println("Removed legacy internal/runner/")
 
-	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
 	_ = z.RunCmd(context.Background(), workDir, "go", "work", "edit", "-dropuse", "./internal/runner")
 
 	return nil
 }
 
-func tidyDefaultBundleModule(cmdCtx workspaceCommandContext) error {
-	bundleDir := defaultBundleDir(cmdCtx.goRoot)
-	if !fileExists(filepath.Join(bundleDir, "go.mod")) {
+func tidyDefaultBundleModule(cmdCtx scaffold.WorkspaceContext) error {
+	bundleDir := scaffold.DefaultBundleDir(cmdCtx.GoRoot)
+	if !scaffold.FileExists(filepath.Join(bundleDir, "go.mod")) {
 		return nil
 	}
 
@@ -525,20 +526,20 @@ func tidyDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 	return nil
 }
 
-func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
-	bundleDir := defaultBundleDir(cmdCtx.goRoot)
+func ensureDefaultBundleModule(cmdCtx scaffold.WorkspaceContext) error {
+	bundleDir := scaffold.DefaultBundleDir(cmdCtx.GoRoot)
 	if err := os.MkdirAll(bundleDir, 0o755); err != nil {
-		return fmt.Errorf("create cmd/%s: %w", defaultBundleName, err)
+		return fmt.Errorf("create cmd/%s: %w", scaffold.DefaultBundleName, err)
 	}
 
 	if err := ensureDefaultBundleFeaturesGo(cmdCtx); err != nil {
 		return err
 	}
 
-	modulePath := path.Join(opt.RepositoryGoModule, "cmd", defaultBundleName)
+	modulePath := path.Join(opt.RepositoryGoModule, "cmd", scaffold.DefaultBundleName)
 	p := z.RunCmdParams{Dir: bundleDir}
 
-	if !fileExists(filepath.Join(bundleDir, "go.mod")) {
+	if !scaffold.FileExists(filepath.Join(bundleDir, "go.mod")) {
 		if err := z.RunCmd(context.Background(), p, "go", "mod", "init", modulePath); err != nil {
 			return err
 		}
@@ -547,17 +548,17 @@ func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 			return err
 		}
 
-		cmdCtx.cmd.Printf("Initialized cmd/%s module\n", defaultBundleName)
+		cmdCtx.Log.Printf("Initialized cmd/%s module\n", scaffold.DefaultBundleName)
 	}
 
-	workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+	workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
 	if err := z.RunCmd(
 		context.Background(),
 		workDir,
 		"go",
 		"work",
 		"use",
-		"./cmd/"+defaultBundleName,
+		"./cmd/"+scaffold.DefaultBundleName,
 	); err != nil {
 		return err
 	}
@@ -569,93 +570,93 @@ func ensureDefaultBundleModule(cmdCtx workspaceCommandContext) error {
 		"work",
 		"edit",
 		"-dropuse",
-		"./cmd/"+legacyDefaultBundleName,
+		"./cmd/"+scaffold.LegacyDefaultBundleName,
 	)
 
 	return nil
 }
 
-func ensureDefaultBundleFeaturesGo(cmdCtx workspaceCommandContext) error {
-	featuresPath := filepath.Join(defaultBundleDir(cmdCtx.goRoot), "features.go")
-	if fileExists(featuresPath) {
+func ensureDefaultBundleFeaturesGo(cmdCtx scaffold.WorkspaceContext) error {
+	featuresPath := filepath.Join(scaffold.DefaultBundleDir(cmdCtx.GoRoot), "features.go")
+	if scaffold.FileExists(featuresPath) {
 		return nil
 	}
 
-	legacyPath := filepath.Join(legacyDefaultBundleDir(cmdCtx.goRoot), "features.go")
-	if fileExists(legacyPath) {
+	legacyPath := filepath.Join(scaffold.LegacyDefaultBundleDir(cmdCtx.GoRoot), "features.go")
+	if scaffold.FileExists(legacyPath) {
 		content, err := os.ReadFile(legacyPath)
 		if err != nil {
-			return fmt.Errorf("read cmd/%s/features.go: %w", legacyDefaultBundleName, err)
+			return fmt.Errorf("read cmd/%s/features.go: %w", scaffold.LegacyDefaultBundleName, err)
 		}
 
 		if err := os.WriteFile(featuresPath, content, 0o644); err != nil {
 			return err
 		}
 
-		cmdCtx.cmd.Printf("Copied features.go from cmd/%s/\n", legacyDefaultBundleName)
+		cmdCtx.Log.Printf("Copied features.go from cmd/%s/\n", scaffold.LegacyDefaultBundleName)
 
 		return nil
 	}
 
-	imports, err := discoverFeatureModuleImports(cmdCtx.goRoot, cmdCtx.repoModule)
+	imports, err := scaffold.DiscoverFeatureModuleImports(cmdCtx.GoRoot, cmdCtx.RepoModule, scaffold.DefaultFeaturePrefix)
 	if err != nil {
 		return err
 	}
 
-	if err := os.WriteFile(featuresPath, []byte(renderFeaturesGo(imports)), 0o644); err != nil {
+	if err := os.WriteFile(featuresPath, []byte(scaffold.RenderFeaturesGo(imports)), 0o644); err != nil {
 		return err
 	}
 
 	if len(imports) > 0 {
-		cmdCtx.cmd.Printf(
+		cmdCtx.Log.Printf(
 			"Created cmd/%s/features.go with %d feature import(s) discovered under %s/\n",
-			defaultBundleName,
+			scaffold.DefaultBundleName,
 			len(imports),
 			opt.FeatureContainerFolder,
 		)
 	} else {
-		cmdCtx.cmd.Printf("Created empty cmd/%s/features.go\n", defaultBundleName)
+		cmdCtx.Log.Printf("Created empty cmd/%s/features.go\n", scaffold.DefaultBundleName)
 	}
 
 	return nil
 }
 
-func renameLegacyServiceBundle(cmdCtx workspaceCommandContext) error {
-	legacy := legacyDefaultBundleDir(cmdCtx.goRoot)
-	current := defaultBundleDir(cmdCtx.goRoot)
+func renameLegacyServiceBundle(cmdCtx scaffold.WorkspaceContext) error {
+	legacy := scaffold.LegacyDefaultBundleDir(cmdCtx.GoRoot)
+	current := scaffold.DefaultBundleDir(cmdCtx.GoRoot)
 
-	if fileExists(filepath.Join(legacy, "main.go")) {
-		if fileExists(filepath.Join(current, "main.go")) {
+	if scaffold.FileExists(filepath.Join(legacy, "main.go")) {
+		if scaffold.FileExists(filepath.Join(current, "main.go")) {
 			if err := os.RemoveAll(legacy); err != nil {
-				return fmt.Errorf("remove legacy cmd/%s: %w", legacyDefaultBundleName, err)
+				return fmt.Errorf("remove legacy cmd/%s: %w", scaffold.LegacyDefaultBundleName, err)
 			}
 
-			cmdCtx.cmd.Printf("Removed legacy cmd/%s/\n", legacyDefaultBundleName)
+			cmdCtx.Log.Printf("Removed legacy cmd/%s/\n", scaffold.LegacyDefaultBundleName)
 		} else if err := os.Rename(legacy, current); err != nil {
-			return fmt.Errorf("rename cmd/%s to cmd/%s: %w", legacyDefaultBundleName, defaultBundleName, err)
+			return fmt.Errorf("rename cmd/%s to cmd/%s: %w", scaffold.LegacyDefaultBundleName, scaffold.DefaultBundleName, err)
 		} else {
-			cmdCtx.cmd.Printf("Renamed cmd/%s/ to cmd/%s/\n", legacyDefaultBundleName, defaultBundleName)
+			cmdCtx.Log.Printf("Renamed cmd/%s/ to cmd/%s/\n", scaffold.LegacyDefaultBundleName, scaffold.DefaultBundleName)
 		}
 
 		goModPath := filepath.Join(current, "go.mod")
 		if content, err := os.ReadFile(goModPath); err == nil {
-			oldMod := path.Join(opt.RepositoryGoModule, "cmd", legacyDefaultBundleName)
-			newMod := path.Join(opt.RepositoryGoModule, "cmd", defaultBundleName)
+			oldMod := path.Join(opt.RepositoryGoModule, "cmd", scaffold.LegacyDefaultBundleName)
+			newMod := path.Join(opt.RepositoryGoModule, "cmd", scaffold.DefaultBundleName)
 			updated := strings.ReplaceAll(string(content), oldMod, newMod)
 
 			if err := os.WriteFile(goModPath, []byte(updated), 0o644); err != nil {
-				return fmt.Errorf("update cmd/%s/go.mod: %w", defaultBundleName, err)
+				return fmt.Errorf("update cmd/%s/go.mod: %w", scaffold.DefaultBundleName, err)
 			}
 		}
 
-		workDir := z.RunCmdParams{Dir: cmdCtx.goRoot}
+		workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
 		if err := z.RunCmd(
 			context.Background(),
 			workDir,
 			"go",
 			"work",
 			"use",
-			"./cmd/"+defaultBundleName,
+			"./cmd/"+scaffold.DefaultBundleName,
 		); err != nil {
 			return err
 		}
@@ -667,39 +668,39 @@ func renameLegacyServiceBundle(cmdCtx workspaceCommandContext) error {
 			"work",
 			"edit",
 			"-dropuse",
-			"./cmd/"+legacyDefaultBundleName,
+			"./cmd/"+scaffold.LegacyDefaultBundleName,
 		)
 	}
 
 	return migrateLegacyBundlesManifest(cmdCtx)
 }
 
-func migrateLegacyBundlesManifest(cmdCtx workspaceCommandContext) error {
-	cfg, err := loadBundlesConfig(cmdCtx.goRoot)
+func migrateLegacyBundlesManifest(cmdCtx scaffold.WorkspaceContext) error {
+	cfg, err := scaffold.LoadBundlesConfig(cmdCtx.GoRoot)
 	if err != nil {
 		return err
 	}
 
-	spec, ok := cfg.Bundles[legacyDefaultBundleName]
+	spec, ok := cfg.Bundles[scaffold.LegacyDefaultBundleName]
 	if !ok {
 		return nil
 	}
 
-	if _, exists := cfg.Bundles[defaultBundleName]; !exists {
-		cfg.Bundles[defaultBundleName] = spec
+	if _, exists := cfg.Bundles[scaffold.DefaultBundleName]; !exists {
+		cfg.Bundles[scaffold.DefaultBundleName] = spec
 	}
 
-	delete(cfg.Bundles, legacyDefaultBundleName)
+	delete(cfg.Bundles, scaffold.LegacyDefaultBundleName)
 
-	if err := saveBundlesConfig(cmdCtx.goRoot, cfg); err != nil {
+	if err := scaffold.SaveBundlesConfig(cmdCtx.GoRoot, cfg); err != nil {
 		return err
 	}
 
-	cmdCtx.cmd.Printf(
+	cmdCtx.Log.Printf(
 		"Renamed %q bundle to %q in %s\n",
-		legacyDefaultBundleName,
-		defaultBundleName,
-		bundlesManifestName,
+		scaffold.LegacyDefaultBundleName,
+		scaffold.DefaultBundleName,
+		scaffold.BundlesManifestName,
 	)
 
 	return nil
