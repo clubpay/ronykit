@@ -2,15 +2,43 @@
 
 Practical instructions for coding agents and contributors working in this repository.
 
+> **Last verified:** 2026-08-12 — every `make` target, path, and link in this file was checked against the tree at that commit.
+
+- **Stack:** Go 1.25+ multi-module workspace (`go.work`). No other language runtime is needed to build or test.
 - **Scope:** entire repository rooted at this directory.
 - **Default approach:** prefer minimal, targeted changes over broad refactors.
+- **Local env:** copy `.env.example` to `.env` (gitignored) for the optional `OLLAMA_*` / `OPENAI_*` / integration-test variables.
 
 ## AI assistants
 
 - **MCP:** `ronyup mcp` (see `.cursor/mcp.json`) — knowledge resources and scaffold tools.
 - **Skill:** `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification) layout; Cursor discovers it automatically) — invoke `/ronykit-framework` for orchestration; conventions live in MCP, not in the skill body. MCP index: `references/mcp-map.md` under that directory.
+- **Path rules:** `.cursor/rules/*.mdc` carry `globs:` frontmatter and load automatically when you edit `kit/`, `rony/`, `intent/`, `std/`, `x/`, `ronyup/`, or `.agents/skills/`. They hold the per-area detail that used to sit in this file — put new area-specific guidance there, not here.
+- **Exclusions:** `.cursorignore` keeps secrets and vendored bulk out of reach. Add new secret paths there, not only to `.gitignore`.
 
 For scaffolded application workspaces (outside this monorepo), MCP knowledge and tools are the source of truth for service layout and handler conventions.
+
+## Context map
+
+Context is layered: this file, plus whichever path rule matches your edit, is all that loads automatically. Everything else is opened deliberately — do not read it all up front.
+
+| When you are…                                                                  | Open                                                                                                        |
+|--------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| editing `kit/`, `rony/`, `intent/`, `std/`, `x/`, `ronyup/`, `.agents/skills/` | nothing — the matching path rule loads itself                                                               |
+| scaffolding a workspace, service, or feature                                   | the `ronykit-framework` skill, then `ronyup mcp` resources                                                  |
+| needing the request flow, key abstractions, or deeper architecture             | `docs/architecture.md`, `docs/knowledge-architecture.md`, `docs/advanced-kit.md`                            |
+| changing agent behavior                                                        | `intent/README.md`, `intent/DESIGN.md`                                                                      |
+| looking for the API contract or schema                                         | **Contracts & schemas** below                                                                               |
+| asked about dependency licenses                                                | `docs/compliance.md` — **never open `COMPLIANCE.md`**, a 529 KB generated FOSSA export                      |
+| working near the embedded API-doc UI                                           | **never open** `x/apidoc/internal/swagger-ui/` or `x/apidoc/internal/redoc-ui/` (vendored minified bundles) |
+
+## Contracts & schemas
+
+The machine-readable API surface, for grounding instead of guessing:
+
+- **Contract descriptors** — `kit/desc` is the in-code source of truth for routes, input/output messages, and fields (`desc.ServiceDesc`, `desc.ParsedContract`, `desc.ParsedMessage`). See `kit/desc/README.MD`.
+- **Swagger 2.0 spec** — `x/apidoc` generates it from `desc.ServiceDesc` at runtime (`apidoc.New(title, ver, desc)`, see `x/apidoc/doc.go`); example wiring in `example/ex-01-rpc/cmd/server/main.go`. Nothing is committed — regenerate, never assume a checked-in copy is current.
+- **Client stubs** — `stub/stubgen` generates Go (`NewGolangEngine`) and TypeScript (`NewTypescriptEngine`) clients from the same descriptors. See `stub/README.MD`.
 
 ---
 
@@ -96,41 +124,6 @@ make tidy        # go mod tidy all modules (excludes example/)
 
 ---
 
-## Architecture quick reference
-
-**Request flow:**
-
-```
-Client -> Gateway -> northBridge -> EdgeServer -> Contract lookup -> Handler chain -> Response
-```
-
-**Key abstractions:**
-
-- **EdgeServer** — orchestrator that binds Gateways, Clusters, and Services.
-- **Gateway** — inbound traffic (fasthttp, silverhttp, fastws, mcp).
-- **Cluster** — multi-instance coordination (Redis, libp2p P2P).
-- **Service** — logical grouping of Contracts.
-- **Contract** — single API operation (input/output types, route selectors, handlers).
-- **Context** — request-scoped state with four storage layers: per-request, per-connection, per-service (local), cluster-wide.
-
-**Encoding:** JSON, Protobuf, MessagePack, multipart/form-data, or custom.
-
-**Routing:** `RESTRouteSelector` (HTTP method + path) and `RPCRouteSelector` (predicate).
-
-**Agent stack (`intent`):**
-
-```
-Client -> rony endpoint -> intent.Agent.RunTurn -> LLM pool -> tools / skills / memory
-```
-
-- **Agent** — composes knowledge, LLM pool, memory, tools, skills, sessions, and rony services.
-- **LLM pool** — multiple `intent.LLM` backends with pluggable selection (`first`, `random`, `priority`, `enforced`).
-- **std adapters** — e.g. `std/llms/ollama`, `std/llms/langchaingo`, `std/knowledge/static`, `std/memories/inmem`.
-
-See `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
-
----
-
 ## std module conventions
 
 - Each module under `std/` and `x/` has its own `go.mod`; respect module boundaries.
@@ -138,24 +131,6 @@ See `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
 - **Workflows:** use `flow` only — do not import `go.temporal.io/sdk` directly (denied by workspace `.golangci.yml` in scaffolded apps).
 - **Constructors:** std modules follow the gateway pattern — `New(opts ...Option) (T, error)` plus `MustNew(opts ...Option) T` that panics on error. Unset config fields may be filled from environment variables (see each package).
 - **LLM adapters:** `std/llms/ollama` and `std/llms/langchaingo` expose functional options and env-backed defaults (`OLLAMA_*`, `OPENAI_*`). Wire multiple backends into `intent.NewLLMPool`; do not add a separate pool orchestration module.
-
----
-
-## Developing `ronyup` (scaffolder + MCP server)
-
-`ronyup/` produces scaffolded app workspaces and serves the `ronyup mcp` knowledge/tools that drive agents. When changing how agents build apps, edit these — not this file.
-
-- **MCP knowledge** lives in `ronyup/cmd/mcp/knowledge/` and is embedded + auto-loaded by `loader.go` (no registration needed — dropping a `.md` file is enough):
-  - `server/instructions.md` — always injected on MCP connect (the portable, cross-agent backbone).
-  - `resources/{architecture,packages,characteristics,tools}/*.md` — read on demand (`knowledge://ronyup/<category>/<name>`).
-  - `prompts/*.md` — workflow prompts (e.g. `design-new-service`, `design-frontend`).
-- **Bundled skills** live in `ronyup/internal/skeleton/skills/<id>/SKILL.md` and must be registered in `skillCatalog` (`ronyup/internal/scaffold/skills.go`); authoring heuristic (single file vs. `rules/` tree) is in `internal/skeleton/skills/README.md`. `copySkills` ships the whole directory.
-- **Enforcement is gates and hooks, not prose** (small models ignore advisory text):
-  - `ronyup/cmd/mcp/tools/scaffold/gate.go` — the SRS/SDD design gate that `scaffold_feature` enforces (portable across MCP clients).
-  - `ronyup/internal/skeleton/backend/verify.sh` and `internal/skeleton/frontend/verify.sh` — the `make verify` quality gates (test coverage, design-doc, lint/build/stories).
-  - `ronyup/internal/skeleton/workspace/.cursor/hooks/*.sh` + `hooks.jsontmpl` — Cursor `stop` hooks that auto-loop the agent until a gate passes.
-- **Keep the layers consistent.** A behavior change usually touches several surfaces at once: `server/instructions.md`, the relevant `resources/`/`prompts/` doc, `AGENTS.mdtmpl`, the `ronykit-framework` skill (both `.agents/skills/.../SKILL.md` and the skeleton copy under `ronyup/internal/skeleton/workspace/.agents/skills/`), and `references/mcp-map.md`.
-- **Verify with** `cd ronyup && go test ./...` (the scaffold integration tests assert the generated gate/hook files exist).
 
 ---
 

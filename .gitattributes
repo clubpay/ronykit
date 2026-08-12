@@ -1,0 +1,19 @@
+# Normalize line endings in the repository; check out with the platform default.
+* text=auto
+
+# Files that must stay LF on every platform.
+*.go        text eol=lf
+*.mod       text eol=lf
+*.sum       text eol=lf
+*.work      text eol=lf
+*.sh        text eol=lf
+*.gotmpl    text eol=lf
+*.tmpl      text eol=lf
+*.mdtmpl    text eol=lf
+*.tstmpl    text eol=lf
+*.yamltmpl  text eol=lf
+*.ymltmpl   text eol=lf
+*.jsontmpl  text eol=lf
+
+# Binary assets.
+*.png       binary

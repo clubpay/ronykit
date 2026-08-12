@@ -1,0 +1,15 @@
+---
+description: std/ and x/ module conventions
+globs: std/**,x/**
+alwaysApply: false
+---
+
+# std/ and x/ modules
+
+- Every directory here has its own `go.mod`; respect module boundaries and test with `cd <module> && go test ./...`.
+- Constructors follow the gateway pattern: `New(opts ...Option) (T, error)` plus `MustNew(opts ...Option) T` that panics on error. Unset config fields may be filled from environment variables — list any new one in `.env.example`.
+- Prefer RonyKit packages over third-party/stdlib substitutes where an equivalent exists (`x/rkit`, `x/di`, `x/settings`, `x/telemetry/*`, `rony/errs`).
+- Workflows go through `flow` — do not import `go.temporal.io/sdk` directly.
+- Never open `x/apidoc/internal/swagger-ui/` or `x/apidoc/internal/redoc-ui/`; they are vendored minified bundles served via `go:embed`.
+
+Deep reference: `AGENTS.md` (std module conventions).

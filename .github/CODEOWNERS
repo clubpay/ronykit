@@ -1,0 +1,6 @@
+# Default review ownership for this repository.
+# Syntax: https://docs.github.com/articles/about-code-owners
+#
+# Replace the entries below with a GitHub team (e.g. @clubpay/<team>) once one exists.
+
+*       @ehsannm
