@@ -9,6 +9,7 @@ alwaysApply: false
 - `kit/` is the low-level core (EdgeServer, Gateway, Cluster, Service, Contract, Context). `rony/` is the batteries-included framework built on top of it — keep the dependency direction one-way.
 - Request flow: `Client -> Gateway -> northBridge -> EdgeServer -> contract lookup -> handler chain -> Response`.
 - `Context` has four storage layers: per-request, per-connection, per-service (local), cluster-wide. Use the narrowest one that works.
+- Routing: `RESTRouteSelector` (HTTP method + path) and `RPCRouteSelector` (predicate) — one handler can serve both.
 - Read the package README before changing behavior; preserve existing architecture and naming.
 
 Deep reference: `AGENTS.md` (Architecture quick reference), `docs/architecture.md`.

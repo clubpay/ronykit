@@ -7,6 +7,7 @@ alwaysApply: false
 # intent (agent runtime)
 
 - The `intent` core stays dependency-light and defines interfaces only — concrete backends live under `std/<kind>/<name>` as separate modules.
+- Agent stack: `Client -> rony endpoint -> intent.Agent.RunTurn -> LLM pool -> tools / skills / memory`.
 - `intent.Agent` composes knowledge, LLM pool, memory, tools, skills, sessions, and rony services.
 - Wire multiple LLM backends into `intent.NewLLMPool` (selectors: `first`, `random`, `priority`, `enforced`). Do not add a separate pool orchestration module.
 - Read `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
