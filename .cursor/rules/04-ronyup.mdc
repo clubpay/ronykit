@@ -1,0 +1,15 @@
+---
+description: ronyup scaffolder and MCP server conventions
+globs: ronyup/**
+alwaysApply: false
+---
+
+# ronyup (scaffolder + MCP server)
+
+- MCP knowledge under `ronyup/cmd/mcp/knowledge/` is embedded and auto-loaded by `loader.go` — dropping a `.md` file is enough, no registration needed.
+- Bundled skills live in `ronyup/internal/skeleton/skills/<id>/SKILL.md` and **must** be registered in `skillCatalog` (`ronyup/internal/scaffold/skills.go`).
+- Enforcement is gates and hooks, not prose: `cmd/mcp/tools/scaffold/gate.go`, `internal/skeleton/{backend,frontend}/verify.sh`, `internal/skeleton/workspace/.cursor/hooks/`.
+- A behavior change usually touches several surfaces at once (instructions, resources/prompts, `AGENTS.mdtmpl`, the skeleton skill copy, `references/mcp-map.md`) — keep them consistent.
+- Verify with `cd ronyup && go test ./...`.
+
+Deep reference: `AGENTS.md` (Developing `ronyup`).

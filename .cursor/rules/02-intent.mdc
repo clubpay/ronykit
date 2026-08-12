@@ -1,0 +1,14 @@
+---
+description: intent agent runtime conventions
+globs: intent/**
+alwaysApply: false
+---
+
+# intent (agent runtime)
+
+- The `intent` core stays dependency-light and defines interfaces only — concrete backends live under `std/<kind>/<name>` as separate modules.
+- `intent.Agent` composes knowledge, LLM pool, memory, tools, skills, sessions, and rony services.
+- Wire multiple LLM backends into `intent.NewLLMPool` (selectors: `first`, `random`, `priority`, `enforced`). Do not add a separate pool orchestration module.
+- Read `intent/README.md` and `intent/DESIGN.md` before changing agent behavior.
+
+Deep reference: `intent/DESIGN.md`.

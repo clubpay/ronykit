@@ -1,0 +1,10 @@
+# Kept out of Cursor's reach.
+
+# Secrets / local config.
+.env
+.ai/mcp/mcp.json
+
+# Vendored & generated bulk: multi-megabyte, never hand-edited, nothing to learn from reading.
+x/apidoc/internal/swagger-ui/
+x/apidoc/internal/redoc-ui/
+COMPLIANCE.md

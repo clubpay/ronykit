@@ -2,15 +2,43 @@
 
 Practical instructions for coding agents and contributors working in this repository.
 
+> **Last verified:** 2026-08-12 — every `make` target, path, and link in this file was checked against the tree at that commit.
+
+- **Stack:** Go 1.25+ multi-module workspace (`go.work`). No other language runtime is needed to build or test.
 - **Scope:** entire repository rooted at this directory.
 - **Default approach:** prefer minimal, targeted changes over broad refactors.
+- **Local env:** copy `.env.example` to `.env` (gitignored) for the optional `OLLAMA_*` / `OPENAI_*` / integration-test variables.
 
 ## AI assistants
 
 - **MCP:** `ronyup mcp` (see `.cursor/mcp.json`) — knowledge resources and scaffold tools.
 - **Skill:** `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification) layout; Cursor discovers it automatically) — invoke `/ronykit-framework` for orchestration; conventions live in MCP, not in the skill body. MCP index: `references/mcp-map.md` under that directory.
+- **Path rules:** `.cursor/rules/*.mdc` carry `globs:` frontmatter and load automatically when you edit `kit/`, `rony/`, `intent/`, `std/`, `x/`, or `ronyup/`. Keep each one short — a rule's cost is its body length, not its glob.
+- **Exclusions:** `.cursorignore` keeps secrets and vendored bulk out of reach. Add new secret paths there, not only to `.gitignore`.
 
 For scaffolded application workspaces (outside this monorepo), MCP knowledge and tools are the source of truth for service layout and handler conventions.
+
+## Context map
+
+Context is layered: this file, plus whichever path rule matches your edit, is all that loads automatically. Everything else is opened deliberately — do not read it all up front.
+
+| When you are…                                               | Open                                                                                                        |
+|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| editing `kit/`, `rony/`, `intent/`, `std/`, `x/`, `ronyup/` | nothing — the matching path rule loads itself                                                               |
+| scaffolding a workspace, service, or feature                | the `ronykit-framework` skill, then `ronyup mcp` resources                                                  |
+| needing architecture depth                                  | `docs/architecture.md`, `docs/knowledge-architecture.md`, `docs/advanced-kit.md`                            |
+| changing agent behavior                                     | `intent/README.md`, `intent/DESIGN.md`                                                                      |
+| looking for the API contract or schema                      | **Contracts & schemas** below                                                                               |
+| asked about dependency licenses                             | `docs/compliance.md` — **never open `COMPLIANCE.md`**, a 529 KB generated FOSSA export                      |
+| working near the embedded API-doc UI                        | **never open** `x/apidoc/internal/swagger-ui/` or `x/apidoc/internal/redoc-ui/` (vendored minified bundles) |
+
+## Contracts & schemas
+
+The machine-readable API surface, for grounding instead of guessing:
+
+- **Contract descriptors** — `kit/desc` is the in-code source of truth for routes, input/output messages, and fields (`desc.ServiceDesc`, `desc.ParsedContract`, `desc.ParsedMessage`). See `kit/desc/README.MD`.
+- **Swagger 2.0 spec** — `x/apidoc` generates it from `desc.ServiceDesc` at runtime (`apidoc.New(title, ver, desc)`, see `x/apidoc/doc.go`); example wiring in `example/ex-01-rpc/cmd/server/main.go`. Nothing is committed — regenerate, never assume a checked-in copy is current.
+- **Client stubs** — `stub/stubgen` generates Go (`NewGolangEngine`) and TypeScript (`NewTypescriptEngine`) clients from the same descriptors. See `stub/README.MD`.
 
 ---
 
