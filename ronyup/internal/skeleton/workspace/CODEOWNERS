@@ -1,0 +1,12 @@
+# CODEOWNERS — review routing for this repository.
+# This file is intentionally inert: with no active rule below, it does NOT block PRs.
+# Uncomment and set real team handles once the repo's owners are known.
+#
+# Syntax:  <path pattern>   @org/team  [@user ...]
+# Docs:    https://docs.github.com/articles/about-code-owners
+#
+# Examples:
+# *            @your-org/your-team
+# /backend/    @your-org/backend
+# /frontend/   @your-org/frontend
+# /devops/     @your-org/platform
