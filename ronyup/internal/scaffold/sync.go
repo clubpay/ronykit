@@ -221,7 +221,7 @@ func syncSection(
 ) error {
 	switch section {
 	case SyncSectionAgents:
-		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "AGENTS.mdtmpl")
+		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "AGENTS.mdtmpl", "CLAUDE.md")
 	case SyncSectionAI:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, ".ai", ".cursor/mcp.json")
 	case SyncSectionHooks:
