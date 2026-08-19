@@ -221,7 +221,18 @@ func syncSection(
 ) error {
 	switch section {
 	case SyncSectionAgents:
-		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "AGENTS.mdtmpl")
+		return syncWorkspacePaths(
+			layout,
+			templateInput,
+			skipExisting,
+			callback,
+			"AGENTS.mdtmpl",
+			"CLAUDE.md",
+			".cursorignore",
+			".claude/settings.json",
+			".editorconfig",
+			"CODEOWNERS",
+		)
 	case SyncSectionAI:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, ".ai", ".cursor/mcp.json")
 	case SyncSectionHooks:
@@ -300,6 +311,8 @@ func syncSkills(
 		skipExisting,
 		callback,
 		".agents/skills/ronykit-framework",
+		".claude/skills/ronykit-framework",
+		".cursor/skills/ronykit-framework",
 	); err != nil {
 		return err
 	}

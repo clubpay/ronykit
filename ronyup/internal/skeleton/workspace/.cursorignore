@@ -1,0 +1,10 @@
+# Secrets — never read or indexed by AI assistants.
+# The same set is denied to Claude Code via .claude/settings.json (permissions.deny).
+.env
+.env.*
+**/.env
+**/.env.*
+**/config.local.yaml
+*.pem
+*.key
+*.keystore
