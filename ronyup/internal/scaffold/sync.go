@@ -311,6 +311,8 @@ func syncSkills(
 		skipExisting,
 		callback,
 		".agents/skills/ronykit-framework",
+		".claude/skills/ronykit-framework",
+		".cursor/skills/ronykit-framework",
 	); err != nil {
 		return err
 	}
