@@ -231,10 +231,8 @@ func WithMaxRequestBodySize(size int) ServerOption {
 	}
 }
 
-
 func WithPoolBufferSize(reqBody, resBody int) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithPoolBufferSize(reqBody, resBody))
 	}
 }
-

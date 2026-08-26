@@ -129,6 +129,7 @@ func parseAllowResult(limit Limit, values []any) (*Result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ratelimit allowed: %w", err)
 	}
+
 	remaining, err := redisInt(values[1])
 	if err != nil {
 		return nil, fmt.Errorf("ratelimit remaining: %w", err)
@@ -138,6 +139,7 @@ func parseAllowResult(limit Limit, values []any) (*Result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ratelimit retry_after: %w", err)
 	}
+
 	resetAfter, err := redisFloat(values[3])
 	if err != nil {
 		return nil, fmt.Errorf("ratelimit reset_after: %w", err)
@@ -165,6 +167,7 @@ func redisInt(v any) (int, error) {
 		return int(n), nil
 	case string:
 		i, err := strconv.Atoi(n)
+
 		return i, err
 	default:
 		return 0, fmt.Errorf("unsupported numeric type %T", v)

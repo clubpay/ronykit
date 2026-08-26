@@ -20,21 +20,21 @@ require (
 	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
-	github.com/klauspost/compress v1.19.1 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/klauspost/compress v1.19.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.11 // indirect
-	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/onsi/ginkgo/v2 v2.32.0 // indirect
 	github.com/onsi/gomega v1.42.0 // indirect
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
-	github.com/savsgio/gotils v0.0.0-20250408102913-196191ec6287 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
+	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
+	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.73.0 // indirect
-	golang.org/x/arch v0.4.0 // indirect
-	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/arch v0.8.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
