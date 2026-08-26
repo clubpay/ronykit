@@ -1,0 +1,130 @@
+name: PR Checks
+
+# Self-contained by necessity: the shared gate lives in clubpay/reusable-workflows,
+# which is private, and a public repo may not call a private repo's reusable
+# workflow -- GitHub reports that denial as "workflow was not found".
+#
+# Complementary to go.yml, which keeps owning the four core trees' tests and the
+# codecov upload. Nothing here is a required check, so a red job means "look",
+# not "blocked".
+
+on:
+  # No `branches:` filter. An allow-list fails quietly: the first PR onto a
+  # release branch would get no checks at all, which looks identical to passing.
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Read-only, and no secrets are used anywhere below, so this works unchanged on
+# pull requests from forks.
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # go.work is the only list of modules that is guaranteed current; a hand-kept
+  # matrix would drift the first time a module is added.
+  modules:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: list
+        # Read as text, so this job needs no Go toolchain to parse a text file.
+        run: |
+          set -euo pipefail
+          list=$(sed -n '/^use (/,/^)/p' go.work | sed -e '1d' -e '$d' \
+                   | tr -d ' \t' | grep . | jq -R . | jq -cs .)
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "$list" | jq .
+
+  module:
+    name: ${{ matrix.module }}
+    needs: modules
+    strategy:
+      # Every module reports independently; one broken module must not hide the
+      # state of the other 46.
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.modules.outputs.list) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          # 1.25.8, and no module asks for more, so the default GOTOOLCHAIN=local holds.
+          go-version-file: go.work
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      # The gap this closes: go.yml compiles only 4 of the 47 modules, so a
+      # break anywhere else surfaces at release time.
+      - name: Build
+        # ronyup/internal/skeleton holds project templates: `func main` lives in
+        # main.gotmpl, so linking those packages fails by design.
+        run: go list ./... | grep -v '/internal/skeleton/' | xargs -r go build
+
+      # Also covers test files, which the lint config skips via `run: tests: false`.
+      - name: Vet
+        run: go vet ./...
+
+      # .golangci.yml is elaborate but nothing in CI has ever run it.
+      - name: Lint
+        # example/ is outside `make lint`; keep CI matching the Makefile.
+        if: ${{ !startsWith(matrix.module, './example/') }}
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.2
+          working-directory: ${{ matrix.module }}
+          args: -c ${{ github.workspace }}/.golangci.yml --timeout=10m
+
+      - name: Test
+        # go.yml owns the four trees it already lists, and testenv needs the
+        # Docker containers gnomock starts. Everything else is 91 of the repo's
+        # 176 test files, none of which ran in CI before.
+        if: >-
+          !contains(fromJSON('["./kit","./rony","./stub","./std/gateways/fasthttp","./testenv"]'), matrix.module)
+          && !startsWith(matrix.module, './example/')
+        run: go test -count=1 ./...
+
+      - name: Vulnerabilities
+        if: ${{ !startsWith(matrix.module, './example/') }}
+        env:
+          # The tool is built with the repo's toolchain and may need a newer one
+          # than go.work pins; `local` makes that a build failure.
+          GOTOOLCHAIN: auto
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
+          govulncheck ./...
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # the scan walks a commit range
+
+      - name: Install gitleaks
+        # The pinned binary, not gitleaks-action: the action needs a paid licence
+        # for organisation repos, the CLI is MIT.
+        run: |
+          set -euo pipefail
+          curl -sSfL --retry 3 \
+            "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin gitleaks
+
+      - name: Scan the commits this PR adds
+        # Only the new commits. A secret already on main is a rotation job for
+        # whoever owns it, not a reason to fail every PR.
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$GITHUB_BASE_REF"
+          gitleaks git --log-opts "$(git merge-base HEAD "origin/$GITHUB_BASE_REF")..HEAD" \
+            --redact --no-banner --exit-code 1 .

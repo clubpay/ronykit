@@ -40,6 +40,10 @@ linters:
     - wsl
     - gomodguard
   settings:
+    gomoddirectives:
+      # This is a go.work workspace; every cross-module require is a local
+      # replace, so the default rejection fires on 11 modules.
+      replace-local: true
     depguard:
       rules:
         whitelist:
