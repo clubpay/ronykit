@@ -6,10 +6,10 @@ github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UF
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.12 h1:PH9QVINWceQdki+pvbf71tM9No18Zh5VcFv4iqIw1eM=
-github.com/clubpay/ronykit/kit v0.26.12/go.mod h1:gIxcLjkgG8rD74mGzQih0ErC3kjxPgrz4aP4WzyTh7g=
-github.com/clubpay/ronykit/x/rkit v0.5.12 h1:B+XDFxlp86SaTxQh4gCgzUPZbZNxjXOIOgGzsUN37OI=
-github.com/clubpay/ronykit/x/rkit v0.5.12/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
+github.com/clubpay/ronykit/kit v0.26.13 h1:5X9WAyFGr1inl6rzCtuKqgeQppaYYprN2QMFLfeT+1E=
+github.com/clubpay/ronykit/kit v0.26.13/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
+github.com/clubpay/ronykit/x/rkit v0.5.13 h1:PW252Wm+P1lUkPHDSTmHuY0DG+jPkLbDd/BjgOcoHyE=
+github.com/clubpay/ronykit/x/rkit v0.5.13/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.4 h1:tG4xh9yMsRCAiodLVTxyrkzSZ9+o0L1Kg/+cPVcbP/8=
 github.com/go-logr/logr v1.4.4/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
@@ -32,6 +32,7 @@ github.com/jedib0t/go-pretty/v6 v6.8.3/go.mod h1:YwC5CE4fJ1HFUDeivSV1r//AmANFHyq
 github.com/jinzhu/copier v0.4.0 h1:w3ciUoD19shMCRargcpm0cm91ytaBhDvuRpz1ODO/U8=
 github.com/jinzhu/copier v0.4.0/go.mod h1:DfbEm0FYsaqBcKcFuvmOZb218JkPGtvSHsKg8S8hyyg=
 github.com/klauspost/compress v1.19.2 h1:hMRETovs/pu/dVWN7zIT1PGG8t509MwT6bO7XSi26R8=
+github.com/klauspost/compress v1.19.2/go.mod h1:cwPg85FWrGar70rWktvGQj8/hthj3wpl0PGDogxkrSQ=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
