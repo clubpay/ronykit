@@ -218,3 +218,23 @@ func WithErrorHandler(handler kit.ErrHandlerFunc) ServerOption {
 		cfg.edgeOpts = append(cfg.edgeOpts, kit.WithErrorHandler(handler))
 	}
 }
+
+func WithBufferSize(read, write int) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithBufferSize(read, write))
+	}
+}
+
+func WithMaxRequestBodySize(size int) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithMaxRequestBodySize(size))
+	}
+}
+
+
+func WithPoolBufferSize(reqBody, resBody int) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.gatewayOpts = append(cfg.gatewayOpts, fasthttp.WithPoolBufferSize(reqBody, resBody))
+	}
+}
+
