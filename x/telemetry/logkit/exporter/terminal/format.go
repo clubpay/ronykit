@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/log"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
@@ -17,21 +18,21 @@ const (
 	emptyField      = "-"
 )
 
-var systemAttrs = map[string]struct{}{
-	string(semconv.CodeFilePathKey):        {},
-	string(semconv.CodeLineNumberKey):      {},
-	string(semconv.CodeFunctionNameKey):    {},
-	string(semconv.CodeStacktraceKey):      {},
-	string(semconv.ExceptionStacktraceKey): {},
-	string(semconv.ExceptionTypeKey):       {},
+var systemAttrs = map[attribute.Key]struct{}{
+	semconv.CodeFilePathKey:        {},
+	semconv.CodeLineNumberKey:      {},
+	semconv.CodeFunctionNameKey:    {},
+	semconv.CodeStacktraceKey:      {},
+	semconv.ExceptionStacktraceKey: {},
+	semconv.ExceptionTypeKey:       {},
 }
 
-func attrDisplayKey(key string) (string, bool) {
+func attrDisplayKey(key attribute.Key) (string, bool) {
 	switch key {
-	case string(semconv.ExceptionMessageKey), "error":
+	case semconv.ExceptionMessageKey, "error":
 		return "error", true
 	default:
-		return key, false
+		return string(key), false
 	}
 }
 
@@ -109,13 +110,13 @@ func collectMeta(record sdklog.Record) recordMeta {
 		attrs: make([]string, 0, record.AttributesLen()),
 	}
 
-	record.WalkAttributes(func(kv log.KeyValue) bool {
+	record.WalkAttributes(func(kv attribute.KeyValue) bool {
 		switch kv.Key {
-		case string(semconv.CodeFilePathKey):
+		case semconv.CodeFilePathKey:
 			meta.filePath = shortenPath(kv.Value.AsString())
 
 			return true
-		case string(semconv.CodeLineNumberKey):
+		case semconv.CodeLineNumberKey:
 			meta.line = formatValue(kv.Value)
 
 			return true
@@ -147,11 +148,11 @@ func shortenPath(path string) string {
 	return short
 }
 
-func formatBody(body log.Value) string {
-	switch body.Kind() {
-	case log.KindString:
+func formatBody(body attribute.Value) string {
+	switch body.Type() {
+	case attribute.STRING:
 		return body.AsString()
-	case log.KindEmpty:
+	case attribute.EMPTY:
 		return ""
 	default:
 		return truncateValue(formatValue(body))
@@ -183,19 +184,19 @@ func formatAttrPair(key, value string) string {
 	return "<" + key + "=" + quoteValue(value) + ">"
 }
 
-func formatValue(v log.Value) string {
-	switch v.Kind() {
-	case log.KindString:
+func formatValue(v attribute.Value) string {
+	switch v.Type() {
+	case attribute.STRING:
 		return v.AsString()
-	case log.KindInt64:
+	case attribute.INT64:
 		return strconv.FormatInt(v.AsInt64(), 10)
-	case log.KindFloat64:
+	case attribute.FLOAT64:
 		return strconv.FormatFloat(v.AsFloat64(), 'f', -1, 64)
-	case log.KindBool:
+	case attribute.BOOL:
 		return strconv.FormatBool(v.AsBool())
-	case log.KindBytes:
-		return string(v.AsBytes())
-	case log.KindSlice:
+	case attribute.BYTESLICE:
+		return string(v.AsByteSlice())
+	case attribute.SLICE:
 		items := v.AsSlice()
 
 		parts := make([]string, 0, len(items))
@@ -204,19 +205,19 @@ func formatValue(v log.Value) string {
 		}
 
 		return "[" + strings.Join(parts, ",") + "]"
-	case log.KindMap:
+	case attribute.MAP:
 		pairs := v.AsMap()
 
 		parts := make([]string, 0, len(pairs))
 		for _, kv := range pairs {
-			parts = append(parts, kv.Key+"="+formatValue(kv.Value))
+			parts = append(parts, string(kv.Key)+"="+formatValue(kv.Value))
 		}
 
 		return "{" + strings.Join(parts, " ") + "}"
-	case log.KindEmpty:
+	case attribute.EMPTY:
 		return ""
 	default:
-		return v.AsString()
+		return v.String()
 	}
 }
 

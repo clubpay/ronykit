@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/log/logtest"
 	semconv "go.opentelemetry.io/otel/semconv/v1.41.0"
 	"go.opentelemetry.io/otel/trace"
@@ -20,13 +20,13 @@ func TestFormatRecord(t *testing.T) {
 	record := logtest.RecordFactory{
 		Timestamp:    ts,
 		SeverityText: "INFO",
-		Body:         log.StringValue("request completed"),
-		Attributes: []log.KeyValue{
-			log.String("user_id", "42"),
-			log.Int("count", 3),
-			log.String(string(semconv.CodeFilePathKey), "/app/cmd/service/main.go"),
-			log.Int(string(semconv.CodeLineNumberKey), 128),
-			log.String(string(semconv.ExceptionMessageKey), "connection refused"),
+		Body:         attribute.StringValue("request completed"),
+		Attributes: []attribute.KeyValue{
+			attribute.String("user_id", "42"),
+			attribute.Int("count", 3),
+			attribute.String(string(semconv.CodeFilePathKey), "/app/cmd/service/main.go"),
+			attribute.Int(string(semconv.CodeLineNumberKey), 128),
+			attribute.String(string(semconv.ExceptionMessageKey), "connection refused"),
 		},
 		TraceID: traceID,
 	}.NewRecord()
@@ -41,9 +41,9 @@ func TestFormatRecord(t *testing.T) {
 
 func TestFormatRecordErrorKey(t *testing.T) {
 	record := logtest.RecordFactory{
-		Body: log.StringValue("failed"),
-		Attributes: []log.KeyValue{
-			log.String("error", "connection refused"),
+		Body: attribute.StringValue("failed"),
+		Attributes: []attribute.KeyValue{
+			attribute.String("error", "connection refused"),
 		},
 	}.NewRecord()
 
@@ -53,10 +53,10 @@ func TestFormatRecordErrorKey(t *testing.T) {
 
 func TestFormatRecordExceptionStacktraceOnlyRegression(t *testing.T) {
 	record := logtest.RecordFactory{
-		Body: log.StringValue("failed"),
-		Attributes: []log.KeyValue{
-			log.String(string(semconv.ExceptionMessageKey), "connection refused"),
-			log.String(string(semconv.ExceptionStacktraceKey), "goroutine 1 [running]:"),
+		Body: attribute.StringValue("failed"),
+		Attributes: []attribute.KeyValue{
+			attribute.String(string(semconv.ExceptionMessageKey), "connection refused"),
+			attribute.String(string(semconv.ExceptionStacktraceKey), "goroutine 1 [running]:"),
 		},
 	}.NewRecord()
 
@@ -67,7 +67,7 @@ func TestFormatRecordExceptionStacktraceOnlyRegression(t *testing.T) {
 
 func TestFormatRecordMissingFields(t *testing.T) {
 	record := logtest.RecordFactory{
-		Body: log.StringValue("hello"),
+		Body: attribute.StringValue("hello"),
 	}.NewRecord()
 
 	got := formatRecord(record, palette{enabled: false})
@@ -91,7 +91,7 @@ func TestFormatHeaderFields(t *testing.T) {
 	record := logtest.RecordFactory{
 		Timestamp:    time.Date(2026, 7, 1, 15, 4, 5, 0, time.UTC),
 		SeverityText: "WARN",
-		Body:         log.StringValue("slow query"),
+		Body:         attribute.StringValue("slow query"),
 	}.NewRecord()
 
 	got := formatHeader(record, collectMeta(record), palette{enabled: false})

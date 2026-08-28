@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/log"
+	"go.opentelemetry.io/otel/attribute"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/log/logtest"
 )
@@ -20,9 +20,9 @@ func TestExporterExport(t *testing.T) {
 	record := logtest.RecordFactory{
 		Timestamp:    time.Date(2026, 7, 1, 15, 4, 5, 0, time.UTC),
 		SeverityText: "WARN",
-		Body:         log.StringValue("slow query"),
-		Attributes: []log.KeyValue{
-			log.String("table", "users"),
+		Body:         attribute.StringValue("slow query"),
+		Attributes: []attribute.KeyValue{
+			attribute.String("table", "users"),
 		},
 	}.NewRecord()
 
@@ -42,7 +42,7 @@ func TestExporterShutdown(t *testing.T) {
 	require.NoError(t, exp.Shutdown(context.Background()))
 
 	record := logtest.RecordFactory{
-		Body: log.StringValue("ignored"),
+		Body: attribute.StringValue("ignored"),
 	}.NewRecord()
 
 	err := exp.Export(context.Background(), []sdklog.Record{record})
