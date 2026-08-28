@@ -144,7 +144,7 @@ func TryWriteValue(stream *jsoniter.Stream, fieldName string, value any) error {
 		reflect.Indirect(reflect.ValueOf(subStream)).FieldByName("indention").UnsafeAddr(),
 	)
 	indent := *(*int)(currentPtr)
-	*((*int)(subStreamPtr)) = indent
+	*(*int)(subStreamPtr) = indent
 
 	// Write the value into the substream & flush it
 	subStream.WriteVal(value)

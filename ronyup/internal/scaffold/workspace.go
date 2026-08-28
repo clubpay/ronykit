@@ -219,12 +219,15 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 			if err := z.RunCmd(ctx, p, "go", "mod", "init", path.Join(modulePrefix, pkg)); err != nil {
 				return fmt.Errorf("go mod init %s: %w", pkg, err)
 			}
+
 			if err := z.RunCmd(ctx, p, "go", "mod", "edit", "-go=1.25"); err != nil {
 				return fmt.Errorf("go mod edit %s: %w", pkg, err)
 			}
+
 			if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
 				return fmt.Errorf("go mod tidy %s: %w", pkg, err)
 			}
+
 			if err := z.RunCmd(ctx, p, "go", "work", "use", "."); err != nil {
 				return fmt.Errorf("go work use %s: %w", pkg, err)
 			}
@@ -232,6 +235,7 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 	}
 
 	p := z.RunCmdParams{Dir: in.repoRoot}
+
 	isGitRepo, err := isGitRepository(in.repoRoot)
 	if err == nil && !isGitRepo {
 		_ = z.RunCmd(ctx, p, "git", "init")

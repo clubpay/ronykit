@@ -39,6 +39,7 @@ linters:
     - wrapcheck
     - wsl
     - gomodguard
+    - exhaustruct_v5
   settings:
     gomoddirectives:
       # This is a go.work workspace; every cross-module require is a local

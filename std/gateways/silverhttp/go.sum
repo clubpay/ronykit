@@ -1,7 +1,7 @@
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.14 h1:uhl/paOX6EfHqZgQNYmSkjhnAnL8GMWhyxgEK0qK2AE=
-github.com/clubpay/ronykit/kit v0.26.14/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
+github.com/clubpay/ronykit/kit v0.26.15 h1:R6FKgDZjoFOYKIOGPTwd38guzKCk6GNqP0MvyYN+kIY=
+github.com/clubpay/ronykit/kit v0.26.15/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/go-www/silverlining v1.3.3 h1:JNt561V3tvXBD0sw/slQP5UhvADeVxXN0AnT9WiG0yA=
 github.com/go-www/silverlining v1.3.3/go.mod h1:eh9Fljz24Qn4zHyXInelstw4c89RqlS8R0s7oKtBdJw=

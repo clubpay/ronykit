@@ -134,12 +134,15 @@ func copyFeatureTemplate(
 	if err := z.RunCmd(ctx, p, "go", "mod", "init", path.Join(module, packagePath)); err != nil {
 		return fmt.Errorf("go mod init: %w", err)
 	}
+
 	if err := z.RunCmd(ctx, p, "go", "mod", "edit", "-go=1.25"); err != nil {
 		return fmt.Errorf("go mod edit: %w", err)
 	}
+
 	if err := z.RunCmd(ctx, p, "go", "mod", "tidy"); err != nil {
 		return fmt.Errorf("go mod tidy: %w", err)
 	}
+
 	if err := z.RunCmd(ctx, p, "go", "fmt", "./..."); err != nil {
 		return fmt.Errorf("go fmt: %w", err)
 	}
@@ -231,6 +234,7 @@ func sideEffectImportModule(
 	if err := z.RunCmd(ctx, p, "go", "mod", "tidy"); err != nil {
 		return fmt.Errorf("go mod tidy cmd/%s: %w", defaultBundleName, err)
 	}
+
 	if err := z.RunCmd(ctx, p, "go", "fmt", "./..."); err != nil {
 		return fmt.Errorf("go fmt cmd/%s: %w", defaultBundleName, err)
 	}

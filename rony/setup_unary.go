@@ -172,7 +172,7 @@ func CreateKitHandler[IN, OUT Message, S State[A], A Action](
 			out *OUT
 		)
 		if deRefIN {
-			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
+			req = *ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
 		} else {
 			req = ctx.In().GetMsg().(IN) //nolint:forcetypeassert,errcheck
 		}
@@ -202,7 +202,7 @@ func CreateRawKitHandler[IN Message, S State[A], A Action](
 			out kit.RawMessage
 		)
 		if deRefIN {
-			req = *(ctx.In().GetMsg().(*IN)) //nolint:forcetypeassert,errcheck
+			req = *ctx.In().GetMsg().(*IN) //nolint:forcetypeassert,errcheck
 		} else {
 			req = ctx.In().GetMsg().(IN) //nolint:forcetypeassert,errcheck
 		}

@@ -31,7 +31,7 @@ func Filter[T any](match func(src T) bool, tt []T) []T {
 		}
 	}
 
-	return ftt[:len(ftt):len(ftt)]
+	return slices.Clip(ftt)
 }
 
 // Map applies the transformer function to each element of the slice ss.
