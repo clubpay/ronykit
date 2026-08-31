@@ -29,6 +29,34 @@ func TestGetField(t *testing.T) {
 	}
 }
 
+func TestGetOptionalField(t *testing.T) {
+	var s testSettings
+	s.Redis.User = "redis-user"
+
+	// testSettings.Redis has no TLS field: must return the zero value, not panic.
+	if got := getOptionalField[bool](s, "Redis", "TLS"); got != false {
+		t.Fatalf("TLS = %v, want %v", got, false)
+	}
+
+	// Missing parent field must also return the zero value, not panic.
+	if got := getOptionalField[string](s, "Cache", "Host"); got != "" {
+		t.Fatalf("Cache.Host = %q, want %q", got, "")
+	}
+
+	type settingsWithTLS struct {
+		Redis struct {
+			TLS bool
+		}
+	}
+
+	var withTLS settingsWithTLS
+	withTLS.Redis.TLS = true
+
+	if got := getOptionalField[bool](withTLS, "Redis", "TLS"); got != true {
+		t.Fatalf("TLS = %v, want %v", got, true)
+	}
+}
+
 func TestConfigSearchPath(t *testing.T) {
 	// 1. Without CONFIG_DIR env variable
 	t.Setenv("CONFIG_DIR", "")
