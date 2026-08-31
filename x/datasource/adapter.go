@@ -132,22 +132,28 @@ type RedisParams struct {
 	User               string
 	Pass               string
 	DBNumber           int
+	TLS                bool
 	InsecureSkipVerify bool
 }
 
 func (params RedisParams) DSN() string {
+	scheme := "redis"
+	if params.TLS {
+		scheme = "rediss"
+	}
+
 	if params.DBNumber > 0 {
 		return fmt.Sprintf(
-			"redis://%s:%s@%s/%d",
-			params.User, url.QueryEscape(params.Pass),
+			"%s://%s:%s@%s/%d",
+			scheme, params.User, url.QueryEscape(params.Pass),
 			net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
 			params.DBNumber,
 		)
 	}
 
 	return fmt.Sprintf(
-		"redis://%s:%s@%s",
-		params.User, url.QueryEscape(params.Pass),
+		"%s://%s:%s@%s",
+		scheme, params.User, url.QueryEscape(params.Pass),
 		net.JoinHostPort(params.Host, rkit.IntToStr(params.Port)),
 	)
 }
@@ -173,6 +179,7 @@ func InitRedis(in, out string) fx.Option {
 
 					if opt.TLSConfig != nil {
 						opt.TLSConfig.MinVersion = tls.VersionTLS12
+						opt.TLSConfig.InsecureSkipVerify = params.InsecureSkipVerify
 					}
 
 					cli := redis.NewClient(opt)

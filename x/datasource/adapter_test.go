@@ -44,4 +44,18 @@ func TestRedisParamsDSN(t *testing.T) {
 	if got != want {
 		t.Fatalf("DSN without DB = %q, want %q", got, want)
 	}
+
+	params.TLS = true
+	got = params.DSN()
+	want = "rediss://u:p%40ss@localhost:6379"
+	if got != want {
+		t.Fatalf("DSN with TLS = %q, want %q", got, want)
+	}
+
+	params.DBNumber = 2
+	got = params.DSN()
+	want = "rediss://u:p%40ss@localhost:6379/2"
+	if got != want {
+		t.Fatalf("DSN with TLS and DB = %q, want %q", got, want)
+	}
 }
