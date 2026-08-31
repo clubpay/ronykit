@@ -52,6 +52,12 @@ type Error struct {
 	// for use with errors.Is and errors.As.
 	// It is not propagated across RPC boundaries.
 	underlying error
+
+	// httpStatus, when non-zero, overrides the wire-level HTTP status
+	// derived from Code. Set via Builder.HTTPStatus; used for compatibility
+	// with external HTTP contracts (e.g. a legacy service's exact status)
+	// that don't map cleanly onto the fixed gRPC-style code set.
+	httpStatus int
 }
 
 // Metadata represents structured key-value pairs for attaching arbitrary
@@ -192,6 +198,10 @@ func Details(err error) ErrDetails {
 }
 
 func (e Error) GetCode() int {
+	if e.httpStatus != 0 {
+		return e.httpStatus
+	}
+
 	return codeStatus[e.Code]
 }
 
