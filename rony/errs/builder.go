@@ -19,6 +19,9 @@ type Builder struct {
 	msgSet bool
 	meta   []any
 	err    error
+
+	httpStatus    int
+	httpStatusSet bool
 }
 
 // B is shorthand for creating a new Builder.
@@ -88,6 +91,18 @@ func (b *Builder) DetailsX(det ErrDetails) *Builder {
 	return b
 }
 
+// HTTPStatus overrides the wire-level HTTP status code for this error,
+// bypassing the default status derived from Code. Use this for
+// compatibility with an external HTTP contract (e.g. matching a legacy
+// service's exact status for a given error) when the fixed gRPC-style
+// code set has no equivalent.
+func (b *Builder) HTTPStatus(status int) *Builder {
+	b.httpStatus = status
+	b.httpStatusSet = true
+
+	return b
+}
+
 // Cause sets the underlying error cause.
 func (b *Builder) Cause(err error) *Builder {
 	b.err = err
@@ -108,6 +123,11 @@ func (b *Builder) Cause(err error) *Builder {
 		if !b.detSet {
 			b.det = e.Details
 			b.detSet = true
+		}
+
+		if !b.httpStatusSet && e.httpStatus != 0 {
+			b.httpStatus = e.httpStatus
+			b.httpStatusSet = true
 		}
 	}
 
@@ -135,11 +155,16 @@ func (b *Builder) Err() error {
 
 	var errMeta Metadata
 
-	return &Error{
+	e := &Error{
 		Code:       code,
 		Item:       msg,
 		Meta:       mergeMeta(errMeta, b.meta),
 		Details:    b.det,
 		underlying: b.err,
 	}
+	if b.httpStatusSet {
+		e.httpStatus = b.httpStatus
+	}
+
+	return e
 }

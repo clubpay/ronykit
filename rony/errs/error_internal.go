@@ -1,6 +1,8 @@
 package errs
 
 import (
+	"errors"
+
 	"github.com/clubpay/ronykit/rony/errs/errmarshalling"
 
 	jsoniter "github.com/json-iterator/go"
@@ -30,6 +32,11 @@ func HTTPStatusToCode(status int) ErrCode {
 }
 
 func HTTPStatus(err error) int {
+	var e *Error
+	if errors.As(err, &e) && e.httpStatus != 0 {
+		return e.httpStatus
+	}
+
 	code := Code(err)
 	switch code {
 	case OK:

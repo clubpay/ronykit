@@ -177,6 +177,46 @@ func TestHTTPStatusAndText(t *testing.T) {
 	}
 }
 
+func TestBuilderHTTPStatusOverride(t *testing.T) {
+	err := errs.B().Code(errs.InvalidArgument).Msg("PHONE_IS_NOT_WHITELISTED").HTTPStatus(406).Err()
+
+	var e *errs.Error
+	if !errors.As(err, &e) {
+		t.Fatalf("expected errs.Error, got %T", err)
+	}
+	if got := e.GetCode(); got != 406 {
+		t.Fatalf("expected overridden GetCode 406, got %d", got)
+	}
+	if got := errs.HTTPStatus(err); got != 406 {
+		t.Fatalf("expected overridden HTTPStatus 406, got %d", got)
+	}
+	// Code-derived classification (retryability, gRPC mapping, ...) is untouched.
+	if e.Code != errs.InvalidArgument {
+		t.Fatalf("expected Code to remain InvalidArgument, got %v", e.Code)
+	}
+
+	// No override set: falls back to the default Code-derived status.
+	plain := errs.B().Code(errs.NotFound).Msg("missing").Err()
+	if got := errs.HTTPStatus(plain); got != errs.NotFound.HTTPStatus() {
+		t.Fatalf("expected default status %d, got %d", errs.NotFound.HTTPStatus(), got)
+	}
+}
+
+func TestBuilderHTTPStatusPropagatesThroughCause(t *testing.T) {
+	cause := errs.B().Code(errs.NotFound).Msg("OTP_EXPIRED").HTTPStatus(410).Err()
+
+	wrapped := errs.B().Cause(cause).Err()
+	if got := errs.HTTPStatus(wrapped); got != 410 {
+		t.Fatalf("expected propagated override 410, got %d", got)
+	}
+
+	// An explicit override on the wrapping builder wins over the cause's.
+	wrapped = errs.B().Cause(cause).HTTPStatus(404).Err()
+	if got := errs.HTTPStatus(wrapped); got != 404 {
+		t.Fatalf("expected explicit override 404 to win, got %d", got)
+	}
+}
+
 func TestHTTPStatusCases(t *testing.T) {
 	cases := []errs.ErrCode{
 		errs.OK,
