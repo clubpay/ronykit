@@ -6,10 +6,10 @@ github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UF
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.16 h1:8rss3VdJdkyj0H3uOzUUYCmSpg/c4L0ec9lzZvJReNQ=
-github.com/clubpay/ronykit/kit v0.26.16/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
-github.com/clubpay/ronykit/x/rkit v0.5.16 h1:xfhcXmpSfVw+ghGdetTSG+wRtdcLXI9yQhx5As/KBmM=
-github.com/clubpay/ronykit/x/rkit v0.5.16/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
+github.com/clubpay/ronykit/kit v0.26.17 h1:bePJiWFER2+guc/QACqfyRFhiDP29oTWUZSf7pskSUE=
+github.com/clubpay/ronykit/kit v0.26.17/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
+github.com/clubpay/ronykit/x/rkit v0.5.17 h1:XHrOYKr2vlzzfJY0uQt/viby+w0DtbhI5+jign0MYZ4=
+github.com/clubpay/ronykit/x/rkit v0.5.17/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.4 h1:tG4xh9yMsRCAiodLVTxyrkzSZ9+o0L1Kg/+cPVcbP/8=
 github.com/go-logr/logr v1.4.4/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=

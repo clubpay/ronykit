@@ -1,7 +1,7 @@
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
 github.com/clipperhouse/uax29/v2 v2.7.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
-github.com/clubpay/ronykit/kit v0.26.16 h1:8rss3VdJdkyj0H3uOzUUYCmSpg/c4L0ec9lzZvJReNQ=
-github.com/clubpay/ronykit/kit v0.26.16/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
+github.com/clubpay/ronykit/kit v0.26.17 h1:bePJiWFER2+guc/QACqfyRFhiDP29oTWUZSf7pskSUE=
+github.com/clubpay/ronykit/kit v0.26.17/go.mod h1:Aj16iRhtnQ5/wpS5Gn5lsvtY73NlCGHR1zP8VKmMzpo=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=
 github.com/gobwas/pool v0.2.1 h1:xfeeEhW7pwmX8nuLVlqbzVc7udMDrwetjEv+TZIz1og=
