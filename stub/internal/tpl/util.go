@@ -1,12 +1,14 @@
 package tpl
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/build"
 	"path"
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/clubpay/ronykit/kit"
 )
@@ -17,12 +19,15 @@ func goType(t reflect.Type) string {
 
 func goTypeRecursive(prefix string, t reflect.Type) string {
 	// we need a hacky fix to correctly handle json.RawMessage and kit.RawMessage in auto-generated code
-	// of the stubs
+	// of the stubs.
+	// NOTE: compare reflect.Type directly instead of Type.String(); since Go 1.27
+	// json.RawMessage is an alias for jsontext.Value and its String() no longer
+	// reports "json.RawMessage".
 	if t.PkgPath() == reflect.TypeFor[kit.RawMessage]().PkgPath() {
 		return fmt.Sprintf("%s%s%s", prefix, "kit.", t.Name())
 	}
 
-	if t.String() == "json.RawMessage" {
+	if t == reflect.TypeFor[json.RawMessage]() {
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
 	}
 
@@ -72,13 +77,15 @@ func tsType(t reflect.Type) string {
 
 func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 	// we need a hacky fix to handle correctly json.RawMessage and kit.RawMessage in auto-generated code
-	// of the stubs
-	switch t.String() {
-	case "time.Time":
+	// of the stubs.
+	// NOTE: compare reflect.Type directly instead of Type.String(); since Go 1.27
+	// json.RawMessage is an alias for jsontext.Value and its String() no longer
+	// reports "json.RawMessage".
+	switch t {
+	case reflect.TypeFor[time.Time]():
 		return fmt.Sprintf("%sstring", prefix)
-	case "json.RawMessage":
-		return fmt.Sprintf("%s%s", prefix, "any")
-	case "kit.RawMessage":
+	case reflect.TypeFor[json.RawMessage](),
+		reflect.TypeFor[kit.RawMessage]():
 		return fmt.Sprintf("%s%s", prefix, "any")
 	}
 
