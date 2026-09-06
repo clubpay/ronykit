@@ -1,6 +1,7 @@
 package stubgen
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -50,6 +51,17 @@ func TestInputBuiltinPkgPaths(t *testing.T) {
 					RType: reflect.TypeOf(localType{}),
 				},
 			},
+			{
+				// Raw message fields are rendered as kit.JSONMessage in the
+				// generated code, so their declaring package must not be
+				// collected. On Go >= 1.27 json.RawMessage is an alias for
+				// jsontext.Value and PkgPath() reports "encoding/json/jsontext",
+				// which would otherwise become an unused import.
+				Element: &desc.ParsedElement{
+					Kind:  desc.Object,
+					RType: reflect.TypeOf(json.RawMessage{}),
+				},
+			},
 		},
 	})
 
@@ -63,6 +75,9 @@ func TestInputBuiltinPkgPaths(t *testing.T) {
 	}
 	if found[reflect.TypeOf(localType{}).PkgPath()] {
 		t.Fatalf("unexpected non-stdlib package path present: %#v", paths)
+	}
+	if found["encoding/json"] || found["encoding/json/jsontext"] {
+		t.Fatalf("raw message field package must not be collected: %#v", paths)
 	}
 }
 

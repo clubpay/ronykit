@@ -1,7 +1,9 @@
 package stubgen
 
 import (
+	"encoding/json"
 	"go/build"
+	"reflect"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
@@ -128,8 +130,25 @@ func (in *Input) GetBuiltinPkgPaths() []string {
 
 	for _, m := range in.DTOs() {
 		for _, f := range m.Fields {
-			if f.Element != nil && isBuiltinPackage(f.Element.RType.PkgPath()) {
-				paths[f.Element.RType.PkgPath()] = struct{}{}
+			if f.Element == nil {
+				continue
+			}
+
+			rt := f.Element.RType
+
+			// Raw message fields are rendered as kit.JSONMessage / kit.RawMessage
+			// in the generated code (see tpl.goTypeRecursive), so their declaring
+			// package must not be imported by the generated file. Besides being
+			// unnecessary, collecting it breaks the build on Go >= 1.27, where
+			// encoding/json.RawMessage is an alias for encoding/json/jsontext.Value
+			// and PkgPath() reports "encoding/json/jsontext", an import the
+			// generated code never references.
+			if rt == reflect.TypeFor[json.RawMessage]() || rt == reflect.TypeFor[kit.RawMessage]() {
+				continue
+			}
+
+			if isBuiltinPackage(rt.PkgPath()) {
+				paths[rt.PkgPath()] = struct{}{}
 			}
 		}
 	}
