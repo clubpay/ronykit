@@ -1,19 +1,25 @@
 package desc
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/clubpay/ronykit/kit"
 )
 
 func typ(prefix string, t reflect.Type) string {
 	// we need a hacky fix to handle correctly json.RawMessage and kit.RawMessage in auto-generated code
-	// of the stubs
-	switch t.String() {
-	case "json.RawMessage":
+	// of the stubs.
+	// NOTE: compare reflect.Type directly instead of Type.String(); since Go 1.27
+	// json.RawMessage is an alias for jsontext.Value and its String() no longer
+	// reports "json.RawMessage".
+	switch t {
+	case reflect.TypeFor[json.RawMessage]():
 		return fmt.Sprintf("%s%s", prefix, "kit.JSONMessage")
-	case "kit.RawMessage":
+	case reflect.TypeFor[kit.RawMessage]():
 		return fmt.Sprintf("%s%s", prefix, "kit.RawMessage")
-	case "kit.MultipartFormMessage":
+	case reflect.TypeFor[kit.MultipartFormMessage]():
 		return fmt.Sprintf("%s%s", prefix, "kit.MultipartFormMessage")
 	}
 
