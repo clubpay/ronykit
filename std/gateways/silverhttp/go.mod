@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/std/gateways/silverhttp
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/clubpay/ronykit/kit v0.26.19
@@ -20,7 +20,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

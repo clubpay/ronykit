@@ -161,8 +161,8 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 
 	// if we are here, it means that mt is a struct
 	fields := make([]ParsedField, 0, mt.NumField())
-	for i := range mt.NumField() {
-		f := mt.Field(i)
+	for f := range mt.Fields() {
+		f := f
 		ft := f.Type
 		ptn := getParsedStructTag(f.Tag, tagName)
 
@@ -175,7 +175,7 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 				Optional: ft.Kind() == reflect.Pointer || ft.Kind() == reflect.Slice ||
 					ft.Kind() == reflect.Map,
 				Embedded: f.Anonymous,
-				Element:  utils.ValPtr(ps.parseElement(ft, enc)),
+				Element:  new(ps.parseElement(ft, enc)),
 				Exported: f.IsExported(),
 				Meta:     meta.Fields[f.Name],
 			},
@@ -199,11 +199,11 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 	}
 	switch kind {
 	case Map:
-		pe.Key = utils.ValPtr(ps.parseElement(ft.Key(), enc))
-		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
+		pe.Key = new(ps.parseElement(ft.Key(), enc))
+		pe.Element = new(ps.parseElement(ft.Elem(), enc))
 
 	case Array:
-		pe.Element = utils.ValPtr(ps.parseElement(ft.Elem(), enc))
+		pe.Element = new(ps.parseElement(ft.Elem(), enc))
 
 	case Object:
 		switch {
@@ -212,7 +212,7 @@ func (ps *ParsedService) parseElement(ft reflect.Type, enc kit.Encoding) ParsedE
 				ft = ft.Elem()
 			}
 
-			pe.Message = utils.ValPtr(ps.parseMessage(reflect.New(ft).Interface(), MessageMeta{}, enc))
+			pe.Message = new(ps.parseMessage(reflect.New(ft).Interface(), MessageMeta{}, enc))
 		case ps.isParsed(ft):
 			pe.Message = ps.getParsed(ft)
 		case ps.isVisited(ft):

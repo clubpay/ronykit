@@ -77,8 +77,7 @@ func Wrap(err error, msg string, metaPairs ...any) error {
 
 	e := &Error{Code: Unknown, Item: msg, underlying: err}
 
-	var ee *Error
-	if errors.As(err, &ee) {
+	if ee, ok := errors.AsType[*Error](err); ok {
 		e.Details = ee.Details
 		e.Code = ee.Code
 		e.Meta = mergeMeta(ee.Meta, metaPairs)
@@ -123,8 +122,7 @@ func Convert(err error) error {
 		return nil
 	}
 
-	var e *Error
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*Error](err); ok {
 		return e
 	}
 
@@ -167,8 +165,7 @@ func Code(err error) ErrCode {
 		return OK
 	}
 
-	var e *Error
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*Error](err); ok {
 		return e.Code
 	}
 
@@ -178,8 +175,7 @@ func Code(err error) ErrCode {
 // Meta reports the metadata included in the error.
 // If 'err' is nil or the error lacks metadata it reports nil.
 func Meta(err error) Metadata {
-	var e *Error
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*Error](err); ok {
 		return e.Meta
 	}
 
@@ -189,8 +185,7 @@ func Meta(err error) Metadata {
 // Details reports the error details included in the error.
 // If err is nil or the error lacks details it reports nil.
 func Details(err error) ErrDetails {
-	var e *Error
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*Error](err); ok {
 		return e.Details
 	}
 

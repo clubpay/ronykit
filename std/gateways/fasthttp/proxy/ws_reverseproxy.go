@@ -227,8 +227,7 @@ func replicateWebsocketConn(logger __Logger, dst, src *websocket.Conn, errChan c
 	for {
 		msgType, msg, err := src.ReadMessage()
 		if err != nil {
-			var closeErr *websocket.CloseError
-			if !errors.As(err, &closeErr) {
+			if _, ok := errors.AsType[*websocket.CloseError](err); !ok {
 				errorf(
 					logger,
 					"replicateWebsocketConn: src.ReadMessage failed, msgType=%d, msg=%s, err=%v",
