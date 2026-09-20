@@ -71,8 +71,17 @@ func (cfg *serverConfig) allServiceDesc() []desc.ServiceDesc {
 }
 
 func (cfg *serverConfig) Gateways() []kit.Gateway {
+	return cfg.gateways()
+}
+
+func (cfg *serverConfig) gateways(extra ...fasthttp.Option) []kit.Gateway {
+	opts := cfg.gatewayOpts
+	if len(extra) > 0 {
+		opts = append(append([]fasthttp.Option{}, cfg.gatewayOpts...), extra...)
+	}
+
 	return []kit.Gateway{
-		fasthttp.MustNew(cfg.gatewayOpts...),
+		fasthttp.MustNew(opts...),
 	}
 }
 

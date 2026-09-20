@@ -1,8 +1,10 @@
 package rony
 
 import (
+	"errors"
 	"testing"
 
+	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
 )
 
@@ -76,5 +78,43 @@ func TestSetupStreamOptions(t *testing.T) {
 	}
 	if contract.OutputMeta.Fields["ok"].Deprecated != true {
 		t.Fatalf("unexpected output meta: %#v", contract.OutputMeta.Fields)
+	}
+}
+
+func TestSetupStreamErrorDoesNotSendEnvelope(t *testing.T) {
+	srv := NewServer()
+
+	handler := func(_ *StreamCtx[EMPTY, NOP, streamOut], _ streamIn) error {
+		return errors.New("boom")
+	}
+
+	Setup[EMPTY, NOP](
+		srv,
+		"svc",
+		EmptyState(),
+		WithStream[EMPTY, NOP, streamIn, streamOut](
+			handler,
+			RPC("pred"),
+		),
+	)
+
+	svc := srv.cfg.services["svc"]
+	if svc == nil || len(svc.Contracts) != 1 {
+		t.Fatalf("unexpected contracts: %#v", svc)
+	}
+
+	err := kit.NewTestContext().
+		Input(&streamIn{ID: 1}, kit.EnvelopeHdr{}).
+		SetHandler(svc.Contracts[0].Handlers...).
+		Receiver(func(out ...*kit.Envelope) error {
+			if len(out) != 0 {
+				return errors.New("stream handler errors must not auto-send an envelope")
+			}
+
+			return nil
+		}).
+		Run(true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }

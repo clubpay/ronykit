@@ -68,8 +68,8 @@ type Metadata map[string]any
 // Wrap wraps the err, adding additional error information.
 // If err is nil, it returns.
 //
-// If err is already an *Error, its code, message, and details
-// are copied over to the new error.
+// If err is already an *Error, its code, details, metadata, and
+// HTTP status override are copied over to the new error.
 func Wrap(err error, msg string, metaPairs ...any) error {
 	if err == nil {
 		return nil
@@ -80,6 +80,7 @@ func Wrap(err error, msg string, metaPairs ...any) error {
 	if ee, ok := errors.AsType[*Error](err); ok {
 		e.Details = ee.Details
 		e.Code = ee.Code
+		e.httpStatus = ee.httpStatus
 		e.Meta = mergeMeta(ee.Meta, metaPairs)
 	} else {
 		e.Meta = mergeMeta(nil, metaPairs)
@@ -197,7 +198,7 @@ func (e Error) GetCode() int {
 		return e.httpStatus
 	}
 
-	return codeStatus[e.Code]
+	return e.Code.HTTPStatus()
 }
 
 func (e Error) GetItem() string {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
+	"github.com/clubpay/ronykit/rony/errs"
 )
 
 type rawIn struct {
@@ -203,5 +204,64 @@ func TestSetupRawUnaryErrorPath(t *testing.T) {
 		RunREST()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCreateKitHandlerSuccessAndConvertedError(t *testing.T) {
+	state := EMPTY{}
+	h := func(_ *UnaryCtx[EMPTY, NOP], in goodIn) (*goodOut, error) {
+		if in.ID == 0 {
+			return nil, errors.New("boom")
+		}
+
+		return &goodOut{OK: true}, nil
+	}
+
+	handler := CreateKitHandler[goodIn, goodOut, EMPTY, NOP](h, &state, nil, true)
+
+	err := kit.NewTestContext().
+		Input(&goodIn{ID: 1}, kit.EnvelopeHdr{}).
+		SetHandler(handler).
+		Expect(func(e *kit.Envelope) error {
+			out, ok := e.GetMsg().(*goodOut)
+			if !ok || out == nil || !out.OK {
+				return errors.New("unexpected success payload")
+			}
+
+			return nil
+		}).
+		RunREST()
+	if err != nil {
+		t.Fatalf("success path failed: %v", err)
+	}
+
+	err = kit.NewTestContext().
+		Input(&goodIn{ID: 0}, kit.EnvelopeHdr{}).
+		SetHandler(handler).
+		Receiver(func(out ...*kit.Envelope) error {
+			if len(out) == 0 {
+				return errors.New("expected converted error envelope")
+			}
+
+			var got *errs.Error
+			switch m := out[0].GetMsg().(type) {
+			case *errs.Error:
+				got = m
+			case error:
+				if !errors.As(m, &got) {
+					return errors.New("expected converted unknown *errs.Error")
+				}
+			default:
+				return errors.New("expected converted unknown *errs.Error")
+			}
+			if got == nil || errs.Code(got) != errs.Unknown {
+				return errors.New("expected converted unknown *errs.Error")
+			}
+
+			return nil
+		}).
+		RunREST()
+	if err != nil {
+		t.Fatalf("error path failed: %v", err)
 	}
 }

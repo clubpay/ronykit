@@ -80,6 +80,89 @@ func TestBaseCtxReduceStateLocking(t *testing.T) {
 	}
 }
 
+func TestBaseCtxReduceStateUnlocksOnCallbackPanic(t *testing.T) {
+	state := &testState{}
+	ctx := &BaseCtx[*testState, testAction]{
+		s:  state,
+		sl: state,
+	}
+
+	func() {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("expected panic from ReduceState callback")
+			}
+		}()
+
+		_ = ctx.ReduceState(1, func(_ *testState, _ error) error {
+			panic("callback")
+		})
+	}()
+
+	if state.locked != 1 || state.unlocked != 1 {
+		t.Fatalf("lock not released after callback panic: %d/%d", state.locked, state.unlocked)
+	}
+
+	if err := ctx.ReduceState(4, nil); err != nil {
+		t.Fatalf("ReduceState after panic recovery failed: %v", err)
+	}
+	if state.locked != 2 || state.unlocked != 2 {
+		t.Fatalf("unexpected lock counts after recovery: %d/%d", state.locked, state.unlocked)
+	}
+	if state.value != 5 {
+		t.Fatalf("unexpected state value after recovery: %d", state.value)
+	}
+}
+
+type panicReduceState struct {
+	testState
+}
+
+func (s *panicReduceState) Reduce(_ testAction) error {
+	panic("reduce")
+}
+
+func TestBaseCtxReduceStateUnlocksOnReducePanic(t *testing.T) {
+	state := &panicReduceState{}
+	ctx := &BaseCtx[*panicReduceState, testAction]{
+		s:  state,
+		sl: state,
+	}
+
+	func() {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("expected panic from Reduce")
+			}
+		}()
+
+		_ = ctx.ReduceState(1, nil)
+	}()
+
+	if state.locked != 1 || state.unlocked != 1 {
+		t.Fatalf("lock not released after Reduce panic: %d/%d", state.locked, state.unlocked)
+	}
+}
+
+func TestNewUnaryCtxSharesPointerState(t *testing.T) {
+	state := &testState{value: 7}
+	err := kit.NewTestContext().
+		Input(&inMsg{ID: 1}, kit.EnvelopeHdr{}).
+		SetHandler(func(ctx *kit.Context) {
+			u := newUnaryCtx[*testState, testAction](ctx, &state, state)
+			if u.State() != state {
+				t.Fatalf("expected same state pointer, got %p want %p", u.State(), state)
+			}
+			if u.State().value != 7 {
+				t.Fatalf("unexpected state value: %d", u.State().value)
+			}
+		}).
+		RunREST()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestStreamCtxPushHeaders(t *testing.T) {
 	state := EMPTY{}
 

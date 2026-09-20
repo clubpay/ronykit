@@ -41,6 +41,15 @@ func TestJSONIterEncoder(t *testing.T) {
 	if !strings.Contains(string(data), `"code"`) || !strings.Contains(string(data), `"message"`) {
 		t.Fatalf("unexpected json output: %s", string(data))
 	}
+
+	invalid := Error{Code: 99, Item: "x"}
+	data, err = jsoniter.Marshal(invalid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(data), `"unknown"`) {
+		t.Fatalf("expected out-of-range code to encode as unknown, got %s", string(data))
+	}
 }
 
 func TestErrmarshallingRoundTrip(t *testing.T) {

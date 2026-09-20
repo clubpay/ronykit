@@ -4,6 +4,12 @@ All notable changes to the `rony` module are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- **`ReduceState`** now unlocks via `defer`, so a panic in `Reduce` or the callback cannot leave the service lock held.
+- **`Server` lifecycle** — `Stop`, `PrintRoutes`, `PrintRoutesCompact`, and `LogEndpoints` no-op if `Start` was never called. `initEdge` no longer appends docs `WithServeFS` onto the long-lived gateway option list (Start/Stop/Start no longer accumulates duplicate mounts).
+- **`errs`** — `ErrCode.String`, `ErrCode.HTTPStatus`, and `Error.GetCode` no longer panic on an out-of-range code (they report `unknown` / 500). `Wrap` now copies an `HTTPStatus` override the same way `Builder.Cause` already did. `WrapCode` still does not copy the override, so the new code's default status applies.
+
 ### Added
 
 - **`RelayCtx`** and **`SRelayCtx`** — relay-only handler context (no envelope output helpers). Exposes `Relay()`, `InputBody()`, `RESTConn()`, `IsWebSocketUpgrade()`.

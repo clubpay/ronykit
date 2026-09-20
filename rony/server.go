@@ -32,6 +32,8 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 func (s *Server) initEdge() error {
+	var extraGateway []fasthttp.Option
+
 	if s.cfg.serveDocsPath != "" {
 		var (
 			docFS fs.FS
@@ -56,13 +58,15 @@ func (s *Server) initEdge() error {
 			return err
 		}
 
-		s.cfg.gatewayOpts = append(s.cfg.gatewayOpts, fasthttp.WithServeFS(s.cfg.serveDocsPath, "", docFS))
+		// Keep serve-docs off cfg.gatewayOpts so Start/Stop/Start does not
+		// accumulate duplicate WithServeFS options.
+		extraGateway = []fasthttp.Option{fasthttp.WithServeFS(s.cfg.serveDocsPath, "", docFS)}
 	}
 
 	opts := make([]kit.Option, 0, 2+len(s.cfg.edgeOpts))
 	opts = append(
 		opts,
-		kit.WithGateway(s.cfg.Gateways()...),
+		kit.WithGateway(s.cfg.gateways(extraGateway...)...),
 		kit.WithServiceBuilder(s.cfg.allServiceBuilders()...),
 	)
 
@@ -85,18 +89,34 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Stop(ctx context.Context, signals ...os.Signal) {
+	if s.edge == nil {
+		return
+	}
+
 	s.edge.Shutdown(ctx, signals...)
 }
 
 func (s *Server) PrintRoutes(w io.Writer) {
+	if s.edge == nil {
+		return
+	}
+
 	s.edge.PrintRoutes(w)
 }
 
 func (s *Server) PrintRoutesCompact(w io.Writer) {
+	if s.edge == nil {
+		return
+	}
+
 	s.edge.PrintRoutesCompact(w)
 }
 
 func (s *Server) LogEndpoints(w io.Writer) {
+	if s.edge == nil {
+		return
+	}
+
 	s.edge.LogEndpoints(w)
 }
 

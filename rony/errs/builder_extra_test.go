@@ -217,6 +217,61 @@ func TestBuilderHTTPStatusPropagatesThroughCause(t *testing.T) {
 	}
 }
 
+func TestWrapPreservesHTTPStatusOverride(t *testing.T) {
+	inner := errs.B().Code(errs.InvalidArgument).Msg("PHONE_IS_NOT_WHITELISTED").HTTPStatus(406).Err()
+
+	wrapped := errs.Wrap(inner, "session")
+	if got := errs.HTTPStatus(wrapped); got != 406 {
+		t.Fatalf("Wrap should keep HTTP status override, got %d", got)
+	}
+	if errs.Code(wrapped) != errs.InvalidArgument {
+		t.Fatalf("Wrap should keep code, got %v", errs.Code(wrapped))
+	}
+
+	// WrapCode replaces the code; the override is intentionally not copied
+	// so the new code's default HTTP status applies.
+	recoded := errs.WrapCode(inner, errs.Internal, "INTERNAL")
+	if got := errs.HTTPStatus(recoded); got != errs.Internal.HTTPStatus() {
+		t.Fatalf("WrapCode should use the new code's status, got %d", got)
+	}
+	if errs.Code(recoded) != errs.Internal {
+		t.Fatalf("WrapCode should replace code, got %v", errs.Code(recoded))
+	}
+
+	plain := errs.Wrap(errors.New("x"), "wrapped")
+	if got := errs.HTTPStatus(plain); got != errs.Unknown.HTTPStatus() {
+		t.Fatalf("Wrap of non-Error should stay unknown/500, got %d", got)
+	}
+}
+
+func TestErrCodeOutOfRangeIsSafe(t *testing.T) {
+	cases := []errs.ErrCode{99, -1, 1000}
+	for _, c := range cases {
+		if got := c.String(); got != "unknown" {
+			t.Fatalf("out-of-range String(%d) = %q, want unknown", c, got)
+		}
+		if got := c.HTTPStatus(); got != 500 {
+			t.Fatalf("out-of-range HTTPStatus(%d) = %d, want 500", c, got)
+		}
+
+		e := &errs.Error{Code: c, Item: "x"}
+		if got := e.GetCode(); got != 500 {
+			t.Fatalf("GetCode for code %d = %d, want 500", c, got)
+		}
+		if got := errs.HTTPStatus(e); got != 500 {
+			t.Fatalf("HTTPStatus for code %d = %d, want 500", c, got)
+		}
+	}
+
+	// Valid codes are unchanged, including the zero value.
+	if errs.OK.String() != "ok" || errs.OK.HTTPStatus() != 200 {
+		t.Fatalf("OK mapping changed: %s %d", errs.OK.String(), errs.OK.HTTPStatus())
+	}
+	if errs.Unauthenticated.String() != "unauthenticated" || errs.Unauthenticated.HTTPStatus() != 401 {
+		t.Fatalf("Unauthenticated mapping changed: %s %d", errs.Unauthenticated.String(), errs.Unauthenticated.HTTPStatus())
+	}
+}
+
 func TestHTTPStatusCases(t *testing.T) {
 	cases := []errs.ErrCode{
 		errs.OK,

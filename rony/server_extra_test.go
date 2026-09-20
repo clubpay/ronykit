@@ -128,3 +128,42 @@ func TestServerOptionsAffectConfig(t *testing.T) {
 		t.Fatal("expected gateway to be created")
 	}
 }
+
+func TestServerLifecycleBeforeStartIsSafe(t *testing.T) {
+	srv := NewServer(Listen("127.0.0.1:0"))
+
+	var buf bytes.Buffer
+	srv.PrintRoutes(&buf)
+	srv.PrintRoutesCompact(&buf)
+	srv.LogEndpoints(&buf)
+	if buf.Len() != 0 {
+		t.Fatalf("expected no route output before Start, got %q", buf.String())
+	}
+
+	srv.Stop(context.Background())
+}
+
+func TestInitEdgeDoesNotMutateGatewayOpts(t *testing.T) {
+	srv := NewServer(
+		WithServerName("demo"),
+		WithVersion("v1"),
+		Listen("127.0.0.1:0"),
+		WithAPIDocs("/docs"),
+		UseScalarUI(),
+	)
+
+	before := len(srv.cfg.gatewayOpts)
+	if err := srv.initEdge(); err != nil {
+		t.Fatalf("first initEdge failed: %v", err)
+	}
+	if got := len(srv.cfg.gatewayOpts); got != before {
+		t.Fatalf("initEdge mutated gatewayOpts: before=%d after=%d", before, got)
+	}
+
+	if err := srv.initEdge(); err != nil {
+		t.Fatalf("second initEdge failed: %v", err)
+	}
+	if got := len(srv.cfg.gatewayOpts); got != before {
+		t.Fatalf("second initEdge mutated gatewayOpts: before=%d after=%d", before, got)
+	}
+}

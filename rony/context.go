@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // BaseCtx is a base context object used by UnaryCtx, StreamCtx, and RelayCtx
@@ -37,15 +36,7 @@ func (c *BaseCtx[S, A]) State() S {
 func (c *BaseCtx[S, A]) ReduceState(action A, fn func(s S, err error) error) (err error) {
 	if c.sl != nil {
 		c.sl.Lock()
-
-		err = c.s.Reduce(action)
-		if fn != nil {
-			err = fn(c.s, err)
-		}
-
-		c.sl.Unlock()
-
-		return err
+		defer c.sl.Unlock()
 	}
 
 	err = c.s.Reduce(action)
@@ -137,7 +128,7 @@ func newUnaryCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *UnaryCtx[S, A] {
 	return &UnaryCtx[S, A]{
-		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: BaseCtx[S, A]{ctx: ctx, s: *s, sl: sl},
 	}
 }
 
@@ -185,7 +176,7 @@ func newStreamCtx[S State[A], A Action, M Message](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *StreamCtx[S, A, M] {
 	return &StreamCtx[S, A, M]{
-		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: BaseCtx[S, A]{ctx: ctx, s: *s, sl: sl},
 	}
 }
 
@@ -235,7 +226,7 @@ func newRelayCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *RelayCtx[S, A] {
 	return &RelayCtx[S, A]{
-		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: BaseCtx[S, A]{ctx: ctx, s: *s, sl: sl},
 	}
 }
 
