@@ -21,7 +21,6 @@ use (
 	./std/gateways/fastws
 	./std/gateways/mcp
 	./std/gateways/silverhttp
-	./std/mcpclients/gosdk
 	./stub
 	./testenv
 	./x/apidoc
