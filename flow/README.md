@@ -440,7 +440,8 @@ handle, err := sdk.CreateSchedule(ctx, flow.CreateScheduleRequest{
 	},
 	Spec: flow.ScheduleSpec{
 		Calendars: []flow.ScheduleCalendarSpec{
-			{Hour: 9, Minute: 0},
+			{Hour: 9, Minute: 0}, // 09:00:00; clock zeros are kept
+			// DaysOfWeek: []time.Weekday{time.Sunday}, // optional; DayOfWeek: 0 cannot express Sunday
 		},
 	},
 })
@@ -537,7 +538,9 @@ run, err := MyWorkflow.Execute(ctx, req, flow.ExecuteWorkflowOptions{
 
 ## Payload Encryption
 
-`flow` includes an AES-encrypted data converter with zlib compression. Payloads stored in Temporal are encrypted at rest.
+`flow` includes an AES-GCM data converter with zlib compression. Payloads stored in Temporal are encrypted at rest. The key may be 16, 24, or 32 bytes (used as the AES key) or any other length (SHA-256 derived).
+
+Encrypt failures are returned, so a payload is never stored in plaintext as a fallback. Decrypt is deliberately lenient in the other direction: a payload the codec cannot read — plaintext history written before encryption was enabled, or a payload sealed with a rotated key — is passed through untouched instead of failing the batch, so one unreadable payload cannot stall a workflow task or blank out the Web UI. Passthrough is all-or-nothing per payload; a payload is never returned half-decrypted.
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
@@ -548,7 +551,7 @@ backend, err := flow.NewBackend(flow.BackendConfig{
 
 ### Codec Server
 
-The `codecserver` sub-package exposes an HTTP service compatible with Temporal's [Codec Server protocol](https://docs.temporal.io/production-deployment/data-encryption). Point the Temporal Web UI at this endpoint to decrypt payloads for display.
+The `codecserver` sub-package exposes an HTTP service compatible with Temporal's [Codec Server protocol](https://docs.temporal.io/production-deployment/data-encryption). Point the Temporal Web UI at this endpoint to decrypt payloads for display. Handlers read `X-Namespace` from the incoming request header and set the CORS headers the Web UI needs (`POST`/`OPTIONS` on `/encode` and `/decode`). If the gateway also has CORS enabled, include `X-Namespace` in the allowed headers.
 
 ```go
 import "github.com/clubpay/ronykit/flow/codecserver"
@@ -572,7 +575,7 @@ sdk := flow.NewSDK(flow.SDKConfig{
 })
 ```
 
-On `Start()`, the SDK automatically migrates schedulers from the old backend to the new one. Old workflows continue running on the deprecating backend until completion. Use `SchedulerMigrator` directly for manual control:
+On `Start()`, the SDK automatically migrates schedulers from the old backend to the new one in the background; `Stop()` cancels that migration and waits for it to unwind. Old workflows continue running on the deprecating backend until completion. Use `SchedulerMigrator` directly for manual control:
 
 ```go
 m := flow.NewSchedulerMigrator(oldBackend, newBackend)
@@ -581,6 +584,8 @@ err := m.Migrate(ctx, true, func(ctx context.Context, sch *flow.ScheduleEntry) f
 	return flow.MigrateCheckResult{}
 })
 ```
+
+A schedule that the check function skips is retried on later rounds, so one that was skipped because it was about to fire still migrates once it settles. `Migrate` waits one minute between rounds and gives up after ten, returning an error that names the schedules left on the source cluster. Use `WithRetry(interval, rounds)` to change those bounds.
 
 ## Logging
 

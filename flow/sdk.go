@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"reflect"
+	"sync"
 	"time"
 
 	"go.temporal.io/sdk/client"
@@ -22,6 +23,9 @@ type SDK struct {
 	l   log.Logger
 	b   Backend
 	old Backend
+
+	migrateCancel context.CancelFunc
+	migrateDone   <-chan struct{}
 }
 
 func NewSDK(cfg SDKConfig) *SDK {
@@ -43,16 +47,35 @@ func (sdk *SDK) Start() error {
 	if sdk.old != nil {
 		err = sdk.old.Start()
 		if err != nil {
+			sdk.b.Stop()
+
 			return err
 		}
 
-		go sdk.migrateSchedulers()
+		ctx, cancel := context.WithCancel(context.Background())
+		done := make(chan struct{})
+		sdk.migrateCancel = cancel
+		sdk.migrateDone = done
+
+		go func() {
+			defer close(done)
+
+			sdk.migrateSchedulers(ctx)
+		}()
 	}
 
 	return nil
 }
 
 func (sdk *SDK) Stop() {
+	if sdk.migrateCancel != nil {
+		sdk.migrateCancel()
+
+		if sdk.migrateDone != nil {
+			<-sdk.migrateDone
+		}
+	}
+
 	sdk.b.Stop()
 
 	if sdk.old != nil {
@@ -60,7 +83,7 @@ func (sdk *SDK) Stop() {
 	}
 }
 
-func (sdk *SDK) migrateSchedulers() {
+func (sdk *SDK) migrateSchedulers(ctx context.Context) {
 	if sdk.old == nil || sdk.b == nil {
 		return
 	}
@@ -68,10 +91,16 @@ func (sdk *SDK) migrateSchedulers() {
 	m := NewSchedulerMigrator(sdk.old, sdk.b)
 
 	err := m.Migrate(
-		context.Background(),
+		ctx,
 		true,
 		func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult {
 			if len(sch.NextActionTimes) > 0 && time.Until(sch.NextActionTimes[0]) < time.Minute {
+				if sdk.l != nil {
+					sdk.l.Info("skipping schedule migration; next action is imminent",
+						"scheduleID", sch.ID,
+					)
+				}
+
 				return MigrateCheckResult{
 					Ignore: true,
 				}
@@ -81,7 +110,7 @@ func (sdk *SDK) migrateSchedulers() {
 		},
 	)
 	if err != nil && sdk.l != nil {
-		sdk.l.Warn("got error on migrating schedulers: %v", err)
+		sdk.l.Warn("migrating schedulers", "error", err)
 	}
 }
 
@@ -94,8 +123,13 @@ func (sdk *SDK) Init() {
 }
 
 func (sdk *SDK) InitWithState(state any) {
+	registryMu.Lock()
+	defer registryMu.Unlock()
+
+	stateT := reflect.TypeOf(state)
+
 	for stateType, w := range registeredWorkflows {
-		if stateType == reflect.TypeOf(state) {
+		if stateType == stateT {
 			for _, t := range w {
 				t.registerWithStateAny(sdk.b, state, true)
 
@@ -107,7 +141,7 @@ func (sdk *SDK) InitWithState(state any) {
 	}
 
 	for stateType, w := range registeredActivities {
-		if stateType == reflect.TypeOf(state) {
+		if stateType == stateT {
 			for _, t := range w {
 				t.registerWithStateAny(sdk.b, state, true)
 
@@ -119,12 +153,13 @@ func (sdk *SDK) InitWithState(state any) {
 	}
 
 	for stateType, w := range registeredActivityFactories {
-		if stateType == reflect.TypeOf(state) {
+		if stateType == stateT {
 			for _, fn := range w {
-				fn(state).registerWithStateAny(sdk.b, state, true)
+				ent := fn(state)
+				ent.registerWithStateAny(sdk.b, state, true)
 
 				if sdk.old != nil {
-					fn(state).registerWithStateAny(sdk.old, state, false)
+					ent.registerWithStateAny(sdk.old, state, false)
 				}
 			}
 		}
@@ -146,6 +181,7 @@ type temporalEntityT interface {
 }
 
 var (
+	registryMu                  sync.Mutex
 	registeredWorkflows         = make(map[reflect.Type][]temporalEntityT)
 	registeredActivities        = make(map[reflect.Type][]temporalEntityT)
 	registeredActivityFactories = make(map[reflect.Type][]func(s any) temporalEntityT)

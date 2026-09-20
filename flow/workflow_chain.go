@@ -1,6 +1,9 @@
 package flow
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type chainExecutor[DATA, STATE any] interface {
 	Execute(ctx Context, req DATA, opts ExecuteActivityOptions) Future[DATA]
@@ -95,10 +98,14 @@ func NewChainWorkflow[DATA, STATE any](
 		name, group,
 		func(ctx *WorkflowContext[DATA, DATA, STATE], req DATA) (*DATA, error) {
 			data := req
-			for _, step := range steps {
+			for i, step := range steps {
 				res, err := step.executor.Execute(ctx.Context(), data, step.options).Get(ctx.Context())
 				if err != nil {
 					return nil, err
+				}
+
+				if res == nil {
+					return nil, fmt.Errorf("flow: chain step %d returned a nil result", i)
 				}
 
 				data = *res

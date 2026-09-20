@@ -43,16 +43,45 @@ func (ctx *ActivityContext[REQ, RES, STATE]) SetState(state STATE) {
 	ctx.s = state
 }
 
-func (ctx *ActivityContext[REQ, RES, STATE]) HasHearBeat() bool {
+func (ctx *ActivityContext[REQ, RES, STATE]) HasHeartbeat() bool {
 	return activity.HasHeartbeatDetails(ctx.ctx)
 }
 
-func (ctx *ActivityContext[REQ, RES, STATE]) GetHeartBeat() any {
-	return activity.GetHeartbeatDetails(ctx.ctx)
+// HasHearBeat is a misspelled alias of HasHeartbeat.
+//
+// Deprecated: use HasHeartbeat.
+func (ctx *ActivityContext[REQ, RES, STATE]) HasHearBeat() bool {
+	return ctx.HasHeartbeat()
 }
 
-func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartBeat(details any) {
+func (ctx *ActivityContext[REQ, RES, STATE]) HeartbeatDetails(dest any) error {
+	return activity.GetHeartbeatDetails(ctx.ctx, dest)
+}
+
+func (ctx *ActivityContext[REQ, RES, STATE]) GetHeartbeat() (any, error) {
+	var details any
+
+	err := activity.GetHeartbeatDetails(ctx.ctx, &details)
+
+	return details, err
+}
+
+// GetHeartBeat is a misspelled alias of GetHeartbeat.
+//
+// Deprecated: use GetHeartbeat.
+func (ctx *ActivityContext[REQ, RES, STATE]) GetHeartBeat() (any, error) {
+	return ctx.GetHeartbeat()
+}
+
+func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartbeat(details any) {
 	activity.RecordHeartbeat(ctx.ctx, details)
+}
+
+// SetHeartBeat is a misspelled alias of SetHeartbeat.
+//
+// Deprecated: use SetHeartbeat.
+func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartBeat(details any) {
+	ctx.SetHeartbeat(details)
 }
 
 type Client = client.Client
@@ -61,12 +90,32 @@ func (ctx *ActivityContext[REQ, RES, STATE]) Client() Client {
 	return activity.GetClient(ctx.ctx)
 }
 
-func SetHearBeat[D, REQ, RES, STATE any](
+func SetHeartbeat[D, REQ, RES, STATE any](
 	ctx ActivityContext[REQ, RES, STATE], details D,
 ) {
 	activity.RecordHeartbeat(ctx.ctx, details)
 }
 
-func GetHeartBeat[D, REQ, RES, STATE any](ctx *ActivityContext[REQ, RES, STATE]) D {
-	return activity.GetHeartbeatDetails(ctx.ctx).(D)
+// SetHearBeat is a misspelled alias of SetHeartbeat.
+//
+// Deprecated: use SetHeartbeat.
+func SetHearBeat[D, REQ, RES, STATE any](
+	ctx ActivityContext[REQ, RES, STATE], details D,
+) {
+	SetHeartbeat(ctx, details)
+}
+
+func GetHeartbeat[D, REQ, RES, STATE any](ctx *ActivityContext[REQ, RES, STATE]) (D, error) {
+	var details D
+
+	err := activity.GetHeartbeatDetails(ctx.ctx, &details)
+
+	return details, err
+}
+
+// GetHeartBeat is a misspelled alias of GetHeartbeat.
+//
+// Deprecated: use GetHeartbeat.
+func GetHeartBeat[D, REQ, RES, STATE any](ctx *ActivityContext[REQ, RES, STATE]) (D, error) {
+	return GetHeartbeat[D, REQ, RES, STATE](ctx)
 }

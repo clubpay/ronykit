@@ -2,6 +2,8 @@ package flow
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -70,6 +72,7 @@ type ScheduleCalendarSpec struct {
 	Month      int
 	Year       int
 	DayOfWeek  time.Weekday
+	DaysOfWeek []time.Weekday
 	DayOfMonth int // between 1 and 31 inclusive
 }
 
@@ -98,17 +101,10 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 	calSpec := rkit.Map(
 		sc.Calendars,
 		func(src ScheduleCalendarSpec) client.ScheduleCalendarSpec {
-			cal := client.ScheduleCalendarSpec{}
-			if src.Second != 0 {
-				cal.Second = []client.ScheduleRange{{Start: src.Second}}
-			}
-
-			if src.Minute != 0 {
-				cal.Minute = []client.ScheduleRange{{Start: src.Minute}}
-			}
-
-			if src.Hour != 0 {
-				cal.Hour = []client.ScheduleRange{{Start: src.Hour}}
+			cal := client.ScheduleCalendarSpec{
+				Second: []client.ScheduleRange{{Start: src.Second}},
+				Minute: []client.ScheduleRange{{Start: src.Minute}},
+				Hour:   []client.ScheduleRange{{Start: src.Hour}},
 			}
 
 			if src.Month != 0 {
@@ -119,7 +115,12 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 				cal.Year = []client.ScheduleRange{{Start: src.Year}}
 			}
 
-			if src.DayOfWeek != 0 {
+			switch {
+			case len(src.DaysOfWeek) > 0:
+				cal.DayOfWeek = rkit.Map(src.DaysOfWeek, func(d time.Weekday) client.ScheduleRange {
+					return client.ScheduleRange{Start: int(d)}
+				})
+			case src.DayOfWeek != 0:
 				cal.DayOfWeek = []client.ScheduleRange{{Start: int(src.DayOfWeek)}}
 			}
 
@@ -153,10 +154,16 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 }
 
 func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (ScheduleHandle, error) {
+	spec := req.Spec.toScheduleSpec()
+	if spec.TimeZoneName == "" {
+		spec.TimeZoneName = req.TimezoneName
+	}
+
 	opt := client.ScheduleOptions{
 		ID:   req.ID,
-		Spec: req.Spec.toScheduleSpec(),
+		Spec: spec,
 		Action: &client.ScheduleWorkflowAction{
+			ID:                       req.Action.WorkflowIDPrefix,
 			Workflow:                 req.Action.WorkflowName,
 			Args:                     []any{req.Action.WorkflowArg},
 			TaskQueue:                rkit.Coalesce(req.TaskQueue, sdk.b.TaskQueue()),
@@ -214,16 +221,36 @@ func (sdk *SDK) Trigger(ctx context.Context, id string) error {
 		)
 }
 
+const (
+	defaultMigrateRetryInterval = time.Minute
+	defaultMigrateMaxRounds     = 10
+)
+
 type SchedulerMigrator struct {
 	from Backend
 	to   Backend
+
+	retryInterval time.Duration
+	maxRounds     int
 }
 
 func NewSchedulerMigrator(from, to Backend) *SchedulerMigrator {
 	return &SchedulerMigrator{
-		from: from,
-		to:   to,
+		from:          from,
+		to:            to,
+		retryInterval: defaultMigrateRetryInterval,
+		maxRounds:     defaultMigrateMaxRounds,
 	}
+}
+
+// WithRetry configures how Migrate re-visits schedules that the check function skipped.
+// Between rounds it waits interval; it gives up after rounds attempts and returns an error
+// naming the schedules that were left on the source cluster.
+func (s *SchedulerMigrator) WithRetry(interval time.Duration, rounds int) *SchedulerMigrator {
+	s.retryInterval = interval
+	s.maxRounds = rounds
+
+	return s
 }
 
 type (
@@ -234,92 +261,151 @@ type (
 	MigrateCheckFunc func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult
 )
 
+// Migrate copies every schedule from the source cluster to the destination cluster,
+// optionally deleting it from the source afterwards. Schedules that checkFn marks as
+// Ignore are retried on later rounds, so a schedule that is skipped because it is about
+// to fire still migrates once it settles. Migrate stops when nothing is left to retry,
+// when ctx is canceled, or when it runs out of rounds.
 func (s *SchedulerMigrator) Migrate(
 	ctx context.Context,
 	deleteSource bool,
 	checkFn MigrateCheckFunc,
 ) error {
-	for {
-		it, err := s.from.ScheduleClient().List(
-			ctx,
-			client.ScheduleListOptions{
-				PageSize: 100,
-				Query:    "",
-			},
-		)
+	rounds := max(s.maxRounds, 1)
+
+	for round := range rounds {
+		ignored, err := s.migrateOnce(ctx, deleteSource, checkFn)
 		if err != nil {
 			return err
 		}
 
-		schToCli := s.to.ScheduleClient()
-		schFromCli := s.from.ScheduleClient()
+		if len(ignored) == 0 {
+			return nil
+		}
 
-		count := 0
-		for it.HasNext() {
-			count++
-
-			ent, err := it.Next()
-			if err != nil {
-				return err
-			}
-
-			_, err = schToCli.GetHandle(ctx, ent.ID).Describe(ctx)
-			if err == nil {
-				if deleteSource {
-					err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
-					if err != nil {
-						return err
-					}
-				}
-
-				continue
-			}
-
-			res := checkFn(ctx, ent)
-			if res.Ignore {
-				continue
-			}
-
-			fromSchDesc, err := schFromCli.GetHandle(ctx, ent.ID).Describe(ctx)
-			if err != nil {
-				return err
-			}
-
-			_, err = schToCli.Create(
-				ctx,
-				client.ScheduleOptions{
-					ID:                    ent.ID,
-					Spec:                  rkit.PtrVal(fromSchDesc.Schedule.Spec),
-					Action:                fromSchDesc.Schedule.Action,
-					Overlap:               fromSchDesc.Schedule.Policy.Overlap,
-					CatchupWindow:         fromSchDesc.Schedule.Policy.CatchupWindow,
-					PauseOnFailure:        fromSchDesc.Schedule.Policy.PauseOnFailure,
-					Note:                  fromSchDesc.Schedule.State.Note,
-					Paused:                fromSchDesc.Schedule.State.Paused,
-					RemainingActions:      fromSchDesc.Schedule.State.RemainingActions,
-					TypedSearchAttributes: fromSchDesc.TypedSearchAttributes,
-				},
+		if round == rounds-1 {
+			return fmt.Errorf(
+				"flow: %d schedule(s) left on the source cluster after %d rounds: %s",
+				len(ignored), rounds, strings.Join(ignored, ", "),
 			)
-			if err != nil {
-				return err
-			}
-
-			if deleteSource {
-				err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
-				if err != nil {
-					return err
-				}
-			}
 		}
 
-		// if there is no more schedule, then break the loop
-		if count == 0 {
-			break
+		if err = sleepCtx(ctx, s.retryInterval); err != nil {
+			return err
 		}
-
-		// wait for a while
-		time.Sleep(time.Minute)
 	}
 
 	return nil
+}
+
+func sleepCtx(ctx context.Context, d time.Duration) error {
+	t := time.NewTimer(d)
+	defer t.Stop()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-t.C:
+		return nil
+	}
+}
+
+// migrateOnce makes a single pass over the source schedules and returns the IDs that
+// checkFn asked to skip.
+func (s *SchedulerMigrator) migrateOnce(
+	ctx context.Context,
+	deleteSource bool,
+	checkFn MigrateCheckFunc,
+) ([]string, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	var ignored []string
+
+	it, err := s.from.ScheduleClient().List(
+		ctx,
+		client.ScheduleListOptions{
+			PageSize: 100,
+			Query:    "",
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	schToCli := s.to.ScheduleClient()
+	schFromCli := s.from.ScheduleClient()
+
+	for it.HasNext() {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
+		ent, err := it.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = schToCli.GetHandle(ctx, ent.ID).Describe(ctx)
+		if err == nil {
+			if deleteSource {
+				err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			continue
+		}
+
+		if checkFn != nil {
+			res := checkFn(ctx, ent)
+			if res.Ignore {
+				ignored = append(ignored, ent.ID)
+
+				continue
+			}
+		}
+
+		fromSchDesc, err := schFromCli.GetHandle(ctx, ent.ID).Describe(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		opt := client.ScheduleOptions{
+			ID:                    ent.ID,
+			Action:                fromSchDesc.Schedule.Action,
+			TypedSearchAttributes: fromSchDesc.TypedSearchAttributes,
+		}
+		if fromSchDesc.Schedule.Spec != nil {
+			opt.Spec = *fromSchDesc.Schedule.Spec
+		}
+
+		if fromSchDesc.Schedule.Policy != nil {
+			opt.Overlap = fromSchDesc.Schedule.Policy.Overlap
+			opt.CatchupWindow = fromSchDesc.Schedule.Policy.CatchupWindow
+			opt.PauseOnFailure = fromSchDesc.Schedule.Policy.PauseOnFailure
+		}
+
+		if fromSchDesc.Schedule.State != nil {
+			opt.Note = fromSchDesc.Schedule.State.Note
+			opt.Paused = fromSchDesc.Schedule.State.Paused
+			opt.RemainingActions = fromSchDesc.Schedule.State.RemainingActions
+		}
+
+		_, err = schToCli.Create(ctx, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		if deleteSource {
+			err = schFromCli.GetHandle(ctx, ent.ID).Delete(ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return ignored, nil
 }

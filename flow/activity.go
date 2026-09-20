@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -44,9 +45,17 @@ func NewActivity[REQ, RES, STATE any](
 	name, group string, fn ActivityFunc[REQ, RES, STATE],
 	opts ...ActivityOption,
 ) *Activity[REQ, RES, STATE] {
+	return newActivity(name, group, fn, true, opts...)
+}
+
+func newActivity[REQ, RES, STATE any](
+	name, group string, fn ActivityFunc[REQ, RES, STATE],
+	register bool,
+	opts ...ActivityOption,
+) *Activity[REQ, RES, STATE] {
 	cfg := newActivityConfig(opts...)
 
-	act := Activity[REQ, RES, STATE]{
+	act := &Activity[REQ, RES, STATE]{
 		Name: name,
 		Fn: func(ctx *ActivityContext[REQ, RES, STATE], req REQ) (*RES, error) {
 			ctx.ctx = context.WithValue(ctx.ctx, _StateCtxKey, ctx.s)
@@ -63,9 +72,14 @@ func NewActivity[REQ, RES, STATE any](
 		group: group,
 	}
 
-	registeredActivities[act.stateType()] = append(registeredActivities[act.stateType()], &act)
+	if register {
+		registryMu.Lock()
 
-	return &act
+		registeredActivities[act.stateType()] = append(registeredActivities[act.stateType()], act)
+		registryMu.Unlock()
+	}
+
+	return act
 }
 
 func NewActivityFactory[REQ, RES, STATE any](
@@ -75,15 +89,19 @@ func NewActivityFactory[REQ, RES, STATE any](
 	stateT := reflect.TypeFor[func(s STATE) ActivityFunc[REQ, RES, STATE]]().In(0)
 	actFactory := &ActivityFactory[REQ, RES, STATE]{}
 
+	registryMu.Lock()
+
 	registeredActivityFactories[stateT] = append(
 		registeredActivityFactories[stateT],
 		func(s any) temporalEntityT {
-			act := NewActivity(name, group, fn(s.(STATE)), opts...)
-			actFactory.act = act
+			if actFactory.act == nil {
+				actFactory.act = newActivity(name, group, fn(s.(STATE)), false, opts...)
+			}
 
-			return act
+			return actFactory.act
 		},
 	)
+	registryMu.Unlock()
 
 	return actFactory
 }
@@ -140,16 +158,25 @@ func ToActivityFactoryNoResult[STATE, REQ any](
 }
 
 type Activity[REQ, RES, STATE any] struct {
-	backend Backend
-	group   string
+	backend    Backend
+	registered []Backend
+	group      string
 
 	Name  string
 	State STATE
 	Fn    ActivityFunc[REQ, RES, STATE]
 }
 
+func (a *Activity[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
+	return slices.Contains(a.registered, b)
+}
+
 func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, setDefaultBackend bool) {
 	if b.Group() != a.group {
+		return
+	}
+
+	if a.alreadyRegistered(b) {
 		return
 	}
 
@@ -168,6 +195,7 @@ func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, se
 		},
 	)
 
+	a.registered = append(a.registered, b)
 	if setDefaultBackend {
 		a.backend = b
 	}
@@ -214,19 +242,34 @@ type ExecuteActivityOptions struct {
 	TaskQueue string
 }
 
-func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+func applyActivityTimeouts(opts ExecuteActivityOptions) ExecuteActivityOptions {
 	if opts.StartToCloseTimeout == 0 {
 		opts.StartToCloseTimeout = time.Minute
 	}
 
 	if opts.ScheduleToCloseTimeout == 0 {
-		opts.ScheduleToCloseTimeout = time.Hour * 24
+		opts.ScheduleToCloseTimeout = 24 * time.Hour
 	}
+
+	return opts
+}
+
+func mustBackend(b Backend, kind, name string) Backend {
+	if b == nil {
+		panic("flow: " + kind + " " + name + " is not registered; call SDK.Init or SDK.InitWithState first")
+	}
+
+	return b
+}
+
+func (a *Activity[REQ, RES, STATE]) Execute(ctx Context, req REQ, opts ExecuteActivityOptions) Future[RES] {
+	opts = applyActivityTimeouts(opts)
+	backend := mustBackend(a.backend, "activity", a.Name)
 
 	ctx = workflow.WithActivityOptions(
 		ctx,
 		workflow.ActivityOptions{
-			TaskQueue:              rkit.Coalesce(opts.TaskQueue, a.backend.TaskQueue()),
+			TaskQueue:              rkit.Coalesce(opts.TaskQueue, backend.TaskQueue()),
 			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
 			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
 			StartToCloseTimeout:    opts.StartToCloseTimeout,
@@ -245,13 +288,7 @@ func (a *Activity[REQ, RES, STATE]) ExecuteLocal(
 	req REQ,
 	opts ExecuteActivityOptions,
 ) Future[RES] {
-	if opts.StartToCloseTimeout == 0 {
-		opts.StartToCloseTimeout = time.Minute
-	}
-
-	if opts.ScheduleToCloseTimeout == 0 {
-		opts.ScheduleToCloseTimeout = time.Hour * 24
-	}
+	opts = applyActivityTimeouts(opts)
 
 	ctx = workflow.WithLocalActivityOptions(
 		ctx,
@@ -271,33 +308,20 @@ type ActivityFactory[REQ, RES, STATE any] struct {
 	act *Activity[REQ, RES, STATE]
 }
 
+func (a *ActivityFactory[REQ, RES, STATE]) mustAct() *Activity[REQ, RES, STATE] {
+	if a.act == nil {
+		panic("flow: activity factory has no state bound; call SDK.Init or SDK.InitWithState first")
+	}
+
+	return a.act
+}
+
 func (a *ActivityFactory[REQ, RES, STATE]) Execute(
 	ctx Context,
 	req REQ,
 	opts ExecuteActivityOptions,
 ) Future[RES] {
-	if opts.StartToCloseTimeout == 0 {
-		opts.StartToCloseTimeout = time.Minute
-	}
-
-	if opts.ScheduleToCloseTimeout == 0 {
-		opts.ScheduleToCloseTimeout = time.Hour * 24
-	}
-
-	ctx = workflow.WithActivityOptions(
-		ctx,
-		workflow.ActivityOptions{
-			TaskQueue:              rkit.Coalesce(opts.TaskQueue, a.act.backend.TaskQueue()),
-			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
-			ScheduleToStartTimeout: opts.ScheduleToStartTimeout,
-			StartToCloseTimeout:    opts.StartToCloseTimeout,
-			RetryPolicy:            opts.RetryPolicy,
-		},
-	)
-
-	return Future[RES]{
-		f: workflow.ExecuteActivity(ctx, a.act.Name, req),
-	}
+	return a.mustAct().Execute(ctx, req, opts)
 }
 
 func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(
@@ -305,26 +329,7 @@ func (a *ActivityFactory[REQ, RES, STATE]) ExecuteLocal(
 	req REQ,
 	opts ExecuteActivityOptions,
 ) Future[RES] {
-	if opts.StartToCloseTimeout == 0 {
-		opts.StartToCloseTimeout = time.Minute
-	}
-
-	if opts.ScheduleToCloseTimeout == 0 {
-		opts.ScheduleToCloseTimeout = time.Hour * 24
-	}
-
-	ctx = workflow.WithLocalActivityOptions(
-		ctx,
-		workflow.LocalActivityOptions{
-			ScheduleToCloseTimeout: opts.ScheduleToCloseTimeout,
-			StartToCloseTimeout:    opts.StartToCloseTimeout,
-			RetryPolicy:            opts.RetryPolicy,
-		},
-	)
-
-	return Future[RES]{
-		f: workflow.ExecuteLocalActivity(ctx, a.act.Name, req),
-	}
+	return a.mustAct().ExecuteLocal(ctx, req, opts)
 }
 
 func ExecuteActivity[REQ, RES, STATE any](

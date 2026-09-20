@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,11 +27,12 @@ type (
 )
 
 type Workflow[REQ, RES, STATE any] struct {
-	backend Backend
-	group   string
-	Name    string
-	State   STATE
-	Fn      WorkflowFunc[REQ, RES, STATE]
+	backend    Backend
+	registered []Backend
+	group      string
+	Name       string
+	State      STATE
+	Fn         WorkflowFunc[REQ, RES, STATE]
 }
 
 func NewWorkflow[REQ, RES, STATE any](
@@ -89,7 +91,10 @@ func NewWorkflowWithState[REQ, RES, STATE any](
 		group: group,
 	}
 
+	registryMu.Lock()
+
 	registeredWorkflows[w.stateType()] = append(registeredWorkflows[w.stateType()], w)
+	registryMu.Unlock()
 
 	return w
 }
@@ -109,8 +114,16 @@ func NewSimpleWorkflow[REQ, RES, STATE any](
 	)
 }
 
+func (w *Workflow[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
+	return slices.Contains(w.registered, b)
+}
+
 func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDefaultBackend bool) {
 	if b.Group() != w.group {
+		return
+	}
+
+	if w.alreadyRegistered(b) {
 		return
 	}
 
@@ -128,6 +141,7 @@ func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDef
 		},
 	)
 
+	w.registered = append(w.registered, b)
 	if setDefaultBackend {
 		w.backend = b
 	}
@@ -253,11 +267,13 @@ func (x WorkflowRun[T]) Get(ctx context.Context) (*T, error) {
 func (w *Workflow[REQ, RES, STATE]) Execute(
 	ctx context.Context, req REQ, opts ExecuteWorkflowOptions,
 ) (*WorkflowRun[RES], error) {
-	run, err := w.backend.ExecuteWorkflow(
+	backend := mustBackend(w.backend, "workflow", w.Name)
+
+	run, err := backend.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:                       opts.ID,
-			TaskQueue:                rkit.Coalesce(opts.TaskQueue, w.backend.TaskQueue()),
+			TaskQueue:                rkit.Coalesce(opts.TaskQueue, backend.TaskQueue()),
 			WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 			WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 			WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,
@@ -340,6 +356,8 @@ func (w *Workflow[REQ, RES, STATE]) ExecuteAsChild(
 				TaskQueue:                opts.TaskQueue,
 				WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 				WorkflowRunTimeout:       opts.WorkflowRunTimeout,
+				WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,
+				WaitForCancellation:      opts.WaitForCancellation,
 				WorkflowIDReusePolicy:    opts.WorkflowIDReusePolicy,
 				RetryPolicy:              opts.RetryPolicy,
 				ParentClosePolicy:        opts.ParentClosePolicy,
@@ -610,16 +628,14 @@ type GetWorkflowRequest struct {
 }
 
 func (sdk *SDK) GetWorkflow(ctx context.Context, req GetWorkflowRequest) (*WorkflowExecution, error) {
-	wr := sdk.b.Client().GetWorkflow(ctx, req.WorkflowID, req.RunID)
-
-	var e WorkflowExecution
-
-	err := wr.Get(ctx, &e)
+	desc, err := sdk.b.Client().DescribeWorkflowExecution(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &e, nil
+	exec := toWorkflowExecution(desc.GetWorkflowExecutionInfo())
+
+	return &exec, nil
 }
 
 type DescribeWorkflowExecutionRequest struct {
