@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/std/clusters/p2pcluster
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.20
-	github.com/clubpay/ronykit/x/batch v0.4.20
-	github.com/clubpay/ronykit/x/rkit v0.5.20
+	github.com/clubpay/ronykit/kit v0.26.21
+	github.com/clubpay/ronykit/x/batch v0.4.21
+	github.com/clubpay/ronykit/x/rkit v0.5.21
 	github.com/libp2p/go-libp2p v0.49.0
 	github.com/libp2p/go-libp2p-pubsub v0.17.0
 )
