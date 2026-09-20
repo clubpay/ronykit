@@ -1,0 +1,32 @@
+package v0repo
+
+import (
+	"context"
+	"sync"
+
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/domain"
+)
+
+// itemRepository is a teaching-slice in-memory adapter. Replace with a sqlc adapter
+// bound in adapter.go via fx.Annotate(..., fx.As(new(repo.ItemRepository))).
+type itemRepository struct {
+	mu    sync.Mutex
+	byID  map[string]domain.Item
+}
+
+func NewItemRepository() *itemRepository {
+	return &itemRepository{byID: map[string]domain.Item{}}
+}
+
+func (r *itemRepository) Create(_ context.Context, item domain.Item) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, exists := r.byID[item.ID()]; exists {
+		return domain.ErrItemConflict
+	}
+
+	r.byID[item.ID()] = item
+
+	return nil
+}

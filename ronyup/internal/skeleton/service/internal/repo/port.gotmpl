@@ -1,0 +1,13 @@
+package repo
+
+import (
+	"context"
+
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/domain"
+)
+
+// ItemRepository is a teaching-slice port. Replace it with your SDD ports.
+// Persistence stays behind interfaces; adapters live in v0/.
+type ItemRepository interface {
+	Create(ctx context.Context, item domain.Item) error
+}

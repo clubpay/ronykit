@@ -34,6 +34,10 @@ type ArchitectureHint struct {
 
 // CharacteristicDoc describes a service characteristic loaded from characteristics/*.md.
 type CharacteristicDoc struct {
+	// Name is the resource URI slug (knowledge://ronyup/characteristics/<name>).
+	// Defaults to the filename without .md when omitted from frontmatter.
+	Name           string   `yaml:"name"`
+	Slug           string   `yaml:"-"`
 	Keywords       []string `yaml:"keywords"`
 	AppliesToFiles []string `yaml:"applies_to_files"`
 	ServiceHint    string

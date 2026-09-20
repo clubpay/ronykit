@@ -142,7 +142,7 @@ sel.Select(ctx.Context())
 ### Continue-as-new (for long-running loops)
 
 ```go
-if ctx.GetVersion("v1", workflow.DefaultVersion, 1) == 1 {
+if ctx.GetVersion("v1", flow.DefaultVersion, 1) == 1 {
 return nil, ctx.ContinueAsNewError(updatedReq)
 }
 ```

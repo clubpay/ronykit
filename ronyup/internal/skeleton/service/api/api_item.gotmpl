@@ -1,0 +1,31 @@
+package api
+
+import "{{.RonyKitPath}}/rony/errs"
+
+// Teaching-slice handler. Replace with your SDD operations.
+// IDs → rkit (in domain); errors → rony/errs; do not import fmt.Errorf.
+
+type CreateItemRequest struct {
+	Name string `json:"name"`
+}
+
+type CreateItemResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (svc Service) CreateItem(ctx *RContext, in CreateItemRequest) (*CreateItemResponse, error) {
+	if in.Name == "" {
+		return nil, errs.B().Code(errs.InvalidArgument).Msg("ITEM_NAME_REQUIRED").Err()
+	}
+
+	item, err := svc.{{.PackageName}}App.CreateItem(ctx.Context(), in.Name)
+	if err != nil {
+		return nil, errs.B().Cause(err).Msg("CREATE_ITEM_FAILED").Err()
+	}
+
+	return &CreateItemResponse{
+		ID:   item.ID(),
+		Name: item.Name(),
+	}, nil
+}

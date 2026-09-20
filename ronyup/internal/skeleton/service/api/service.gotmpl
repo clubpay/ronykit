@@ -16,22 +16,24 @@ type ServiceParams struct {
 	App      *app.App
 }
 
+// Service is the API adapter. Keep handlers thin: validate, call app, map errors with rony/errs.
 type Service struct {
 	{{.PackageName}}App *app.App
+	settings            settings.Settings
 }
 
 func New(params ServiceParams) *Service {
 	return &Service{
 		{{.PackageName}}App: params.App,
+		settings:            params.Settings,
 	}
 }
 
 func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 	return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
-		// Keep handlers thin: validate input and delegate use-cases to app layer.
-		// rony.WithUnary(
-		// 	Create{{.PackageName}},
-		// 	rony.POST("/{{.PackageName}}/create", rony.UnaryName("Create{{.PackageName}}")),
-		// ),
+		rony.WithUnary(
+			svc.CreateItem,
+			rony.POST("/{{.PackageName}}/items", rony.UnaryName("CreateItem")),
+		),
 	)
 }

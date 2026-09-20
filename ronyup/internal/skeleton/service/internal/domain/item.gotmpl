@@ -1,0 +1,24 @@
+package domain
+
+import "{{.RonyKitPath}}/x/rkit"
+
+// Item is a teaching-slice entity. Replace it with your SDD domain types.
+// Domain types have no json tags — those belong on API DTOs.
+type Item struct {
+	id   string
+	name string
+}
+
+func NewItem(name string) (Item, error) {
+	if name == "" {
+		return Item{}, ErrItemInvalid
+	}
+
+	return Item{
+		id:   rkit.RandomID(16),
+		name: name,
+	}, nil
+}
+
+func (i Item) ID() string   { return i.id }
+func (i Item) Name() string { return i.name }

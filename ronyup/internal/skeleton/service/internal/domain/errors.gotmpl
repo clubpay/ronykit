@@ -1,0 +1,13 @@
+package domain
+
+import "{{.RonyKitPath}}/rony/errs"
+
+// Domain errors use rony/errs only — not errors.New or fmt.Errorf.
+// Replace these teaching-slice sentinels with your SDD codes.
+//
+// Static sentinel: errs.B().Code(...).Msg(...).Err()
+// Wrappable:       errs.GenWrap(code, "ERROR_CODE") — call as ErrX(cause); nil cause returns nil.
+var (
+	ErrItemInvalid  = errs.B().Code(errs.InvalidArgument).Msg("ITEM_INVALID").Err()
+	ErrItemConflict = errs.B().Code(errs.AlreadyExists).Msg("ITEM_ALREADY_EXISTS").Err()
+)

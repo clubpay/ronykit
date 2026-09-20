@@ -12,8 +12,10 @@ func PtrVal[T any](src *T) T {
 }
 
 // ValPtr returns the pointer of the src. It is a reference operation.
+//
+//go:fix inline
 func ValPtr[T any](src T) *T {
-	return &src
+	return new(src)
 }
 
 // ValPtrOrNil returns the pointer of the src if src is not zero value, otherwise nil.

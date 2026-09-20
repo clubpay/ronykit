@@ -205,11 +205,13 @@ report errors back to you, or confirm that a fix worked.
 
 - Before hand-rolling a utility or importing a stdlib/third-party package, use the RonyKIT equivalent. The authoritative map is the MCP
   resource `knowledge://ronyup/architecture/package-selection`.
-- Common helpers (IDs, JSON/byte casts, string↔number, case transforms, slice/map ops) → `x/rkit`. Logging → `x/telemetry/logkit`. Config →
-  `x/settings`. DI → `x/di` + `uber/fx`. Errors → `rony/errs`. DB/Redis/S3 → `x/datasource`. Cache → `x/cache`. Rate limiting →
-  `x/ratelimit`. Batching → `x/batch`. Pools → `x/p`.
+- Feature handlers: `packages/rony` (`SetupOptionGroup` / `WithUnary` / `WithRelay`) and `packages/errs`. Common helpers (IDs, JSON/byte
+  casts, string↔number, case transforms, slice/map ops) → `x/rkit`. Logging → `x/telemetry/logkit`. Config → `x/settings`. DI → `x/di` +
+  `uber/fx`. Errors → `rony/errs`. DB/S3 → `x/datasource`. Redis → `x/datasource.InitRedis` (not `x/cache`). In-memory cache → `x/cache`.
+  Rate limiting → `x/ratelimit`. Batching → `x/batch`. Pools → `x/p`. Inter-service clients → generated stubs (`packages/stub`).
 - Durable workflows: use the `flow` package only — never import `go.temporal.io/sdk` directly.
 - The backend `.golangci.yml` enforces this with `depguard`; a forbidden-import lint failure is a design violation, not a formatting nit.
+  `make verify` runs golangci-lint on each feature when the binary is on PATH.
 
 ## Architecture Conventions
 

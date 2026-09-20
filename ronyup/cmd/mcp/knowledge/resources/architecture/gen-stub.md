@@ -16,4 +16,5 @@ Outputs:
 
 Regenerate stubs via `make gen-stub` whenever contracts change.
 
-Other services consume stubs by importing the stub package and wiring through `di.ProvideXStub` in their `module.go`.
+Other services consume stubs by importing the stub package and wiring through `di.StubProvider` in their `module.go`. Read
+`architecture/inter-service-stubs` and `packages/stub`.

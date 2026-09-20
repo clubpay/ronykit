@@ -1,24 +1,50 @@
 package app
 
 import (
-	log "{{.RonyKitPath}}/x/telemetry/logkit"
+	"context"
+
 	"go.uber.org/fx"
+	log "{{.RonyKitPath}}/x/telemetry/logkit"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/domain"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/repo"
 )
+
+// App holds use-cases. Errors → rony/errs; IDs/helpers → x/rkit; logging → logkit.
+// Do not import encoding/json or fmt.Errorf for domain/API errors.
 
 type NewAppParams struct {
 	fx.In
 
 	Logger *log.Logger
+	Items  repo.ItemRepository
 }
 
 func New(p NewAppParams) (*App, error) {
 	app := &App{
-		l: p.Logger.With("APP"),
+		l:     p.Logger.With("APP"),
+		items: p.Items,
 	}
 
 	return app, nil
 }
 
 type App struct {
-	l *log.Logger
+	l     *log.Logger
+	items repo.ItemRepository
+}
+
+// CreateItem is a teaching-slice use-case. Replace it with your SDD methods.
+func (a *App) CreateItem(ctx context.Context, name string) (domain.Item, error) {
+	item, err := domain.NewItem(name)
+	if err != nil {
+		return domain.Item{}, err
+	}
+
+	if err := a.items.Create(ctx, item); err != nil {
+		return domain.Item{}, err
+	}
+
+	a.l.Info("item created", log.String("id", item.ID()))
+
+	return item, nil
 }

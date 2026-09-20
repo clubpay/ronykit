@@ -30,6 +30,8 @@ linters:
               desc: "Do not use google/uuid. Use github.com/clubpay/ronykit/x/rkit (RandomID/RandomIDs/SecureRandomUint64)."
             - pkg: io/ioutil
               desc: "io/ioutil is deprecated; use io / os."
+            - pkg: github.com/jinzhu/copier
+              desc: "Do not use jinzhu/copier. Use github.com/clubpay/ronykit/x/rkit (DynCast/DynCastOption/TypeConvert)."
   exclusions:
     generated: lax
     paths:

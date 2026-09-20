@@ -25,7 +25,8 @@ User requirements and context:
 
 1. Read `knowledge://ronyup/architecture/design-documents` for document locations and gate rules.
 2. Read `knowledge://ronyup/architecture/srs-template` for the section outline.
-3. For each requested characteristic, read `knowledge://ronyup/characteristics/<name>`.
+3. For each requested characteristic, read `knowledge://ronyup/characteristics/<name>` (URI = filename: `cache`, `redis`, `database`, `api`,
+   `testing`, not the first YAML keyword).
 4. Read relevant `knowledge://ronyup/architecture/*` resources (e.g. `inter-service-stubs`, `postgres-sqlc`, `flow-workflows`, `table-partitioning`) when the requirements imply them — especially `table-partitioning` when data volume or retention will grow over time.
 5. Ask clarifying questions if requirements are ambiguous — do not invent unstated behavior.
 6. Write the SRS to **`docs/design/{{feature_name}}-srs.md`** in the workspace root.

@@ -52,12 +52,12 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 2. **Documents** — Backend: SRS to `docs/design/<feature>-srs.md`, SDD to `docs/design/<feature>-sdd.md`. Frontend: `docs/design/<app>-frontend-design.md`. Get user approval before scaffolding or UI code. Read `architecture/design-documents` and `architecture/frontend-design-documents`.
 3. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
 4. **Load knowledge** (read MCP resources before coding):
-- Always: `architecture/service-structure`, `architecture/api-handler-files`
+- Always: `architecture/package-selection`, `packages/rony`, `packages/errs`, `architecture/service-structure`, `architecture/api-handler-files`
 - Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`, `architecture/integration-tests` (+ `architecture/table-partitioning` when data is expected to grow)
 - Wiring: `architecture/module-wiring`, `architecture/settings-config`
 - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
 5. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module.
-6. **Characteristics** — If the user mentions caching, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (see [references/mcp-map.md](references/mcp-map.md)).
+6. **Characteristics** — If the user mentions caching, Redis, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (filename URI: `cache` vs `redis`; see [references/mcp-map.md](references/mcp-map.md)).
 7. **Finish** — `make gen-stub` in the feature after contract changes; run `make verify` (backend) and `frontend/verify.sh` (fullstack UI); then workspace `make lint` / `make test` when appropriate.
 
 ## Task → MCP routing
@@ -84,7 +84,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 - **App unit tests are mandatory.** Every exported `App` method in `internal/app/` needs a unit test.
 - Handlers thin; business logic in `internal/app`; persistence behind `internal/repo/port.go`.
 - Default storage: Postgres + sqlc in `internal/repo/v0` unless the user requests otherwise.
-- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource. Use `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache`, `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and `rony/errs` — avoid third-party/stdlib substitutes.
+- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource — at minimum `packages/rony` and `packages/errs` before writing handlers. Use `rony` (not raw `kit`) in feature `api/`, `rony/errs`, `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache` (process-local only; Redis → `characteristics/redis`), `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and generated stubs (`packages/stub`) — avoid third-party/stdlib substitutes.
 - **Workflows: `flow` only.** Never import `go.temporal.io/sdk` directly — it's denied by the workspace `.golangci.yml`.
 - Feature Go package name: `<feature>mod` (e.g. `authmod`, not `auth`).
 - After contract changes: `make gen-stub` in that feature module.

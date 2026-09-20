@@ -29,7 +29,7 @@ If a document is missing or still `status: draft`, the tool returns an actionabl
 
 Default layout: `feature/<name>/`. With `groupByTemplate: true`: `feature/<template>/<name>/` (for example `feature/service/<name>/`).
 
-The result contains `service.go`, `module.go`, `migration.go`, `api/`, `internal/{app,domain,repo,settings}/`, and a `gen/stub/` generator.
+The result contains `service.go`, `module.go`, `migration.go`, `api/` (including a teaching-slice `CreateItem` unary), `internal/{app,domain,repo,settings}/` with `domain/errors.go`, one repo port + `fx.Annotate` adapter, and a `gen/stub/` generator. Replace the teaching slice with the SDD domain; do not invent a second layout.
 
 A side-effect blank import is added to `cmd/all-in-one/features.go` so the new module's `init()` registers it via `di.RegisterService`. Matching bundles in `bundles.yaml` (those listing the feature or `"*"`) have their `cmd/<bundle>/features.go` refreshed automatically.
 

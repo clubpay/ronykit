@@ -183,6 +183,11 @@ func loadCharacteristics(fsys fs.FS, base *Base) error {
 		sections := splitSections(body)
 		doc.ServiceHint = strings.TrimSpace(sections[""])
 		doc.FileHint = strings.TrimSpace(sections["File-Level Hint"])
+		doc.Slug = strings.TrimSuffix(e.Name(), ".md")
+
+		if doc.Name == "" {
+			doc.Name = doc.Slug
+		}
 
 		base.Characteristics = append(base.Characteristics, doc)
 	}

@@ -25,8 +25,8 @@ the best way. Target the workspace Go version (1.25+/1.26).
 - **Names reveal intent.** Prefer `elapsedDays` over `d`; booleans as predicates
   (`isActive`, `hasPermission`); functions as verb+noun. See
   `refactoring-patterns` when renaming is part of a structural cleanup.
-- **Errors:** wrap with `fmt.Errorf("...: %w", err)`; inspect with `errors.Is` /
-  `errors.As`. In this workspace prefer `rony/errs` for domain errors.
+- **Errors:** domain and API errors use `rony/errs` (`errs.GenWrap`, `errs.B()`),
+  never `fmt.Errorf` / `errors.New`. Inspect with `errors.Is` / `errors.As`.
 - **Context first.** `ctx context.Context` is the first parameter; never store it
   in a struct. Honor cancellation and deadlines.
 - **Zero values are useful.** Design types so the zero value is ready to use.
@@ -35,13 +35,14 @@ the best way. Target the workspace Go version (1.25+/1.26).
 
 ## Use current stdlib
 
-- Iterators (`iter.Seq`, `range`-over-func), `slices`, `maps`, `cmp` for
-  collection work instead of hand-rolled loops.
+- Iterators (`iter.Seq`, `range`-over-func). For map/filter/reduce/paginate in
+  service code prefer `x/rkit` (`rkit.Map`, `Filter`, `Reduce`, `Paginate`);
+  `slices` / `maps` / `cmp` are fine when no RonyKIT helper fits.
 - `min`/`max`/`clear` builtins.
 - `for i := range n` for counted loops.
 - `errors.Join` to combine multiple failures.
 - `context.WithoutCancel`, `WithDeadlineCause`, and `AfterFunc` where they fit.
-- `log/slog` for structured logging (or the workspace `x/telemetry/logkit`).
+- Structured logging: `x/telemetry/logkit` only — never `log`, `log/slog`, or `zap`.
 
 ## Package selection (this workspace)
 

@@ -34,14 +34,14 @@ place code and review PRs:
 
 | Clean Architecture | RonyKit layer | Rule |
 | ------------------ | ------------- | ---- |
-| Interface Adapters (controllers) | `internal/handler` | Thin: decode input, call app, encode output. No business rules. |
+| Interface Adapters (controllers) | `api/` (`api/service.go`, `api/api_*.go`) | Thin: decode input, call app, encode output. No business rules. |
 | Use Cases | `internal/app` | Orchestration and application rules. Depends on `repo` **ports** only. |
-| Entities / domain rules | `internal/app` (types + methods) | Pure logic; no imports from handler, sqlc, or rony context. |
+| Entities / domain rules | `internal/domain` | Pure logic; no imports from `api`, sqlc, or rony context. |
 | Gateways (repos) | `internal/repo/port.go` + `v0/` sqlc | Port defined inward; Postgres/sqlc implementation is outer. |
 | Frameworks & drivers | `service.go`, Rony contracts, gateway | Wiring and delivery at the edge. |
 
-**Dependency direction:** `handler` → `app` → `repo.Port` ← `repo/v0` (sqlc).
-Never import handler or sqlc from `app`. Read MCP
+**Dependency direction:** `api` → `app` → `repo.Port` ← `repo/v0` (sqlc).
+Never import `api` or sqlc from `app`. Read MCP
 `architecture/service-structure`, `architecture/repo-ports`, and
 `architecture/api-handler-files`.
 

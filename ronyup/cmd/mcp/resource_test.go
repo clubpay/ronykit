@@ -247,8 +247,13 @@ func TestCompletionHandler_NameArgWithContext(t *testing.T) {
 		}
 
 		allNames := namesForCategory(kb, "")
-		if len(result.Completion.Values) != len(allNames) {
-			t.Fatalf("expected %d names, got %d", len(allNames), len(result.Completion.Values))
+		wantLen := len(allNames)
+		if wantLen > maxCompletionValues {
+			wantLen = maxCompletionValues
+		}
+
+		if len(result.Completion.Values) != wantLen {
+			t.Fatalf("expected %d names, got %d (total candidates %d)", wantLen, len(result.Completion.Values), len(allNames))
 		}
 	})
 }

@@ -25,6 +25,10 @@ approved SRS). Update the SDD when implementation reveals design gaps.
 
 {{#if characteristics}} Requested characteristics: {{characteristics}} {{/if}}
 
+**Before the first `.go` edit**, read `knowledge://ronyup/architecture/package-selection` and every `knowledge://ronyup/packages/<name>` you
+will import — at minimum `rony`, `errs`, and `rkit`. Then read `architecture/service-structure` and `architecture/api-handler-files`. Do not
+invent constructors from memory.
+
 Follow the RonyKIT service structure conventions below.
 
 ## Package Layout
@@ -93,27 +97,20 @@ return toOutputDTO(result), nil
 
 ## Service Setup (in api/service.go Desc())
 
+Feature `Desc()` returns options only. `rony.Setup(srv, name, initState, opts...)` is **server** wiring in `pkg/runner` — never call it from
+`api/service.go`. The scaffold default is stateless (`rony.EMPTY` / `rony.NOP`). `rony.SUnaryCtx` is an alias for
+`rony.UnaryCtx[rony.EMPTY, rony.NOP]`; generated code already aliases it as `RContext`.
+
 ```go
-func (svc Service) Desc() *desc.Service {
-return rony.Setup[*State, Action](
-"{{service_name}}",
-rony.ToInitiateState[*State, Action](&State{}),
-rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
-)
+func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
+	return rony.SetupOptionGroup[rony.EMPTY, rony.NOP](
+		rony.WithUnary(svc.HandlerName, rony.POST("/v1/{{service_name}}/action")),
+	)
 }
 ```
 
-If the service has no shared state, use `rony.EMPTY` / `rony.NOP`:
-
-```go
-type RContext = rony.SUnaryCtx
-
-rony.Setup[rony.EMPTY, rony.NOP](
-"{{service_name}}",
-rony.EmptyState(),
-rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
-)
-```
+For a stateful service, replace `rony.EMPTY` / `rony.NOP` with `*State` / `Action` and pass
+`rony.ToInitiateState[*State, Action](&State{})` to `rony.Setup` on the server.
 
 ## Workflow of Implementation
 
@@ -130,5 +127,6 @@ rony.WithUnary(svc.HandlerName, rony.GET("/v1/{{service_name}}/items")),
    they pass before treating the repo as done.
 8. Run `make gen-stub` to generate client stubs.
 
-Use the `scaffold_feature` tool to create the module skeleton, then read the relevant `knowledge://ronyup/architecture/*`, `packages/*`, and
-`characteristics/*` resources for architecture hints and package recommendations before filling in the generated files.
+Use the `scaffold_feature` tool to create the module skeleton. The generated files include a teaching slice (one `CreateItem` path) — replace
+it with the SDD domain rather than inventing a second layout. Read `packages/rony`, `packages/errs`, and any other `packages/*` you import
+before filling in the generated files.

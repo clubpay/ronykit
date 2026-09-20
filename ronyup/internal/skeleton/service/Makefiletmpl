@@ -13,6 +13,7 @@ vet:
 	@go vet ./...
 
 lint: tidy vet
+	# depguard failures = wrong package; see AGENTS.md Package Selection.
 	@go fmt ./... && go fix ./...
 	@golangci-lint run  --fix ./... --path-prefix "{{.PackagePath}}"
 

@@ -18,10 +18,12 @@ if err != nil {
 }
 if res.Allowed == 0 {
     // over limit — res.RetryAfter / res.ResetAfter tell the client when to retry
-    return errs.B().Code(errs.RateLimited).Msg("RATE_LIMITED").Err()
+    return errs.B().Code(errs.ResourceExhausted).Msg("RATE_LIMITED").Err()
 }
 ```
 
 - Build limits with `ratelimit.PerSecond(n)` / `PerMinute(n)` / `PerHour(n)`, or a custom `ratelimit.Limit{Rate, Burst, Period}`.
 - `Allow` / `AllowN` / `AllowAtMost` report how many events are permitted; `Result` carries `Allowed`, `Remaining`, `RetryAfter`, `ResetAfter`.
 - `Reset(ctx, key)` clears a key's usage.
+
+**When NOT:** in-process / single-instance limits — this limiter is Redis-backed. HTTP 429 uses `errs.ResourceExhausted` (that code name is the only 429 mapping).

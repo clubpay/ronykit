@@ -32,3 +32,5 @@ fx.Provide(settings.New, app.New, api.New),
 
 `MigrationFS` is exposed via `//go:embed internal/repo/v0/data/db/migrations` in `migration.go`. Do not write your own connection bootstrap
 or migration runner.
+
+**When NOT:** this is not a repository layer. Ports stay in `internal/repo/port.go`; sqlc adapters in `v0/`. Do not put queries here.

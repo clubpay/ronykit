@@ -1,0 +1,53 @@
+package app
+
+import (
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	log "{{.RonyKitPath}}/x/telemetry/logkit"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/domain"
+)
+
+type fakeItemRepo struct {
+	created []domain.Item
+	err     error
+}
+
+func (f *fakeItemRepo) Create(_ context.Context, item domain.Item) error {
+	if f.err != nil {
+		return f.err
+	}
+
+	f.created = append(f.created, item)
+
+	return nil
+}
+
+func TestCreateItem(t *testing.T) {
+	t.Parallel()
+
+	fake := &fakeItemRepo{}
+	a := &App{
+		l:     log.New(),
+		items: fake,
+	}
+
+	item, err := a.CreateItem(t.Context(), "widget")
+	require.NoError(t, err)
+	require.Equal(t, "widget", item.Name())
+	require.NotEmpty(t, item.ID())
+	require.Len(t, fake.created, 1)
+}
+
+func TestCreateItemRejectsEmptyName(t *testing.T) {
+	t.Parallel()
+
+	a := &App{
+		l:     log.New(),
+		items: &fakeItemRepo{},
+	}
+
+	_, err := a.CreateItem(t.Context(), "")
+	require.Error(t, err)
+}

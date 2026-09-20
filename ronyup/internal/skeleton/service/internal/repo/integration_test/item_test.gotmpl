@@ -1,0 +1,22 @@
+package integration_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	v0repo "{{.RepositoryPath}}/{{.PackagePath}}/internal/repo/v0"
+	"{{.RepositoryPath}}/{{.PackagePath}}/internal/domain"
+)
+
+func TestItemRepositoryCreate(t *testing.T) {
+	t.Parallel()
+
+	r := v0repo.NewItemRepository()
+	item, err := domain.NewItem("widget")
+	require.NoError(t, err)
+	require.NoError(t, r.Create(t.Context(), item))
+
+	err = r.Create(t.Context(), item)
+	require.Error(t, err)
+	require.ErrorIs(t, err, domain.ErrItemConflict)
+}

@@ -37,7 +37,7 @@ rony.WithRelay(
             DropQueryParams: []string{"token"},
         })
     },
-    rony.ANY("/deploy/v1/sessions/:sessionId/api/{path:*}"),
+    rony.RelayALL("/deploy/v1/sessions/:sessionId/api/{path:*}"),
 )
 ```
 

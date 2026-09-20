@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
@@ -134,7 +135,7 @@ func resolveKnowledge(kb *knowledge.Base, category, name string) string {
 		}
 	case categoryCharacteristics:
 		for _, ch := range kb.Characteristics {
-			if charResourceName(ch) == name {
+			if characteristicMatches(ch, name) {
 				return formatCharacteristicResource(ch)
 			}
 		}
@@ -188,7 +189,7 @@ func formatPackageResource(pkg knowledge.PackageDoc) string {
 func formatCharacteristicResource(ch knowledge.CharacteristicDoc) string {
 	var b strings.Builder
 	b.WriteString("# Characteristic: ")
-	b.WriteString(strings.Join(ch.Keywords, ", "))
+	b.WriteString(charResourceName(ch))
 	b.WriteString("\n\n")
 	b.WriteString(ch.ServiceHint)
 
@@ -203,11 +204,50 @@ func formatCharacteristicResource(ch knowledge.CharacteristicDoc) string {
 }
 
 func charResourceName(ch knowledge.CharacteristicDoc) string {
-	if len(ch.Keywords) > 0 {
-		return ch.Keywords[0]
+	if ch.Name != "" {
+		return ch.Name
+	}
+
+	if ch.Slug != "" {
+		return ch.Slug
 	}
 
 	return "unknown"
+}
+
+func characteristicMatches(ch knowledge.CharacteristicDoc, name string) bool {
+	if charResourceName(ch) == name {
+		return true
+	}
+
+	return slices.Contains(ch.Keywords, name)
+}
+
+func characteristicNames(ch knowledge.CharacteristicDoc) []string {
+	seen := map[string]struct{}{}
+	names := make([]string, 0, 1+len(ch.Keywords))
+
+	add := func(s string) {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			return
+		}
+
+		if _, ok := seen[s]; ok {
+			return
+		}
+
+		seen[s] = struct{}{}
+		names = append(names, s)
+	}
+
+	add(charResourceName(ch))
+
+	for _, kw := range ch.Keywords {
+		add(kw)
+	}
+
+	return names
 }
 
 func completionHandler(
@@ -311,7 +351,7 @@ func namesForCategory(kb *knowledge.Base, category string) []string {
 	case categoryCharacteristics:
 		names := make([]string, 0, len(kb.Characteristics))
 		for _, ch := range kb.Characteristics {
-			names = append(names, charResourceName(ch))
+			names = append(names, characteristicNames(ch)...)
 		}
 
 		return names
@@ -334,7 +374,7 @@ func namesForCategory(kb *knowledge.Base, category string) []string {
 		}
 
 		for _, ch := range kb.Characteristics {
-			all = append(all, charResourceName(ch))
+			all = append(all, characteristicNames(ch)...)
 		}
 
 		for _, tool := range kb.Tools {

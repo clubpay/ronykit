@@ -82,6 +82,64 @@ func TestRonykitFrameworkSkillCopiesInSync(t *testing.T) {
 	if err != nil {
 		t.Fatalf("walk shipped skill: %v", err)
 	}
+
+	for _, rel := range []string{
+		filepath.Join(".cursor", "skills", "ronykit-framework"),
+		filepath.Join(".claude", "skills", "ronykit-framework"),
+	} {
+		copyDir := filepath.Join(repoRoot, "ronyup", "internal", "skeleton", "workspace", rel)
+		assertSkillTreesEqual(t, monorepoSkill, copyDir, rel)
+	}
+}
+
+func assertSkillTreesEqual(t *testing.T, canonical, other, otherLabel string) {
+	t.Helper()
+
+	if !isDir(other) {
+		t.Fatalf("skill copy not found at %s", other)
+	}
+
+	err := filepath.WalkDir(canonical, func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		rel, err := filepath.Rel(canonical, path)
+		if err != nil {
+			return err
+		}
+
+		// Files that exist only in the monorepo copy (e.g. README.md) are tolerated.
+		otherPath := filepath.Join(other, rel)
+		if !fileExists(otherPath) {
+			return nil
+		}
+
+		want, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		got, err := os.ReadFile(otherPath)
+		if err != nil {
+			t.Errorf("%s missing %s: %v", otherLabel, rel, err)
+
+			return nil
+		}
+
+		if !bytes.Equal(want, got) {
+			t.Errorf("skill file drift: %s differs from monorepo in %s", filepath.ToSlash(rel), otherLabel)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk %s: %v", otherLabel, err)
+	}
 }
 
 // findRepoRoot walks up from the test working directory looking for a go.work

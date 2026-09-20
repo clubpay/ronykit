@@ -40,6 +40,7 @@ Read these when implementing or reviewing service code.
 | Resource                | Topic                                            |
 |-------------------------|--------------------------------------------------|
 | `package-selection`     | Mandatory reach-for-X → use-Y package map        |
+| `gateway-choice`        | Default fasthttp vs extra std gateways/clusters  |
 | `design-documents`      | SRS/SDD workflow, paths, gate rules              |
 | `frontend-design-documents` | Frontend design doc workflow, paths, gate rules |
 | `frontend-design-template`  | Frontend design doc outline (tokens, rules)     |
@@ -88,6 +89,10 @@ Read these when implementing or reviewing service code.
 | `p`          | `x/p`                  |
 | `flow`       | `flow`                 |
 | `rkit`       | `x/rkit`               |
+| `rony`       | `rony`                 |
+| `errs`       | `rony/errs`            |
+| `kit`        | `kit` (not in feature `api/`) |
+| `stub`       | generated stubs + `di.StubProvider` |
 
 ## Characteristics (keyword routing)
 
@@ -96,7 +101,8 @@ When the user mentions these topics, read the resource before coding.
 | Resource     | Keywords (partial)    |
 |--------------|-----------------------|
 | `api`        | rest, http, api, relay, proxy |
-| `cache`      | redis, cache          |
+| `cache`      | cache, ristretto (in-memory only) |
+| `redis`      | redis, dragonfly, valkey — `InitRedis`, not `x/cache` |
 | `database`   | postgres, mysql, partition, retention, growth |
 | `di`         | di, dependency inject |
 | `i18n`       | i18n, locale          |
@@ -110,8 +116,9 @@ When the user mentions these topics, read the resource before coding.
 1. `design-new-service` or `write-srs` → `write-sdd` (prompts)
 2. `architecture/design-documents`, `srs-template`, `sdd-template`
 3. `scaffold_feature` (tool)
-4. `architecture/service-structure`
-5. `architecture/api-handler-files`
-6. `architecture/repo-ports` + `architecture/postgres-sqlc` (+ `architecture/table-partitioning` if data grows over time)
-7. Prompt `write-service-code`
-8. On completion: `architecture/gen-stub` → run `make gen-stub`
+4. `architecture/package-selection` + `packages/rony` + `packages/errs`
+5. `architecture/service-structure`
+6. `architecture/api-handler-files`
+7. `architecture/repo-ports` + `architecture/postgres-sqlc` (+ `architecture/table-partitioning` if data grows over time)
+8. Prompt `write-service-code`
+9. On completion: `architecture/gen-stub` → run `make gen-stub`

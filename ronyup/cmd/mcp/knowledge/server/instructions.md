@@ -94,36 +94,15 @@ Error handling: use `rony/errs` exclusively.
 - In handlers, wrap with `errs.B().Cause(err).Msg("OPERATION_FAILED").Err()`.
 - Error codes are `SCREAMING_SNAKE_CASE`.
 
-STOP — package selection is mandatory, not optional. Before writing any helper, conversion, ID, log, config read, cache, rate limiter,
-batcher, pool, DB/Redis/S3 connection, workflow, or inter-service client, check whether RonyKIT already provides it. Do NOT hand-roll it and
-do NOT pull a third-party/stdlib equivalent when a RonyKIT one exists. When in doubt, read
-`knowledge://ronyup/architecture/package-selection` (the full reach-for-X → use-Y mapping) and the relevant `knowledge://ronyup/packages/*`
-resource. Quick decision table (left = what you might reach for, right = what you MUST use instead):
+STOP — package selection is mandatory. Before writing any helper, conversion, ID, log, config, cache, rate limiter, batcher, pool,
+DB/Redis/S3 connection, workflow, or inter-service client, read `knowledge://ronyup/architecture/package-selection` and the matching
+`knowledge://ronyup/packages/<name>` (at minimum `rony`, `errs`, `rkit`). Do NOT hand-roll or import a stdlib/third-party equivalent when a
+RonyKIT package exists. `make verify` / `golangci-lint` depguard failures are design violations, not formatting nits.
 
-- IDs / tokens / random (`crypto/rand`, `math/rand`, `github.com/google/uuid`) → `rkit.RandomID`, `rkit.RandomIDs`, `rkit.RandomDigit`,
-  `rkit.SecureRandomUint64`.
-- JSON marshal/unmarshal & byte/string casts (`encoding/json`, manual `[]byte(s)`) → `rkit.ToJSON`/`rkit.FromJSON`/`rkit.ToJSONStr`/
-  `rkit.CastJSON`, `rkit.B2S`/`rkit.S2B`.
-- String↔number (`strconv.*`) → `rkit.StrToInt64`/`rkit.Int64ToStr`/`rkit.StrToFloat64`, etc.
-- Case transforms → `rkit.ToCamel`/`ToLowerCamel`/`ToSnake`/`ToScreamingSnake`/`ToKebab`.
-- Slice/map transforms (hand-written `for` loops) → `rkit.Map`/`Filter`/`Reduce`/`Paginate`/`Contains`/`ArrayToMap`/`ArrayToSet`/`Coalesce`.
-- Pointer/zero/optional handling → `rkit.PtrVal`/`ValPtr`/`ValPtrOrNil`/`Must`/`Ok`/`OkOr`.
-- Struct-to-struct copy/convert (`jinzhu/copier` directly) → `rkit.DynCast`/`DynCastOption`/`TypeConvert`.
-- Logging (`log`, `log/slog`, `go.uber.org/zap`) → `x/telemetry/logkit`. Tracing/metrics (raw OTel) → `x/telemetry/tracekit` /
-  `x/telemetry/meterkit`.
-- Config (`os.Getenv`, `flag`, raw `viper`) → `x/settings`. DI/globals/singletons → `x/di` + `uber/fx`.
-- Errors (`errors.New`, `fmt.Errorf`, 3rd-party error libs) → `rony/errs`.
-- Workflows / durable orchestration (`go.temporal.io/sdk/*`) → `flow` ONLY. NEVER import the Temporal SDK directly in service code — it
-  bypasses RonyKIT's determinism, typing, retry, and state-injection guarantees, and is denied by the workspace `.golangci.yml`.
-- DB/Redis/S3 connections & migrations (`sql.Open`, `redis.NewClient`, `golang-migrate` directly) → `x/datasource` (`InitDB`/`InitRedis`/
-  `InitS3`) wired via `di.ProvideDBParams`/`di.ProvideRedisParams`.
-- Distributed rate limiting → `x/ratelimit`. In-memory cache → `x/cache`. Request coalescing / micro-batching → `x/batch`. Pooled
-  timers/waitgroups/byte buffers → `x/p`.
-- Localization → `x/i18n`. API docs → `x/apidoc` / `rony.WithAPIDocs`. Inter-service calls → generated stubs via `di.StubProvider` (never
-  hand-written HTTP clients).
-- **Dynamic HTTP/WebSocket relay** (session-scoped passthrough after handler auth) → `rony.WithRelay` + `RelayCtx.Relay()` with `kit.RelayConfig`.
-  Read `knowledge://ronyup/architecture/handler-relay`. Do **not** use `WithUnary`/`WithRawUnary` for relay routes. **Static** gateway proxy →
-  `rony.WithReverseProxy` (unchanged).
+- Feature `Desc()` returns `rony.SetupOptionGroup` — never `*desc.Service` and never call `rony.Setup` from `api/`.
+- In-memory cache → `x/cache`. Redis → `x/datasource.InitRedis` (`characteristics/redis`), not `x/cache`.
+- Relay (session passthrough) → `rony.WithRelay` + `RelayALL` (`architecture/handler-relay`). Static proxy → `rony.WithReverseProxy`.
+- Typed JSON API → `rony.WithUnary`. Gateway choice: `architecture/gateway-choice`.
 
 Workspaces scaffolded before executable bundles: run `ronyup setup migrate bundles` once after upgrading `ronyup` (read
 `knowledge://ronyup/tools/migrate_bundles`). Run from the Go workspace root or the fullstack repository root. Use `ronyup setup sync` for
