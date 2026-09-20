@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/x/p"
 )
 
 func TestTakeStacktraceIncludesFunction(t *testing.T) {
@@ -25,7 +25,7 @@ func TestStackFormatterEmitsFrames(t *testing.T) {
 		t.Fatal("expected stacktrace to have frames")
 	}
 
-	buffer := buf.GetCap(256)
+	buffer := p.GetCap(256)
 	defer buffer.Release()
 
 	stackfmt := newStackFormatter(buffer)

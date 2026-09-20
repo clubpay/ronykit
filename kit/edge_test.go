@@ -11,7 +11,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type testSelector struct{}
@@ -353,13 +353,13 @@ func BenchmarkServer(b *testing.B) {
 	).Start(b.Context())
 	defer s.Shutdown(b.Context())
 
-	req := []byte(utils.RandomID(24))
+	req := []byte(rkit.RandomID(24))
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.RunParallel(
 		func(pb *testing.PB) {
 			for pb.Next() {
-				c := newTestConn(utils.RandomUint64(0), "", false)
+				c := newTestConn(rkit.RandomUint64(0), "", false)
 				bundle.Send(c, req)
 			}
 		},

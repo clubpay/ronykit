@@ -2,7 +2,7 @@ package desc
 
 import (
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type Header struct {
@@ -162,10 +162,11 @@ func (c *Contract) AddRoute(r ...RouteSelector) *Contract {
 // Deprecated: use AddRoute instead
 func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
 	return c.AddRoute(
-		utils.Map(
+		rkit.Map(
+			s,
 			func(src kit.RouteSelector) RouteSelector {
 				return Route("", src)
-			}, s,
+			},
 		)...,
 	)
 }
@@ -174,10 +175,11 @@ func (c *Contract) AddSelector(s ...kit.RouteSelector) *Contract {
 // Deprecated: use AddRoute instead
 func (c *Contract) Selector(s ...kit.RouteSelector) *Contract {
 	return c.AddRoute(
-		utils.Map(
+		rkit.Map(
+			s,
 			func(src kit.RouteSelector) RouteSelector {
 				return Route("", src)
-			}, s,
+			},
 		)...,
 	)
 }

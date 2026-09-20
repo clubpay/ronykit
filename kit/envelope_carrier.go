@@ -3,7 +3,7 @@ package kit
 import (
 	"encoding/json"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/goccy/go-reflect"
 )
@@ -72,7 +72,7 @@ func (ec *envelopeCarrier) FillWithContext(ctx *Context) *envelopeCarrier {
 
 func (ec *envelopeCarrier) FillWithEnvelope(e *Envelope) *envelopeCarrier {
 	ec.Data = &carrierData{
-		EnvelopeID:  utils.B2S(e.id),
+		EnvelopeID:  rkit.B2S(e.id),
 		IsREST:      e.ctx.IsREST(),
 		StatusCode:  e.ctx.GetStatusCode(),
 		MsgType:     reflect.TypeOf(e.GetMsg()).String(),

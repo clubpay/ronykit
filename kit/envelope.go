@@ -4,7 +4,7 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var envelopePool = &sync.Pool{}
@@ -27,7 +27,7 @@ type Envelope struct {
 	id       []byte
 	ctx      *Context
 	conn     Conn
-	kvl      utils.SpinLock
+	kvl      rkit.SpinLock
 	kv       EnvelopeHdr
 	m        Message
 	sizeHint int
@@ -192,7 +192,7 @@ func (e *Envelope) Send() {
 // Reply creates a new envelope which it's id is
 func (e *Envelope) Reply() *Envelope {
 	return newEnvelope(e.ctx, e.conn, true).
-		SetID(utils.B2S(e.id))
+		SetID(rkit.B2S(e.id))
 }
 
 // IsOutgoing returns `true` if this Envelope is sending from Server to Client.

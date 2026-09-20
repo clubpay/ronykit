@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type ParsedService struct {
@@ -55,8 +55,8 @@ func (ps *ParsedService) parseContract(c Contract) []ParsedContract {
 		pc := ParsedContract{
 			Index:        idx,
 			GroupName:    c.Name,
-			Name:         utils.Coalesce(s.Name, c.Name),
-			SelectorName: utils.Coalesce(s.Name, s.Selector.String()),
+			Name:         rkit.Coalesce(s.Name, c.Name),
+			SelectorName: rkit.Coalesce(s.Name, s.Selector.String()),
 			Deprecated:   s.Deprecated,
 			Encoding:     s.Selector.GetEncoding().Tag(),
 		}
@@ -162,7 +162,6 @@ func (ps *ParsedService) parseMessage(m kit.Message, meta MessageMeta, enc kit.E
 	// if we are here, it means that mt is a struct
 	fields := make([]ParsedField, 0, mt.NumField())
 	for f := range mt.Fields() {
-		f := f
 		ft := f.Type
 		ptn := getParsedStructTag(f.Tag, tagName)
 
@@ -286,10 +285,10 @@ func (pc ParsedContract) SuggestName() string {
 				continue
 			}
 
-			return utils.ToCamel(v)
+			return rkit.ToCamel(v)
 		}
 	case RPC:
-		return utils.ToCamel(pc.Predicate)
+		return rkit.ToCamel(pc.Predicate)
 	}
 
 	return fmt.Sprintf("%s%d", pc.GroupName, pc.Index)
@@ -373,7 +372,7 @@ func (pm ParsedMessage) GoName() string {
 func (pm ParsedMessage) JSON() string {
 	mJSON, _ := json.MarshalIndent(pm.original, "", "  ") //nolint:errchkjson
 
-	return utils.B2S(mJSON)
+	return rkit.B2S(mJSON)
 }
 
 func (pm ParsedMessage) String() string {

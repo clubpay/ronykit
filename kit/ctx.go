@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 const (
@@ -56,7 +56,7 @@ func (p *ctxPool) releaseCtx(ctx *Context) {
 }
 
 type Context struct {
-	utils.SpinLock
+	rkit.SpinLock
 
 	ctx       context.Context //nolint:containedctx
 	sb        *southBridge

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 )
 
 // Service is the description of the kit.Service you are going to create. It then

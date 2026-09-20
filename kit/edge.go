@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -83,7 +83,7 @@ func NewServer(opts ...Option) *EdgeServer {
 	}
 
 	if cfg.cluster != nil {
-		s.registerCluster(utils.RandomID(32), cfg.cluster)
+		s.registerCluster(rkit.RandomID(32), cfg.cluster)
 	}
 
 	for _, gw := range cfg.gateways {
@@ -145,7 +145,7 @@ func (s *EdgeServer) registerCluster(id string, cb Cluster) *EdgeServer {
 		c:             s.contracts,
 		cb:            cb,
 		tp:            s.t,
-		inProgressMtx: utils.SpinLock{},
+		inProgressMtx: rkit.SpinLock{},
 		inProgress:    map[string]*clusterConn{},
 		msgFactories:  map[string]MessageFactoryFunc{},
 		l:             s.l,
@@ -586,7 +586,7 @@ func getFuncName(f HandlerFunc) string {
 }
 
 func getColor(s string) text.Color {
-	c := text.Color(crc32.ChecksumIEEE(utils.S2B(s)) % 7)
+	c := text.Color(crc32.ChecksumIEEE(rkit.S2B(s)) % 7)
 	c += text.FgBlack + 1
 
 	return c

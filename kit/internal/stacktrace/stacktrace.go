@@ -24,8 +24,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/x/p"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 const (
@@ -132,7 +132,7 @@ func TakeStacktrace(skip int) string {
 	stack := captureStacktrace(skip+1, stacktraceFull)
 	defer stack.Free()
 
-	buffer := buf.GetCap(1024)
+	buffer := p.GetCap(1024)
 	defer buffer.Release()
 
 	stackfmt := newStackFormatter(buffer)
@@ -143,12 +143,12 @@ func TakeStacktrace(skip int) string {
 
 // stackFormatter formats a stack trace into a readable string representation.
 type stackFormatter struct {
-	b        *buf.Bytes
+	b        *p.Bytes
 	nonEmpty bool // whehther we've written at least one frame already
 }
 
 // newStackFormatter builds a new stackFormatter.
-func newStackFormatter(b *buf.Bytes) stackFormatter {
+func newStackFormatter(b *p.Bytes) stackFormatter {
 	return stackFormatter{b: b}
 }
 
@@ -175,5 +175,5 @@ func (sf *stackFormatter) FormatFrame(frame runtime.Frame) {
 	sf.b.AppendByte('\t')
 	sf.b.AppendString(frame.File)
 	sf.b.AppendByte(':')
-	sf.b.AppendString(utils.IntToStr(frame.Line))
+	sf.b.AppendString(rkit.IntToStr(frame.Line))
 }

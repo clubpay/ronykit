@@ -44,7 +44,7 @@ var FuncMaps = map[string]any{
 		return out
 	},
 
-	// Case conversion using kit/utils (project-specific conventions).
+	// Case conversion using x/rkit (project-specific conventions).
 	"lowerCamelCase":  rkit.ToLowerCamel,
 	"camelCase":       rkit.ToCamel,
 	"screamSnakeCase": rkit.ToScreamingSnake,

@@ -2,7 +2,7 @@ package desc
 
 import (
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type ServiceDesc interface {
@@ -28,8 +28,9 @@ func BuildService(desc ServiceDesc) kit.Service {
 }
 
 func ToDesc(svc ...*Service) []ServiceDesc {
-	return utils.Map(
+	return rkit.Map(
+		svc,
 		func(src *Service) ServiceDesc {
 			return ServiceDescFunc(func() *Service { return src })
-		}, svc)
+		})
 }

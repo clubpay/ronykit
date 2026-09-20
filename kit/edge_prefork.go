@@ -3,7 +3,7 @@ package kit
 import (
 	"os"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 const envForkChildKey = "RONYKIT_FORK_CHILD"
@@ -16,5 +16,5 @@ type child struct {
 
 // childID determines if the current process is a child process
 func childID() int {
-	return utils.StrToInt(os.Getenv(envForkChildKey))
+	return rkit.StrToInt(os.Getenv(envForkChildKey))
 }

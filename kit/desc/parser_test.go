@@ -2,12 +2,12 @@ package desc_test
 
 import (
 	"reflect"
+	"testing"
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
-	"testing"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -369,7 +369,7 @@ type SpecialFields struct {
 	TMapPtr map[string]*time.Time `json:"tMapPtr"`
 	TArr    []time.Time           `json:"tArr"`
 	TArrPtr []*time.Time          `json:"tArrPtr"`
-	NUM     utils.Numeric         `json:"num"`
+	NUM     rkit.Numeric          `json:"num"`
 }
 
 func TestTimeFields(t *testing.T) {
@@ -409,7 +409,7 @@ func TestTimeFields(t *testing.T) {
 	assert.Equal(t, "tArrPtr", contract0.Request.Message.Fields[5].Name)
 	assert.Equal(t, reflect.TypeOf([]*time.Time{}), contract0.Request.Message.Fields[5].Element.RType)
 	assert.Equal(t, "num", contract0.Request.Message.Fields[6].Name)
-	assert.Equal(t, reflect.TypeOf(utils.Numeric{}), contract0.Request.Message.Fields[6].Element.RType)
+	assert.Equal(t, reflect.TypeOf(rkit.Numeric{}), contract0.Request.Message.Fields[6].Element.RType)
 	assert.Equal(t, desc.String, contract0.Request.Message.Fields[6].Element.Kind)
 	assert.Equal(t, "RawMessage", contract0.Responses[0].Message.Name)
 }

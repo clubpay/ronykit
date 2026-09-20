@@ -11,6 +11,10 @@ All notable changes to the `kit` module are documented here.
 - **`Context.InputBody()`** — inbound body via `RelayConn.RequestBody()` when available, otherwise `InputRawData()`.
 - **`Context.RelayConn()`** / **`Context.IsRelay()`** type assertions.
 
+### Removed
+
+- **`kit/utils`** and its subpackages (`buf`, `reflector`, `srl`). Callers should use `github.com/clubpay/ronykit/x/rkit` (and `x/rkit/reflector`) instead. Kit now depends on `x/rkit` for those helpers and `x/p` for pooled byte buffers.
+
 ### Notes
 
 - Handler relay is **dynamic** (per-request target URL decided in the handler). For **static** gateway-level proxying, continue using `rony.WithReverseProxy` / `fasthttp.WithReverseProxy`.

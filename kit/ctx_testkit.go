@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var (
@@ -155,7 +155,7 @@ var _ Conn = (*testConn)(nil)
 
 func newTestConn() *testConn {
 	return &testConn{
-		id: utils.RandomUint64(0),
+		id: rkit.RandomUint64(0),
 		kv: map[string]string{},
 	}
 }
@@ -233,7 +233,7 @@ var _ RESTConn = (*testRESTConn)(nil)
 func newTestRESTConn() *testRESTConn {
 	return &testRESTConn{
 		testConn: testConn{
-			id: utils.RandomUint64(0),
+			id: rkit.RandomUint64(0),
 		},
 	}
 }

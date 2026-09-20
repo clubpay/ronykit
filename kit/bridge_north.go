@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type WriteFunc func(conn Conn, e *Envelope) error
@@ -96,7 +96,7 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 
 	var start int64
 	if logEnabled {
-		start = utils.NanoTime()
+		start = rkit.NanoTime()
 	}
 
 	ctx := n.acquireCtx(conn)
@@ -121,7 +121,7 @@ func (n *northBridge) OnMessage(conn Conn, msg []byte) {
 		ctx.execute(arg, c)
 
 		if logEnabled {
-			writeEndpointLog(n.elog, ctx, time.Duration(utils.NanoTime()-start))
+			writeEndpointLog(n.elog, ctx, time.Duration(rkit.NanoTime()-start))
 		}
 	}
 

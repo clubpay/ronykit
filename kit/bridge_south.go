@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/x/p"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type Cluster interface {
@@ -46,7 +46,7 @@ type southBridge struct {
 	tp TracePropagator
 	l  Logger
 
-	inProgressMtx utils.SpinLock
+	inProgressMtx rkit.SpinLock
 	inProgress    map[string]*clusterConn
 	msgFactories  map[string]MessageFactoryFunc
 }
@@ -198,7 +198,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 		carrier.OriginID,
 	)
 
-	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+	ecBuf := p.GetCap(CodecDefaultBufferSize)
 
 	err = defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {
@@ -215,7 +215,7 @@ func (sb *southBridge) onIncomingMessage(carrier *envelopeCarrier) {
 }
 
 func (sb *southBridge) sendMessage(carrier *envelopeCarrier) error {
-	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+	ecBuf := p.GetCap(CodecDefaultBufferSize)
 
 	err := defaultMessageCodec.Encode(carrier, ecBuf)
 	if err == nil {
@@ -267,7 +267,7 @@ func (sb *southBridge) genForwarderHandler(sel EdgeSelectorFunc) HandlerFunc {
 
 		carrier := newEnvelopeCarrier(
 			incomingCarrier,
-			utils.RandomID(32),
+			rkit.RandomID(32),
 			ctx.sb.id,
 			target,
 		).FillWithContext(ctx)
@@ -327,7 +327,7 @@ func (sb *southBridge) writeFunc(c *clusterConn, e *Envelope) error {
 		sb.tp.Inject(e.ctx.ctx, ec.Data)
 	}
 
-	ecBuf := buf.GetCap(CodecDefaultBufferSize)
+	ecBuf := p.GetCap(CodecDefaultBufferSize)
 
 	err := defaultMessageCodec.Encode(ec, ecBuf)
 	if err != nil {

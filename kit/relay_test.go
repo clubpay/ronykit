@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +31,7 @@ func newTestRelayConn() *testRelayConn {
 	return &testRelayConn{
 		testRESTConn: testRESTConn{
 			testConn: testConn{
-				id: utils.RandomUint64(0),
+				id: rkit.RandomUint64(0),
 				kv: map[string]string{},
 			},
 		},

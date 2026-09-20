@@ -61,4 +61,4 @@ Import as `github.com/clubpay/ronykit/x/rkit`.
 ### Struct field access (`reflector`)
 
 - Import as `github.com/clubpay/ronykit/x/rkit/reflector`.
-- `reflector.New()` / `reflector.Register(m, tags...)` / `Reflector.Load` for cached struct field lookup by name or tag. Use this instead of `kit/utils/reflector`.
+- `reflector.New()` / `reflector.Register(m, tags...)` / `Reflector.Load` for cached struct field lookup by name or tag.
