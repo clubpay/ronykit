@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/std/clusters/p2pcluster
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.23
-	github.com/clubpay/ronykit/x/batch v0.4.23
-	github.com/clubpay/ronykit/x/rkit v0.5.23
+	github.com/clubpay/ronykit/kit v0.27.0
+	github.com/clubpay/ronykit/x/batch v0.5.0
+	github.com/clubpay/ronykit/x/rkit v0.6.0
 	github.com/libp2p/go-libp2p v0.49.0
 	github.com/libp2p/go-libp2p-pubsub v0.17.0
 )
@@ -17,7 +17,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/x/p v0.4.23 // indirect
+	github.com/clubpay/ronykit/x/p v0.5.0 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/dunglas/httpsfv v1.1.0 // indirect

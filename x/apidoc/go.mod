@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/x/apidoc
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.23
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.23
-	github.com/clubpay/ronykit/x/rkit v0.5.23
+	github.com/clubpay/ronykit/kit v0.27.0
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.27.0
+	github.com/clubpay/ronykit/x/rkit v0.6.0
 	github.com/go-openapi/spec v1.0.1
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/stretchr/testify v1.12.1
@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/x/p v0.4.23 // indirect
+	github.com/clubpay/ronykit/x/p v0.5.0 // indirect
 	github.com/fasthttp/router v1.5.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/go-openapi/jsonpointer v1.0.0 // indirect

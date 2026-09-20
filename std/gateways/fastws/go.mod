@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/std/gateways/fastws
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.23
-	github.com/clubpay/ronykit/x/p v0.4.23
-	github.com/clubpay/ronykit/x/rkit v0.5.23
+	github.com/clubpay/ronykit/kit v0.27.0
+	github.com/clubpay/ronykit/x/p v0.5.0
+	github.com/clubpay/ronykit/x/rkit v0.6.0
 	github.com/gobwas/ws v1.4.0
 	github.com/panjf2000/gnet/v2 v2.10.0
 )
