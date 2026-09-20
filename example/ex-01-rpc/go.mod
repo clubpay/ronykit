@@ -8,6 +8,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fastws v0.23.9
 	github.com/clubpay/ronykit/stub v0.23.9
 	github.com/clubpay/ronykit/x/apidoc v0.2.9
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/stretchr/testify v1.12.1
 )
 
@@ -32,6 +33,7 @@ require (
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/molecule-man/go-brrr v1.0.1 // indirect
@@ -40,7 +42,6 @@ require (
 	github.com/panjf2000/ants/v2 v2.12.1 // indirect
 	github.com/panjf2000/gnet/v2 v2.10.0 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.74.0 // indirect

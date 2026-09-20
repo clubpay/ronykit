@@ -10,8 +10,8 @@ import (
 	"ronykit/testenv/services"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
@@ -49,9 +49,9 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 		time.Sleep(time.Second * 5)
 		hosts := []string{"localhost:8082", "localhost:8083"}
 		for range 100 {
-			key := "K_" + utils.RandomID(10)
-			value := "V_" + utils.RandomID(10)
-			setHostIndex := utils.RandomInt(len(hosts))
+			key := "K_" + rkit.RandomID(10)
+			value := "V_" + rkit.RandomID(10)
+			setHostIndex := rkit.RandomInt(len(hosts))
 			setHost := hosts[setHostIndex]
 			getHost := hosts[(setHostIndex+1)%len(hosts)]
 			// Set Key to instance 1
@@ -72,8 +72,8 @@ func kitWithCluster(t *testing.T, opt fx.Option) func(c C) {
 			c.So(resp.Value, ShouldEqual, value)
 
 			// Get Key from instance 2
-			connHdrIn := utils.RandomID(12)
-			envelopeHdrIn := utils.RandomID(12)
+			connHdrIn := rkit.RandomID(12)
+			envelopeHdrIn := rkit.RandomID(12)
 			err = stub.New(getHost).REST().
 				SetMethod("GET").
 				SetHeader("Conn-Hdr-In", connHdrIn).

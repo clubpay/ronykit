@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type WorkflowFilterName string
@@ -67,10 +67,10 @@ func StartsWith(name WorkflowFilterName, value string) string {
 
 func IN(name WorkflowFilterName, value ...string) string {
 	return fmt.Sprintf("%s IN (%s)", name, strings.Join(
-		utils.Map(
+		rkit.Map(
+			value,
 			func(in string) string {
 				return fmt.Sprintf("'%s'", strings.Trim(in, "'"))
 			},
-			value,
 		), ", "))
 }

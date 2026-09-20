@@ -2,7 +2,7 @@ package httpmux
 
 import (
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 )
@@ -23,7 +23,7 @@ type Params []Param
 func (ps Params) ByName(name string) string {
 	for _, p := range ps {
 		if p.Key == name {
-			return string(utils.S2B(p.Value))
+			return string(rkit.S2B(p.Value))
 		}
 	}
 

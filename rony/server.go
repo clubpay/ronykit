@@ -8,9 +8,9 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/x/apidoc"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type Server struct {
@@ -126,11 +126,12 @@ func (s *Server) GenDocFile(_ context.Context, filename string) error {
 
 // ExportDesc returns all services descriptions.
 func (s *Server) ExportDesc() []desc.ServiceDesc {
-	return utils.Map(
+	return rkit.Map(
+		rkit.MapToArray(s.cfg.services),
 		func(src *desc.Service) desc.ServiceDesc {
 			return desc.ServiceDescFunc(func() *desc.Service {
 				return src
 			})
-		}, utils.MapToArray(s.cfg.services),
+		},
 	)
 }

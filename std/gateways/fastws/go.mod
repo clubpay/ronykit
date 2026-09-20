@@ -4,6 +4,8 @@ go 1.26.0
 
 require (
 	github.com/clubpay/ronykit/kit v0.26.19
+	github.com/clubpay/ronykit/x/p v0.4.19
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/gobwas/ws v1.4.0
 	github.com/panjf2000/gnet/v2 v2.10.0
 )
@@ -15,6 +17,7 @@ require (
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/panjf2000/ants/v2 v2.12.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

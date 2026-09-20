@@ -14,7 +14,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-openapi/spec"
 	"github.com/rbretecher/go-postman-collection"
@@ -490,9 +490,9 @@ Loop:
 		possibleValues = meta.Enum
 	}
 
-	enum := utils.Map(
-		func(v string) any { return v },
+	enum := rkit.Map(
 		possibleValues,
+		func(v string) any { return v },
 	)
 	if len(enum) > 0 {
 		wrapFuncChain = wrapFuncChain.Add(
@@ -697,9 +697,9 @@ func setSwaggerParam(p *spec.Parameter, pp desc.ParsedField) *spec.Parameter {
 
 	if len(pp.Tag.PossibleValues) > 0 {
 		p.WithEnum(
-			utils.Map(
-				func(src string) any { return src },
+			rkit.Map(
 				pp.Tag.PossibleValues,
+				func(src string) any { return src },
 			)...,
 		)
 	}

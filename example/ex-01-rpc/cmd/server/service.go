@@ -6,9 +6,9 @@ import (
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var sampleService = desc.NewService("SampleService").
@@ -34,7 +34,7 @@ func echoHandler(ctx *kit.Context) {
 			&dto.EchoResponse{
 				RandomID: req.RandomID,
 				Ok:       req.Ok,
-				Ts:       utils.NanoTime(),
+				Ts:       rkit.NanoTime(),
 			},
 		).Send()
 }

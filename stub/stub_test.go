@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -125,8 +125,8 @@ func TestStubAutoRun(t *testing.T) {
 		AutoRun(ctx, "get", kit.JSON, sampleRequest{
 			Name:     "someName",
 			Value:    12345,
-			NamePtr:  utils.ValPtr("someName"),
-			ValuePtr: utils.ValPtr(12345),
+			NamePtr:  rkit.ValPtr("someName"),
+			ValuePtr: rkit.ValPtr(12345),
 			Strings:  []string{"a", "b", "c"},
 			Ints:     []int64{1, 2, 3},
 		})

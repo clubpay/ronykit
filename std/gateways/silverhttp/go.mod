@@ -4,6 +4,8 @@ go 1.26.0
 
 require (
 	github.com/clubpay/ronykit/kit v0.26.19
+	github.com/clubpay/ronykit/x/p v0.4.19
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/go-www/silverlining v1.3.3
 	github.com/goccy/go-reflect v1.2.0
 	github.com/libp2p/go-reuseport v0.4.0
@@ -17,6 +19,7 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect

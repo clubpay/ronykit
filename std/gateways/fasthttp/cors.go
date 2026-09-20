@@ -3,7 +3,7 @@ package fasthttp
 import (
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/valyala/fasthttp"
 )
@@ -82,7 +82,7 @@ func (cors *cors) handle(ctx *fasthttp.RequestCtx) {
 		ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowOrigin, origin)
 	} else {
 		for _, allowedOrigin := range cors.origins {
-			if strings.EqualFold(utils.B2S(origin), allowedOrigin) {
+			if strings.EqualFold(rkit.B2S(origin), allowedOrigin) {
 				ctx.Response.Header.SetBytesV(fasthttp.HeaderAccessControlAllowOrigin, origin)
 			}
 		}
@@ -110,7 +110,7 @@ func (cors *cors) handleWS(ctx *fasthttp.RequestCtx) bool {
 		return true
 	}
 
-	origin := utils.B2S(ctx.Request.Header.Peek(fasthttp.HeaderOrigin))
+	origin := rkit.B2S(ctx.Request.Header.Peek(fasthttp.HeaderOrigin))
 	if origin == "" && cors.ignoreEmptyOrigin {
 		return true
 	}

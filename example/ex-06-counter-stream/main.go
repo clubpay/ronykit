@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony"
 	"github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func main() {
@@ -162,13 +162,13 @@ func printMW(ctx *kit.Context) {
 	fmt.Printf(
 		"<- req: REST(%t) %s\n",
 		ctx.IsREST(),
-		utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
+		rkit.B2S(rkit.Must(kit.MarshalMessage(ctx.In().GetMsg()))),
 	)
 	ctx.AddModifier(
 		func(e *kit.Envelope) {
 			fmt.Printf(
 				"-> res: %s\n",
-				utils.B2S(utils.Must(kit.MarshalMessage(e.GetMsg()))),
+				rkit.B2S(rkit.Must(kit.MarshalMessage(e.GetMsg()))),
 			)
 		},
 	)

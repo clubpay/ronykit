@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/Masterminds/sprig/v3"
 
@@ -45,9 +45,9 @@ var FuncMaps = map[string]any{
 	},
 
 	// Case conversion using kit/utils (project-specific conventions).
-	"lowerCamelCase":  utils.ToLowerCamel,
-	"camelCase":       utils.ToCamel,
-	"screamSnakeCase": utils.ToScreamingSnake,
+	"lowerCamelCase":  rkit.ToLowerCamel,
+	"camelCase":       rkit.ToCamel,
+	"screamSnakeCase": rkit.ToScreamingSnake,
 
 	// Domain-specific type converters and helpers.
 	"goType":              goType,

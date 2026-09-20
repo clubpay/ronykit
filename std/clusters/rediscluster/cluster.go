@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -71,13 +71,13 @@ func (c *cluster) gc(ctx context.Context) {
 		},
 		c.id,
 		idleSec,
-		utils.TimeUnix(),
+		rkit.TimeUnix(),
 	).Err()
 }
 
 func (c *cluster) Start(ctx context.Context) error { //nolint:contextcheck
 	c.ps = c.rc.Subscribe(ctx, fmt.Sprintf("%s:chan:%s", c.prefix, c.id))
-	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, utils.TimeUnix())
+	c.rc.HSet(ctx, fmt.Sprintf("%s:instances", c.prefix), c.id, rkit.TimeUnix())
 	c.msgChan = c.ps.Channel()
 	gcTimer := time.NewTimer(c.gcPeriod)
 
@@ -94,7 +94,7 @@ func (c *cluster) Start(ctx context.Context) error { //nolint:contextcheck
 					return
 				}
 
-				c.d.OnMessage(utils.S2B(msg.Payload))
+				c.d.OnMessage(rkit.S2B(msg.Payload))
 			case <-runCtx.Done():
 				_ = c.ps.Close()
 

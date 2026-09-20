@@ -67,15 +67,15 @@ import (
 {{ end }}
 
 "github.com/clubpay/ronykit/kit"
-"github.com/clubpay/ronykit/kit/utils"
+"github.com/clubpay/ronykit/x/rkit"
 "github.com/clubpay/ronykit/stub"
-"github.com/clubpay/ronykit/kit/utils/reflector"
+"github.com/clubpay/ronykit/x/rkit/reflector"
 )
 
 {{/* We use this to make sure fmt import is not complained by the compiler */}}
 var (
 _ fmt.Stringer
-_ utils.Result
+_ rkit.SpinLock
 {{ if has "encoding/json" .GetBuiltinPkgPaths }} _ json.RawMessage {{end}}
 {{ if has "time" .GetBuiltinPkgPaths }} _ time.Time {{end}}
 )
@@ -166,7 +166,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 		SetOKHandler(
 		func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 		{{ if .GetOKResponse.Message.IsSpecial }}
-			res = utils.CloneBytes(r.GetBody())
+			res = rkit.CloneBytes(r.GetBody())
 			return  nil
 		{{ else }}
 			return stub.WrapError(kit.UnmarshalMessage(r.GetBody(), res))

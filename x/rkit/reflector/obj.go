@@ -5,8 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"unsafe"
-
-	"github.com/clubpay/ronykit/kit"
 )
 
 var (
@@ -43,7 +41,7 @@ func (f FieldInfo) Type() reflect.StructField {
 
 type Fields map[string]FieldInfo
 
-func (fields Fields) Get(m kit.Message, fieldName string) any {
+func (fields Fields) Get(m any, fieldName string) any {
 	fi := fields[fieldName]
 	if len(fi.idx) == 0 {
 		return nil
@@ -77,7 +75,7 @@ func (fields Fields) Get(m kit.Message, fieldName string) any {
 	return mVal.Interface()
 }
 
-func (fields Fields) GetInt(m kit.Message, fieldName string) (int, error) {
+func (fields Fields) GetInt(m any, fieldName string) (int, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int {
 		return 0, errInvalidFieldType(k.String())
@@ -88,7 +86,7 @@ func (fields Fields) GetInt(m kit.Message, fieldName string) (int, error) {
 	return *(*int)(ptr), nil
 }
 
-func (fields Fields) GetIntDefault(m kit.Message, fieldName string, def int) int {
+func (fields Fields) GetIntDefault(m any, fieldName string, def int) int {
 	v, err := fields.GetInt(m, fieldName)
 	if err != nil {
 		return def
@@ -97,7 +95,7 @@ func (fields Fields) GetIntDefault(m kit.Message, fieldName string, def int) int
 	return v
 }
 
-func (fields Fields) GetUInt(m kit.Message, fieldName string) (uint, error) {
+func (fields Fields) GetUInt(m any, fieldName string) (uint, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint {
 		return 0, errInvalidFieldType(k.String())
@@ -108,7 +106,7 @@ func (fields Fields) GetUInt(m kit.Message, fieldName string) (uint, error) {
 	return *(*uint)(ptr), nil
 }
 
-func (fields Fields) GetUIntDefault(m kit.Message, fieldName string, def uint) uint {
+func (fields Fields) GetUIntDefault(m any, fieldName string, def uint) uint {
 	v, err := fields.GetUInt(m, fieldName)
 	if err != nil {
 		return def
@@ -117,7 +115,7 @@ func (fields Fields) GetUIntDefault(m kit.Message, fieldName string, def uint) u
 	return v
 }
 
-func (fields Fields) GetInt64(m kit.Message, fieldName string) (int64, error) {
+func (fields Fields) GetInt64(m any, fieldName string) (int64, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int64 {
 		return 0, errInvalidFieldType(k.String())
@@ -128,7 +126,7 @@ func (fields Fields) GetInt64(m kit.Message, fieldName string) (int64, error) {
 	return *(*int64)(ptr), nil
 }
 
-func (fields Fields) GetInt64Default(m kit.Message, fieldName string, def int64) int64 {
+func (fields Fields) GetInt64Default(m any, fieldName string, def int64) int64 {
 	v, err := fields.GetInt64(m, fieldName)
 	if err != nil {
 		return def
@@ -137,7 +135,7 @@ func (fields Fields) GetInt64Default(m kit.Message, fieldName string, def int64)
 	return v
 }
 
-func (fields Fields) GetUInt64(m kit.Message, fieldName string) (uint64, error) {
+func (fields Fields) GetUInt64(m any, fieldName string) (uint64, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint64 {
 		return 0, errInvalidFieldType(k.String())
@@ -148,7 +146,7 @@ func (fields Fields) GetUInt64(m kit.Message, fieldName string) (uint64, error) 
 	return *(*uint64)(ptr), nil
 }
 
-func (fields Fields) GetUInt64Default(m kit.Message, fieldName string, def uint64) uint64 {
+func (fields Fields) GetUInt64Default(m any, fieldName string, def uint64) uint64 {
 	v, err := fields.GetUInt64(m, fieldName)
 	if err != nil {
 		return def
@@ -157,7 +155,7 @@ func (fields Fields) GetUInt64Default(m kit.Message, fieldName string, def uint6
 	return v
 }
 
-func (fields Fields) GetInt32(m kit.Message, fieldName string) (int32, error) {
+func (fields Fields) GetInt32(m any, fieldName string) (int32, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Int32 {
 		return 0, errInvalidFieldType(k.String())
@@ -168,7 +166,7 @@ func (fields Fields) GetInt32(m kit.Message, fieldName string) (int32, error) {
 	return *(*int32)(ptr), nil
 }
 
-func (fields Fields) GetInt32Default(m kit.Message, fieldName string, def int32) int32 {
+func (fields Fields) GetInt32Default(m any, fieldName string, def int32) int32 {
 	v, err := fields.GetInt32(m, fieldName)
 	if err != nil {
 		return def
@@ -177,7 +175,7 @@ func (fields Fields) GetInt32Default(m kit.Message, fieldName string, def int32)
 	return v
 }
 
-func (fields Fields) GetUInt32(m kit.Message, fieldName string) (uint32, error) {
+func (fields Fields) GetUInt32(m any, fieldName string) (uint32, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.Uint32 {
 		return 0, errInvalidFieldType(k.String())
@@ -188,7 +186,7 @@ func (fields Fields) GetUInt32(m kit.Message, fieldName string) (uint32, error) 
 	return *(*uint32)(ptr), nil
 }
 
-func (fields Fields) GetUInt32Default(m kit.Message, fieldName string, def uint32) uint32 {
+func (fields Fields) GetUInt32Default(m any, fieldName string, def uint32) uint32 {
 	v, err := fields.GetUInt32(m, fieldName)
 	if err != nil {
 		return def
@@ -197,7 +195,7 @@ func (fields Fields) GetUInt32Default(m kit.Message, fieldName string, def uint3
 	return v
 }
 
-func (fields Fields) GetString(m kit.Message, fieldName string) (string, error) {
+func (fields Fields) GetString(m any, fieldName string) (string, error) {
 	fi := fields[fieldName]
 	if k := fi.Kind(); k != reflect.String {
 		return "", errInvalidFieldType(k.String())
@@ -208,7 +206,7 @@ func (fields Fields) GetString(m kit.Message, fieldName string) (string, error) 
 	return *(*string)(ptr), nil
 }
 
-func (fields Fields) GetStringDefault(m kit.Message, fieldName string, def string) string {
+func (fields Fields) GetStringDefault(m any, fieldName string, def string) string {
 	v, err := fields.GetString(m, fieldName)
 	if err != nil {
 		return def

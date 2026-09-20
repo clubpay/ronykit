@@ -1,7 +1,7 @@
 package fasthttp
 
 import (
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type util struct {
@@ -22,7 +22,7 @@ func defaultUtil() util {
 
 func speedUtil() util {
 	return util{
-		b2s: utils.B2S,
-		s2b: utils.S2B,
+		b2s: rkit.B2S,
+		s2b: rkit.S2B,
 	}
 }

@@ -1,8 +1,8 @@
 package rony
 
 import (
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub/stubgen"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // GenerateStub generates a stub file for the given service description.
@@ -17,9 +17,9 @@ func GenerateStub[S State[A], A Action](
 	var s S
 
 	ctx := SetupContext[S, A]{
-		s:    utils.ValPtr(ToInitiateState(s)()),
+		s:    new(ToInitiateState(s)()),
 		name: name,
-		cfg:  utils.ValPtr(defaultServerConfig()),
+		cfg:  new(defaultServerConfig()),
 	}
 	for _, o := range opt {
 		o(&ctx)
@@ -27,7 +27,7 @@ func GenerateStub[S State[A], A Action](
 
 	return stubgen.New(
 		stubgen.WithGenEngine(genEngine),
-		stubgen.WithStubName(utils.ToCamel(name)),
+		stubgen.WithStubName(rkit.ToCamel(name)),
 		stubgen.WithFolderName(folderName),
 		stubgen.WithOutputDir(outputDir),
 	).Generate(ctx.cfg.allServiceDesc()...)

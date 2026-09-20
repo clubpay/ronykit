@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 
 	"github.com/valyala/fasthttp"
 )
@@ -516,7 +516,7 @@ func (hc *RESTCtx) AutoRun(
 	)
 	hc.SetPath(path)
 
-	switch utils.B2S(hc.req.Header.Method()) {
+	switch rkit.B2S(hc.req.Header.Method()) {
 	case http.MethodGet:
 		fields.WalkFields(
 			func(key string, _ reflector.FieldInfo) {

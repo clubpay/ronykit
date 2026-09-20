@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 
 	"github.com/fasthttp/websocket"
 )
@@ -117,7 +117,7 @@ func (wCtx *WebsocketCtx) Reconnect(ctx context.Context) error {
 }
 
 func (wCtx *WebsocketCtx) setActivity() {
-	wCtx.lastActivity.Store(uint32(utils.TimeUnix()))
+	wCtx.lastActivity.Store(uint32(rkit.TimeUnix()))
 }
 
 func (wCtx *WebsocketCtx) getActivity() int64 {
@@ -140,7 +140,7 @@ func (wCtx *WebsocketCtx) watchdog(c *websocket.Conn) {
 			return
 
 		case <-t.C:
-			if utils.TimeUnix()-wCtx.getActivity() <= d {
+			if rkit.TimeUnix()-wCtx.getActivity() <= d {
 				wCtx.cMtx.Lock()
 
 				err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(wCtx.cfg.writeTimeout))
@@ -358,7 +358,7 @@ func (wCtx *WebsocketCtx) Do(ctx context.Context, req WebsocketRequest) error {
 	outC := wCtx.cfg.rpcOutFactory()
 
 	if req.ID == "" {
-		req.ID = utils.RandomDigit(10)
+		req.ID = rkit.RandomDigit(10)
 	}
 
 	outC.InjectMessage(req.ReqMsg)

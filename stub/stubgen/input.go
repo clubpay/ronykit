@@ -7,7 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type Input struct {
@@ -53,7 +53,7 @@ func (in *Input) addContract(c desc.ParsedContract) {
 			Method:               c.Method,
 			Path:                 c.Path,
 			PathParams:           c.PathParams,
-			Encoding:             utils.Coalesce(c.Encoding, "json"),
+			Encoding:             rkit.Coalesce(c.Encoding, "json"),
 			Request:              c.Request,
 			Responses:            c.Responses,
 			DefaultErrorResponse: c.DefaultError,
@@ -66,7 +66,7 @@ func (in *Input) addContract(c desc.ParsedContract) {
 			Predicate: c.Predicate,
 			Request:   c.Request,
 			Responses: c.Responses,
-			Encoding:  utils.Coalesce(c.Encoding, "json"),
+			Encoding:  rkit.Coalesce(c.Encoding, "json"),
 		})
 	}
 }
@@ -153,7 +153,7 @@ func (in *Input) GetBuiltinPkgPaths() []string {
 		}
 	}
 
-	return utils.MapKeysToArray(paths)
+	return rkit.MapKeysToArray(paths)
 }
 
 func isBuiltinPackage(pkgpath string) bool {
@@ -182,26 +182,29 @@ type RESTMethod struct {
 }
 
 func (rm *RESTMethod) HasOKResponse() bool {
-	return len(utils.Filter(
+	return len(rkit.Filter(
+		rm.Responses,
 		func(src desc.ParsedResponse) bool {
 			return !src.IsError()
-		}, rm.Responses,
+		},
 	)) > 0
 }
 
 func (rm *RESTMethod) GetOKResponse() desc.ParsedResponse {
-	return utils.Filter(
+	return rkit.Filter(
+		rm.Responses,
 		func(src desc.ParsedResponse) bool {
 			return !src.IsError()
-		}, rm.Responses,
+		},
 	)[0]
 }
 
 func (rm *RESTMethod) GetErrors() []desc.ParsedResponse {
-	return utils.Filter(
+	return rkit.Filter(
+		rm.Responses,
 		func(src desc.ParsedResponse) bool {
 			return src.IsError()
-		}, rm.Responses,
+		},
 	)
 }
 
@@ -226,17 +229,19 @@ type RPCMethod struct {
 }
 
 func (rm *RPCMethod) GetOKResponse() desc.ParsedResponse {
-	return utils.Filter(
+	return rkit.Filter(
+		rm.Responses,
 		func(src desc.ParsedResponse) bool {
 			return !src.IsError()
-		}, rm.Responses,
+		},
 	)[0]
 }
 
 func (rm *RPCMethod) GetErrors() []desc.ParsedResponse {
-	return utils.Filter(
+	return rkit.Filter(
+		rm.Responses,
 		func(src desc.ParsedResponse) bool {
 			return src.IsError()
-		}, rm.Responses,
+		},
 	)
 }

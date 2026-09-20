@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/x/p"
 )
 
 type sseHTTPConn struct {
@@ -43,7 +43,7 @@ func (c *sseHTTPConn) Write(data []byte) (int, error) {
 }
 
 func (c *sseHTTPConn) WriteEnvelope(e *kit.Envelope) error {
-	dataBuf := buf.GetCap(e.SizeHint())
+	dataBuf := p.GetCap(e.SizeHint())
 
 	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {

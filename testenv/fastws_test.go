@@ -9,8 +9,8 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
@@ -57,7 +57,7 @@ func fastwsWithHugePayload(t *testing.T, opt fx.Option) func(c C) {
 		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
 
 		for i := 0; i < 10; i++ {
-			req := &services.EchoRequest{Input: utils.RandomID(10000)}
+			req := &services.EchoRequest{Input: rkit.RandomID(10000)}
 			res := &services.EchoResponse{}
 			err := wsCtx.BinaryMessage(
 				ctx, "echo", req, res,
@@ -96,7 +96,7 @@ func fastwsWithPingAndSmallPayload(t *testing.T, opt fx.Option) func(c C) {
 		c.So(wsCtx.Connect(ctx, "/"), ShouldBeNil)
 
 		for i := 0; i < 10; i++ {
-			req := &services.EchoRequest{Input: utils.RandomID(32)}
+			req := &services.EchoRequest{Input: rkit.RandomID(32)}
 			res := &services.EchoResponse{}
 			err := wsCtx.BinaryMessage(
 				ctx, "echo", req, res,

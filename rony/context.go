@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // BaseCtx is a base context object used by UnaryCtx, StreamCtx, and RelayCtx
@@ -137,7 +137,7 @@ func newUnaryCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *UnaryCtx[S, A] {
 	return &UnaryCtx[S, A]{
-		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
 	}
 }
 
@@ -185,7 +185,7 @@ func newStreamCtx[S State[A], A Action, M Message](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *StreamCtx[S, A, M] {
 	return &StreamCtx[S, A, M]{
-		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
 	}
 }
 
@@ -235,7 +235,7 @@ func newRelayCtx[S State[A], A Action](
 	ctx *kit.Context, s *S, sl sync.Locker,
 ) *RelayCtx[S, A] {
 	return &RelayCtx[S, A]{
-		BaseCtx: utils.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
+		BaseCtx: rkit.PtrVal(newBaseCtx[S, A](ctx, s, sl)),
 	}
 }
 

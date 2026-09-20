@@ -80,6 +80,29 @@ func TestSSEHTTPHandlerRESTStream(t *testing.T) {
 	}
 }
 
+func TestSSEWriteEnvelope(t *testing.T) {
+	var out bytes.Buffer
+	conn := &sseHTTPConn{
+		httpConn: httpConn{ctx: newRequestCtx(MethodGet, "/stream")},
+		w:        bufio.NewWriter(&out),
+	}
+
+	env := newTestEnvelope(newTestContext(conn), conn)
+	env.SetHdr("X-Env", "1").SetMsg(kit.RawMessage("ping"))
+	if err := conn.WriteEnvelope(env); err != nil {
+		t.Fatalf("WriteEnvelope: %v", err)
+	}
+	if err := conn.w.Flush(); err != nil {
+		t.Fatalf("flush: %v", err)
+	}
+	if !strings.Contains(out.String(), "data: ping") {
+		t.Fatalf("unexpected SSE payload: %q", out.String())
+	}
+	if got := string(conn.ctx.Response.Header.Peek("X-Env")); got != "1" {
+		t.Fatalf("unexpected envelope header: %s", got)
+	}
+}
+
 func TestSSEHTTPConnStream(t *testing.T) {
 	conn := &sseHTTPConn{}
 	if !conn.Stream() {

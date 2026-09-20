@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-
-	"github.com/clubpay/ronykit/kit"
 )
 
 var (
@@ -29,7 +27,7 @@ func New() *Reflector {
 
 // Register registers the message, then reflector will be much faster. You should call
 // it concurrently.
-func Register(m kit.Message, tags ...string) {
+func Register(m any, tags ...string) {
 	if m == nil {
 		return
 	}
@@ -47,7 +45,7 @@ func Register(m kit.Message, tags ...string) {
 	registered[mType] = destruct(mType, tags...)
 }
 
-func getValue(m kit.Message) (reflect.Value, error) {
+func getValue(m any) (reflect.Value, error) {
 	mVal := reflect.Indirect(reflect.ValueOf(m))
 	if mVal.Kind() != reflect.Struct {
 		return reflect.Value{}, ErrMessageIsNotStruct
@@ -132,7 +130,7 @@ func destruct(mType reflect.Type, tags ...string) *Reflected { //nolint:gocognit
 	return r
 }
 
-func (r *Reflector) Load(m kit.Message, tags ...string) *Reflected {
+func (r *Reflector) Load(m any, tags ...string) *Reflected {
 	mType := reflect.Indirect(reflect.ValueOf(m)).Type()
 
 	cachedData := registered[mType]
@@ -153,7 +151,7 @@ func (r *Reflector) Load(m kit.Message, tags ...string) *Reflected {
 	return cachedData
 }
 
-func (r *Reflector) Get(m kit.Message, fieldName string) (any, error) {
+func (r *Reflector) Get(m any, fieldName string) (any, error) {
 	e, err := getValue(m)
 	if err != nil {
 		return nil, err
@@ -171,7 +169,7 @@ func (r *Reflector) Get(m kit.Message, fieldName string) (any, error) {
 	return e.FieldByName(fieldName).Interface(), nil
 }
 
-func (r *Reflector) GetString(m kit.Message, fieldName string) (string, error) {
+func (r *Reflector) GetString(m any, fieldName string) (string, error) {
 	e, err := getValue(m)
 	if err != nil {
 		return "", err
@@ -189,7 +187,7 @@ func (r *Reflector) GetString(m kit.Message, fieldName string) (string, error) {
 	return e.FieldByName(fieldName).String(), nil
 }
 
-func (r *Reflector) GetInt(m kit.Message, fieldName string) (int64, error) {
+func (r *Reflector) GetInt(m any, fieldName string) (int64, error) {
 	e, err := getValue(m)
 	if err != nil {
 		return 0, err

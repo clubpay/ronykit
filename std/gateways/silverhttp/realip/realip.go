@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 )
@@ -87,12 +87,12 @@ func IsPrivateAddress(address string) (bool, error) {
 func FromRequest(ctx *silverlining.Context) string {
 	hdr := ctx.RequestHeaders()
 
-	xClientIP, _ := hdr.GetBytes(utils.S2B(xClientIPHeader))
+	xClientIP, _ := hdr.GetBytes(rkit.S2B(xClientIPHeader))
 	if xClientIP != nil {
 		return string(xClientIP)
 	}
 
-	xOriginalForwardedFor, _ := hdr.GetBytes(utils.S2B(xOriginalForwardedForHeader))
+	xOriginalForwardedFor, _ := hdr.GetBytes(rkit.S2B(xOriginalForwardedForHeader))
 	if xOriginalForwardedFor != nil {
 		requestIP, err := retrieveForwardedIP(string(xOriginalForwardedFor))
 		if err == nil {
@@ -100,7 +100,7 @@ func FromRequest(ctx *silverlining.Context) string {
 		}
 	}
 
-	xForwardedFor, _ := hdr.GetBytes(utils.S2B(xForwardedForHeader))
+	xForwardedFor, _ := hdr.GetBytes(rkit.S2B(xForwardedForHeader))
 	if xForwardedFor != nil {
 		requestIP, err := retrieveForwardedIP(string(xForwardedFor))
 		if err == nil {
@@ -134,7 +134,7 @@ func FromRequest(ctx *silverlining.Context) string {
 func fromSpecialHeaders(ctx *silverlining.Context) (string, error) {
 	ipHeaders := [...]string{cfConnectingIPHeader, fastlyClientIPHeader, trueClientIPHeader, xRealIPHeader}
 	for _, iplHeader := range ipHeaders {
-		if clientIP, _ := ctx.RequestHeaders().GetBytes(utils.S2B(iplHeader)); clientIP != nil {
+		if clientIP, _ := ctx.RequestHeaders().GetBytes(rkit.S2B(iplHeader)); clientIP != nil {
 			return string(clientIP), nil
 		}
 	}
@@ -145,7 +145,7 @@ func fromSpecialHeaders(ctx *silverlining.Context) (string, error) {
 func fromForwardedHeaders(ctx *silverlining.Context) (string, error) {
 	forwardedHeaders := [...]string{xForwardedHeader, forwardedForHeader, forwardedHeader}
 	for _, forwardedHeader := range forwardedHeaders {
-		if forwarded, _ := ctx.RequestHeaders().GetBytes(utils.S2B(forwardedHeader)); forwarded != nil {
+		if forwarded, _ := ctx.RequestHeaders().GetBytes(rkit.S2B(forwardedHeader)); forwarded != nil {
 			clientIP, err := retrieveForwardedIP(string(forwarded))
 			if err == nil {
 				return clientIP, nil

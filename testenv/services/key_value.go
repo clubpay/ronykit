@@ -8,8 +8,8 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type GetRequest struct {
@@ -101,7 +101,7 @@ func contextMW(t time.Duration) kit.HandlerFunc {
 }
 
 type testClusterStore struct {
-	mtx      utils.SpinLock
+	mtx      rkit.SpinLock
 	sharedKV map[string]string
 }
 

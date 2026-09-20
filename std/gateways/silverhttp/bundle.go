@@ -9,8 +9,8 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 	"github.com/go-www/silverlining/h1"
@@ -202,8 +202,8 @@ func (b *bundle) httpDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, erro
 		params = append(
 			params,
 			httpmux.Param{
-				Key:   utils.B2S(p.Key),
-				Value: utils.B2S(p.Value),
+				Key:   rkit.B2S(p.Key),
+				Value: rkit.B2S(p.Value),
 			},
 		)
 	}

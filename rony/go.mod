@@ -7,6 +7,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.19
 	github.com/clubpay/ronykit/stub v0.26.19
 	github.com/clubpay/ronykit/x/apidoc v0.5.19
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/json-iterator/go v1.1.12
 	github.com/modern-go/reflect2 v1.0.2
 	github.com/stretchr/testify v1.12.1
@@ -36,6 +37,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

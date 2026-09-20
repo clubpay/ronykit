@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/flow"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.temporal.io/sdk/temporal"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ func TestFlow(t *testing.T) {
 				TaskQueue:     "kitTest",
 				Namespace:     "kitTest",
 				HostPort:      temporalHostPort,
-				DataConverter: flow.EncryptedDataConverter(utils.RandomID(32)),
+				DataConverter: flow.EncryptedDataConverter(rkit.RandomID(32)),
 				Logger:        flow.NewZapAdapter(zap.NewNop()),
 			},
 		)
@@ -140,7 +140,7 @@ var WFSelect = flow.NewWorkflow(
 
 		fmt.Println(*name)
 
-		return utils.ValPtr(res), nil
+		return rkit.ValPtr(res), nil
 	},
 )
 

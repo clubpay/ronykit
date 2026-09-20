@@ -16,6 +16,8 @@ github.com/clubpay/ronykit/stub v0.26.19 h1:5rqZL+S1bxM1CHN40scl9bEUUqobbXqI4uET
 github.com/clubpay/ronykit/stub v0.26.19/go.mod h1:jc2se1dDAckoFaCFy0dbl16PkKBCsxG3Lm8qk7rdRqU=
 github.com/clubpay/ronykit/x/apidoc v0.5.19 h1:YRLO3gxR1WQe7vWApqyaaHW/6X85iFvnYeoEHy9oNvo=
 github.com/clubpay/ronykit/x/apidoc v0.5.19/go.mod h1:IQumPdMWm2MHxVbF/DswokrvkKW40pueqCUES0njPqw=
+github.com/clubpay/ronykit/x/rkit v0.5.19 h1:SDEMjSkbg7dcegwXB/k/nsqaH7QfuSehHnogK2JbbhY=
+github.com/clubpay/ronykit/x/rkit v0.5.19/go.mod h1:bvSqU2oR9TU3ZWDAV5MniTgV+athRPB3MwHGaCIFI9c=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fasthttp/router v1.5.4 h1:oxdThbBwQgsDIYZ3wR1IavsNl6ZS9WdjKukeMikOnC8=
@@ -63,6 +65,8 @@ github.com/huandu/xstrings v1.5.0 h1:2ag3IFq9ZDANvthTwTiqSSZLjDc+BedvHPAp5tJy2TI
 github.com/huandu/xstrings v1.5.0/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/jedib0t/go-pretty/v6 v6.8.3 h1:yVSk5aemoYHCvcrtqyXklwqcgHQIQzmy/oUzFlmffSQ=
 github.com/jedib0t/go-pretty/v6 v6.8.3/go.mod h1:YwC5CE4fJ1HFUDeivSV1r//AmANFHyqczZk+U6BDALU=
+github.com/jinzhu/copier v0.4.0 h1:w3ciUoD19shMCRargcpm0cm91ytaBhDvuRpz1ODO/U8=
+github.com/jinzhu/copier v0.4.0/go.mod h1:DfbEm0FYsaqBcKcFuvmOZb218JkPGtvSHsKg8S8hyyg=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/klauspost/compress v1.20.0 h1:a3C1ke2ohxFymNlb2HWAHjDeKCI90scRskErZkR0ezA=

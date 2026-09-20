@@ -57,3 +57,8 @@ Import as `github.com/clubpay/ronykit/x/rkit`.
 - `rkit.TimeUnix()` (cached per-second clock), `rkit.NanoTime`/`CPUTicks` for cheap durations.
 - `rkit.GetExecDir`/`GetExecName`/`GetCurrentDir`, `rkit.CopyFile`, `rkit.ReadYamlFile`/`WriteYamlFile`.
 - `rkit.SpinLock` (`spinlock.go`) for very short critical sections instead of `sync.Mutex`.
+
+### Struct field access (`reflector`)
+
+- Import as `github.com/clubpay/ronykit/x/rkit/reflector`.
+- `reflector.New()` / `reflector.Register(m, tags...)` / `Reflector.Load` for cached struct field lookup by name or tag. Use this instead of `kit/utils/reflector`.

@@ -4,13 +4,13 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/fasthttp/websocket"
 )
 
 type wsConn struct {
-	utils.SpinLock
+	rkit.SpinLock
 
 	kv            map[string]string
 	id            uint64

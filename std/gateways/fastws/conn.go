@@ -6,8 +6,8 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
+	"github.com/clubpay/ronykit/x/p"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -18,7 +18,7 @@ import (
 const ringBufInitialSize = 4 << 10
 
 type wsConn struct {
-	utils.SpinLock
+	rkit.SpinLock
 
 	id            uint64
 	kv            map[string]string
@@ -28,7 +28,7 @@ type wsConn struct {
 	// websocketCodec
 	handshakeDone bool
 	readBuff      *ring.Buffer
-	msgBuff       *buf.Bytes
+	msgBuff       *p.Bytes
 	currHead      *ws.Header
 	w             *wsutil.Writer
 	c             gnet.Conn
@@ -50,7 +50,7 @@ func newWebsocketConn(
 		id:            id,
 		kv:            map[string]string{},
 		readBuff:      ring.New(ringBufInitialSize),
-		msgBuff:       buf.GetCap(ringBufInitialSize),
+		msgBuff:       p.GetCap(ringBufInitialSize),
 		rpcOutFactory: rpcOutFactory,
 	}
 
@@ -138,7 +138,7 @@ func (wsc *wsConn) nextHeader() error {
 }
 
 func (wsc *wsConn) handleControlMessage(c gnet.Conn) error {
-	buff := buf.GetLen(int(wsc.currHead.Length))
+	buff := p.GetLen(int(wsc.currHead.Length))
 	defer buff.Release()
 
 	if wsc.currHead.Length > 0 {
@@ -191,7 +191,7 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 				return nil
 			}
 
-			tmpBuff := buf.GetLen(8192)
+			tmpBuff := p.GetLen(8192)
 			stPos := wsc.msgBuff.Len()
 			written, err := io.CopyBuffer(
 				wsc.msgBuff,
@@ -210,13 +210,13 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 			}
 
 			endPos := wsc.msgBuff.Len()
-			ws.Cipher(utils.PtrVal(wsc.msgBuff.Bytes())[stPos:endPos], wsc.currHead.Mask, 0)
+			ws.Cipher(rkit.PtrVal(wsc.msgBuff.Bytes())[stPos:endPos], wsc.currHead.Mask, 0)
 		}
 
 		if wsc.currHead.Fin {
 			msgBuff := wsc.msgBuff
 
-			wsc.msgBuff = buf.GetCap(wsc.msgBuff.Cap())
+			wsc.msgBuff = p.GetCap(wsc.msgBuff.Cap())
 			go wsc.execMessage(d, msgBuff)
 		}
 
@@ -225,7 +225,7 @@ func (wsc *wsConn) executeMessages(c gnet.Conn, d kit.GatewayDelegate) error {
 	}
 }
 
-func (wsc *wsConn) execMessage(d kit.GatewayDelegate, msgBuff *buf.Bytes) {
+func (wsc *wsConn) execMessage(d kit.GatewayDelegate, msgBuff *p.Bytes) {
 	d.OnMessage(wsc, *msgBuff.Bytes())
 	msgBuff.Release()
 }

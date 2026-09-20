@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/x/rkit"
 
 	enumspb "go.temporal.io/api/enums/v1"
@@ -96,7 +95,8 @@ type (
 )
 
 func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
-	calSpec := utils.Map(
+	calSpec := rkit.Map(
+		sc.Calendars,
 		func(src ScheduleCalendarSpec) client.ScheduleCalendarSpec {
 			cal := client.ScheduleCalendarSpec{}
 			if src.Second != 0 {
@@ -129,16 +129,15 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 
 			return cal
 		},
-		sc.Calendars,
 	)
-	intervalSpec := utils.Map(
+	intervalSpec := rkit.Map(
+		sc.Intervals,
 		func(src ScheduleIntervalSpec) client.ScheduleIntervalSpec {
 			return client.ScheduleIntervalSpec{
 				Every:  src.Period,
 				Offset: src.Offset,
 			}
 		},
-		sc.Intervals,
 	)
 
 	out := client.ScheduleSpec{
@@ -290,7 +289,7 @@ func (s *SchedulerMigrator) Migrate(
 				ctx,
 				client.ScheduleOptions{
 					ID:                    ent.ID,
-					Spec:                  utils.PtrVal(fromSchDesc.Schedule.Spec),
+					Spec:                  rkit.PtrVal(fromSchDesc.Schedule.Spec),
 					Action:                fromSchDesc.Schedule.Action,
 					Overlap:               fromSchDesc.Schedule.Policy.Overlap,
 					CatchupWindow:         fromSchDesc.Schedule.Policy.CatchupWindow,

@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/clubpay/ronykit/kit v0.26.19
 	github.com/clubpay/ronykit/rony v0.26.19
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/fasthttp/websocket v1.5.12
 	github.com/stretchr/testify v1.12.1
 	github.com/valyala/fasthttp v1.74.0
@@ -23,6 +24,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect

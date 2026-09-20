@@ -13,8 +13,8 @@ import (
 	"ronykit/testenv/services"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
@@ -48,11 +48,11 @@ func stubWithRun(t *testing.T, opt fx.Option) func(c C) {
 		)
 
 		for range 100 {
-			X := utils.RandomID(10)
-			XP := utils.RandomID(10)
-			Y := utils.RandomInt64(100)
+			X := rkit.RandomID(10)
+			XP := rkit.RandomID(10)
+			Y := rkit.RandomInt64(100)
 			Z := rand.Float64()
-			A := utils.S2B(utils.RandomID(10))
+			A := rkit.S2B(rkit.RandomID(10))
 
 			// Set Key to instance 1
 			resp := &services.EchoResponse{}
@@ -68,9 +68,9 @@ func stubWithRun(t *testing.T, opt fx.Option) func(c C) {
 				).
 				SetQueryMap(map[string]string{
 					"x": X,
-					"y": utils.Int64ToStr(Y),
-					"z": utils.Float64ToStr(Z),
-					"a": utils.B2S(A),
+					"y": rkit.Int64ToStr(Y),
+					"z": rkit.Float64ToStr(Z),
+					"a": rkit.B2S(A),
 				}).
 				Run(ctx).
 				Error()
@@ -99,11 +99,11 @@ func stubWithAutoRun1(t *testing.T, opt fx.Option) func(c C) {
 			// Set Key to instance 1
 			req := &services.EchoRequest{
 				Embedded: services.Embedded{
-					X:  utils.RandomID(10),
-					XP: utils.RandomID(10),
+					X:  rkit.RandomID(10),
+					XP: rkit.RandomID(10),
 					Y:  rand.Int63(),
 					Z:  rand.Float64(),
-					A:  utils.S2B(utils.RandomID(10)),
+					A:  rkit.S2B(rkit.RandomID(10)),
 				},
 			}
 			resp := &services.EchoResponse{}
@@ -144,11 +144,11 @@ func stubWithAutoRun2(t *testing.T, opt fx.Option) func(c C) {
 			// Set Key to instance 1
 			req := &services.EchoRequest{
 				Embedded: services.Embedded{
-					X:  utils.RandomID(10),
-					XP: utils.RandomID(10),
+					X:  rkit.RandomID(10),
+					XP: rkit.RandomID(10),
 					Y:  rand.Int63(),
 					Z:  rand.Float64(),
-					A:  utils.S2B(utils.RandomID(10)),
+					A:  rkit.S2B(rkit.RandomID(10)),
 				},
 			}
 			resp := &services.EchoResponse{}
@@ -206,8 +206,8 @@ func stubWebsocket(t *testing.T, opt fx.Option) func(c C) {
 		)
 
 		for range 200 {
-			X := utils.RandomID(10)
-			XP := utils.RandomID(10)
+			X := rkit.RandomID(10)
+			XP := rkit.RandomID(10)
 
 			// Set Key to instance 1
 			resp := &services.EchoResponse{}
@@ -267,8 +267,8 @@ func stubWebsocketStability(t *testing.T, opt fx.Option) func(c C) {
 
 		wg := sync.WaitGroup{}
 		for range 200 {
-			X := utils.RandomID(10)
-			XP := utils.RandomID(10)
+			X := rkit.RandomID(10)
+			XP := rkit.RandomID(10)
 
 			// Set Key to instance 1
 			resp := &services.EchoResponse{}
@@ -330,13 +330,13 @@ func stubHttpCompressed(t *testing.T, opt fx.Option) func(c C) {
 		)
 
 		for range 200 {
-			X := utils.RandomID(10)
-			XP := utils.RandomID(10)
+			X := rkit.RandomID(10)
+			XP := rkit.RandomID(10)
 			s := stub.New("127.0.0.1:8082")
 
 			err := s.REST().
 				SetDeflateBody(
-					utils.Ok(json.Marshal(&services.EchoRequest{
+					rkit.Ok(json.Marshal(&services.EchoRequest{
 						Embedded: services.Embedded{
 							X: X,
 						},

@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 )
 
 var (
 	_ fmt.Stringer
-	_ utils.Result
+	_ rkit.SpinLock
 	_ json.RawMessage
 	_ time.Time
 )

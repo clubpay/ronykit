@@ -8,9 +8,9 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type RelayHandler[S State[A], A Action] func(ctx *RelayCtx[S, A]) error
@@ -59,9 +59,9 @@ func registerRelay[S State[A], A Action](
 	for idx, s := range cfg.Selectors {
 		if s.Name == "" {
 			if idx == 0 {
-				s.Name = utils.ToCamel(handlerName)
+				s.Name = rkit.ToCamel(handlerName)
 			} else {
-				s.Name = utils.ToCamel(handlerName) + utils.IntToStr(idx+1)
+				s.Name = rkit.ToCamel(handlerName) + rkit.IntToStr(idx+1)
 			}
 		}
 

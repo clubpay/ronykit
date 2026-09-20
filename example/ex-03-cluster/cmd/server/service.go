@@ -9,9 +9,9 @@ import (
 	"github.com/clubpay/ronykit/example/ex-03-cluster/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 )
 
 var (
@@ -52,10 +52,10 @@ func coordinator(ctx *kit.LimitedContext) (string, error) {
 
 	fmt.Println(
 		"node", ctx.ClusterID(),
-		"target", members[crc32.ChecksumIEEE(utils.S2B(key))%uint32(len(members))],
+		"target", members[crc32.ChecksumIEEE(rkit.S2B(key))%uint32(len(members))],
 	)
 
-	return members[crc32.ChecksumIEEE(utils.S2B(key))%uint32(len(members))], nil
+	return members[crc32.ChecksumIEEE(rkit.S2B(key))%uint32(len(members))], nil
 }
 
 func SetKeyHandler(ctx *kit.Context) {

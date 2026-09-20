@@ -7,14 +7,14 @@ import (
 	"fmt"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/reflector"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
+	"github.com/clubpay/ronykit/x/rkit/reflector"
 )
 
 var (
 	_ fmt.Stringer
-	_ utils.Result
+	_ rkit.SpinLock
 )
 
 func init() {
@@ -360,7 +360,7 @@ func (s Stub) Upload(
 		SetOKHandler(
 			func(ctx context.Context, r stub.RESTResponse) *stub.Error {
 
-				res = utils.CloneBytes(r.GetBody())
+				res = rkit.CloneBytes(r.GetBody())
 				return nil
 
 			},

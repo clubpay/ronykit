@@ -3,7 +3,7 @@ package cache
 import (
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/dgraph-io/ristretto/v2"
 )
@@ -22,9 +22,9 @@ type Cache struct {
 func New(cfg Config) (*Cache, error) {
 	c, err := ristretto.NewCache[string, any](
 		&ristretto.Config[string, any]{
-			NumCounters: utils.Coalesce(cfg.NumCounters, 100_000),
-			MaxCost:     utils.Coalesce(cfg.MaxCost, 10_000),
-			BufferItems: utils.Coalesce(cfg.BufferItems, 64),
+			NumCounters: rkit.Coalesce(cfg.NumCounters, 100_000),
+			MaxCost:     rkit.Coalesce(cfg.MaxCost, 10_000),
+			BufferItems: rkit.Coalesce(cfg.BufferItems, 64),
 		},
 	)
 	if err != nil {

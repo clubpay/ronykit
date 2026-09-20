@@ -8,14 +8,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
 )
 
 type gateway struct {
-	utils.SpinLock
+	rkit.SpinLock
 
 	b      *bundle
 	nextID atomic.Uint64
@@ -86,7 +86,7 @@ func (gw *gateway) OnClose(c gnet.Conn, _ error) (action gnet.Action) {
 func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	wsc := gw.getConnWrap(c)
 	if wsc == nil {
-		gw.b.l.Debugf("did not find ws conn for connID(%d)", utils.TryCast[uint64](c.Context()))
+		gw.b.l.Debugf("did not find ws conn for connID(%d)", rkit.TryCast[uint64](c.Context()))
 
 		return gnet.Close
 	}
@@ -96,7 +96,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 		if err != nil {
 			gw.b.l.Debugf(
 				"faild to upgrade websocket connID(%d): %v",
-				utils.TryCast[uint64](c.Context()),
+				rkit.TryCast[uint64](c.Context()),
 				err,
 			)
 
@@ -110,7 +110,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 	if err != nil {
 		gw.b.l.Debugf(
 			"faild to read buffer websocket connID(%d): %v",
-			utils.TryCast[uint64](c.Context()),
+			rkit.TryCast[uint64](c.Context()),
 			err,
 		)
 
@@ -119,7 +119,7 @@ func (gw *gateway) OnTraffic(c gnet.Conn) gnet.Action {
 
 	err = wsc.executeMessages(c, gw.b.d)
 	if err != nil {
-		gw.b.l.Debugf("failed to execute message connID(%d): %v", utils.TryCast[uint64](c.Context()), err)
+		gw.b.l.Debugf("failed to execute message connID(%d): %v", rkit.TryCast[uint64](c.Context()), err)
 
 		return gnet.Close
 	}
@@ -148,7 +148,7 @@ func newSwitchProtocol() *SwitchProtocol {
 	}
 
 	sp.u.OnHeader = func(key, value []byte) error {
-		if bytes.Equal(key, utils.S2B(headerOrigin)) {
+		if bytes.Equal(key, rkit.S2B(headerOrigin)) {
 			sp.hdr.Set(headerAccessControlAllowOrigin, string(value))
 		}
 

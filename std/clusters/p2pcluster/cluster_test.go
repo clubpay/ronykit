@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/x/batch"
+	"github.com/clubpay/ronykit/x/rkit"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	pb "github.com/libp2p/go-libp2p-pubsub/pb"
 )
@@ -60,7 +60,7 @@ func TestPublishErrors(t *testing.T) {
 		t.Fatalf("expected ErrClusterMemberNotFound, got: %v", err)
 	}
 
-	c.subs["peer1"] = utils.TimeUnix() - int64(c.broadcastInterval/time.Second)*3
+	c.subs["peer1"] = rkit.TimeUnix() - int64(c.broadcastInterval/time.Second)*3
 	if err := c.Publish("peer1", []byte("x")); err != kit.ErrClusterMemberNotActive {
 		t.Fatalf("expected ErrClusterMemberNotActive, got: %v", err)
 	}

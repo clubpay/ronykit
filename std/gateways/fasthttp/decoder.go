@@ -6,7 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/goccy/go-reflect"
 	"github.com/valyala/fasthttp"
@@ -28,7 +28,7 @@ type Params []Param
 func (ps Params) ByName(name string) string {
 	for _, p := range ps {
 		if p.Key == name {
-			return string(utils.S2B(p.Value))
+			return string(rkit.S2B(p.Value))
 		}
 	}
 
@@ -50,15 +50,15 @@ func GetParams(ctx *RequestCtx) Params {
 				params = append(
 					params,
 					Param{
-						Key:   utils.B2S(key),
-						Value: utils.B2S(v),
+						Key:   rkit.B2S(key),
+						Value: rkit.B2S(v),
 					},
 				)
 			case string:
 				params = append(
 					params,
 					Param{
-						Key:   utils.B2S(key),
+						Key:   rkit.B2S(key),
 						Value: v,
 					},
 				)
@@ -71,8 +71,8 @@ func GetParams(ctx *RequestCtx) Params {
 		params = append(
 			params,
 			Param{
-				Key:   strings.TrimSuffix(utils.B2S(key), "[]"),
-				Value: utils.B2S(value),
+				Key:   strings.TrimSuffix(rkit.B2S(key), "[]"),
+				Value: rkit.B2S(value),
 			},
 		)
 	}
@@ -81,8 +81,8 @@ func GetParams(ctx *RequestCtx) Params {
 		params = append(
 			params,
 			Param{
-				Key:   utils.B2S(key),
-				Value: utils.B2S(value),
+				Key:   rkit.B2S(key),
+				Value: rkit.B2S(value),
 			},
 		)
 	}
@@ -196,66 +196,66 @@ func genDecoderFunc(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderF
 				// simply ignore
 				case reflect.Bool:
 					if strings.ToLower(x) == "true" {
-						*(**bool)(ptr) = utils.ValPtr(true)
+						*(**bool)(ptr) = new(true)
 					}
 				case reflect.String:
-					*(**string)(ptr) = utils.ValPtr(x)
+					*(**string)(ptr) = new(x)
 				case reflect.Int64:
-					*(**int64)(ptr) = utils.ValPtr(utils.StrToInt64(x))
+					*(**int64)(ptr) = new(rkit.StrToInt64(x))
 				case reflect.Int32:
-					*(**int32)(ptr) = utils.ValPtr(utils.StrToInt32(x))
+					*(**int32)(ptr) = new(rkit.StrToInt32(x))
 				case reflect.Uint64:
-					*(**uint64)(ptr) = utils.ValPtr(utils.StrToUInt64(x))
+					*(**uint64)(ptr) = new(rkit.StrToUInt64(x))
 				case reflect.Uint32:
-					*(**uint32)(ptr) = utils.ValPtr(utils.StrToUInt32(x))
+					*(**uint32)(ptr) = new(rkit.StrToUInt32(x))
 				case reflect.Float64:
-					*(**float64)(ptr) = utils.ValPtr(utils.StrToFloat64(x))
+					*(**float64)(ptr) = new(rkit.StrToFloat64(x))
 				case reflect.Float32:
-					*(**float32)(ptr) = utils.ValPtr(utils.StrToFloat32(x))
+					*(**float32)(ptr) = new(rkit.StrToFloat32(x))
 				case reflect.Int:
-					*(**int)(ptr) = utils.ValPtr(utils.StrToInt(x))
+					*(**int)(ptr) = new(rkit.StrToInt(x))
 				case reflect.Uint:
-					*(**uint)(ptr) = utils.ValPtr(utils.StrToUInt(x))
+					*(**uint)(ptr) = new(rkit.StrToUInt(x))
 				}
 			case reflect.Int64:
-				*(*int64)(ptr) = utils.StrToInt64(x)
+				*(*int64)(ptr) = rkit.StrToInt64(x)
 			case reflect.Int32:
-				*(*int32)(ptr) = utils.StrToInt32(x)
+				*(*int32)(ptr) = rkit.StrToInt32(x)
 			case reflect.Uint64:
-				*(*uint64)(ptr) = utils.StrToUInt64(x)
+				*(*uint64)(ptr) = rkit.StrToUInt64(x)
 			case reflect.Uint32:
-				*(*uint32)(ptr) = utils.StrToUInt32(x)
+				*(*uint32)(ptr) = rkit.StrToUInt32(x)
 			case reflect.Float64:
-				*(*float64)(ptr) = utils.StrToFloat64(x)
+				*(*float64)(ptr) = rkit.StrToFloat64(x)
 			case reflect.Float32:
-				*(*float32)(ptr) = utils.StrToFloat32(x)
+				*(*float32)(ptr) = rkit.StrToFloat32(x)
 			case reflect.Int:
-				*(*int)(ptr) = utils.StrToInt(x)
+				*(*int)(ptr) = rkit.StrToInt(x)
 			case reflect.Uint:
-				*(*uint)(ptr) = utils.StrToUInt(x)
+				*(*uint)(ptr) = rkit.StrToUInt(x)
 			case reflect.Slice:
 				switch pc.typ.Elem().Kind() {
 				default:
 					// simply ignore
 				case reflect.Int64:
-					*(*[]int64)(ptr) = append(*(*[]int64)(ptr), utils.StrToInt64(x))
+					*(*[]int64)(ptr) = append(*(*[]int64)(ptr), rkit.StrToInt64(x))
 				case reflect.Int32:
-					*(*[]int32)(ptr) = append(*(*[]int32)(ptr), utils.StrToInt32(x))
+					*(*[]int32)(ptr) = append(*(*[]int32)(ptr), rkit.StrToInt32(x))
 				case reflect.Uint64:
-					*(*[]uint64)(ptr) = append(*(*[]uint64)(ptr), utils.StrToUInt64(x))
+					*(*[]uint64)(ptr) = append(*(*[]uint64)(ptr), rkit.StrToUInt64(x))
 				case reflect.Uint32:
-					*(*[]uint32)(ptr) = append(*(*[]uint32)(ptr), utils.StrToUInt32(x))
+					*(*[]uint32)(ptr) = append(*(*[]uint32)(ptr), rkit.StrToUInt32(x))
 				case reflect.Float64:
-					*(*[]float64)(ptr) = append(*(*[]float64)(ptr), utils.StrToFloat64(x))
+					*(*[]float64)(ptr) = append(*(*[]float64)(ptr), rkit.StrToFloat64(x))
 				case reflect.Float32:
-					*(*[]float32)(ptr) = append(*(*[]float32)(ptr), utils.StrToFloat32(x))
+					*(*[]float32)(ptr) = append(*(*[]float32)(ptr), rkit.StrToFloat32(x))
 				case reflect.String:
 					*(*[]string)(ptr) = append(*(*[]string)(ptr), x)
 				case reflect.Uint8:
-					*(*[]byte)(ptr) = utils.S2B(x)
+					*(*[]byte)(ptr) = rkit.S2B(x)
 				}
 			case reflect.String:
-				*(*string)(ptr) = string(utils.S2B(x))
+				*(*string)(ptr) = string(rkit.S2B(x))
 			case reflect.Bool:
 				if strings.ToLower(x) == "true" {
 					*(*bool)(ptr) = true

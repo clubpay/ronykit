@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/x/batch"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -34,10 +34,10 @@ type cluster struct {
 	gossipCancelFunc    context.CancelFunc
 	broadcastCancelFunc context.CancelFunc
 	broadcastInterval   time.Duration
-	subsMtx             utils.SpinLock
+	subsMtx             rkit.SpinLock
 	subs                map[string]int64
 	subsList            []string
-	topicsMtx           utils.SpinLock
+	topicsMtx           rkit.SpinLock
 	topics              map[string]*pubsub.Topic
 	myTopicCancelFunc   context.CancelFunc
 }
@@ -166,8 +166,8 @@ func (c *cluster) startBroadcast(ctx context.Context) error {
 			}
 
 			c.subsMtx.Lock()
-			c.subs[string(msg.GetData())] = utils.TimeUnix()
-			c.subsList = utils.AddUnique(c.subsList, string(msg.GetData()))
+			c.subs[string(msg.GetData())] = rkit.TimeUnix()
+			c.subsList = rkit.AddUnique(c.subsList, string(msg.GetData()))
 			c.subsMtx.Unlock()
 		}
 	}()
@@ -297,7 +297,7 @@ func (c *cluster) Publish(id string, data []byte) error {
 		return kit.ErrClusterMemberNotFound
 	}
 
-	if utils.TimeUnix()-t > int64(c.broadcastInterval/time.Second)*2 {
+	if rkit.TimeUnix()-t > int64(c.broadcastInterval/time.Second)*2 {
 		return kit.ErrClusterMemberNotActive
 	}
 

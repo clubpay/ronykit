@@ -6,6 +6,7 @@ require (
 	github.com/clubpay/ronykit/kit v0.22.1
 	github.com/clubpay/ronykit/std/clusters/rediscluster v0.22.1
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.22.1
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/clubpay/ronykit/x/telemetry v0.1.1
 	github.com/orlangure/gnomock v0.32.0
 )
@@ -34,6 +35,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/klauspost/compress v1.20.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
@@ -49,7 +51,6 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/redis/go-redis/v9 v9.22.0 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

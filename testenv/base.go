@@ -11,11 +11,11 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/clusters/p2pcluster"
 	"github.com/clubpay/ronykit/std/clusters/rediscluster"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/orlangure/gnomock"
 	redisContainer "github.com/orlangure/gnomock/preset/redis"
@@ -269,7 +269,7 @@ func invokeEdgeServerWithRedis(_ string, port int, desc ...kit.ServiceBuilder) f
 				kit.WithCluster(
 					rediscluster.MustNew(
 						"testCluster",
-						rediscluster.WithRedisClient(utils.Must(getRedis())),
+						rediscluster.WithRedisClient(rkit.Must(getRedis())),
 						rediscluster.WithGCPeriod(time.Second*3),
 					),
 				),

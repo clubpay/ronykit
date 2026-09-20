@@ -2,15 +2,15 @@ package silverhttp
 
 import (
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/realip"
+	"github.com/clubpay/ronykit/x/p"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 )
 
 type httpConn struct {
-	utils.SpinLock
+	rkit.SpinLock
 
 	ctx *silverlining.Context
 }
@@ -21,7 +21,7 @@ func (c *httpConn) Walk(f func(key string, val string) bool) {
 	stopCall := false
 	for _, h := range c.ctx.RequestHeaders().List() {
 		if !stopCall {
-			if !f(utils.B2S(h.Name), utils.B2S(h.RawValue)) {
+			if !f(rkit.B2S(h.Name), rkit.B2S(h.RawValue)) {
 				stopCall = true
 			}
 		}
@@ -32,7 +32,7 @@ func (c *httpConn) WalkQueryParams(f func(key string, val string) bool) {
 	stopCall := false
 	for _, h := range c.ctx.QueryParams() {
 		if !stopCall {
-			if !f(utils.B2S(h.Key), utils.B2S(h.Value)) {
+			if !f(rkit.B2S(h.Key), rkit.B2S(h.Value)) {
 				stopCall = true
 			}
 		}
@@ -40,9 +40,9 @@ func (c *httpConn) WalkQueryParams(f func(key string, val string) bool) {
 }
 
 func (c *httpConn) Get(key string) string {
-	v, ok := c.ctx.RequestHeaders().GetBytes(utils.S2B(key))
+	v, ok := c.ctx.RequestHeaders().GetBytes(rkit.S2B(key))
 	if ok {
-		return utils.B2S(v)
+		return rkit.B2S(v)
 	}
 
 	return ""
@@ -73,7 +73,7 @@ func (c *httpConn) Write(data []byte) (int, error) {
 }
 
 func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
-	dataBuf := buf.GetCap(e.SizeHint())
+	dataBuf := p.GetCap(e.SizeHint())
 
 	err := kit.EncodeMessage(e.GetMsg(), dataBuf)
 	if err != nil {
@@ -91,7 +91,7 @@ func (c *httpConn) WriteEnvelope(e *kit.Envelope) error {
 	)
 
 	c.ctx.SetContentLength(dataBuf.Len())
-	_, err = c.ctx.Write(utils.PtrVal(dataBuf.Bytes()))
+	_, err = c.ctx.Write(rkit.PtrVal(dataBuf.Bytes()))
 
 	return err
 }
@@ -105,7 +105,7 @@ func (c *httpConn) GetHost() string {
 }
 
 func (c *httpConn) GetRequestURI() string {
-	return utils.B2S(c.ctx.RawURI())
+	return rkit.B2S(c.ctx.RawURI())
 }
 
 func (c *httpConn) GetMethod() string {
@@ -113,7 +113,7 @@ func (c *httpConn) GetMethod() string {
 }
 
 func (c *httpConn) GetPath() string {
-	return utils.B2S(c.ctx.Path())
+	return rkit.B2S(c.ctx.Path())
 }
 
 func (c *httpConn) Redirect(statusCode int, url string) {

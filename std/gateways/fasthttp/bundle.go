@@ -13,10 +13,10 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
-	"github.com/clubpay/ronykit/kit/utils"
-	"github.com/clubpay/ronykit/kit/utils/buf"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/internal/realip"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+	"github.com/clubpay/ronykit/x/p"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/fasthttp/router"
 	"github.com/fasthttp/websocket"
@@ -314,7 +314,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 					break
 				}
 
-				inBuf := buf.FromBytes(in)
+				inBuf := p.FromBytes(in)
 				go b.wsHandlerExec(inBuf, wsc)
 			}
 
@@ -324,7 +324,7 @@ func (b *bundle) wsHandler(ctx *fasthttp.RequestCtx) {
 	)
 }
 
-func (b *bundle) wsHandlerExec(buf *buf.Bytes, wsc *wsConn) {
+func (b *bundle) wsHandlerExec(buf *p.Bytes, wsc *wsConn) {
 	b.d.OnMessage(wsc, *buf.Bytes())
 	buf.Release()
 }
@@ -358,7 +358,7 @@ func (b *bundle) rpcDispatch(ctx *kit.Context, in []byte) (kit.ExecuteArg, error
 
 		frm, err := multipart.NewReader(
 			bytes.NewReader(x),
-			utils.B2S(getMultipartFormBoundary(utils.S2B(inputMsgContainer.GetHdr("Content-Type")))),
+			rkit.B2S(getMultipartFormBoundary(rkit.S2B(inputMsgContainer.GetHdr("Content-Type")))),
 		).ReadForm(int64(b.srv.MaxRequestBodySize))
 		if err != nil {
 			return noExecuteArg, errors.Wrap(kit.ErrDecodeIncomingMessageFailed, err)

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -147,9 +147,9 @@ func Convert(err error) error {
 
 	var errMap map[string]any
 
-	_ = json.Unmarshal(utils.S2B(se.Item()), &errMap) //nolint:errcheck
+	_ = json.Unmarshal(rkit.S2B(se.Item()), &errMap) //nolint:errcheck
 	if errMap != nil {
-		if item := utils.TryCast[string](errMap["item"]); len(item) > 0 {
+		if item := rkit.TryCast[string](errMap["item"]); len(item) > 0 {
 			out.Item = item
 		}
 	}

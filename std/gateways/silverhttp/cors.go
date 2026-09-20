@@ -3,7 +3,7 @@ package silverhttp
 import (
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 	"github.com/go-www/silverlining/h1"
@@ -111,9 +111,9 @@ func (cors *cors) handle(rc *httpConn) {
 
 		resHdr.Set(HeaderAccessControlRequestMethod, cors.methods)
 
-		reqHeaders, _ := rc.ctx.RequestHeaders().GetBytes(utils.S2B(HeaderAccessControlRequestHeaders))
+		reqHeaders, _ := rc.ctx.RequestHeaders().GetBytes(rkit.S2B(HeaderAccessControlRequestHeaders))
 		if len(reqHeaders) > 0 {
-			resHdr.Set(HeaderAccessControlAllowHeaders, utils.B2S(reqHeaders))
+			resHdr.Set(HeaderAccessControlAllowHeaders, rkit.B2S(reqHeaders))
 		} else {
 			resHdr.Set(HeaderAccessControlAllowHeaders, cors.headers)
 		}

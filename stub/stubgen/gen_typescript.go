@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub/internal/tpl"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var _ GenEngine = (*typescriptGE)(nil)
@@ -45,7 +45,7 @@ func (t typescriptGE) Generate(in *Input) ([]GeneratedFile, error) {
 	stubFile, err := runPrettier(
 		GeneratedFile{
 			Filename: "stub.ts",
-			Data:     utils.S2B(stubSB.String()),
+			Data:     rkit.S2B(stubSB.String()),
 		},
 	)
 	if err != nil {
@@ -58,7 +58,7 @@ func (t typescriptGE) Generate(in *Input) ([]GeneratedFile, error) {
 		swrFile, err := runPrettier(
 			GeneratedFile{
 				Filename: "swr.hooks.ts",
-				Data:     utils.S2B(swrHooksSB.String()),
+				Data:     rkit.S2B(swrHooksSB.String()),
 			},
 		)
 		if err != nil {

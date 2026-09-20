@@ -6,9 +6,9 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/desc"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var EchoRawService kit.ServiceBuilder = desc.NewService("EchoRawService").
@@ -23,7 +23,7 @@ var EchoRawService kit.ServiceBuilder = desc.NewService("EchoRawService").
 				func(ctx *kit.Context) {
 					ctx.Out().
 						SetMsg(
-							kit.RawMessage(utils.Ok(json.Marshal(&EchoResponse{
+							kit.RawMessage(rkit.Ok(json.Marshal(&EchoResponse{
 								Embedded: Embedded{
 									X:  "x",
 									XP: "xp",

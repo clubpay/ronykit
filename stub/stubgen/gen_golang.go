@@ -5,8 +5,8 @@ import (
 	"go/format"
 	"strings"
 
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/stub/internal/tpl"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var _ GenEngine = (*golangGE)(nil)
@@ -42,7 +42,7 @@ func (g golangGE) Generate(in *Input) ([]GeneratedFile, error) {
 		return nil, fmt.Errorf("failed to execute template: %w", err)
 	}
 
-	formattedContent, err := format.Source(utils.S2B(sb.String()))
+	formattedContent, err := format.Source(rkit.S2B(sb.String()))
 	if err != nil {
 		return nil, fmt.Errorf(`
 formatting generated code failed: %w

@@ -10,6 +10,7 @@ require (
 	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.19
 	github.com/clubpay/ronykit/std/gateways/fastws v0.26.19
 	github.com/clubpay/ronykit/stub v0.26.19
+	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/orlangure/gnomock v0.32.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -29,7 +30,6 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/clubpay/ronykit/rony v0.26.19 // indirect
 	github.com/clubpay/ronykit/x/batch v0.4.19 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.5.19 // indirect
 	github.com/clubpay/ronykit/x/telemetry v0.5.19 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect

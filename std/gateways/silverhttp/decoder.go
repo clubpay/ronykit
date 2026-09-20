@@ -6,8 +6,8 @@ import (
 	"unsafe"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/std/gateways/silverhttp/httpmux"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/go-www/silverlining"
 	"github.com/goccy/go-reflect"
@@ -111,52 +111,52 @@ func genDecoder(factory kit.MessageFactoryFunc, pcs ...paramCaster) DecoderFunc 
 				// ignore
 				case reflect.Bool:
 					if strings.ToLower(x) == "true" {
-						*(**bool)(ptr) = utils.ValPtr(true)
+						*(**bool)(ptr) = new(true)
 					}
 				case reflect.String:
-					*(**string)(ptr) = utils.ValPtr(x)
+					*(**string)(ptr) = new(x)
 				case reflect.Int64:
-					*(**int64)(ptr) = utils.ValPtr(utils.StrToInt64(x))
+					*(**int64)(ptr) = new(rkit.StrToInt64(x))
 				case reflect.Int32:
-					*(**int32)(ptr) = utils.ValPtr(utils.StrToInt32(x))
+					*(**int32)(ptr) = new(rkit.StrToInt32(x))
 				case reflect.Uint64:
-					*(**uint64)(ptr) = utils.ValPtr(utils.StrToUInt64(x))
+					*(**uint64)(ptr) = new(rkit.StrToUInt64(x))
 				case reflect.Uint32:
-					*(**uint32)(ptr) = utils.ValPtr(utils.StrToUInt32(x))
+					*(**uint32)(ptr) = new(rkit.StrToUInt32(x))
 				case reflect.Float64:
-					*(**float64)(ptr) = utils.ValPtr(utils.StrToFloat64(x))
+					*(**float64)(ptr) = new(rkit.StrToFloat64(x))
 				case reflect.Float32:
-					*(**float32)(ptr) = utils.ValPtr(utils.StrToFloat32(x))
+					*(**float32)(ptr) = new(rkit.StrToFloat32(x))
 				case reflect.Int:
-					*(**int)(ptr) = utils.ValPtr(utils.StrToInt(x))
+					*(**int)(ptr) = new(rkit.StrToInt(x))
 				case reflect.Uint:
-					*(**uint)(ptr) = utils.ValPtr(utils.StrToUInt(x))
+					*(**uint)(ptr) = new(rkit.StrToUInt(x))
 				}
 			case reflect.Int64:
-				*(*int64)(ptr) = utils.StrToInt64(x)
+				*(*int64)(ptr) = rkit.StrToInt64(x)
 			case reflect.Int32:
-				*(*int32)(ptr) = utils.StrToInt32(x)
+				*(*int32)(ptr) = rkit.StrToInt32(x)
 			case reflect.Uint64:
-				*(*uint64)(ptr) = utils.StrToUInt64(x)
+				*(*uint64)(ptr) = rkit.StrToUInt64(x)
 			case reflect.Uint32:
-				*(*uint32)(ptr) = utils.StrToUInt32(x)
+				*(*uint32)(ptr) = rkit.StrToUInt32(x)
 			case reflect.Float64:
-				*(*float64)(ptr) = utils.StrToFloat64(x)
+				*(*float64)(ptr) = rkit.StrToFloat64(x)
 			case reflect.Float32:
-				*(*float32)(ptr) = utils.StrToFloat32(x)
+				*(*float32)(ptr) = rkit.StrToFloat32(x)
 			case reflect.Int:
-				*(*int)(ptr) = utils.StrToInt(x)
+				*(*int)(ptr) = rkit.StrToInt(x)
 			case reflect.Uint:
-				*(*uint)(ptr) = utils.StrToUInt(x)
+				*(*uint)(ptr) = rkit.StrToUInt(x)
 			case reflect.Slice:
 				switch pcs[idx].typ.Elem().Kind() {
 				default:
 					// ignore
 				case reflect.Uint8:
-					*(*[]byte)(ptr) = utils.S2B(x)
+					*(*[]byte)(ptr) = rkit.S2B(x)
 				}
 			case reflect.String:
-				*(*string)(ptr) = string(utils.S2B(x))
+				*(*string)(ptr) = string(rkit.S2B(x))
 			case reflect.Bool:
 				if strings.ToLower(x) == "true" {
 					*(*bool)(ptr) = true

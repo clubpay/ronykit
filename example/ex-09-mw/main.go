@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/clubpay/ronykit/kit"
-	"github.com/clubpay/ronykit/kit/utils"
 	"github.com/clubpay/ronykit/rony"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func main() {
@@ -76,7 +76,7 @@ type EchoResponseDTO struct {
 func echo(ctx *rony.UnaryCtx[*Counter, rony.NOP], req EchoRequestDTO) (*EchoResponseDTO, error) {
 	res := &EchoResponseDTO{
 		ID:      req.ID,
-		Latency: utils.NanoTime() - req.Timestamp,
+		Latency: rkit.NanoTime() - req.Timestamp,
 	}
 
 	_ = ctx.ReduceState(rony.NOP{}, nil)
@@ -88,10 +88,10 @@ func echo(ctx *rony.UnaryCtx[*Counter, rony.NOP], req EchoRequestDTO) (*EchoResp
 
 // printMW is a stateless middleware that prints the request and response
 func printMW(ctx *kit.Context) {
-	fmt.Println("req", utils.B2S(utils.Must(kit.MarshalMessage(ctx.In().GetMsg()))))
+	fmt.Println("req", rkit.B2S(rkit.Must(kit.MarshalMessage(ctx.In().GetMsg()))))
 	ctx.AddModifier(
 		func(envelope *kit.Envelope) {
-			fmt.Println("res", utils.B2S(utils.Must(kit.MarshalMessage(envelope.GetMsg()))))
+			fmt.Println("res", rkit.B2S(rkit.Must(kit.MarshalMessage(envelope.GetMsg()))))
 		},
 	)
 	ctx.Next()
