@@ -1,11 +1,11 @@
 module github.com/clubpay/ronykit/std/gateways/fastws
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/clubpay/ronykit/kit v0.26.19
 	github.com/gobwas/ws v1.4.0
-	github.com/panjf2000/gnet/v2 v2.9.8
+	github.com/panjf2000/gnet/v2 v2.10.0
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect

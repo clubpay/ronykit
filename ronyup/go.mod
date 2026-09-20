@@ -1,13 +1,13 @@
 module github.com/clubpay/ronykit/ronyup
 
-go 1.25.8
+go 1.26.0
 
 require (
 	charm.land/huh/v2 v2.0.3
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/clubpay/ronykit/x/rkit v0.5.19
 	github.com/clubpay/ronykit/x/telemetry v0.5.19
-	github.com/modelcontextprotocol/go-sdk v1.7.0
+	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/mod v0.38.0
 	golang.org/x/text v0.41.0
@@ -83,10 +83,10 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
+	golang.org/x/exp v0.0.0-20260718201538-764159d718ef // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
