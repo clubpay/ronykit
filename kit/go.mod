@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/kit
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/x/p v0.4.22
-	github.com/clubpay/ronykit/x/rkit v0.5.22
+	github.com/clubpay/ronykit/x/p v0.4.23
+	github.com/clubpay/ronykit/x/rkit v0.5.23
 	github.com/goccy/go-json v0.10.6
 	github.com/goccy/go-reflect v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.8.3

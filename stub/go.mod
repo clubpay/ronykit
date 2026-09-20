@@ -4,9 +4,9 @@ go 1.26.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/clubpay/ronykit/kit v0.26.22
-	github.com/clubpay/ronykit/rony v0.26.22
-	github.com/clubpay/ronykit/x/rkit v0.5.22
+	github.com/clubpay/ronykit/kit v0.26.23
+	github.com/clubpay/ronykit/rony v0.26.23
+	github.com/clubpay/ronykit/x/rkit v0.5.23
 	github.com/fasthttp/websocket v1.5.12
 	github.com/stretchr/testify v1.12.1
 	github.com/valyala/fasthttp v1.74.0

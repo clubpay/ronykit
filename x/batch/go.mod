@@ -1,9 +1,9 @@
 module github.com/clubpay/ronykit/x/batch
 
-go 1.25.1
+go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.5.22
+	github.com/clubpay/ronykit/x/rkit v0.5.23
 	github.com/stretchr/testify v1.12.1
 )
 

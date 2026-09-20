@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/gateways/mcp
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.22
-	github.com/clubpay/ronykit/x/rkit v0.5.22
+	github.com/clubpay/ronykit/kit v0.26.23
+	github.com/clubpay/ronykit/x/rkit v0.5.23
 	github.com/google/jsonschema-go v0.4.3
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/spf13/cast v1.10.0
