@@ -317,22 +317,22 @@ func syncSkills(
 		return err
 	}
 
-	dest := filepath.Join(layout.RepoRoot, ".agents", "skills")
+	for _, dest := range skillInstallRoots(layout.RepoRoot) {
+		for _, id := range skillIDs {
+			if id == "ronykit-framework" || !SkillExists(id) {
+				continue
+			}
 
-	for _, id := range skillIDs {
-		if id == "ronykit-framework" || !SkillExists(id) {
-			continue
-		}
-
-		err := z.CopyDir(z.CopyDirParams{
-			FS:             internal.Skeleton,
-			SrcPathPrefix:  filepath.ToSlash(filepath.Join(SkillsSrcPrefix, id)),
-			DestPathPrefix: filepath.Join(dest, id),
-			SkipExisting:   skipExisting,
-			Callback:       callback,
-		})
-		if err != nil {
-			return fmt.Errorf("skill %q: %w", id, err)
+			err := z.CopyDir(z.CopyDirParams{
+				FS:             internal.Skeleton,
+				SrcPathPrefix:  filepath.ToSlash(filepath.Join(SkillsSrcPrefix, id)),
+				DestPathPrefix: filepath.Join(dest, id),
+				SkipExisting:   skipExisting,
+				Callback:       callback,
+			})
+			if err != nil {
+				return fmt.Errorf("skill %q: %w", id, err)
+			}
 		}
 	}
 
@@ -458,20 +458,22 @@ func resolveSyncSkills(repoRoot string, modes []string, kind string) ([]string, 
 }
 
 func listInstalledSkillIDs(repoRoot string) []string {
-	entries, err := os.ReadDir(filepath.Join(repoRoot, ".agents", "skills"))
-	if err != nil {
-		return nil
-	}
+	seen := map[string]bool{}
 
-	var ids []string
+	for _, dest := range skillInstallRoots(repoRoot) {
+		entries, err := os.ReadDir(dest)
+		if err != nil {
+			continue
+		}
 
-	for _, e := range entries {
-		if e.IsDir() && e.Name() != "ronykit-framework" {
-			ids = append(ids, e.Name())
+		for _, e := range entries {
+			if e.IsDir() && e.Name() != "ronykit-framework" {
+				seen[e.Name()] = true
+			}
 		}
 	}
 
-	return ids
+	return FilterCatalogOrder(seen)
 }
 
 func appNameFromModule(module string) string {

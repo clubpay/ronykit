@@ -173,7 +173,7 @@ Feature flags:
 - `--featurePrefix`: parent directory for feature modules (default `feature`).
 - `--featureDir`, `-p`: destination directory inside the feature prefix.
 - `--featureName`, `-n`: feature name.
-- `--template`, `-t`: feature template (`service`, `job`, `gateway`).
+- `--template`, `-t`: feature template (`service` only).
 - `--groupByTemplate`, `-g`: group features under `{featurePrefix}/{template}/`.
 
 ### text
@@ -202,7 +202,7 @@ Feature flags:
 `ronyup` is the CLI for RonyKIT scaffolding and tooling. It can:
 
 - Create a new Go workspace with a RonyKIT service layout.
-- Add new feature modules (service/job/gateway) to an existing workspace.
+- Add new feature modules (`service` template) to an existing workspace.
 - Extract and generate translation catalogs.
 - Inspect Go packages for template-related metadata (WIP).
 
@@ -298,7 +298,7 @@ Flags:
     --featurePrefix string   prefix for feature folder (default "feature")
 -p, --featureDir string      destination directory inside the feature prefix (default "my_feature")
 -n, --featureName string     feature name (default "myfeature")
--t, --template string        possible values: service | job | gateway (default "service")
+-t, --template string        possible values: service (default "service")
 -g, --groupByTemplate        group features by template (default false)
 ```
 

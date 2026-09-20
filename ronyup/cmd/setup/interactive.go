@@ -30,7 +30,7 @@ func selectSkillsInteractive() error {
 		huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Title("Agent Skills").
-				Description("Pre-install agent skills into .agents/skills (space to toggle)").
+				Description("Pre-install agent skills into .agents/.cursor/.claude/skills (space to toggle)").
 				Options(options...).
 				Value(&selected),
 		),
@@ -155,8 +155,6 @@ func runFeatureInteractive(cmd *cobra.Command) error {
 				Description("Choose a template for the feature").
 				Options(
 					huh.NewOption("Service", "service"),
-					huh.NewOption("Job", "job"),
-					huh.NewOption("Gateway", "gateway"),
 				).
 				Value(&opt.Template),
 			huh.NewConfirm().

@@ -75,7 +75,12 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 		t.Fatalf("backend-only hooks.json should register the backend stop hook, got:\n%s", hooks)
 	}
 
-	for _, rel := range []string{"verify.sh", ".cursor/hooks/backend-verify.sh"} {
+	for _, rel := range []string{
+		"verify.sh", ".cursor/hooks/backend-verify.sh",
+		".agents/skills/go-modern/SKILL.md",
+		".cursor/skills/go-modern/SKILL.md",
+		".claude/skills/go-modern/SKILL.md",
+	} {
 		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
 			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
 		}
@@ -157,6 +162,9 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 		"frontend/README.MD", "frontend/verify.sh", "frontend/Makefile",
 		"backend/verify.sh", "backend/Makefile",
 		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh", ".cursor/hooks/backend-verify.sh",
+		".agents/skills/go-modern/SKILL.md",
+		".cursor/skills/go-modern/SKILL.md",
+		".claude/skills/go-modern/SKILL.md",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s to exist at the repo root: %v", rel, err)
@@ -256,6 +264,8 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 		"docs", "AGENTS.md", ".ai/mcp/mcp.json",
 		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh",
 		".agents/skills/frontend-design",
+		".cursor/skills/frontend-design",
+		".claude/skills/frontend-design",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s in frontend-only workspace: %v", rel, err)
@@ -265,7 +275,10 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 	// The Go workspace and backend-only artifacts must NOT be scaffolded.
 	for _, rel := range []string{
 		"cmd", "feature", "pkg", "Makefile", "verify.sh", ".golangci.yml",
-		"backend", ".cursor/hooks/backend-verify.sh", ".agents/skills/go-modern",
+		"backend", ".cursor/hooks/backend-verify.sh",
+		".agents/skills/go-modern",
+		".cursor/skills/go-modern",
+		".claude/skills/go-modern",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); !os.IsNotExist(err) {
 			t.Fatalf("did not expect %s in frontend-only workspace (err=%v)", rel, err)

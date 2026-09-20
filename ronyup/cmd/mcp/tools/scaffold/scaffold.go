@@ -122,7 +122,7 @@ func registerSetupFeature(srv *mcpsdk.Server) {
 				},
 				"template": map[string]any{
 					schemaKeyType:        schemaTypeString,
-					schemaKeyDescription: "Feature template: service, job, or gateway.",
+					schemaKeyDescription: "Feature template. Only \"service\" is available.",
 					schemaKeyDefault:     "service",
 					"enum":               appscaffold.FeatureTemplates,
 				},

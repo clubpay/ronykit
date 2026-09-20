@@ -45,7 +45,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 | `hooks` | `.cursor/hooks/`, `hooks.json` |
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
-| `skills` | `.agents/skills/ronykit-framework` + `skills` selection |
+| `skills` | `.agents/.cursor/.claude/skills/ronykit-framework` + catalog copies |
 | `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all applicable sections (default) |

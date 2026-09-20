@@ -18,7 +18,7 @@ In `backend` kind this is the repository root; in `fullstack` kind it is `backen
 - `cmd/all-in-one/` — the default all-in-one dev executable. `main.go` delegates to `pkg/runner`; registered services start via `di.AllServices()` unless filtered with `--service` or the `SERVICES` env var (`settings.ModuleName` values, e.g. `feature/auth`).
 - `cmd/all-in-one/features.go` — blank imports trigger each feature module's `init()` (`di.RegisterService`). `ronyup setup feature` appends imports here and refreshes matching bundles in `bundles.yaml`.
 - `cmd/<bundle>/` — optional production bundles created with `ronyup setup bundle`. Each bundle has its own selective `features.go` for compile-time mix-and-match.
-- `feature/` — business modules (default parent directory; override with `--featurePrefix`). By default, a service named `auth` lives at `feature/auth/`. With `--groupByTemplate`, it lives at `feature/service/auth/`; job and gateway templates would use `feature/job/<name>/` or `feature/gateway/<name>/`.
+- `feature/` — business modules (default parent directory; override with `--featurePrefix`). By default, a service named `auth` lives at `feature/auth/`. With `--groupByTemplate`, it lives at `feature/service/auth/`. The only feature template is `service`.
 - `pkg/` — shared internal libraries (`pkg/i18n` and `pkg/runner` are created by `setup workspace`; add others such as `bkit`, `log`, `datasource`, `msg` as needed). Keep `pkg/*` free of feature-specific business logic.
 - `.golangci.yml` — package-selection enforcement (depguard).
 - `Makefile` — workspace tasks (`make run`, `make test`, `make lint`, …).

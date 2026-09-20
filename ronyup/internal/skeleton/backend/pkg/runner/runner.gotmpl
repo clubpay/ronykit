@@ -66,6 +66,12 @@ func newRootCommand(cfg Config) *cobra.Command {
 			services, _ := cmd.Flags().GetStringSlice("service")
 			configDir, _ := cmd.Flags().GetString("configDir")
 
+			set := settings.New()
+
+			if configDir == "" {
+				configDir = set.GetString("CONFIG_DIR")
+			}
+
 			if configDir != "" {
 				di.ConfigSearchPath = func(kind string) string {
 					return filepath.Join(configDir, kind)
@@ -73,9 +79,7 @@ func newRootCommand(cfg Config) *cobra.Command {
 			}
 
 			if len(services) == 0 {
-				if env := strings.TrimSpace(os.Getenv("SERVICES")); env != "" {
-					services = splitServices(env)
-				}
+				services = splitServices(set.GetString("SERVICES"))
 			}
 
 			if len(services) > 0 {
@@ -160,8 +164,8 @@ func newRootCommand(cfg Config) *cobra.Command {
 
 	cmd.Flags().String("listenIP", "0.0.0.0", "listen ip")
 	cmd.Flags().Int("port", 8586, "service port")
-	cmd.Flags().StringSlice("service", []string{}, "service(s) to run (settings.ModuleName); empty runs all compiled-in services. Also reads SERVICES env (comma-separated).")
-	cmd.Flags().String("configDir", os.Getenv("CONFIG_DIR"), "path to the config directory")
+	cmd.Flags().StringSlice("service", []string{}, "service(s) to run (settings.ModuleName); empty runs all compiled-in services. Also reads SERVICES from x/settings (env).")
+	cmd.Flags().String("configDir", "", "path to the config directory (falls back to CONFIG_DIR via x/settings)")
 
 	return cmd
 }

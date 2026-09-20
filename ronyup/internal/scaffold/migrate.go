@@ -195,7 +195,7 @@ func MigrateBundles(ctx context.Context, req MigrateBundlesRequest, log Logger) 
 	}
 
 	log.Println("Bundle layout migration complete")
-	log.Println("Tip: run `ronyup setup sync --only backend` to refresh Makefile targets")
+	log.Println("Tip: run `ronyup setup sync --only backend --overwrite` to refresh Makefile targets")
 
 	return nil
 }

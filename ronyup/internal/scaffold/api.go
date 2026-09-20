@@ -30,7 +30,7 @@ type FeatureRequest struct {
 	FeatureDir string
 	// FeatureName is the Go package / feature name.
 	FeatureName string
-	// Template is service | job | gateway.
+	// Template is the feature skeleton name (currently only "service").
 	Template string
 	// FeaturePrefix is the parent directory for feature modules (default "feature").
 	FeaturePrefix string
@@ -41,7 +41,7 @@ type FeatureRequest struct {
 }
 
 // FeatureTemplates are the supported feature skeleton names.
-var FeatureTemplates = []string{"service", "job", "gateway"}
+var FeatureTemplates = []string{"service"}
 
 // WorkspaceKinds are the supported workspace layouts.
 var WorkspaceKinds = []string{KindBackend, KindFullstack, KindFrontend}

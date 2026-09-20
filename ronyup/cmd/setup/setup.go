@@ -80,7 +80,7 @@ func init() {
 		"template",
 		"t",
 		"service",
-		"possible values: service | job | gateway",
+		"possible values: service",
 	)
 	featureFlagSet.BoolVarP(
 		&opt.GroupByTemplate,

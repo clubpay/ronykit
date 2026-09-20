@@ -106,4 +106,5 @@ RonyKIT package exists. `make verify` / `golangci-lint` depguard failures are de
 
 Workspaces scaffolded before executable bundles: run `ronyup setup migrate bundles` once after upgrading `ronyup` (read
 `knowledge://ronyup/tools/migrate_bundles`). Run from the Go workspace root or the fullstack repository root. Use `ronyup setup sync` for
-AGENTS.md/devops/Makefile drift only — sync does not rewrite `cmd/all-in-one/main.go`.
+AGENTS.md/devops/Makefile/skill drift only — default is add-missing (`SkipExisting`); pass `--overwrite` to replace existing scaffold files.
+Sync does not rewrite `cmd/all-in-one/main.go`.

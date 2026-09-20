@@ -10,7 +10,8 @@ import (
 )
 
 // SkillDef describes a bundled agent skill that can be pre-installed into a new
-// workspace under .agents/skills/<ID>. Skills are curated defaults for testing,
+// workspace under .agents/skills/<ID>, .cursor/skills/<ID>, and .claude/skills/<ID>.
+// Skills are curated defaults for testing,
 // modern code, formatting, and review workflows.
 type SkillDef struct {
 	// ID is both the skill directory name and the value used by the --skills flag.
@@ -87,7 +88,7 @@ var skillCatalog = []SkillDef{
 	{
 		ID:               "clean-architecture",
 		Name:             "Clean Architecture",
-		Description:      "Dependency Rule and layer boundaries — maps to handler/app/repo in RonyKit features",
+		Description:      "Dependency Rule and layer boundaries — maps to api/app/domain/repo in RonyKit features",
 		Category:         catArchitecture,
 		DefaultBackend:   true,
 		DefaultFullstack: true,
@@ -427,28 +428,38 @@ func selectedSkillInfos(ids []string) []SkillInfo {
 	return infos
 }
 
+// skillInstallRoots are the trees where catalog skills are installed so Cursor,
+// Claude Code, and generic agents can auto-discover them.
+func skillInstallRoots(skillsRoot string) []string {
+	return []string{
+		filepath.Join(skillsRoot, ".agents", "skills"),
+		filepath.Join(skillsRoot, ".cursor", "skills"),
+		filepath.Join(skillsRoot, ".claude", "skills"),
+	}
+}
+
 // CopySkills copies the selected skill directories from the embedded FS into
-// <skillsRoot>/.agents/skills/<id>.
+// .agents/skills/<id>, .cursor/skills/<id>, and .claude/skills/<id>.
 func CopySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
 	return copySkills(skillsRoot, ids, callback)
 }
 
 func copySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
-	dest := filepath.Join(skillsRoot, ".agents", "skills")
+	for _, dest := range skillInstallRoots(skillsRoot) {
+		for _, id := range ids {
+			if !skillExists(id) {
+				continue
+			}
 
-	for _, id := range ids {
-		if !skillExists(id) {
-			continue
-		}
-
-		err := z.CopyDir(z.CopyDirParams{
-			FS:             internal.Skeleton,
-			SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
-			DestPathPrefix: filepath.Join(dest, id),
-			Callback:       callback,
-		})
-		if err != nil {
-			return fmt.Errorf("copy skill %q: %w", id, err)
+			err := z.CopyDir(z.CopyDirParams{
+				FS:             internal.Skeleton,
+				SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
+				DestPathPrefix: filepath.Join(dest, id),
+				Callback:       callback,
+			})
+			if err != nil {
+				return fmt.Errorf("copy skill %q to %s: %w", id, dest, err)
+			}
 		}
 	}
 

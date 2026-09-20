@@ -26,7 +26,7 @@ Workspace is the root of your services and should be created once.
 ## How to Create a New Feature
 
 - Use `ronyup` CLI to create a new feature.
-- Current templates: `service` (default; `job` and `gateway` are reserved for future scaffolds).
+- Current template: `service` only.
 - Default layout: `feature/<name>/` (for example `feature/billing/`).
 - Example: `ronyup setup feature --featureDir billing --featureName billing --template service`
 - Optional: `--featurePrefix` to change the parent folder; `--groupByTemplate` (or `-g`) for `feature/<template>/<name>/`.

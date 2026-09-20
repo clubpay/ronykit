@@ -107,47 +107,45 @@ for mod in $modules; do
 	port="$mod/internal/repo/port.go"
 	if [ ! -f "$port" ]; then
 		echo ">> ($mod) no internal/repo/port.go — skipping repo checks."
-		continue
-	fi
-
-	methods="$(repo_methods "$port")"
-	if [ -z "$methods" ]; then
-		echo ">> ($mod) no repository interface methods — skipping repo checks."
 	else
-		intdir="$mod/internal/repo/integration_test"
-		if [ ! -d "$intdir" ]; then
-			echo ">> ($mod) MISSING internal/repo/integration_test/ (required for repo ports)" >&2
-			fail=1
-			continue
-		fi
-
-		int_tests=""
-		while IFS= read -r tf; do
-			[ "$(basename "$tf")" = "setup_test.go" ] && continue
-			int_tests="$int_tests $tf"
-		done <<EOF
+		methods="$(repo_methods "$port")"
+		if [ -z "$methods" ]; then
+			echo ">> ($mod) no repository interface methods — skipping repo checks."
+		else
+			intdir="$mod/internal/repo/integration_test"
+			if [ ! -d "$intdir" ]; then
+				echo ">> ($mod) MISSING internal/repo/integration_test/ (required for repo ports)" >&2
+				fail=1
+			else
+				int_tests=""
+				while IFS= read -r tf; do
+					[ "$(basename "$tf")" = "setup_test.go" ] && continue
+					int_tests="$int_tests $tf"
+				done <<EOF
 $(find "$intdir" -name '*_test.go' 2>/dev/null)
 EOF
 
-		if [ -z "$(echo "$int_tests" | tr -d ' ')" ]; then
-			echo ">> ($mod) integration_test/ has no test files (only setup_test.go or empty)" >&2
-			fail=1
-		else
-			for method in $methods; do
-				if ! test_files_contain "$method" $int_tests; then
-					echo ">> ($mod) repo method $method has no integration test referencing it" >&2
+				if [ -z "$(echo "$int_tests" | tr -d ' ')" ]; then
+					echo ">> ($mod) integration_test/ has no test files (only setup_test.go or empty)" >&2
 					fail=1
+				else
+					for method in $methods; do
+						if ! test_files_contain "$method" $int_tests; then
+							echo ">> ($mod) repo method $method has no integration test referencing it" >&2
+							fail=1
+						fi
+					done
 				fi
-			done
-		fi
 
-		if [ "$DOCKER_OK" -eq 1 ]; then
-			echo ">> ($mod) go test ./internal/repo/integration_test/..."
-			if ! ( cd "$mod" && go test ./internal/repo/integration_test/... -count=1 ); then
-				fail=1
+				if [ "$DOCKER_OK" -eq 1 ]; then
+					echo ">> ($mod) go test ./internal/repo/integration_test/..."
+					if ! ( cd "$mod" && go test ./internal/repo/integration_test/... -count=1 ); then
+						fail=1
+					fi
+				else
+					echo ">> ($mod) skipping integration test RUN — Docker unavailable (see warning above)." >&2
+				fi
 			fi
-		else
-			echo ">> ($mod) skipping integration test RUN — Docker unavailable (see warning above)." >&2
 		fi
 	fi
 

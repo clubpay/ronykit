@@ -17,4 +17,6 @@ For `fullstack`, Go module paths are prefixed with `backend/` (e.g. `<repoModule
 
 After scaffolding, add feature modules with the `scaffold_feature` tool, then run `make tidy && make lint && make test` from the workspace root (the `backend/` directory in `fullstack` mode).
 
-For workspaces created with an older `ronyup`, run `ronyup setup migrate bundles` once (see `knowledge://ronyup/tools/migrate_bundles`).
+Catalog skills are installed under `.agents/skills/`, `.cursor/skills/`, and `.claude/skills/` so Cursor, Claude Code, and generic agents can discover them.
+
+For workspaces created with an older `ronyup`, run `ronyup setup migrate bundles` once (see `knowledge://ronyup/tools/migrate_bundles`). To refresh existing scaffold files (`AGENTS.md`, hooks, skills, Makefile) after upgrading `ronyup`, run `ronyup setup sync --overwrite` (default sync only adds missing files).

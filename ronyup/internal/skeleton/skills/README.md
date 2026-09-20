@@ -1,7 +1,8 @@
 # Authoring bundled skills
 
 These are the agent skills `ronyup` installs into a workspace's
-`.agents/skills/<id>/`. Each directory is a self-contained skill; register it in
+`.agents/skills/<id>/`, `.cursor/skills/<id>/`, and `.claude/skills/<id>/`.
+Each directory is a self-contained skill; register it in
 the catalog (`ronyup/internal/scaffold/skills.go`) so it can be selected. `copySkills`
 copies the **whole** skill directory, so a `rules/` (or `references/`) subfolder
 ships automatically — no extra wiring.

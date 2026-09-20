@@ -93,9 +93,11 @@ func TestCopySkillsWritesSkillFiles(t *testing.T) {
 	}
 
 	for _, id := range ids {
-		p := filepath.Join(root, ".agents", "skills", id, "SKILL.md")
-		if _, err := os.Stat(p); err != nil {
-			t.Fatalf("expected skill file %s: %v", p, err)
+		for _, dest := range skillInstallRoots(root) {
+			p := filepath.Join(dest, id, "SKILL.md")
+			if _, err := os.Stat(p); err != nil {
+				t.Fatalf("expected skill file %s: %v", p, err)
+			}
 		}
 	}
 
@@ -112,8 +114,10 @@ func TestCatalogSkillsExistInEmbedFS(t *testing.T) {
 			t.Fatalf("copySkills(%q) error: %v", s.ID, err)
 		}
 
-		if _, err := os.Stat(filepath.Join(root, ".agents", "skills", s.ID, "SKILL.md")); err != nil {
-			t.Fatalf("catalog skill %q has no embedded SKILL.md: %v", s.ID, err)
+		for _, dest := range skillInstallRoots(root) {
+			if _, err := os.Stat(filepath.Join(dest, s.ID, "SKILL.md")); err != nil {
+				t.Fatalf("catalog skill %q missing SKILL.md under %s: %v", s.ID, dest, err)
+			}
 		}
 	}
 }

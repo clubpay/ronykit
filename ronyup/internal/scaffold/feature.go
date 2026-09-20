@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -24,6 +25,14 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 
 	if req.Template == "" {
 		req.Template = "service"
+	}
+
+	if !validFeatureTemplate(req.Template) {
+		return fmt.Errorf(
+			"unknown feature template %q (available: %s)",
+			req.Template,
+			strings.Join(FeatureTemplates, ", "),
+		)
 	}
 
 	if req.FeaturePrefix == "" {
@@ -240,4 +249,8 @@ func sideEffectImportModule(
 	}
 
 	return nil
+}
+
+func validFeatureTemplate(name string) bool {
+	return slices.Contains(FeatureTemplates, name)
 }

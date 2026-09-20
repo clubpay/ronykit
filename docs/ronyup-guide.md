@@ -109,7 +109,7 @@ ronyup setup workspace \
 
 ### Pre-installed agent skills
 
-Every workspace ships with the `ronykit-framework` skill. On top of that, `setup workspace` can pre-install a curated set of general-purpose **agent skills** under `.agents/skills/` — focused on modern code, testing, formatting, debugging, review, and commits.
+Every workspace ships with the `ronykit-framework` skill. On top of that, `setup workspace` can pre-install a curated set of general-purpose **agent skills** under `.agents/skills/`, `.cursor/skills/`, and `.claude/skills/` — focused on modern code, testing, formatting, debugging, review, and commits.
 
 Use `--skills` (or `-s`) to choose which to install. Pass a comma-separated list of skill IDs, or one of the tokens `default`, `all`, or `none`:
 
@@ -180,7 +180,7 @@ MCP prompt `design-frontend` orchestrates the frontend bootstrap workflow (ask �
 
 ## Add a Feature
 
-Add a new service, job, or gateway module to an existing workspace:
+Add a new service module to an existing workspace:
 
 ```bash
 cd my-api
@@ -212,7 +212,7 @@ By default, features are placed at `{featurePrefix}/{featureDir}/` (for example 
 | `--featurePrefix`   |       | Parent directory for feature modules      | `feature`              |
 | `--featureDir`      | `-p`  | Directory name inside the feature prefix  | `my_feature`           |
 | `--featureName`     | `-n`  | Feature name                              | `myfeature`            |
-| `--template`        | `-t`  | Template: `service`, `job`, or `gateway`  | `service`              |
+| `--template`        | `-t`  | Template: `service` only                  | `service`              |
 | `--groupByTemplate` | `-g`  | Group under `{featurePrefix}/{template}/` | `false`                |
 | `--repoModule`      | `-m`  | Repository Go module path (auto-detected) | `github.com/your/repo` |
 | `--force`           | `-f`  | Replace existing feature directory        | `false`                |
@@ -242,10 +242,18 @@ After upgrading `ronyup`, refresh shared boilerplate and migrate bundle layout o
 ```bash
 ronyup setup sync
 ronyup setup migrate bundles    # from repo root (fullstack) or backend/ — both work
-ronyup setup sync --only backend   # optional Makefile bundle targets
+ronyup setup sync --only backend --overwrite   # optional Makefile bundle targets
 ```
 
 `setup sync` does not rewrite `cmd/all-in-one/main.go`. Use `setup migrate bundles` (preview with `--dry-run`).
+
+By default sync **adds missing files only**. Existing scaffold files (`AGENTS.md`, hooks, skill trees, `Makefile`) stay untouched unless you pass `--overwrite`:
+
+```bash
+ronyup setup sync --only agents,hooks --overwrite
+ronyup setup sync --only skills --overwrite --skills installed
+ronyup setup sync --only backend --overwrite
+```
 
 ---
 
@@ -254,8 +262,6 @@ ronyup setup sync --only backend   # optional Makefile bundle targets
 | Template  | Purpose                                                               |
 |-----------|-----------------------------------------------------------------------|
 | `service` | A standard API service with CRUD endpoints, repo layer, and DI wiring |
-| `job`     | A background job or worker module                                     |
-| `gateway` | A public-facing API gateway that composes multiple services           |
 
 ---
 

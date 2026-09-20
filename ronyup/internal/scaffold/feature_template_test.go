@@ -56,3 +56,21 @@ func TestServiceTemplatesParse(t *testing.T) {
 		t.Fatalf("walk service skeleton: %v", err)
 	}
 }
+
+func TestValidFeatureTemplate(t *testing.T) {
+	t.Parallel()
+
+	if got := FeatureTemplates; len(got) != 1 || got[0] != "service" {
+		t.Fatalf("FeatureTemplates = %v, want [service]", got)
+	}
+
+	if !validFeatureTemplate("service") {
+		t.Fatal("service must be a valid feature template")
+	}
+
+	for _, name := range []string{"job", "gateway", "worker", ""} {
+		if validFeatureTemplate(name) {
+			t.Fatalf("%q must not be a valid feature template", name)
+		}
+	}
+}
