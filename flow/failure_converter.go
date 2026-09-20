@@ -67,8 +67,7 @@ func (c *errsFailureConverter) ErrorToFailure(err error) *failurepb.Failure {
 		return nil
 	}
 
-	var e *errs.Error
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*errs.Error](err); ok {
 		return c.errsErrorToFailure(err, e)
 	}
 

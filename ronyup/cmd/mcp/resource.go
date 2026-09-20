@@ -10,7 +10,14 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-const resourceURIPrefix = "knowledge://ronyup/"
+const (
+	resourceURIPrefix       = "knowledge://ronyup/"
+	markdownMIMEType        = "text/markdown"
+	categoryPackages        = "packages"
+	categoryArchitecture    = "architecture"
+	categoryCharacteristics = "characteristics"
+	categoryTools           = "tools"
+)
 
 var resourceTemplateURI = resourceURIPrefix + "{category}/{name}"
 
@@ -23,46 +30,46 @@ func registerResources(srv *mcpsdk.Server, cfg ServerConfig) {
 			Name:        "RonyKIT Knowledge Base",
 			Description: "Architecture hints, package docs, and characteristic " +
 				"guidance for RonyKIT service development.",
-			MIMEType: "text/markdown",
+			MIMEType: markdownMIMEType,
 		},
 		resourceTemplateHandler(kb),
 	)
 
 	for _, pkg := range kb.Packages {
 		srv.AddResource(&mcpsdk.Resource{
-			URI:         resourceURIPrefix + "packages/" + pkg.ShortName,
+			URI:         resourceURIPrefix + categoryPackages + "/" + pkg.ShortName,
 			Name:        "Package: " + pkg.ShortName,
-			Description: truncateText(pkg.Description, 120),
-			MIMEType:    "text/markdown",
-		}, resourceHandler(kb, "packages", pkg.ShortName))
+			Description: resourceDescription(pkg.Description),
+			MIMEType:    markdownMIMEType,
+		}, resourceHandler(kb, categoryPackages, pkg.ShortName))
 	}
 
 	for _, hint := range kb.ArchitectureHints {
 		srv.AddResource(&mcpsdk.Resource{
-			URI:         resourceURIPrefix + "architecture/" + hint.Slug,
+			URI:         resourceURIPrefix + categoryArchitecture + "/" + hint.Slug,
 			Name:        "Architecture: " + hint.Slug,
-			Description: truncateText(hint.Text, 120),
-			MIMEType:    "text/markdown",
-		}, resourceHandler(kb, "architecture", hint.Slug))
+			Description: resourceDescription(hint.Text),
+			MIMEType:    markdownMIMEType,
+		}, resourceHandler(kb, categoryArchitecture, hint.Slug))
 	}
 
 	for _, ch := range kb.Characteristics {
 		name := charResourceName(ch)
 		srv.AddResource(&mcpsdk.Resource{
-			URI:         resourceURIPrefix + "characteristics/" + name,
+			URI:         resourceURIPrefix + categoryCharacteristics + "/" + name,
 			Name:        "Characteristic: " + name,
-			Description: truncateText(ch.ServiceHint, 120),
-			MIMEType:    "text/markdown",
-		}, resourceHandler(kb, "characteristics", name))
+			Description: resourceDescription(ch.ServiceHint),
+			MIMEType:    markdownMIMEType,
+		}, resourceHandler(kb, categoryCharacteristics, name))
 	}
 
 	for _, tool := range kb.Tools {
 		srv.AddResource(&mcpsdk.Resource{
-			URI:         resourceURIPrefix + "tools/" + tool.Name,
+			URI:         resourceURIPrefix + categoryTools + "/" + tool.Name,
 			Name:        "Tool: " + tool.Name,
-			Description: truncateText(tool.Description, 120),
-			MIMEType:    "text/markdown",
-		}, resourceHandler(kb, "tools", tool.Name))
+			Description: resourceDescription(tool.Description),
+			MIMEType:    markdownMIMEType,
+		}, resourceHandler(kb, categoryTools, tool.Name))
 	}
 }
 
@@ -84,7 +91,7 @@ func resourceTemplateHandler(kb *knowledge.Base) mcpsdk.ResourceHandler {
 			Contents: []*mcpsdk.ResourceContents{
 				{
 					URI:      req.Params.URI,
-					MIMEType: "text/markdown",
+					MIMEType: markdownMIMEType,
 					Text:     content,
 				},
 			},
@@ -103,7 +110,7 @@ func resourceHandler(kb *knowledge.Base, category, name string) mcpsdk.ResourceH
 			Contents: []*mcpsdk.ResourceContents{
 				{
 					URI:      req.Params.URI,
-					MIMEType: "text/markdown",
+					MIMEType: markdownMIMEType,
 					Text:     content,
 				},
 			},
@@ -113,25 +120,25 @@ func resourceHandler(kb *knowledge.Base, category, name string) mcpsdk.ResourceH
 
 func resolveKnowledge(kb *knowledge.Base, category, name string) string {
 	switch category {
-	case "packages":
+	case categoryPackages:
 		for _, pkg := range kb.Packages {
 			if pkg.ShortName == name {
 				return formatPackageResource(pkg)
 			}
 		}
-	case "architecture":
+	case categoryArchitecture:
 		for _, hint := range kb.ArchitectureHints {
 			if hint.Slug == name {
 				return hint.Text
 			}
 		}
-	case "characteristics":
+	case categoryCharacteristics:
 		for _, ch := range kb.Characteristics {
 			if charResourceName(ch) == name {
 				return formatCharacteristicResource(ch)
 			}
 		}
-	case "tools":
+	case categoryTools:
 		for _, tool := range kb.Tools {
 			if tool.Name == name {
 				return formatToolResource(tool)
@@ -251,7 +258,7 @@ func completeResource(
 }
 
 func knowledgeCategories() []string {
-	return []string{"packages", "architecture", "characteristics", "tools"}
+	return []string{categoryPackages, categoryArchitecture, categoryCharacteristics, categoryTools}
 }
 
 const maxCompletionValues = 64
@@ -287,28 +294,28 @@ func emptyCompletion() *mcpsdk.CompleteResult {
 
 func namesForCategory(kb *knowledge.Base, category string) []string {
 	switch strings.ToLower(strings.TrimSpace(category)) {
-	case "packages":
+	case categoryPackages:
 		names := make([]string, 0, len(kb.Packages))
 		for _, pkg := range kb.Packages {
 			names = append(names, pkg.ShortName)
 		}
 
 		return names
-	case "architecture":
+	case categoryArchitecture:
 		names := make([]string, 0, len(kb.ArchitectureHints))
 		for _, hint := range kb.ArchitectureHints {
 			names = append(names, hint.Slug)
 		}
 
 		return names
-	case "characteristics":
+	case categoryCharacteristics:
 		names := make([]string, 0, len(kb.Characteristics))
 		for _, ch := range kb.Characteristics {
 			names = append(names, charResourceName(ch))
 		}
 
 		return names
-	case "tools":
+	case categoryTools:
 		names := make([]string, 0, len(kb.Tools))
 		for _, tool := range kb.Tools {
 			names = append(names, tool.Name)
@@ -356,7 +363,9 @@ func filterPrefix(items []string, prefix string) []string {
 	return result
 }
 
-func truncateText(s string, maxLen int) string {
+func resourceDescription(s string) string {
+	const maxLen = 120
+
 	s = strings.TrimSpace(s)
 	if len(s) <= maxLen {
 		return s

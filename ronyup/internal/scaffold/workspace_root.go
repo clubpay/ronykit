@@ -36,7 +36,8 @@ func resolveGoWorkspace(startDir string) (goRoot string, err error) {
 	}
 
 	return "", fmt.Errorf(
-		"run this command from the Go workspace root (directory with go.work) or from the repository root in a fullstack workspace (backend/go.work)",
+		"run this command from the Go workspace root (directory with go.work) " +
+			"or from the repository root in a fullstack workspace (backend/go.work)",
 	)
 }
 

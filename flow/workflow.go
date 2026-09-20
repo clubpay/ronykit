@@ -590,8 +590,7 @@ func (sdk *SDK) CancelWorkflow(
 ) (*CancelWorkflowResponse, error) {
 	err := sdk.b.Client().CancelWorkflow(ctx, req.WorkflowID, req.RunID)
 	if err != nil {
-		var notFoundErr *serviceerror.NotFound
-		if errors.As(err, &notFoundErr) {
+		if _, ok := errors.AsType[*serviceerror.NotFound](err); ok {
 			return &CancelWorkflowResponse{Success: false}, nil
 		}
 

@@ -205,32 +205,8 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 	log.Println("Workspace created successfully")
 
 	if hasBackend(in.kind) {
-		goRoot := filepath.Join(in.repoRoot, goRootRel(in.kind))
-		modulePrefix := goModulePrefix(in.module, in.kind)
-		packages := []string{"pkg/i18n", "pkg/runner", "cmd/" + defaultBundleName}
-
-		p := z.RunCmdParams{Dir: goRoot}
-		if err := z.RunCmd(ctx, p, "go", "work", "init"); err != nil {
-			return fmt.Errorf("go work init: %w", err)
-		}
-
-		for _, pkg := range packages {
-			p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
-			if err := z.RunCmd(ctx, p, "go", "mod", "init", path.Join(modulePrefix, pkg)); err != nil {
-				return fmt.Errorf("go mod init %s: %w", pkg, err)
-			}
-
-			if err := z.RunCmd(ctx, p, "go", "mod", "edit", "-go=1.25"); err != nil {
-				return fmt.Errorf("go mod edit %s: %w", pkg, err)
-			}
-
-			if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
-				return fmt.Errorf("go mod tidy %s: %w", pkg, err)
-			}
-
-			if err := z.RunCmd(ctx, p, "go", "work", "use", "."); err != nil {
-				return fmt.Errorf("go work use %s: %w", pkg, err)
-			}
+		if err := initGoWorkspace(ctx, in); err != nil {
+			return err
 		}
 	}
 
@@ -241,6 +217,38 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 		_ = z.RunCmd(ctx, p, "git", "init")
 		_ = z.RunCmd(ctx, p, "git", "add", ".")
 		_ = z.RunCmd(ctx, p, "git", "commit", "-m", "Workspace created")
+	}
+
+	return nil
+}
+
+func initGoWorkspace(ctx context.Context, in workspaceCopyInput) error {
+	goRoot := filepath.Join(in.repoRoot, goRootRel(in.kind))
+	modulePrefix := goModulePrefix(in.module, in.kind)
+	packages := []string{"pkg/i18n", "pkg/runner", "cmd/" + defaultBundleName}
+
+	p := z.RunCmdParams{Dir: goRoot}
+	if err := z.RunCmd(ctx, p, "go", "work", "init"); err != nil {
+		return fmt.Errorf("go work init: %w", err)
+	}
+
+	for _, pkg := range packages {
+		p = z.RunCmdParams{Dir: filepath.Join(goRoot, pkg)}
+		if err := z.RunCmd(ctx, p, "go", "mod", "init", path.Join(modulePrefix, pkg)); err != nil {
+			return fmt.Errorf("go mod init %s: %w", pkg, err)
+		}
+
+		if err := z.RunCmd(ctx, p, "go", "mod", "edit", "-go=1.25"); err != nil {
+			return fmt.Errorf("go mod edit %s: %w", pkg, err)
+		}
+
+		if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
+			return fmt.Errorf("go mod tidy %s: %w", pkg, err)
+		}
+
+		if err := z.RunCmd(ctx, p, "go", "work", "use", "."); err != nil {
+			return fmt.Errorf("go work use %s: %w", pkg, err)
+		}
 	}
 
 	return nil

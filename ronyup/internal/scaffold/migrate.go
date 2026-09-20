@@ -593,37 +593,39 @@ func renameLegacyServiceBundle(ctx context.Context, cmdCtx WorkspaceContext) err
 	legacy := LegacyDefaultBundleDir(cmdCtx.GoRoot)
 	current := DefaultBundleDir(cmdCtx.GoRoot)
 
-	if FileExists(filepath.Join(legacy, "main.go")) {
-		if FileExists(filepath.Join(current, "main.go")) {
-			if err := os.RemoveAll(legacy); err != nil {
-				return fmt.Errorf("remove legacy cmd/%s: %w", LegacyDefaultBundleName, err)
-			}
-
-			cmdCtx.Log.Printf("Removed legacy cmd/%s/\n", LegacyDefaultBundleName)
-		} else if err := os.Rename(legacy, current); err != nil {
-			return fmt.Errorf("rename cmd/%s to cmd/%s: %w", LegacyDefaultBundleName, DefaultBundleName, err)
-		} else {
-			cmdCtx.Log.Printf("Renamed cmd/%s/ to cmd/%s/\n", LegacyDefaultBundleName, DefaultBundleName)
-		}
-
-		goModPath := filepath.Join(current, "go.mod")
-		if content, err := os.ReadFile(goModPath); err == nil {
-			oldMod := path.Join(cmdCtx.RepoModule, "cmd", LegacyDefaultBundleName)
-			newMod := path.Join(cmdCtx.RepoModule, "cmd", DefaultBundleName)
-			updated := strings.ReplaceAll(string(content), oldMod, newMod)
-
-			if err := os.WriteFile(goModPath, []byte(updated), 0o644); err != nil {
-				return fmt.Errorf("update cmd/%s/go.mod: %w", DefaultBundleName, err)
-			}
-		}
-
-		workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
-		if err := z.RunCmd(ctx, workDir, "go", "work", "use", "./cmd/"+DefaultBundleName); err != nil {
-			return err
-		}
-
-		_ = z.RunCmd(ctx, workDir, "go", "work", "edit", "-dropuse", "./cmd/"+LegacyDefaultBundleName)
+	if !FileExists(filepath.Join(legacy, "main.go")) {
+		return migrateLegacyBundlesManifest(cmdCtx)
 	}
+
+	if FileExists(filepath.Join(current, "main.go")) {
+		if err := os.RemoveAll(legacy); err != nil {
+			return fmt.Errorf("remove legacy cmd/%s: %w", LegacyDefaultBundleName, err)
+		}
+
+		cmdCtx.Log.Printf("Removed legacy cmd/%s/\n", LegacyDefaultBundleName)
+	} else if err := os.Rename(legacy, current); err != nil {
+		return fmt.Errorf("rename cmd/%s to cmd/%s: %w", LegacyDefaultBundleName, DefaultBundleName, err)
+	} else {
+		cmdCtx.Log.Printf("Renamed cmd/%s/ to cmd/%s/\n", LegacyDefaultBundleName, DefaultBundleName)
+	}
+
+	goModPath := filepath.Join(current, "go.mod")
+	if content, err := os.ReadFile(goModPath); err == nil {
+		oldMod := path.Join(cmdCtx.RepoModule, "cmd", LegacyDefaultBundleName)
+		newMod := path.Join(cmdCtx.RepoModule, "cmd", DefaultBundleName)
+		updated := strings.ReplaceAll(string(content), oldMod, newMod)
+
+		if err := os.WriteFile(goModPath, []byte(updated), 0o644); err != nil {
+			return fmt.Errorf("update cmd/%s/go.mod: %w", DefaultBundleName, err)
+		}
+	}
+
+	workDir := z.RunCmdParams{Dir: cmdCtx.GoRoot}
+	if err := z.RunCmd(ctx, workDir, "go", "work", "use", "./cmd/"+DefaultBundleName); err != nil {
+		return err
+	}
+
+	_ = z.RunCmd(ctx, workDir, "go", "work", "edit", "-dropuse", "./cmd/"+LegacyDefaultBundleName)
 
 	return migrateLegacyBundlesManifest(cmdCtx)
 }

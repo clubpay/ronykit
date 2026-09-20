@@ -109,20 +109,18 @@ func CreateBundle(ctx context.Context, req BundleRequest, log Logger) error {
 	}
 
 	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", req.Name)
-	if z.IsEmptyDir(bundleDir) {
-		if err := os.MkdirAll(bundleDir, 0o755); err != nil {
-			return err
+	if !z.IsEmptyDir(bundleDir) {
+		if !req.Force {
+			return fmt.Errorf("%s already exists, use force to overwrite", filepath.Join("cmd", req.Name))
 		}
-	} else if !req.Force {
-		return fmt.Errorf("%s already exists, use force to overwrite", filepath.Join("cmd", req.Name))
-	} else {
+
 		if err := os.RemoveAll(bundleDir); err != nil {
 			return err
 		}
+	}
 
-		if err := os.MkdirAll(bundleDir, 0o755); err != nil {
-			return err
-		}
+	if err := os.MkdirAll(bundleDir, 0o755); err != nil {
+		return err
 	}
 
 	cfg.Bundles[req.Name] = BundleSpec{
