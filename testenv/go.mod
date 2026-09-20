@@ -30,6 +30,7 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/clubpay/ronykit/rony v0.26.23 // indirect
 	github.com/clubpay/ronykit/x/batch v0.4.23 // indirect
+	github.com/clubpay/ronykit/x/p v0.4.23 // indirect
 	github.com/clubpay/ronykit/x/telemetry v0.5.23 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
