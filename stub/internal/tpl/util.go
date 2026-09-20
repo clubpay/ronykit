@@ -83,10 +83,10 @@ func tsTypeRecursive(prefix string, t reflect.Type, postfix string) string {
 	// reports "json.RawMessage".
 	switch t {
 	case reflect.TypeFor[time.Time]():
-		return fmt.Sprintf("%sstring", prefix)
+		return fmt.Sprintf("%sstring%s", prefix, postfix)
 	case reflect.TypeFor[json.RawMessage](),
 		reflect.TypeFor[kit.RawMessage]():
-		return fmt.Sprintf("%s%s", prefix, "any")
+		return fmt.Sprintf("%s%s%s", prefix, "any", postfix)
 	}
 
 	//nolint:exhaustive
@@ -133,6 +133,44 @@ var pathParamRegEX = regexp.MustCompile(`{([^}]+)}`)
 
 func tsReplacePathParams(path string, prefix string) string {
 	return pathParamRegEX.ReplaceAllStringFunc(path, func(s string) string {
-		return fmt.Sprintf(`${%s%s}`, prefix, strings.Trim(s, "{}"))
+		name := strings.Trim(s, "{}")
+
+		return fmt.Sprintf(`${encodeURIComponent(String(%s%s))}`, prefix, name)
 	})
+}
+
+// tsJSONName returns the JSON field name for a DTO field, or empty if the field
+// should be omitted from generated TypeScript (no name or json:"-").
+func tsJSONName(name string, jsonTag string) string {
+	if name != "" {
+		if name == "-" {
+			return ""
+		}
+
+		return name
+	}
+
+	if jsonTag == "" {
+		return ""
+	}
+
+	jsonName, _, _ := strings.Cut(jsonTag, ",")
+	if jsonName == "" || jsonName == "-" {
+		return ""
+	}
+
+	return jsonName
+}
+
+func tsPathParamLiterals(params []string) string {
+	if len(params) == 0 {
+		return ""
+	}
+
+	quoted := make([]string, len(params))
+	for i, p := range params {
+		quoted[i] = fmt.Sprintf("%q", p)
+	}
+
+	return strings.Join(quoted, ", ")
 }

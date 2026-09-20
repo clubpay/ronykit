@@ -92,10 +92,51 @@ func TestGolangGenerator(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, files)
 	assert.Greater(t, len(files), 0)
-	fmt.Println(string(files[0].Data))
+
+	src := string(files[0].Data)
+	assert.Contains(t, src, "func (s testStub) Client() *stub.Stub")
+	assert.NotContains(t, src, "hostPort  string")
+	assert.NotContains(t, src, "verifyTLS bool")
+	assert.Contains(t, src, "sm.s1 = f")
+	assert.NotContains(t, src, `swag:""`)
+	assert.Contains(t, src, "// s1 GET /path1")
+	fmt.Println(src)
 }
 
 func TestTypeScriptGenerator(t *testing.T) {
+	svc := desc.ServiceDescFunc(func() *desc.Service {
+		return desc.NewService("testService").
+			AddContract(
+				desc.NewContract().
+					SetName("c1").
+					AddRoute(desc.Route("s1", newREST(kit.JSON, "/path1/{str}", "GET"))).
+					SetInput(&ComplexRequest{}).
+					SetOutput(&ComplexResponse{}).
+					SetHandler(nil),
+			)
+	})
+
+	in := stubgen.NewInput("test", svc)
+	in.AddTags("json")
+	in.AddExtraOptions(map[string]string{
+		"withHook": "yes",
+	})
+
+	files, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{}).Generate(in)
+	require.NoError(t, err)
+	require.NotEmpty(t, files)
+
+	src := string(files[0].Data)
+	assert.Contains(t, src, "export class testStubError extends globalThis.Error")
+	assert.Contains(t, src, "async s1(")
+	assert.Contains(t, src, "init?: RequestInit")
+	assert.Contains(t, src, "encodeURIComponent")
+	assert.Contains(t, src, "this.buildQuery")
+	assert.Contains(t, src, "res.status !== 201")
+	assert.NotContains(t, src, "@ts-ignore")
+}
+
+func TestTypeScriptSWRHooksGenerator(t *testing.T) {
 	svc := desc.ServiceDescFunc(func() *desc.Service {
 		return desc.NewService("testService").
 			AddContract(
@@ -109,11 +150,16 @@ func TestTypeScriptGenerator(t *testing.T) {
 	})
 
 	in := stubgen.NewInput("test", svc)
-	in.AddTags("json")
-	in.AddExtraOptions(map[string]string{
-		"withHook": "yes",
-	})
-
-	_, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{}).Generate(in)
+	files, err := stubgen.NewTypescriptEngine(stubgen.TypescriptConfig{GenerateSWR: true}).Generate(in)
 	require.NoError(t, err)
+	require.Len(t, files, 2)
+	assert.Equal(t, "swr.hooks.ts", files[1].Filename)
+
+	src := string(files[1].Data)
+	assert.Contains(t, src, "export function uses1(")
+	assert.Contains(t, src, "init?: RequestInit")
+	assert.Contains(t, src, "ComplexRequest")
+	assert.Contains(t, src, "ComplexResponse")
+	assert.NotContains(t, src, "SimpleObject")
+	assert.NotContains(t, src, "@ts-ignore")
 }

@@ -53,6 +53,12 @@ func TestTsTypeHelpers(t *testing.T) {
 	if tsType(reflect.TypeOf(time.Time{})) != "string" {
 		t.Fatalf("unexpected time ts type")
 	}
+	if tsType(reflect.TypeOf([]time.Time{})) != "string[]" {
+		t.Fatalf("unexpected []time.Time ts type: %s", tsType(reflect.TypeOf([]time.Time{})))
+	}
+	if tsType(reflect.TypeOf([]json.RawMessage{})) != "any[]" {
+		t.Fatalf("unexpected []json.RawMessage ts type: %s", tsType(reflect.TypeOf([]json.RawMessage{})))
+	}
 	if tsType(reflect.TypeOf([]byte{})) != "string" {
 		t.Fatalf("unexpected []byte ts type")
 	}
@@ -77,8 +83,20 @@ func TestTsTypeHelpers(t *testing.T) {
 }
 
 func TestStringHelpers(t *testing.T) {
-	if tsReplacePathParams("/v1/{id}", "req.") != "/v1/${req.id}" {
-		t.Fatalf("unexpected path param replace")
+	if tsReplacePathParams("/v1/{id}", "req.") != "/v1/${encodeURIComponent(String(req.id))}" {
+		t.Fatalf("unexpected path param replace: %s", tsReplacePathParams("/v1/{id}", "req."))
+	}
+	if tsJSONName("-", "-") != "" {
+		t.Fatalf("expected omitted json name for '-'")
+	}
+	if tsJSONName("key1", "key1,omitempty") != "key1" {
+		t.Fatalf("unexpected json name: %s", tsJSONName("key1", "key1,omitempty"))
+	}
+	if tsJSONName("", "-") != "" {
+		t.Fatalf("expected omitted json name from tag '-'")
+	}
+	if tsPathParamLiterals([]string{"key1", "sKey1"}) != `"key1", "sKey1"` {
+		t.Fatalf("unexpected path param literals: %s", tsPathParamLiterals([]string{"key1", "sKey1"}))
 	}
 
 	quoted := FuncMaps["strQuote"].(func([]string) []string)([]string{"a", "b"})

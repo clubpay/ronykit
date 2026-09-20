@@ -53,4 +53,6 @@ var FuncMaps = map[string]any{
 	"goType":              goType,
 	"tsType":              tsType,
 	"tsReplacePathParams": tsReplacePathParams,
+	"tsJSONName":          tsJSONName,
+	"tsPathParamLiterals": tsPathParamLiterals,
 }

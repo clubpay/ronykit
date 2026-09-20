@@ -3,8 +3,8 @@
 */}}
 
 {{ define "swagTag" }}
-	{{- if gt (len (.Tag.Get "swag")) 0 -}}swag:"{{.Tag.Get "swag"}}"
-	{{- else -}} {{ .Meta.SwagTag }}
+	{{- if gt (len (.Tag.Get "swag")) 0 }} swag:"{{.Tag.Get "swag"}}"
+	{{- else if or .Meta.Optional .Meta.Deprecated .Meta.OmitEmpty (gt (len .Meta.Enum) 0) }} {{ .Meta.SwagTag }}
 	{{- end -}}
 {{ end }}
 
@@ -15,11 +15,11 @@
 		{{- if .Embedded }}
 			{{.GoName}}
 		{{- else if eq .Element.RKind.String "interface" }}
-			{{.GoName}} any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
+			{{.GoName}} any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}}{{- if .Tag.OmitEmpty }},omitempty{{- end }}"{{ template "swagTag" . }}`{{- end }}
 		{{- else if eq .Element.Kind "" }}
-			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
+			{{.GoName}} map[string]any {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}}{{- if .Tag.OmitEmpty }},omitempty{{- end }}"{{ template "swagTag" . }}`{{- end }}
 		{{- else }}
-			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}} {{- if .Tag.OmitEmpty }},omitempty{{- end }}" {{ template "swagTag" . }}`{{- end }}
+			{{.GoName}} {{goType .Element.RType}} {{ if gt (len .Tag.Name) 0 }}`{{.Tag.Name}}:"{{.Tag.Value}}{{- if .Tag.OmitEmpty }},omitempty{{- end }}"{{ template "swagTag" . }}`{{- end }}
 		{{- end }}
 	{{- end }}
 	}
@@ -116,10 +116,6 @@ type I{{$serviceName}}Stub interface {
 // {{$serviceName}}Stub represents the client/stub for {{$serviceName}}.
 // Implements I{{$serviceName}}Stub
 type {{$serviceName}}Stub struct {
-hostPort string
-secure bool
-verifyTLS bool
-
 s *stub.Stub
 }
 
@@ -131,6 +127,12 @@ s: stub.New(hostPort, opts...),
 return s
 }
 
+// Client returns the underlying stub.Stub used by generated REST methods.
+// It is not part of I{{$serviceName}}Stub so existing mock implementations stay valid.
+func (s {{$serviceName}}Stub) Client() *stub.Stub {
+return s.s
+}
+
 var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 
 {{/*
@@ -139,6 +141,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}Stub)(nil)
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{- if and (ne $methodName "") .HasOKResponse }}
+		// {{$methodName}} {{.Method}} {{.Path}}
 		func (s {{$serviceName}}Stub) {{$methodName}}(
 		ctx context.Context, req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}}, opt ...stub.RESTOption,
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error){
@@ -222,7 +225,7 @@ type MockOption func(*{{$serviceName}}StubMock)
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error),
 		) MockOption {
 		return func(sm *{{$serviceName}}StubMock) {
-		sm.{{lower $methodName}} = f
+		sm.{{lowerCamelCase $methodName}} = f
 		}
 		}
 	{{ end }}
@@ -235,7 +238,7 @@ type {{$serviceName}}StubMock struct {
 {{ range .RESTMethods }}
 	{{$methodName := .Name}}
 	{{ if and (ne $methodName "") .HasOKResponse -}}
-		{{lower $methodName}} func(
+		{{lowerCamelCase $methodName}} func(
 		ctx context.Context,
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
@@ -263,11 +266,11 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		req {{if not .Request.Message.IsSpecial }}*{{end}}{{.Request.Message.GoName}},
 		opt ...stub.RESTOption,
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error){
-		if s.{{lower $methodName}} == nil {
+		if s.{{lowerCamelCase $methodName}} == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 		}
 
-		return s.{{lower $methodName}}(ctx, req, opt...)
+		return s.{{lowerCamelCase $methodName}}(ctx, req, opt...)
 		}
 
 		func (s *{{$serviceName}}StubMock) Set{{$methodName}}(
@@ -277,7 +280,7 @@ var _ I{{$serviceName}}Stub = (*{{$serviceName}}StubMock)(nil)
 		opt ...stub.RESTOption,
 		) ({{if not .GetOKResponse.Message.IsSpecial }}*{{end}}{{.GetOKResponse.Message.GoName}}, error),
 		) *{{$serviceName}}StubMock {
-		s.{{lower $methodName}} = f
+		s.{{lowerCamelCase $methodName}} = f
 
 		return s
 		}

@@ -27,13 +27,59 @@ func init() {
 	reflector.Register(&SumResponse{}, "json")
 }
 
+type IStub interface {
+	EchoGET(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error)
+
+	EchoPOST(
+		ctx context.Context,
+		req *EchoRequest,
+		opt ...stub.RESTOption,
+	) (*EchoResponse, error)
+
+	Sum1(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+
+	Sum2(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+
+	SumRedirect(
+		ctx context.Context,
+		req *SumRequest,
+		opt ...stub.RESTOption,
+	) (*SumResponse, error)
+
+	Upload(
+		ctx context.Context,
+		req kit.MultipartFormMessage,
+		opt ...stub.RESTOption,
+	) (kit.RawMessage, error)
+}
+
 // EchoRequest is a data transfer object
 type EchoRequest struct {
 	RandomID         int64   `json:"randomID"`
 	Ok               bool    `json:"ok"`
-	OptionalStrField *string `json:"optionalField"`
+	OptionalStrField *string `json:"optionalField" swag:"enum:a,b,c"`
 	OptionalIntField *int64  `json:"optionalIntField"`
 }
+
+type EchoRequest_OptionalStrFieldENUM = string
+
+const (
+	EchoRequest_OptionalStrField_A = "a"
+	EchoRequest_OptionalStrField_B = "b"
+	EchoRequest_OptionalStrField_C = "c"
+)
 
 // EchoResponse is a data transfer object
 type EchoResponse struct {
@@ -81,39 +127,9 @@ type SumResponse struct {
 	Val int64 `json:"val"`
 }
 
-type IStub interface {
-	EchoGET(
-		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-	) (*EchoResponse, error)
-
-	EchoPOST(
-		ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
-	) (*EchoResponse, error)
-
-	Sum1(
-		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, error)
-
-	Sum2(
-		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, error)
-
-	SumRedirect(
-		ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
-	) (*SumResponse, error)
-
-	Upload(
-		ctx context.Context, req kit.MultipartFormMessage, opt ...stub.RESTOption,
-	) (kit.RawMessage, error)
-}
-
 // Stub represents the client/stub for .
 // Implements IStub
 type Stub struct {
-	hostPort  string
-	secure    bool
-	verifyTLS bool
-
 	s *stub.Stub
 }
 
@@ -125,8 +141,15 @@ func NewStub(hostPort string, opts ...stub.Option) *Stub {
 	return s
 }
 
+// Client returns the underlying stub.Stub used by generated REST methods.
+// It is not part of IStub so existing mock implementations stay valid.
+func (s Stub) Client() *stub.Stub {
+	return s.s
+}
+
 var _ IStub = (*Stub)(nil)
 
+// EchoGET GET /echo/{randomID}
 func (s Stub) EchoGET(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
 ) (*EchoResponse, error) {
@@ -169,6 +192,7 @@ func (s Stub) EchoGET(
 	return res, nil
 }
 
+// EchoPOST POST /echo-post
 func (s Stub) EchoPOST(
 	ctx context.Context, req *EchoRequest, opt ...stub.RESTOption,
 ) (*EchoResponse, error) {
@@ -211,6 +235,7 @@ func (s Stub) EchoPOST(
 	return res, nil
 }
 
+// Sum1 GET /sum/{val1}/{val2}
 func (s Stub) Sum1(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, error) {
@@ -253,6 +278,7 @@ func (s Stub) Sum1(
 	return res, nil
 }
 
+// Sum2 POST /sum
 func (s Stub) Sum2(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, error) {
@@ -295,6 +321,7 @@ func (s Stub) Sum2(
 	return res, nil
 }
 
+// SumRedirect GET /sum-redirect/{val1}/{val2}
 func (s Stub) SumRedirect(
 	ctx context.Context, req *SumRequest, opt ...stub.RESTOption,
 ) (*SumResponse, error) {
@@ -337,6 +364,7 @@ func (s Stub) SumRedirect(
 	return res, nil
 }
 
+// Upload POST /upload
 func (s Stub) Upload(
 	ctx context.Context, req kit.MultipartFormMessage, opt ...stub.RESTOption,
 ) (kit.RawMessage, error) {
@@ -390,7 +418,7 @@ func MockEchoGET(
 	) (*EchoResponse, error),
 ) MockOption {
 	return func(sm *StubMock) {
-		sm.echoget = f
+		sm.echoGET = f
 	}
 }
 
@@ -402,7 +430,7 @@ func MockEchoPOST(
 	) (*EchoResponse, error),
 ) MockOption {
 	return func(sm *StubMock) {
-		sm.echopost = f
+		sm.echoPOST = f
 	}
 }
 
@@ -438,7 +466,7 @@ func MockSumRedirect(
 	) (*SumResponse, error),
 ) MockOption {
 	return func(sm *StubMock) {
-		sm.sumredirect = f
+		sm.sumRedirect = f
 	}
 }
 
@@ -457,27 +485,31 @@ func MockUpload(
 // StubMock represents the mocked for client/stub for .
 // Implements IStub
 type StubMock struct {
-	echoget func(
+	echoGET func(
 		ctx context.Context,
 		req *EchoRequest,
 		opt ...stub.RESTOption,
 	) (*EchoResponse, error)
-	echopost func(
+
+	echoPOST func(
 		ctx context.Context,
 		req *EchoRequest,
 		opt ...stub.RESTOption,
 	) (*EchoResponse, error)
+
 	sum1 func(
 		ctx context.Context,
 		req *SumRequest,
 		opt ...stub.RESTOption,
 	) (*SumResponse, error)
+
 	sum2 func(
 		ctx context.Context,
 		req *SumRequest,
 		opt ...stub.RESTOption,
 	) (*SumResponse, error)
-	sumredirect func(
+
+	sumRedirect func(
 		ctx context.Context,
 		req *SumRequest,
 		opt ...stub.RESTOption,
@@ -506,11 +538,11 @@ func (s *StubMock) EchoGET(
 	req *EchoRequest,
 	opt ...stub.RESTOption,
 ) (*EchoResponse, error) {
-	if s.echoget == nil {
+	if s.echoGET == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
 
-	return s.echoget(ctx, req, opt...)
+	return s.echoGET(ctx, req, opt...)
 }
 
 func (s *StubMock) SetEchoGET(
@@ -520,7 +552,7 @@ func (s *StubMock) SetEchoGET(
 		opt ...stub.RESTOption,
 	) (*EchoResponse, error),
 ) *StubMock {
-	s.echoget = f
+	s.echoGET = f
 
 	return s
 }
@@ -530,11 +562,11 @@ func (s *StubMock) EchoPOST(
 	req *EchoRequest,
 	opt ...stub.RESTOption,
 ) (*EchoResponse, error) {
-	if s.echopost == nil {
+	if s.echoPOST == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
 
-	return s.echopost(ctx, req, opt...)
+	return s.echoPOST(ctx, req, opt...)
 }
 
 func (s *StubMock) SetEchoPOST(
@@ -544,7 +576,7 @@ func (s *StubMock) SetEchoPOST(
 		opt ...stub.RESTOption,
 	) (*EchoResponse, error),
 ) *StubMock {
-	s.echopost = f
+	s.echoPOST = f
 
 	return s
 }
@@ -602,11 +634,11 @@ func (s *StubMock) SumRedirect(
 	req *SumRequest,
 	opt ...stub.RESTOption,
 ) (*SumResponse, error) {
-	if s.sumredirect == nil {
+	if s.sumRedirect == nil {
 		return nil, stub.WrapError(fmt.Errorf("method not mocked"))
 	}
 
-	return s.sumredirect(ctx, req, opt...)
+	return s.sumRedirect(ctx, req, opt...)
 }
 
 func (s *StubMock) SetSumRedirect(
@@ -616,7 +648,7 @@ func (s *StubMock) SetSumRedirect(
 		opt ...stub.RESTOption,
 	) (*SumResponse, error),
 ) *StubMock {
-	s.sumredirect = f
+	s.sumRedirect = f
 
 	return s
 }
