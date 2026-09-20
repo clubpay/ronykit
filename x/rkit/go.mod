@@ -1,6 +1,6 @@
 module github.com/clubpay/ronykit/x/rkit
 
-go 1.25.1
+go 1.26.0
 
 require (
 	github.com/goccy/go-reflect v1.2.0

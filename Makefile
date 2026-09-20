@@ -47,6 +47,9 @@ test:
 		done
 
 # Workspace version bump helpers (uses scripts/bump-workspace.sh)
+# kit depends on x/rkit and x/p; the script tags those foundation modules
+# first, tidies kit against the new tags (GOPRIVATE, so sum.golang.org lag
+# does not fail the bump), then tags remaining dependents.
 # Usage:
 #   make bump-workspace PART=minor              # apply changes to all modules
 #   make bump-workspace-dry PART=patch          # dry-run only
