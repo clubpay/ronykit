@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/x/apidoc
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.26.19
-	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.19
-	github.com/clubpay/ronykit/x/rkit v0.5.19
+	github.com/clubpay/ronykit/kit v0.26.20
+	github.com/clubpay/ronykit/std/gateways/fasthttp v0.26.20
+	github.com/clubpay/ronykit/x/rkit v0.5.20
 	github.com/go-openapi/spec v1.0.1
 	github.com/rbretecher/go-postman-collection v0.9.0
 	github.com/stretchr/testify v1.12.1
