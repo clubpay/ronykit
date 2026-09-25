@@ -5,7 +5,8 @@ description: >-
   budgets, health checks, and observability. Use when hardening RonyKit services
   for production, reviewing outbound calls, capacity planning, or preventing
   cascading failures. Pair with MCP characteristics/telemetry and package
-  x/ratelimit where applicable.
+  x/ratelimit where applicable. For making retried writes safe (idempotency,
+  isolation, constraints), see ddia-systems.
 license: MIT
 metadata:
   author: wondelai
@@ -32,8 +33,9 @@ resources:
 
 | Concern | Reach for |
 | ------- | --------- |
+| Timeouts | `context.WithTimeout` per outbound call; propagate the handler's `ctx` through `app` and repo |
 | Rate limiting | `x/ratelimit` |
-| Structured logging / traces | `x/telemetry/logkit`, `x/telemetry/tracekit` |
+| Structured logging / traces / metrics | `x/telemetry/logkit`, `x/telemetry/tracekit`, `x/telemetry/meterkit` |
 | Durable workflows (retries, sagas) | `flow` module — never import Temporal SDK directly |
 | Settings / feature flags | `x/settings` |
 | Batch / backpressure | `x/batch` |
@@ -74,7 +76,7 @@ Six areas that determine whether software survives contact with production:
 |---------|-------|---------|
 | HTTP calls | Assume every remote call can fail, hang, or return garbage | Wrap all external calls with timeout + circuit breaker |
 | Database queries | Enforce result set limits | Add `LIMIT`; paginate all list endpoints |
-| Thread pools | Isolate pools per dependency | Separate pool for payment gateway vs. search |
+| Concurrency limits | Isolate capacity per dependency | In Go, a buffered-channel semaphore (or bounded worker pool) per downstream — payment gateway vs. search — so one slow dependency can't absorb every goroutine and DB connection |
 | Marketing events | Coordinate launches with capacity planning | Pre-scale before Black Friday; queue coupon redemptions |
 
 See [references/anti-patterns.md](references/anti-patterns.md) when triaging an outage or hardening an integration point — each anti-pattern with its failure scenario and the symptom that detects it.
@@ -100,7 +102,7 @@ See [references/anti-patterns.md](references/anti-patterns.md) when triaging an 
 | Service calls | Circuit Breaker | Open after 5 failures in 60s; half-open after 30s |
 | Resource isolation | Bulkhead | Dedicated connection pools for critical vs. non-critical |
 | Network calls | Timeout with propagation | Connect 1s, read 5s; propagate deadline downstream |
-| Retries | Backoff + jitter + budget | Base 100ms, max 3 retries, 20% fleet retry budget |
+| Retries | Backoff + jitter + budget | Base 100ms, max 3 retries, 20% fleet retry budget; retry only idempotent calls, stop when `ctx` is done; inside `flow` workflows use the activity retry policy instead of hand-rolled loops |
 | Data cleanup | Steady State | Purge sessions >24h; rotate logs at 500MB |
 
 See [references/stability-patterns.md](references/stability-patterns.md) when implementing a breaker or tuning thresholds — state-machine diagram, parameter ranges, what-counts-as-failure tables, and how to combine patterns.

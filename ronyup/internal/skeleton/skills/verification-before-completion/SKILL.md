@@ -37,6 +37,9 @@ cannot say it passes, builds, or is fixed.
 | Regression test works | Red→green verified (fails without the fix) | test passes once |
 | Requirements met | Line-by-line check against the spec | "tests pass, so we're done" |
 | Delegated work done | Diff/output inspected directly | the agent reported success |
+| RonyKit backend done | `make verify` passes (repo integration + app unit tests), then `make lint` | `go build` succeeds |
+| RonyKit frontend done | `bash frontend/verify.sh` passes | `pnpm build` alone |
+| Contract/SQL change done | `make gen-stub` / `make sqlc` re-run and the diff committed | generated code edited by hand |
 
 ## Red flags — stop and verify
 

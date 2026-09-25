@@ -132,8 +132,13 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 
 | Skill ID               | Category | Default        | Description                                                   |
 |------------------------|----------|----------------|---------------------------------------------------------------|
-| `go-modern`            | Go       | all kinds      | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
-| `go-testing`           | Go       | all kinds      | Table-driven tests, mandatory x/testkit repo integration + app unit tests |
+| `go-modern`            | Go       | backend, fullstack | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
+| `go-testing`           | Go       | backend, fullstack | Table-driven testify tests, mandatory x/testkit repo integration + app unit tests |
+| `go-design`            | Go       | backend, fullstack | Dependency direction, consumer-defined interfaces, composition over inheritance, safe refactoring, changing untested code |
+| `release-it`           | Architecture | all kinds  | Timeouts, circuit breakers, bulkheads, health checks, observability |
+| `domain-driven-design` | Architecture | all kinds  | Bounded contexts, aggregates, value objects mapped to feature modules |
+| `software-design-philosophy` | Architecture | all kinds | Deep modules, information hiding, no pass-through layers |
+| `ddia-systems`         | Architecture | opt-in     | Storage, indexes, partitioning, isolation, idempotency        |
 | `writing-tests`        | Quality  | all kinds      | Language-agnostic TDD discipline and the test pyramid         |
 | `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
 | `systematic-debugging` | Quality  | all kinds      | Find root cause before fixing; reproduce, verify, prevent     |
@@ -141,12 +146,19 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `verification-before-completion` | Quality | all kinds | Require fresh evidence before claiming work is done       |
 | `writing-plans`        | Workflow | all kinds      | Plan multi-step work into small, testable tasks first         |
 | `conventional-commits` | Workflow | all kinds      | Atomic commits with the Conventional Commits format           |
-| `nextjs-modern`        | Frontend | fullstack only | Next.js 16 App Router, Server Components, Server Actions       |
-| `frontend-testing`     | Frontend | fullstack only | Vitest + Testing Library and Playwright e2e best practices     |
-| `storybook`            | Frontend | fullstack only | Ensure every UI component ships with a Storybook story         |
-| `shadcn`               | Frontend | fullstack only | Find, install, compose, and theme shadcn/ui components correctly|
-| `frontend-design`      | Frontend | fullstack only | Required before UI bootstrap: design questions, token plan, aesthetics |
-| `design-tokens`        | Frontend | fullstack only | Token architecture (primitive→semantic→component), Tailwind/shadcn |
+| `technical-documentation` | Workflow | all kinds   | Google developer-docs style for READMEs, SRS/SDD prose, doc comments |
+| `nextjs-modern`        | Frontend | fullstack, frontend | Next.js 16 App Router, Server Components, Server Actions  |
+| `frontend-testing`     | Frontend | fullstack, frontend | Vitest + Testing Library and Playwright e2e best practices |
+| `storybook`            | Frontend | fullstack, frontend | Ensure every UI component ships with a Storybook story    |
+| `shadcn`               | Frontend | fullstack, frontend | Find, install, compose, and theme shadcn/ui components    |
+| `dashboard-ui`         | Frontend | fullstack, frontend | Dashboards/back-office: KPI strip, F-pattern, color discipline |
+| `frontend-design`      | Frontend | fullstack, frontend | Required before UI bootstrap: design questions, token plan, aesthetics |
+| `ux-quality`           | Frontend | fullstack, frontend | Keyboard/focus, interaction states, forms, navigation, motion |
+| `typography`           | Frontend | fullstack, frontend | Curly quotes, dashes, line length, hierarchy, the JSX entity trap |
+| `design-tokens`        | Frontend | fullstack, frontend | Token architecture (primitive→semantic→component), Tailwind/shadcn |
+| `react-performance`    | Frontend | fullstack, frontend | 70 React/Next.js perf rules: waterfalls, bundles, re-renders |
+| `composition-patterns` | Frontend | fullstack, frontend | Compound components, lifted state, explicit variants      |
+| `webmcp`               | Frontend | fullstack, frontend | Expose frontend features as agent-callable WebMCP tools   |
 
 The installed skills are listed in the workspace's `AGENTS.md` with a **skill routing** table (task → which `SKILL.md` files to read).
 

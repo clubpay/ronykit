@@ -30,22 +30,30 @@ formatter owns. Always finish a change with formatters and linters clean.
 
 ## Go
 
+The scaffolded `backend/.golangci.yml` (golangci-lint v2) owns both linting
+(`depguard`) and formatting (`gofmt`, `gofumpt`, `goimports`, `gci`). Run it
+rather than the individual tools, so import grouping matches the config:
+
 ```bash
-gofmt -w .            # or: go fmt ./...
-goimports -w .        # group/order imports
-go vet ./...
-golangci-lint run     # repo lint config (depguard, etc.)
+make lint             # every module: golangci-lint run --fix ./...
+make vet              # every module: go vet ./...
+cd feature/<name> && golangci-lint fmt ./...   # format one module only
 ```
 
-In this workspace, `make lint` runs the configured linters; treat its failures
-as blocking. Forbidden-import errors mean "use the RonyKIT equivalent".
+Treat `make lint` failures as blocking. A `depguard` error means "use the
+RonyKIT equivalent" (see `knowledge://ronyup/architecture/package-selection`),
+not "add a `//nolint`". Generated code (sqlc `data/db`, stubs) is regenerated
+with `make sqlc` / `make gen-stub`, never hand-formatted.
 
 ## TypeScript / JavaScript (frontend)
+
+Use the scripts the app's `package.json` defines (names vary; check first):
 
 ```bash
 pnpm format           # Prettier (or biome) write
 pnpm lint --fix       # ESLint / Biome autofix
 pnpm typecheck        # tsc --noEmit
+bash frontend/verify.sh   # the full gate: typecheck, lint, build, test, stories
 ```
 
 Prefer the formatter the repo already configures (Prettier or Biome) — do not
@@ -53,9 +61,11 @@ introduce a second one.
 
 ## Markdown
 
-```bash
-make format-md        # repo Markdown formatter (preserves YAML frontmatter)
-```
+Use the repo's Markdown formatter if one is configured (a `make format-md`
+target, Prettier, or `markdownlint`); otherwise leave Markdown formatting as
+is. Never let a formatter rewrite the YAML frontmatter of design documents or
+`SKILL.md` files — the `scaffold_feature` design gate and skill discovery parse
+it.
 
 ## Checklist before "done"
 

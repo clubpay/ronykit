@@ -211,6 +211,8 @@ Database schema changes are the most dangerous part of deployment because they a
 
 Never make a breaking schema change in a single step. Instead, expand (add), migrate data, then contract (remove).
 
+**RonyKit note:** each schema step is its own numbered migration pair in `internal/repo/v0/data/db/migrations` (`002_add_full_name.up.sql` / `.down.sql`), embedded and applied by `x/datasource` at startup. The new version migrates while old instances are still serving, so every migration must work with the previous release's code. Run large backfills as a batched job, not inside a startup migration.
+
 ### Example: Renaming a Column
 
 **Wrong (causes downtime):**
@@ -223,7 +225,7 @@ ALTER TABLE users RENAME COLUMN name TO full_name;
 
 | Step | Migration | Application Code |
 |------|-----------|-----------------|
-| 1. Expand | `ALTER TABLE users ADD COLUMN full_name VARCHAR(255);` | Writes to both `name` and `full_name` |
+| 1. Expand | `ALTER TABLE users ADD COLUMN full_name TEXT;` | Writes to both `name` and `full_name` |
 | 2. Backfill | `UPDATE users SET full_name = name WHERE full_name IS NULL;` | Reads from `full_name`, falls back to `name` |
 | 3. Switch | No schema change | Reads and writes only `full_name` |
 | 4. Contract | `ALTER TABLE users DROP COLUMN name;` | Only uses `full_name` |
@@ -234,18 +236,23 @@ Each step is a separate deployment. Each step is individually rollback-safe.
 
 **Wrong (locks table, breaks old code):**
 ```sql
-ALTER TABLE orders ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending';
+ALTER TABLE orders ADD COLUMN status TEXT;
+UPDATE orders SET status = 'pending';                 -- one giant UPDATE: long lock, table bloat
+ALTER TABLE orders ALTER COLUMN status SET NOT NULL;  -- full scan under ACCESS EXCLUSIVE lock
 -- On large tables, this locks the table for minutes/hours
 ```
+
+PostgreSQL 11+ adds a column with a *constant* default without rewriting the table (`ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'` is instant); a volatile default such as `clock_timestamp()` still rewrites every row. When the value must be computed per row, phase it:
 
 **Right (phased approach):**
 
 | Step | Action |
 |------|--------|
-| 1 | Add column as nullable: `ALTER TABLE orders ADD COLUMN status VARCHAR(20);` |
+| 1 | Add column as nullable: `ALTER TABLE orders ADD COLUMN status TEXT;` |
 | 2 | Deploy code that writes `status` on all new rows |
-| 3 | Backfill existing rows: `UPDATE orders SET status = 'pending' WHERE status IS NULL;` (in batches) |
-| 4 | Add NOT NULL constraint: `ALTER TABLE orders ALTER COLUMN status SET NOT NULL;` |
+| 3 | Backfill existing rows: `UPDATE orders SET status = 'pending' WHERE id IN (SELECT id FROM orders WHERE status IS NULL LIMIT 10000);` (repeat until 0 rows) |
+| 4 | Add the constraint without a long lock: `ALTER TABLE orders ADD CONSTRAINT orders_status_not_null CHECK (status IS NOT NULL) NOT VALID;` then `ALTER TABLE orders VALIDATE CONSTRAINT orders_status_not_null;` |
+| 5 | `ALTER TABLE orders ALTER COLUMN status SET NOT NULL;` (PostgreSQL 12+ uses the validated check and skips the scan), then drop the check constraint |
 
 ### Migration Safety Checklist
 
@@ -254,7 +261,7 @@ ALTER TABLE orders ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending';
 - [ ] Are large data migrations batched (not one giant UPDATE)?
 - [ ] Is the migration tested against production-volume data?
 - [ ] Is the migration reversible?
-- [ ] Are table locks avoided (no ALTER TABLE on large tables without online DDL)?
+- [ ] Are table locks avoided (no rewriting ALTER TABLE on large tables; in PostgreSQL use `NOT VALID` + `VALIDATE CONSTRAINT` and `CREATE INDEX CONCURRENTLY`)?
 
 ---
 

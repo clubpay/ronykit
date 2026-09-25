@@ -20,6 +20,12 @@ someone with no context implement the work correctly, one small task at a time.
 Save plans to `docs/plans/YYYY-MM-DD-<feature-name>.md` (or the repo's
 convention) so they're reviewable and durable.
 
+In a RonyKit workspace, a backend plan is derived from the **approved SDD**
+(`docs/design/<feature>-sdd.md`): the SDD decides design, the plan only
+sequences the work. If planning uncovers a design change, update the SDD first.
+Order tasks along the layers — domain types → repo port + sqlc + integration
+tests → app + unit tests → handlers/contract → `make gen-stub` → `make verify`.
+
 ## 1. Map the files first
 
 Before listing tasks, decide which files are created or modified and the single

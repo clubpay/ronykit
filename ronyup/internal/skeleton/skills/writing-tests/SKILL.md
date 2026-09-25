@@ -3,7 +3,10 @@ name: writing-tests
 description: >-
   Language-agnostic discipline for writing valuable tests and practicing TDD.
   Use when deciding what to test, structuring a test suite, doing red-green-
-  refactor, or judging whether coverage is meaningful rather than vanity.
+  refactor, or judging whether coverage is meaningful rather than vanity. For
+  Go specifics and the mandatory repo/app tests, see go-testing; for
+  Vitest/Playwright, see frontend-testing; for Go code with no tests yet, see
+  go-design.
 ---
 
 # Writing Tests
@@ -14,7 +17,8 @@ breaks, and tells you exactly what broke.
 ## When to use
 
 - Before/while writing new behavior (TDD), or backfilling tests for legacy code
-  (read `working-with-legacy-code` when there is no safety net yet).
+  (pin current behavior with characterization tests first; for Go, see
+  `go-design`).
 - Deciding what deserves a test and at which level.
 - A bug was found — write the failing test first, then fix it.
 
@@ -51,6 +55,11 @@ is not tested.
 
 ## Anti-patterns
 
+- **Tautological tests** — they restate the implementation instead of pinning
+  behavior: asserting a mock returns what you configured, re-deriving the
+  expected value with the same expression the code uses, `expect(X).toBe(X)`,
+  or approving a snapshot nobody read. Use hand-computed expected values;
+  delete tautological tests rather than fixing them.
 - Asserting implementation details that change during refactors.
 - Tests that pass when the feature is broken (no real assertion).
 - Mocking the thing under test, or mocking value objects.

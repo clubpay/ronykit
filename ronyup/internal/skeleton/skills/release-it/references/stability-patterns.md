@@ -85,39 +85,76 @@ Not every error should trip the circuit breaker. Configure what counts:
 - **Coordination:** In a fleet of instances, each has its own circuit breaker state. Consider whether this is acceptable or if you need coordinated state (usually independent is fine).
 - **Half-open thundering herd:** When the recovery timeout expires, only let one or two trial requests through -- not the full backlog.
 
-### Code Pattern (Pseudocode)
+### Code Pattern (Go)
 
-```
-class CircuitBreaker:
-    state = CLOSED
-    failure_count = 0
-    last_failure_time = null
+RonyKit ships no circuit breaker, so keep a small one per dependency inside the app-side wrapper around its generated stub:
 
-    function call(operation):
-        if state == OPEN:
-            if now() - last_failure_time > recovery_timeout:
-                state = HALF_OPEN
-            else:
-                raise CircuitOpenException()
+```go
+type breakerState int
 
-        try:
-            result = operation()
-            on_success()
-            return result
-        catch Exception:
-            on_failure()
-            raise
+const (
+	stateClosed breakerState = iota
+	stateOpen
+	stateHalfOpen
+)
 
-    function on_success():
-        if state == HALF_OPEN:
-            state = CLOSED
-        failure_count = 0
+var ErrCircuitOpen = errs.B().Code(errs.Unavailable).Msg("CIRCUIT_OPEN").Err()
 
-    function on_failure():
-        failure_count += 1
-        last_failure_time = now()
-        if failure_count >= threshold:
-            state = OPEN
+// Breaker short-circuits calls to one dependency. It is safe for concurrent use.
+type Breaker struct {
+	mu        sync.Mutex
+	state     breakerState
+	failures  int
+	openedAt  time.Time
+	threshold int
+	cooldown  time.Duration
+	now       func() time.Time
+}
+
+func (b *Breaker) Call(ctx context.Context, op func(context.Context) error) error {
+	if !b.allow() {
+		return ErrCircuitOpen
+	}
+	err := op(ctx)
+	b.record(err)
+	return err
+}
+
+func (b *Breaker) allow() bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	switch b.state {
+	case stateOpen:
+		if b.now().Sub(b.openedAt) < b.cooldown {
+			return false
+		}
+		b.state = stateHalfOpen // this caller is the single trial request
+
+		return true
+	case stateHalfOpen:
+		return false // a trial is already in flight
+	default:
+		return true
+	}
+}
+
+func (b *Breaker) record(err error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	switch {
+	case err == nil:
+		b.state, b.failures = stateClosed, 0
+	case !shouldTrip(err): // 4xx, validation, cancellation: see table above
+		if b.state == stateHalfOpen {
+			b.state = stateOpen // inconclusive trial; the next caller probes again
+		}
+	default:
+		b.failures++
+		if b.state == stateHalfOpen || b.failures >= b.threshold {
+			b.state, b.openedAt = stateOpen, b.now()
+		}
+	}
+}
 ```
 
 ---
@@ -161,6 +198,27 @@ The key question: how many resources does each partition get?
 
 **Approach:** Measure the actual concurrency for each dependency under peak load. Set the bulkhead size to p99 concurrency + 20% headroom. Set a queue/reject policy for requests beyond the limit.
 
+**Go note:** goroutines are cheap, so "thread pool isolation" becomes a per-dependency semaphore that caps in-flight calls:
+
+```go
+var ErrBulkheadFull = errs.B().Code(errs.ResourceExhausted).Msg("BULKHEAD_FULL").Err()
+
+// Bulkhead caps concurrent calls to one dependency; calls beyond the cap fail fast.
+type Bulkhead struct{ slots chan struct{} }
+
+func NewBulkhead(size int) Bulkhead { return Bulkhead{slots: make(chan struct{}, size)} }
+
+func (b Bulkhead) Do(ctx context.Context, op func(context.Context) error) error {
+	select {
+	case b.slots <- struct{}{}:
+		defer func() { <-b.slots }()
+		return op(ctx)
+	default:
+		return ErrBulkheadFull
+	}
+}
+```
+
 ---
 
 ## 3. Timeouts
@@ -189,6 +247,17 @@ User request: 10s deadline
 ```
 
 **Implementation:** Pass the remaining deadline in a request header (e.g., `X-Request-Deadline` or gRPC deadline propagation). Each service subtracts its own processing time and passes the remainder downstream.
+
+**Go note:** within a process the deadline travels in `ctx`. `context.WithTimeout` never extends the parent's deadline (the earlier one wins), so derive every outbound call from the request context:
+
+```go
+func (g *paymentGateway) Charge(ctx context.Context, in ChargeInput) (ChargeResult, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	return g.client.Charge(ctx, in)
+}
+```
 
 ### Common Timeout Mistakes
 
@@ -249,6 +318,30 @@ When a downstream service recovers, all clients retry simultaneously, overwhelmi
 - **No jitter:** All 1,000 clients retry at exactly t+100ms, t+200ms, t+400ms
 - **Full jitter:** Each client retries at random(0, 100ms), random(0, 200ms), random(0, 400ms) -- spreading the load evenly
 
+```go
+// retryIdempotent retries op with exponential backoff and full jitter. Only pass
+// operations that are idempotent (reads, or writes carrying an idempotency key).
+func retryIdempotent(ctx context.Context, attempts int, base time.Duration, op func(context.Context) error) error {
+	var err error
+	for attempt := range attempts {
+		if err = op(ctx); err == nil || !isRetryable(err) {
+			return err
+		}
+		if attempt == attempts-1 {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(rand.N(base << attempt)):
+		}
+	}
+	return err
+}
+```
+
+Inside `flow` workflows, don't hand-roll this: set `RetryPolicy` in `flow.ExecuteActivityOptions`; business `rony/errs` codes (InvalidArgument, NotFound, AlreadyExists, FailedPrecondition, ...) are already non-retryable.
+
 ---
 
 ## 5. Steady State
@@ -289,7 +382,7 @@ If a system knows it cannot process a request successfully, it should reject the
 | Circuit breaker is open | Return 503 immediately |
 | Required parameter missing | Return 400 immediately |
 | User not authenticated | Return 401 immediately |
-| Resource limit exceeded (rate limit) | Return 429 immediately |
+| Resource limit exceeded (rate limit; RonyKit: `x/ratelimit`) | Return 429 immediately |
 | Request deadline already expired | Return 504 immediately |
 | Required downstream service unavailable | Return 503 with degraded response |
 
@@ -345,7 +438,7 @@ GET /ready
 503 Unavailable → Server is overloaded; do not send requests
 
 Readiness considers:
-- Thread pool utilization < 80%
+- Worker/bulkhead utilization < 80%
 - Connection pool utilization < 80%
 - Response latency < SLO threshold
 - No critical dependency failures

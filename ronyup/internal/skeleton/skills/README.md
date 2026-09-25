@@ -61,9 +61,29 @@ Otherwise, keep it one file.
 - Cross-reference sibling skills by name instead of duplicating their content.
 - Vendored material: keep upstream license/attribution (e.g. a metadata file and
   an `## Attribution` section), and prefer the granular source files over a
-  single giant concatenated document. Architecture skills (`clean-architecture`,
-  `refactoring-patterns`, `release-it`, `working-with-legacy-code`) are adapted
-  from [`wondelai/skills`](https://github.com/wondelai/skills) (MIT).
+  single giant concatenated document. Architecture and craft skills
+  (`release-it`, `domain-driven-design`, `software-design-philosophy`,
+  `ddia-systems`, `technical-documentation`) are adapted from
+  [`wondelai/skills`](https://github.com/wondelai/skills) (MIT).
+- Only vendor a skill whose core ideas are language-neutral. Class-bound
+  material (inheritance refactorings, SOLID-per-class, Java seams) does not
+  translate to Go; distill what survives into a Go-native skill instead of
+  converting it line by line. That is why `go-design` replaces the upstream
+  `clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code`.
+  They intentionally diverge from upstream: the book concepts stay, but every
+  code example (in `SKILL.md` and `references/`) is idiomatic Go shaped like a
+  RonyKit feature module (`internal/domain`, `internal/app`, `repo/port.go`,
+  `rony/errs`, `fx`) or TypeScript for Next.js/React, and advice that
+  contradicts RonyKit conventions has been rewritten. Do not re-sync by
+  copying upstream files over ours. To pick up upstream changes, diff the new
+  upstream against the previous upstream version, then port only the conceptual
+  changes, keeping the Go/TS examples. Check Go snippets parse and are
+  gofmt-clean before committing.
+- Descriptions route to siblings ("For X, see Y") so overlapping skills
+  (`writing-tests`/`go-testing`, `code-review`/`go-design`) don't
+  compete for the same trigger.
+- Only name sibling skills that are bundled here; an unbundled name is a dead
+  pointer for the agent.
 - Wrap prose at ~80 columns to match the other skills.
 
 ## Registering a skill

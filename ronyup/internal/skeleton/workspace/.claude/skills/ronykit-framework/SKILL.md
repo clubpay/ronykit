@@ -32,11 +32,13 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 
 | Task | Read (in order) |
 |------|-----------------|
-| New backend feature | this skill → MCP `design-new-service` → `clean-architecture` |
-| Repo / persistence | `go-testing` → MCP `architecture/integration-tests` |
-| Layer / boundary review | `clean-architecture`, `code-review` |
-| Refactoring (tests exist) | `refactoring-patterns`, `verification-before-completion` |
-| Untested / legacy code | `working-with-legacy-code` → `go-testing` → `refactoring-patterns` |
+| New backend feature | this skill → MCP `design-new-service` → `domain-driven-design`, `go-design` |
+| SRS / SDD / README prose | `technical-documentation` → MCP `architecture/design-documents` |
+| Repo / persistence | `go-testing` → MCP `architecture/integration-tests` (+ `ddia-systems` if installed, for schema, indexes, partitioning, races) |
+| Layer / boundary review | `go-design`, `software-design-philosophy`, `code-review` |
+| Refactoring (tests exist) | `go-design`, `verification-before-completion` |
+| Untested / legacy code | `go-design` (characterize first) → `go-testing` |
+| Bug / failing test | `systematic-debugging` → `verification-before-completion` |
 | Production hardening | `release-it` → MCP `characteristics/telemetry` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` → MCP `design-frontend` |
 | Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |

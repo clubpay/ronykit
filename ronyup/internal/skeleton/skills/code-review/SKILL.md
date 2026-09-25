@@ -3,7 +3,9 @@ name: code-review
 description: >-
   Review code (your own or others') for correctness, design, and risk before it
   merges. Use when reviewing a diff or pull request, doing a self-review before
-  opening a PR, or giving structured, prioritized feedback.
+  opening a PR, or giving structured, prioritized feedback. For layer
+  violations, smell fixes, and untested changes in Go, see go-design; for
+  shallow or leaky abstractions, see software-design-philosophy.
 ---
 
 # Code Review
@@ -25,8 +27,8 @@ Prioritize feedback so the important things aren't lost in nits.
    code/logs, unsafe defaults.
 3. **Design fit** — right layer/abstraction; follows existing architecture and
    package-selection rules; no leaking concerns across boundaries. For RonyKit
-   features, read `clean-architecture` — handlers thin, logic in `internal/app`,
-   persistence behind `internal/repo/port.go`.
+   features, read `go-design` — handlers thin, logic in `internal/app`,
+   persistence behind `internal/repo/port.go`, imports pointing inward.
 4. **Tests** — meaningful tests for new behavior and fixed bugs; deterministic;
    assert behavior not internals.
 5. **Readability** — clear names, small functions, comments only where intent is
@@ -43,6 +45,8 @@ no user value. Quick lenses:
   author" means it's not pulling its weight.
 - **Abstraction needs ≥3 uses** — one implementation behind an interface is
   indirection, not abstraction. Don't add a layer for a hypothetical second case.
+  (Architectural boundaries such as `internal/repo/port.go` are the exception:
+  they exist to keep the app testable and storage-independent.)
 - **Scale is actual, not imagined** — generality/caching/sharding for traffic
   you don't have is speculation; prefer the simplest thing that fits today.
 - **Dependencies earn their keep** — a new library must save more than its
@@ -53,7 +57,8 @@ no user value. Quick lenses:
 Calibrate: a junior over-abstracting is learning; flag the pattern, propose the
 simpler alternative, and keep the person's dignity. Distinguish this from
 genuine, requirement-driven complexity — the point is fit, not minimalism for
-its own sake.
+its own sake. For the deeper vocabulary (shallow modules, information leakage,
+pass-through methods), read `software-design-philosophy`.
 
 ## How to give feedback
 
@@ -71,6 +76,22 @@ its own sake.
 - Confirm tests, formatter, and linter pass locally.
 - Write a description that states the why, the approach, and how to verify.
 
+## RonyKit feature checklist
+
+For a full architecture pass, run the MCP prompt `review-architecture`. At
+minimum, check these in any diff touching `feature/<name>/`:
+
+| Check | How to verify | If it fails |
+| ----- | ------------- | ----------- |
+| Handlers thin; rules in `internal/app` / `internal/domain` | Read `api/api_*.go`: decode → one app call → encode | `blocking` — move the logic inward |
+| No forbidden imports | `rg -e go.temporal.io/sdk -e log/slog -e go.uber.org/zap -e google/uuid -g '!*_test.go'` | `blocking` — `make lint` (depguard) will fail |
+| Errors via `rony/errs` | No `errors.New` / `fmt.Errorf` in service code | `should` |
+| Every new port method has a repo integration test | `internal/repo/integration_test/` covers happy, not-found, conflict | `blocking` — `make verify` fails |
+| Every new exported `App` method has a unit test | `internal/app/*_test.go` | `blocking` — `make verify` fails |
+| Contract changed → stubs regenerated | Diff includes `stub/` changes after `make gen-stub` | `blocking` for consumers |
+| SQL changed → sqlc regenerated | `data/db` generated code updated with `.sql` | `blocking` |
+| Behavior matches the approved SDD | Compare with `docs/design/<feature>-sdd.md` | Update the SDD first, then the code |
+
 ## Red flags
 
 - Large diff with no tests, or tests that can't fail.
@@ -80,6 +101,6 @@ its own sake.
 - An abstraction/config layer with a single implementation, or generality built
   for scale the system doesn't have yet.
 
-For smell names and fixes (Long Method, Feature Envy, etc.), read
-`refactoring-patterns` → `references/smell-catalog.md`. For untested code being
-changed, require `working-with-legacy-code` first.
+For smells and their Go remedies (feature envy, primitive obsession, flag
+parameters, etc.), read `go-design`. For untested code being changed, require
+characterization tests first (`go-design`, section 6).

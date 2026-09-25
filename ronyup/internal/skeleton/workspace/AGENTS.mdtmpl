@@ -15,8 +15,12 @@ Specialized skills live under `.agents/skills/`. For each applicable row, **open
 
 | Task | Read these skills (in order) |
 |------|------------------------------|
-| New backend feature | `ronykit-framework` → MCP `design-new-service` |
-| Repo / persistence | `go-testing` + MCP `architecture/integration-tests` |
+| New backend feature | `ronykit-framework` → MCP `design-new-service` → `domain-driven-design`, `go-design` |
+| SRS / SDD / docs prose | `technical-documentation` + MCP `architecture/design-documents` |
+| Repo / persistence | `go-testing` + MCP `architecture/integration-tests` (+ `ddia-systems` if installed) |
+| Design / code review | `code-review`, `go-design`, `software-design-philosophy` |
+| Bug or failing test | `systematic-debugging`, then `verification-before-completion` |
+| Refactoring or untested / legacy code | `go-design` (characterize first) → `go-testing` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` + MCP `design-frontend` |
 | Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
 | Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |
