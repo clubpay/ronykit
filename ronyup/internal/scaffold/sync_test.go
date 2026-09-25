@@ -148,6 +148,83 @@ func TestResolveSyncSkillsInstalled(t *testing.T) {
 	}
 }
 
+func TestResolveSyncSkillsInstalled_ReplacesRetiredSkills(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	for _, id := range []string{"go-modern", "clean-architecture", "refactoring-patterns"} {
+		if err := os.MkdirAll(filepath.Join(root, ".agents", "skills", id), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	ids, err := resolveSyncSkills(root, []string{"installed"}, KindBackend)
+	if err != nil {
+		t.Fatalf("resolveSyncSkills: %v", err)
+	}
+
+	if len(ids) != 2 || ids[0] != "go-modern" || ids[1] != "go-design" {
+		t.Fatalf("installed skills: %v, want [go-modern go-design]", ids)
+	}
+}
+
+func TestPruneRetiredSkills(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	retired := []string{
+		filepath.Join(root, ".agents", "skills", "clean-architecture"),
+		filepath.Join(root, ".cursor", "skills", "working-with-legacy-code"),
+	}
+	kept := filepath.Join(root, ".agents", "skills", "go-modern")
+
+	for _, dir := range append(retired, kept) {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := pruneRetiredSkills(root, false, DiscardLogger{}); err != nil {
+		t.Fatalf("pruneRetiredSkills(report only): %v", err)
+	}
+
+	for _, dir := range retired {
+		if !isDir(dir) {
+			t.Fatalf("%s removed without overwrite", dir)
+		}
+	}
+
+	if err := pruneRetiredSkills(root, true, DiscardLogger{}); err != nil {
+		t.Fatalf("pruneRetiredSkills(remove): %v", err)
+	}
+
+	for _, dir := range retired {
+		if isDir(dir) {
+			t.Fatalf("%s still present after overwrite", dir)
+		}
+	}
+
+	if !isDir(kept) {
+		t.Fatal("catalog skill removed")
+	}
+}
+
+func TestRetiredSkillsHaveCatalogReplacements(t *testing.T) {
+	t.Parallel()
+
+	for id, replacements := range retiredSkills {
+		if SkillExists(id) {
+			t.Errorf("retired skill %q is still in the catalog", id)
+		}
+
+		for _, r := range replacements {
+			if !SkillExists(r) {
+				t.Errorf("retired skill %q maps to unknown skill %q", id, r)
+			}
+		}
+	}
+}
+
 func TestPathAllowed(t *testing.T) {
 	t.Parallel()
 

@@ -2,8 +2,10 @@ package scaffold
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -115,7 +117,15 @@ func SyncWorkspace(req SyncRequest, log Logger) error {
 	log.Printf("Sections: %s\n", strings.Join(sections, ", "))
 
 	for _, section := range sections {
-		if err := syncSection(section, layout, templateInput, skillIDs, skipExisting, callback); err != nil {
+		if err := syncSection(
+			section,
+			layout,
+			templateInput,
+			skillIDs,
+			skipExisting,
+			callback,
+			log,
+		); err != nil {
 			return fmt.Errorf("sync %s: %w", section, err)
 		}
 	}
@@ -218,6 +228,7 @@ func syncSection(
 	skillIDs []string,
 	skipExisting bool,
 	callback func(string, bool),
+	log Logger,
 ) error {
 	switch section {
 	case SyncSectionAgents:
@@ -249,7 +260,15 @@ func syncSection(
 	case SyncSectionDocs:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "docs/design/README.MD")
 	case SyncSectionSkills:
-		return syncSkills(layout, templateInput, skillIDs, skipExisting, callback)
+		if err := syncSkills(layout, templateInput, skillIDs, skipExisting, callback); err != nil {
+			return err
+		}
+
+		if len(skillIDs) == 0 {
+			return nil
+		}
+
+		return pruneRetiredSkills(layout.RepoRoot, !skipExisting, log)
 	case SyncSectionBackend:
 		return syncBackendBoilerplate(layout, templateInput, skipExisting, callback)
 	case SyncSectionFrontend:
@@ -467,13 +486,56 @@ func listInstalledSkillIDs(repoRoot string) []string {
 		}
 
 		for _, e := range entries {
-			if e.IsDir() && e.Name() != "ronykit-framework" {
-				seen[e.Name()] = true
+			if !e.IsDir() || e.Name() == "ronykit-framework" {
+				continue
 			}
+
+			if replacements, retired := retiredSkills[e.Name()]; retired {
+				for _, id := range replacements {
+					seen[id] = true
+				}
+
+				continue
+			}
+
+			seen[e.Name()] = true
 		}
 	}
 
 	return FilterCatalogOrder(seen)
+}
+
+// pruneRetiredSkills deletes installed skill directories whose IDs were retired
+// from the catalog. Deleting requires overwrite; otherwise it only reports them.
+func pruneRetiredSkills(repoRoot string, remove bool, log Logger) error {
+	for _, root := range skillInstallRoots(repoRoot) {
+		for _, id := range slices.Sorted(maps.Keys(retiredSkills)) {
+			dir := filepath.Join(root, id)
+			if !isDir(dir) {
+				continue
+			}
+
+			replacements := strings.Join(retiredSkills[id], ", ")
+
+			if !remove {
+				log.Printf(
+					"sync: %s is retired (replaced by %s); rerun with --overwrite to remove it\n",
+					dir,
+					replacements,
+				)
+
+				continue
+			}
+
+			if err := os.RemoveAll(dir); err != nil {
+				return fmt.Errorf("remove retired skill %q: %w", id, err)
+			}
+
+			log.Printf("sync: removed retired skill %s (replaced by %s)\n", dir, replacements)
+		}
+	}
+
+	return nil
 }
 
 func appNameFromModule(module string) string {

@@ -267,6 +267,8 @@ ronyup setup sync --only skills --overwrite --skills installed
 ronyup setup sync --only backend --overwrite
 ```
 
+`--skills installed` refreshes the skills already in the workspace and swaps retired skills for their replacements (`clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code` → `go-design`). With `--overwrite`, the retired directories are deleted; without it, sync only reports them. New catalog skills are not added in this mode: pass `--skills default` or a skill ID to install them.
+
 ---
 
 ## Feature Templates

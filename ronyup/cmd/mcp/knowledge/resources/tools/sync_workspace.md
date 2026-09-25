@@ -35,6 +35,8 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 - For the bundle + `pkg/runner` layout, run `migrate_bundles` (or `ronyup setup migrate bundles`) once after upgrading `ronyup`.
 - **Default**: add missing scaffold files only (`overwrite: true` replaces existing scaffold files).
 - **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `kind` if needed.
+- **Retired skills**: skills removed from the catalog (for example `clean-architecture`, `refactoring-patterns`, `working-with-legacy-code` → `go-design`) are replaced in `installed` mode. With `overwrite: true` the retired directories are deleted; without it they are only reported.
+- **New catalog skills** are not added in `installed` mode. Use `skills: default` (or a skill ID) to pick them up.
 
 ## Sections (`only`)
 

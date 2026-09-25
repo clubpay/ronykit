@@ -11,7 +11,7 @@ This file defines practical guidance for AI coding assistants in this workspace.
 {{ if .Skills }}
 ## Skill routing (read SKILL.md — do not rely on memory)
 
-Specialized skills live under `.agents/skills/`. For each applicable row, **open and read** the skill file before coding — this is required even for small models that skip optional pointers.
+Specialized skills live under `.agents/skills/`. For each applicable row, **open and read** the skill file before coding — this is required even for small models that skip optional pointers. If a listed skill is not installed, skip it (`ronyup setup sync --only skills --skills <id>` adds it).
 
 | Task | Read these skills (in order) |
 |------|------------------------------|

@@ -61,6 +61,17 @@ const (
 	skillTokenDefaults = SkillTokenDefaults
 )
 
+// retiredSkills maps skill IDs removed from the catalog to the skills that
+// replace them. Workspace sync installs the replacements for any retired skill
+// it finds, and removes the retired directories when overwriting.
+var retiredSkills = map[string][]string{
+	"clean-architecture":       {skillGoDesign},
+	"refactoring-patterns":     {skillGoDesign},
+	"working-with-legacy-code": {skillGoDesign},
+}
+
+const skillGoDesign = "go-design"
+
 // skillCatalog is the curated set of skills bundled with ronyup. Backend
 // (Go/quality/workflow) skills default on for every workspace; frontend skills
 // default on only for fullstack scaffolds but remain selectable anywhere.
@@ -86,7 +97,7 @@ var skillCatalog = []SkillDef{
 		DefaultFullstack: true,
 	},
 	{
-		ID:               "go-design",
+		ID:               skillGoDesign,
 		Name:             "Go Design",
 		Description:      "Layer direction, Go-style interfaces, composition, safe refactoring, untested code",
 		Category:         catGo,

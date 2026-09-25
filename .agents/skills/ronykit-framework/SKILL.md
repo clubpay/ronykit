@@ -28,7 +28,7 @@ Full MCP index: [references/mcp-map.md](references/mcp-map.md)
 
 ## Skill routing (read SKILL.md — required)
 
-Do not rely on memory or optional auto-discovery. **Open and read** `.agents/skills/<id>/SKILL.md` for every row that applies:
+Do not rely on memory or optional auto-discovery. **Open and read** `.agents/skills/<id>/SKILL.md` for every row that applies. If a listed skill is not installed, skip it and mention that `ronyup setup sync --only skills --skills <id>` adds it:
 
 | Task | Read (in order) |
 |------|-----------------|
