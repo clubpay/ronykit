@@ -17,7 +17,8 @@ type CopyDirParams struct {
 	SrcPathPrefix  string
 	DestPathPrefix string
 	TemplateInput  any
-	Callback       func(filePath string, dir bool)
+	// Callback is called with the destination path of each file written.
+	Callback func(filePath string, dir bool)
 	// SkipExisting skips copying when the destination file already exists.
 	SkipExisting bool
 	// DestMapper optionally rewrites the destination for each entry. It
@@ -55,7 +56,7 @@ func CopyDir(params CopyDirParams) error {
 			}
 
 			if params.Callback != nil {
-				params.Callback(currPath, d.IsDir())
+				params.Callback(destPath, d.IsDir())
 			}
 
 			// Ensure the parent directory exists. When DestMapper reroutes

@@ -1,8 +1,12 @@
 package scaffold
 
 import (
+	"go/format"
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -198,6 +202,80 @@ func parseSkillFrontmatter(content string) (name, description string, ok bool) {
 	}
 
 	return name, description, true
+}
+
+func TestFrontendDefaultsExcludeBackendSkills(t *testing.T) {
+	ids := defaultSkillIDs(KindFrontend)
+	if len(ids) == 0 {
+		t.Fatal("expected frontend defaults")
+	}
+
+	for _, s := range skillCatalog {
+		if !slices.Contains(ids, s.ID) {
+			continue
+		}
+
+		if s.Category == catGo || s.Category == catArchitecture {
+			t.Errorf("frontend defaults include %s skill %q", s.Category, s.ID)
+		}
+	}
+
+	if !slices.Contains(ids, "nextjs-modern") || !slices.Contains(ids, "code-review") {
+		t.Fatalf("frontend defaults missing frontend or quality skills: %v", ids)
+	}
+}
+
+var skillGoFenceRE = regexp.MustCompile("(?s)```go\\n(.*?)```")
+
+// TestSkillGoSnippetsFormatted keeps every ```go block in the bundled skills
+// valid and gofmt-clean, since agents copy them verbatim.
+func TestSkillGoSnippetsFormatted(t *testing.T) {
+	var n int
+
+	err := fs.WalkDir(internal.Skeleton, skillsSrcPrefix, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || path.Ext(p) != ".md" {
+			return err
+		}
+
+		data, err := internal.Skeleton.ReadFile(p)
+		if err != nil {
+			return err
+		}
+
+		for i, m := range skillGoFenceRE.FindAllStringSubmatch(string(data), -1) {
+			n++
+
+			// Format as a full file: format.Source's partial-source mode drops
+			// empty "//" lines inside doc comments.
+			const pkg = "package snippet\n\n"
+
+			src := strings.TrimSpace(m[1])
+			file := src
+			if !strings.HasPrefix(src, "package ") {
+				file = pkg + src
+			}
+
+			got, err := format.Source([]byte(file))
+			if err != nil {
+				t.Errorf("%s go block %d does not parse: %v", p, i+1, err)
+
+				continue
+			}
+
+			if strings.TrimSpace(strings.TrimPrefix(string(got), pkg)) != src {
+				t.Errorf("%s go block %d is not gofmt-clean", p, i+1)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n == 0 {
+		t.Fatal("expected ```go blocks in bundled skills")
+	}
 }
 
 func preview(s string, n int) string {

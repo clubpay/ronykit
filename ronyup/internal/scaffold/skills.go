@@ -331,8 +331,9 @@ func defaultSkillIDs(kind string) []string {
 			isDefault = s.DefaultFullstack
 		case KindFrontend:
 			// Frontend-only workspaces want the frontend defaults plus the
-			// language-agnostic quality/workflow skills, but not Go skills.
-			isDefault = s.DefaultFullstack && s.Category != catGo
+			// language-agnostic quality/workflow skills, but not the Go or
+			// backend architecture skills (their examples are Go services).
+			isDefault = s.DefaultFullstack && s.Category != catGo && s.Category != catArchitecture
 		default:
 			isDefault = s.DefaultBackend
 		}

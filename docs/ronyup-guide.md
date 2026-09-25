@@ -135,9 +135,9 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `go-modern`            | Go       | backend, fullstack | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
 | `go-testing`           | Go       | backend, fullstack | Table-driven testify tests, mandatory x/testkit repo integration + app unit tests |
 | `go-design`            | Go       | backend, fullstack | Dependency direction, consumer-defined interfaces, composition over inheritance, safe refactoring, changing untested code |
-| `release-it`           | Architecture | all kinds  | Timeouts, circuit breakers, bulkheads, health checks, observability |
-| `domain-driven-design` | Architecture | all kinds  | Bounded contexts, aggregates, value objects mapped to feature modules |
-| `software-design-philosophy` | Architecture | all kinds | Deep modules, information hiding, no pass-through layers |
+| `release-it`           | Architecture | backend, fullstack  | Timeouts, circuit breakers, bulkheads, health checks, observability |
+| `domain-driven-design` | Architecture | backend, fullstack  | Bounded contexts, aggregates, value objects mapped to feature modules |
+| `software-design-philosophy` | Architecture | backend, fullstack | Deep modules, information hiding, no pass-through layers |
 | `ddia-systems`         | Architecture | opt-in     | Storage, indexes, partitioning, isolation, idempotency        |
 | `writing-tests`        | Quality  | all kinds      | Language-agnostic TDD discipline and the test pyramid         |
 | `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
