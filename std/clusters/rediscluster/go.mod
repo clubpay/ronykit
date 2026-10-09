@@ -3,15 +3,15 @@ module github.com/clubpay/ronykit/std/clusters/rediscluster
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.27.0
-	github.com/clubpay/ronykit/x/rkit v0.6.0
+	github.com/clubpay/ronykit/kit v0.27.1
+	github.com/clubpay/ronykit/x/rkit v0.6.1
 	github.com/redis/go-redis/v9 v9.23.0
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/x/p v0.5.0 // indirect
+	github.com/clubpay/ronykit/x/p v0.5.1 // indirect
 	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
