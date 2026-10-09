@@ -95,6 +95,7 @@ type (
 	ScheduleActionResult = client.ScheduleActionResult
 	ScheduleHandle       = client.ScheduleHandle
 	ScheduleListIterator = client.ScheduleListIterator
+	ScheduleClient       = client.ScheduleClient
 )
 
 func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
@@ -258,7 +259,7 @@ type (
 		// Ignore is TRUE, then do not copy the scheduler
 		Ignore bool
 	}
-	MigrateCheckFunc func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult
+	MigrateCheckFunc func(ctx context.Context, sch *ScheduleEntry) MigrateCheckResult
 )
 
 // Migrate copies every schedule from the source cluster to the destination cluster,

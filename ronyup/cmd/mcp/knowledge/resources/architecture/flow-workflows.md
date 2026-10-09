@@ -1,6 +1,6 @@
 Use `flow` for durable process orchestration.
 
-Create the Temporal integration in datasource/module wiring (`flow.NewBackend` + `flow.NewSDK`), initialize typed registrations with `sdk.InitWithState(app)`, and start/stop the SDK from service lifecycle hooks.
+Create the Temporal integration in datasource/module wiring (`flow.NewBackend` + `flow.NewSDK`), initialize typed registrations with `sdk.InitWithState(app)`, and start/stop the SDK from service lifecycle hooks. Authenticate with `flow.NewAPIKeyStaticCredentials` (or `NewAPIKeyDynamicCredentials` / `NewMTLSCredentials`); do not import the Temporal SDK to build credentials.
 
 Keep a strict split:
 

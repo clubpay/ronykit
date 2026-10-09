@@ -22,22 +22,22 @@ type Backend interface { //nolint:interfacebloat
 
 	ExecuteWorkflow(
 		ctx context.Context,
-		options client.StartWorkflowOptions,
+		options StartWorkflowOptions,
 		workflow any,
 		args ...any,
 	) (client.WorkflowRun, error)
 	StartWorkflow(
-		options client.StartWorkflowOptions, workflow any, args ...any,
-	) client.WithStartWorkflowOperation
+		options StartWorkflowOptions, workflow any, args ...any,
+	) WithStartWorkflowOperation
 	TaskQueue() string
 	Namespace() string
 	Group() string
 	Start() error
 	Stop()
-	Client() client.Client
-	ScheduleClient() client.ScheduleClient
+	Client() Client
+	ScheduleClient() ScheduleClient
 	UpdateWorkflowRetentionPeriod(ctx context.Context, d time.Duration) error
-	DataConverter() converter.DataConverter
+	DataConverter() DataConverter
 }
 
 type BackendConfig struct {
@@ -46,11 +46,11 @@ type BackendConfig struct {
 	Namespace        string
 	Group            string
 	TaskQueue        string
-	DataConverter    converter.DataConverter
-	FailureConverter converter.FailureConverter
-	Credentials      client.Credentials
-	Logger           log.Logger
-	WorkerOptions    worker.Options
+	DataConverter    DataConverter
+	FailureConverter FailureConverter
+	Credentials      Credentials
+	Logger           Logger
+	WorkerOptions    WorkerOptions
 }
 
 var _ Backend = (*realBackend)(nil)
@@ -225,7 +225,7 @@ func (r *realBackend) Client() client.Client {
 	return r.cli
 }
 
-func (r *realBackend) DataConverter() converter.DataConverter {
+func (r *realBackend) DataConverter() DataConverter {
 	return r.dc
 }
 

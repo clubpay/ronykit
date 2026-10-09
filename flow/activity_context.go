@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"go.temporal.io/sdk/activity"
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/log"
 )
 
 type ActivityInfo = activity.Info
@@ -19,7 +17,7 @@ func (ctx ActivityContext[REQ, RES, STATE]) Context() context.Context {
 	return ctx.ctx
 }
 
-func (ctx ActivityContext[REQ, RES, STATE]) Log() log.Logger {
+func (ctx ActivityContext[REQ, RES, STATE]) Log() Logger {
 	return activity.GetLogger(ctx.ctx)
 }
 
@@ -83,8 +81,6 @@ func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartbeat(details any) {
 func (ctx *ActivityContext[REQ, RES, STATE]) SetHeartBeat(details any) {
 	ctx.SetHeartbeat(details)
 }
-
-type Client = client.Client
 
 func (ctx *ActivityContext[REQ, RES, STATE]) Client() Client {
 	return activity.GetClient(ctx.ctx)

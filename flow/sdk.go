@@ -5,13 +5,10 @@ import (
 	"reflect"
 	"sync"
 	"time"
-
-	"go.temporal.io/sdk/client"
-	"go.temporal.io/sdk/log"
 )
 
 type SDKConfig struct {
-	Logger         log.Logger
+	Logger         Logger
 	DefaultBackend Backend
 	// DeprecatingBackend should be only set when we are moving from one Temporal cluster
 	// to a new Temporal cluster. This way SDK makes sure the old workflows are running
@@ -20,7 +17,7 @@ type SDKConfig struct {
 }
 
 type SDK struct {
-	l   log.Logger
+	l   Logger
 	b   Backend
 	old Backend
 
@@ -93,7 +90,7 @@ func (sdk *SDK) migrateSchedulers(ctx context.Context) {
 	err := m.Migrate(
 		ctx,
 		true,
-		func(ctx context.Context, sch *client.ScheduleListEntry) MigrateCheckResult {
+		func(ctx context.Context, sch *ScheduleEntry) MigrateCheckResult {
 			if len(sch.NextActionTimes) > 0 && time.Until(sch.NextActionTimes[0]) < time.Minute {
 				if sdk.l != nil {
 					sdk.l.Info("skipping schedule migration; next action is imminent",

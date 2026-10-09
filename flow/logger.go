@@ -3,7 +3,6 @@ package flow
 import (
 	"fmt"
 
-	"go.temporal.io/sdk/log"
 	"go.uber.org/zap"
 )
 
@@ -11,7 +10,7 @@ type zapAdapter struct {
 	zl *zap.Logger
 }
 
-func NewZapAdapter(zapLogger *zap.Logger) log.Logger {
+func NewZapAdapter(zapLogger *zap.Logger) Logger {
 	return &zapAdapter{
 		// Skip one call frame to exclude zap_adapter itself.
 		// Or it can be configured when logger is created (not always possible).
@@ -54,10 +53,10 @@ func (log *zapAdapter) Error(msg string, keyvals ...any) {
 	log.zl.Error(msg, log.fields(keyvals)...)
 }
 
-func (log *zapAdapter) With(keyvals ...any) log.Logger {
+func (log *zapAdapter) With(keyvals ...any) Logger {
 	return &zapAdapter{zl: log.zl.With(log.fields(keyvals)...)}
 }
 
-func (log *zapAdapter) WithCallerSkip(skip int) log.Logger {
+func (log *zapAdapter) WithCallerSkip(skip int) Logger {
 	return &zapAdapter{zl: log.zl.WithOptions(zap.AddCallerSkip(skip))}
 }

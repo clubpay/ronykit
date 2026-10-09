@@ -155,52 +155,61 @@ func (w *Workflow[REQ, RES, STATE]) stateType() reflect.Type {
 	return reflect.TypeOf(w.State)
 }
 
-// WorkflowIdReusePolicy
-// Defines whether to allow re-using a workflow id from a previously *closed* workflow.
-// If the request is denied, a `WorkflowExecutionAlreadyStartedFailure` is returned.
+// WorkflowIdReusePolicy defines whether to allow re-using a workflow id from a
+// previously closed workflow. If the request is denied, the server returns
+// WorkflowExecutionAlreadyStarted.
 //
-// See `WorkflowIdConflictPolicy` for handling workflow id duplication with a *running* workflow.
-type WorkflowIdReusePolicy int32
+// See WorkflowIdConflictPolicy for a workflow id that is still running.
+type WorkflowIdReusePolicy = enumspb.WorkflowIdReusePolicy
 
 const (
-	WorkflowIdReusePolicyUnspecified WorkflowIdReusePolicy = 0
-	// WorkflowIdReusePolicyAllowDuplicate
-	// Allow starting a workflow execution using the same workflow id.
-	WorkflowIdReusePolicyAllowDuplicate WorkflowIdReusePolicy = 1
-	// WorkflowIdReusePolicyAllowDuplicateFailedOnly
-	// Allow starting a workflow execution using the same workflow id, only when the last
-	// execution's final state is one of [terminated, cancelled, timed out, failed].
-	WorkflowIdReusePolicyAllowDuplicateFailedOnly WorkflowIdReusePolicy = 2
-	// WorkflowIdReusePolicyRejectDuplicate
-	// Do not permit re-use of the workflow id for this workflow. Future start workflow requests
-	// could potentially change the policy, allowing re-use of the workflow id.
-	WorkflowIdReusePolicyRejectDuplicate WorkflowIdReusePolicy = 3
-	// WorkflowIdReusePolicyTerminateIfRunning
-	// This option belongs in WorkflowIdConflictPolicy but is here for backwards compatibility.
-	// If specified, it acts like ALLOW_DUPLICATE, but also the WorkflowId*Conflict*Policy on
-	// the request is treated as WorkflowIdConflictPolicyTerminateExisting.
-	// If no running workflow, then the behavior is the same as ALLOW_DUPLICATE.
-	WorkflowIdReusePolicyTerminateIfRunning WorkflowIdReusePolicy = 4
+	WorkflowIdReusePolicyUnspecified = enumspb.WORKFLOW_ID_REUSE_POLICY_UNSPECIFIED
+	// WorkflowIdReusePolicyAllowDuplicate allows starting a workflow execution
+	// using the same workflow id.
+	WorkflowIdReusePolicyAllowDuplicate = enumspb.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE
+	// WorkflowIdReusePolicyAllowDuplicateFailedOnly allows reuse only when the last
+	// execution's final state is terminated, cancelled, timed out, or failed.
+	WorkflowIdReusePolicyAllowDuplicateFailedOnly = enumspb.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY
+	// WorkflowIdReusePolicyRejectDuplicate does not permit re-use of the workflow id.
+	WorkflowIdReusePolicyRejectDuplicate = enumspb.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE
+	// WorkflowIdReusePolicyTerminateIfRunning behaves like AllowDuplicate and also
+	// treats the conflict policy as TerminateExisting. Prefer
+	// WorkflowIdReusePolicyAllowDuplicate together with
+	// WorkflowIdConflictPolicyTerminateExisting.
+	WorkflowIdReusePolicyTerminateIfRunning = enumspb.WORKFLOW_ID_REUSE_POLICY_TERMINATE_IF_RUNNING
 )
 
-// WorkflowIdConflictPolicy
-// Defines what to do when trying to start a workflow with the same workflow id as a *running* workflow.
-// Note that it is *never* valid to have two actively running instances of the same workflow id.
+// WorkflowIdConflictPolicy defines what to do when starting a workflow with the
+// same id as a running workflow. Two running instances of the same id are never valid.
 //
-// See `WorkflowIdReusePolicy` for handling workflow id duplication with a *closed* workflow.
-type WorkflowIdConflictPolicy int32
+// See WorkflowIdReusePolicy for a workflow id that is already closed.
+type WorkflowIdConflictPolicy = enumspb.WorkflowIdConflictPolicy
 
 const (
-	WorkflowIdConflictPolicyUnspecified WorkflowIdConflictPolicy = 0
-	// WorkflowIdConflictPolicyFail
-	// Don't start a new workflow; instead return `WorkflowExecutionAlreadyStartedFailure`.
-	WorkflowIdConflictPolicyFail WorkflowIdConflictPolicy = 1
-	// WorkflowIdConflictPolicyUseExisting
-	// Don't start a new workflow; instead return a workflow handle for the running workflow.
-	WorkflowIdConflictPolicyUseExisting WorkflowIdConflictPolicy = 2
-	// WorkflowIdConflictPolicyTerminateExisting
-	// Terminate the running workflow before starting a new one.
-	WorkflowIdConflictPolicyTerminateExisting WorkflowIdConflictPolicy = 3
+	WorkflowIdConflictPolicyUnspecified = enumspb.WORKFLOW_ID_CONFLICT_POLICY_UNSPECIFIED
+	// WorkflowIdConflictPolicyFail does not start a new workflow and returns
+	// WorkflowExecutionAlreadyStarted.
+	WorkflowIdConflictPolicyFail = enumspb.WORKFLOW_ID_CONFLICT_POLICY_FAIL
+	// WorkflowIdConflictPolicyUseExisting does not start a new workflow and returns
+	// a handle for the running workflow.
+	WorkflowIdConflictPolicyUseExisting = enumspb.WORKFLOW_ID_CONFLICT_POLICY_USE_EXISTING
+	// WorkflowIdConflictPolicyTerminateExisting terminates the running workflow
+	// before starting a new one.
+	WorkflowIdConflictPolicyTerminateExisting = enumspb.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING
+)
+
+// ParentClosePolicy defines what a child workflow does when its parent closes.
+type ParentClosePolicy = enumspb.ParentClosePolicy
+
+const (
+	ParentClosePolicyUnspecified = enumspb.PARENT_CLOSE_POLICY_UNSPECIFIED
+	// ParentClosePolicyTerminate terminates the child when the parent closes.
+	// This is the server default when the policy is left unspecified.
+	ParentClosePolicyTerminate = enumspb.PARENT_CLOSE_POLICY_TERMINATE
+	// ParentClosePolicyAbandon lets the child keep running after the parent closes.
+	ParentClosePolicyAbandon = enumspb.PARENT_CLOSE_POLICY_ABANDON
+	// ParentClosePolicyRequestCancel requests cancellation of the child when the parent closes.
+	ParentClosePolicyRequestCancel = enumspb.PARENT_CLOSE_POLICY_REQUEST_CANCEL
 )
 
 type ExecuteWorkflowOptions struct {
@@ -277,8 +286,8 @@ func (w *Workflow[REQ, RES, STATE]) Execute(
 			WorkflowExecutionTimeout: opts.WorkflowExecutionTimeout,
 			WorkflowRunTimeout:       opts.WorkflowRunTimeout,
 			WorkflowTaskTimeout:      opts.WorkflowTaskTimeout,
-			WorkflowIDReusePolicy:    enumspb.WorkflowIdReusePolicy(opts.WorkflowIDReusePolicy),
-			WorkflowIDConflictPolicy: enumspb.WorkflowIdConflictPolicy(opts.WorkflowIDConflictPolicy),
+			WorkflowIDReusePolicy:    opts.WorkflowIDReusePolicy,
+			WorkflowIDConflictPolicy: opts.WorkflowIDConflictPolicy,
 			StartDelay:               opts.StartDelay,
 			TypedSearchAttributes:    opts.SearchAttributes,
 			Memo:                     opts.Memo,
@@ -330,17 +339,17 @@ type ExecuteChildWorkflowOptions struct {
 	// Optional: default false
 	WaitForCancellation bool
 
-	// WorkflowIDReusePolicy - Whether server allow reuse of workflow ID, can be useful
-	// for dedupe logic if set to WorkflowIdReusePolicyRejectDuplicate
-	WorkflowIDReusePolicy enumspb.WorkflowIdReusePolicy
+	// WorkflowIDReusePolicy controls reuse of a closed child workflow id.
+	// Optional: defaulted to AllowDuplicate.
+	WorkflowIDReusePolicy WorkflowIdReusePolicy
 
 	// RetryPolicy specify how to retry child workflow if error happens.
 	// Optional: default is no retry
 	RetryPolicy *RetryPolicy
 
-	// ParentClosePolicy specify how the retry child workflow get terminated.
-	// default is Terminate
-	ParentClosePolicy enumspb.ParentClosePolicy
+	// ParentClosePolicy controls the child after the parent closes.
+	// Optional: defaulted to Terminate.
+	ParentClosePolicy ParentClosePolicy
 	SearchAttributes  SearchAttributes
 }
 

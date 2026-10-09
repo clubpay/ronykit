@@ -7,7 +7,7 @@ import (
 	"go.temporal.io/sdk/converter"
 )
 
-func EncryptedDataConverter(key string) converter.DataConverter {
+func EncryptedDataConverter(key string) DataConverter {
 	return converter.NewCodecDataConverter(
 		converter.GetDefaultDataConverter(),
 		converter.NewZlibCodec(converter.ZlibCodecOptions{}),
@@ -15,7 +15,7 @@ func EncryptedDataConverter(key string) converter.DataConverter {
 	)
 }
 
-func EncryptedPayloadCodec(key string) converter.PayloadCodec {
+func EncryptedPayloadCodec(key string) PayloadCodec {
 	return &aesCodec{s: scramble.MustNewScramble(key)}
 }
 

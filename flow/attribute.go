@@ -1,6 +1,10 @@
 package flow
 
-import "go.temporal.io/sdk/temporal"
+import (
+	"time"
+
+	"go.temporal.io/sdk/temporal"
+)
 
 type (
 	SearchAttributeUpdate = temporal.SearchAttributeUpdate
@@ -29,4 +33,12 @@ func AttrKeywords(name string, val []string) SearchAttributeUpdate {
 
 func AttrKeyword(name string, value string) SearchAttributeUpdate {
 	return temporal.NewSearchAttributeKeyKeyword(name).ValueSet(value)
+}
+
+func AttrFloat64(name string, val float64) SearchAttributeUpdate {
+	return temporal.NewSearchAttributeKeyFloat64(name).ValueSet(val)
+}
+
+func AttrTime(name string, val time.Time) SearchAttributeUpdate {
+	return temporal.NewSearchAttributeKeyTime(name).ValueSet(val)
 }

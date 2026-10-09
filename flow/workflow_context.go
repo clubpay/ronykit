@@ -3,8 +3,6 @@ package flow
 import (
 	"time"
 
-	"go.temporal.io/sdk/log"
-	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -19,15 +17,15 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Info() *WorkflowInfo {
 	return workflow.GetInfo(ctx.ctx)
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) Context() workflow.Context {
+func (ctx WorkflowContext[REQ, RES, STATE]) Context() Context {
 	return ctx.ctx
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) DisconnectedContext() (workflow.Context, workflow.CancelFunc) {
+func (ctx WorkflowContext[REQ, RES, STATE]) DisconnectedContext() (Context, CancelFunc) {
 	return workflow.NewDisconnectedContext(ctx.ctx)
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) WithCancel() (workflow.Context, workflow.CancelFunc) {
+func (ctx WorkflowContext[REQ, RES, STATE]) WithCancel() (Context, CancelFunc) {
 	return workflow.WithCancel(ctx.ctx)
 }
 
@@ -47,7 +45,7 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Go(fn func(ctx Context)) {
 	workflow.Go(ctx.ctx, fn)
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) Log() log.Logger {
+func (ctx WorkflowContext[REQ, RES, STATE]) Log() Logger {
 	return workflow.GetLogger(ctx.ctx)
 }
 
@@ -55,16 +53,16 @@ func (ctx WorkflowContext[REQ, RES, STATE]) Sleep(d time.Duration) error {
 	return workflow.Sleep(ctx.ctx, d)
 }
 
-func (ctx WorkflowContext[REQ, RES, STATE]) Timer(d time.Duration) Future[temporal.CanceledError] {
-	return Future[temporal.CanceledError]{
+func (ctx WorkflowContext[REQ, RES, STATE]) Timer(d time.Duration) Future[CanceledError] {
+	return Future[CanceledError]{
 		f: workflow.NewTimer(ctx.ctx, d),
 	}
 }
 
 func (ctx WorkflowContext[REQ, RES, STATE]) TimerCtx(
 	wCtx Context, d time.Duration,
-) Future[temporal.CanceledError] {
-	return Future[temporal.CanceledError]{
+) Future[CanceledError] {
+	return Future[CanceledError]{
 		f: workflow.NewTimer(wCtx, d),
 	}
 }

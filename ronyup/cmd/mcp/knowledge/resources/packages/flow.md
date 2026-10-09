@@ -11,11 +11,14 @@ Type-safe Temporal orchestration. The **only** allowed way to write durable work
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
 	HostPort: cfg.TemporalHostPort, Namespace: cfg.TemporalNamespace, TaskQueue: cfg.TemporalTaskQueue,
+	Credentials: flow.NewAPIKeyStaticCredentials(cfg.TemporalAPIKey), // omit for unauthenticated local Temporal
 })
 sdk := flow.NewSDK(flow.SDKConfig{DefaultBackend: backend, Logger: logger})
 sdk.InitWithState(app)
 sdk.Start() // service Start(); sdk.Stop() on Shutdown
 ```
+
+Credentials: `flow.NewAPIKeyStaticCredentials`, `flow.NewAPIKeyDynamicCredentials`, or `flow.NewMTLSCredentials`. Do not import `go.temporal.io/sdk/client` to build them. Non-retryable activity failures use `flow.NewNonRetryableApplicationError`. Child close behavior uses `flow.ParentClosePolicyAbandon` (and the other `ParentClosePolicy*` constants).
 
 - Workflows: `flow.NewWorkflow[REQ, RES, STATE](name, group, fn)` — orchestration only (timers, selectors, activities). No I/O.
 - Activities: `flow.NewActivity[REQ, RES, STATE](name, group, fn)` — side effects via `ctx.S()`.

@@ -44,20 +44,26 @@ defer sdk.Stop()
 
 ### Backend
 
-`Backend` wraps a Temporal client and worker for a single cluster. It is created via `NewBackend` and handles namespace auto-creation, TLS, custom `DataConverter`, default `FailureConverter` for `*rony/errs.Error`, and `worker.Options` passthrough.
+`Backend` wraps a Temporal client and worker for a single cluster. It is created via `NewBackend` and handles namespace auto-creation, TLS, custom `DataConverter`, default `FailureConverter` for `*rony/errs.Error`, and `WorkerOptions` passthrough.
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
 	HostPort:      "temporal.example.com:7233",
-	Secure:        true, // enables TLS
+	Secure:        true, // enables TLS; API key credentials enable it when unset
 	Namespace:     "production",
 	Group:         "payments",
 	TaskQueue:     "payment-tasks",
+	Credentials:   flow.NewAPIKeyStaticCredentials(apiKey),
 	DataConverter: flow.EncryptedDataConverter("my-secret-key"),
 	Logger:        flow.NewZapAdapter(zapLogger),
+	WorkerOptions: flow.WorkerOptions{
+		MaxConcurrentActivityExecutionSize: 100,
+	},
 	// FailureConverter is optional; defaults to flow.DefaultFailureConverter()
 })
 ```
+
+`NewAPIKeyDynamicCredentials` calls a function on every request so the key can rotate without reconnecting. `NewMTLSCredentials` authenticates with a client certificate. Leave `Credentials` unset for a local server that does not require auth.
 
 ### Workflow
 
@@ -528,6 +534,8 @@ attrs := flow.NewSearchAttributes(
 	flow.AttrBool("express", true),
 	flow.AttrKeyword("region", "us-east-1"),
 	flow.AttrKeywords("tags", []string{"urgent", "vip"}),
+	flow.AttrFloat64("score", 0.9),
+	flow.AttrTime("due", dueAt),
 )
 
 run, err := MyWorkflow.Execute(ctx, req, flow.ExecuteWorkflowOptions{
@@ -629,6 +637,13 @@ err = flow.WrapError(ctx, err)
 
 // Check if an error is a Temporal ApplicationError
 ok, appErr := flow.IsApplicationError(err)
+
+// Return a non-retryable failure from an activity
+return nil, flow.NewNonRetryableApplicationError("invalid order", "InvalidOrder", err)
+
+if flow.IsCanceledError(err) {
+	return nil
+}
 ```
 
 ## Workflow ID Policies
@@ -649,6 +664,16 @@ ok, appErr := flow.IsApplicationError(err)
 | `WorkflowIdConflictPolicyFail`              | Return error (default)        |
 | `WorkflowIdConflictPolicyUseExisting`       | Return handle to existing run |
 | `WorkflowIdConflictPolicyTerminateExisting` | Terminate existing, start new |
+
+### Parent Close Policy (child workflows)
+
+Set `ParentClosePolicy` on `ExecuteChildWorkflowOptions`.
+
+| Policy                             | Behavior                                                |
+|------------------------------------|---------------------------------------------------------|
+| `ParentClosePolicyTerminate`       | Terminate the child when the parent closes (default)    |
+| `ParentClosePolicyAbandon`         | Leave the child running                                 |
+| `ParentClosePolicyRequestCancel`   | Request cancellation of the child                       |
 
 ## Requirements
 

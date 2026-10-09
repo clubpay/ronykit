@@ -18,22 +18,22 @@ const errsErrorFailureType = "github.com/clubpay/ronykit/rony/errs.Error"
 
 // FailureConverterConfig configures a Temporal FailureConverter for *errs.Error.
 type FailureConverterConfig struct {
-	DataConverter converter.DataConverter
-	Fallback      converter.FailureConverter
+	DataConverter DataConverter
+	Fallback      FailureConverter
 }
 
 // FailureConverterOption configures DefaultFailureConverter.
 type FailureConverterOption func(*FailureConverterConfig)
 
 // WithFailureConverterDataConverter sets the DataConverter used to encode failure details.
-func WithFailureConverterDataConverter(dc converter.DataConverter) FailureConverterOption {
+func WithFailureConverterDataConverter(dc DataConverter) FailureConverterOption {
 	return func(cfg *FailureConverterConfig) {
 		cfg.DataConverter = dc
 	}
 }
 
 // WithFailureConverterFallback sets the converter used for non-*errs.Error failures.
-func WithFailureConverterFallback(fc converter.FailureConverter) FailureConverterOption {
+func WithFailureConverterFallback(fc FailureConverter) FailureConverterOption {
 	return func(cfg *FailureConverterConfig) {
 		cfg.Fallback = fc
 	}
@@ -42,7 +42,7 @@ func WithFailureConverterFallback(fc converter.FailureConverter) FailureConverte
 // DefaultFailureConverter returns a FailureConverter that round-trips *errs.Error values
 // across Temporal activity, workflow, and client boundaries using errmarshalling.
 // Business-domain errs codes are marked non-retryable in Temporal failures.
-func DefaultFailureConverter(opts ...FailureConverterOption) converter.FailureConverter {
+func DefaultFailureConverter(opts ...FailureConverterOption) FailureConverter {
 	cfg := FailureConverterConfig{
 		DataConverter: converter.GetDefaultDataConverter(),
 		Fallback:      temporal.GetDefaultFailureConverter(),
