@@ -1,0 +1,31 @@
+### List items with available stock
+GET http://127.0.0.1:8080/items
+
+### Back office: set units on hand (cannot go below what open orders reserve)
+PUT http://127.0.0.1:8080/items/sandwich/inventory
+Content-Type: application/json
+
+{"onHand": 10}
+
+### Open an order (basket)
+POST http://127.0.0.1:8080/orders
+Content-Type: application/json
+
+{}
+
+> {% client.global.set("order", response.body.id); %}
+
+### Add an item: checks and reserves stock
+POST http://127.0.0.1:8080/orders/{{order}}/items
+Content-Type: application/json
+
+{"itemId": "coffee", "quantity": 2}
+
+### Remove an item: releases its reservation
+DELETE http://127.0.0.1:8080/orders/{{order}}/items/coffee
+
+### Get the order
+GET http://127.0.0.1:8080/orders/{{order}}
+
+### Checkout: deducts reserved stock and sets submittedAt
+POST http://127.0.0.1:8080/orders/{{order}}/checkout
