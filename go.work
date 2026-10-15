@@ -1,6 +1,7 @@
 go 1.27.2
 
 use (
+	./ee
 	./example/ex-01-rpc
 	./example/ex-02-rest
 	./example/ex-03-cluster
@@ -11,7 +12,7 @@ use (
 	./example/ex-09-mw
 	./example/ex-10-flow-codec
 	./example/ex-11-mcp
-	./ee
+	./example/ex-12-ee
 	./flow
 	./kit
 	./rony
