@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: sql/schema.sql
+    queries: sql/query.sql
+    gen:
+      go:
+        package: db
+        out: internal/db
+        sql_package: pgx/v5
+        emit_methods_with_db_argument: false

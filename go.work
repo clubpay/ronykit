@@ -18,6 +18,7 @@ use (
 	./ronyup
 	./std/clusters/p2pcluster
 	./std/clusters/rediscluster
+	./std/ee/store/postgres
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/mcp
