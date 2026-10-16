@@ -28,11 +28,11 @@ func main() {
 	// Register everything before Start.
 	shop := rkit.Must(NewShop(env))
 
-	must(env.Start(ctx))
+	rkit.Assert(env.Start(ctx))
 
-	defer func() { must(env.Close()) }()
+	defer func() { rkit.Assert(env.Close()) }()
 
-	must(seed(ctx, shop))
+	rkit.Assert(seed(ctx, shop))
 
 	srv := rony.NewServer(
 		rony.Listen(":8080"),
@@ -42,7 +42,7 @@ func main() {
 	)
 	shop.Setup(srv)
 
-	must(srv.Run(ctx, os.Kill, os.Interrupt))
+	rkit.Assert(srv.Run(ctx, os.Kill, os.Interrupt))
 }
 
 func seed(ctx context.Context, s *Shop) error {
@@ -68,8 +68,3 @@ func seed(ctx context.Context, s *Shop) error {
 	return nil
 }
 
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
