@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/x/testkit
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.6.1
-	github.com/clubpay/ronykit/x/settings v0.6.1
+	github.com/clubpay/ronykit/x/rkit v0.6.2
+	github.com/clubpay/ronykit/x/settings v0.6.2
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/orlangure/gnomock v0.32.0
 	github.com/pkg/errors v0.9.1
@@ -43,7 +43,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
