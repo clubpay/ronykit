@@ -11,14 +11,15 @@
 <body>
 <div id="app"></div>
 
-<!-- Load the Script -->
-<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+<!-- Load the Script (@scalar/api-reference@1.74.0 dist/browser/standalone.js) -->
+<script src="./scalar.standalone.js"></script>
 
 <!-- Initialize the Scalar API Reference -->
 <script>
 	Scalar.createApiReference('#app', {
 		url: './swagger.json',
-		proxyUrl: 'https://proxy.scalar.com',
+		// Keep the docs self-contained: no fonts.scalar.com, no proxy.scalar.com.
+		withDefaultFonts: false,
 		agent: {
 			disabled: true,
 		},

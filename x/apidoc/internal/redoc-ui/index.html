@@ -6,7 +6,17 @@
 	<title>API Documentation</title>
 </head>
 <body>
-<redoc spec-url="./swagger.json"></redoc>
-<script src="./redoc.standalone.js"></script>
+<!--
+	Redoc 3.0.1 is an ES module. We call init ourselves instead of using a
+	redoc element with spec-url: its auto-init ignores other attributes, so
+	disable-telemetry would not take effect and Redoc would send telemetry to
+	otel.cloud.redocly.com.
+-->
+<div id="redoc"></div>
+<script type="module">
+	import { init } from './redoc.standalone.js';
+
+	init('./swagger.json', { disableTelemetry: true }, document.getElementById('redoc'));
+</script>
 </body>
 </html>

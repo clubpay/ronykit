@@ -3,6 +3,7 @@ package apidoc_test
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"testing"
 	"time"
 
@@ -317,4 +318,33 @@ func TestSwaggerJSONIsSeekable(t *testing.T) {
 	again, err := io.ReadAll(f)
 	assert.NoError(t, err)
 	assert.Equal(t, body, again)
+}
+
+func TestScalarUIServesBundleLocally(t *testing.T) {
+	docFS, err := apidoc.New("Test", "v1", "").ScalarUI(testService{})
+	assert.NoError(t, err)
+
+	index, err := fs.ReadFile(docFS, "index.html")
+	assert.NoError(t, err)
+	assert.Contains(t, string(index), `src="./scalar.standalone.js"`)
+	assert.NotContains(t, string(index), "cdn.jsdelivr.net")
+
+	bundle, err := fs.ReadFile(docFS, "scalar.standalone.js")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, bundle)
+}
+
+func TestReDocUIDisablesTelemetry(t *testing.T) {
+	docFS, err := apidoc.New("Test", "v1", "").ReDocUI(testService{})
+	assert.NoError(t, err)
+
+	index, err := fs.ReadFile(docFS, "index.html")
+	assert.NoError(t, err)
+	assert.Contains(t, string(index), "disableTelemetry: true")
+	// A <redoc> tag would trigger Redoc's auto-init, which ignores our options.
+	assert.NotContains(t, string(index), "<redoc")
+
+	bundle, err := fs.ReadFile(docFS, "redoc.standalone.js")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, bundle)
 }
