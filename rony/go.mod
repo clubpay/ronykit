@@ -45,7 +45,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/molecule-man/go-brrr v1.1.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

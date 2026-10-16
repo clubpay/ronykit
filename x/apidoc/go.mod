@@ -32,7 +32,6 @@ require (
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/molecule-man/go-brrr v1.1.1 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.75.0 // indirect

@@ -22,7 +22,6 @@ require (
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/molecule-man/go-brrr v1.1.1 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.60.0 // indirect

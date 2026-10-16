@@ -20,7 +20,6 @@ require (
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/panjf2000/ants/v2 v2.12.1 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
