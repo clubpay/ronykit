@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/clubpay/ronykit/x/rkit v0.6.1
-	github.com/dgraph-io/ristretto/v2 v2.4.0
+	github.com/dgraph-io/ristretto/v2 v2.4.2
 )
 
 require (
@@ -13,6 +13,7 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
