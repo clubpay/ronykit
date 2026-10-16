@@ -6,6 +6,7 @@ require (
 	github.com/clubpay/ronykit/ee v0.0.0
 	github.com/clubpay/ronykit/rony v0.27.1
 	github.com/clubpay/ronykit/x/rkit v0.6.1
+	github.com/stretchr/testify v1.12.1
 )
 
 require (
