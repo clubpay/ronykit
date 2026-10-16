@@ -387,6 +387,16 @@ func toSwagDefinition(svcName string, m desc.ParsedMessage) spec.Schema {
 	for fields.Back() != nil {
 		p := fields.Remove(fields.Back()).(desc.ParsedField) //nolint:errcheck,forcetypeassert
 
+		// skip fields the encoder never serializes; embedded structs are kept
+		// since their exported fields are promoted.
+		if p.Name == "-" || (!p.Exported && !p.Embedded) {
+			continue
+		}
+
+		if p.Name == "" && !p.Embedded {
+			p.Name = p.GoName
+		}
+
 		// handle []byte as a special case of string[base64]
 		if p.Element.Kind == desc.Array && p.Element.Element.Kind == desc.Byte {
 			setProperty(&def, p.Name, *spec.StrFmtProperty("base64"), idx)

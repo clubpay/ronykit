@@ -269,3 +269,52 @@ func (t testService2) Desc() *desc.Service {
 				SetHandler(nil),
 		)
 }
+
+type skippedFieldsMsg struct {
+	Visible  string            `json:"visible"`
+	Hidden   map[string]string `json:"-"`
+	NoTag    string
+	internal int
+}
+
+func TestToSwaggerDefinitionSkipsUnserializedFields(t *testing.T) {
+	ps := desc.ParseService(
+		desc.NewService("skipSvc").AddContract(
+			desc.NewContract().
+				SetInput(&skippedFieldsMsg{}).
+				SetOutput(&skippedFieldsMsg{}).
+				AddRoute(desc.Route("x", fasthttp.POST("/x"))),
+		),
+	)
+
+	d := apidoc.ToSwaggerDefinition(ps.Origin.Name, ps.Contracts[0].Request.Message)
+	props := d.Properties.ToOrderedSchemaItems()
+
+	names := make([]string, 0, len(props))
+	for _, p := range props {
+		names = append(names, p.Name)
+	}
+
+	assert.Equal(t, []string{"visible", "NoTag"}, names)
+}
+
+func TestSwaggerJSONIsSeekable(t *testing.T) {
+	docFS, err := apidoc.New("Test", "v1", "").ScalarUI(testService{})
+	assert.NoError(t, err)
+
+	f, err := docFS.Open("swagger.json")
+	assert.NoError(t, err)
+
+	seeker, ok := f.(io.Seeker)
+	assert.True(t, ok, "swagger.json must implement io.Seeker for fasthttp")
+
+	body, err := io.ReadAll(f)
+	assert.NoError(t, err)
+
+	_, err = seeker.Seek(0, io.SeekStart)
+	assert.NoError(t, err)
+
+	again, err := io.ReadAll(f)
+	assert.NoError(t, err)
+	assert.Equal(t, body, again)
+}

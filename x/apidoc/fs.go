@@ -3,6 +3,7 @@ package apidoc
 import (
 	"bytes"
 	"embed"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -30,7 +31,7 @@ type customFS struct {
 func (c customFS) Open(name string) (fs.File, error) {
 	if name == "swagger.json" {
 		return &swaggerFile{
-			buf: bytes.NewBuffer(c.swaggerJSON),
+			buf: bytes.NewReader(c.swaggerJSON),
 			t:   c.t,
 		}, nil
 	}
@@ -41,10 +42,13 @@ func (c customFS) Open(name string) (fs.File, error) {
 var (
 	_ fs.File     = (*swaggerFile)(nil)
 	_ fs.FileInfo = (*swaggerFile)(nil)
+	_ io.Seeker   = (*swaggerFile)(nil)
 )
 
+// swaggerFile must be seekable: fasthttp's FS rejects files that are not
+// io.Seeker when serving range or compressed responses.
 type swaggerFile struct {
-	buf *bytes.Buffer
+	buf *bytes.Reader
 	t   time.Time
 }
 
@@ -53,7 +57,7 @@ func (s swaggerFile) Name() string {
 }
 
 func (s swaggerFile) Size() int64 {
-	return int64(s.buf.Len())
+	return s.buf.Size()
 }
 
 func (s swaggerFile) Mode() fs.FileMode {
@@ -78,6 +82,10 @@ func (s swaggerFile) Stat() (fs.FileInfo, error) {
 
 func (s *swaggerFile) Read(b []byte) (int, error) {
 	return s.buf.Read(b)
+}
+
+func (s *swaggerFile) Seek(offset int64, whence int) (int64, error) {
+	return s.buf.Seek(offset, whence)
 }
 
 func (s swaggerFile) Close() error {

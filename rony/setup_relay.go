@@ -53,7 +53,8 @@ func registerRelay[S State[A], A Action](
 	hValue := reflect.ValueOf(h)
 	if hValue.Kind() == reflect.Func {
 		parts := strings.Split(runtime.FuncForPC(hValue.Pointer()).Name(), ".")
-		handlerName = strings.TrimSuffix(parts[len(parts)-1], "Fm")
+		// Method values are reported as "name-fm" by the runtime.
+		handlerName = strings.TrimSuffix(parts[len(parts)-1], "-fm")
 	}
 
 	for idx, s := range cfg.Selectors {

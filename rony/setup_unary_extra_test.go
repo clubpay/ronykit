@@ -265,3 +265,31 @@ func TestCreateKitHandlerSuccessAndConvertedError(t *testing.T) {
 		t.Fatalf("error path failed: %v", err)
 	}
 }
+
+type methodValueHandlers struct{}
+
+func (methodValueHandlers) createCluster(_ *UnaryCtx[EMPTY, NOP], _ goodIn) (*goodOut, error) {
+	return &goodOut{OK: true}, nil
+}
+
+func TestWithUnaryNamesMethodValueHandler(t *testing.T) {
+	srv := NewServer()
+
+	var h methodValueHandlers
+
+	Setup[EMPTY, NOP](
+		srv,
+		"svc",
+		EmptyState(),
+		WithUnary[EMPTY, NOP, goodIn, goodOut](h.createCluster, POST("/clusters")),
+	)
+
+	svc := srv.cfg.services["svc"]
+	if svc == nil || len(svc.Contracts) != 1 || len(svc.Contracts[0].RouteSelectors) != 1 {
+		t.Fatalf("unexpected contracts: %#v", svc)
+	}
+
+	if got := svc.Contracts[0].RouteSelectors[0].Name; got != "CreateCluster" {
+		t.Fatalf("route name = %q, want %q", got, "CreateCluster")
+	}
+}
