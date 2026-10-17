@@ -71,10 +71,9 @@ func Dedup(next Next) Next {
 			return err
 		}
 
-		at, err := time.Now().UTC().MarshalJSON()
-		if err != nil {
-			return err
-		}
+		// MarshalJSON fails only for years outside [0, 9999], which time.Now
+		// cannot produce.
+		at, _ := time.Now().UTC().MarshalJSON()
 
 		return d.Tx.Insert(ctx, store.Record{Kind: DedupKind, ID: key, Version: 1, Data: at})
 	}

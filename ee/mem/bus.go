@@ -62,6 +62,10 @@ func NewBus(opts ...BusOption) *Bus {
 		o(b)
 	}
 
+	if b.lanes < 1 {
+		b.lanes = 1
+	}
+
 	b.ctx, b.cancel = context.WithCancel(context.Background())
 
 	return b

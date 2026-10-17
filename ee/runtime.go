@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"time"
 
@@ -41,8 +42,8 @@ func (e *Env) unit(
 	fn func(sc *scope) error,
 ) error {
 	attempts := 1
-	if retry {
-		attempts += e.maxRetries
+	if retry && e.maxRetries > 0 {
+		attempts = min(e.maxRetries, math.MaxInt-1) + 1
 	}
 
 	var err error

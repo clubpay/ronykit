@@ -40,7 +40,13 @@ func Run(t *testing.T, newStore func(t *testing.T) store.Store) {
 		{"ReadOwnWrites", testReadOwnWrites},
 		{"Find", testFind},
 		{"FindWhileWriting", testFindWhileWriting},
+		{"FindEarlyStop", testFindEarlyStop},
+		{"FindWithTxWrites", testFindWithTxWrites},
+		{"DeleteMissing", testDeleteMissing},
+		{"StaleOpWithinTx", testStaleWithinTx},
+		{"InsertDeleteReinsert", testInsertDeleteReinsert},
 		{"View", testView},
+		{"ViewWritesFail", testViewWrites},
 		{"OutboxClaimAck", testOutbox},
 		{"OutboxPerKeyOrder", testOutboxPerKeyOrder},
 		{"OutboxLeaseExpiry", testOutboxLeaseExpiry},
@@ -432,6 +438,238 @@ func testView(t *testing.T, s store.Store) {
 	})
 	if !errors.Is(err, store.ErrReadOnly) {
 		t.Errorf("write in View: want ErrReadOnly, got %v", err)
+	}
+}
+
+// testViewWrites extends testView to every write operation.
+func testViewWrites(t *testing.T, s store.Store) {
+	t.Helper()
+
+	err := s.View(t.Context(), func(ctx context.Context, tx store.Tx) error {
+		if err := tx.Update(
+			ctx,
+			store.Record{Kind: "k", ID: "1", Version: 1},
+		); !errors.Is(
+			err,
+			store.ErrReadOnly,
+		) {
+			t.Errorf("update in View: want ErrReadOnly, got %v", err)
+		}
+
+		if err := tx.Delete(ctx, "k", "1", 1); !errors.Is(err, store.ErrReadOnly) {
+			t.Errorf("delete in View: want ErrReadOnly, got %v", err)
+		}
+
+		if err := tx.AppendOutbox(ctx, store.OutboxEntry{ID: "e"}); !errors.Is(err, store.ErrReadOnly) {
+			t.Errorf("append in View: want ErrReadOnly, got %v", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// testDeleteMissing pins that deleting an absent record reports ErrNotFound,
+// like updating one.
+func testDeleteMissing(t *testing.T, s store.Store) {
+	t.Helper()
+
+	err := tx(t, s, func(ctx context.Context, tx store.Tx) error {
+		return tx.Delete(ctx, "k", "missing", 1)
+	})
+	if !errors.Is(err, store.ErrNotFound) {
+		t.Errorf("delete of a missing record: want ErrNotFound, got %v", err)
+	}
+}
+
+// testStaleWithinTx pins in-transaction version checking: a second stale
+// update inside the same transaction conflicts, and the transaction stays
+// usable afterwards (ee.Dedup relies on both properties).
+func testStaleWithinTx(t *testing.T, s store.Store) {
+	t.Helper()
+
+	err := tx(t, s, func(ctx context.Context, tx store.Tx) error {
+		if err := tx.Insert(ctx, rec("k", "1", `{"v":1}`)); err != nil {
+			return err
+		}
+
+		if err := tx.Update(
+			ctx,
+			store.Record{Kind: "k", ID: "1", Version: 1, Data: []byte(`{"v":2}`)},
+		); err != nil {
+			return err
+		}
+
+		if err := tx.Update(
+			ctx,
+			store.Record{Kind: "k", ID: "1", Version: 1, Data: []byte(`{"v":3}`)},
+		); !errors.Is(
+			err,
+			store.ErrConflict,
+		) {
+			t.Errorf("stale update within the tx: want ErrConflict, got %v", err)
+		}
+
+		// The transaction is still usable.
+		return tx.Insert(ctx, rec("k", "2", `{}`))
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := get(t, s, "2"); err != nil {
+		t.Errorf("work after an in-tx conflict was lost: %v", err)
+	}
+}
+
+// testInsertDeleteReinsert allows a record deleted and re-inserted inside one
+// transaction: the delete shadows the insert conflict.
+func testInsertDeleteReinsert(t *testing.T, s store.Store) {
+	t.Helper()
+
+	err := tx(t, s, func(ctx context.Context, tx store.Tx) error {
+		if err := tx.Insert(ctx, rec("k", "1", `{}`)); err != nil {
+			return err
+		}
+
+		if err := tx.Delete(ctx, "k", "1", 1); err != nil {
+			return err
+		}
+
+		return tx.Insert(ctx, rec("k", "1", `{"re":true}`))
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r, err := get(t, s, "1")
+	if err != nil || r.Version != 1 || !jsonEqual(r.Data, `{"re":true}`) {
+		t.Errorf("after delete+reinsert: %+v, %v", r, err)
+	}
+}
+
+// testFindWithTxWrites checks that Find merges the transaction's own writes:
+// inserts and updates are visible, deletes hide records, and writes of other
+// kinds never leak in (or other kinds' records out).
+func testFindWithTxWrites(t *testing.T, s store.Store) {
+	t.Helper()
+
+	err := tx(t, s, func(ctx context.Context, tx store.Tx) error {
+		if err := tx.Insert(ctx, rec("k", "a", `{"name":"x"}`)); err != nil {
+			return err
+		}
+
+		if err := tx.Insert(ctx, rec("k", "b", `{"name":"y"}`)); err != nil {
+			return err
+		}
+
+		if err := tx.Delete(ctx, "k", "a", 1); err != nil {
+			return err
+		}
+
+		if err := tx.Update(
+			ctx,
+			store.Record{Kind: "k", ID: "b", Version: 1, Data: []byte(`{"name":"z"}`)},
+		); err != nil {
+			return err
+		}
+
+		// A write in another kind must not leak into this kind's results.
+		if err := tx.Insert(ctx, rec("other", "o1", `{"name":"z"}`)); err != nil {
+			return err
+		}
+
+		ids, err := findIDs(ctx, tx, store.Query{Kind: "k"})
+		if err != nil {
+			return err
+		}
+
+		slices.Sort(ids)
+
+		if !slices.Equal(ids, []string{"b"}) {
+			return fmt.Errorf("find after own writes: %v, want [b]", ids)
+		}
+
+		q := store.Query{Kind: "k", Where: []store.Cond{{Field: nameField, Op: store.Eq, Value: "z"}}}
+		if id := firstID(ctx, tx, q); id != "b" {
+			return fmt.Errorf("eq z after update: %q, want b", id)
+		}
+
+		// The other-kind write exists where asked for it.
+		if id := firstID(ctx, tx, store.Query{Kind: "other"}); id != "o1" {
+			return fmt.Errorf("other kind: %q, want o1", id)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func findIDs(ctx context.Context, tx store.Tx, q store.Query) ([]string, error) {
+	var out []string
+
+	for r, err := range tx.Find(ctx, q) {
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, r.ID)
+	}
+
+	return out, nil
+}
+
+func firstID(ctx context.Context, tx store.Tx, q store.Query) string {
+	for r, err := range tx.Find(ctx, q) {
+		if err != nil {
+			return "err: " + err.Error()
+		}
+
+		return r.ID
+	}
+
+	return ""
+}
+
+// testFindEarlyStop checks that stopping the iteration early is allowed.
+func testFindEarlyStop(t *testing.T, s store.Store) {
+	t.Helper()
+
+	mustTx(t, s, func(ctx context.Context, tx store.Tx) error {
+		for i := range 3 {
+			if err := tx.Insert(ctx, rec("k", fmt.Sprintf("%d", i), `{}`)); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	err := s.View(t.Context(), func(ctx context.Context, tx store.Tx) error {
+		n := 0
+
+		for _, err := range tx.Find(ctx, store.Query{Kind: "k"}) {
+			if err != nil {
+				return err
+			}
+
+			n++
+
+			break
+		}
+
+		if n != 1 {
+			t.Errorf("visited %d records after break", n)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

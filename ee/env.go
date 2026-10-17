@@ -95,6 +95,14 @@ func New(opts ...Option) (*Env, error) {
 		return nil, errors.New("ee: codec must not be nil")
 	}
 
+	if e.maxRetries < 0 {
+		return nil, errors.New("ee: max retries must not be negative")
+	}
+
+	if e.outboxPoll <= 0 {
+		return nil, errors.New("ee: outbox poll must be positive")
+	}
+
 	return e, nil
 }
 
