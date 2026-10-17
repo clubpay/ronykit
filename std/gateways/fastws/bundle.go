@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/kit/common"
 	"github.com/clubpay/ronykit/kit/errors"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/gobwas/ws"
 	"github.com/panjf2000/gnet/v2"
@@ -52,12 +53,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 }
 
 func MustNew(opts ...Option) kit.Gateway {
-	b, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return rkit.Must(New(opts...))
 }
 
 func (b *bundle) Register(
@@ -129,10 +125,7 @@ func (b *bundle) Start(_ context.Context, cfg kit.GatewayStartConfig) error {
 			gnet.WithReuseAddr(cfg.ReusePort),
 		}
 
-		err := gnet.Run(b.eh, b.listen, opts...)
-		if err != nil {
-			panic(err)
-		}
+		rkit.Assert(gnet.Run(b.eh, b.listen, opts...))
 	}()
 
 	return nil

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/fasthttp/websocket"
 	"github.com/valyala/fasthttp"
 )
@@ -73,10 +75,7 @@ func defaultBuildOptionWS() *buildOptionWS {
 // WithURL_OptionWS("ws://YOUR_WEBSOCKET_HOST:PORT/AND/PATH")
 func WithURL_OptionWS(u string) OptionWS {
 	return newFuncBuildOptionWS(func(o *buildOptionWS) {
-		URL, err := url.Parse(u)
-		if err != nil {
-			panic(err)
-		}
+		URL := rkit.Must(url.Parse(u))
 
 		o.target = URL
 	})

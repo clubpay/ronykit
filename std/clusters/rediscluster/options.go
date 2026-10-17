@@ -3,6 +3,8 @@ package rediscluster
 import (
 	"time"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,10 +24,7 @@ func WithRedisClient(rc *redis.Client) Option {
 
 func WithRedisURL(url string) Option {
 	return func(c *cluster) {
-		opt, err := redis.ParseURL(url)
-		if err != nil {
-			panic(err)
-		}
+		opt := rkit.Must(redis.ParseURL(url))
 
 		c.rc = redis.NewClient(opt)
 	}

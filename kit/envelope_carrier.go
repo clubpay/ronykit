@@ -153,10 +153,7 @@ func newEnvelopeCarrier(kind carrierKind, sessionID, originID, targetID string) 
 }
 
 func unmarshalEnvelopeCarrier(data []byte, m Message) {
-	err := UnmarshalMessage(data, m)
-	if err != nil {
-		panic(err)
-	}
+	rkit.Assert(UnmarshalMessage(data, m))
 }
 
 func marshalEnvelopeCarrier(m Message) []byte {
@@ -165,10 +162,5 @@ func marshalEnvelopeCarrier(m Message) []byte {
 		return v
 	}
 
-	data, err := MarshalMessage(m)
-	if err != nil {
-		panic(err)
-	}
-
-	return data
+	return rkit.Must(MarshalMessage(m))
 }

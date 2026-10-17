@@ -50,12 +50,7 @@ func New(name string, opts ...Option) (kit.Cluster, error) {
 }
 
 func MustNew(name string, opts ...Option) kit.Cluster {
-	c, err := New(name, opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return c
+	return rkit.Must(New(name, opts...))
 }
 
 func (c *cluster) gc(ctx context.Context) {

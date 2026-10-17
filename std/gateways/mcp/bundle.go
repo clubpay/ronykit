@@ -93,12 +93,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 }
 
 func MustNew(opts ...Option) kit.Gateway {
-	b, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return rkit.Must(New(opts...))
 }
 
 func (b *bundle) Start(ctx context.Context, _ kit.GatewayStartConfig) error {

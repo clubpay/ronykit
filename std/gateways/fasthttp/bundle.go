@@ -120,12 +120,7 @@ func New(opts ...Option) (kit.Gateway, error) {
 }
 
 func MustNew(opts ...Option) kit.Gateway {
-	b, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return rkit.Must(New(opts...))
 }
 
 type routeData struct {

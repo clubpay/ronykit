@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/stub/internal/tpl"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type GeneratedFile struct {
@@ -69,10 +70,7 @@ func (g *Generator) Generate(descs ...desc.ServiceDesc) error {
 }
 
 func (g *Generator) MustGenerate(desc ...desc.ServiceDesc) {
-	err := g.Generate(desc...)
-	if err != nil {
-		panic(err)
-	}
+	rkit.Assert(g.Generate(desc...))
 }
 
 // AuxFunctions are a set of helper functions that could be used in

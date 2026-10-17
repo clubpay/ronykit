@@ -8,6 +8,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"hash/crc32"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var ErrCiphertextTooShort = errors.New("scramble: ciphertext too short")
@@ -41,12 +43,7 @@ func NewScramble(seed string) (*Scramble, error) {
 }
 
 func MustNewScramble(seed string) *Scramble {
-	s, err := NewScramble(seed)
-	if err != nil {
-		panic(err)
-	}
-
-	return s
+	return rkit.Must(NewScramble(seed))
 }
 
 func aesKey(seed string) []byte {

@@ -39,10 +39,7 @@ func decorateConfig(set settings.Settings) settings.Settings {
 	_, filename, _, ok := runtime.Caller(0)
 	_ = ok
 
-	err := set.SetFromFile("testenv", filepath.Dir(filename))
-	if err != nil {
-		panic(err)
-	}
+	rkit.Assert(set.SetFromFile("testenv", filepath.Dir(filename)))
 
 	return set
 }
