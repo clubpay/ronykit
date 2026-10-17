@@ -11,6 +11,7 @@
 - [Upgrade an Older Workspace](#upgrade-an-older-workspace)
 - [Feature Templates](#feature-templates)
 - [Translation Catalogs](#translation-catalogs)
+- [Lint: x/rkit duplicates](#lint-xrkit-duplicates)
 - [MCP Server](#mcp-server)
   - [Setup for Cursor IDE](#setup-for-cursor-ide)
   - [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
@@ -170,7 +171,9 @@ Scaffolded workspaces ship mechanical gates so agents cannot skip design or test
 |------|-------------|----------------|
 | Backend SRS/SDD | `scaffold_feature` MCP tool | Approved `docs/design/<feature>-{srs,sdd}.md` before scaffolding |
 | Frontend design doc | `frontend/verify.sh` | Approved `docs/design/<app>-frontend-design.md` before UI verify passes |
-| Backend repo/app tests | `verify.sh` + Cursor `backend-verify` hook | Integration test per repo port method; unit test per `App` method; tests run green |
+| Backend repo/app tests | `verify.sh` + Cursor and Claude Code `backend-verify` Stop hooks | Integration test per repo port method; unit test per `App` method; tests run green |
+| Package selection (imports) | `.golangci.yml` `depguard` via `verify.sh` | No forbidden imports (`go.temporal.io/sdk`, `log`/`slog`/`zap`, uuid/ulid/xid, `samber/lo`, strcase, copier) |
+| Package selection (code) | `ronyup lint` via `verify.sh` + Claude Code `backend-lint` PostToolUse hook | No hand-written copies of `x/rkit` helpers |
 | Frontend quality | `frontend/verify.sh` + Cursor `frontend-verify` hook | typecheck, lint, build, test, Storybook stories |
 
 MCP prompt `design-frontend` orchestrates the frontend bootstrap workflow (ask → design doc → approval → init → implement). Backend integration test conventions live in `knowledge://ronyup/architecture/integration-tests`.
@@ -307,6 +310,26 @@ If a `go.work` file is present, the command loads packages from each workspace m
 
 ---
 
+## Lint: x/rkit duplicates
+
+`ronyup lint` reports Go code that re-implements an `x/rkit` helper, and `--fix` rewrites it:
+
+```bash
+ronyup lint ./...          # report; exit 1 when findings remain, 2 when packages do not compile
+ronyup lint --fix ./...    # rewrite fixable findings in place (adds the rkit import)
+```
+
+| Rule         | Matches                                                                 | Replacement                                 |
+|--------------|-------------------------------------------------------------------------|---------------------------------------------|
+| `must`       | `v, err := f(); if err != nil { panic(err) }`                           | `rkit.Must(f())` / `rkit.Assert(f())`        |
+| `mapcollect` | a loop that only appends a map's keys or values                         | `rkit.MapKeysToArray(m)` / `rkit.MapToArray(m)` |
+| `unsafeconv` | hand-rolled zero-copy `[]byte`↔`string` conversions                     | `rkit.B2S` / `rkit.S2B`                      |
+| `helper`     | unexported functions re-implementing `Must`, `PtrVal`, `Contains`, `Coalesce` | delete and call rkit (no automatic fix) |
+
+Modules whose `go.mod` does not require `x/rkit` are skipped unless `--all-modules` is set. Silence a deliberate exception with
+`//rkitcheck:ignore <reason>` on the reported line or the line above. The same check is the MCP tool `check_rkit_usage`;
+scaffolded workspaces run it from `verify.sh`, and Claude Code runs it after every Go edit through `.claude/hooks/backend-lint.sh`.
+
 ## MCP Server
 
 `ronyup` includes a built-in [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes scaffolding and code generation as tools for AI assistants.
@@ -377,6 +400,10 @@ Add to your `.vscode/settings.json` or user settings:
 |----------------------|-------------------------------------------------------------------------|
 | `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`; optional `skills`: IDs or `default`/`all`/`none`) |
 | `scaffold_feature`   | Add a `feature/<name>/` module to a workspace                           |
+| `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`setup sync`)    |
+| `setup_bundle`       | Create/remove executable bundles (`setup bundle`)                       |
+| `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`setup migrate bundles`) |
+| `check_rkit_usage`   | Report (and optionally fix) code that re-implements an x/rkit helper (`ronyup lint`) |
 
 ### MCP Prompts
 

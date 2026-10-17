@@ -1,0 +1,11 @@
+package fixmod
+
+import (
+	"strconv"
+
+	rk "github.com/clubpay/ronykit/x/rkit"
+)
+
+func aliased() int {
+	return rk.Must(strconv.Atoi(rk.IntToStr(1)))
+}

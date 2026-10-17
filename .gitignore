@@ -123,3 +123,4 @@ x/apidoc/**/_*
 go.work.sum
 /.ai/mcp/mcp.json
 .env
+/.bin/

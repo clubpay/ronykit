@@ -97,7 +97,9 @@ Error handling: use `rony/errs` exclusively.
 STOP — package selection is mandatory. Before writing any helper, conversion, ID, log, config, cache, rate limiter, batcher, pool,
 DB/Redis/S3 connection, workflow, or inter-service client, read `knowledge://ronyup/architecture/package-selection` and the matching
 `knowledge://ronyup/packages/<name>` (at minimum `rony`, `errs`, `rkit`). Do NOT hand-roll or import a stdlib/third-party equivalent when a
-RonyKIT package exists. `make verify` / `golangci-lint` depguard failures are design violations, not formatting nits.
+RonyKIT package exists. `make verify` / `golangci-lint` depguard failures are design violations, not formatting nits. Hand-written
+copies of rkit helpers (if-err-panic, map key/value loops, unsafe []byte↔string casts, local must/deref/contains/coalesce) are caught by
+`ronyup lint` — the MCP tool `check_rkit_usage` — which `make verify` runs on every feature; call it with `fix: true` to rewrite them.
 
 - Feature `Desc()` returns `rony.SetupOptionGroup` — never `*desc.Service` and never call `rony.Setup` from `api/`.
 - In-memory cache → `x/cache`. Redis → `x/datasource.InitRedis` (`characteristics/redis`), not `x/cache`.

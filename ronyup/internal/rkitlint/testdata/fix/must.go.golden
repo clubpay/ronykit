@@ -1,0 +1,38 @@
+package fixmod
+
+import (
+	"os"
+	"strconv"
+
+	"github.com/clubpay/ronykit/x/rkit"
+)
+
+func open() *os.File {
+	return rkit.Must(os.Open("x"))
+}
+
+func parse() int {
+	n := rkit.Must(strconv.Atoi("1"))
+
+	return n * 2
+}
+
+func discard() {
+	rkit.Must(strconv.Atoi("1"))
+}
+
+func remove() {
+	rkit.Assert(os.Remove("x"))
+
+	rkit.Assert(os.Remove("y"))
+}
+
+func commented() int {
+	n, err := strconv.Atoi("1")
+	if err != nil {
+		// keep this note
+		panic(err)
+	}
+
+	return n
+}

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/goccy/go-reflect"
-	"github.com/jinzhu/copier"
+	"github.com/jinzhu/copier" //nolint:depguard // rkit is the one sanctioned wrapper
 )
 
 // Cast Converts any type to a given type. If conversion fails, it returns the zero value of the given type.

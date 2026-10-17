@@ -4,6 +4,8 @@ version: "2"
 # and adds `depguard` to fail the build when service code imports a third-party
 # or stdlib package that has a mandated RonyKIT replacement. See the ronyup MCP
 # resource `knowledge://ronyup/architecture/package-selection` for the full map.
+# depguard only sees imports; hand-written copies of x/rkit helpers are caught by
+# `ronyup lint`, which verify.sh runs on every feature module.
 run:
   tests: false
 linters:
@@ -32,6 +34,24 @@ linters:
               desc: "io/ioutil is deprecated; use io / os."
             - pkg: github.com/jinzhu/copier
               desc: "Do not use jinzhu/copier. Use github.com/clubpay/ronykit/x/rkit (DynCast/DynCastOption/TypeConvert)."
+            - pkg: github.com/samber/lo
+              desc: "Do not use samber/lo. Use github.com/clubpay/ronykit/x/rkit (Map/Filter/Reduce/Contains/Coalesce/...) or slices/maps."
+            - pkg: github.com/thoas/go-funk
+              desc: "Do not use go-funk. Use github.com/clubpay/ronykit/x/rkit collection helpers or slices/maps."
+            - pkg: github.com/iancoleman/strcase
+              desc: "Do not use iancoleman/strcase. Use github.com/clubpay/ronykit/x/rkit (ToCamel/ToSnake/ToKebab/...)."
+            - pkg: github.com/ettle/strcase
+              desc: "Do not use ettle/strcase. Use github.com/clubpay/ronykit/x/rkit (ToCamel/ToSnake/ToKebab/...)."
+            - pkg: github.com/gofrs/uuid
+              desc: "Do not use gofrs/uuid. Use github.com/clubpay/ronykit/x/rkit (RandomID/SecureRandomUint64)."
+            - pkg: github.com/rs/xid
+              desc: "Do not use rs/xid. Use github.com/clubpay/ronykit/x/rkit (RandomID)."
+            - pkg: github.com/oklog/ulid
+              desc: "Do not use oklog/ulid. Use github.com/clubpay/ronykit/x/rkit (RandomID)."
+            - pkg: github.com/segmentio/ksuid
+              desc: "Do not use segmentio/ksuid. Use github.com/clubpay/ronykit/x/rkit (RandomID)."
+            - pkg: github.com/matoous/go-nanoid
+              desc: "Do not use go-nanoid. Use github.com/clubpay/ronykit/x/rkit (RandomID)."
   exclusions:
     generated: lax
     paths:

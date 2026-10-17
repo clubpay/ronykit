@@ -127,12 +127,20 @@ func workspaceCommonDestMapper(repoRoot, kind string) func(string) (string, bool
 	}
 
 	return func(relPath string) (string, bool) {
-		if strings.HasSuffix(filepath.ToSlash(relPath), "hooks/backend-verify.sh") {
+		if isBackendHook(relPath) {
 			return "", true
 		}
 
 		return filepath.Join(repoRoot, relPath), false
 	}
+}
+
+// isBackendHook reports whether relPath is a backend-only agent hook script
+// (.cursor/hooks/backend-*.sh, .claude/hooks/backend-*.sh), which frontend workspaces skip.
+func isBackendHook(relPath string) bool {
+	rel := filepath.ToSlash(relPath)
+
+	return path.Base(path.Dir(rel)) == "hooks" && strings.HasPrefix(path.Base(rel), "backend-")
 }
 
 // BackendDestPrefix is where skeleton/backend/ is copied.

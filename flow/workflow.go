@@ -10,7 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/x/rkit"
 
-	"github.com/google/uuid"
+	"github.com/google/uuid" //nolint:depguard // Temporal request IDs are UUIDs by convention
 	"go.temporal.io/api/common/v1"
 	enumspb "go.temporal.io/api/enums/v1"
 	v13 "go.temporal.io/api/failure/v1"

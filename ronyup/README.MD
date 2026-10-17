@@ -31,6 +31,7 @@ go install github.com/clubpay/ronykit/ronyup@latest
 - `setup`: create a new workspace, add a feature, migrate bundle layout, sync scaffold files, or manage bundles.
 - `text`: extract and generate translation catalogs using `golang.org/x/text/message/pipeline`.
 - `mcp`: run `ronyup` as a stdio or streamable-HTTP MCP server for AI assistants.
+- `lint`: report (or `--fix`) Go code that re-implements an `x/rkit` helper.
 - `version`: print the `ronyup` version.
 
 Running `ronyup setup` or `ronyup text` with no flags triggers an interactive TUI.
@@ -135,6 +136,18 @@ ronyup text \
 
 If a `go.work` file is present, the command loads packages from each `use` entry (filtered by `--modules-filter`).
 
+### Lint for x/rkit duplicates
+
+```bash
+ronyup lint ./...          # exit 1 when findings remain, 2 when packages do not compile
+ronyup lint --fix ./...    # rewrite fixable findings in place
+```
+
+Flags hand-written copies of rkit helpers: if-err-panic (`rkit.Must`/`Assert`), loops collecting map keys/values
+(`rkit.MapKeysToArray`/`MapToArray`), unsafe `[]byte`↔`string` casts (`rkit.B2S`/`S2B`), and local
+`must`/`deref`/`contains`/`coalesce` helpers. Modules that do not require `x/rkit` are skipped unless `--all-modules`.
+`--hook claude-post-edit` runs it as a Claude Code `PostToolUse` hook (used by scaffolded workspaces).
+
 ### Run MCP server
 
 ```bash
@@ -148,6 +161,7 @@ Starts a stdio MCP server (or streamable HTTP with `--port`). Exposed tools:
 - `sync_workspace` — refresh scaffold boilerplate in an existing workspace (same as `setup sync`)
 - `setup_bundle` — create/remove executable bundles or regenerate `features.go` (same as `setup bundle`)
 - `migrate_bundles` — upgrade a legacy workspace to the bundle layout (same as `setup migrate bundles`)
+- `check_rkit_usage` — report (and optionally fix) code that re-implements an `x/rkit` helper (same as `lint`)
 
 Knowledge resources are served under `knowledge://ronyup/{architecture,packages,characteristics,tools}/…`, and workflow prompts include
 `design-new-service`, `write-srs`, `write-sdd`, `design-frontend`, and `migrate-kit-to-rony`.

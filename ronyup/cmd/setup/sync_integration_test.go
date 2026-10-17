@@ -91,6 +91,36 @@ func TestSetupSyncCommand_OverwriteAgents(t *testing.T) {
 	}
 }
 
+func TestSetupSyncCommand_AddsClaudeHooks(t *testing.T) {
+	root := scaffoldLegacyBackendWorkspace(t)
+
+	oldOpt := opt
+	oldSync := syncOpt
+	t.Cleanup(func() {
+		opt = oldOpt
+		syncOpt = oldSync
+	})
+
+	chdir(t, root)
+
+	syncOpt = struct {
+		RepoDir    string
+		Kind       string
+		Only       []string
+		Overwrite  bool
+		SkillsMode []string
+	}{
+		RepoDir: ".",
+		Only:    []string{syncSectionHooks},
+	}
+
+	if err := runSync(newSilentCommand(t)); err != nil {
+		t.Fatalf("runSync(hooks): %v", err)
+	}
+
+	assertClaudeHooks(t, root, true)
+}
+
 func scaffoldLegacyBackendWorkspace(t *testing.T) string {
 	t.Helper()
 

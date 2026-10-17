@@ -9,6 +9,7 @@
 #   - internal/app unit tests pass `go test` (no Docker needed)
 #   - integration_test packages pass `go test` (only when Docker is available)
 #   - golangci-lint (depguard / package selection) when the binary is on PATH
+#   - ronyup lint (hand-written code that duplicates an x/rkit helper) when ronyup is on PATH
 #
 # Static coverage checks ALWAYS block. The repo integration test RUN needs a
 # Docker daemon (Gnomock); when Docker is unavailable the gate WARNS and skips
@@ -52,6 +53,10 @@ fail=0
 if ! command -v golangci-lint >/dev/null 2>&1; then
 	echo ">> WARNING: golangci-lint is not on PATH — package-selection lint will be skipped." >&2
 	echo ">> Install golangci-lint and re-run make verify; depguard failures are design violations." >&2
+fi
+
+if ! command -v ronyup >/dev/null 2>&1; then
+	echo ">> WARNING: ronyup is not on PATH — the x/rkit duplicate check (ronyup lint) will be skipped." >&2
 fi
 
 # repo_methods <port.go> — interface method names (one per line).
@@ -153,6 +158,14 @@ EOF
 		echo ">> ($mod) golangci-lint run (depguard / package selection)"
 		if ! ( cd "$mod" && golangci-lint run ./... ); then
 			echo ">> ($mod) golangci-lint FAILED — a depguard/import failure is a design violation; switch to the RonyKIT package." >&2
+			fail=1
+		fi
+	fi
+
+	if command -v ronyup >/dev/null 2>&1; then
+		echo ">> ($mod) ronyup lint (x/rkit duplicates)"
+		if ! ( cd "$mod" && ronyup lint ./... ); then
+			echo ">> ($mod) ronyup lint FAILED — call the x/rkit helper instead of re-implementing it (\`ronyup lint --fix ./...\` in $mod rewrites the fixable ones)." >&2
 			fail=1
 		fi
 	fi

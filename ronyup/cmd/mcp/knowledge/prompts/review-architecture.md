@@ -22,7 +22,7 @@ Check the following:
 9. Error handling uses rony/errs exclusively (errs.GenWrap / errs.B), with SCREAMING_SNAKE_CASE codes — no bare errors.New/fmt.Errorf.
 10. Workflows use the `flow` package only — flag ANY direct `go.temporal.io/sdk` import as a violation.
 11. Infra connections use x/datasource (InitDB/InitRedis/InitS3) via di params — no hand-written sql.Open/redis.NewClient/migrate setup.
-12. Common utilities use x/rkit (IDs, JSON/byte casts, string↔number, case transforms, collection ops) instead of hand-rolled loops, crypto/rand, google/uuid, or raw strconv/encoding/json.
+12. Common utilities use x/rkit (IDs, JSON/byte casts, string↔number, case transforms, collection ops) instead of hand-rolled loops, crypto/rand, google/uuid, or raw strconv/encoding/json. Run the MCP tool `check_rkit_usage` on the feature module and include every finding.
 13. Rate limiting uses x/ratelimit; in-memory caching uses x/cache; batching uses x/batch; pooling uses x/p — not third-party or hand-rolled equivalents.
 14. Forbidden imports: grep the feature for `go.temporal.io/sdk`, `log/slog`, `go.uber.org/zap`, `github.com/google/uuid` in non-test files and report each as a violation.
 

@@ -44,7 +44,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 |---------|---------|
 | `agents` | `AGENTS.md` |
 | `ai` | `.ai/`, `.cursor/mcp.json` |
-| `hooks` | `.cursor/hooks/`, `hooks.json` |
+| `hooks` | `.cursor/hooks/`, `hooks.json`, `.claude/hooks/`, `.claude/settings.json` |
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
 | `skills` | `.agents/.cursor/.claude/skills/ronykit-framework` + catalog copies |

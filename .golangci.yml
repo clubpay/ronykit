@@ -5,7 +5,6 @@ linters:
   default: all
   disable:
     - cyclop
-    - depguard
     - dupl
     - embeddedstructfieldcheck
     - err113
@@ -55,6 +54,31 @@ linters:
           deny:
             - pkg: io/ioutil
               desc: io/ioutil is deprecated, use io instead
+            # Third-party substitutes for x/rkit (same list as the scaffolded
+            # workspaces' .golangci.yml). Hand-written copies are caught by
+            # `make lint-rkit` instead.
+            - pkg: github.com/jinzhu/copier
+              desc: use x/rkit (DynCast/DynCastOption/TypeConvert); only x/rkit may wrap copier
+            - pkg: github.com/google/uuid
+              desc: use x/rkit (RandomID/SecureRandomUint64)
+            - pkg: github.com/gofrs/uuid
+              desc: use x/rkit (RandomID/SecureRandomUint64)
+            - pkg: github.com/rs/xid
+              desc: use x/rkit (RandomID)
+            - pkg: github.com/oklog/ulid
+              desc: use x/rkit (RandomID)
+            - pkg: github.com/segmentio/ksuid
+              desc: use x/rkit (RandomID)
+            - pkg: github.com/matoous/go-nanoid
+              desc: use x/rkit (RandomID)
+            - pkg: github.com/samber/lo
+              desc: use x/rkit collection helpers or slices/maps
+            - pkg: github.com/thoas/go-funk
+              desc: use x/rkit collection helpers or slices/maps
+            - pkg: github.com/iancoleman/strcase
+              desc: use x/rkit (ToCamel/ToSnake/ToKebab/...)
+            - pkg: github.com/ettle/strcase
+              desc: use x/rkit (ToCamel/ToSnake/ToKebab/...)
     errcheck:
       check-type-assertions: true
       check-blank: true

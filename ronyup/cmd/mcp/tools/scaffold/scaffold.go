@@ -25,11 +25,13 @@ type featureArgs struct {
 	SkipDesignGate  bool   `json:"skipDesignGate"`
 }
 
-// Register registers scaffold MCP tools that call internal/scaffold in-process.
+// Register registers the scaffold MCP tools (in-process internal/scaffold calls) and
+// check_rkit_usage (in-process internal/rkitlint).
 func Register(srv *mcpsdk.Server) {
 	registerSetupWorkspace(srv)
 	registerSetupFeature(srv)
 	registerLifecycle(srv)
+	registerCheckRkit(srv)
 }
 
 func registerSetupWorkspace(srv *mcpsdk.Server) {
@@ -39,7 +41,7 @@ func registerSetupWorkspace(srv *mcpsdk.Server) {
 		InputSchema: map[string]any{
 			schemaKeyType: schemaKeyObject,
 			schemaKeyProperties: map[string]any{
-				"path": map[string]any{
+				argPath: map[string]any{
 					schemaKeyType:        schemaTypeString,
 					schemaKeyDescription: "The absolute or relative path to initialize the workspace.",
 				},
@@ -62,7 +64,7 @@ func registerSetupWorkspace(srv *mcpsdk.Server) {
 						"defaults for the chosen kind.",
 				},
 			},
-			schemaKeyRequired: []string{"path"},
+			schemaKeyRequired: []string{argPath},
 		},
 	}
 

@@ -76,6 +76,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                                             |
 | Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony`                           |
 | Upgrade old workspace layout | MCP `migrate_bundles` → `ronyup setup migrate bundles`                                        |
+| Check x/rkit usage           | MCP `check_rkit_usage` (`ronyup lint`; `fix: true` rewrites the fixable findings)             |
 
 ## Hard rules
 
@@ -86,13 +87,13 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 - **App unit tests are mandatory.** Every exported `App` method in `internal/app/` needs a unit test.
 - Handlers thin; business logic in `internal/app`; persistence behind `internal/repo/port.go`.
 - Default storage: Postgres + sqlc in `internal/repo/v0` unless the user requests otherwise.
-- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource — at minimum `packages/rony` and `packages/errs` before writing handlers. Use `rony` (not raw `kit`) in feature `api/`, `rony/errs`, `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache` (process-local only; Redis → `characteristics/redis`), `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and generated stubs (`packages/stub`) — avoid third-party/stdlib substitutes.
+- **Package selection is mandatory.** Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent. Read `architecture/package-selection` (the full reach-for-X → use-Y map) and the relevant `packages/*` resource — at minimum `packages/rony` and `packages/errs` before writing handlers. Use `rony` (not raw `kit`) in feature `api/`, `rony/errs`, `x/rkit` (IDs, JSON/byte casts, string↔number, case, collections), `x/di`, `x/settings`, `x/telemetry/*`, `x/datasource`, `x/cache` (process-local only; Redis → `characteristics/redis`), `x/ratelimit`, `x/batch`, `x/p`, `x/i18n`, `x/apidoc`, and generated stubs (`packages/stub`) — avoid third-party/stdlib substitutes. `make verify` runs `ronyup lint` (MCP `check_rkit_usage`), which flags hand-written copies of rkit helpers (if-err-panic, map key/value loops, unsafe casts, local `must`/`deref`/`contains`/`coalesce`).
 - **Workflows: `flow` only.** Never import `go.temporal.io/sdk` directly — it's denied by the workspace `.golangci.yml`.
 - Feature Go package name: `<feature>mod` (e.g. `authmod`, not `auth`).
 - After contract changes: `make gen-stub` in that feature module.
 - Inter-service calls: generated stubs, not hand-written HTTP clients.
 - **Passthrough HTTP/WebSocket proxy routes** use `rony.WithRelay` + `RelayCtx.Relay()` only — never `WithUnary`/`WithRawUnary` or `kit.RawMessage` hacks. Read `architecture/handler-relay`. Static gateway proxy: `rony.WithReverseProxy`.
-- `make lint` failures from `depguard` are design violations (forbidden imports), not formatting nits — fix by switching to the RonyKIT package.
+- `make lint` failures from `depguard` (forbidden imports) and `ronyup lint` findings (re-implemented rkit helpers) are design violations, not formatting nits — fix by switching to the RonyKIT package or helper.
 
 ## Validation
 

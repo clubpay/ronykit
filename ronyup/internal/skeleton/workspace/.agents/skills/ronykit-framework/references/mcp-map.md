@@ -14,8 +14,10 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 | `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`ronyup setup sync`)         |
 | `setup_bundle`       | Create/remove executable bundles, regenerate features.go (`ronyup setup bundle`)    |
 | `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`ronyup setup migrate bundles`)    |
+| `check_rkit_usage`   | Report (and optionally fix) Go code that re-implements an x/rkit helper (`ronyup lint`) |
 
-Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`.
+Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`,
+`check_rkit_usage`.
 
 ## Prompts
 

@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -74,6 +75,8 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 	if !strings.Contains(string(hooks), "backend-verify.sh") {
 		t.Fatalf("backend-only hooks.json should register the backend stop hook, got:\n%s", hooks)
 	}
+
+	assertClaudeHooks(t, filepath.Join(tmpDir, repoDir), true)
 
 	for _, rel := range []string{
 		"verify.sh", ".cursor/hooks/backend-verify.sh",
@@ -182,6 +185,8 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 	if !strings.Contains(string(hooks), "backend-verify.sh") {
 		t.Fatalf("fullstack hooks.json should register the backend-verify stop hook, got:\n%s", hooks)
 	}
+
+	assertClaudeHooks(t, root, true)
 
 	// The Go workspace must not be duplicated at the repository root.
 	if _, err := os.Stat(filepath.Join(root, "cmd")); !os.IsNotExist(err) {
@@ -297,6 +302,8 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 		t.Fatalf("frontend-only hooks.json should not register the backend stop hook, got:\n%s", hooks)
 	}
 
+	assertClaudeHooks(t, root, false)
+
 	// AGENTS.md renders frontend-only guidance and drops backend sections.
 	agents, err := os.ReadFile(filepath.Join(root, "AGENTS.md"))
 	if err != nil {
@@ -410,4 +417,61 @@ func writeExecutable(path, content string) error {
 	}
 
 	return os.Chmod(path, 0o755)
+}
+
+// assertClaudeHooks checks .claude/settings.json is valid JSON and registers the backend
+// PostToolUse (ronyup lint) and Stop (verify) hooks exactly when the workspace has a backend.
+func assertClaudeHooks(t *testing.T, root string, backend bool) {
+	t.Helper()
+
+	raw, err := os.ReadFile(filepath.Join(root, ".claude", "settings.json"))
+	if err != nil {
+		t.Fatalf("ReadFile(.claude/settings.json) unexpected error: %v", err)
+	}
+
+	var settings struct {
+		Permissions map[string]any `json:"permissions"`
+		Hooks       map[string]any `json:"hooks"`
+	}
+	if err := json.Unmarshal(raw, &settings); err != nil {
+		t.Fatalf(".claude/settings.json is not valid JSON: %v\n%s", err, raw)
+	}
+
+	if settings.Permissions == nil {
+		t.Fatalf(".claude/settings.json lost its permissions block:\n%s", raw)
+	}
+
+	scripts := []string{".claude/hooks/backend-lint.sh", ".claude/hooks/backend-verify.sh"}
+
+	if !backend {
+		if settings.Hooks != nil {
+			t.Fatalf("frontend-only .claude/settings.json should not register backend hooks:\n%s", raw)
+		}
+
+		for _, rel := range scripts {
+			if _, err := os.Stat(filepath.Join(root, rel)); !os.IsNotExist(err) {
+				t.Fatalf("did not expect %s in frontend-only workspace (err=%v)", rel, err)
+			}
+		}
+
+		return
+	}
+
+	for _, event := range []string{"PostToolUse", "Stop"} {
+		if settings.Hooks[event] == nil {
+			t.Fatalf(".claude/settings.json should register a %s hook:\n%s", event, raw)
+		}
+	}
+
+	for _, want := range []string{"backend-lint.sh", "backend-verify.sh", "Edit|MultiEdit|Write"} {
+		if !strings.Contains(string(raw), want) {
+			t.Fatalf(".claude/settings.json should mention %q:\n%s", want, raw)
+		}
+	}
+
+	for _, rel := range scripts {
+		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
+			t.Fatalf("expected %s: %v", rel, err)
+		}
+	}
 }

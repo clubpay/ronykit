@@ -1,0 +1,11 @@
+package fixmod
+
+import "github.com/clubpay/ronykit/x/rkit"
+
+func get() (int, error) { return 1, nil }
+
+func useGet() int {
+	v := rkit.Must(get())
+
+	return v + 1
+}

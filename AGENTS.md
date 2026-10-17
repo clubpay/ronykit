@@ -94,7 +94,8 @@ docs/             Diagrams and extra documentation
 make setup       # Install tools (gotestsum, golangci-lint, markdownfmt)
 make format-md   # Format all Markdown (*.md); preserves YAML frontmatter (see scripts/format-markdown.sh)
 make test        # Run tests across all modules (excludes example/, ronyup/)
-make lint        # Lint all modules (excludes example/)
+make lint        # Lint all modules (excludes example/); ends with lint-rkit
+make lint-rkit   # ronyup lint --fix: rewrite hand-written copies of x/rkit helpers
 make vet         # go vet all modules (excludes example/)
 make tidy        # go mod tidy all modules (excludes example/)
 ```
@@ -118,7 +119,7 @@ make tidy        # go mod tidy all modules (excludes example/)
 ## std module conventions
 
 - Each module under `std/` and `x/` has its own `go.mod`; respect module boundaries.
-- Prefer RonyKit packages over third-party/stdlib substitutes where equivalents exist (`x/rkit`, `x/di`, `x/settings`, `x/telemetry/*`, `rony/errs`, etc.).
+- Prefer RonyKit packages over third-party/stdlib substitutes where equivalents exist (`x/rkit`, `x/di`, `x/settings`, `x/telemetry/*`, `rony/errs`, etc.). `make lint` enforces part of this: depguard denies third-party substitutes for rkit, and `make lint-rkit` (`ronyup lint`) flags hand-written copies of rkit helpers in modules that require `x/rkit`. Silence a deliberate exception with `//rkitcheck:ignore <reason>`.
 - **Workflows:** use `flow` only — do not import `go.temporal.io/sdk` directly (denied by workspace `.golangci.yml` in scaffolded apps).
 - **Constructors:** std modules follow the gateway pattern — `New(opts ...Option) (T, error)` plus `MustNew(opts ...Option) T` that panics on error. Unset config fields may be filled from environment variables — list any new one in `.env.example`.
 

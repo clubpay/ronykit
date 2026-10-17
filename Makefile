@@ -1,4 +1,4 @@
-.PHONY:  cleanup test lint vet format-md \
+.PHONY:  cleanup test lint lint-rkit vet format-md \
          new-version-patch new-version-minor \
          new-version-patch-dry new-version-minor-dry \
          bump-workspace bump-workspace-dry \
@@ -21,6 +21,18 @@ lint:
 		echo "lint $$dir..."; \
 		(cd $$dir && golangci-lint run --path-prefix "${dir}" --fix ./...); \
 	done
+	@$(MAKE) --no-print-directory lint-rkit
+
+# Hand-written code that duplicates an x/rkit helper (`ronyup lint`, built from
+# this checkout). Modules that do not require x/rkit are skipped by the tool.
+RONYUP_BIN := $(CURDIR)/.bin/ronyup
+
+lint-rkit:
+	@echo "Run ronyup lint (x/rkit duplicates)"
+	@cd ronyup && go build -o $(RONYUP_BIN) .
+	@fail=0; for dir in $$(go list -f '{{.Dir}}' -m all | grep -v mod | grep -v example); do \
+		(cd $$dir && $(RONYUP_BIN) lint --fix ./...) || fail=1; \
+	done; exit $$fail
 
 vet:
 	@echo "Run Go Vet"

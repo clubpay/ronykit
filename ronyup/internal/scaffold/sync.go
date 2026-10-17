@@ -240,7 +240,7 @@ func syncSection(
 			"AGENTS.mdtmpl",
 			"CLAUDE.md",
 			".cursorignore",
-			".claude/settings.json",
+			".claude/settings.jsontmpl",
 			".editorconfig",
 			"CODEOWNERS",
 		)
@@ -254,6 +254,8 @@ func syncSection(
 			callback,
 			".cursor/hooks",
 			".cursor/hooks.jsontmpl",
+			".claude/hooks",
+			".claude/settings.jsontmpl",
 		)
 	case SyncSectionDevops:
 		return syncWorkspacePaths(layout, templateInput, skipExisting, callback, "devops")
@@ -305,7 +307,7 @@ func workspacePathFilter(repoRoot, kind string, allowed map[string]bool) func(st
 	return func(relPath string) (string, bool) {
 		rel := filepath.ToSlash(relPath)
 
-		if kind == KindFrontend && strings.HasSuffix(rel, "hooks/backend-verify.sh") {
+		if kind == KindFrontend && isBackendHook(rel) {
 			return "", true
 		}
 

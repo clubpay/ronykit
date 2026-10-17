@@ -1,0 +1,19 @@
+package fixmod
+
+import (
+	"sort"
+
+	"github.com/clubpay/ronykit/x/rkit"
+)
+
+func keys(m map[string]int) []string {
+	return rkit.MapKeysToArray(m)
+}
+
+func sortedValues(m map[string]int) []int {
+	out := rkit.MapToArray(m)
+
+	sort.Ints(out)
+
+	return out
+}
