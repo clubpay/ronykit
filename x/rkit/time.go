@@ -1,6 +1,7 @@
 package rkit
 
 import (
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -15,21 +16,30 @@ import (
    Auditor: Ehsan N. Moosa (E2)
 */
 
-var timeInSec int64
+var (
+	timeInSec atomic.Int64
+	clockOnce sync.Once
+)
 
-func init() {
-	timeInSec = time.Now().Unix()
+// startClock is deferred to the first TimeUnix call so that importing rkit does not
+// spawn a background goroutine.
+func startClock() {
+	timeInSec.Store(time.Now().Unix())
 
 	go func() {
 		for {
 			time.Sleep(time.Second)
-			atomic.AddInt64(&timeInSec, time.Now().Unix()-atomic.LoadInt64(&timeInSec))
+			timeInSec.Store(time.Now().Unix())
 		}
 	}()
 }
 
+// TimeUnix returns the current Unix time in seconds from a clock refreshed once per second.
+// It is cheaper than time.Now().Unix() on hot paths that tolerate up to one second of drift.
 func TimeUnix() int64 {
-	return atomic.LoadInt64(&timeInSec)
+	clockOnce.Do(startClock)
+
+	return timeInSec.Load()
 }
 
 func TimeUnixAdd(unixTime int64, d time.Duration) int64 {

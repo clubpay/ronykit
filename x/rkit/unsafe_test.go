@@ -25,3 +25,15 @@ func TestStrToByte(t *testing.T) {
 		t.Fatalf("StrToByte len = %d, want %d", len(b), len(s))
 	}
 }
+
+func TestUnsafeConversionsEmpty(t *testing.T) {
+	if got := ByteToStr(nil); got != "" {
+		t.Fatalf("ByteToStr(nil) = %q, want empty", got)
+	}
+	if got := ByteToStr([]byte{}); got != "" {
+		t.Fatalf("ByteToStr(empty) = %q, want empty", got)
+	}
+	if got := StrToByte(""); got != nil {
+		t.Fatalf("StrToByte(\"\") = %v, want nil", got)
+	}
+}

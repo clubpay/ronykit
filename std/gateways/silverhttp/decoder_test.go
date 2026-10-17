@@ -1,6 +1,8 @@
 package silverhttp
 
 import (
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
@@ -82,5 +84,48 @@ func TestSelectorQueries(t *testing.T) {
 	rpc := RPC("evt")
 	if rpc.Query(queryPredicate) != "evt" {
 		t.Fatalf("unexpected query predicate: %v", rpc.Query(queryPredicate))
+	}
+}
+
+type wideIntMsg struct {
+	Int    int     `json:"int"`
+	IntPtr *int    `json:"intPtr"`
+	Uint   uint    `json:"uint"`
+	U32    uint32  `json:"u32"`
+	U64    uint64  `json:"u64"`
+	U64Ptr *uint64 `json:"u64Ptr"`
+}
+
+func TestReflectDecoderWideIntegers(t *testing.T) {
+	if strconv.IntSize != 64 {
+		t.Skip("requires 64-bit int")
+	}
+
+	dec := reflectDecoder(kit.JSON, kit.CreateMessageFactory(&wideIntMsg{}))
+	bag := httpmux.Params{
+		{Key: "int", Value: "3000000000"},
+		{Key: "intPtr", Value: "-3000000000"},
+		{Key: "uint", Value: "3000000000"},
+		{Key: "u32", Value: "4000000000"},
+		{Key: "u64", Value: "18446744073709551615"},
+		{Key: "u64Ptr", Value: "-1"},
+	}
+
+	msg, err := dec(nil, bag, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	m := msg.(*wideIntMsg) //nolint:forcetypeassert
+	if m.Int != 3000000000 || m.IntPtr == nil || *m.IntPtr != -3000000000 {
+		t.Fatalf("int fields truncated: %d %v", m.Int, m.IntPtr)
+	}
+	if m.Uint != 3000000000 || m.U32 != 4000000000 {
+		t.Fatalf("uint fields truncated: %d %d", m.Uint, m.U32)
+	}
+	if m.U64 != math.MaxUint64 {
+		t.Fatalf("uint64 field clamped: %d", m.U64)
+	}
+	if m.U64Ptr == nil || *m.U64Ptr != 0 {
+		t.Fatalf("negative uint64 must decode as 0, got %v", m.U64Ptr)
 	}
 }

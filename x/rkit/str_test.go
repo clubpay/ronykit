@@ -1,6 +1,10 @@
 package rkit
 
-import "testing"
+import (
+	"math"
+	"strconv"
+	"testing"
+)
 
 func TestCloneAndConversions(t *testing.T) {
 	if got := CloneStr("abc"); got != "abc" {
@@ -82,5 +86,48 @@ func TestStrTruncate(t *testing.T) {
 	}
 	if got := StrTruncate("hello", 10); got != "hello" {
 		t.Fatalf("StrTruncate large = %q, want %q", got, "hello")
+	}
+}
+
+func TestStrToNumberBounds(t *testing.T) {
+	if strconv.IntSize != 64 {
+		t.Skip("requires 64-bit int")
+	}
+
+	tests := []struct {
+		name string
+		got  any
+		want any
+	}{
+		{"StrToInt above int32", StrToInt("3000000000"), 3000000000},
+		{"StrToInt negative", StrToInt("-3000000000"), -3000000000},
+		{"StrToInt overflow clamps", StrToInt("99999999999999999999"), math.MaxInt},
+		{"StrToUInt above int32", StrToUInt("3000000000"), uint(3000000000)},
+		{"StrToUInt negative", StrToUInt("-1"), uint(0)},
+		{"StrToUInt plus sign", StrToUInt("+7"), uint(7)},
+		{"StrToUInt32 above int32", StrToUInt32("4000000000"), uint32(4000000000)},
+		{"StrToUInt32 overflow clamps", StrToUInt32("5000000000"), uint32(math.MaxUint32)},
+		{"StrToUInt32 negative", StrToUInt32("-1"), uint32(0)},
+		{"StrToUInt64 max", StrToUInt64("18446744073709551615"), uint64(math.MaxUint64)},
+		{"StrToUInt64 negative", StrToUInt64("-1"), uint64(0)},
+		{"StrToUInt64 plus sign", StrToUInt64("+5"), uint64(5)},
+		{"StrToInt32 overflow clamps", StrToInt32("3000000000"), int32(math.MaxInt32)},
+		{"StrToInt64 negative", StrToInt64("-42"), int64(-42)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.got != tt.want {
+				t.Fatalf("got %v, want %v", tt.got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIntToStrNegative(t *testing.T) {
+	if got := IntToStr(-5); got != "-5" {
+		t.Fatalf("IntToStr(-5) = %q, want %q", got, "-5")
+	}
+	if got := IntToStr(math.MinInt); got != strconv.FormatInt(math.MinInt, 10) {
+		t.Fatalf("IntToStr(MinInt) = %q", got)
 	}
 }

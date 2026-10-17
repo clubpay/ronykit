@@ -4,10 +4,10 @@ import "slices"
 
 // Filter returns a new slice containing only the elements in tt for which the match function returns true.
 //
-//		type User struct {
-//			Name string
-//			Age  int
-//			Active bool
+//	type User struct {
+//		Name   string
+//		Age    int
+//		Active bool
 //	}
 //
 //	var users = []User{
@@ -16,11 +16,11 @@ import "slices"
 //		{"Mary", 18, true},
 //	}
 //
-//	var activeUsers = qkit.Filter(users, func(u User) bool {
+//	var activeUsers = rkit.Filter(users, func(u User) bool {
 //		return u.Active
 //	})
 //
-// fmt.Println(activeUsers)
+//	fmt.Println(activeUsers)
 //
 // Playground: https://go.dev/play/p/70YOKRs79OF
 func Filter[T any](tt []T, match func(src T) bool) []T {
@@ -48,11 +48,11 @@ func Filter[T any](tt []T, match func(src T) bool) []T {
 //		{"Mary", 18},
 //	}
 //
-//	var names = qkit.Map(users, func(u User) string {
+//	var names = rkit.Map(users, func(u User) string {
 //		return u.Name
 //	})
 //
-// fmt.Println(names)
+//	fmt.Println(names)
 //
 // Playground: https://go.dev/play/p/wKIa32-rMDn
 func Map[S, D any](ss []S, transformer func(src S) D) []D {
@@ -64,9 +64,10 @@ func Map[S, D any](ss []S, transformer func(src S) D) []D {
 	return dd
 }
 
-// Reduce [T, R] reduces the slice tt to a single value r using the reducer
-// function. The reducer function takes the current reduced value r and the
-// current slice value t and returns a new reduced value.
+// Reduce reduces the slice tt to a single value r using the reducer
+// function, starting from the zero value of R. The reducer function takes the
+// current reduced value r and the current slice value t and returns a new
+// reduced value. Unlike Map and Filter, the function comes before the slice.
 //
 //	type User struct {
 //		Name string
@@ -79,11 +80,11 @@ func Map[S, D any](ss []S, transformer func(src S) D) []D {
 //		{"Mary", 18},
 //	}
 //
-//	var totalAge = qkit.Reduce(func(r int, u User) int {
+//	var totalAge = rkit.Reduce(func(r int, u User) int {
 //		return r + u.Age
 //	}, users)
 //
-// fmt.Println(totalAge)
+//	fmt.Println(totalAge)
 //
 // Playground: https://go.dev/play/p/gf9evzMIMIK
 func Reduce[T, R any](reducer func(r R, t T) R, tt []T) R {
@@ -111,7 +112,7 @@ func Reduce[T, R any](reducer func(r R, t T) R, tt []T) R {
 //		{"Lin", 22},
 //	}
 //
-//	qkit.Paginate(users, 2, func(start, end int) error {
+//	rkit.Paginate(users, 2, func(start, end int) error {
 //		fmt.Println(users[start:end])
 //		return nil
 //	})

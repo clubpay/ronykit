@@ -2,7 +2,9 @@ package fasthttp
 
 import (
 	"bytes"
+	"math"
 	"mime/multipart"
+	"strconv"
 	"testing"
 
 	"github.com/clubpay/ronykit/kit"
@@ -139,5 +141,45 @@ func TestGetParamsTrimAndUserValues(t *testing.T) {
 	}
 	if seenTags != 2 || !sawUser || !sawPost {
 		t.Fatalf("unexpected params: %+v", params)
+	}
+}
+
+type wideIntMessage struct {
+	Int    int     `json:"int"`
+	IntPtr *int    `json:"intPtr"`
+	Uint   uint    `json:"uint"`
+	U32    uint32  `json:"u32"`
+	U64    uint64  `json:"u64"`
+	U64Ptr *uint64 `json:"u64Ptr"`
+}
+
+func TestReflectDecoderWideIntegers(t *testing.T) {
+	if strconv.IntSize != 64 {
+		t.Skip("requires 64-bit int")
+	}
+
+	dec := reflectDecoder(kit.JSON, kit.CreateMessageFactory(&wideIntMessage{}))
+	ctx := newRequestCtx(MethodGet, "/decode")
+	ctx.Request.URI().SetQueryString(
+		"int=3000000000&intPtr=-3000000000&uint=3000000000&u32=4000000000" +
+			"&u64=18446744073709551615&u64Ptr=-1",
+	)
+
+	msg, err := dec(ctx, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	m := msg.(*wideIntMessage) //nolint:forcetypeassert
+	if m.Int != 3000000000 || m.IntPtr == nil || *m.IntPtr != -3000000000 {
+		t.Fatalf("int fields truncated: %d %v", m.Int, m.IntPtr)
+	}
+	if m.Uint != 3000000000 || m.U32 != 4000000000 {
+		t.Fatalf("uint fields truncated: %d %d", m.Uint, m.U32)
+	}
+	if m.U64 != math.MaxUint64 {
+		t.Fatalf("uint64 field clamped: %d", m.U64)
+	}
+	if m.U64Ptr == nil || *m.U64Ptr != 0 {
+		t.Fatalf("negative uint64 must decode as 0, got %v", m.U64Ptr)
 	}
 }

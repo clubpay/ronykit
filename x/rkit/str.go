@@ -14,6 +14,9 @@ func CloneBytes(b []byte) []byte {
 	return []byte(B2S(b))
 }
 
+// StrToFloat64 parses s as a base-10 number. Like the other StrTo* helpers it ignores the
+// parse error: malformed input yields 0 and out-of-range input is clamped to the bounds of
+// the target type.
 func StrToFloat64(s string) float64 {
 	v, _ := strconv.ParseFloat(s, 64)
 
@@ -39,27 +42,28 @@ func StrToInt32(s string) int32 {
 }
 
 func StrToUInt64(s string) uint64 {
-	v, _ := strconv.ParseInt(s, 10, 64)
-
-	return uint64(v)
+	return parseUint(s, 64)
 }
 
 func StrToUInt32(s string) uint32 {
-	v, _ := strconv.ParseInt(s, 10, 32)
-
-	return uint32(v)
+	return uint32(parseUint(s, 32))
 }
 
 func StrToInt(s string) int {
-	v, _ := strconv.ParseInt(s, 10, 32)
+	v, _ := strconv.ParseInt(s, 10, strconv.IntSize)
 
 	return int(v)
 }
 
 func StrToUInt(s string) uint {
-	v, _ := strconv.ParseInt(s, 10, 32)
+	return uint(parseUint(s, strconv.IntSize))
+}
 
-	return uint(v)
+// parseUint accepts a leading '+' like strconv.ParseInt does; strconv.ParseUint rejects it.
+func parseUint(s string, bitSize int) uint64 {
+	v, _ := strconv.ParseUint(strings.TrimPrefix(s, "+"), 10, bitSize)
+
+	return v
 }
 
 func Int64ToStr(x int64) string {
@@ -95,7 +99,7 @@ func F32ToStr(x float32) string {
 }
 
 func IntToStr(x int) string {
-	return strconv.FormatUint(uint64(x), 10)
+	return strconv.Itoa(x)
 }
 
 func UIntToStr(x uint) string {
