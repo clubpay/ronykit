@@ -84,7 +84,8 @@ minimum, check these in any diff touching `feature/<name>/`:
 | Check | How to verify | If it fails |
 | ----- | ------------- | ----------- |
 | Handlers thin; rules in `internal/app` / `internal/domain` | Read `api/api_*.go`: decode → one app call → encode | `blocking` — move the logic inward |
-| No forbidden imports | `rg -e go.temporal.io/sdk -e log/slog -e go.uber.org/zap -e google/uuid -g '!*_test.go'` | `blocking` — `make lint` (depguard) will fail |
+| No forbidden imports | `rg -e go.temporal.io/sdk -e log/slog -e go.uber.org/zap -e google/uuid -e samber/lo -e strcase -g '!*_test.go'` | `blocking` — `make lint` (depguard) will fail |
+| rkit helpers used, not re-implemented | `ronyup lint ./...` in the feature (MCP `check_rkit_usage`) | `blocking` — `make verify` fails; `ronyup lint --fix` rewrites most |
 | Errors via `rony/errs` | No `errors.New` / `fmt.Errorf` in service code | `should` |
 | Every new port method has a repo integration test | `internal/repo/integration_test/` covers happy, not-found, conflict | `blocking` — `make verify` fails |
 | Every new exported `App` method has a unit test | `internal/app/*_test.go` | `blocking` — `make verify` fails |

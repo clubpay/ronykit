@@ -1,0 +1,16 @@
+---
+description: shared Go helpers (x/rkit) in every module
+globs: **/*.go
+alwaysApply: false
+---
+
+# Shared Go helpers (x/rkit)
+
+In a module whose `go.mod` requires `x/rkit`, use rkit before writing a small helper. Task → helper map and edge cases: `x/rkit/README.md`.
+
+- if-err-panic → `rkit.Must(f())` / `rkit.Assert(err)`; nil-safe deref → `rkit.PtrVal`; first non-zero → `rkit.Coalesce`.
+- Collections → `rkit.Map` / `Filter` / `Reduce` / `Contains` / `ArrayToSet` / `MapKeysToArray` / `MapToArray`.
+- Zero-copy `[]byte`↔`string` → `rkit.B2S` / `rkit.S2B`; error-free JSON → `rkit.ToJSON` / `rkit.FromJSON`.
+- IDs → `rkit.RandomID` (not secure; `rkit.SecureRandomUint64` when it must be); case → `rkit.ToCamel` / `ToSnake` / `ToKebab`.
+- `make lint-rkit` (`ronyup lint --fix`) rewrites hand-written copies; depguard rejects `samber/lo`, `strcase`, uuid/ulid/xid and `jinzhu/copier`. Mark a deliberate exception with `//rkitcheck:ignore <reason>`.
+- Modules without rkit in `go.mod` (today `ee/`, `std/ee/*`, `x/p`, `x/settings`): use the standard library; don't add the dependency for a one-liner.

@@ -110,11 +110,13 @@ workflows: `flow` only — never import `go.temporal.io/sdk` directly. See
 | Interface declared next to its only implementation | Producer-side abstraction; couples callers to it | Declare it where it is consumed, or drop it |
 | `defer` inside a long loop | Resources held until the function returns | Extract the loop body into a function |
 | Returning `nil` slice vs empty slice inconsistently in API output | JSON `null` vs `[]` breaks clients | Normalize at the handler / DTO boundary |
-| Hand-rolled `uuid`, `strconv`, JSON helpers | Fails `depguard`; bypasses shared behavior | `x/rkit` equivalents |
+| Importing `google/uuid`, `samber/lo`, `strcase`, `copier` | Fails `depguard` (`make lint`) | `x/rkit` equivalents |
+| Hand-writing `must`/`deref`/`contains`/`coalesce`, if-err-panic, map-key loops | Fails `ronyup lint` (`make verify`); bypasses shared behavior | `rkit.Must`/`PtrVal`/`Contains`/`Coalesce`/`MapKeysToArray` — `ronyup lint --fix` rewrites most |
 
 ## Checklist before "done"
 
 - `make lint` clean (formatters + `depguard`), `go vet` passes.
+- `make verify` clean, including `ronyup lint` (no hand-written copies of `x/rkit` helpers).
 - No naked `panic` in library code; errors returned via `rony/errs`.
 - Every goroutine has an owner and a stop condition.
 - Exported identifiers have doc comments starting with the identifier name

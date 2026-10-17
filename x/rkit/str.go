@@ -15,8 +15,8 @@ func CloneBytes(b []byte) []byte {
 }
 
 // StrToFloat64 parses s as a base-10 number. Like the other StrTo* helpers it ignores the
-// parse error: malformed input yields 0 and out-of-range input is clamped to the bounds of
-// the target type.
+// parse error: malformed input yields 0, out-of-range integers are clamped to the bounds of
+// the target type, and out-of-range floats become ±Inf.
 func StrToFloat64(s string) float64 {
 	v, _ := strconv.ParseFloat(s, 64)
 

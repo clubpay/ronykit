@@ -13,7 +13,7 @@ Practical instructions for coding agents and contributors working in this reposi
 
 - **MCP:** `ronyup mcp` (see `.cursor/mcp.json`) — knowledge resources and scaffold tools.
 - **Skill:** `.agents/skills/ronykit-framework/` ([Agent Skills](https://agentskills.io/specification) layout; Cursor discovers it automatically) — invoke `/ronykit-framework` for orchestration; conventions live in MCP, not in the skill body. MCP index: `references/mcp-map.md` under that directory.
-- **Path rules:** `.cursor/rules/*.mdc` carry `globs:` frontmatter and load automatically when you edit `kit/`, `rony/`, `std/`, `x/`, `ronyup/`, or `.agents/skills/`. They hold the per-area detail that used to sit in this file — put new area-specific guidance there, not here.
+- **Path rules:** `.cursor/rules/*.mdc` (Cursor, `globs:`) and their mirrors `.claude/rules/*.md` (Claude Code, quoted `paths:`) load automatically when you edit `kit/`, `rony/`, `std/`, `x/`, `ronyup/`, `.agents/skills/`, or any `.go` file. They hold the per-area detail that used to sit in this file — put new area-specific guidance there, not here, and keep each mirror's body identical (`ronyup/internal/scaffold/rules_drift_test.go` checks).
 - **Exclusions:** `.cursorignore` keeps secrets and vendored bulk out of reach. Add new secret paths there, not only to `.gitignore`.
 
 For scaffolded application workspaces (outside this monorepo), MCP knowledge and tools are the source of truth for service layout and handler conventions.
@@ -26,6 +26,7 @@ Context is layered: this file, plus whichever path rule matches your edit, is al
 |-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
 | editing `kit/`, `rony/`, `std/`, `x/`, `ronyup/`, `.agents/skills/`    | nothing — the matching path rule loads itself                                                               |
 | scaffolding a workspace, service, or feature                          | the `ronykit-framework` skill, then `ronyup mcp` resources                                                  |
+| about to write a small helper (IDs, casts, collections, must/deref)   | `x/rkit/README.md` — task → helper map and edge cases                                                       |
 | needing the request flow, key abstractions, or deeper architecture    | `docs/architecture.md`, `docs/knowledge-architecture.md`, `docs/advanced-kit.md`                            |
 | looking for the API contract or schema                                | **Contracts & schemas** below                                                                               |
 | asked about dependency licenses                                       | `docs/compliance.md` — **never open `COMPLIANCE.md`**, a 529 KB generated FOSSA export                      |
