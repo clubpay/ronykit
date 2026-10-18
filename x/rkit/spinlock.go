@@ -19,7 +19,7 @@ import (
 // A SpinLock must not be copied after first use.
 // This SpinLock intended to be used to synchronize exceptionally short-lived operations.
 type SpinLock struct {
-	lock uintptr
+	lock atomic.Uintptr
 	_    sync.Mutex // for copy protection compiler warning
 }
 
@@ -27,12 +27,12 @@ type SpinLock struct {
 // If the lock is already in use, the calling goroutine
 // blocks until the locker is available.
 func (l *SpinLock) Lock() {
-	for !atomic.CompareAndSwapUintptr(&l.lock, 0, 1) {
+	for !l.lock.CompareAndSwap(0, 1) {
 		runtime.Gosched()
 	}
 }
 
 // Unlock unlocks l.
 func (l *SpinLock) Unlock() {
-	atomic.StoreUintptr(&l.lock, 0)
+	l.lock.Store(0)
 }
