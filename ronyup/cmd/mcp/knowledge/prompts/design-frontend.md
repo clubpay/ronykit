@@ -34,6 +34,8 @@ Also read these skill files (do not skip — they are required, not optional):
 - `.agents/skills/frontend-design/SKILL.md`
 - `.agents/skills/design-tokens/SKILL.md`
 - `.agents/skills/typography/SKILL.md`
+- `.agents/skills/ui-polish/SKILL.md`
+- `.agents/skills/dashboard-ui/SKILL.md` — when the app is an operational dashboard, admin console, or data-dense workbench (`Operate` mode)
 - `.agents/skills/webmcp/SKILL.md` — when the app should expose WebMCP tools to
   in-browser agents (default for dashboards, admin consoles, and operational UIs)
 
@@ -44,9 +46,10 @@ Also read these skill files (do not skip — they are required, not optional):
 1. Confirm frontend topology: one app at `frontend/` or multiple under `frontend/<app>/`.
 2. Confirm target app slug: **{{app_name}}** and stack (Next.js, Vite+React, …).
 3. Ask design questions the user has not already answered:
-   - Aesthetic direction and references (what to avoid: generic AI defaults)
+   - Surface mode (`Persuade` marketing/landing, `Operate` dashboard/workbench, `Read` docs/editorial, or `Experience` interactive canvas)
+   - Aesthetic direction and references (what to avoid: generic AI defaults, hanging headers, 3-equal-card strips, fake browser chrome)
    - Brand constraints vs freedom to propose palette/type
-   - Light/dark/both; marketing vs dashboard/data-dense
+   - Light/dark/both; fluid `clamp()` scale (`Persuade`/`Read`) vs fixed `rem` scale + 1 sans + 1 mono (`Operate`)
    - Must-have v1 screens
    - **Agent-friendly surface:** should in-browser AI agents automate this app via
      WebMCP? If yes (typical for admin/dashboard/ops UIs), plan the tool catalog in
@@ -82,7 +85,7 @@ Only after the design doc is approved:
 ## Phase 4 — Implement
 
 1. Build v1 surfaces from the design doc; derive every color and type choice from the token plan.
-2. Use `shadcn`, `nextjs-modern`, `ux-quality`, `storybook`, and `webmcp` skills as needed.
+2. Use `shadcn`, `ui-polish`, `nextjs-modern`, `ux-quality`, `storybook`, and `webmcp` skills as needed.
 3. When WebMCP is in scope: install `@mcp-b/global` + `@mcp-b/react-webmcp`, wire the provider,
    register tools per the approved catalog, and unit-test shared handler logic.
 4. Run `bash frontend/verify.sh` (or `make -C frontend verify`) and fix until green before reporting done.

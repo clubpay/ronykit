@@ -1,195 +1,170 @@
 ---
 name: design-tokens
 description: >-
-  Architect a scalable, themeable design-token system — primitive → semantic →
-  component layers, CSS variables, a 4px spacing/type scale, and dark mode. Use
-  when setting up or refactoring a project's tokens, naming color/spacing/radius
-  values, wiring tokens into Tailwind/shadcn, enabling theme switching, or
-  killing hard-coded hex/px scattered through components.
+  Architect CSS custom-property design token systems (3-tier primitive →
+  semantic → component tokens) using OKLCH color ramps, 4-tier text hierarchy,
+  dedicated control tokens, spacing/radius/elevation scales, and first-class
+  light/dark theming in Tailwind CSS v3/v4 and shadcn/ui. Use when setting up
+  `globals.css`, defining a palette, adding dark mode, or eliminating hardcoded
+  hex/px values.
 ---
 
-# Design Tokens
+# Design Tokens & Theming Architecture
 
-Tokens are the single source of truth for every visual value. The goal is that
-a component never contains a raw `#2563EB` or `16px` — it references a named
-token, so a theme change or rebrand is one edit, not a find-and-replace across
-the codebase.
+Hardcoded hex codes (`#3b82f6`), arbitrary pixel spacing, and ad-hoc shadows make
+interfaces brittle and dark mode impossible to maintain. A **3-tier token
+architecture** gives every component a single semantic source of truth.
 
-The discipline is **three layers**: raw values, what they *mean*, and how a
-*component* consumes them. Skipping the middle layer is why most token systems
-can't switch themes.
+## 1. Three-tier token hierarchy
 
-## When to use
+| Tier              | Purpose                                | Example                                                     | Used in components?                |
+| ----------------- | -------------------------------------- | ----------------------------------------------------------- | ---------------------------------- |
+| **1. Primitive**  | Raw palette ramps & numeric scales     | `--neutral-100`, `--brand-600`, `--space-4`                 | **Never directly**                 |
+| **2. Semantic**   | Role-based tokens that flip per theme  | `--background`, `--foreground-secondary`, `--border`, `--primary` | **Yes — 95% of styling**     |
+| **3. Component**  | Scoped overrides when a widget needs it| `--sidebar-bg`, `--input-bg`, `--chart-1`                   | Only inside that component         |
 
-- Standing up a new design system, or refactoring flat/ad-hoc tokens.
-- Naming and organizing color, spacing, radius, shadow, type, motion values.
-- Wiring tokens into Tailwind / shadcn, or enabling light/dark theming.
-- Reviewing UI that hard-codes hex/px instead of referencing tokens.
+**Rule:** Never borrow a token across roles (for example, never use a border
+token for text color or a card surface token for an input background) — even if
+they share the same value in light mode, they diverge in dark mode.
 
-For *consuming* shadcn/ui's generated variables and CLI, see `shadcn`; for
-color discipline in data UIs, see `dashboard-ui`; for type scales and
-hierarchy, see `typography`. This skill governs the token *architecture* those
-build on.
+## 2. OKLCH color ramps & hue discipline
 
-## The three layers
+Prefer **`oklch(L C H)`** over hex or HSL: equal lightness `L` steps look equally
+bright to the human eye across every hue.
 
-```
-Component   --button-bg, --card-padding      per-component overrides
-   ↑
-Semantic    --color-primary, --spacing-section   purpose-based aliases
-   ↑
-Primitive   --color-blue-600, --space-4          raw, meaningless values
-```
+- **Keep the palette minimal:** One neutral ramp, one primary accent ramp, and
+  only the semantic status ramps (`success`, `warning`, `destructive`, `info`)
+  your UI actually renders.
+- **Constant hue per ramp:** Hold hue `H` constant across a ramp (`50 → 950`) and
+  tighten lightness steps at the light end (`50, 100, 200`) where subtle surface
+  differences matter most. When adjusting contrast, change **`L`**, not `H`.
+- **Tint your neutrals:** Add a subtle hint of the brand hue (`C = 0.005–0.015`)
+  to neutral surfaces, text, and borders so the UI feels cohesive rather than
+  sterile `#000`/`#fff`.
+- **Distinct status hues:** Keep `success`, `warning`, and `destructive` hues at
+  least **`15°` away** from your primary accent hue so users never confuse a
+  brand badge with an error or warning.
+- **Paired status tokens:** Every status role needs **3 tokens** — subtle
+  surface (`--status-*-subtle`), readable foreground (`--status-*-fg` at ≥ 4.5:1
+  contrast on that surface), and hairline border (`--status-*-border`).
 
-| Layer     | Holds                          | Changes when…        |
-| --------- | ------------------------------ | -------------------- |
-| Primitive | Raw scales (the palette/ramp)  | Rarely — foundational|
-| Semantic  | Meaning (primary, background)  | Theme / brand switch |
-| Component | One component's knobs          | A component needs it |
+## 3. Four-tier text hierarchy & dedicated control tokens
 
-**Rule:** primitives never appear in components, and semantics never hold raw
-values. A component reads a component or semantic token; a semantic token reads
-a primitive; a primitive is the only place a literal lives.
-
-### 1. Primitive — raw values, no meaning
-
-Full numeric ramps so the semantic layer always has a rung to point at. Use a
-**4px-based spacing scale** and a consistent type/radius/shadow scale.
+Two text tokens (`foreground` and `muted-foreground`) are rarely enough for rich
+data UIs. Define **4 text levels** plus **dedicated control tokens**:
 
 ```css
 :root {
-  --color-gray-100: #f3f4f6;  --color-gray-900: #111827;
-  --color-blue-600: #2563eb;  --color-blue-700: #1d4ed8;
-  --color-red-600:  #dc2626;  --color-green-600: #16a34a;
+  color-scheme: light;
 
-  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-4: 1rem;  --space-6: 1.5rem;
-  --font-size-sm: 0.875rem; --font-size-base: 1rem; --font-size-lg: 1.125rem;
-  --radius-sm: 0.25rem; --radius-lg: 0.5rem; --radius-full: 9999px;
-  --duration-fast: 150ms; --duration-normal: 200ms;
+  /* Surfaces (60 / 30 / 10 distribution) */
+  --background: oklch(0.985 0.004 255);          /* Base canvas */
+  --surface-sunken: oklch(0.962 0.006 255);      /* Wells, code blocks, table headers */
+  --card: oklch(1 0 0);                          /* Elevated cards */
+  --popover: oklch(1 0 0);                       /* Dropdowns, dialogs */
+
+  /* 4-tier text hierarchy */
+  --foreground: oklch(0.145 0.012 255);          /* Tier 1: headings, primary values */
+  --foreground-secondary: oklch(0.32 0.012 255); /* Tier 2: body copy, table cells */
+  --muted-foreground: oklch(0.48 0.012 255);     /* Tier 3: labels, column headers, timestamps */
+  --foreground-subtle: oklch(0.62 0.010 255);    /* Tier 4: placeholders, disabled, empty dashes */
+
+  /* Dedicated interactive & control tokens */
+  --primary: oklch(0.50 0.19 262);
+  --primary-foreground: oklch(0.99 0.005 262);
+  --input-bg: oklch(1 0 0);
+  --input-border: oklch(0.80 0.010 255);         /* ≥ 3:1 contrast for input boundaries */
+  --border: oklch(0.90 0.008 255);               /* Structural hairline dividers */
+  --ring: oklch(0.55 0.18 262);
+
+  /* Concentric radius & motion tokens */
+  --radius-sm: 0.375rem;  /* 6px — inner badges, inputs */
+  --radius-md: 0.5rem;    /* 8px — buttons, menu items */
+  --radius-lg: 0.75rem;   /* 12px — cards (inner 8px + 4px/8px pad) */
+  --radius-xl: 1rem;      /* 16px — modals, panels */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
-```
 
-### 2. Semantic — purpose-based aliases
-
-The layer that makes theming possible. Names describe *role*, not appearance
-(`--color-primary`, not `--color-blue`).
-
-```css
-:root {
-  --color-background: var(--color-gray-50);
-  --color-foreground: var(--color-gray-900);
-  --color-primary: var(--color-blue-600);
-  --color-primary-hover: var(--color-blue-700);
-  --color-muted-foreground: var(--color-gray-500);
-  --color-destructive: var(--color-red-600);
-  --spacing-section: var(--space-6);
-}
-```
-
-### 3. Component — one component's knobs
-
-Only when a component needs a value that isn't a plain semantic read. Keeps
-per-component tweaks out of the semantic layer.
-
-```css
-:root {
-  --button-bg: var(--color-primary);
-  --button-hover-bg: var(--color-primary-hover);
-  --button-radius: var(--radius-lg);
-  --card-padding: var(--space-4);
-  --input-focus-ring: var(--color-primary);
-}
-```
-
-## Naming convention
-
-```
---{category}-{role}-{variant}-{state}
---color-primary            --color-primary-hover
---button-bg-hover          --space-section-sm
-```
-
-Categories: `color`, `space`, `font-size`, `radius`, `shadow`, `duration`,
-`z` (layered scale: dropdown/sticky/modal/popover/tooltip).
-
-## Dark mode — override semantics, never primitives
-
-Dark mode re-points the *semantic* layer; primitives and components are
-untouched. Use desaturated/lighter tonal variants, not literal inversion, and
-verify contrast independently from light mode.
-
-```css
 .dark {
-  --color-background: var(--color-gray-900);
-  --color-foreground: var(--color-gray-50);
-  --color-muted-foreground: var(--color-gray-400);
+  color-scheme: dark;
+
+  /* Dark mode elevates via lightness steps (+7% → +9% → +12%), not drop shadows */
+  --background: oklch(0.135 0.010 255);          /* Base canvas */
+  --surface-sunken: oklch(0.11 0.010 255);       /* Recessed wells & inset inputs */
+  --card: oklch(0.175 0.012 255);                /* Step 1 elevation */
+  --popover: oklch(0.21 0.014 255);              /* Step 2 elevation (menus/modals) */
+
+  /* Softened off-white text & desaturated accents to prevent halation */
+  --foreground: oklch(0.94 0.006 255);
+  --foreground-secondary: oklch(0.78 0.008 255);
+  --muted-foreground: oklch(0.64 0.010 255);
+  --foreground-subtle: oklch(0.46 0.008 255);
+
+  /* Lower chroma slightly on dark surfaces so accents don't vibrate */
+  --primary: oklch(0.66 0.16 262);
+  --primary-foreground: oklch(0.13 0.015 262);
+  --input-bg: oklch(0.12 0.010 255);             /* Inset darker than card */
+  --input-border: oklch(1 0 0 / 16%);
+  --border: oklch(1 0 0 / 9%);                   /* Translucent white hairline */
+  --ring: oklch(0.68 0.16 262);
 }
 ```
 
-## Tailwind / shadcn integration
+## 4. Dark-mode engineering rules
 
-shadcn and Tailwind expect the **same** structure — define semantics as
-`hsl()` channel triples so opacity modifiers (`bg-primary/50`) work, then map
-them in the theme. This stays compatible with `npx shadcn@latest add`.
+- **Never invert the light ramp mechanically:** Dark mode uses **surface
+  lightness steps** (`--background < --card < --popover`) + translucent white
+  hairlines (`oklch(1 0 0 / 8–14%)`) instead of dark drop shadows.
+- **Inputs are inset in dark mode:** Set `--input-bg` slightly *darker* than
+  `--card` so text fields read as recessed wells.
+- **Lower chroma on dark:** Reduce accent and status saturation (`C`) by ~10–15%
+  in `.dark` so colors don't vibrate against dark surfaces.
+- **Set `color-scheme: dark`** on `.dark` / `<html>` so native scrollbars, date
+  pickers, and `<select>` menus match the active theme, and style `::selection`
+  + `meta[name="theme-color"]` from your tokens.
+- **Single switching mechanism:** Drive dark mode with **one** strategy across
+  the whole app (typically `.dark` class via `next-themes` with
+  `disableTransitionOnChange`), never a mix of `.dark` classes and raw
+  `@media (prefers-color-scheme: dark)` overrides that fight each other.
+
+## 5. Tailwind v4 (`@theme inline`) vs. v3 bridge
+
+In **Tailwind v4**, expose semantic tokens in `globals.css`:
 
 ```css
-:root { --primary: 217 91% 60%; --primary-foreground: 0 0% 100%; --radius: 0.5rem; }
-.dark { --primary: 217 91% 60%; }
-```
+@import "tailwindcss";
 
-```ts
-// tailwind.config.ts
-colors: {
-  primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+@theme inline {
+  --color-background: var(--background);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input-border);
+  --color-ring: var(--ring);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 ```
 
-Store channels (`217 91% 60%`), not full `hsl(...)`, so `/opacity` modifiers
-compose. See `shadcn` for the consumption side.
+## Token audit checklist
 
-## Migration from flat tokens
-
-Pull every literal up into a primitive, alias its meaning, and point the
-component at the alias:
-
-```css
-/* before */ --button-primary-bg: #2563eb;
-/* after  */ --color-blue-600: #2563eb;          /* primitive */
-            --color-primary: var(--color-blue-600); /* semantic */
-            --button-bg: var(--color-primary);    /* component */
-```
-
-For tool interchange (Figma, Style Dictionary), the W3C DTCG JSON format uses
-`{ "$value": "#2563EB", "$type": "color" }` — keep one source and generate CSS
-from it rather than maintaining two by hand.
-
-## Common mistakes to avoid
-
-1. Components referencing primitives directly (`var(--color-blue-600)`) — breaks
-   theming; point them at a semantic token.
-2. Semantic tokens holding raw hex/px instead of a `var()` to a primitive.
-3. Dark mode overriding primitives (or re-inventing colors) instead of
-   re-pointing semantics.
-4. Color names that describe appearance (`--color-blue`) rather than role
-   (`--color-primary`) — renames cascade everywhere on a rebrand.
-5. Full `hsl(...)` strings where Tailwind/shadcn expect bare channels, killing
-   `/opacity` modifiers.
-6. Two sources of truth (a JSON file *and* hand-edited CSS) drifting apart.
-
-## Checklist before "done"
-
-- Three layers present; components read component/semantic tokens only,
-  primitives hold the only literals.
-- Spacing on a 4px scale; type/radius/shadow/duration each a consistent scale.
-- Semantic names describe role, not appearance.
-- Dark mode overrides semantics only; contrast verified separately.
-- Tailwind/shadcn map uses `hsl(var(--token))` over bare channels; no stray hex
-  in components.
-- One source of truth (CSS or DTCG JSON), not both.
+- [ ] Zero raw `#hex`, `rgb()`, or Tailwind palette literals (`bg-slate-800`) inside feature components
+- [ ] Every status role has paired `-subtle`, `-fg` (≥ 4.5:1), and `-border` tokens at ≥ `15°` hue separation from `--primary`
+- [ ] 4-tier text tokens and dedicated `--input-bg` / `--input-border` tokens defined
+- [ ] Dark mode uses surface lightness steps, translucent borders, `color-scheme: dark`, and `disableTransitionOnChange`
+- [ ] Nested border radii follow concentric math (`outer = inner + padding`)
 
 ## Attribution
 
-Adapted (web-focused, distilled) from the `design-system` token references of
-[`ui-ux-pro-max`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill),
-MIT License. The three-layer model aligns with the W3C Design Tokens Community
-Group format.
+Synthesized from [`jakubkrehel/skills`](https://github.com/jakubkrehel/skills)
+(`better-colors`, MIT) and [`Dammyjay93/interface-design`](https://github.com/Dammyjay93/interface-design)
+(MIT).

@@ -14,40 +14,47 @@ updated: <YYYY-MM-DD>
 
 ## 1. Context
 
-| Field     | Decision                                      |
-|-----------|-----------------------------------------------|
-| Subject   | <!-- what it is -->                           |
-| Audience  | <!-- who uses it -->                          |
-| Single job| <!-- one sentence: what this UI must achieve --> |
-| Topology  | <!-- single app at frontend/ or frontend/<app>/ --> |
+| Field        | Decision                                      |
+|--------------|-----------------------------------------------|
+| Subject      | <!-- what it is -->                           |
+| Audience     | <!-- who uses it -->                          |
+| Single job   | <!-- one sentence: what this UI must achieve --> |
+| Surface mode | <!-- Persuade | Operate | Read | Experience --> |
+| Topology     | <!-- single app at frontend/ or frontend/<app>/ --> |
 
 ## 2. Aesthetic direction
 
-<!-- One paragraph: mood, references, what to avoid (e.g. no Inter + purple gradient) -->
+<!-- One paragraph: mood, references, what to avoid (e.g. no Inter + purple gradient, no 3-equal-icon-card grids, no hanging section headers, no fake browser chrome) -->
 
 **Signature element:** <!-- the one memorable visual/device for this product -->
 
 ## 3. Token plan
 
-### Color (primitives)
+### Color (OKLCH / primitives & roles)
 
-| Token            | Hex       | Role              |
-|------------------|-----------|-------------------|
-| surface          | #         | page background   |
-| surface-elevated | #         | cards, panels     |
-| text             | #         | primary copy      |
-| text-muted       | #         | secondary copy    |
-| accent           | #         | primary CTA/links |
-| destructive      | #         | errors/danger     |
+| Token                  | Light     | Dark      | Role                                         |
+|------------------------|-----------|-----------|----------------------------------------------|
+| `--background`         |           |           | page canvas (60%)                            |
+| `--surface-sunken`     |           |           | recessed wells, table headers, inset inputs  |
+| `--card` / `--popover` |           |           | elevated surfaces (lightness steps in dark)  |
+| `--foreground`         |           |           | Tier 1: headings & primary values            |
+| `--foreground-secondary`|          |           | Tier 2: body copy & table cells              |
+| `--muted-foreground`   |           |           | Tier 3: labels, column headers, timestamps   |
+| `--foreground-subtle`  |           |           | Tier 4: placeholders, disabled, empty dashes |
+| `--primary`            |           |           | primary CTA/links (10%)                      |
+| `--input-bg` / `--input-border` |  |           | dedicated control tokens (≥3:1 border)       |
+| `--border` / `--ring`  |           |           | hairline dividers (`1px`) & instant focus    |
+| `--destructive` / status|          |           | ≥15° from primary; paired `-subtle`/`-fg`/`-border` |
 
 ### Semantic aliases
 
 ```css
 :root {
-  --color-background: var(--color-surface);
-  --color-foreground: var(--color-text);
-  --color-primary: var(--color-accent);
-  /* dark mode: override semantics only, in .dark { … } */
+  color-scheme: light;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  /* dark mode: override semantics only, in .dark { color-scheme: dark; … } */
 }
 ```
 
@@ -55,38 +62,39 @@ updated: <YYYY-MM-DD>
 
 | Role    | Family | Weight | Size scale notes |
 |---------|--------|--------|------------------|
-| Display |        |        |                  |
-| Body    |        |        |                  |
-| Mono    |        |        | optional         |
+| Display |        |        | omit on `Operate` dashboards; fluid `clamp()` on `Persuade` |
+| Body    |        |        | `16px` (`1rem`) prose, `14px` UI, `≥16px` mobile inputs |
+| Mono    |        |        | `tabular-nums` for numbers, metrics, IDs, timestamps |
 
-### Spacing & radius
+### Spacing, concentric radius & elevation
 
-- Base grid: 4px
+- Base grid: 4px; group with space first (gap between groups ≥ `2×` inner gap)
 - Section padding:
-- Card radius:
-- Button radius:
+- Card & inner radius: concentric (`outerRadius = innerRadius + padding`)
+- Elevation: layered transparent shadows in light mode; surface lightness steps (`+7% / +9% / +12%`) + `1px` translucent borders in dark mode
 
 ## 4. Layout
 
 <!-- One-sentence layout concept + ASCII wireframe for main shell -->
 
 - Max content width:
-- Navigation: <!-- top / side / hybrid -->
-- Mobile: <!-- how nav and hero adapt -->
+- Navigation: <!-- top / side / hybrid; sidebar shares canvas background on Operate UIs -->
+- Mobile: <!-- how nav and hero adapt; 100dvh, ≥44x44px hit targets -->
 
 ## 5. Component rules
 
-- UI kit: <!-- shadcn/ui + Tailwind -->
-- Buttons: <!-- primary / secondary / ghost usage -->
-- Forms: <!-- label placement, error display -->
-- Tables/cards: <!-- dashboard vs marketing -->
-- Empty & error states: <!-- voice and layout -->
+- UI kit: <!-- shadcn/ui + Tailwind; single SVG icon library (currentColor, no emoji icons) -->
+- Buttons: <!-- verb + object labels, nowrap, 2px optical icon-side padding, enabled:active:scale-[0.97] -->
+- Forms: <!-- visible labels, validate on blur/submit, aria-describedby errors, never block paste -->
+- Tables/cards: <!-- right-aligned tabular-nums numbers, 5-8 columns max, no card-in-card nesting -->
+- Empty & error states: <!-- first-use empty vs filtered empty with Reset filters; Undo toast for reversible actions -->
 
 ## 6. Motion
 
-- Load / enter:
-- Hover / focus:
-- Reduced motion: respect `prefers-reduced-motion`; disable decorative motion
+- Frequency budget: <!-- 0ms for 100+/day actions (⌘K, row hover, tab switch); 125-350ms for overlays -->
+- Load / enter: <!-- --ease-out: cubic-bezier(0.23, 1, 0.32, 1) from scale(0.95) + trigger transform-origin; never ease-in or scale(0) -->
+- Hover / focus: <!-- hover gated on @media (hover: hover); focus-visible ring instant 0ms -->
+- Reduced motion: respect `prefers-reduced-motion` (collapse spatial motion to `≤150ms` opacity cross-fade); suppress transitions on theme switch (`disableTransitionOnChange`)
 
 ## 7. v1 surfaces
 

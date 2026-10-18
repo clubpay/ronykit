@@ -22,10 +22,11 @@ Specialized skills live under `.agents/skills/`. For each applicable row, **open
 | Bug or failing test | `systematic-debugging`, then `verification-before-completion` |
 | Refactoring or untested / legacy code | `go-design` (characterize first) → `go-testing` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` + MCP `design-frontend` |
-| Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
+| Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality`, `ui-polish` |
 | Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |
 | Next.js routes / data | `nextjs-modern`, `shadcn` |
-| UI components | `shadcn`, `storybook`, `ux-quality` |
+| UI components | `shadcn`, `ui-polish`, `storybook`, `ux-quality` |
+| UI polish / motion / deslop | `ui-polish`, `ux-quality`, `typography` |
 | Frontend tests | `frontend-testing`, `verification-before-completion` |
 | Go style / tests | `go-modern`, `go-testing`, `writing-tests` |
 | Before claiming done | `verification-before-completion`, `code-formatting` |
@@ -191,7 +192,7 @@ report errors back to you, or confirm that a fix worked.
   up-to-date story is not done; create the story without being asked, and
   verify with `pnpm build-storybook`.
 - Use the installed frontend skills (`frontend-design`, `design-tokens`,
-  `typography`, `storybook`, `frontend-testing`, `nextjs-modern`, `shadcn`,
+  `typography`, `ui-polish`, `storybook`, `frontend-testing`, `nextjs-modern`, `shadcn`,
   `dashboard-ui`, `webmcp`, `ux-quality`, `verification-before-completion`) — read their
   SKILL.md files per the routing table above.
 {{- end }}

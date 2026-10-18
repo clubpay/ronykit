@@ -252,7 +252,15 @@ var skillCatalog = []SkillDef{
 	{
 		ID:               "ux-quality",
 		Name:             "UX Quality",
-		Description:      "Accessible, usable web UI: keyboard/focus, interaction states, forms, navigation, motion",
+		Description:      "Accessible, usable UI: keyboard/focus, 8 states, forms, copy, layout resilience",
+		Category:         catFrontend,
+		DefaultBackend:   false,
+		DefaultFullstack: true,
+	},
+	{
+		ID:               "ui-polish",
+		Name:             "UI Polish & Motion Craft",
+		Description:      "Surface, icon, microinteraction, and motion craft: radii, shadows, easings, perf",
 		Category:         catFrontend,
 		DefaultBackend:   false,
 		DefaultFullstack: true,

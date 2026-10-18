@@ -1,168 +1,184 @@
 ---
 name: dashboard-ui
 description: >-
-  Design and build data-dense dashboards, back-office, and admin apps that
-  surface the few metrics a decision needs. Use when laying out an admin/console
-  screen, KPI strip, chart grid, data table, sidebar nav, or reviewing the
-  visual design and information hierarchy of an internal/operational UI.
+  Design and build data-dense dashboards, admin panels, analytics views, and
+  operational SaaS interfaces (Operate mode) — information hierarchy, KPI cards,
+  tables, filter bars, charts, empty/loading states, and density controls. Use
+  when building back-office tools, observability UIs, financial/ops consoles,
+  CRM views, or any screen where users scan, compare, and act on structured data.
 ---
 
-# Dashboard & Admin UI
+# Dashboard & Data-Dense UI (Operate Mode)
 
-A dashboard optimizes for **repeated decision-making under time pressure**, not
-persuasion. The user returns daily to extract a number, compare it to a target,
-and act in seconds. That means less hero typography, more data density, a
-stricter color system, and zero decorative motion.
+Dashboards and operational tools are **workbenches, not billboards**. Users open
+them dozens of times a day to answer a question or complete a task in seconds.
+Every pixel of decoration, oversized header, or page-load animation steals
+attention from the data.
 
-The job: surface the smallest set of metrics needed to make a decision, in the
-order the eye scans them, with one accent color and no decorative noise.
+Pair with `design-tokens` (surfaces & status tokens), `typography` (tabular
+numerals & fixed scales), `shadcn` (DataTable, Sheet, Command, Dialog),
+`ux-quality` (keyboard flows & form states), and `ui-polish` (surface elevation &
+instant high-frequency interactions).
 
 ## When to use
 
-- Building or reviewing an admin panel, back-office console, analytics overview,
-  ops dashboard, or settings/management screen.
-- Laying out a screen with KPI cards, charts, data tables, or a sidebar nav.
-- Choosing a chart type, color usage, or where an element belongs on the page.
-- Designing empty/loading/error states for an operational UI.
+- Analytics dashboards, observability/monitoring views, billing/finance consoles
+- Admin panels, CRUD back-offices, CRM/support queues, inventory tables
+- Any screen combining KPIs, charts, filter bars, and data tables
 
-Combine with the `shadcn` and `nextjs-modern` skills for implementation — this
-skill governs layout and information hierarchy; those govern the components and
-data wiring.
+## 1. Domain grounding & the 5-second hierarchy
 
-## 1. One job per dashboard
+Before laying out a dashboard, state three things: **who** the operator is, the
+**primary verb** (triage, reconcile, monitor, approve, debug), and the **target
+density** (`compact`, `default`, or `comfortable`).
 
-Before laying anything out, write one sentence: **who** looks at this, and
-**what decision** do they make from it? ("The on-call engineer opens this during
-an incident to find which service is degraded.")
+Organize the viewport top-to-bottom, left-to-right by question priority:
 
-- "An overview of the business" / "all the data in one place" is not a job —
-  it's a database with bad lighting.
-- Three audiences = three dashboards. Don't serve every stakeholder from one
-  screen; make focused screens and link between them.
+1. **Status & anomalies (top):** Is anything broken or needing action right now?
+2. **Summary KPIs (row 1, max 3–4 cards):** What are the headline numbers and
+   how did they change vs. the comparison period?
+3. **Trends & distribution (row 2, 1–2 charts):** Why did the numbers move?
+4. **Actionable records (row 3+, table/list):** Which specific items need
+   inspection or action?
 
-## 2. Lead with 3–5 hero metrics
+**Squint test:** Blur your eyes — the primary metric or anomaly must stand out
+first, section structure second, and chrome/gridlines last.
 
-Pick the smallest set of numbers that, glanced at together, tell you whether the
-job is going well today. These become the top KPI strip.
+**Anti-patterns:**
 
-- Each KPI card shows three things: the **current value** (large number), a
-  **delta vs. the previous comparable period** (small % with a directional
-  arrow), and an inline **sparkline / trend**.
-- Use absolute numbers, not normalized ratios, for the hero metric when stakes
-  are real (`$1,248,000` reads faster than "104% of target").
-- Make the delta sign explicit — a green up-arrow next to "+12.5% vs last month"
-  beats a bare "12.5%".
-- A KPI card without a sparkline is just a number; the trend earns its 60px.
-- Twelve cards is a wall, not a strip — walls don't get scanned. Cut to 4–6.
+- Never open a dashboard with a welcome banner (`"Good morning, Alex! 👋"`).
+- Never place more than **4 KPI cards** in a single row.
+- Never show a raw number without **context** (delta `%`, comparison period,
+  target, or sparkline).
+- Never animate dashboard widgets on page load — data should render immediately.
 
-## 3. Lay it out on the F-pattern
+## 2. Operate-mode typography & 4-tier hierarchy
 
-Users scan in an F-shape: a horizontal sweep across the top, a shorter sweep
-lower, then a vertical drift down the left edge. Place by importance:
+Operational UIs rely on **weight and color/opacity** more than font size jumps:
 
-1. Most important metric **top-left** — where the eye lands first.
-2. Secondary metrics extend **right** along the KPI strip.
-3. The chart that explains the hero metric sits **directly below**.
-4. Detail (tables, drilldowns) flows down from there.
-5. Filters and time-range pickers go **top-right** — reachable, but not
-   competing with metrics for attention.
+- **Font families:** One crisp sans-serif for UI + one monospace face for IDs,
+  hashes, shortcuts, and timestamps. **Never use serif display fonts** on
+  operational dashboards.
+- **Fixed `rem` scale (not fluid `clamp()`):** Keep UI text at fixed `rem` steps
+  (ratio `1.125–1.25`) so resizing the browser shows *more data columns*, not
+  bigger labels.
+- **Tabular numerals everywhere:** Enable `font-variant-numeric: tabular-nums`
+  (`tabular-nums`) on every KPI value, table column, delta badge, axis label,
+  timer, and pagination counter.
+- **4-tier text hierarchy at a single size (`14px`):**
+  1. **Primary (`--foreground`, weight `500–600`):** Record names, KPI values,
+     active labels.
+  2. **Secondary (`--foreground-secondary`, weight `400–500`):** Supporting cell
+     values, descriptions.
+  3. **Tertiary (`--muted-foreground`, weight `400`):** Column headers, field
+     labels, timestamps, units.
+  4. **Muted / disabled:** Placeholders, empty-cell dashes (`—`), shortcut hints.
 
-Keep the primary view to **7–8 elements max**. Push secondary detail behind
-tabs, drilldowns, or a "View all" link (progressive disclosure).
+## 3. Subtle surface layering & density
 
-## 4. 12-column grid, card-based content
+- **Whisper-quiet elevation:** Separate regions with `1px` hairline borders and
+  subtle surface steps rather than heavy drop shadows. In dark mode, elevate via
+  lightness steps (`canvas → +7% card → +9% sticky bar → +12% popover/modal`) +
+  `1px` border (`rgba(255, 255, 255, 0.06–0.12)`).
+- **Unified sidebar & canvas:** Keep the sidebar on the **same background token
+  as the canvas** separated by a `1px` border — two competing dark/light
+  backgrounds fracture the workbench.
+- **Inset controls:** Form inputs, search boxes, and filter pills sit slightly
+  *darker/recessed* than the card surface in dark mode (and crisp white with a
+  ≥ 3:1 border in light mode).
+- **Avoid card-in-card bloat:** At medium/high density, do not wrap every metric
+  or sub-section in its own bordered card. Use a single outer surface with
+  `divide-y` / `divide-x` hairline dividers or whitespace (`gap` between groups
+  ≥ `2×` inner gap).
 
-| Region       | Width                  | Purpose                                   |
-| ------------ | ---------------------- | ----------------------------------------- |
-| Left sidebar | 240–280px              | Nav, workspace switcher, account menu     |
-| Top bar      | Full width, 56–64px    | Page title, search, date range, notifs    |
-| Content area | 12-column CSS grid     | KPI cards, charts, tables, detail panels  |
+| Density tier    | Row height | Cell padding | Font size | Best for                                 |
+| --------------- | ---------- | ------------ | --------- | ---------------------------------------- |
+| **Compact**     | `32–36px`  | `6px 10px`   | `12–13px` | Logs, trading/ops, power-user queues     |
+| **Default**     | `40–44px`  | `8px 12px`   | `13–14px` | Standard SaaS tables, CRM, billing       |
+| **Comfortable** | `48–56px`  | `12px 16px`  | `14px`    | Media rows with avatars, two-line cells  |
 
-- KPI strip of 4 cards → each spans **3 columns**. Paired charts → **6 + 6** or
-  **8 + 4** (wide chart + narrow context panel). Full-width table → **12**.
-- Every content element lives in a **card**: consistent radius (8–12px),
-  consistent padding (24px default), consistent border.
-- **Prefer a 1px border at ~8% opacity over a drop shadow** — it reads cleaner
-  and ages better (Linear/Vercel ship borders, not shadows).
-- **Whitespace (16–24px) does the grouping** — no divider lines, color blocks,
-  or section headings needed when spacing is right.
-- A **persistent sidebar on desktop**, never a hamburger menu — it's navigation,
-  not wasted space.
+## 4. KPI cards that carry meaning
 
-## 5. Color discipline — one accent, the rest for status
+Every KPI card needs at most **3 data points**:
 
-The fastest way to look professional is to use almost no color.
+1. **Label** (`12–13px`, medium, `text-muted-foreground`, top-left, no ALL CAPS)
+2. **Primary value** (`24–32px`, semibold, `tabular-nums`, tight tracking `-0.02em`)
+3. **Comparison / delta** (`+12.4% vs last 30d`) with semantic direction + icon
+   (`↑` / `↓`) — never rely on red/green color alone (add arrow + `+/-` sign;
+   remember higher error/latency is **bad**, not green).
 
-- **Two surface colors** — off-white/white cards in light mode; near-black in
-  dark (`#0a0a0a`/`#111`, never pure `#000`).
-- **Two text colors** — near-black primary, 60–70% gray secondary.
-- **One accent** — interactive elements, links, the active sidebar item, the
-  hero chart line. That's it.
-- **Three semantic status colors** — green (on track / up), red (at risk /
-  down), amber (caution). **Reserved**: they appear nowhere else.
+## 5. Data tables (the workhorse)
 
-Heuristic: if you removed every color except one accent + three status colors,
-does the dashboard still work? If yes, your discipline is right. The moment red
-becomes a decorative icon background, you've taught the user that red means
-nothing — and broken the most useful signal a dashboard has.
+- **Alignment rules (non-negotiable):**
+  - **Left-align** text, names, emails, statuses, and tags.
+  - **Right-align** numbers, currency, percentages, durations, and counts (with
+    `tabular-nums`), matching the column header alignment to the cells.
+  - **Center-align** only single-character icons or checkboxes.
+- **Column discipline:** Keep visible columns to **5–8** at default width. Push
+  secondary metadata into a row-click **detail `Sheet` / drawer** or a column
+  visibility toggle.
+- **Truncation & layout resilience:** Set `min-w-0` on flex children and use
+  `truncate` with a way to inspect the full value (tooltip or detail drawer).
+  Never let a long ID or email blow out table width.
+- **Sticky chrome:** Keep the table header (`thead`) and bulk-action bar sticky
+  during vertical scroll; keep the primary identifier column sticky during
+  horizontal scroll on wide tables.
+- **Row actions:** Put 1–2 primary actions or a `⋯` (`DropdownMenu`) in the
+  rightmost column, always reachable via keyboard focus (never `display: none`
+  until hover).
+- **Bulk selection:** Header checkbox supports checked, unchecked, and
+  `indeterminate` states; selecting rows reveals a contextual action bar (`"3
+  selected · Export · Archive · Delete"`).
 
-> Never use colored card backgrounds. Use neutral cards with a colored accent on
-> the metric or a status pill.
+## 6. Filter bars, time-range & URL state
 
-Use semantic tokens (`bg-background`, `text-foreground`, `border`, `ring`) per
-the `shadcn` skill — don't hard-code hex.
+- **Single horizontal toolbar above the data:**
+  `[Search input (⌘K / /)] [Status facet] [Owner facet] [Date range picker] ··· [Saved views] [Density] [Export] [Primary CTA]`
+- **URL-synced state:** Persist active filters, sort column/direction, page
+  size, and date range in URL search params so every filtered view is shareable,
+  bookmarkable, and survives refresh.
+- **Active filter visibility:** Show applied filter count and a one-click
+  `"Reset filters"` action whenever any filter is non-default.
 
-## 6. Charts follow data shape
+## 7. Charts & visualizations
 
-Pick the chart from the data, not because it looks interesting.
+- **Pick the simplest chart that answers the question:**
+  - Trend over time → **Line** or **subtle area** (`0.08–0.15` fill opacity)
+  - Ranked comparison → **Horizontal bar** (labels never rotate diagonally)
+  - Part-to-whole (≤ 5 slices) → **Stacked bar** (avoid pie charts with > 3 slices)
+- **Restrained chrome:** Dashed or `4–6%` opacity horizontal gridlines only;
+  remove vertical gridlines and chart borders; format axes compactly (`$1.2M`,
+  `45ms`, `99.9%`); limit a single chart to **≤ 4 series** using your `--chart-1`
+  .. `--chart-5` tokens.
+- **Crosshair tooltip:** Show exact timestamp + all series values in
+  `tabular-nums`, sorted by value.
 
-| Data shape                       | Use                                   | Don't use                  |
-| -------------------------------- | ------------------------------------- | -------------------------- |
-| Trend over time                  | Line, area, sparkline                 | Bar-per-day                |
-| Categorical compare (≤7)         | Horizontal bar                        | Pie, 3D anything           |
-| Categorical compare (>7)         | Sorted table, treemap                 | Bar chart with 25 bars     |
-| Composition (parts of a whole)   | Stacked bar / single-row stacked bar  | Pie with >3 slices         |
-| High-density patterns            | Heatmap                               | Line chart with 50 series  |
-| Detail to sort or scan           | Table with sortable columns           | Any chart                  |
-| Relationship between 2 variables | Scatter plot                          | "Balanced scorecard"       |
+## 8. Loading, empty, error & freshness states
 
-- **Tables are charts.** First-class: sortable columns, sticky headers, status
-  pills, pagination. Most "this feels janky" complaints trace to a bad table.
-- **Don't use color as a category.** Distinguish series by line style, weight,
-  or order — five-line charts stop being readable around the third line.
-- React charting: reach for Recharts, Tremor, or Apache ECharts.
+Every widget and table handles 4 states independently (one failing widget must
+never crash the whole page):
 
-## Mobile dashboards — the rules change
-
-A desktop dashboard squeezed onto a 430px phone is worse than one designed for
-mobile. When targeting mobile:
-
-- **One dominant KPI** at the top, not four.
-- Secondary metrics in a **2×2 grid** (two columns max).
-- **Bottom tab bar** (≤5 tabs) instead of a sidebar — thumb-reachable.
-- **Cut the table** → a list of the top 3–5 items + "View all".
-- Simpler charts: drop axis labels/legends where possible, never >2 series.
-
-## Common mistakes to avoid
-
-1. The 14-card overview — cut to 4–6; the rest belong on sub-pages.
-2. Colored card backgrounds — neutral cards + accent/status pill instead.
-3. Pie charts with 7 slices — use a sorted bar chart.
-4. Hamburger menu on desktop — keep the persistent sidebar.
-5. Decorative motion — ticking counters, self-drawing charts, hover wiggles.
-   None help a decision; cut them.
-6. Design system defined in two places — one source of truth for tokens.
-7. **No empty states.** What does it look like with no data / for a new user?
-   Empty states are ~80% of perceived polish — design them, plus loading and
-   error states, for every data surface.
+1. **Loading:** Structural skeletons matching exact card/table heights (zero
+   CLS); delay spinners by `150ms`.
+2. **Zero-data empty (first use):** Explain what populates this view + primary
+   CTA (`"Connect data source"`).
+3. **Zero-results empty (filtered):** Echo the active filter (`"No invoices
+   match 'status:overdue'"`) + `"Reset filters"` button.
+4. **Error & staleness:** Inline retry on the failed card/table + timestamp or
+   `"Updated 12s ago · Refresh"` indicator for live views.
 
 ## Checklist before "done"
 
-- One stated job; primary view ≤ 7–8 elements; 3–5 hero metrics top-left.
-- KPI cards show value + signed delta + trend; layout follows the F-pattern.
-- 12-column grid; consistent cards (radius/padding/border, not shadows);
-  spacing does the grouping.
-- One accent + 3 reserved status colors only; no decorative/background color;
-  semantic tokens, no stray hex.
-- Chart type matches data shape; tables are sortable/sticky/paginated.
-- Empty, loading, and error states designed for every data surface.
+- 1 sans + 1 mono font on a fixed `rem` scale; `tabular-nums` on every numeric
+  element; numbers right-aligned, text left-aligned.
+- Sidebar shares canvas background; surfaces layer via `1px` borders and subtle
+  lightness steps without card-in-card nesting.
+- Filters, sort, pagination, and date range persist in URL search params.
+- Every KPI card has a comparison/delta; every table and chart handles loading,
+  empty, filtered-empty, and error states independently.
+
+## Attribution
+
+Synthesized from [`Dammyjay93/interface-design`](https://github.com/Dammyjay93/interface-design)
+(MIT) and [`pbakaus/impeccable`](https://github.com/pbakaus/impeccable)
+(`operate.md`, Apache-2.0).

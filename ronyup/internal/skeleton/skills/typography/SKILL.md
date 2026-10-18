@@ -1,126 +1,138 @@
 ---
 name: typography
 description: >-
-  Get screen typography correct — the details models reliably get wrong: curly
-  quotes, en/em dashes, real ellipses, line length, line-height, hierarchy, and
-  the JSX entity trap. Use whenever generating or reviewing HTML/CSS/React with
-  visible text (landing pages, components, docs, dashboards) — apply the rules
-  automatically, even if typography wasn't mentioned.
+  Apply professional web typography: font pairing by surface mode, modular/fluid
+  vs. fixed type scales, unitless line-height by role, weight floors, line
+  length, vertical rhythm, OpenType CSS properties, dark-mode optical
+  adjustments, and typographic hygiene. Use when setting up CSS/Tailwind
+  typography, designing article/editorial layouts, choosing fonts, or fixing UI
+  text that feels cramped, generic, or hard to scan.
 ---
 
-# Typography
+# Web Typography
 
-These are durable craft rules, not trends — distilled from Matthew Butterick's
-*Practical Typography*. They're the difference between text that looks
-typeset and text that looks auto-generated. Apply them **silently by default**
-when producing UI text; in review mode, flag violations with before/after fixes.
+Typography is 90% of web design. Good type makes an unadorned page feel
+authored; sloppy type makes the most expensive component library look cheap.
 
-`frontend-design` chooses the *typefaces and mood*; this skill governs the
-*correct setting* of whatever type is chosen. Use `design-tokens` for the type
-scale, and `dashboard-ui` for tabular figures in data tables.
+## 1. Font selection & pairing by surface mode
 
-## When to use
+Match your font stack to the surface mode (see `frontend-design` and
+`dashboard-ui`):
 
-- Generating any HTML/CSS/React/JSX containing visible text.
-- "Make this look professional", a design/typography review, or fixing legacy
-  copy full of straight quotes and `--`.
-- Setting body text, line length, hierarchy, or a type scale.
+- **Operate mode (dashboards, admin, SaaS tools):** **1 crisp sans + 1 mono.**
+  Never use serif display faces on operational dashboards. Rely on weight
+  (`400 / 500 / 600`) and 4-tier color/opacity for hierarchy.
+- **Persuade & Read modes (marketing, editorial, docs):** Pair at most **2–3
+  families** with distinct roles (`--font-display`, `--font-sans`, `--font-mono`).
+  Pair fonts that share a similar **x-height and visual proportion** while
+  contrasting in structure (e.g., high-contrast editorial serif display +
+  neutral neo-grotesque body).
+- **Avoid overused defaults as the sole personality** on Persuade surfaces:
+  Inter, Roboto, Open Sans, Lato, Montserrat, Arial. Consider characterful
+  variable families:
+  - *Geometric / Neo-grotesque:* Plus Jakarta Sans, Geist, General Sans, Satoshi,
+    Cabinet Grotesk,Space Grotesk, Instrument Sans, DM Sans, Outfit
+  - *Editorial / Serif:* Instrument Serif, Fraunces, Newsreader, Playfair
+    Display, Source Serif 4, News Cycle
+  - *Monospace:* JetBrains Mono, Geist Mono, Commit Mono, Fira Code, Berkeley Mono
+- **Load only the weights you use** (`400`, `500`, `600`, `700`) via `next/font`
+  or `font-display: swap` + `size-adjust` fallback metrics so the browser never
+  synthesizes blurry faux bold or faux italic.
 
-## Characters — the high-frequency fixes
+## 2. Type scale & size floors (`rem`, never `px` for body)
 
-Use the real character; never approximate. (Full table:
-`references/html-entities.md`.)
+- **Persuade / Read surfaces:** Use a **fluid `clamp()` scale** for display and
+  section headings (`h1`–`h3`) so headlines scale smoothly from mobile to desktop.
+- **Operate surfaces (dashboards/apps):** Use a **fixed `rem` scale** (ratio
+  `1.125` Major Second or `1.200` Minor Third) so wider viewports show *more
+  data*, not larger labels.
+- **Hard size floors:**
+  - **Body prose:** `1rem` (`16px`) default (`15–18px` for long-form reading).
+  - **UI controls, tables, dense labels:** `0.875rem` (`14px`) standard,
+    `0.8125rem` (`13px`) compact, **`0.75rem` (`12px`) absolute floor** (badges,
+    captions, kbd hints only). Never ship `10px` or `11px` text.
+  - **Mobile form inputs (`<input>`, `<textarea>`, `<select>`):** Must be
+    **`≥ 16px` (`1rem`, `text-base sm:text-sm`)** on mobile viewports so iOS
+    Safari never auto-zooms the page on focus.
 
-| Wrong            | Right       | Entity              | When                          |
-| ---------------- | ----------- | ------------------- | ----------------------------- |
-| `"straight"`     | "curly"     | `&ldquo;` `&rdquo;` | All double quotes             |
-| `'straight'`     | 'curly'     | `&lsquo;` `&rsquo;` | All single quotes             |
-| `it's`           | it's        | `&rsquo;`           | Apostrophe = closing single   |
-| `--`             | –           | `&ndash;`           | Ranges (1–10), connections    |
-| `---`            | —           | `&mdash;`           | Sentence breaks—like this     |
-| `...`            | …           | `&hellip;`          | One ellipsis character        |
-| `(c) (TM) (R)`   | © ™ ®       | `&copy;` `&trade;` `&reg;` | Real symbols           |
-| `12 x 4`         | 12 × 4      | `&times;`           | Multiplication                |
+## 3. Measure (line length) & deliberate wrapping
 
-- Apostrophes **always point down** (`&rsquo;`), including before decades
-  (`&rsquo;70s`) and `rock &rsquo;n&rsquo; roll` — smart-quote engines get
-  these backwards.
-- **Foot/inch marks are the one exception** — they must be *straight*:
-  `6&#39;&nbsp;10&quot;`.
-- One space after punctuation, never two. Use `&nbsp;` to glue references
-  (`&sect;&nbsp;42`, `Fig.&nbsp;3`, `&copy;&nbsp;2025`).
+- **Body prose (`p`, `li`, `blockquote`):** `60–75ch` (`max-w-[65ch]`). Never let
+  article or modal paragraphs stretch across a `1200px` container.
+- **Lead paragraphs / intros:** `45–60ch` at `1.125–1.25rem`.
+- **Card descriptions & UI help text:** `35–50ch`.
+- **Headings:** `20–35ch` with `text-wrap: balance` (`text-balance`, effective up
+  to ~6 lines — never apply `balance` to long paragraphs).
+- **Body copy:** Apply `text-wrap: pretty` (`text-pretty`) to prevent lonely
+  single-word orphans on the last line, plus `overflow-wrap: break-word` so long
+  URLs or tokens never cause horizontal scroll.
+- **Interactive labels:** Set `white-space: nowrap` on buttons, pills, badges,
+  and nav links so clickable text never breaks across two lines.
 
-### The JSX/React trap (read this)
+## 4. Unitless line-height, tracking & weight floors
 
-**Unicode escapes like `\u2019` do NOT work in JSX text between tags** — they
-render literally as `\u2019`. Pick one:
+Line-height and letter-spacing must **tighten as font size grows**. Always use
+**unitless** `line-height` so child elements inherit the ratio, not a fixed pixel
+height:
 
-```jsx
-<p>Don’t do this</p>          {/* 1. paste the real character (preferred) */}
-<p>Don{'\u2019'}t do this</p> {/* 2. wrap the escape in a JS expression */}
-```
+| Role                                     | Size range    | `line-height` | `letter-spacing`  | Weight floor |
+| ---------------------------------------- | ------------- | ------------- | ----------------- | ------------ |
+| Display / Hero                           | `≥ 2.5rem`    | `1.05 – 1.12` | `-0.03em – -0.02em` | `300 – 700`  |
+| Headings (`h1`–`h3`)                     | `1.25–2.25rem`| `1.15 – 1.30` | `-0.02em – -0.01em` | `500 – 700`  |
+| Body prose                               | `1rem–1.125rem`| `1.50 – 1.65` | `0`               | `400`        |
+| Card / UI text wrapping to **3+ lines**  | `0.8125–0.9375rem` | **`≥ 1.40`** | `0`               | `400`        |
+| Single-line UI controls (buttons/inputs) | `0.8125–0.875rem` | `1.25 – 1.35` | `0`               | `400 – 500`  |
+| Eyebrows / ALL CAPS labels (≤ 3 words)   | `0.75rem`     | `1.20 – 1.35` | `+0.06em – +0.10em` | `500 – 600`  |
 
-HTML entities (`&rsquo;`) work in `.html` but **not** in JSX text. For bulk
-fixes use raw UTF-8 bytes with `sed`, not escape sequences. (`\u2019` *does*
-work inside JS string literals and data arrays — only JSX text is affected.)
+- **Never apply `leading-none` (`1`) or `leading-tight` (`1.25`) to text that
+  wraps to 3+ lines** — ascenders and descenders collide.
+- **Weight floor below `18px`:** Use weight `400` or heavier for any text under
+  `18px`. Thin/light weights (`100–300`) are only legible at `28px+`.
+- **Never set lowercase text with wide positive tracking**, and never set body
+  copy in `UPPERCASE`.
 
-## Emphasis & case
+## 5. Vertical rhythm, optical trim & dark mode
 
-- **Bold OR italic, never both**; use as little as possible — if everything is
-  emphasized, nothing is. Sans-serif: prefer bold (italic sans barely reads).
-- **Never underline** for emphasis (typewriter relic). Links: subtle only —
-  `text-decoration-thickness: 1px; text-underline-offset: 2px`.
-- **ALL CAPS** only for short labels/headings, and **always letterspace** them
-  (`letter-spacing: 0.05em–0.12em`); never set a paragraph in caps. Real small
-  caps only (`font-variant-caps: small-caps` with `smcp`), never scaled caps.
-- Kerning always on: `font-feature-settings: "kern" 1; text-rendering:
-  optimizeLegibility`.
+- **Asymmetric heading margins:** A heading belongs to the section *below* it,
+  not the one above (`margin-top: 2em; margin-bottom: 0.5em`, i.e., top ≥ `2–3×`
+  bottom).
+- **Paragraph spacing:** Use `margin-block-end: 1em` or `space-y-4` between
+  paragraphs — never empty `<br><br>` tags.
+- **Optical cap-height centering:** On tight buttons, badges, and pills where a
+  font's descender box makes text look top-heavy, use progressive enhancement:
+  `text-box: trim-both cap alphabetic`.
+- **Dark mode optical compensation:** Light text on dark backgrounds Halates
+  (appears slightly bolder). Set `-webkit-font-smoothing: antialiased` **once on
+  `html`/`body`** (never scatter it across components), and step body text down
+  slightly (`oklch(0.93 0.005 H)` instead of pure `#ffffff`).
+- **Keep text selectable:** Only apply `user-select: none` to drag handles and
+  interactive games — never to headings, tables, or UI text users copy.
 
-## Layout — body text first
+## 6. OpenType via high-level CSS properties
 
-Four decisions set everything else: **font, size, line length, line spacing.**
+Prefer standard CSS font properties over low-level `font-feature-settings` or
+`font-variation-settings` so fallback fonts still render properly and rules
+don't clobber each other:
 
-- **Line length 45–90 characters** — the most-broken responsive rule. Cap text
-  containers: `max-width: 65ch` (plus padding); never edge-to-edge body text.
-- **Line height 1.2–1.45** for body; tighter (~1.15) for headings.
-- **Web body size 15–25px**; fluid with `clamp(16px, 2.5vw, 20px)`.
-- **Left-align** by default; justify only with `hyphens: auto`; center only
-  short (<1 line) titles, never blocks.
-- **Paragraphs: indent OR space between, never both.** Web default: a small
-  `margin-bottom` (~0.75em). Never double `<br>`.
-- **Max 2 typefaces**, each a consistent role; tabular figures
-  (`font-variant-numeric: tabular-nums`) for numeric columns, prices, timers.
-
-### Headings (max ~3 levels)
-
-Bold (not italic), **more space above than below** (a heading belongs to the
-text that follows), smallest size increment that reads as a step up,
-`hyphens: none`. Don't all-caps (unless short + letterspaced), underline, or
-center.
+- **Numbers in tables, KPIs, prices, timers, and axes:**
+  `font-variant-numeric: tabular-nums` (`tabular-nums`).
+- **Numbers in running prose:** `font-variant-numeric: proportional-nums`.
+- **Slashed zero for IDs/codes/hashes:** `font-variant-numeric: tabular-nums slashed-zero`.
+- **Variable fonts:** Set `font-weight: 550` instead of `font-variation-settings: "wght" 550`,
+  and leave `font-optical-sizing: auto` enabled.
+- **Real typographic punctuation:** Use curly quotes (`“ ”` `‘ ’`), real
+  apostrophes (`’`), en-dashes for ranges (`10–20`), em-dashes (`—`), and real
+  ellipsis (`…`) — see `references/html-entities.md`.
 
 ## Reference files
 
-Open these when you need the full detail (progressive disclosure):
-
-- `references/css-baseline.md` — copy-paste CSS baseline (line length, headings,
-  emphasis, caps, tables, links, responsive `clamp()`, OpenType, dark mode) and
-  the React/JSX inline entity pattern.
-- `references/html-entities.md` — complete entity/character table (quotes,
-  dashes, spaces, primes, symbols, accents) with usage examples.
-
-## Checklist before "done"
-
-- Curly quotes/apostrophes, en/em dashes, single-character ellipsis throughout;
-  no `--`, `...`, or straight quotes (except foot/inch marks).
-- JSX text uses real characters or `{'\u2019'}` — never bare `\u2019`.
-- Body line length 45–90 chars (`max-width` set); line-height 1.2–1.45.
-- Bold *or* italic, used sparingly; nothing underlined for emphasis; caps
-  letterspaced.
-- ≤ 2 typefaces; tabular figures in data columns; one space after punctuation.
+- `references/css-baseline.md` — Drop-in CSS custom properties, fluid `clamp()`
+  scale, prose spacing, and OpenType classes.
+- `references/html-entities.md` — Quick reference for proper typographic
+  punctuation, dashes, quotes, and symbols.
 
 ## Attribution
 
-Rules distilled from **Matthew Butterick's *Practical Typography***
-(<https://practicaltypography.com>), the standard reference for everyday digital
-typography; if useful, support his work. Restructured into RonyKit's
-self-contained skill format (paraphrased, not reproduced).
+Synthesized from [`jakubkrehel/skills`](https://github.com/jakubkrehel/skills)
+(`better-typography`, MIT) and [`pbakaus/impeccable`](https://github.com/pbakaus/impeccable)
+(Apache-2.0).

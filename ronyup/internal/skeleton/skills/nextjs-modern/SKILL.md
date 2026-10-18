@@ -1,109 +1,131 @@
 ---
 name: nextjs-modern
 description: >-
-  Build modern Next.js (16, App Router) apps with React Server Components. Use
-  when creating or reviewing Next.js routes, layouts, server/client components,
-  data fetching, Server Actions, caching, or metadata in the frontend app.
+  Build and review Next.js App Router applications (Next.js 15/16+) — Server vs
+  Client Component boundaries, async request APIs, data fetching and caching,
+  Server Actions, streaming Suspense, URL state, LCP/image optimization, and
+  deterministic metadata/SEO. Use when creating or modifying `app/` routes,
+  layouts, loading/error boundaries, metadata, or data mutations.
 ---
 
 # Modern Next.js (App Router)
 
-Default to the server. Reach for the client only when you need interactivity.
-Target Next.js 16 with the App Router and React Server Components.
+Apply these conventions when building or reviewing Next.js App Router (`app/`)
+codebases.
 
-## When to use
+## 1. Server Components by default; Client Components at the leaves
 
-- Adding or reviewing routes, layouts, pages, or components in the frontend app.
-- Choosing server vs client components, a data-fetching strategy, or caching.
-- Wiring forms and mutations via Server Actions.
+- Every file in `app/` is a **React Server Component (RSC)** unless marked with
+  `'use client'`. Keep layouts, pages, and data-fetching wrappers on the server.
+- Push `'use client'` **as far down the component tree as possible** — only on
+  interactive leaves that use `useState`, `useEffect`, event handlers, or
+  browser APIs.
+- **Compose Server inside Client via `children`:** A Client Component (e.g., an
+  animated modal or collapsible sidebar) can render Server Components without
+  turning them into client bundles when passed as `children` or slots.
+- **Serialization boundary:** Props passed from Server → Client must be
+  serializable (plain objects, primitives, Promises, Server Actions — never
+  class instances or unserializable functions).
 
-## Server vs Client Components
+## 2. Async request APIs (Next.js 15+)
 
-Components are **Server Components by default**. Add `'use client'` only when you
-need state, effects, event handlers, or browser-only APIs.
-
-- Keep `'use client'` at the leaves; pass server-fetched data down as props.
-- Don't put `'use client'` on a layout/page just to use one interactive child —
-  split the child out.
-- Never import server-only code (DB clients, secrets) into a client component.
-- **Minimize the serialization boundary:** props crossing server → client are
-  serialized into the RSC payload. Pass only the minimal, serializable fields a
-  client component needs — not whole ORM rows or large objects. Non-serializable
-  values (functions, class instances, Dates in some setups) won't cross.
-
-## Data fetching
-
-- Fetch directly in async Server Components — no `useEffect` for initial data.
-- Choose the cache explicitly: static by default, `revalidate` for ISR,
-  `cache: 'no-store'` / `dynamic` for per-request data.
-- Stream slow data with `<Suspense>` and `loading.tsx`; colocate `error.tsx`.
-- Use `next/cache` (`revalidateTag`/`revalidatePath`) to invalidate after writes.
-
-### Avoid request waterfalls
-
-- Fetch independent data **in parallel**, not sequentially. Kick off the
-  requests, then await together:
+In Next.js 15+, `params`, `searchParams`, `cookies()`, `headers()`, and
+`draftMode()` are **asynchronous**. Always `await` them:
 
 ```tsx
-const [user, posts] = await Promise.all([getUser(id), getPosts(id)]);
+export default async function OrderPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { id } = await params;
+  const { tab = 'overview' } = await searchParams;
+  // ...
+}
 ```
 
-- Don't `await` a request only to pass its result into the next independent one
-  — that serializes round-trips and inflates TTFB.
-- Stream non-critical sections behind their own `<Suspense>` so the shell
-  renders immediately.
+## 3. Data fetching & parallel streaming
 
-### Deduplicate requests
+- **Colocate reads where needed** and wrap shared server reads in `React.cache()`
+  so layout, `generateMetadata`, and page deduplicate within a single request.
+- **Eliminate waterfalls:** Start independent fetches in parallel with
+  `Promise.all([getUser(id), getOrders(id)])` or split slow secondary sections
+  into separate async Server Components wrapped in `<Suspense fallback={<Skeleton />}>`.
+- **Never call your own Route Handlers (`app/api/...`) from a Server Component**
+  over HTTP — call the underlying service/SDK or typed RonyKit stub directly.
+- **Pass Promises to Client Components** and unwrap them with React 19's `use(promise)`
+  when the shell should render immediately.
 
-- `fetch` is automatically deduped within a render pass — call it where the data
-  is needed instead of prop-drilling.
-- For non-`fetch` data sources (DB/ORM), wrap the loader in React `cache()` so
-  repeated calls in one render hit the source once:
+## 4. Mutations & Server Actions
 
-```tsx
-import { cache } from 'react';
-export const getUser = cache(async (id: string) => db.user.find(id));
-```
+- Validate every Server Action input at the boundary with **Zod** (`safeParse`)
+  and verify **authentication + authorization inside the action** — Server
+  Actions are public HTTP endpoints.
+- Return structured results (`{ ok: true, data } | { ok: false, fieldErrors, message }`)
+  for expected validation/domain errors instead of throwing raw exceptions.
+- Pair form actions with `useActionState` (React 19) for pending state + field
+  errors, and `useOptimistic` for instant UI updates.
+- Call `revalidatePath` / `revalidateTag` after mutations before redirecting.
 
-## Mutations — Server Actions
+## 5. URL state, routing & boundary files
 
-- Use Server Actions for form submissions and mutations instead of hand-rolled
-  API routes where possible.
-- **Authenticate and authorize inside every action.** A Server Action is a
-  public POST endpoint — hiding the button in the UI does not protect it. Re-check
-  the session and the caller's permission to act on the target resource at the
-  top of the action, before any mutation.
-- Validate input on the server (e.g. Zod) — never trust the client.
-- Revalidate or redirect after a successful mutation.
+- **Deep-linkable UI state:** Store filter facets, search queries, sort order,
+  pagination, and active tabs in URL search params (`useSearchParams` or `nuqs`)
+  so views survive refresh and can be shared.
+- **Real `<Link>` navigation:** Always use `<Link href="...">` for internal
+  navigation (never `router.push` inside a `<div onClick>`) so prefetching,
+  Cmd/Ctrl-click, and middle-click work.
+- **Route boundaries:** Provide `loading.tsx` (layout-matched structural
+  skeletons with zero CLS), `error.tsx` (`'use client'` with a `reset()` retry
+  button), and `not-found.tsx` at meaningful route segments.
 
-## Routing & structure
+## 6. Metadata, Open Graph & SEO discipline
 
-- Use the file conventions: `layout.tsx`, `page.tsx`, `loading.tsx`,
-  `error.tsx`, `not-found.tsx`, route groups `(group)`, dynamic `[param]`.
-- Co-locate components/tests with the route; share via a top-level module.
-- `<Link>` for navigation; `next/image` and `next/font` for assets.
+- **Single source of truth per route:** Define metadata via the static
+  `export const metadata: Metadata` object or `generateMetadata` in `layout.tsx`
+  / `page.tsx` — never render duplicate raw `<title>` or `<meta>` tags inside
+  component bodies.
+- **Set `metadataBase` once in the root `app/layout.tsx`** so relative Open
+  Graph and Twitter image paths resolve to **absolute URLs**.
+- **URL & title agreement:** Keep `title` (with root `title.template: "%s · App"`),
+  `description`, `alternates.canonical`, and `openGraph.url` consistent on
+  every indexable page. Pair `openGraph.images` (`1200×630`) with
+  `twitter.card = "summary_large_image"`.
+- **Viewport & browser chrome:** Export `viewport: Viewport` in the root layout
+  with light/dark `themeColor` matching your `--background` tokens:
+  ```tsx
+  export const viewport: Viewport = {
+    themeColor: [
+      { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
+      { media: '(prefers-color-scheme: dark)', color: '#0c0d10' },
+    ],
+  };
+  ```
+- **Honest structured data:** Only emit JSON-LD (`application/ld+json`) for
+  entities actually rendered on the page, and Gate non-production environments
+  with `robots: { index: false, follow: false }`.
 
-## Metadata & a11y
+## 7. Images, fonts, LCP & hydration safety
 
-- Export `metadata` or `generateMetadata` for SEO instead of manual `<head>`.
-- Semantic HTML, labelled controls, keyboard reachability.
-
-## Performance
-
-- Keep client bundles small; prefer Server Components and `next/dynamic` for
-  heavy client-only widgets.
-- Use `next/image` (sizing, lazy loading) and avoid layout shift.
-- Pick the runtime deliberately: default Node.js runtime for full APIs; opt into
-  the Edge runtime (`export const runtime = 'edge'`) only for light, latency-
-  sensitive routes that don't need Node-only APIs.
-- Profile before optimizing — use the bundle analyzer and a Lighthouse pass to
-  confirm wins (TTFB, payload size) rather than guessing.
+- **LCP image priority:** Use `next/image` with explicit `width`/`height` (or
+  `fill` inside an `aspect-*` container). Add `priority` (`fetchpriority="high"`)
+  to the above-the-fold hero/LCP image — **never set `loading="lazy"` on the LCP
+  image**. Lazy-load below-the-fold media.
+- **Zero-CLS fonts:** Load fonts in the root layout via `next/font/google` or
+  `next/font/local` bound to CSS variables (`--font-sans`, `--font-display`,
+  `--font-mono`).
+- **Hydration safety:** Never read `window`, `localStorage`, `Math.random()`, or
+  `new Date()` directly during render in a Client Component — defer client-only
+  values to `useEffect` or format timestamps consistently with an explicit
+  locale/timezone. Never mix `value` without `onChange` and `defaultValue` on
+  the same input.
 
 ## Checklist
 
-- Default to Server Components; `'use client'` only where required and at leaves.
-- Independent data fetched in parallel; loaders deduped; no waterfalls.
-- Caching strategy chosen deliberately per fetch.
-- Mutations authorize the caller, validate input server-side, and revalidate
-  affected data.
-- `pnpm lint`, `pnpm typecheck`, and tests pass.
+- [ ] `'use client'` only on leaf interactive components; `params`/`searchParams` awaited
+- [ ] Independent server fetches run in parallel (`Promise.all` or `<Suspense>`)
+- [ ] Server Actions validate inputs with Zod and check auth before mutating
+- [ ] Filters, tabs, and pagination sync to URL search params
+- [ ] `metadataBase`, `canonical`, `openGraph`, and `viewport.themeColor` configured; LCP image uses `priority`

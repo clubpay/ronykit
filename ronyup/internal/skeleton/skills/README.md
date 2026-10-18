@@ -29,7 +29,7 @@ Decide deliberately; don't copy the shape of a neighboring skill.
 judgment/taste guidance that fits comfortably in ~100–200 lines (principles,
 tables, a checklist). Splitting these adds indirection with no reliability gain.
 
-- Examples: `frontend-design`, `dashboard-ui`, `go-modern`, `code-review`.
+- Examples: `frontend-design`, `dashboard-ui`, `ui-polish`, `go-modern`, `code-review`.
 
 **Use a `rules/` tree (progressive disclosure)** when the material is a large,
 example-heavy catalog (many discrete rules, each with concrete code and/or
@@ -64,7 +64,16 @@ Otherwise, keep it one file.
   single giant concatenated document. Architecture and craft skills
   (`release-it`, `domain-driven-design`, `software-design-philosophy`,
   `ddia-systems`, `technical-documentation`) are adapted from
-  [`wondelai/skills`](https://github.com/wondelai/skills) (MIT).
+  [`wondelai/skills`](https://github.com/wondelai/skills) (MIT). Frontend UI and
+  motion skills (`frontend-design`, `dashboard-ui`, `ux-quality`, `ui-polish`,
+  `typography`, `design-tokens`, `nextjs-modern`) synthesize patterns from
+  [`jakubkrehel/skills`](https://github.com/jakubkrehel/skills) (MIT),
+  [`emilkowalski/skills`](https://github.com/emilkowalski/skills) (MIT),
+  [`pbakaus/impeccable`](https://github.com/pbakaus/impeccable) (Apache-2.0),
+  [`nexu-io/open-design`](https://github.com/nexu-io/open-design) (MIT),
+  [`Dammyjay93/interface-design`](https://github.com/Dammyjay93/interface-design) (MIT),
+  [`ibelick/ui-skills`](https://github.com/ibelick/ui-skills), and
+  [`vercel-labs/web-interface-guidelines`](https://github.com/vercel-labs/web-interface-guidelines).
 - Only vendor a skill whose core ideas are language-neutral. Class-bound
   material (inheritance refactorings, SOLID-per-class, Java seams) does not
   translate to Go; distill what survives into a Go-native skill instead of

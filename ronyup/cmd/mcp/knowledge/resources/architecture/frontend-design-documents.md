@@ -60,7 +60,8 @@ Use the `design-frontend` prompt for the full bootstrap workflow.
 | Need                         | Skills                                              |
 |------------------------------|-----------------------------------------------------|
 | Bootstrap / aesthetic        | `frontend-design`, `design-tokens`, `typography`    |
+| Surface, icon & motion craft | `ui-polish`, `ux-quality`                           |
 | Agent-friendly / WebMCP      | `webmcp`, `nextjs-modern`, `ux-quality`             |
-| Dashboard / admin            | `dashboard-ui`, `shadcn`, `ux-quality`            |
-| Implementation               | `nextjs-modern`, `shadcn`, `react-performance`    |
+| Dashboard / admin (Operate)  | `dashboard-ui`, `shadcn`, `ux-quality`, `ui-polish` |
+| Implementation               | `nextjs-modern`, `shadcn`, `react-performance`      |
 | Stories & tests              | `storybook`, `frontend-testing`                     |

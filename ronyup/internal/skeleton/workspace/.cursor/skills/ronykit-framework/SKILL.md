@@ -41,10 +41,11 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Bug / failing test | `systematic-debugging` → `verification-before-completion` |
 | Production hardening | `release-it` → MCP `characteristics/telemetry` |
 | Bootstrap frontend | `frontend-design`, `design-tokens`, `typography` → MCP `design-frontend` |
-| Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality` |
+| Dashboard / admin UI | `dashboard-ui`, `shadcn`, `ux-quality`, `ui-polish` |
 | Agent-friendly UI / WebMCP | `webmcp`, `nextjs-modern`, `ux-quality` |
 | Next.js / routes | `nextjs-modern`, `shadcn` |
-| UI components | `shadcn`, `storybook`, `ux-quality` |
+| UI components | `shadcn`, `ui-polish`, `storybook`, `ux-quality` |
+| UI polish / motion / deslop | `ui-polish`, `ux-quality`, `typography` |
 | Frontend tests | `frontend-testing`, `verification-before-completion` |
 | Before claiming done | `verification-before-completion`, `code-formatting` |
 

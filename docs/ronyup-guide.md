@@ -152,11 +152,12 @@ Running `ronyup setup` with no flags launches an interactive selector with the k
 | `frontend-testing`     | Frontend | fullstack, frontend | Vitest + Testing Library and Playwright e2e best practices |
 | `storybook`            | Frontend | fullstack, frontend | Ensure every UI component ships with a Storybook story    |
 | `shadcn`               | Frontend | fullstack, frontend | Find, install, compose, and theme shadcn/ui components    |
-| `dashboard-ui`         | Frontend | fullstack, frontend | Dashboards/back-office: KPI strip, F-pattern, color discipline |
-| `frontend-design`      | Frontend | fullstack, frontend | Required before UI bootstrap: design questions, token plan, aesthetics |
-| `ux-quality`           | Frontend | fullstack, frontend | Keyboard/focus, interaction states, forms, navigation, motion |
-| `typography`           | Frontend | fullstack, frontend | Curly quotes, dashes, line length, hierarchy, the JSX entity trap |
-| `design-tokens`        | Frontend | fullstack, frontend | Token architecture (primitive→semantic→component), Tailwind/shadcn |
+| `dashboard-ui`         | Frontend | fullstack, frontend | Dashboards/back-office (Operate mode): KPI strip, 4-tier hierarchy, tables |
+| `frontend-design`      | Frontend | fullstack, frontend | Required before UI bootstrap: surface mode, design questions, anti-slop |
+| `ux-quality`           | Frontend | fullstack, frontend | WCAG AA keyboard/focus, 8 interaction states, forms, copy, layout resilience |
+| `ui-polish`            | Frontend | fullstack, frontend | Exact surface, icon, microinteraction, and animation polish & motion perf |
+| `typography`           | Frontend | fullstack, frontend | Font pairing by mode, scales, unitless line-height, OpenType, JSX entities |
+| `design-tokens`        | Frontend | fullstack, frontend | 3-tier OKLCH token architecture, 4-tier text, dark mode, Tailwind/shadcn |
 | `react-performance`    | Frontend | fullstack, frontend | 70 React/Next.js perf rules: waterfalls, bundles, re-renders |
 | `composition-patterns` | Frontend | fullstack, frontend | Compound components, lifted state, explicit variants      |
 | `webmcp`               | Frontend | fullstack, frontend | Expose frontend features as agent-callable WebMCP tools   |
