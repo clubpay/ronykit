@@ -81,9 +81,10 @@ Never set `status: approved` yourself.
 
 Only after the design doc is approved:
 
-1. Initialize the app in `frontend/` or `frontend/{{app_name}}/` with the chosen stack.
-2. Wire semantic tokens into `globals.css` / Tailwind / shadcn theme per the approved doc.
-3. Expose npm scripts required by `frontend/verify.sh`: `typecheck`, `lint`, `build`, `test`, and `build-storybook` once Storybook is added.
+1. Run the MCP tool `check_frontend_design` to verify `docs/design/{{app_name}}-frontend-design.md` is `status: approved`, has all required sections, and contains no leftover placeholder comments.
+2. Initialize the app in `frontend/` or `frontend/{{app_name}}/` with the chosen stack.
+3. Wire semantic tokens into `globals.css` / Tailwind / shadcn theme per the approved doc.
+4. Expose npm scripts required by `frontend/verify.sh`: `typecheck`, `lint`, `build`, `test`, and `build-storybook` once Storybook is added.
 
 ---
 

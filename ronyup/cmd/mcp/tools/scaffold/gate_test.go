@@ -102,3 +102,77 @@ func TestCheckDesignGate(t *testing.T) {
 		}
 	})
 }
+
+func TestCheckFrontendDesignGate(t *testing.T) {
+	completeApprovedDoc := `---
+status: approved
+app: web
+stack: Next.js 16 App Router + shadcn/ui + Tailwind
+updated: 2026-10-18
+---
+
+# Web — frontend design
+
+## 1. Context
+Operate dashboard for billing ops.
+
+## 2. Aesthetic direction
+Precision dark-first editorial ledger.
+
+## 3. Token plan
+OKLCH 4-tier text hierarchy and surface steps.
+
+## 4. Layout
+240px sidebar + 1440px max-width workspace.
+
+## 5. Component rules
+shadcn/ui + Lucide icons, tabular-nums tables.
+
+## 6. Motion
+0ms high-frequency actions, cubic-bezier(0.23, 1, 0.32, 1) overlays.
+
+## 7. v1 surfaces
+/invoices, /customers.
+
+## 9. Quality floor
+Responsive >=360px, Storybook coverage, verify.sh clean.
+`
+
+	t.Run("missing file", func(t *testing.T) {
+		ws := t.TempDir()
+		got := checkFrontendDesignGate(ws, "web")
+		if len(got) != 1 {
+			t.Fatalf("expected 1 problem, got %d: %v", len(got), got)
+		}
+	})
+
+	t.Run("draft and missing sections and comments", func(t *testing.T) {
+		ws := t.TempDir()
+		dir := filepath.Join(ws, designDir)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("mkdir: %v", err)
+		}
+		raw := "---\nstatus: draft\n---\n# Web\n## 1. Context\n<!-- fill me -->\n"
+		if err := os.WriteFile(filepath.Join(dir, "web-frontend-design.md"), []byte(raw), 0o644); err != nil {
+			t.Fatalf("write: %v", err)
+		}
+		got := checkFrontendDesignGate(ws, "web")
+		if len(got) < 3 {
+			t.Fatalf("expected multiple problems (draft, missing sections, comments), got: %v", got)
+		}
+	})
+
+	t.Run("complete and approved passes", func(t *testing.T) {
+		ws := t.TempDir()
+		dir := filepath.Join(ws, designDir)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatalf("mkdir: %v", err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "web-frontend-design.md"), []byte(completeApprovedDoc), 0o644); err != nil {
+			t.Fatalf("write: %v", err)
+		}
+		if got := checkFrontendDesignGate(ws, ""); len(got) != 0 {
+			t.Fatalf("expected gate to pass, got problems: %v", got)
+		}
+	})
+}

@@ -25,12 +25,13 @@ type featureArgs struct {
 	SkipDesignGate  bool   `json:"skipDesignGate"`
 }
 
-// Register registers the scaffold MCP tools (in-process internal/scaffold calls) and
-// check_rkit_usage (in-process internal/rkitlint).
+// Register registers the scaffold MCP tools (in-process internal/scaffold calls),
+// check_frontend_design, and check_rkit_usage (in-process internal/rkitlint).
 func Register(srv *mcpsdk.Server) {
 	registerSetupWorkspace(srv)
 	registerSetupFeature(srv)
 	registerLifecycle(srv)
+	registerCheckFrontendDesign(srv)
 	registerCheckRkit(srv)
 }
 

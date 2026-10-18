@@ -87,6 +87,10 @@ Open these for depth (progressive disclosure — they don't load until needed):
   color customization, multi-theme, and `cva` variant customization.
 - `references/accessibility.md` — what each Radix primitive handles vs. the
   gaps you must fill (labels, form errors, focus ring, live regions).
+- `references/forms-and-tables.md` — accessible forms (`useActionState`, Zod,
+  RonyKit `<Service>StubError` field-error mapping, blur/change validation
+  timing) and data tables (`tabular-nums` right-aligned numeric columns,
+  first-use vs filtered-zero empty states).
 
 ## Checklist
 

@@ -39,15 +39,56 @@ import useSWR, { SWRConfiguration } from 'swr'
 
 {{/* Generate the Stub Class */}}
 {{$serviceName := .Name}}
+export interface RonyErrorPayload {
+	code?: string | number;
+	codeName?: string;
+	item?: string;
+	message?: string;
+	details?: unknown;
+}
+
 export class {{$serviceName}}StubError extends globalThis.Error {
 	readonly status: number;
 	readonly body: string;
+	readonly payload: RonyErrorPayload | null;
 
 	constructor(status: number, body: string) {
 		super(`Failed to fetch the data (${status}): ${body}`);
 		this.name = '{{$serviceName}}StubError';
 		this.status = status;
 		this.body = body;
+		this.payload = {{$serviceName}}StubError.parsePayload(body);
+	}
+
+	get code(): string | number | undefined {
+		return this.payload?.codeName ?? this.payload?.code;
+	}
+
+	get item(): string | undefined {
+		return this.payload?.item;
+	}
+
+	get serverMessage(): string {
+		return this.payload?.message ?? this.payload?.item ?? `Request failed (${this.status})`;
+	}
+
+	get details(): unknown {
+		return this.payload?.details;
+	}
+
+	private static parsePayload(body: string): RonyErrorPayload | null {
+		if (!body) {
+			return null;
+		}
+		try {
+			const parsed = JSON.parse(body);
+			if (parsed && typeof parsed === 'object') {
+				return parsed as RonyErrorPayload;
+			}
+		} catch {
+			// non-JSON error body
+		}
+		return null;
 	}
 }
 
@@ -146,14 +187,14 @@ export class {{$serviceName}}Stub {
 {{- if and (ne $methodName "") (not .Request.Message.IsSpecial) .HasOKResponse }}
 export function use{{$methodName}}(
 	stub: {{$serviceName}}Stub,
-	req: {{.Request.Message.Name}},
+	req: {{.Request.Message.Name}} | null | undefined,
 	reqHeader?: HeadersInit,
-	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>,
+	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}, {{$serviceName}}StubError>>,
 	init?: RequestInit,
 ) {
-	return useSWR(
-		[req, '{{$methodName}}'],
-		([req]) => stub.{{lowerCamelCase $methodName}}(req, reqHeader, init),
+	return useSWR<{{.GetOKResponse.Message.Name}}, {{$serviceName}}StubError>(
+		req ? [req, '{{$methodName}}'] : null,
+		([r]) => stub.{{lowerCamelCase $methodName}}(r, reqHeader, init),
 		options,
 	)
 }

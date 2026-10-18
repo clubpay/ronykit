@@ -13,11 +13,12 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 | `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`)   |
 | `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`ronyup setup sync`)         |
 | `setup_bundle`       | Create/remove executable bundles, regenerate features.go (`ronyup setup bundle`)    |
-| `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`ronyup setup migrate bundles`)    |
-| `check_rkit_usage`   | Report (and optionally fix) Go code that re-implements an x/rkit helper (`ronyup lint`) |
+| `migrate_bundles`       | Upgrade a legacy workspace to the bundle layout (`ronyup setup migrate bundles`)    |
+| `check_frontend_design` | Verify `docs/design/<app>-frontend-design.md` is approved and complete before UI init |
+| `check_rkit_usage`      | Report (and optionally fix) Go code that re-implements an x/rkit helper (`ronyup lint`) |
 
 Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`,
-`check_rkit_usage`.
+`check_frontend_design`, `check_rkit_usage`.
 
 ## Prompts
 
@@ -25,6 +26,7 @@ Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `s
 |-----------------------|---------------------------------------------------|
 | `design-new-service`  | Full workflow: SRS → SDD → scaffold → implement   |
 | `design-frontend`     | Frontend bootstrap: design doc → approval → init → implement |
+| `review-frontend`     | Audit an existing frontend app against its design doc, UI polish, and verify.sh |
 | `write-srs`           | Write SRS to `docs/design/<feature>-srs.md`       |
 | `write-sdd`           | Write SDD from approved SRS                       |
 | `design-api`          | Contracts, routes, handlers, API documentation    |

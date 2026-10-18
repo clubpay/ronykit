@@ -146,6 +146,67 @@ useWebMCP({
 
 The Server Action must perform the same auth checks as the admin UI form.
 
+### RonyKit TypeScript stub (`<Service>Stub` + SWR) in WebMCP tools
+
+In RonyKit fullstack workspaces (`make gen-stub`), wire both the human UI and
+`useWebMCP` tool handlers to the same generated `<Service>Stub` method and SWR
+cache key so agent tool calls and human clicks stay 100% synchronized:
+
+```tsx
+'use client';
+
+import { useSWRConfig } from 'swr';
+import { useWebMCP } from '@mcp-b/react-webmcp';
+import { z } from 'zod';
+import {
+  OrderServiceStub,
+  OrderServiceStubError,
+} from '@/stub/orderstub-typescript/stub';
+
+const orderStub = new OrderServiceStub(
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8080',
+);
+
+export function useCancelOrderAction() {
+  const { mutate } = useSWRConfig();
+
+  async function cancelOrder(orderId: string, reason: string) {
+    try {
+      const res = await orderStub.cancelOrder({ orderId, reason });
+      // Revalidate any SWR hooks watching orders
+      await mutate((key) => Array.isArray(key) && key[1] === 'ListOrders');
+      return { ok: true as const, order: res };
+    } catch (err) {
+      if (err instanceof OrderServiceStubError) {
+        return {
+          ok: false as const,
+          code: err.code,
+          field: err.item,
+          error: err.serverMessage,
+        };
+      }
+      return { ok: false as const, error: 'Failed to cancel order.' };
+    }
+  }
+
+  useWebMCP({
+    name: 'orders_cancel',
+    description: 'Cancel an existing order by ID with a reason and refresh the orders view.',
+    inputSchema: {
+      orderId: z.string().min(1).describe('Order identifier to cancel'),
+      reason: z.string().min(3).describe('Audit reason for cancellation'),
+    },
+    annotations: {
+      title: 'Cancel order',
+      readOnlyHint: false,
+    },
+    handler: ({ orderId, reason }) => cancelOrder(orderId, reason),
+  });
+
+  return { cancelOrder };
+}
+```
+
 ## File layout (recommended)
 
 ```

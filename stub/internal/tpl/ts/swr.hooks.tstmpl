@@ -13,6 +13,7 @@
 import useSWR, { SWRConfiguration } from 'swr'
 import {
 	{{$serviceName}}Stub,
+	{{$serviceName}}StubError,
 {{- range $name := (sortAlpha (keys $types)) }}
 	{{ $name }},
 {{- end }}
@@ -24,14 +25,14 @@ import {
 {{- if and (ne $methodName "") (not .Request.Message.IsSpecial) .HasOKResponse }}
 export function use{{$methodName}}(
 	stub: {{$serviceName}}Stub,
-	req: {{.Request.Message.Name}},
+	req: {{.Request.Message.Name}} | null | undefined,
 	reqHeader?: HeadersInit,
-	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}>>,
+	options?: Partial<SWRConfiguration<{{.GetOKResponse.Message.Name}}, {{$serviceName}}StubError>>,
 	init?: RequestInit,
 ) {
-	return useSWR(
-		[req, '{{$methodName}}'],
-		([req]) => stub.{{lowerCamelCase $methodName}}(req, reqHeader, init),
+	return useSWR<{{.GetOKResponse.Message.Name}}, {{$serviceName}}StubError>(
+		req ? [req, '{{$methodName}}'] : null,
+		([r]) => stub.{{lowerCamelCase $methodName}}(r, reqHeader, init),
 		options,
 	)
 }

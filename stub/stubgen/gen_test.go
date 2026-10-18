@@ -127,12 +127,16 @@ func TestTypeScriptGenerator(t *testing.T) {
 	require.NotEmpty(t, files)
 
 	src := string(files[0].Data)
+	assert.Contains(t, src, "export interface RonyErrorPayload")
 	assert.Contains(t, src, "export class testStubError extends globalThis.Error")
+	assert.Contains(t, src, "get serverMessage(): string")
+	assert.Contains(t, src, "get item(): string | undefined")
 	assert.Contains(t, src, "async s1(")
 	assert.Contains(t, src, "init?: RequestInit")
 	assert.Contains(t, src, "encodeURIComponent")
 	assert.Contains(t, src, "this.buildQuery")
 	assert.Contains(t, src, "res.status !== 201")
+	assert.Contains(t, src, "req ? [req,")
 	assert.NotContains(t, src, "@ts-ignore")
 }
 
@@ -157,6 +161,9 @@ func TestTypeScriptSWRHooksGenerator(t *testing.T) {
 
 	src := string(files[1].Data)
 	assert.Contains(t, src, "export function uses1(")
+	assert.Contains(t, src, "req: ComplexRequest | null | undefined")
+	assert.Contains(t, src, "testStubError")
+	assert.Contains(t, src, "req ? [req,")
 	assert.Contains(t, src, "init?: RequestInit")
 	assert.Contains(t, src, "ComplexRequest")
 	assert.Contains(t, src, "ComplexResponse")

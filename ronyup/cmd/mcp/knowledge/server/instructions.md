@@ -15,11 +15,10 @@ Frontend topology (fullstack workspaces): never assume a single frontend app. Be
 user whether there is one frontend app or multiple. For multiple apps, each app lives in its own directory (`frontend/<app-name>/`); confirm
 which app (and its stack when initializing a new one) the change targets before proceeding.
 
-Frontend design is document-first (enforced by `frontend/verify.sh`): before initializing a frontend stack or writing UI, ask aesthetic/design
-questions, read skills `frontend-design`, `design-tokens`, `typography`, and write `docs/design/<app>-frontend-design.md` with a token plan and
+Frontend design is document-first (enforced by `check_frontend_design` and `frontend/verify.sh`): before initializing a frontend stack or writing UI, ask aesthetic/design
+questions, read skills `frontend-design`, `design-tokens`, `typography`, `ui-polish`, and write `docs/design/<app>-frontend-design.md` with a token plan and
 design-system rules. For admin/dashboard/ops UIs that agents should automate, also read skill `webmcp` and plan tools in the design doc (§8).
-Use MCP prompt `design-frontend`. Write with `status: draft`; only the user sets `status: approved`. Do not run framework
-CLIs until the design doc is approved.
+Use MCP prompt `design-frontend` (and `review-frontend` when auditing an existing frontend app). Write with `status: draft`; only the user sets `status: approved`. Run `check_frontend_design` before running framework CLIs.
 
 Follow layered service conventions:
 

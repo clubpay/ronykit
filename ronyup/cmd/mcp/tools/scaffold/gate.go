@@ -1,6 +1,7 @@
 package scaffold
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -160,4 +161,174 @@ func frontmatterStatus(content string) string {
 	}
 
 	return ""
+}
+
+type checkFrontendDesignArgs struct {
+	WorkspacePath string `json:"workspacePath"`
+	App           string `json:"app"`
+}
+
+var requiredFrontendSections = []string{
+	"Context",
+	"Aesthetic direction",
+	"Token plan",
+	"Layout",
+	"Component rules",
+	"Motion",
+	"v1 surfaces",
+	"Quality floor",
+}
+
+func registerCheckFrontendDesign(srv *mcpsdk.Server) {
+	tool := &mcpsdk.Tool{
+		Name: "check_frontend_design",
+		Description: "Verify that the frontend design document (docs/design/<app>-frontend-design.md) " +
+			"exists, has frontmatter `status: approved`, has no leftover template comments, and includes " +
+			"all required design-system sections before initializing a frontend stack or writing UI code.",
+		InputSchema: map[string]any{
+			schemaKeyType: schemaKeyObject,
+			schemaKeyProperties: map[string]any{
+				argWorkspacePath: stringArg(
+					"The path to the workspace root (or frontend/ / backend/ subdirectory).",
+				),
+				"app": map[string]any{
+					schemaKeyType: schemaTypeString,
+					schemaKeyDescription: "Frontend app slug ('web' for a single app at frontend/, " +
+						"or the directory name for frontend/<app>/).",
+					schemaKeyDefault: "web",
+				},
+			},
+			schemaKeyRequired: []string{argWorkspacePath},
+		},
+	}
+
+	mcpsdk.AddTool(srv, tool,
+		func(_ context.Context, _ *mcpsdk.CallToolRequest, args checkFrontendDesignArgs) (
+			*mcpsdk.CallToolResult, any, error,
+		) {
+			if args.WorkspacePath == "" {
+				return errorResult(rkit.L("workspacePath is required")), nil, nil
+			}
+
+			app := rkit.Coalesce(strings.TrimSpace(args.App), "web")
+
+			problems := checkFrontendDesignGate(args.WorkspacePath, app)
+			if len(problems) > 0 {
+				return frontendDesignGateError(app, problems), nil, nil
+			}
+
+			rel := filepath.ToSlash(filepath.Join(designDir, app+"-frontend-design.md"))
+
+			return textResult(
+				rkit.L("Frontend design gate passed for app %q (%s is approved and complete).", app, rel),
+			), nil, nil
+		})
+}
+
+func checkFrontendDesignGate(workspacePath, app string) []string {
+	app = rkit.Coalesce(strings.TrimSpace(app), "web")
+	baseDir := designBaseDir(workspacePath)
+	rel := filepath.ToSlash(filepath.Join(designDir, app+"-frontend-design.md"))
+	full := filepath.Join(baseDir, designDir, app+"-frontend-design.md")
+
+	data, err := os.ReadFile(full)
+	if err != nil {
+		return []string{
+			fmt.Sprintf(
+				"Frontend design doc not found at %s — write it first using the `design-frontend` prompt.",
+				rel,
+			),
+		}
+	}
+
+	content := string(data)
+
+	var problems []string
+
+	status := frontmatterStatus(content)
+	switch {
+	case status == "":
+		problems = append(problems, fmt.Sprintf(
+			"Frontend design doc at %s has no `status:` frontmatter — expected `status: approved` after user review.",
+			rel,
+		))
+	case !strings.EqualFold(status, "approved"):
+		problems = append(problems, fmt.Sprintf(
+			"Frontend design doc at %s is not approved (status: %q) — the user must approve it (set `status: approved`).",
+			rel,
+			status,
+		))
+	}
+
+	lowerContent := strings.ToLower(content)
+	for _, section := range requiredFrontendSections {
+		if !hasMarkdownSection(lowerContent, strings.ToLower(section)) {
+			problems = append(problems, fmt.Sprintf(
+				"Frontend design doc at %s is missing required section %q "+
+					"(see `knowledge://ronyup/architecture/frontend-design-template`).",
+				rel,
+				section,
+			))
+		}
+	}
+
+	if strings.Contains(content, "<!--") {
+		problems = append(problems, fmt.Sprintf(
+			"Frontend design doc at %s still contains unfilled `<!-- ... -->` "+
+				"instructional comments — replace all placeholders before approval.",
+			rel,
+		))
+	}
+
+	return problems
+}
+
+func hasMarkdownSection(lowerContent, lowerTitle string) bool {
+	for line := range strings.SplitSeq(lowerContent, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "#") && strings.Contains(trimmed, lowerTitle) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func frontendDesignGateError(app string, problems []string) *mcpsdk.CallToolResult {
+	lines := make([]rkit.StrLine, 0, len(problems)+9)
+	lines = append(lines,
+		rkit.L(
+			"Frontend design gate failed for app %q. Frontend initialization and UI "+
+				"implementation are blocked until the design doc is complete and approved.",
+			app,
+		),
+		rkit.L(""),
+		rkit.L("Problems:"),
+	)
+
+	for _, p := range problems {
+		lines = append(lines, rkit.L("- %s", p))
+	}
+
+	lines = append(
+		lines,
+		rkit.L(""),
+		rkit.L("How to proceed:"),
+		rkit.L(
+			"1. Read skills `frontend-design`, `design-tokens`, `typography`, `ui-polish` "+
+				"and `knowledge://ronyup/architecture/frontend-design-template`.",
+		),
+		rkit.L(
+			"2. Write or complete `docs/design/%s-frontend-design.md` with `status: draft` "+
+				"(remove all `<!-- ... -->` comments).",
+			app,
+		),
+		rkit.L("3. Present the summary to the user so they can review and set `status: approved`."),
+		rkit.L(
+			"4. Re-run `check_frontend_design` before running `create-next-app`, "+
+				"`create vite`, or writing UI components.",
+		),
+	)
+
+	return errorResult(lines...)
 }

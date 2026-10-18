@@ -18,8 +18,7 @@ Each document starts with YAML frontmatter `status: draft`. Only the **user** se
 
 **Do not** run `create-next-app`, `create vite`, or scaffold components until the design doc is `status: approved`.
 
-The frontend verify gate (`frontend/verify.sh`) enforces this: once a `package.json` exists under `frontend/`, the matching
-`*-frontend-design.md` must exist with `status: approved`.
+Both the MCP tool `check_frontend_design` (run before initializing the stack) and the frontend verify gate (`frontend/verify.sh`, run once a `package.json` exists under `frontend/`) enforce this: the matching `*-frontend-design.md` must exist with `status: approved` and all required sections filled in.
 
 ## Bootstrap workflow (before any UI code)
 
