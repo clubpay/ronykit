@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"iter"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -38,7 +38,7 @@ func (t *tx) find(ctx context.Context, q store.Query) iter.Seq2[store.Record, er
 		}
 
 		t.cursors++
-		cursor := "ee_find_" + strconv.Itoa(t.cursors)
+		cursor := "ee_find_" + rkit.IntToStr(t.cursors)
 
 		if _, err := t.ptx.Exec(ctx, "DECLARE "+cursor+" NO SCROLL CURSOR FOR "+query, args...); err != nil {
 			yield(store.Record{}, mapError(err))
@@ -48,7 +48,7 @@ func (t *tx) find(ctx context.Context, q store.Query) iter.Seq2[store.Record, er
 
 		defer func() { _, _ = t.ptx.Exec(ctx, "CLOSE "+cursor) }()
 
-		fetch := "FETCH FORWARD " + strconv.Itoa(t.s.fetchSize) + " FROM " + cursor
+		fetch := "FETCH FORWARD " + rkit.IntToStr(t.s.fetchSize) + " FROM " + cursor
 
 		for {
 			batch, err := t.fetch(ctx, fetch)
@@ -131,7 +131,7 @@ func buildFind(q store.Query) (string, []any, error) {
 
 	if q.Limit > 0 {
 		b.WriteString(" LIMIT ")
-		b.WriteString(strconv.Itoa(q.Limit))
+		b.WriteString(rkit.IntToStr(q.Limit))
 	}
 
 	return b.String(), args, nil
@@ -285,7 +285,7 @@ func sqlValue(k valueKind, v any) any {
 func param(args *[]any, v any) string {
 	*args = append(*args, v)
 
-	return "$" + strconv.Itoa(len(*args))
+	return "$" + rkit.IntToStr(len(*args))
 }
 
 // literal quotes s as a SQL string literal.

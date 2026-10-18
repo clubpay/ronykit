@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/ee/store"
 	"github.com/clubpay/ronykit/std/ee/store/postgres/internal/db"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -107,15 +108,14 @@ func (t *tx) AppendOutbox(ctx context.Context, entries ...store.OutboxEntry) err
 		return store.ErrReadOnly
 	}
 
-	rows := make([]db.AppendOutboxParams, len(entries))
-	for i, e := range entries {
-		rows[i] = db.AppendOutboxParams{
+	rows := rkit.Map(entries, func(e store.OutboxEntry) db.AppendOutboxParams {
+		return db.AppendOutboxParams{
 			ID:           e.ID,
 			PartitionKey: e.PartitionKey,
 			Data:         e.Data,
 			CreatedAt:    pgtype.Timestamptz{Time: e.CreatedAt, Valid: true},
 		}
-	}
+	})
 
 	_, err := t.q.AppendOutbox(ctx, rows)
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Decoder reads the top-level fields of an encoded record. Numbers should be
@@ -42,7 +43,7 @@ func matchAll(doc map[string]any, conds []store.Cond) bool {
 
 func match(v any, c store.Cond) bool {
 	if c.Op == store.In {
-		vals, _ := c.Value.([]any)
+		vals := rkit.TryCast[[]any](c.Value)
 		for _, x := range vals {
 			if r, ok := compareValue(v, x); ok && r == 0 {
 				return true
@@ -136,8 +137,8 @@ func compareValue(doc, want any) (int, bool) {
 func compareDoc(a, b any) int {
 	if an, ok := toNumber(a); ok {
 		if bn, ok := toNumber(b); ok {
-			af, _ := strconv.ParseFloat(an, 64)
-			bf, _ := strconv.ParseFloat(bn, 64)
+			af := rkit.StrToFloat64(an)
+			bf := rkit.StrToFloat64(bn)
 
 			return cmp.Compare(af, bf)
 		}

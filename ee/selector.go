@@ -1,6 +1,8 @@
 package ee
 
-import "slices"
+import (
+	"github.com/clubpay/ronykit/x/rkit"
+)
 
 // Selector decides whether an action handles an event, based on its labels.
 type Selector interface {
@@ -25,7 +27,7 @@ func MatchIn(key string, values ...string) Selector {
 	return selectorFunc(func(l L) bool {
 		v, ok := l[key]
 
-		return ok && slices.Contains(values, v)
+		return ok && rkit.Contains(values, v)
 	})
 }
 

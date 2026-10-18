@@ -8,6 +8,7 @@ import (
 
 	"github.com/clubpay/ronykit/ee/store"
 	"github.com/clubpay/ronykit/std/ee/store/postgres/internal/db"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -40,15 +41,14 @@ func (s *Store) Claim(ctx context.Context, limit int, leaseFor time.Duration) ([
 	// RETURNING has no order.
 	slices.SortFunc(rows, func(a, b db.ClaimOutboxRow) int { return cmp.Compare(a.Seq, b.Seq) })
 
-	out := make([]store.OutboxEntry, len(rows))
-	for i, r := range rows {
-		out[i] = store.OutboxEntry{
+	out := rkit.Map(rows, func(r db.ClaimOutboxRow) store.OutboxEntry {
+		return store.OutboxEntry{
 			ID:           r.ID,
 			PartitionKey: r.PartitionKey,
 			Data:         r.Data,
 			CreatedAt:    r.CreatedAt.Time,
 		}
-	}
+	})
 
 	return out, nil
 }

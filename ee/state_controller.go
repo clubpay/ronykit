@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/clubpay/ronykit/ee/bus"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // StateController owns one state type S.
@@ -184,10 +185,5 @@ func (c *StateController[S]) handle(ctx context.Context, msg bus.Message) error 
 }
 
 func eventNames(actions map[string]*action) []string {
-	out := make([]string, 0, len(actions))
-	for name := range actions {
-		out = append(out, name)
-	}
-
-	return out
+	return rkit.MapKeysToArray(actions)
 }

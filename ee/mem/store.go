@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Store is an in-memory store.Store. Transactions are optimistic: writes are
@@ -148,7 +149,7 @@ func (s *Store) Ack(_ context.Context, ids ...string) error {
 	defer s.mu.Unlock()
 
 	s.outbox = slices.DeleteFunc(s.outbox, func(it *outboxItem) bool {
-		return slices.Contains(ids, it.entry.ID)
+		return rkit.Contains(ids, it.entry.ID)
 	})
 
 	return nil
@@ -357,10 +358,7 @@ func (t *tx) find(q store.Query) ([]store.Record, error) {
 		rows = rows[:q.Limit]
 	}
 
-	out := make([]store.Record, len(rows))
-	for i, r := range rows {
-		out[i] = r.rec
-	}
+	out := rkit.Map(rows, func(r row) store.Record { return r.rec })
 
 	return out, nil
 }

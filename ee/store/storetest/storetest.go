@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // nameField is the JSON field most Find cases filter on.
@@ -641,7 +642,7 @@ func testFindEarlyStop(t *testing.T, s store.Store) {
 
 	mustTx(t, s, func(ctx context.Context, tx store.Tx) error {
 		for i := range 3 {
-			if err := tx.Insert(ctx, rec("k", fmt.Sprintf("%d", i), `{}`)); err != nil {
+			if err := tx.Insert(ctx, rec("k", rkit.IntToStr(i), `{}`)); err != nil {
 				return err
 			}
 		}
@@ -685,12 +686,7 @@ func appendOutbox(t *testing.T, s store.Store, entries ...store.OutboxEntry) {
 }
 
 func ids(es []store.OutboxEntry) []string {
-	out := make([]string, 0, len(es))
-	for _, e := range es {
-		out = append(out, e.ID)
-	}
-
-	return out
+	return rkit.Map(es, func(e store.OutboxEntry) string { return e.ID })
 }
 
 func testOutbox(t *testing.T, s store.Store) {
@@ -733,8 +729,8 @@ func testOutboxPerKeyOrder(t *testing.T, s store.Store) {
 	)
 
 	// Relay 1 takes only "a"; relay 2 must not get "b" while "a" is leased.
-	r1, _ := ob.Claim(ctx, 1, time.Minute)
-	r2, _ := ob.Claim(ctx, 10, time.Minute)
+	r1 := rkit.Ok(ob.Claim(ctx, 1, time.Minute))
+	r2 := rkit.Ok(ob.Claim(ctx, 10, time.Minute))
 
 	if !slices.Equal(ids(r1), []string{"a"}) || !slices.Equal(ids(r2), []string{"c", "d"}) {
 		t.Fatalf("relay1 %v, relay2 %v", ids(r1), ids(r2))

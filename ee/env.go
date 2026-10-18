@@ -11,6 +11,7 @@ import (
 
 	"github.com/clubpay/ronykit/ee/bus"
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Env wires schemas, controllers and backends together. Register everything,
@@ -107,12 +108,7 @@ func New(opts ...Option) (*Env, error) {
 }
 
 func MustNew(opts ...Option) *Env {
-	e, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return e
+	return rkit.Must(New(opts...))
 }
 
 // Start subscribes every controller to its events and starts the outbox
@@ -173,10 +169,7 @@ func (e *Env) Close() error {
 }
 
 func (e *Env) closeSubs() error {
-	errs := make([]error, 0, len(e.subs))
-	for _, s := range e.subs {
-		errs = append(errs, s.Close())
-	}
+	errs := rkit.Map(e.subs, func(s bus.Subscription) error { return s.Close() })
 
 	e.subs = nil
 

@@ -14,4 +14,4 @@ In a module whose `go.mod` requires `x/rkit`, use rkit before writing a small he
 - Zero-copy `[]byte`↔`string` → `rkit.B2S` / `rkit.S2B`; error-free JSON → `rkit.ToJSON` / `rkit.FromJSON`.
 - IDs → `rkit.RandomID` (not secure; `rkit.SecureRandomUint64` when it must be); case → `rkit.ToCamel` / `ToSnake` / `ToKebab`.
 - `make lint-rkit` (`ronyup lint --fix`) rewrites hand-written copies; depguard rejects `samber/lo`, `strcase`, uuid/ulid/xid and `jinzhu/copier`. Mark a deliberate exception with `//rkitcheck:ignore <reason>`.
-- Modules without rkit in `go.mod` (today `ee/`, `std/ee/*`, `x/p`, `x/settings`): use the standard library; don't add the dependency for a one-liner.
+- Only `x/p` and `x/settings` stay without rkit: they are foundation modules (no workspace dependencies), and `make bump-workspace` releases them first. Use the standard library there.

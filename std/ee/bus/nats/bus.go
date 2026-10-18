@@ -16,12 +16,12 @@ import (
 	"fmt"
 	"hash/fnv"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/clubpay/ronykit/ee/bus"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
@@ -183,12 +183,7 @@ func New(opts ...Option) (*Bus, error) {
 }
 
 func MustNew(opts ...Option) *Bus {
-	b, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return rkit.Must(New(opts...))
 }
 
 func (b *Bus) ensureStream(ctx context.Context) error {
@@ -220,14 +215,12 @@ func (b *Bus) ensureStream(ctx context.Context) error {
 func (b *Bus) Stream() string { return b.cfg.stream }
 
 func (b *Bus) subject(event, key, id string) string {
-	if key == "" {
-		key = id
-	}
+	key = rkit.Coalesce(key, id)
 
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(key))
 
-	return b.cfg.prefix + "." + event + "." + strconv.Itoa(int(h.Sum32()%uint32(b.cfg.partitions)))
+	return b.cfg.prefix + "." + event + "." + rkit.IntToStr(int(h.Sum32()%uint32(b.cfg.partitions)))
 }
 
 // Publish sends envelopes asynchronously and waits for every ack. Envelopes
@@ -337,10 +330,10 @@ func (b *Bus) Subscribe(
 	s := &subscription{b: b, h: h, ctx: subCtx, cancel: cancel}
 
 	for p := range b.cfg.partitions {
-		filters := make([]string, len(events))
-		for i, e := range events {
-			filters[i] = b.cfg.prefix + "." + e + "." + strconv.Itoa(p)
-		}
+		filters := rkit.Map(
+			events,
+			func(e string) string { return b.cfg.prefix + "." + e + "." + rkit.IntToStr(p) },
+		)
 
 		cons, err := b.js.CreateOrUpdateConsumer(ctx, b.cfg.stream, jetstream.ConsumerConfig{
 			Durable:        consumerName(group, p),
@@ -385,11 +378,7 @@ func (b *Bus) Close() error {
 	}
 
 	b.closed = true
-	subs := make([]*subscription, 0, len(b.subs))
-
-	for s := range b.subs {
-		subs = append(subs, s)
-	}
+	subs := rkit.MapKeysToArray(b.subs)
 	b.mu.Unlock()
 
 	for _, s := range subs {

@@ -18,12 +18,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/clubpay/ronykit/ee/bus"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kerr"
@@ -146,12 +146,7 @@ func New(opts ...Option) (*Bus, error) {
 }
 
 func MustNew(opts ...Option) *Bus {
-	b, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return b
+	return rkit.Must(New(opts...))
 }
 
 // Topics returns the topics events are routed to, e.g. for operational
@@ -160,7 +155,7 @@ func (b *Bus) Topics(events ...string) []string {
 	var out []string
 
 	for _, e := range events {
-		if t := b.cfg.topicFor(e); !slices.Contains(out, t) {
+		if t := b.cfg.topicFor(e); !rkit.Contains(out, t) {
 			out = append(out, t)
 		}
 	}
@@ -175,14 +170,7 @@ func (b *Bus) EnsureTopics(ctx context.Context, events ...string) error {
 	}
 
 	b.mu.Lock()
-
-	var missing []string
-
-	for _, t := range b.Topics(events...) {
-		if !b.created[t] {
-			missing = append(missing, t)
-		}
-	}
+	missing := rkit.Filter(b.Topics(events...), func(t string) bool { return !b.created[t] })
 	b.mu.Unlock()
 
 	if len(missing) == 0 {
@@ -212,10 +200,7 @@ func (b *Bus) EnsureTopics(ctx context.Context, events ...string) error {
 // Publish produces envelopes and waits for every ack. The producer is
 // idempotent, so retries cannot reorder records of a partition.
 func (b *Bus) Publish(ctx context.Context, envs ...bus.Envelope) error {
-	events := make([]string, len(envs))
-	for i, e := range envs {
-		events[i] = e.Event
-	}
+	events := rkit.Map(envs, func(e bus.Envelope) string { return e.Event })
 
 	if err := b.EnsureTopics(ctx, events...); err != nil {
 		return err
@@ -305,11 +290,7 @@ func (b *Bus) Close() error {
 	}
 
 	b.closed = true
-	subs := make([]*subscription, 0, len(b.subs))
-
-	for s := range b.subs {
-		subs = append(subs, s)
-	}
+	subs := rkit.MapKeysToArray(b.subs)
 	b.mu.Unlock()
 
 	for _, s := range subs {
@@ -419,7 +400,7 @@ func (s *subscription) deliver(r *kgo.Record) bool {
 		return true
 	}
 
-	if !slices.Contains(s.events, env.Event) {
+	if !rkit.Contains(s.events, env.Event) {
 		return true // another group's event on a shared topic
 	}
 

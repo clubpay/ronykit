@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Delivery describes the event an action is about to handle.
@@ -73,7 +74,7 @@ func Dedup(next Next) Next {
 
 		// MarshalJSON fails only for years outside [0, 9999], which time.Now
 		// cannot produce.
-		at, _ := time.Now().UTC().MarshalJSON()
+		at := rkit.Ok(time.Now().UTC().MarshalJSON())
 
 		return d.Tx.Insert(ctx, store.Record{Kind: DedupKind, ID: key, Version: 1, Data: at})
 	}

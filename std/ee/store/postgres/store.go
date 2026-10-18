@@ -19,6 +19,7 @@ import (
 
 	"github.com/clubpay/ronykit/ee/store"
 	"github.com/clubpay/ronykit/std/ee/store/postgres/internal/db"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -154,12 +155,7 @@ func New(opts ...Option) (*Store, error) {
 }
 
 func MustNew(opts ...Option) *Store {
-	s, err := New(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return s
+	return rkit.Must(New(opts...))
 }
 
 // Close closes the pools the store opened from DSNs; pools passed with
@@ -223,7 +219,7 @@ func ForcePrimary(ctx context.Context) context.Context {
 }
 
 func forcedPrimary(ctx context.Context) bool {
-	v, _ := ctx.Value(forcePrimaryKey{}).(bool)
+	v := rkit.TryCast[bool](ctx.Value(forcePrimaryKey{}))
 
 	return v
 }

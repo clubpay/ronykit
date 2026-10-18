@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/ee/bus"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Bus is an in-memory bus.Bus with consumer groups, per-key ordering and
@@ -197,9 +198,7 @@ func (b *Bus) route(msg bus.Message) (int, error) {
 		}
 
 		key := msg.PartitionKey
-		if key == "" {
-			key = msg.ID
-		}
+		key = rkit.Coalesce(key, msg.ID)
 
 		h := fnv.New32a()
 		_, _ = h.Write([]byte(key))
