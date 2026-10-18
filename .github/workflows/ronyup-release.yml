@@ -59,7 +59,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: ronyup/go.mod
+          go-version-file: go.work
           cache-dependency-path: ronyup/go.sum
 
       - name: Build binary
