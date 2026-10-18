@@ -1,0 +1,53 @@
+package fixmod
+
+import (
+	"github.com/clubpay/ronykit/x/rkit"
+)
+
+type item struct {
+	Name string
+	Qty  int
+}
+
+type opts struct {
+	Host string
+	Port int
+}
+
+func withDefaults(o opts) opts {
+	o.Host = rkit.Coalesce(o.Host, "localhost")
+
+	o.Port = rkit.Coalesce(o.Port, 80, 8080)
+
+	return o
+}
+
+func label(primary, secondary string) string {
+	return rkit.Coalesce(primary, secondary, "none")
+}
+
+func names(items []item) []string {
+	return rkit.Map(items, func(it item) string { return it.Name })
+}
+
+func inStock(items []item) []item {
+	return rkit.Filter(items, func(it item) bool { return it.Qty > 0 })
+}
+
+func counts(items []item) []string {
+	return rkit.Map(items, func(it item) string { return rkit.IntToStr(it.Qty) })
+}
+
+func has(items []string, name string) bool {
+	return rkit.Contains(items, name)
+}
+
+func asString(v any) string {
+	s := rkit.TryCast[string](v)
+
+	return s
+}
+
+func view(b []byte) string {
+	return rkit.B2S(b)
+}

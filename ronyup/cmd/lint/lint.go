@@ -48,7 +48,11 @@ var Cmd = &cobra.Command{
 	Long: `Report hand-written Go code that duplicates an x/rkit helper:
 
   must        v, err := f(); if err != nil { panic(err) }   → rkit.Must / rkit.Assert
+  coalesce    if x == "" { x = y } runs, non-zero return chains → rkit.Coalesce
+  transform   loops that only map or filter a slice          → rkit.Map / rkit.Filter
   mapcollect  loops that only append a map's keys/values      → rkit.MapKeysToArray / rkit.MapToArray
+  discard     v, _ := f() and v, _ := x.(T)                   → rkit.Ok / StrToInt / ToJSON / TryCast
+  stdlib      slices.Contains, cmp.Or, strconv.Itoa, ...      → rkit.Contains, Coalesce, IntToStr, ...
   unsafeconv  hand-rolled zero-copy []byte↔string casts       → rkit.B2S / rkit.S2B
   helper      local copies of rkit.Must, PtrVal, Contains, Coalesce
 
@@ -89,6 +93,10 @@ func runLint(cmd *cobra.Command, patterns []string) int {
 
 	for _, f := range res.Fixed {
 		_, _ = fmt.Fprintln(out, "fixed: "+formatFinding(f, wd))
+	}
+
+	for _, dir := range res.NeedsTidy {
+		cmd.PrintErrf("ronyup lint: %s now imports x/rkit; run `go mod tidy` there\n", dir)
 	}
 
 	fixable := 0

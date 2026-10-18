@@ -216,8 +216,9 @@ report errors back to you, or confirm that a fix worked.
 - Durable workflows: use the `flow` package only — never import `go.temporal.io/sdk` directly.
 - The backend `.golangci.yml` enforces this with `depguard`; a forbidden-import lint failure is a design violation, not a formatting nit.
   `make verify` runs golangci-lint on each feature when the binary is on PATH.
-- `make verify` also runs `ronyup lint` (MCP tool `check_rkit_usage`), which flags hand-written copies of `x/rkit` helpers (if-err-panic,
-  map key/value loops, unsafe casts, local `must`/`deref`/`contains`/`coalesce`). `ronyup lint --fix ./...` in a feature rewrites the
+- `make verify` also runs `ronyup lint` (MCP tool `check_rkit_usage`), which flags code that re-implements `x/rkit` helpers (if-err-panic,
+  default-value ifs, map/filter loops, map key/value loops, dropped errors and type-assertion results, unsafe casts,
+  `slices.Contains`/`cmp.Or`/`strconv.Itoa` and other standard-library calls rkit covers, local `must`/`deref`/`contains`/`coalesce`). `ronyup lint --fix ./...` in a feature rewrites the
   fixable ones; silence a deliberate exception with `//rkitcheck:ignore <reason>`. In Claude Code a `PostToolUse` hook runs it on every
   Go file you edit.
 

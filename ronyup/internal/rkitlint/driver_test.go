@@ -48,8 +48,8 @@ func TestRunFix(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if got := len(res.Findings); got != 10 {
-		t.Fatalf("got %d findings, want 10:\n%v", got, res.Findings)
+	if got := len(res.Findings); got != 20 {
+		t.Fatalf("got %d findings, want 20:\n%v", got, res.Findings)
 	}
 
 	res, err = rkitlint.Run(rkitlint.Options{Dir: dir, Fix: true})
@@ -57,8 +57,10 @@ func TestRunFix(t *testing.T) {
 		t.Fatalf("Run fix: %v", err)
 	}
 
-	if len(res.Fixed) != 9 || len(res.Findings) != 1 {
-		t.Fatalf("fixed %d, left %d; want 9 fixed and the commented one left:\n%v", len(res.Fixed),
+	// policy.go's counts() needs two rounds: the loop becomes rkit.Map, then the strconv.Itoa
+	// inside the generated closure becomes rkit.IntToStr.
+	if len(res.Fixed) != 19 || len(res.Findings) != 1 {
+		t.Fatalf("fixed %d, left %d; want 19 fixed and the commented one left:\n%v", len(res.Fixed),
 			len(res.Findings), res.Findings)
 	}
 
@@ -66,7 +68,7 @@ func TestRunFix(t *testing.T) {
 		t.Errorf("finding with a comment in range must not offer a fix: %v", res.Findings[0])
 	}
 
-	for _, name := range []string{"must.go", "maps.go", "alias.go", "noimports.go"} {
+	for _, name := range []string{"must.go", "maps.go", "alias.go", "noimports.go", "policy.go"} {
 		got, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
 			t.Fatal(err)
@@ -119,6 +121,27 @@ func TestRunSkipsModulesWithoutRkit(t *testing.T) {
 	if len(res.Findings) == 0 {
 		t.Error("AllModules must check modules without an rkit requirement")
 	}
+
+	// Offline, the second fix round cannot load the module until go mod tidy adds rkit; Run must
+	// keep the first round's fixes instead of failing.
+	t.Setenv("GOPROXY", "off")
+
+	res, err = rkitlint.Run(rkitlint.Options{Dir: dir, AllModules: true, Fix: true})
+	if err != nil {
+		t.Fatalf("Run AllModules fix: %v", err)
+	}
+
+	if len(res.Fixed) == 0 || len(res.NeedsTidy) != 1 || !sameDir(res.NeedsTidy[0], dir) {
+		t.Errorf("fixing a module without an rkit requirement must ask for go mod tidy in %s, got %v",
+			dir, res.NeedsTidy)
+	}
+}
+
+func sameDir(a, b string) bool {
+	ra, errA := filepath.EvalSymlinks(a)
+	rb, errB := filepath.EvalSymlinks(b)
+
+	return errA == nil && errB == nil && ra == rb
 }
 
 func TestRunLoadError(t *testing.T) {

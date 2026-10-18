@@ -111,7 +111,8 @@ workflows: `flow` only — never import `go.temporal.io/sdk` directly. See
 | `defer` inside a long loop | Resources held until the function returns | Extract the loop body into a function |
 | Returning `nil` slice vs empty slice inconsistently in API output | JSON `null` vs `[]` breaks clients | Normalize at the handler / DTO boundary |
 | Importing `google/uuid`, `samber/lo`, `strcase`, `copier` | Fails `depguard` (`make lint`) | `x/rkit` equivalents |
-| Hand-writing `must`/`deref`/`contains`/`coalesce`, if-err-panic, map-key loops | Fails `ronyup lint` (`make verify`); bypasses shared behavior | `rkit.Must`/`PtrVal`/`Contains`/`Coalesce`/`MapKeysToArray` — `ronyup lint --fix` rewrites most |
+| Hand-writing `must`/`deref`/`contains`/`coalesce`, if-err-panic, default-value ifs, map/filter loops, `v, _ := f()` | Fails `ronyup lint` (`make verify`); bypasses shared behavior | `rkit.Must`/`PtrVal`/`Contains`/`Coalesce`/`Map`/`Filter`/`Ok`/`TryCast` — `ronyup lint --fix` rewrites most |
+| `slices.Contains`, `cmp.Or`, `strconv.Itoa` where rkit has the helper | Fails `ronyup lint`; the workspace uses rkit where both exist | `rkit.Contains`, `rkit.Coalesce`, `rkit.IntToStr` |
 
 ## Checklist before "done"
 

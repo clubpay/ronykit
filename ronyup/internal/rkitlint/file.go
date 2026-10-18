@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"go/ast"
 	"go/token"
+	"go/types"
 	"strconv"
 	"strings"
 
@@ -25,16 +26,20 @@ type fileCtx struct {
 	imported bool
 	// canFix is false when no fix can be offered safely (unreadable source, or "rkit" is taken).
 	canFix bool
+	// importNames maps the import paths of this file to the name they are referred to by
+	// ("" for a dot-import), for spelling types in generated closures.
+	importNames map[string]string
 }
 
 func newFileCtx(pass *analysis.Pass, f *ast.File) *fileCtx {
 	fc := &fileCtx{
-		pass:   pass,
-		file:   f,
-		tok:    pass.Fset.File(f.FileStart),
-		quiet:  make(map[int]bool),
-		qual:   "rkit.",
-		canFix: true,
+		pass:        pass,
+		file:        f,
+		tok:         pass.Fset.File(f.FileStart),
+		quiet:       make(map[int]bool),
+		qual:        "rkit.",
+		canFix:      true,
+		importNames: make(map[string]string),
 	}
 
 	if src, err := pass.ReadFile(fc.tok.Name()); err == nil && len(src) == fc.tok.Size() {
@@ -52,6 +57,17 @@ func newFileCtx(pass *analysis.Pass, f *ast.File) *fileCtx {
 	}
 
 	for _, imp := range f.Imports {
+		if pn := pass.TypesInfo.PkgNameOf(imp); pn != nil {
+			name := pn.Name()
+			if name == "." {
+				name = ""
+			}
+
+			if name != "_" {
+				fc.importNames[pn.Imported().Path()] = name
+			}
+		}
+
 		if path, _ := strconv.Unquote(imp.Path.Value); path != RkitPath {
 			continue
 		}
@@ -192,4 +208,88 @@ func (fc *fileCtx) importEdit() (analysis.TextEdit, bool) {
 			NewText: []byte("\n\t" + spec + "\n"),
 		}, true
 	}
+}
+
+// typeExpr spells t as it must be written in this file. ok is false when that is impossible: a
+// package the file does not import, or an unexported type of another package.
+func (fc *fileCtx) typeExpr(t types.Type) (string, bool) {
+	ok := !hasForeignUnexported(t, fc.pass.Pkg, make(map[types.Type]bool))
+
+	s := types.TypeString(t, func(p *types.Package) string {
+		if p == fc.pass.Pkg {
+			return ""
+		}
+
+		name, found := fc.importNames[p.Path()]
+		if !found {
+			ok = false
+
+			return p.Name()
+		}
+
+		return name
+	})
+
+	return s, ok
+}
+
+// hasForeignUnexported reports whether t mentions a named type, struct field or method that is
+// unexported and belongs to a package other than pkg.
+func hasForeignUnexported(t types.Type, pkg *types.Package, seen map[types.Type]bool) bool {
+	if seen[t] {
+		return false
+	}
+
+	seen[t] = true
+
+	foreign := func(obj types.Object) bool {
+		return obj.Pkg() != nil && obj.Pkg() != pkg && !obj.Exported()
+	}
+
+	switch t := t.(type) {
+	case *types.Named:
+		if foreign(t.Obj()) {
+			return true
+		}
+
+		for arg := range t.TypeArgs().Types() {
+			if hasForeignUnexported(arg, pkg, seen) {
+				return true
+			}
+		}
+	case *types.Alias:
+		return foreign(t.Obj()) || hasForeignUnexported(types.Unalias(t), pkg, seen)
+	case *types.Pointer:
+		return hasForeignUnexported(t.Elem(), pkg, seen)
+	case *types.Slice:
+		return hasForeignUnexported(t.Elem(), pkg, seen)
+	case *types.Array:
+		return hasForeignUnexported(t.Elem(), pkg, seen)
+	case *types.Chan:
+		return hasForeignUnexported(t.Elem(), pkg, seen)
+	case *types.Map:
+		return hasForeignUnexported(t.Key(), pkg, seen) || hasForeignUnexported(t.Elem(), pkg, seen)
+	case *types.Signature:
+		return hasForeignUnexported(t.Params(), pkg, seen) || hasForeignUnexported(t.Results(), pkg, seen)
+	case *types.Tuple:
+		for v := range t.Variables() {
+			if hasForeignUnexported(v.Type(), pkg, seen) {
+				return true
+			}
+		}
+	case *types.Struct:
+		for field := range t.Fields() {
+			if foreign(field) || hasForeignUnexported(field.Type(), pkg, seen) {
+				return true
+			}
+		}
+	case *types.Interface:
+		for m := range t.Methods() {
+			if foreign(m) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

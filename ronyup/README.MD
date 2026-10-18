@@ -143,9 +143,11 @@ ronyup lint ./...          # exit 1 when findings remain, 2 when packages do not
 ronyup lint --fix ./...    # rewrite fixable findings in place
 ```
 
-Flags hand-written copies of rkit helpers: if-err-panic (`rkit.Must`/`Assert`), loops collecting map keys/values
-(`rkit.MapKeysToArray`/`MapToArray`), unsafe `[]byte`↔`string` casts (`rkit.B2S`/`S2B`), and local
-`must`/`deref`/`contains`/`coalesce` helpers. Modules that do not require `x/rkit` are skipped unless `--all-modules`.
+Flags code that re-implements an rkit helper: if-err-panic (`rkit.Must`/`Assert`), default-value ifs (`rkit.Coalesce`),
+map/filter loops (`rkit.Map`/`Filter`), map key/value loops (`rkit.MapKeysToArray`/`MapToArray`), dropped errors and
+type-assertion results (`rkit.Ok`/`TryCast`/`StrToInt`/`ToJSON`), unsafe casts (`rkit.B2S`/`S2B`), standard-library calls
+rkit covers (`slices.Contains`, `cmp.Or`, `strconv.Itoa`, ...), and local `must`/`deref`/`contains`/`coalesce` helpers.
+Modules that do not require `x/rkit` are skipped unless `--all-modules`.
 `--hook claude-post-edit` runs it as a Claude Code `PostToolUse` hook (used by scaffolded workspaces).
 
 ### Run MCP server

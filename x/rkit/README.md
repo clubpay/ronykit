@@ -8,8 +8,7 @@ import "github.com/clubpay/ronykit/x/rkit"
 ```
 
 **Reach here before writing a helper.** In modules that require `x/rkit`, `make lint-rkit` (`ronyup lint`) flags
-hand-written copies of the common ones (if-err-panic, loops collecting map keys/values, unsafe casts, local
-`must`/`deref`/`contains`/`coalesce`), and depguard rejects third-party substitutes (`samber/lo`, `strcase`, uuid/ulid/xid,
+code that re-implements them (if-err-panic, default-value ifs, map/filter loops, map key/value loops, dropped errors and type-assertion results, unsafe casts, standard-library calls rkit covers (`slices.Contains`, `cmp.Or`, `strconv.Itoa`, ...), local `must`/`deref`/`contains`/`coalesce`), and depguard rejects third-party substitutes (`samber/lo`, `strcase`, uuid/ulid/xid,
 `jinzhu/copier`). When rkit and the standard library both cover a case, use rkit; the exception is `ValPtr`, which
 `go fix` inlines to the `new(v)` builtin (Go 1.26+).
 

@@ -98,8 +98,9 @@ STOP — package selection is mandatory. Before writing any helper, conversion, 
 DB/Redis/S3 connection, workflow, or inter-service client, read `knowledge://ronyup/architecture/package-selection` and the matching
 `knowledge://ronyup/packages/<name>` (at minimum `rony`, `errs`, `rkit`). Do NOT hand-roll or import a stdlib/third-party equivalent when a
 RonyKIT package exists. `make verify` / `golangci-lint` depguard failures are design violations, not formatting nits. Hand-written
-copies of rkit helpers (if-err-panic, map key/value loops, unsafe []byte↔string casts, local must/deref/contains/coalesce) are caught by
-`ronyup lint` — the MCP tool `check_rkit_usage` — which `make verify` runs on every feature; call it with `fix: true` to rewrite them.
+copies of rkit helpers (if-err-panic, default-value ifs, map/filter loops, map key/value loops, dropped errors and type-assertion results, unsafe casts, standard-library calls rkit covers (slices.Contains, cmp.Or, strconv.Itoa, ...), local must/deref/contains/coalesce) are caught by
+`ronyup lint` — the MCP tool `check_rkit_usage` — which `make verify` runs on every feature; call it with `fix: true` to rewrite them. Where rkit and the standard library
+overlap (slices.Contains, cmp.Or, strconv.Itoa), use rkit.
 
 - Feature `Desc()` returns `rony.SetupOptionGroup` — never `*desc.Service` and never call `rony.Setup` from `api/`.
 - In-memory cache → `x/cache`. Redis → `x/datasource.InitRedis` (`characteristics/redis`), not `x/cache`.

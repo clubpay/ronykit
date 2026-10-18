@@ -6,9 +6,10 @@ paths:
 
 # Shared Go helpers (x/rkit)
 
-In a module whose `go.mod` requires `x/rkit`, use rkit before writing a small helper. Task → helper map and edge cases: `x/rkit/README.md`.
+In a module whose `go.mod` requires `x/rkit`, use rkit before writing a small helper — and over the standard library when both have it (`rkit.Contains` not `slices.Contains`, `rkit.Coalesce` not `cmp.Or`, `rkit.IntToStr` not `strconv.Itoa`). Task → helper map and edge cases: `x/rkit/README.md`.
 
-- if-err-panic → `rkit.Must(f())` / `rkit.Assert(err)`; nil-safe deref → `rkit.PtrVal`; first non-zero → `rkit.Coalesce`.
+- if-err-panic → `rkit.Must(f())` / `rkit.Assert(err)`; nil-safe deref → `rkit.PtrVal`; defaults (`if x == "" { x = y }`) → `rkit.Coalesce`.
+- Dropped errors and assertion results → `rkit.Ok(f())`, `rkit.StrToInt(s)`, `rkit.ToJSON(v)`, `rkit.TryCast[T](x)`.
 - Collections → `rkit.Map` / `Filter` / `Reduce` / `Contains` / `ArrayToSet` / `MapKeysToArray` / `MapToArray`.
 - Zero-copy `[]byte`↔`string` → `rkit.B2S` / `rkit.S2B`; error-free JSON → `rkit.ToJSON` / `rkit.FromJSON`.
 - IDs → `rkit.RandomID` (not secure; `rkit.SecureRandomUint64` when it must be); case → `rkit.ToCamel` / `ToSnake` / `ToKebab`.

@@ -23,9 +23,11 @@ type checkRkitArgs struct {
 func registerCheckRkit(srv *mcpsdk.Server) {
 	tool := &mcpsdk.Tool{
 		Name: "check_rkit_usage",
-		Description: "Report Go code that re-implements an x/rkit helper (if-err-panic → rkit.Must/Assert, " +
-			"map key/value collection loops → rkit.MapKeysToArray/MapToArray, unsafe []byte↔string casts → " +
-			"rkit.B2S/S2B, local copies of Must/PtrVal/Contains/Coalesce) and optionally fix it in place. " +
+		Description: "Report Go code that re-implements an x/rkit helper and optionally fix it in place: " +
+			"if-err-panic (rkit.Must/Assert), default-value ifs (Coalesce), map/filter loops (Map/Filter), " +
+			"map key/value loops (MapKeysToArray/MapToArray), dropped errors and type-assertion results " +
+			"(Ok/TryCast/StrToInt/ToJSON), unsafe []byte↔string casts (B2S/S2B), standard-library calls rkit " +
+			"covers (slices.Contains, cmp.Or, strconv.Itoa, ...) and local copies of Must/PtrVal/Contains/Coalesce. " +
 			"Same as `ronyup lint`; `make verify` runs it on every feature module.",
 		InputSchema: map[string]any{
 			schemaKeyType: schemaKeyObject,
@@ -91,6 +93,10 @@ func checkRkitLines(dir string, res *rkitlint.Result) []rkit.StrLine {
 		for _, f := range res.Fixed {
 			lines = append(lines, rkit.L("- %s", relFinding(dir, f)))
 		}
+	}
+
+	for _, mod := range res.NeedsTidy {
+		lines = append(lines, rkit.L("Run `go mod tidy` in %s: its code now imports x/rkit.", mod))
 	}
 
 	if len(res.Findings) > 0 {

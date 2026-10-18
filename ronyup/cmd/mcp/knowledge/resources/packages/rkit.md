@@ -68,6 +68,5 @@ Import as `github.com/clubpay/ronykit/x/rkit`.
 
 ### Enforcement
 
-`ronyup lint` (MCP tool `check_rkit_usage`) reports hand-written copies of these helpers — if-err-panic, loops that only
-collect map keys/values, unsafe `[]byte`↔`string` casts, local `must`/`deref`/`contains`/`coalesce` — and `make verify`
-runs it on every feature module. The monorepo's full task-organised reference is `x/rkit/README.md`.
+`ronyup lint` (MCP tool `check_rkit_usage`) reports code that re-implements these helpers — if-err-panic, default-value ifs, map/filter loops, map key/value loops, dropped errors and type-assertion results, unsafe casts, standard-library calls rkit covers (`slices.Contains`, `cmp.Or`, `strconv.Itoa`, ...), local `must`/`deref`/`contains`/`coalesce` — and
+`make verify` runs it on every feature module. Where rkit and the standard library overlap, use rkit. The monorepo's full task-organised reference is `x/rkit/README.md`.

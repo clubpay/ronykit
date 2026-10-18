@@ -322,7 +322,11 @@ ronyup lint --fix ./...    # rewrite fixable findings in place (adds the rkit im
 | Rule         | Matches                                                                 | Replacement                                 |
 |--------------|-------------------------------------------------------------------------|---------------------------------------------|
 | `must`       | `v, err := f(); if err != nil { panic(err) }`                           | `rkit.Must(f())` / `rkit.Assert(f())`        |
+| `coalesce`   | `if x == "" { x = y }` runs; `if a != "" { return a }` chains          | `rkit.Coalesce(...)`                         |
+| `transform`  | loops that only map (`f(x)`) or filter (`if cond { append x }`) a slice | `rkit.Map(s, f)` / `rkit.Filter(s, keep)`    |
 | `mapcollect` | a loop that only appends a map's keys or values                         | `rkit.MapKeysToArray(m)` / `rkit.MapToArray(m)` |
+| `discard`    | `v, _ := f()` (error dropped), `v, _ := x.(T)`                          | `rkit.Ok` (`StrToInt`, `ToJSON`, ...) / `rkit.TryCast[T]` |
+| `stdlib`     | `slices.Contains`, `cmp.Or`, `strconv.Itoa`, `FormatInt(x, 10)`, `fmt.Sprintf("%d", x)` | `rkit.Contains`, `Coalesce`, `IntToStr`, ... |
 | `unsafeconv` | hand-rolled zero-copy `[]byte`↔`string` conversions                     | `rkit.B2S` / `rkit.S2B`                      |
 | `helper`     | unexported functions re-implementing `Must`, `PtrVal`, `Contains`, `Coalesce` | delete and call rkit (no automatic fix) |
 

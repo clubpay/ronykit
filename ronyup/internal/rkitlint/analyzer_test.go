@@ -10,5 +10,6 @@ import (
 
 func TestAnalyzer(t *testing.T) {
 	analysistest.Run(t, analysistest.TestData(), rkitlint.Analyzer,
-		"must", "mapcollect", "unsafeconv", "helper", "ignore", "generated", rkitlint.RkitPath)
+		"must", "mapcollect", "unsafeconv", "helper", "ignore", "generated",
+		"coalesce", "transform", "discard", "stdlib", rkitlint.RkitPath)
 }

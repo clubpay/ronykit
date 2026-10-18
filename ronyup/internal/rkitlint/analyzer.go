@@ -6,7 +6,13 @@
 //   - mapcollect: a loop that only appends a map's keys or values → rkit.MapKeysToArray / rkit.MapToArray
 //   - unsafeconv: hand-rolled zero-copy []byte↔string conversions → rkit.B2S / rkit.S2B
 //   - helper:     unexported functions whose body re-implements rkit.Must, PtrVal, Contains or Coalesce
+//   - coalesce:   `if x == "" { x = y }` runs and `if a != "" { return a }` chains → rkit.Coalesce
+//   - transform:  loops that only map or filter one slice into another → rkit.Map / rkit.Filter
+//   - discard:    `v, _ := f()` → rkit.Ok (or StrToInt, ToJSON, ...); `v, _ := x.(T)` → rkit.TryCast
+//   - stdlib:     slices.Contains, cmp.Or, strconv.Itoa/FormatInt/FormatUint, fmt.Sprintf("%d") → rkit
 //
+// The workspace convention is to use rkit whenever it has the helper, even where the standard
+// library has one too.
 // Most reports carry a suggested fix that rewrites the code and adds the rkit import.
 // A report is suppressed by a `//rkitcheck:ignore <reason>` comment on its line or the line above.
 // (Not //nolint: golangci-lint parses those and warns about a linter it does not know.)
@@ -35,6 +41,10 @@ const (
 	CategoryMapCollect = "mapcollect"
 	CategoryUnsafeConv = "unsafeconv"
 	CategoryHelper     = "helper"
+	CategoryCoalesce   = "coalesce"
+	CategoryTransform  = "transform"
+	CategoryDiscard    = "discard"
+	CategoryStdlib     = "stdlib"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -84,6 +94,7 @@ func (c *checker) checkFile(fc *fileCtx) {
 			c.checkStmts(fc, n.Body)
 		case *ast.CallExpr:
 			c.checkUnsafeCall(fc, n)
+			c.checkStdlibCall(fc, n)
 		case *ast.StarExpr:
 			c.checkUnsafeDeref(fc, n)
 		case *ast.FuncDecl:
@@ -99,6 +110,10 @@ func (c *checker) checkStmts(fc *fileCtx, list []ast.Stmt) {
 		c.checkMust(fc, list, i)
 		c.checkAssertIfInit(fc, list[i])
 		c.checkMapCollect(fc, list, i)
+		c.checkTransform(fc, list, i)
+		c.checkCoalesceDefault(fc, list, i)
+		c.checkCoalesceReturn(fc, list, i)
+		c.checkDiscard(fc, list[i])
 	}
 }
 
