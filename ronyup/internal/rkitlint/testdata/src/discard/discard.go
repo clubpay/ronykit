@@ -9,7 +9,7 @@ import (
 func dropped(v any, s string) {
 	n, _ := strconv.Atoi(s)              // want `error dropped: use rkit.StrToInt`
 	i, _ := strconv.ParseInt(s, 10, 64)  // want `error dropped: use rkit.StrToInt64`
-	u, _ := strconv.ParseUint(s, 10, 64) // want `error dropped: use rkit.StrToUInt64`
+	u, _ := strconv.ParseUint(s, 10, 64) // want `error dropped with _: use rkit.Ok`
 	x, _ := strconv.ParseFloat(s, 64)    // want `error dropped: use rkit.StrToFloat64`
 	b, _ := json.Marshal(v)              // want `error dropped: use rkit.ToJSON`
 	i32, _ := strconv.ParseInt(s, 10, 32) // want `error dropped with _: use rkit.Ok`

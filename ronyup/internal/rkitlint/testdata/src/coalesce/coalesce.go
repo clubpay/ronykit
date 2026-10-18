@@ -10,7 +10,7 @@ type config struct {
 
 const defaultName = "svc"
 
-func defaults(c *config, fallback string) {
+func defaults(c config, fallback string) {
 	if c.Name == "" { // want `default value assigned with if: use rkit.Coalesce`
 		c.Name = fallback
 	}
@@ -41,7 +41,31 @@ func name(primary, secondary string) string {
 
 // Not reported below.
 
-func callFallback(c *config, def func() string) {
+var global string
+
+func packageVar() {
+	if global == "" {
+		global = "x"
+	}
+}
+
+func throughPointer(c *config) {
+	if c.Name == "" { // c is shared: Coalesce would write it unconditionally
+		c.Name = "x"
+	}
+}
+
+type holder struct{ c *config }
+
+func fallbackDerefs(name string, h holder) string {
+	if name == "" {
+		name = h.c.Name // evaluated eagerly by Coalesce, even when name is set
+	}
+
+	return name
+}
+
+func callFallback(c config, def func() string) {
 	if c.Name == "" {
 		c.Name = def()
 	}
@@ -53,7 +77,7 @@ func otherTarget(c, d *config) {
 	}
 }
 
-func withElse(c *config) {
+func withElse(c config) {
 	if c.Name == "" {
 		c.Name = "x"
 	} else {

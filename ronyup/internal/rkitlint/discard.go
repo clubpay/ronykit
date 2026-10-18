@@ -16,7 +16,10 @@ var staleNolint = regexp.MustCompile(`^//\s*nolint:(errcheck|errchkjson)(,(errch
 // checkDiscard matches assignments that drop their second result:
 //
 //	v, _ := f()              → v := rkit.Ok(f())          (f returns (T, error))
-//	n, _ := strconv.Atoi(s)  → n := rkit.StrToInt(s)      (and 64-bit ParseInt/ParseUint/ParseFloat)
+//	n, _ := strconv.Atoi(s)  → n := rkit.StrToInt(s)      (and 64-bit ParseInt/ParseFloat)
+//
+// strconv.ParseUint stays on rkit.Ok: rkit.StrToUInt64 also accepts a leading '+'.
+//
 //	b, _ := json.Marshal(x)  → b := rkit.ToJSON(x)
 //	v, _ := x.(T)            → v := rkit.TryCast[T](x)
 func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
@@ -87,10 +90,6 @@ func (c *checker) errorFreeHelper(call *ast.CallExpr) (string, ast.Expr) {
 	case "strconv.ParseInt":
 		if c.isIntConst(args[1], 10) && c.isIntConst(args[2], 64) {
 			return "StrToInt64", args[0]
-		}
-	case "strconv.ParseUint":
-		if c.isIntConst(args[1], 10) && c.isIntConst(args[2], 64) {
-			return "StrToUInt64", args[0]
 		}
 	case "strconv.ParseFloat":
 		if c.isIntConst(args[1], 64) {

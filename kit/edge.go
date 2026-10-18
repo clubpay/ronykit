@@ -375,7 +375,7 @@ func (s *EdgeServer) shutdown(ctx context.Context) {
 		}
 	}
 
-	s.shutdownTimeout = rkit.Coalesce(s.shutdownTimeout, time.Minute)
+	timeout := rkit.Coalesce(s.shutdownTimeout, time.Minute)
 
 	waitCh := make(chan struct{}, 1)
 
@@ -387,7 +387,7 @@ func (s *EdgeServer) shutdown(ctx context.Context) {
 
 	select {
 	case <-waitCh:
-	case <-time.After(s.shutdownTimeout):
+	case <-time.After(timeout):
 	}
 }
 

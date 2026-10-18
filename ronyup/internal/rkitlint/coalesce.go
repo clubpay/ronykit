@@ -70,7 +70,8 @@ func (c *checker) defaultAssign(stmt ast.Stmt) (target, fallback ast.Expr) {
 	}
 
 	x := cond.X
-	if !c.isZero(cond.Y) || !isPlainRef(x) || !sameExpr(x, as.Lhs[0]) || !c.coalescable(x, as.Rhs[0]) {
+	if !c.isZero(cond.Y) || !isPlainRef(x) || !sameExpr(x, as.Lhs[0]) || !c.coalescable(x, as.Rhs[0]) ||
+		!c.isLocalValue(x) {
 		return nil, nil
 	}
 
@@ -168,11 +169,49 @@ func (c *checker) returnIfNonZero(stmt ast.Stmt) ast.Expr {
 		return nil
 	}
 
-	if t := c.typeOf(cond.X); t == nil || !comparableValue(t) {
+	if t := c.typeOf(cond.X); t == nil || !comparableValue(t) || c.derefs(cond.X) {
 		return nil
 	}
 
 	return cond.X
+}
+
+// isLocalValue reports whether assigning to e touches only this function's own storage: a local
+// variable, or fields of one reached without a pointer. `x = rkit.Coalesce(x, y)` always writes,
+// where the if wrote only when x was zero; a shared target could gain a data race.
+func (c *checker) isLocalValue(e ast.Expr) bool {
+	root := e
+	for {
+		sel, ok := root.(*ast.SelectorExpr)
+		if !ok {
+			break
+		}
+
+		root = sel.X
+	}
+
+	v, ok := c.objOf(root).(*types.Var)
+	if !ok || v.Parent() == nil || v.Parent() == c.pass.Pkg.Scope() || v.IsField() {
+		return false
+	}
+
+	return !c.derefs(e)
+}
+
+// derefs reports whether a selector chain goes through a pointer.
+func (c *checker) derefs(e ast.Expr) bool {
+	for {
+		sel, ok := ast.Unparen(e).(*ast.SelectorExpr)
+		if !ok {
+			return false
+		}
+
+		if s := c.pass.TypesInfo.Selections[sel]; s != nil && s.Indirect() {
+			return true
+		}
+
+		e = sel.X
+	}
 }
 
 // coalescable reports whether rkit.Coalesce(x, y) compiles and behaves like the if: x has a
@@ -184,8 +223,10 @@ func (c *checker) coalescable(x, y ast.Expr) bool {
 		return false
 	}
 
+	// y is evaluated even when x is non-zero, so it must not dereference a pointer (which the if
+	// may never have touched).
 	tv, ok := c.pass.TypesInfo.Types[y]
-	if !ok || (tv.Value == nil && !c.isPure(y)) {
+	if !ok || (tv.Value == nil && (!c.isPure(y) || c.derefs(y))) {
 		return false
 	}
 
