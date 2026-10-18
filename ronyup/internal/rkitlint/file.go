@@ -120,9 +120,25 @@ func (fc *fileCtx) trailingComment(n ast.Node) *ast.CommentGroup {
 	return nil
 }
 
-func (fc *fileCtx) hasCommentsIn(pos, end token.Pos) bool {
+// hasCommentsIn reports whether a comment inside (pos, end) would be lost: one that is not within
+// any of the kept nodes.
+func (fc *fileCtx) hasCommentsIn(pos, end token.Pos, keep ...ast.Node) bool {
 	for _, cg := range fc.file.Comments {
-		if cg.Pos() > pos && cg.End() < end {
+		if cg.Pos() <= pos || cg.End() >= end {
+			continue
+		}
+
+		kept := false
+
+		for _, n := range keep {
+			if n != nil && cg.Pos() >= n.Pos() && cg.End() <= n.End() {
+				kept = true
+
+				break
+			}
+		}
+
+		if !kept {
 			return true
 		}
 	}

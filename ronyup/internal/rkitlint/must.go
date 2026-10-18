@@ -54,7 +54,7 @@ func (c *checker) checkMust(fc *fileCtx, list []ast.Stmt, i int) {
 		c.report(fc, as.Pos(), ifs.End(), CategoryMust,
 			"if err != nil { panic(err) } after a call: use rkit.Assert",
 			"Replace with rkit.Assert",
-			fc.rkit("Assert("+callText+")"))
+			fc.rkit("Assert("+callText+")"), call)
 
 		return
 	}
@@ -91,7 +91,7 @@ func (c *checker) checkMust(fc *fileCtx, list []ast.Stmt, i int) {
 	c.report(fc, as.Pos(), end, CategoryMust,
 		"if err != nil { panic(err) } after a call: use rkit.Must",
 		"Replace with rkit.Must",
-		repl)
+		repl, call)
 }
 
 // checkAssertIfInit matches `if err := f(); err != nil { panic(err) }` → `rkit.Assert(f())`.
@@ -119,7 +119,7 @@ func (c *checker) checkAssertIfInit(fc *fileCtx, stmt ast.Stmt) {
 	c.report(fc, ifs.Pos(), ifs.End(), CategoryMust,
 		"if err := f(); err != nil { panic(err) }: use rkit.Assert",
 		"Replace with rkit.Assert",
-		fc.rkit("Assert("+fc.text(call)+")"))
+		fc.rkit("Assert("+fc.text(call)+")"), call)
 }
 
 // isPanicOnErr reports whether ifs is exactly `if err != nil { panic(err) }` (init aside, no else).

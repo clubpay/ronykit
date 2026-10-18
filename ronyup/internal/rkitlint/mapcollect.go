@@ -88,7 +88,7 @@ func (c *checker) checkMapCollect(fc *fileCtx, list []ast.Stmt, i int) {
 		end = list[i+2].End()
 	}
 
-	c.report(fc, list[i].Pos(), end, CategoryMapCollect, msg, "Replace with rkit."+fn, repl)
+	c.report(fc, list[i].Pos(), end, CategoryMapCollect, msg, "Replace with rkit."+fn, repl, rng.X)
 }
 
 // appendTarget matches `s = append(s, x)` and returns the objects of s and x.

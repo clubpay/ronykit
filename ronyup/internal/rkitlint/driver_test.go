@@ -48,8 +48,8 @@ func TestRunFix(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	if got := len(res.Findings); got != 22 {
-		t.Fatalf("got %d findings, want 22:\n%v", got, res.Findings)
+	if got := len(res.Findings); got != 23 {
+		t.Fatalf("got %d findings, want 23:\n%v", got, res.Findings)
 	}
 
 	res, err = rkitlint.Run(rkitlint.Options{Dir: dir, Fix: true})
@@ -59,8 +59,8 @@ func TestRunFix(t *testing.T) {
 
 	// policy.go's counts() needs two rounds: the loop becomes rkit.Map, then the strconv.Itoa
 	// inside the generated closure becomes rkit.IntToStr.
-	if len(res.Fixed) != 21 || len(res.Findings) != 1 {
-		t.Fatalf("fixed %d, left %d; want 21 fixed and the commented one left:\n%v", len(res.Fixed),
+	if len(res.Fixed) != 22 || len(res.Findings) != 1 {
+		t.Fatalf("fixed %d, left %d; want 22 fixed and the commented one left:\n%v", len(res.Fixed),
 			len(res.Findings), res.Findings)
 	}
 

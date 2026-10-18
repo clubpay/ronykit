@@ -106,13 +106,29 @@ func (c *checker) checkMapLoop(
 
 	foldReturn := i+2 < len(list) && c.uses[out] == outUses+1 && c.returnsOnly(list[i+2], out)
 
+	kept := expr
+
 	fn, ok := c.funcValue(fc, expr, x, src.Elem(), outSlice.Elem())
-	if !ok {
+	if ok {
+		kept = expr.(*ast.CallExpr).Fun //nolint:forcetypeassert // funcValue matched a call
+	} else {
 		fn, ok = c.closure(fc, x, src.Elem(), outSlice.Elem(), expr)
 	}
 
 	fixable = fixable && ok && types.Identical(out.Type(), types.NewSlice(outSlice.Elem()))
-	c.reportTransform(fc, list, i, rng, out, foldReturn, fixable, "Map", "loop maps one slice to another", fn)
+	c.reportTransform(
+		fc,
+		list,
+		i,
+		rng,
+		out,
+		foldReturn,
+		fixable,
+		"Map",
+		"loop maps one slice to another",
+		fn,
+		kept,
+	)
 
 	return true
 }
@@ -144,18 +160,22 @@ func (c *checker) checkFilterLoop(
 
 	boolType := types.Typ[types.Bool]
 
+	kept := ifs.Cond
+
 	fn, ok := c.funcValue(fc, ifs.Cond, x, src.Elem(), boolType)
-	if !ok {
+	if ok {
+		kept = ifs.Cond.(*ast.CallExpr).Fun //nolint:forcetypeassert // funcValue matched a call
+	} else {
 		fn, ok = c.closure(fc, x, src.Elem(), boolType, ifs.Cond)
 	}
 
 	fixable = fixable && ok && types.Identical(out.Type(), types.NewSlice(src.Elem()))
-	c.reportTransform(fc, list, i, rng, out, foldReturn, fixable, "Filter", "loop filters a slice", fn)
+	c.reportTransform(fc, list, i, rng, out, foldReturn, fixable, "Filter", "loop filters a slice", fn, kept)
 }
 
 func (c *checker) reportTransform(
 	fc *fileCtx, list []ast.Stmt, i int, rng *ast.RangeStmt, out types.Object,
-	foldReturn, fixable bool, helper, what, fn string,
+	foldReturn, fixable bool, helper, what, fn string, kept ast.Expr,
 ) {
 	msg := what + ": use rkit." + helper
 	if !fixable {
@@ -173,7 +193,7 @@ func (c *checker) reportTransform(
 		end = list[i+2].End()
 	}
 
-	c.report(fc, list[i].Pos(), end, CategoryTransform, msg, "Replace with rkit."+helper, repl)
+	c.report(fc, list[i].Pos(), end, CategoryTransform, msg, "Replace with rkit."+helper, repl, rng.X, kept)
 }
 
 // funcValue returns f when expr is exactly `f(x)` and f can be passed as a func(S) R as is.

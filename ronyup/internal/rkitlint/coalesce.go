@@ -32,6 +32,7 @@ func (c *checker) checkCoalesceDefault(fc *fileCtx, list []ast.Stmt, i int) {
 	}
 
 	args := []string{fc.text(target), fc.text(fallback)}
+	keep := []ast.Node{target, fallback}
 	end := list[i].End()
 
 	for j := i + 1; j < len(list); j++ {
@@ -41,13 +42,14 @@ func (c *checker) checkCoalesceDefault(fc *fileCtx, list []ast.Stmt, i int) {
 		}
 
 		args = append(args, fc.text(fb))
+		keep = append(keep, fb)
 		end = list[j].End()
 	}
 
 	c.report(fc, list[i].Pos(), end, CategoryCoalesce,
 		"default value assigned with if: use rkit.Coalesce",
 		"Replace with rkit.Coalesce",
-		fc.text(target)+" = "+fc.rkit("Coalesce("+strings.Join(args, ", ")+")"))
+		fc.text(target)+" = "+fc.rkit("Coalesce("+strings.Join(args, ", ")+")"), keep...)
 }
 
 // defaultAssign matches `if x == <zero> { x = y }` and returns x and y.
@@ -136,10 +138,17 @@ func (c *checker) checkCoalesceReturn(fc *fileCtx, list []ast.Stmt, i int) {
 
 	args = append(args, fc.text(last))
 
+	keep := make([]ast.Node, 0, len(vals)+1)
+	for _, v := range vals {
+		keep = append(keep, v)
+	}
+
+	keep = append(keep, last)
+
 	c.report(fc, list[i].Pos(), ret.End(), CategoryCoalesce,
 		"chain of non-zero checks returning the first value: use rkit.Coalesce",
 		"Replace with rkit.Coalesce",
-		"return "+fc.rkit("Coalesce("+strings.Join(args, ", ")+")"))
+		"return "+fc.rkit("Coalesce("+strings.Join(args, ", ")+")"), keep...)
 }
 
 // returnIfNonZero matches `if v != <zero> { return v }` and returns v.

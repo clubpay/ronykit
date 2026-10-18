@@ -77,7 +77,7 @@ func (c *checker) reportStdlibFun(fc *fileCtx, call *ast.CallExpr, std, helper s
 // reportStdlibCall replaces the whole call with rkit.helper(arg).
 func (c *checker) reportStdlibCall(fc *fileCtx, call *ast.CallExpr, std, helper string, arg ast.Expr) {
 	c.report(fc, call.Pos(), call.End(), CategoryStdlib,
-		std+": use rkit."+helper, "Replace with rkit."+helper, fc.rkit(helper+"("+fc.text(arg)+")"))
+		std+": use rkit."+helper, "Replace with rkit."+helper, fc.rkit(helper+"("+fc.text(arg)+")"), arg)
 }
 
 func (c *checker) isStringConst(e ast.Expr, want string) bool {

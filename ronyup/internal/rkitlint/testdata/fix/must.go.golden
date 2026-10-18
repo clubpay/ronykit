@@ -27,6 +27,12 @@ func remove() {
 	rkit.Assert(os.Remove("y"))
 }
 
+func commentInCall() int {
+	return rkit.Must(strconv.Atoi(
+		"1", // literal on purpose
+	))
+}
+
 func commented() int {
 	n, err := strconv.Atoi("1")
 	if err != nil {

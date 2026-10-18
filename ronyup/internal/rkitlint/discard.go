@@ -49,7 +49,7 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 		c.report(fc, as.Pos(), end, CategoryDiscard,
 			"type assertion with the ok result dropped: use rkit.TryCast",
 			"Replace with rkit.TryCast",
-			assign+fc.rkit("TryCast["+fc.text(rhs.Type)+"]("+fc.text(rhs.X)+")"))
+			assign+fc.rkit("TryCast["+fc.text(rhs.Type)+"]("+fc.text(rhs.X)+")"), rhs)
 	case *ast.CallExpr:
 		res, isTuple := c.typeOf(rhs).(*types.Tuple)
 		if !isTuple || res.Len() != 2 || !isError(res.At(1).Type()) {
@@ -60,7 +60,7 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 			c.report(fc, as.Pos(), end, CategoryDiscard,
 				"error dropped: use rkit."+helper,
 				"Replace with rkit."+helper,
-				assign+fc.rkit(helper+"("+fc.text(arg)+")"))
+				assign+fc.rkit(helper+"("+fc.text(arg)+")"), arg)
 
 			return
 		}
@@ -68,7 +68,7 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 		c.report(fc, as.Pos(), end, CategoryDiscard,
 			"error dropped with _: use rkit.Ok",
 			"Replace with rkit.Ok",
-			assign+fc.rkit("Ok("+fc.text(rhs)+")"))
+			assign+fc.rkit("Ok("+fc.text(rhs)+")"), rhs)
 	}
 }
 

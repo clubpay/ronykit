@@ -41,6 +41,17 @@ func remove() {
 	}
 }
 
+func commentInCall() int {
+	n, err := strconv.Atoi(
+		"1", // literal on purpose
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	return n
+}
+
 func commented() int {
 	n, err := strconv.Atoi("1")
 	if err != nil {

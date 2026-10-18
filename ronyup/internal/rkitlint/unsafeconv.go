@@ -82,7 +82,7 @@ func (c *checker) reportUnsafe(fc *fileCtx, n ast.Node, fn string, arg ast.Expr)
 	c.report(fc, n.Pos(), n.End(), CategoryUnsafeConv,
 		"hand-rolled "+what+": use rkit."+fn,
 		"Replace with rkit."+fn,
-		fc.rkit(fn+"("+fc.text(arg)+")"))
+		fc.rkit(fn+"("+fc.text(arg)+")"), arg)
 }
 
 // isUnsafe reports whether e refers to unsafe.<name>.

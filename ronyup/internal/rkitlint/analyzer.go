@@ -118,8 +118,14 @@ func (c *checker) checkStmts(fc *fileCtx, list []ast.Stmt) {
 }
 
 // report emits a diagnostic for [pos, end). When repl is non-empty it attaches a fix that replaces
-// that range with repl and imports rkit if needed.
-func (c *checker) report(fc *fileCtx, pos, end token.Pos, category, msg, fixMsg, repl string) {
+// that range with repl and imports rkit if needed. keep lists the nodes whose source repl copies
+// verbatim: comments inside them survive the fix, any other comment in the range blocks it.
+func (c *checker) report(
+	fc *fileCtx,
+	pos, end token.Pos,
+	category, msg, fixMsg, repl string,
+	keep ...ast.Node,
+) {
 	if fc.suppressed(pos) {
 		return
 	}
@@ -131,7 +137,7 @@ func (c *checker) report(fc *fileCtx, pos, end token.Pos, category, msg, fixMsg,
 		Message:  msg,
 	}
 
-	if repl != "" && !fc.hasCommentsIn(pos, end) {
+	if repl != "" && !fc.hasCommentsIn(pos, end, keep...) {
 		if edits, ok := fc.rkitEdits(pos, end, repl); ok {
 			d.SuggestedFixes = []analysis.SuggestedFix{{Message: fixMsg, TextEdits: edits}}
 		}
