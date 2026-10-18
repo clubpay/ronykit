@@ -298,7 +298,7 @@ func workspacePathFilter(repoRoot, kind string, allowed map[string]bool) func(st
 	return func(relPath string) (string, bool) {
 		rel := filepath.ToSlash(relPath)
 
-		if kind == KindFrontend && isBackendHook(rel) {
+		if skipHookForKind(rel, kind) {
 			return "", true
 		}
 

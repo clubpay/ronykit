@@ -73,23 +73,54 @@ Always pair each color with its `*-foreground`, and store **channels** (not a
 full `hsl(...)`/`oklch(...)`) so `/opacity` modifiers compose (`bg-primary/50`).
 
 ```css
-/* Tailwind v4 — globals.css */
+/* Tailwind v4 — globals.css (aligned with design-tokens 4-tier text & lightness steps) */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --radius: 0.625rem;
+  color-scheme: light;
+  --background: oklch(0.985 0.004 255);
+  --surface-sunken: oklch(0.962 0.006 255);
+  --card: oklch(1 0 0);
+  --popover: oklch(1 0 0);
+  --foreground: oklch(0.145 0.012 255);
+  --foreground-secondary: oklch(0.32 0.012 255);
+  --muted-foreground: oklch(0.48 0.012 255);
+  --foreground-subtle: oklch(0.62 0.010 255);
+  --primary: oklch(0.50 0.19 262);
+  --primary-foreground: oklch(0.99 0.005 262);
+  --border: oklch(0.90 0.008 255);
+  --input: oklch(0.80 0.010 255);
+  --ring: oklch(0.55 0.18 262);
+  --radius: 0.5rem;
 }
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  color-scheme: dark;
+  --background: oklch(0.135 0.010 255);
+  --surface-sunken: oklch(0.11 0.010 255);
+  --card: oklch(0.175 0.012 255);
+  --popover: oklch(0.21 0.014 255);
+  --foreground: oklch(0.94 0.006 255);
+  --foreground-secondary: oklch(0.78 0.008 255);
+  --muted-foreground: oklch(0.64 0.010 255);
+  --foreground-subtle: oklch(0.46 0.008 255);
+  --primary: oklch(0.66 0.16 262);
+  --primary-foreground: oklch(0.13 0.015 262);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.68 0.16 262);
 }
 @theme inline {
   --color-background: var(--background);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-foreground-subtle: var(--foreground-subtle);
   --color-primary: var(--color-primary, var(--primary));
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 ```
 

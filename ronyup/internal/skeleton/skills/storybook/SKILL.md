@@ -2,9 +2,9 @@
 name: storybook
 description: >-
   Author and maintain Storybook stories with CSF 3.0 best practices — args,
-  decorators, parameters, and config. Use when creating or editing *.stories.*
-  files, configuring .storybook/, or ensuring every UI component ships with
-  stories.
+  decorators, parameters, token/theme wiring, 8-state coverage, and a11y
+  verification. Use when creating or editing *.stories.* files, configuring
+  .storybook/, or ensuring every UI component ships with stories.
 ---
 
 # Storybook
@@ -32,201 +32,11 @@ reporting done.
 
 ## Best practices
 
-### 1. Use CSF 3.0
+### 1. Use CSF 3.0 with `satisfies Meta<typeof Component>`
 
-Prefer Component Story Format 3.0 — concise and type-safe.
-
-```tsx
-// ❌ CSF 2.0 (legacy)
-export default {
-  title: 'Components/Button',
-  component: Button,
-};
-export const Primary = () => <Button variant="primary">Click me</Button>;
-
-// ✅ CSF 3.0 (preferred)
-import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './Button';
-
-const meta = {
-  component: Button,
-  tags: ['autodocs'],
-  args: {
-    variant: 'primary',
-    children: 'Click me',
-  },
-} satisfies Meta<typeof Button>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Primary: Story = {};
-
-export const Secondary: Story = {
-  args: { variant: 'secondary' },
-};
-```
-
-### 2. Args-based stories
-
-Define component props as args so the Controls panel stays interactive.
-
-- **Declare defaults in `args`** — not `argTypes.defaultValue`. Meta-level
-  `args` become the default selection in Controls.
-- **Share common args at the Meta level**; override only what differs per
-  story.
-
-```tsx
-// ❌ Hard-coded props in render
-export const Disabled: Story = {
-  render: () => <Button disabled>Disabled</Button>,
-};
-
-// ❌ Duplicated args across stories
-export const Primary: Story = {
-  args: { children: 'Click me', variant: 'primary' },
-};
-export const Secondary: Story = {
-  args: { children: 'Click me', variant: 'secondary' },
-};
-
-// ✅ Meta-level shared args; stories override only differences
-const meta = {
-  component: Button,
-  args: {
-    children: 'Click me',
-    variant: 'primary',
-  },
-} satisfies Meta<typeof Button>;
-
-export const Primary: Story = {};
-export const Secondary: Story = { args: { variant: 'secondary' } };
-export const Disabled: Story = { args: { disabled: true } };
-```
-
-### 3. Omit `title` — infer from file path
-
-Avoid hard-coding `title` strings — they are not type-safe and drift when
-components move. Storybook infers the sidebar hierarchy from the file path.
-
-```tsx
-// ❌ Manual title — sync breaks on renames/moves
-const meta = {
-  title: 'Components/Button',
-  component: Button,
-} satisfies Meta<typeof Button>;
-
-// ✅ Omit title — path-based inference
-const meta = {
-  component: Button,
-} satisfies Meta<typeof Button>;
-```
-
-### 4. Type-safe Meta with `satisfies`
-
-Use `satisfies Meta<typeof Component>` for both type checking and inference.
-
-```tsx
-// ❌ Loses inference
-const meta: Meta<typeof Button> = { component: Button };
-
-// ✅ Check and infer
-const meta = {
-  component: Button,
-  args: { size: 'md', variant: 'primary' },
-} satisfies Meta<typeof Button>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-```
-
-### 5. Decorators for context
-
-Wrap stories with providers or layout via decorators.
-
-```tsx
-// Per-story decorator
-export const WithTheme: Story = {
-  decorators: [
-    (Story) => (
-      <ThemeProvider theme="dark">
-        <Story />
-      </ThemeProvider>
-    ),
-  ],
-};
-
-// All stories in the file
-const meta = {
-  component: Button,
-  decorators: [
-    (Story) => (
-      <div style={{ padding: '3rem' }}>
-        <Story />
-      </div>
-    ),
-  ],
-} satisfies Meta<typeof Button>;
-```
-
-### 6. Parameters for behavior
-
-```tsx
-const meta = {
-  component: Button,
-  parameters: {
-    layout: 'centered',
-    backgrounds: {
-      default: 'light',
-      values: [
-        { name: 'light', value: '#ffffff' },
-        { name: 'dark', value: '#000000' },
-      ],
-    },
-  },
-} satisfies Meta<typeof Button>;
-
-export const OnDark: Story = {
-  parameters: { backgrounds: { default: 'dark' } },
-};
-```
-
-### 7. ArgTypes — prefer auto-inference
-
-Storybook infers argTypes from TypeScript prop types. Manual overrides drift
-when props change — only specify argTypes when auto-inference is inadequate.
-
-**Valid reasons to override:**
-
-- `ReactNode` prop that should be edited as text in Controls → `control: 'text'`
-- Compound component pattern (multiple exports) → explicit argTypes
-- Prop fixed for a specific story → `control: false`
-
-```tsx
-// ❌ Unnecessary manual argTypes
-const meta = {
-  component: Button,
-  argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary'] },
-    disabled: { control: 'boolean' },
-  },
-} satisfies Meta<typeof Button>;
-
-// ✅ Let inference work; override only when needed
-const meta = {
-  component: Button,
-  argTypes: {
-    children: { control: 'text' },
-  },
-} satisfies Meta<typeof Button>;
-
-export const Horizontal: Story = {
-  args: { orientation: 'horizontal' },
-  argTypes: { orientation: { control: false } },
-};
-```
-
-## Recommended story structure
+Prefer Component Story Format 3.0 with `satisfies` for full type checking and
+inference, and **omit `title`** so Storybook infers the sidebar hierarchy from
+the file path.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -237,9 +47,9 @@ const meta = {
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
   args: {
-    children: 'Button',
-    size: 'md',
     variant: 'primary',
+    size: 'md',
+    children: 'Save changes',
   },
 } satisfies Meta<typeof Button>;
 
@@ -249,67 +59,138 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {};
 export const Secondary: Story = { args: { variant: 'secondary' } };
 export const Disabled: Story = { args: { disabled: true } };
+```
 
-export const WithCustomTheme: Story = {
-  decorators: [
-    (Story) => (
-      <ThemeProvider theme="custom">
-        <Story />
-      </ThemeProvider>
-    ),
-  ],
+### 2. Args-based stories & minimal `argTypes`
+
+- **Declare defaults in Meta `args`** — stories override only what differs.
+- **Let TypeScript infer `argTypes`:** Only specify `argTypes` when
+  auto-inference is inadequate (`ReactNode` edited as `control: 'text'`, or
+  locking a prop with `control: false`).
+
+### 3. Cover interactive states, dark mode & layout resilience
+
+A single happy-path story is not enough. Cover the states that apply to the
+component (see `ux-quality` and `ui-polish`):
+
+- **Variants & states:** `Default`, `Secondary`/`Destructive`, `Disabled`,
+  `Loading`/`Pending`, `Empty` (first-use vs. filtered), and `Error` (`aria-invalid`).
+- **Dark mode:** Verify the component on both `:root` (light) and `.dark`
+  surfaces so token contrast and surface lightness steps hold up.
+- **Text-growth & truncation stress story:** Include a story with long
+  localized strings (+40% length) or unbreakable IDs/URLs to prove `min-w-0`,
+  `truncate`, and `nowrap` buttons never blow out the layout.
+
+```tsx
+export const LongContentStress: Story = {
+  args: {
+    children: ' Einstellungen speichern und Workspace синхронизировать',
+  },
+};
+
+export const DarkSurface: Story = {
+  globals: { theme: 'dark' },
 };
 ```
 
-## ArgTypes reference (when manual override is needed)
+### 4. Wire `.storybook/preview.ts` to your real design tokens & fonts
+
+Never hardcode `fontFamily: 'Arial'` or arbitrary `#ffffff` / `#333333`
+backgrounds in `.storybook/preview.ts`. Import your app's `globals.css` so
+Storybook renders the exact OKLCH tokens, `--font-sans` / `--font-mono`
+variables, and `.dark` class used in production:
 
 ```tsx
-argTypes: {
-  children: { control: 'text' },
-  opacity: {
-    control: { type: 'range', min: 0, max: 1, step: 0.1 },
+// .storybook/preview.tsx
+import type { Preview } from '@storybook/react';
+import '../src/app/globals.css'; // real design tokens & typography baseline
+
+const preview: Preview = {
+  parameters: {
+    actions: { argTypesRegex: '^on[A-Z].*' },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
+    },
+    a11y: {
+      // Fail or surface WCAG AA violations in the a11y addon
+      test: 'error',
+    },
   },
-  onClick: { action: 'clicked' },
-  orientation: { control: false },
-}
+  globalTypes: {
+    theme: {
+      description: 'Global theme for components',
+      toolbar: {
+        title: 'Theme',
+        icon: 'mirror',
+        items: ['light', 'dark'],
+        dynamicTitle: true,
+      },
+    },
+  },
+  decorators: [
+    (Story, context) => {
+      const isDark = context.globals.theme === 'dark';
+      return (
+        <div
+          className={
+            isDark
+              ? 'dark bg-background text-foreground p-6 font-sans antialiased'
+              : 'bg-background text-foreground p-6 font-sans antialiased'
+          }
+        >
+          <Story />
+        </div>
+      );
+    },
+  ],
+};
+
+export default preview;
 ```
 
-## Common parameters
+### 5. Storybook configuration (`main.ts`)
 
-```tsx
-parameters: {
-  layout: 'centered' | 'fullscreen' | 'padded',
-  backgrounds: {
-    default: 'light',
-    values: [
-      { name: 'light', value: '#ffffff' },
-      { name: 'dark', value: '#333333' },
-    ],
+Include `@storybook/addon-a11y` alongside essentials and interactions:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from '@storybook/nextjs'; // or '@storybook/react-vite'
+
+const config: StorybookConfig = {
+  stories: ['../src/**/*.stories.@(ts|tsx)'],
+  addons: [
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-a11y',
+  ],
+  framework: {
+    name: '@storybook/nextjs',
+    options: {},
   },
-  actions: { argTypesRegex: '^on[A-Z].*' },
-  docs: {
-    description: { component: 'Button component description' },
-  },
-}
+};
+
+export default config;
 ```
 
-## Decorator patterns
+### 6. Interaction (`play`) & accessibility checks
+
+For stateful components (dialogs, dropdowns, forms, tabs), add a `play`
+function using `@storybook/test` (`userEvent`, `within`, `expect`) to verify
+keyboard/pointer flows and ARIA states:
 
 ```tsx
-// Style wrapper
-(Story) => <div style={{ padding: '3rem' }}><Story /></div>
+import { expect, userEvent, within } from '@storybook/test';
 
-// Theme provider
-(Story) => <ThemeProvider theme="dark"><Story /></ThemeProvider>
-
-// React Router
-(Story) => <MemoryRouter initialEntries={['/']}><Story /></MemoryRouter>
-
-// i18n
-(Story) => <I18nProvider locale="en"><Story /></I18nProvider>
-
-// Global state
-(Story) => <Provider store={mockStore}><Story /></Provider>
+export const OpensAndValidates: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: /create key/i }));
+    await expect(canvas.getByRole('alert')).toBeVisible();
+  },
+};
 ```
 
 ## File naming
@@ -320,77 +201,23 @@ Component.stories.tsx   # story file (same directory)
 Component.test.tsx      # test file
 ```
 
-Co-locate: `Button.tsx` → `Button.stories.tsx`.
-
-## Storybook configuration
-
-```typescript
-// .storybook/main.ts
-import type { StorybookConfig } from '@storybook/react-vite';
-
-const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(ts|tsx)'],
-  addons: [
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-  ],
-  framework: {
-    name: '@storybook/react-vite',
-    options: {},
-  },
-};
-
-export default config;
-```
-
-```typescript
-// .storybook/preview.ts
-import type { Preview } from '@storybook/react';
-
-const preview: Preview = {
-  parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/,
-      },
-    },
-  },
-  decorators: [
-    (Story) => (
-      <div style={{ fontFamily: 'Arial, sans-serif' }}>
-        <Story />
-      </div>
-    ),
-  ],
-};
-
-export default preview;
-```
-
-## Quality bar
-
-- **Interactions:** use `play` functions for stateful flows; assert with
-  `@storybook/test` where behavior matters.
-- **Accessibility:** keep the a11y addon clean — fix violations, don't disable.
-- **Isolation:** stories render without app context; provide providers/mocks via
-  decorators, not real network calls.
-- **No dead stories:** remove stories for deleted components/variants.
-
-## Commands
+## Quality bar & commands
 
 ```bash
 pnpm storybook          # run Storybook locally
-pnpm build-storybook    # static build (CI)
+pnpm build-storybook    # static build (enforced by frontend/verify.sh)
 pnpm test-storybook     # interaction/a11y tests (if configured)
 ```
 
 ## Checklist before "done"
 
 - Every new/changed component has a co-located, up-to-date `*.stories.tsx`.
-- Stories use CSF 3.0 with shared Meta `args` and path-based titles.
-- Storybook builds and a11y/interaction checks pass.
+- Stories use CSF 3.0 with `satisfies Meta<typeof Component>`, shared Meta
+  `args`, and path-based titles.
+- `.storybook/preview.tsx` imports `globals.css` tokens and supports light/dark
+  switching (no hardcoded `Arial` or `#fff`/`#333`).
+- States (`Default`, `Disabled`, `Loading`, `Error`, `DarkSurface`, long text)
+  are represented and `pnpm build-storybook` passes.
 
 ---
 

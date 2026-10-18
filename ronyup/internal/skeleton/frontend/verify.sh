@@ -4,17 +4,19 @@
 #
 # For every frontend app (this directory for a single app, or each
 # frontend/<app>/ for multiple apps) it runs the quality steps that the app
-# actually defines (typecheck, lint, build, test, build-storybook) and checks
-# that each UI component ships a co-located Storybook story. It runs ONLY the
-# npm scripts present in each app's package.json, so it is framework-agnostic.
+# actually defines (typecheck, lint, build, test, build-storybook), checks UI
+# polish/a11y conventions, and checks that each UI component ships a co-located
+# Storybook story. It runs ONLY the npm scripts present in each app's
+# package.json, so it is framework-agnostic.
 #
 # It exits non-zero if any step fails, so agents and CI can loop
 # "fix -> re-run" until everything is green. A fresh, un-initialized frontend
 # (no package.json) is a no-op success.
 #
 # Usage:
-#   bash verify.sh              # verify every app under frontend/
-#   SKIP_STORIES_CHECK=1 bash verify.sh   # skip the stories-coverage check
+#   bash verify.sh                         # verify every app under frontend/
+#   SKIP_STORIES_CHECK=1 bash verify.sh    # skip the stories-coverage check
+#   SKIP_UI_POLISH_CHECK=1 bash verify.sh  # skip the UI polish/a11y static check
 set -uo pipefail
 
 FRONTEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -76,6 +78,62 @@ EOF
 
 	echo ">> ($app) stories-coverage OK."
 	return 0
+}
+
+# check_ui_polish <app_dir> — mechanical check for high-confidence UI/motion/a11y
+# anti-patterns from the ui-polish and ux-quality skills. Silence a deliberate
+# line with `ui-polish-ignore`.
+check_ui_polish() {
+	local app="$1"
+	node -e '
+		const fs = require("fs");
+		const path = require("path");
+		const root = process.argv[1];
+		const skipDirs = new Set(["node_modules", ".next", "dist", "build", "storybook-static", ".git", "coverage"]);
+		const findings = [];
+
+		function walk(dir) {
+			let entries;
+			try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+			for (const e of entries) {
+				if (skipDirs.has(e.name)) continue;
+				const full = path.join(dir, e.name);
+				if (e.isDirectory()) { walk(full); continue; }
+				if (!/\.(tsx|jsx|css)$/.test(e.name)) continue;
+				if (/\.(stories|test|spec)\.(tsx|jsx)$/.test(e.name)) continue;
+				checkFile(full);
+			}
+		}
+
+		function checkFile(file) {
+			const rel = path.relative(root, file);
+			const lines = fs.readFileSync(file, "utf8").split("\n");
+			lines.forEach((line, idx) => {
+				if (line.includes("ui-polish-ignore")) return;
+				const loc = `${rel}:${idx + 1}`;
+				if (/\btransition-all\b|transition\s*:\s*all\b/.test(line)) {
+					findings.push(`${loc}: avoid transition-all / transition: all — name exact properties (e.g. transition-[transform,opacity] or transition-colors) [ui-polish]`);
+				}
+				if (/\b(?:min-h-screen|h-screen|100vh)\b/.test(line)) {
+					findings.push(`${loc}: prefer 100dvh / min-h-dvh / h-dvh over 100vh / h-screen so mobile browser toolbars do not clip layouts [ux-quality]`);
+				}
+				if (/\bw-screen\b/.test(line)) {
+					findings.push(`${loc}: prefer w-full (width: 100%) over w-screen (100vw causes horizontal scrollbar overflow) [ux-quality]`);
+				}
+				if (/\b(?:scale-0|scale\(0\))(?![.\d])/.test(line)) {
+					findings.push(`${loc}: never animate from scale(0) / scale-0 — start entrances from scale(0.95) + opacity: 0 [ui-polish]`);
+				}
+			});
+		}
+
+		walk(root);
+		if (findings.length > 0) {
+			console.error(`>> (${root}) UI polish / UX quality violations (${findings.length}):`);
+			for (const f of findings) console.error("  - " + f);
+			process.exit(1);
+		}
+		console.log(`>> (${root}) UI polish static check OK.`);
+	' "$app"
 }
 
 command -v node >/dev/null 2>&1 || {
@@ -145,6 +203,10 @@ for app in $apps; do
 
 	if has_script "$app" "build-storybook"; then
 		run_script "$app" "build-storybook" || fail=1
+	fi
+
+	if [ "${SKIP_UI_POLISH_CHECK:-0}" != "1" ]; then
+		check_ui_polish "$app" || fail=1
 	fi
 
 	if [ "${SKIP_STORIES_CHECK:-0}" != "1" ]; then

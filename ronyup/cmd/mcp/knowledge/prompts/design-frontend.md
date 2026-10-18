@@ -41,11 +41,16 @@ Also read these skill files (do not skip — they are required, not optional):
 
 ---
 
-## Phase 1 — Clarify (ask before assuming)
+## Phase 1 — Clarify & extract references (ask before assuming)
 
 1. Confirm frontend topology: one app at `frontend/` or multiple under `frontend/<app>/`.
 2. Confirm target app slug: **{{app_name}}** and stack (Next.js, Vite+React, …).
-3. Ask design questions the user has not already answered:
+3. **If the user provided a reference URL, screenshot, or existing product to match:**
+   extract its design tokens before asking generic questions — identify its surface
+   lightness steps, 4-tier text colors, hairline border treatment, font pairing &
+   scale ratio, container/grid rhythm, and concentric radius scale, then confirm
+   those extracted tokens in Phase 2.
+4. Ask design questions the user has not already answered:
    - Surface mode (`Persuade` marketing/landing, `Operate` dashboard/workbench, `Read` docs/editorial, or `Experience` interactive canvas)
    - Aesthetic direction and references (what to avoid: generic AI defaults, hanging headers, 3-equal-card strips, fake browser chrome)
    - Brand constraints vs freedom to propose palette/type

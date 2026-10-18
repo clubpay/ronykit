@@ -58,7 +58,46 @@ export default async function OrderPage({
 - **Pass Promises to Client Components** and unwrap them with React 19's `use(promise)`
   when the shell should render immediately.
 
-## 4. Mutations & Server Actions
+## 4. RonyKit TypeScript stub integration (`stub/<name>stub-typescript`)
+
+In RonyKit fullstack workspaces, `make gen-stub` inside a backend feature
+generates a zero-dependency TypeScript client (`stub.ts` + `swr.hooks.ts`):
+
+- **Generated surface:** `<Service>Stub` (with typed `<method>(req, headers?, init?)`
+  calls), `<Service>StubError` (`status: number`, `body: string`), DTO
+  interfaces, and `'use client'` SWR hooks (`use<Method>(stub, req, headers?, options?, init?)`).
+- **Server Components & Server Actions:** Instantiate `<Service>Stub` on the
+  server using `process.env.BACKEND_URL` and forward auth headers from
+  `await cookies()` / `await headers()`. Pass Next.js `fetch` cache/revalidation
+  options via the 3rd `init` parameter (`{ next: { tags: ['orders'] } }`).
+- **Client reads:** Use the generated `use<Method>` SWR hooks from
+  `swr.hooks.ts` when live client polling/revalidation is needed.
+- **Map `rony/errs` payloads cleanly:** RonyKit services return JSON errors
+  shaped as `{ code, item, message }` inside `err.body`. Parse `<Service>StubError`
+  in Server Actions so `item` maps to `fieldErrors[item]` and `message` surfaces
+  inline (never raw stack traces or generic `"Something went wrong"`):
+
+```ts
+export function parseRonyError(err: unknown): { field?: string; message: string } {
+  if (err && typeof err === 'object' && 'status' in err && 'body' in err) {
+    try {
+      const payload = JSON.parse(String((err as { body: string }).body)) as {
+        code?: string;
+        item?: string;
+        message?: string;
+      };
+      if (payload.message) {
+        return { field: payload.item, message: payload.message };
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return { message: 'Unable to complete request. Please try again.' };
+}
+```
+
+## 5. Mutations & Server Actions
 
 - Validate every Server Action input at the boundary with **Zod** (`safeParse`)
   and verify **authentication + authorization inside the action** — Server
@@ -69,7 +108,7 @@ export default async function OrderPage({
   errors, and `useOptimistic` for instant UI updates.
 - Call `revalidatePath` / `revalidateTag` after mutations before redirecting.
 
-## 5. URL state, routing & boundary files
+## 6. URL state, routing & boundary files
 
 - **Deep-linkable UI state:** Store filter facets, search queries, sort order,
   pagination, and active tabs in URL search params (`useSearchParams` or `nuqs`)
@@ -81,7 +120,7 @@ export default async function OrderPage({
   skeletons with zero CLS), `error.tsx` (`'use client'` with a `reset()` retry
   button), and `not-found.tsx` at meaningful route segments.
 
-## 6. Metadata, Open Graph & SEO discipline
+## 7. Metadata, Open Graph & SEO discipline
 
 - **Single source of truth per route:** Define metadata via the static
   `export const metadata: Metadata` object or `generateMetadata` in `layout.tsx`
@@ -107,7 +146,7 @@ export default async function OrderPage({
   entities actually rendered on the page, and Gate non-production environments
   with `robots: { index: false, follow: false }`.
 
-## 7. Images, fonts, LCP & hydration safety
+## 8. Images, fonts, LCP & hydration safety
 
 - **LCP image priority:** Use `next/image` with explicit `width`/`height` (or
   `fill` inside an `aspect-*` container). Add `priority` (`fetchpriority="high"`)

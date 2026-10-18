@@ -86,10 +86,13 @@ status text you render yourself, add one:
 <main id="main">…</main>
 ```
 
-### Respect reduced motion
+### Respect reduced motion & specific transitions
+
+Never use `transition-all` — name the exact properties and collapse spatial
+movement under `motion-reduce:` (see `ui-polish`):
 
 ```tsx
-<div className="transition-all motion-reduce:transition-none" />
+<div className="transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-opacity motion-reduce:transform-none" />
 ```
 
 ## Quick checklist (shadcn-specific)

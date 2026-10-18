@@ -176,13 +176,14 @@ report errors back to you, or confirm that a fix worked.
 - **Run the autonomous verify-and-fix loop** before reporting completion. The
   canonical gate is `make -C frontend verify` (equivalently
   `bash frontend/verify.sh`); it runs typecheck, lint, build, test,
-  `build-storybook`, and the stories-coverage check for every app under
-  `frontend/`. Read the full output, fix every error and meaningful warning,
-  then **re-run the gate**. Repeat until it passes. Only stop and ask the user
-  if you are genuinely blocked (missing secret, ambiguous product decision) —
-  not for ordinary type/lint/test/build failures.
-- This is **enforced**: a Cursor `stop` hook (`.cursor/hooks/frontend-verify.sh`)
-  re-runs `frontend/verify.sh` whenever you touch `frontend/` and loops you back
+  `build-storybook`, the stories-coverage check, and the UI polish static check
+  for every app under `frontend/`. Read the full output, fix every error and
+  meaningful warning, then **re-run the gate**. Repeat until it passes. Only
+  stop and ask the user if you are genuinely blocked (missing secret, ambiguous
+  product decision) — not for ordinary type/lint/test/build failures.
+- This is **enforced**: Cursor and Claude Code `stop` hooks
+  (`.cursor/hooks/frontend-verify.sh` and `.claude/hooks/frontend-verify.sh`)
+  re-run `frontend/verify.sh` whenever you touch `frontend/` and loop you back
   to fix any failures before the turn can complete.
 - **State results with evidence** (the command and its passing output). Never
   claim "done", "fixed", or "should work" without a fresh passing run.

@@ -175,7 +175,7 @@ Scaffolded workspaces ship mechanical gates so agents cannot skip design or test
 | Backend repo/app tests | `verify.sh` + Cursor and Claude Code `backend-verify` Stop hooks | Integration test per repo port method; unit test per `App` method; tests run green |
 | Package selection (imports) | `.golangci.yml` `depguard` via `verify.sh` | No forbidden imports (`go.temporal.io/sdk`, `log`/`slog`/`zap`, uuid/ulid/xid, `samber/lo`, strcase, copier) |
 | Package selection (code) | `ronyup lint` via `verify.sh` + Claude Code `backend-lint` PostToolUse hook | No hand-written copies of `x/rkit` helpers |
-| Frontend quality | `frontend/verify.sh` + Cursor `frontend-verify` hook | typecheck, lint, build, test, Storybook stories |
+| Frontend quality | `frontend/verify.sh` + Cursor and Claude Code `frontend-verify` Stop hooks | typecheck, lint, build, test, Storybook stories, UI polish checks |
 
 MCP prompt `design-frontend` orchestrates the frontend bootstrap workflow (ask → design doc → approval → init → implement). Backend integration test conventions live in `knowledge://ronyup/architecture/integration-tests`.
 

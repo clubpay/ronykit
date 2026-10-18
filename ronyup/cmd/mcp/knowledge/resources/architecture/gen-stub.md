@@ -12,7 +12,7 @@ The Makefile exposes `gen-go-stub` and `gen-ts-stub` targets that run the genera
 Outputs:
 
 - Go stubs land in `stub/<name>stub/stub.go`
-- TS stubs land in `stub/<name>stub-typescript/`
+- TS stubs land in `stub/<name>stub-typescript/` (`stub.ts` with `<Service>Stub` + `<Service>StubError`, and `swr.hooks.ts` with `'use client'` SWR hooks `use<Method>`). Wire Server Components and Server Actions to `<Service>Stub` and map `rony/errs` (`{ code, item, message }`) to inline field errors (see `nextjs-modern` §4).
 
 Regenerate stubs via `make gen-stub` whenever contracts change.
 

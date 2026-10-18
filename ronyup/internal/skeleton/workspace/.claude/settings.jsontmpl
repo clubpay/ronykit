@@ -11,8 +11,9 @@
       "Read(./**/*.key)",
       "Read(./**/*.keystore)"
     ]
-  }{{ if ne .Kind "frontend" }},
+  },
   "hooks": {
+{{- if ne .Kind "frontend" }}
     "PostToolUse": [
       {
         "matcher": "Edit|MultiEdit|Write",
@@ -25,16 +26,26 @@
         ]
       }
     ],
+{{- end }}
     "Stop": [
       {
         "hooks": [
+{{- if ne .Kind "backend" }}
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/frontend-verify.sh",
+            "timeout": 900
+          }{{ if eq .Kind "fullstack" }},{{ end }}
+{{- end }}
+{{- if ne .Kind "frontend" }}
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/backend-verify.sh",
             "timeout": 900
           }
+{{- end }}
         ]
       }
     ]
-  }{{ end }}
+  }
 }

@@ -116,12 +116,8 @@ func goModulePrefix(module, kind string) string {
 }
 
 func workspaceCommonDestMapper(repoRoot, kind string) func(string) (string, bool) {
-	if kind != KindFrontend {
-		return nil
-	}
-
 	return func(relPath string) (string, bool) {
-		if isBackendHook(relPath) {
+		if skipHookForKind(relPath, kind) {
 			return "", true
 		}
 
@@ -129,12 +125,18 @@ func workspaceCommonDestMapper(repoRoot, kind string) func(string) (string, bool
 	}
 }
 
-// isBackendHook reports whether relPath is a backend-only agent hook script
-// (.cursor/hooks/backend-*.sh, .claude/hooks/backend-*.sh), which frontend workspaces skip.
-func isBackendHook(relPath string) bool {
+// skipHookForKind reports whether relPath is a hook script that does not apply to kind
+// (backend-* hooks on frontend-only workspaces, frontend-* hooks on backend-only workspaces).
+func skipHookForKind(relPath, kind string) bool {
 	rel := filepath.ToSlash(relPath)
+	if path.Base(path.Dir(rel)) != "hooks" {
+		return false
+	}
 
-	return path.Base(path.Dir(rel)) == "hooks" && strings.HasPrefix(path.Base(rel), "backend-")
+	base := path.Base(rel)
+
+	return (kind == KindFrontend && strings.HasPrefix(base, "backend-")) ||
+		(kind == KindBackend && strings.HasPrefix(base, "frontend-"))
 }
 
 // BackendDestPrefix is where skeleton/backend/ is copied.

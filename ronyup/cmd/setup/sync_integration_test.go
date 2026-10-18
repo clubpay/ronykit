@@ -118,7 +118,7 @@ func TestSetupSyncCommand_AddsClaudeHooks(t *testing.T) {
 		t.Fatalf("runSync(hooks): %v", err)
 	}
 
-	assertClaudeHooks(t, root, true)
+	assertClaudeHooks(t, root, true, false)
 }
 
 func scaffoldLegacyBackendWorkspace(t *testing.T) string {

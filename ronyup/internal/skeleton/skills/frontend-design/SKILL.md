@@ -22,7 +22,7 @@ Pair with sibling skills by concern:
 - **Color ramps, semantic CSS custom properties, dark mode** → `design-tokens`
 - **Font pairing, fluid vs. fixed scales, OpenType, rhythm** → `typography`
 
-## 1. Pre-flight scan (before writing code)
+## 1. Pre-flight scan & reference extraction (before writing code)
 
 Before proposing a direction or generating components, inspect the workspace:
 
@@ -32,6 +32,17 @@ Before proposing a direction or generating components, inspect the workspace:
    variables, Tailwind version (v3 vs. v4 `@theme`), and `shadcn` primitives.
 3. **`package.json` & root layout** — loaded fonts (`next/font`), icon library
    (`lucide-react`, `@phosphor-icons/react`), and animation runtime (`motion`).
+4. **Reference extraction (when the user supplies a URL, screenshot, or Figma
+   frame):** Do not guess from adjectives. Systematically extract:
+   - **Surface & text tokens:** Canvas background, elevated card/well step,
+     4-tier text contrast levels, hairline border opacity, and primary accent.
+   - **Typography:** Display vs. body vs. mono font families, heading-to-body
+     scale ratio, weight distribution (`400/500/600`), and `letter-spacing`.
+   - **Spatial rhythm:** Container max-width, grid column count/gap, card
+     padding, and concentric border radii (`outer = inner + padding`).
+   - **Signature detail:** The 1–2 craft elements that define the reference's
+     character (translate the *system*, never copy brand logos or proprietary
+     copy).
 
 **Preserve what exists** unless asked for a redesign. Match the scope to the
 request:
