@@ -32,9 +32,7 @@ type Config struct {
 
 // Execute runs the cobra root command with retry logic.
 func Execute(cfg Config) {
-	if cfg.DisplayName == "" {
-		cfg.DisplayName = cfg.ApplicationName
-	}
+	cfg.DisplayName = rkit.Coalesce(cfg.DisplayName, cfg.ApplicationName)
 
 	root := newRootCommand(cfg)
 
@@ -61,10 +59,10 @@ func Execute(cfg Config) {
 func newRootCommand(cfg Config) *cobra.Command {
 	cmd := &cobra.Command{
 		RunE: func(cmd *cobra.Command, args []string) error {
-			listenPort, _ := cmd.Flags().GetInt("port")
-			listenIP, _ := cmd.Flags().GetString("listenIP")
-			services, _ := cmd.Flags().GetStringSlice("service")
-			configDir, _ := cmd.Flags().GetString("configDir")
+			listenPort := rkit.Ok(cmd.Flags().GetInt("port"))
+			listenIP := rkit.Ok(cmd.Flags().GetString("listenIP"))
+			services := rkit.Ok(cmd.Flags().GetStringSlice("service"))
+			configDir := rkit.Ok(cmd.Flags().GetString("configDir"))
 
 			set := settings.New()
 

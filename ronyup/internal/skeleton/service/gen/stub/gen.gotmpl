@@ -5,6 +5,7 @@ import (
 	"{{.RepositoryPath}}/{{.PackagePath}}/api"
 	"{{.RonyKitPath}}/rony"
 	"{{.RonyKitPath}}/stub/stubgen"
+	"{{.RonyKitPath}}/x/rkit"
 )
 
 //nolint:gochecknoglobals
@@ -82,8 +83,5 @@ func init() {
 
 func main() {
 	RootCmd.AddCommand(GenGoCmd, GenTypescriptCmd)
-	err := RootCmd.Execute()
-	if err != nil {
-		panic(err)
-	}
+	rkit.Assert(RootCmd.Execute())
 }
