@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"runtime"
 
@@ -14,6 +13,9 @@ import (
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
 	"github.com/clubpay/ronykit/x/apidoc"
+	"github.com/clubpay/ronykit/x/rkit"
+
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -23,8 +25,8 @@ func main() {
 		_ = http.ListenAndServe(":1234", nil)
 	}()
 
-	docUI, _ := apidoc.New("Example", "v0.1.2", "").
-		ReDocUI(desc.ToDesc(sampleService)...)
+	docUI := rkit.Ok(apidoc.New("Example", "v0.1.2", "").
+		ReDocUI(desc.ToDesc(sampleService)...))
 
 	// Create, start and wait for shutdown signal of the server.
 	defer kit.NewServer(

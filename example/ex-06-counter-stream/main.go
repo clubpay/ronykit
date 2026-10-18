@@ -64,13 +64,10 @@ func main() {
 	)
 
 	// Run the server in blocking mode
-	err := srv.Run(
+	rkit.Assert(srv.Run(
 		context.Background(),
 		os.Kill, os.Interrupt,
-	)
-	if err != nil {
-		panic(err)
-	}
+	))
 }
 
 type EchoCounter struct {

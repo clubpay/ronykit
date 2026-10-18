@@ -11,6 +11,7 @@ import (
 	"github.com/clubpay/ronykit/example/ex-01-rpc/dto"
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/stub"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 			stub.WithPingTime(5*time.Second),
 			stub.WithOnConnectHandler(
 				func(wCtx *stub.WebsocketCtx) {
-					err := wCtx.TextMessage(
+					rkit.Assert(wCtx.TextMessage(
 						context.Background(), "echoRequest",
 						&dto.EchoRequest{
 							RandomID: 2374,
@@ -34,10 +35,7 @@ func main() {
 							res := msg.(*dto.EchoResponse) //nolint:forcetypeassert
 							fmt.Println("Received response:", res.Ok, res.RandomID)
 						},
-					)
-					if err != nil {
-						panic(err)
-					}
+					))
 				},
 			),
 		)
@@ -45,10 +43,7 @@ func main() {
 	ctx, cf := context.WithTimeout(context.Background(), time.Second*5)
 	defer cf()
 
-	err := wsCtx.Connect(ctx, "/")
-	if err != nil {
-		panic(err)
-	}
+	rkit.Assert(wsCtx.Connect(ctx, "/"))
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, os.Interrupt)
