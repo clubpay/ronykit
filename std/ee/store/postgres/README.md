@@ -26,7 +26,7 @@ Without pool/DSN options, `EE_POSTGRES_PRIMARY_DSN` and
 | Operation                                                  | Pool                    |
 |------------------------------------------------------------|-------------------------|
 | actions, `Create`/`Update`/`Delete`, outbox, migrations    | primary                 |
-| `StateController.Get`/`Find`, `AggregateController.Get`    | replicas, round robin   |
+| `EntityController.Get`/`Find`, `AggregateController.Get`    | replicas, round robin   |
 
 Replica reads can lag. For read-your-writes, force the primary for one call:
 `orders.Get(postgres.ForcePrimary(ctx), id)`. With no replicas, everything

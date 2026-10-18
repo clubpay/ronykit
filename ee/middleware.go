@@ -14,7 +14,7 @@ import (
 type Delivery struct {
 	Meta
 
-	// Owner is the consuming controller, e.g. "state:order".
+	// Owner is the consuming controller, e.g. "entity:order".
 	Owner string
 	// Tx is the transaction of the unit of work. Writes made through it
 	// commit or roll back together with the handler's. Middlewares are free

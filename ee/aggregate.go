@@ -11,7 +11,7 @@ import (
 
 // Aggregate is implemented (on the pointer) by aggregate structs.
 // AggregateName must be a constant of the type. Load fills the aggregate with
-// id using ctx.States[S](); what it loads is tracked so the aggregate can be
+// id using ctx.Entities[S](); what it loads is tracked so the aggregate can be
 // saved later.
 type Aggregate interface {
 	AggregateName() string
@@ -38,7 +38,7 @@ type member struct {
 	field  string
 	index  []int
 	shape  memberShape
-	schema *stateSchema
+	schema *entitySchema
 }
 
 type aggregateSchema struct {
@@ -67,11 +67,11 @@ func parseAggregateSchema(env *Env, name string, t reflect.Type) (*aggregateSche
 
 		shape, st := memberShapeOf(f.Type)
 		if shape == 0 {
-			return nil, fmt.Errorf("%w: %s.%s: %s is not a state member (use `ee:\"-\"` to skip it)",
+			return nil, fmt.Errorf("%w: %s.%s: %s is not an entity member (use `ee:\"-\"` to skip it)",
 				ErrInvalidSchema, t, f.Name, f.Type)
 		}
 
-		schema, err := env.stateOf(st)
+		schema, err := env.entityOf(st)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %s.%s: %w", ErrInvalidSchema, t, f.Name, err)
 		}
@@ -96,7 +96,7 @@ func parseAggregateSchema(env *Env, name string, t reflect.Type) (*aggregateSche
 		a.allow[st] = true
 	}
 
-	// Without an explicit root, the first single-state member is the root.
+	// Without an explicit root, the first single-entity member is the root.
 	if a.root < 0 {
 		for i, m := range a.members {
 			if m.shape == shapeValue || m.shape == shapePtr {
@@ -157,7 +157,7 @@ type AggregateController[A any] struct {
 }
 
 // NewAggregateController registers A. Every member state must already be
-// registered with NewStateController. Call it as
+// registered with NewEntityController. Call it as
 // ee.NewAggregateController[OrderAgg](env).
 func NewAggregateController[A any, PA interface {
 	*A
@@ -300,7 +300,7 @@ func (c *AggregateController[A]) handle(ctx context.Context, msg bus.Message) er
 
 // load runs the developer's Load and returns the member states the aggregate
 // holds afterwards; a later save deletes those that disappear.
-func (c *AggregateController[A]) load(sc *scope, id string) (*A, map[stateKey]bool, error) {
+func (c *AggregateController[A]) load(sc *scope, id string) (*A, map[entityKey]bool, error) {
 	a := new(A)
 	if err := c.asAgg(a).Load(&LoadCtx{Context: sc.ctx, sc: sc}, id); err != nil {
 		return nil, nil, err
@@ -311,7 +311,7 @@ func (c *AggregateController[A]) load(sc *scope, id string) (*A, map[stateKey]bo
 		return nil, nil, err
 	}
 
-	members := make(map[stateKey]bool, len(refs))
+	members := make(map[entityKey]bool, len(refs))
 	for _, r := range refs {
 		members[r.key] = true
 	}
@@ -321,13 +321,13 @@ func (c *AggregateController[A]) load(sc *scope, id string) (*A, map[stateKey]bo
 
 // save writes a and returns its current member set. prev is the member set
 // as of the last load/save (nil for a new aggregate).
-func (c *AggregateController[A]) save(sc *scope, a *A, prev map[stateKey]bool) (map[stateKey]bool, error) {
+func (c *AggregateController[A]) save(sc *scope, a *A, prev map[entityKey]bool) (map[entityKey]bool, error) {
 	refs, err := c.collect(a)
 	if err != nil {
 		return nil, err
 	}
 
-	present := make(map[stateKey]bool, len(refs))
+	present := make(map[entityKey]bool, len(refs))
 	for _, r := range refs {
 		if present[r.key] {
 			return nil, fmt.Errorf("ee: aggregate %s holds %s/%s twice", c.schema.name, r.key.kind, r.key.id)
@@ -382,8 +382,8 @@ func (c *AggregateController[A]) saveMember(sc *scope, r memberRef) error {
 }
 
 type memberRef struct {
-	key    stateKey
-	schema *stateSchema
+	key    entityKey
+	schema *entitySchema
 	ptr    reflect.Value
 	root   bool
 }
@@ -408,7 +408,7 @@ func (c *AggregateController[A]) collect(a *A) ([]memberRef, error) {
 
 		refs = append(
 			refs,
-			memberRef{key: stateKey{m.schema.name, id}, schema: m.schema, ptr: ptr, root: root},
+			memberRef{key: entityKey{m.schema.name, id}, schema: m.schema, ptr: ptr, root: root},
 		)
 
 		return nil
@@ -472,7 +472,7 @@ type LoadCtx struct {
 	sc *scope
 }
 
-func (c *LoadCtx) States[S State]() *Repo[S] { return repoOf[S](c.sc) }
+func (c *LoadCtx) Entities[S Entity]() *Repo[S] { return repoOf[S](c.sc) }
 
 // Tx is the underlying store transaction, for backend-specific queries
 // (e.g. postgres.PgxTx).
@@ -485,7 +485,7 @@ type SaveCtx struct {
 	sc *scope
 }
 
-func (c *SaveCtx) States[S State]() *Repo[S] { return repoOf[S](c.sc) }
+func (c *SaveCtx) Entities[S Entity]() *Repo[S] { return repoOf[S](c.sc) }
 
 // Tx is the underlying store transaction, for backend-specific queries.
 func (c *SaveCtx) Tx() store.Tx { return c.sc.tx }
@@ -500,7 +500,7 @@ type AggregateCtx[A any, E KeyedEvent] struct {
 	meta  Meta
 
 	agg     *A
-	members map[stateKey]bool
+	members map[entityKey]bool
 	saved   bool
 }
 
@@ -542,8 +542,8 @@ func (c *AggregateCtx[A, E]) Save(a *A) error {
 // Tx is the underlying store transaction, for backend-specific queries.
 func (c *AggregateCtx[A, E]) Tx() store.Tx { return c.sc.tx }
 
-// States gives access to member state types in the same transaction.
-func (c *AggregateCtx[A, E]) States[S State]() *Repo[S] { return repoOf[S](c.sc) }
+// Entities gives access to member entity types in the same transaction.
+func (c *AggregateCtx[A, E]) Entities[S Entity]() *Repo[S] { return repoOf[S](c.sc) }
 
 // Emit queues an event in the transactional outbox.
 func (c *AggregateCtx[A, E]) Emit[T Event](ev T, opts ...SendOption) error {

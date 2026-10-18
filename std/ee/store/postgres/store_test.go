@@ -65,7 +65,7 @@ type Order struct {
 	Status   string `json:"status"`
 }
 
-func (Order) StateName() string { return "order" }
+func (Order) EntityName() string { return "order" }
 
 type OrderPaid struct{ OrderID string }
 
@@ -76,7 +76,7 @@ type Receipt struct {
 	ID string `ee:"id" json:"id"`
 }
 
-func (Receipt) StateName() string { return "receipt" }
+func (Receipt) EntityName() string { return "receipt" }
 
 type ReceiptRequested struct{ OrderID string }
 
@@ -89,11 +89,11 @@ func TestEndToEnd(t *testing.T) {
 	t.Cleanup(func() { _ = b.Close() })
 
 	env := ee.MustNew(ee.WithStore(s), ee.WithBus(b), ee.WithMaxRetries(100), ee.WithMiddleware(ee.Dedup))
-	orders, _ := ee.NewStateController[Order](env)
-	receipts, _ := ee.NewStateController[Receipt](env)
+	orders, _ := ee.NewEntityController[Order](env)
+	receipts, _ := ee.NewEntityController[Receipt](env)
 
 	_ = orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
-		o, err := ctx.State()
+		o, err := ctx.Entity()
 		if err != nil {
 			return err
 		}
@@ -198,7 +198,7 @@ func TestReplicaRouting(t *testing.T) {
 	}
 
 	env := ee.MustNew(ee.WithStore(s))
-	orders, _ := ee.NewStateController[Order](env)
+	orders, _ := ee.NewEntityController[Order](env)
 	ctx := t.Context()
 
 	if err := orders.Create(ctx, Order{ID: "o1"}); err != nil {

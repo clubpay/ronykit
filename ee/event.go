@@ -16,9 +16,9 @@ type Event interface {
 	EventName() string
 }
 
-// Keyed is optionally implemented by events about one state or aggregate.
+// Keyed is optionally implemented by events about one entity or aggregate.
 // The key is both the partition key (events with the same key are processed
-// in order) and the id ctx.State()/ctx.Aggregate() load.
+// in order) and the id ctx.Entity()/ctx.Aggregate() load.
 type Keyed interface {
 	Key() string
 }

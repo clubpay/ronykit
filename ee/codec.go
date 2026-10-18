@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Codec encodes states and event payloads. It must be the same on every
+// Codec encodes entities and event payloads. It must be the same on every
 // replica sharing a bus or store.
 type Codec interface {
 	Marshal(v any) ([]byte, error)

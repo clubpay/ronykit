@@ -13,21 +13,21 @@ type order struct {
 	Secret   string `json:"-"`
 }
 
-func (order) StateName() string { return "order" }
+func (order) EntityName() string { return "order" }
 
 type orderItem struct {
 	ID      string `ee:"id"`
 	OrderID string
 }
 
-func (orderItem) StateName() string { return "order-item" }
+func (orderItem) EntityName() string { return "order-item" }
 
 type payment struct {
 	ID      string `ee:"id"`
 	OrderID string
 }
 
-func (payment) StateName() string { return "payment" }
+func (payment) EntityName() string { return "payment" }
 
 type orderPaid struct {
 	OrderID  string
@@ -52,7 +52,7 @@ type orderAgg struct {
 func (orderAgg) AggregateName() string { return "order-agg" }
 
 func (a *orderAgg) Load(ctx *LoadCtx, id string) error {
-	o, err := ctx.States[order]().Get(id)
+	o, err := ctx.Entities[order]().Get(id)
 	a.Order = o
 
 	return err
@@ -64,15 +64,15 @@ func newTestEnv(t *testing.T) *Env {
 	now := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
 	env := MustNew(WithClock(func() time.Time { return now }))
 
-	if _, err := NewStateController[order](env); err != nil {
+	if _, err := NewEntityController[order](env); err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := NewStateController[orderItem](env); err != nil {
+	if _, err := NewEntityController[orderItem](env); err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := NewStateController[payment](env); err != nil {
+	if _, err := NewEntityController[payment](env); err != nil {
 		t.Fatal(err)
 	}
 
@@ -81,50 +81,50 @@ func newTestEnv(t *testing.T) *Env {
 
 type noID struct{ Name string }
 
-func (noID) StateName() string { return "no-id" }
+func (noID) EntityName() string { return "no-id" }
 
 type intID struct {
 	ID int `ee:"id"`
 }
 
-func (intID) StateName() string { return "int-id" }
+func (intID) EntityName() string { return "int-id" }
 
 type unnamed struct {
 	ID string `ee:"id"`
 }
 
-func (unnamed) StateName() string { return "" }
+func (unnamed) EntityName() string { return "" }
 
 type orderClone struct {
 	ID string `ee:"id"`
 }
 
-func (orderClone) StateName() string { return "order" }
+func (orderClone) EntityName() string { return "order" }
 
-func TestStateSchema(t *testing.T) {
+func TestEntitySchema(t *testing.T) {
 	env := MustNew()
-	if _, err := NewStateController[noID](env); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := NewEntityController[noID](env); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("no id: want ErrInvalidSchema, got %v", err)
 	}
 
-	if _, err := NewStateController[intID](env); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := NewEntityController[intID](env); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("int id: want ErrInvalidSchema, got %v", err)
 	}
 
-	if _, err := NewStateController[unnamed](env); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := NewEntityController[unnamed](env); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("empty name: want ErrInvalidSchema, got %v", err)
 	}
 
 	env = newTestEnv(t)
-	if _, err := NewStateController[order](env); !errors.Is(err, ErrAlreadyRegistered) {
+	if _, err := NewEntityController[order](env); !errors.Is(err, ErrAlreadyRegistered) {
 		t.Errorf("duplicate type: want ErrAlreadyRegistered, got %v", err)
 	}
 
-	if _, err := NewStateController[orderClone](env); !errors.Is(err, ErrAlreadyRegistered) {
+	if _, err := NewEntityController[orderClone](env); !errors.Is(err, ErrAlreadyRegistered) {
 		t.Errorf("duplicate name: want ErrAlreadyRegistered, got %v", err)
 	}
 
-	s, _ := env.stateOf(typeOf[order]())
+	s, _ := env.entityOf(typeOf[order]())
 	if got := s.id(valueOf(order{ID: "o1"})); got != "o1" {
 		t.Errorf("id = %q", got)
 	}
@@ -190,7 +190,7 @@ func TestSelector(t *testing.T) {
 
 func TestQueryCompile(t *testing.T) {
 	env := newTestEnv(t)
-	s, _ := env.stateOf(typeOf[order]())
+	s, _ := env.entityOf(typeOf[order]())
 
 	q, err := Where("Merchant", "m1").And("Amount", In, []int{1, 2}).And("Amount", Gt, 0).Limit(5).compile(s)
 	if err != nil {
@@ -286,8 +286,8 @@ func TestAggregateSchema(t *testing.T) {
 
 func TestAction(t *testing.T) {
 	env := newTestEnv(t)
-	orders, _ := NewStateController[order](MustNew())
-	items, _ := NewStateController[orderItem](orders.env)
+	orders, _ := NewEntityController[order](MustNew())
+	items, _ := NewEntityController[orderItem](orders.env)
 
 	if err := orders.Action(func(*ActionCtx[order, orderPaid]) error { return nil }, Filter(Match("merchant", "m1"))); err != nil {
 		t.Fatal(err)

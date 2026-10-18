@@ -296,8 +296,8 @@ func TestOutboxYearClockOverflows(t *testing.T) {
 		ee.WithClock(func() time.Time { return future }),
 		ee.WithOutboxPoll(5*time.Millisecond),
 		ee.WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
-	orders := must(ee.NewStateController[Order](env))
-	receipts := must(ee.NewStateController[Receipt](env))
+	orders := must(ee.NewEntityController[Order](env))
+	receipts := must(ee.NewEntityController[Receipt](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
 	ctx := t.Context()
@@ -305,7 +305,7 @@ func TestOutboxYearClockOverflows(t *testing.T) {
 	_ = orders.Create(ctx, Order{ID: "o1"})
 
 	_ = orders.Action(func(c *ee.ActionCtx[Order, OrderPaid]) error {
-		o, err := c.State()
+		o, err := c.Entity()
 		if err != nil {
 			return err
 		}
@@ -363,14 +363,14 @@ func TestEnvLifecycle(t *testing.T) {
 	bs := mem.NewBus(mem.RetryBackoff(time.Millisecond))
 	started := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs),
 		ee.WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
-	_ = must(ee.NewStateController[Order](started))
-	_ = must(ee.NewStateController[Item](started))
-	_ = must(ee.NewStateController[Payment](started))
+	_ = must(ee.NewEntityController[Order](started))
+	_ = must(ee.NewEntityController[Item](started))
+	_ = must(ee.NewEntityController[Payment](started))
 	if err := started.Start(ctx); err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := ee.NewStateController[Receipt](started); !errors.Is(err, ee.ErrStarted) {
+	if _, err := ee.NewEntityController[Receipt](started); !errors.Is(err, ee.ErrStarted) {
 		t.Errorf("register controller after start: %v", err)
 	}
 	if _, err := ee.NewAggregateController[OrderAgg](started); !errors.Is(err, ee.ErrStarted) {
@@ -391,7 +391,7 @@ func TestEnvLifecycle(t *testing.T) {
 	// An action cannot be registered after Start either.
 	bs2 := mem.NewBus(mem.RetryBackoff(time.Millisecond))
 	late := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs2))
-	orders := must(ee.NewStateController[Order](late))
+	orders := must(ee.NewEntityController[Order](late))
 	if err := late.Start(ctx); err != nil {
 		t.Fatal(err)
 	}
@@ -406,8 +406,8 @@ func TestStartSubscribeFault(t *testing.T) {
 	st := mem.NewStore()
 	bs := &faultBus{Bus: mem.NewBus(mem.RetryBackoff(time.Millisecond))}
 	env := ee.MustNew(ee.WithStore(st), ee.WithBus(bs))
-	orders := must(ee.NewStateController[Order](env))
-	_ = must(ee.NewStateController[Receipt](env))
+	orders := must(ee.NewEntityController[Order](env))
+	_ = must(ee.NewEntityController[Receipt](env))
 	_ = orders.Action(func(*ee.ActionCtx[Order, OrderTouched]) error { return nil })
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 

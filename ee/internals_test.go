@@ -18,32 +18,32 @@ import (
 
 // State types with odd schemas, checked against the parser directly.
 
-type badTagState struct {
+type badTagEntity struct {
 	ID   string `ee:"id"`
 	Junk string `ee:"nope"`
 }
 
-func (badTagState) StateName() string { return "bad-tag" }
+func (badTagEntity) EntityName() string { return "bad-tag" }
 
 type twoIDs struct {
 	A string `ee:"id"`
 	B string `ee:"id"`
 }
 
-func (twoIDs) StateName() string { return "two-ids" }
+func (twoIDs) EntityName() string { return "two-ids" }
 
 type hiddenID struct {
 	name string `ee:"id"`
 }
 
-func (hiddenID) StateName() string { return "hidden-id" }
+func (hiddenID) EntityName() string { return "hidden-id" }
 
 type hiddenField struct {
 	ID     string `ee:"id"`
 	secret []byte
 }
 
-func (hiddenField) StateName() string { return "hidden-field" }
+func (hiddenField) EntityName() string { return "hidden-field" }
 
 type strCode string
 
@@ -51,7 +51,7 @@ type strKindID struct {
 	ID strCode `ee:"id"`
 }
 
-func (strKindID) StateName() string { return "str-kind-id" }
+func (strKindID) EntityName() string { return "str-kind-id" }
 
 // Aggregate types with odd schemas.
 
@@ -96,29 +96,29 @@ type aggRootSlice struct {
 }
 
 func TestSchemaOddCases(t *testing.T) {
-	if _, err := parseStateSchema("", typeOf[order](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
-		t.Errorf("empty StateName: want ErrInvalidSchema, got %v", err)
+	if _, err := parseEntitySchema("", typeOf[order](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
+		t.Errorf("empty EntityName: want ErrInvalidSchema, got %v", err)
 	}
 
 	// A state implemented on the pointer (or with no State method at all)
 	// gives the parser a non-struct type.
-	if _, err := parseStateSchema("x", typeOf[*order](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := parseEntitySchema("x", typeOf[*order](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("non-struct: want ErrInvalidSchema, got %v", err)
 	}
 
-	if _, err := parseStateSchema("bad-tag", typeOf[badTagState](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := parseEntitySchema("bad-tag", typeOf[badTagEntity](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("unknown tag: want ErrInvalidSchema, got %v", err)
 	}
 
-	if _, err := parseStateSchema("two-ids", typeOf[twoIDs](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := parseEntitySchema("two-ids", typeOf[twoIDs](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("two id fields: want ErrInvalidSchema, got %v", err)
 	}
 
-	if _, err := parseStateSchema("hidden-id", typeOf[hiddenID](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
+	if _, err := parseEntitySchema("hidden-id", typeOf[hiddenID](), JSONCodec); !errors.Is(err, ErrInvalidSchema) {
 		t.Errorf("unexported id: want ErrInvalidSchema, got %v", err)
 	}
 
-	s, err := parseStateSchema("hidden-field", typeOf[hiddenField](), JSONCodec)
+	s, err := parseEntitySchema("hidden-field", typeOf[hiddenField](), JSONCodec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestSchemaOddCases(t *testing.T) {
 	}
 
 	// A named string kind satisfies the id check.
-	s, err = parseStateSchema("str-kind-id", typeOf[strKindID](), JSONCodec)
+	s, err = parseEntitySchema("str-kind-id", typeOf[strKindID](), JSONCodec)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -174,30 +174,30 @@ func (stubController) handle(context.Context, bus.Message) error { return nil }
 func TestDuplicateControllerName(t *testing.T) {
 	env := MustNew()
 
-	if err := env.addController("state:x", stubController{}); err != nil {
+	if err := env.addController("entity:x", stubController{}); err != nil {
 		t.Fatal(err)
 	}
-	if err := env.addController("state:x", stubController{}); !errors.Is(err, ErrAlreadyRegistered) {
+	if err := env.addController("entity:x", stubController{}); !errors.Is(err, ErrAlreadyRegistered) {
 		t.Errorf("want ErrAlreadyRegistered, got %v", err)
 	}
 }
 
-type dupNameState struct {
+type dupNameEntity struct {
 	ID string `ee:"id"`
 }
 
-func (dupNameState) StateName() string { return "dup-name" }
+func (dupNameEntity) EntityName() string { return "dup-name" }
 
 // A controller name can also be squatted by a non-controller stub; the state
 // registration must still fail cleanly.
-func TestStateControllerNameCollision(t *testing.T) {
+func TestEntityControllerNameCollision(t *testing.T) {
 	env := MustNew()
 
-	if err := env.addController("state:dup-name", stubController{}); err != nil {
+	if err := env.addController("entity:dup-name", stubController{}); err != nil {
 		t.Fatal(err)
 	}
 
-	if _, err := NewStateController[dupNameState](env); !errors.Is(err, ErrAlreadyRegistered) {
+	if _, err := NewEntityController[dupNameEntity](env); !errors.Is(err, ErrAlreadyRegistered) {
 		t.Errorf("want ErrAlreadyRegistered, got %v", err)
 	}
 }
@@ -205,7 +205,7 @@ func TestStateControllerNameCollision(t *testing.T) {
 func TestControllerNames(t *testing.T) {
 	env := MustNew()
 
-	states, err := NewStateController[order](env)
+	states, err := NewEntityController[order](env)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,10 +213,10 @@ func TestControllerNames(t *testing.T) {
 		t.Errorf("Name() = %q", got)
 	}
 
-	if _, err := NewStateController[orderItem](env); err != nil {
+	if _, err := NewEntityController[orderItem](env); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := NewStateController[payment](env); err != nil {
+	if _, err := NewEntityController[payment](env); err != nil {
 		t.Fatal(err)
 	}
 
@@ -246,7 +246,7 @@ func TestDispatchIgnoresUnknownEvent(t *testing.T) {
 	// A subscription may carry events a controller has no action for (e.g.
 	// after a hot upgrade); dispatch must acknowledge them.
 	msg := bus.Message{Envelope: bus.Envelope{Event: "unknown", ID: "x"}}
-	if err := env.dispatch(context.Background(), "state:x", map[string]*action{}, nil, msg); err != nil {
+	if err := env.dispatch(context.Background(), "entity:x", map[string]*action{}, nil, msg); err != nil {
 		t.Errorf("dispatch of an unknown event must not fail, got %v", err)
 	}
 }
@@ -327,7 +327,7 @@ func TestSelectorEdge(t *testing.T) {
 
 func TestQueryCompileOddities(t *testing.T) {
 	env := newTestEnv(t)
-	s, _ := env.stateOf(typeOf[order]())
+	s, _ := env.entityOf(typeOf[order]())
 
 	if _, err := Where("Merchant", nil).compile(s); !errors.Is(err, ErrInvalidQuery) {
 		t.Errorf("nil value: want ErrInvalidQuery, got %v", err)
@@ -355,7 +355,7 @@ type metrics struct {
 	Size  int64
 }
 
-func (metrics) StateName() string { return "metrics" }
+func (metrics) EntityName() string { return "metrics" }
 
 type posT struct{ X, Y int }
 
@@ -364,19 +364,19 @@ type weird struct {
 	Pos struct{ X, Y int }
 }
 
-func (weird) StateName() string { return "weird" }
+func (weird) EntityName() string { return "weird" }
 
 func TestConvertValueOddities(t *testing.T) {
 	env := MustNew()
 
-	if _, err := NewStateController[metrics](env); err != nil {
+	if _, err := NewEntityController[metrics](env); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := NewStateController[weird](env); err != nil {
+	if _, err := NewEntityController[weird](env); err != nil {
 		t.Fatal(err)
 	}
 
-	m, _ := env.stateOf(typeOf[metrics]())
+	m, _ := env.entityOf(typeOf[metrics]())
 
 	// Negative ints land in float fields without loss.
 	if _, err := Where("Rate", -1).compile(m); err != nil {
@@ -399,7 +399,7 @@ func TestConvertValueOddities(t *testing.T) {
 	}
 
 	// A named type is assignable to the same unnamed struct type.
-	w, _ := env.stateOf(typeOf[weird]())
+	w, _ := env.entityOf(typeOf[weird]())
 	if _, err := Where("Pos", posT{X: 1, Y: 2}).compile(w); err != nil {
 		t.Errorf("assignable struct value: %v", err)
 	}
@@ -477,11 +477,11 @@ func (f *fakeFindTx) Find(_ context.Context, _ store.Query) iter.Seq2[store.Reco
 // whose Find does not hide writes the unit itself deleted.
 func TestFindSkipsDeletedTracking(t *testing.T) {
 	env := MustNew()
-	if _, err := NewStateController[order](env); err != nil {
+	if _, err := NewEntityController[order](env); err != nil {
 		t.Fatal(err)
 	}
 
-	schema, err := env.stateOf(typeOf[order]())
+	schema, err := env.entityOf(typeOf[order]())
 	if err != nil {
 		t.Fatal(err)
 	}

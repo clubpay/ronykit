@@ -51,7 +51,7 @@ func TestCodecFieldNameContract(t *testing.T) {
 	// The store decodes documents through the same renaming as the codec.
 	st := mem.NewStore(mem.WithDecoder(swapDecoder))
 	env := ee.MustNew(ee.WithStore(st), ee.WithCodec(newSwapCodec()))
-	orders := must(ee.NewStateController[Order](env))
+	orders := must(ee.NewEntityController[Order](env))
 	t.Cleanup(func() { _ = env.Close() })
 
 	_ = orders.Create(ctx, Order{ID: "o1", Merchant: "m1", Amount: 5})

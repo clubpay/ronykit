@@ -14,9 +14,9 @@ import (
 // ee unit of work, so a request either fully applies or not at all.
 type Shop struct {
 	env         *ee.Env
-	items       *ee.StateController[Item]
-	inventory   *ee.StateController[Inventory]
-	orders      *ee.StateController[Order]
+	items       *ee.EntityController[Item]
+	inventory   *ee.EntityController[Inventory]
+	orders      *ee.EntityController[Order]
 	basketLines *ee.AggregateController[BasketLine]
 	orderAggs   *ee.AggregateController[OrderAgg]
 }
@@ -28,19 +28,19 @@ func NewShop(env *ee.Env) (*Shop, error) {
 	)
 
 	// States first: aggregates check their members are registered.
-	if s.items, err = ee.NewStateController[Item](env); err != nil {
+	if s.items, err = ee.NewEntityController[Item](env); err != nil {
 		return nil, err
 	}
 
-	if s.inventory, err = ee.NewStateController[Inventory](env); err != nil {
+	if s.inventory, err = ee.NewEntityController[Inventory](env); err != nil {
 		return nil, err
 	}
 
-	if s.orders, err = ee.NewStateController[Order](env); err != nil {
+	if s.orders, err = ee.NewEntityController[Order](env); err != nil {
 		return nil, err
 	}
 
-	if _, err = ee.NewStateController[OrderLine](env); err != nil {
+	if _, err = ee.NewEntityController[OrderLine](env); err != nil {
 		return nil, err
 	}
 

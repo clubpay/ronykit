@@ -233,10 +233,10 @@ func newFaultFixture(t *testing.T, st store.Store, bs bus.Bus, opts ...ee.Option
 	f.env = ee.MustNew(append([]ee.Option{
 		ee.WithStore(st), ee.WithBus(bs), ee.WithOutboxPoll(5 * time.Millisecond),
 	}, opts...)...)
-	f.orders = must(ee.NewStateController[Order](f.env))
-	f.receipts = must(ee.NewStateController[Receipt](f.env))
-	f.items = must(ee.NewStateController[Item](f.env))
-	f.payments = must(ee.NewStateController[Payment](f.env))
+	f.orders = must(ee.NewEntityController[Order](f.env))
+	f.receipts = must(ee.NewEntityController[Receipt](f.env))
+	f.items = must(ee.NewEntityController[Item](f.env))
+	f.payments = must(ee.NewEntityController[Payment](f.env))
 	f.aggs = must(ee.NewAggregateController[OrderAgg](f.env))
 
 	t.Cleanup(func() {
@@ -323,14 +323,14 @@ func (c poisonCodec) FieldName(f reflect.StructField) (string, bool) {
 
 // newPoisonFixture is a fixture whose codec refuses Evil-bearing poison
 // states. It returns the fixture and the poison controller.
-func newPoisonFixture(t *testing.T, opts ...ee.Option) (*fixture, *ee.StateController[poisonOrder]) {
+func newPoisonFixture(t *testing.T, opts ...ee.Option) (*fixture, *ee.EntityController[poisonOrder]) {
 	t.Helper()
 
 	f := newFaultFixture(t, mem.NewStore(), mem.NewBus(
 		mem.RetryBackoff(time.Millisecond), mem.MaxAttempts(3),
 	), append([]ee.Option{ee.WithCodec(newPoisonCodec())}, opts...)...)
 
-	c, err := ee.NewStateController[poisonOrder](f.env)
+	c, err := ee.NewEntityController[poisonOrder](f.env)
 	if err != nil {
 		t.Fatal(err)
 	}

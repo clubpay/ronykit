@@ -20,7 +20,7 @@ var (
 	// ErrNotLoaded is returned by Save for a state that was not loaded or
 	// created in the current unit of work, so its version is unknown.
 	ErrNotLoaded = errors.New("ee: state not loaded in this unit of work")
-	// ErrNoKey is returned by ctx.State/ctx.Aggregate when the event does not
+	// ErrNoKey is returned by ctx.Entity/ctx.Aggregate when the event does not
 	// implement Keyed, so there is no target to load.
 	ErrNoKey = errors.New("ee: event has no Key")
 )

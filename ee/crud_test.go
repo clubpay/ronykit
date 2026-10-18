@@ -25,9 +25,9 @@ type ghost struct {
 	ID string `ee:"id"`
 }
 
-func (ghost) StateName() string { return "ghost" }
+func (ghost) EntityName() string { return "ghost" }
 
-func TestStateCRUDLifecycle(t *testing.T) {
+func TestEntityCRUDLifecycle(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
 
@@ -116,13 +116,13 @@ func TestActionUnitSemantics(t *testing.T) {
 
 			// Find returns the tracked state (identity map) and honors an early
 			// break from the consumer.
-			it, err := c.States[Item]().Get("i1")
+			it, err := c.Entities[Item]().Get("i1")
 			if err != nil {
 				return err
 			}
 
 			n := 0
-			for got, err := range c.States[Item]().Find(ee.Query{}) {
+			for got, err := range c.Entities[Item]().Find(ee.Query{}) {
 				if err != nil {
 					return err
 				}
@@ -136,19 +136,19 @@ func TestActionUnitSemantics(t *testing.T) {
 				t.Errorf("find visited %d rows", n)
 			}
 
-			if err := c.States[Item]().Delete(it); err != nil {
+			if err := c.Entities[Item]().Delete(it); err != nil {
 				return err
 			}
 
 			// A tracked-and-deleted state is gone for the rest of the unit.
-			if err := c.States[Item]().Save(it); !errors.Is(err, ee.ErrNotFound) {
+			if err := c.Entities[Item]().Save(it); !errors.Is(err, ee.ErrNotFound) {
 				t.Errorf("save of a deleted state: %v", err)
 			}
-			if _, err := c.States[Item]().Get("i1"); !errors.Is(err, ee.ErrNotFound) {
+			if _, err := c.Entities[Item]().Get("i1"); !errors.Is(err, ee.ErrNotFound) {
 				t.Errorf("get of a deleted state: %v", err)
 			}
 			n = 0
-			for _, err := range c.States[Item]().Find(ee.Query{}) {
+			for _, err := range c.Entities[Item]().Find(ee.Query{}) {
 				if err != nil {
 					return err
 				}
@@ -171,7 +171,7 @@ func TestActionUnitSemantics(t *testing.T) {
 			}
 
 			// Repos for states of no scope fail per operation.
-			g := c.States[ghost]()
+			g := c.Entities[ghost]()
 			if _, err := g.Get("x"); !errors.Is(err, ee.ErrNotRegistered) {
 				t.Errorf("unregistered get: %v", err)
 			}
@@ -219,7 +219,7 @@ func TestActionUnitSemantics(t *testing.T) {
 	}
 }
 
-func TestStateFindStopAndErrors(t *testing.T) {
+func TestEntityFindStopAndErrors(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
 
@@ -254,11 +254,11 @@ func TestAutoSave(t *testing.T) {
 	done := make(chan error, 1)
 	_ = f.orders.Action(func(c *ee.ActionCtx[Order, OrderTouched]) error {
 		err := func() error {
-			it, err := c.States[Item]().Get("i1")
+			it, err := c.Entities[Item]().Get("i1")
 			if err != nil {
 				return err
 			}
-			if err := c.States[Item]().Delete(it); err != nil {
+			if err := c.Entities[Item]().Delete(it); err != nil {
 				return err
 			}
 
@@ -383,7 +383,7 @@ type poisonOrder struct {
 	Evil *evilData
 }
 
-func (poisonOrder) StateName() string { return "poison" }
+func (poisonOrder) EntityName() string { return "poison" }
 
 type poisonTouched struct {
 	ID string
@@ -487,7 +487,7 @@ func TestAutoSavePoisonFailsAtCommit(t *testing.T) {
 	env := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs), ee.WithCodec(newPoisonCodec()),
 		ee.WithAutoSave(), ee.WithOutboxPoll(5*time.Millisecond),
 		ee.WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
-	poison := must(ee.NewStateController[poisonOrder](env))
+	poison := must(ee.NewEntityController[poisonOrder](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
 	ctx := t.Context()
@@ -495,7 +495,7 @@ func TestAutoSavePoisonFailsAtCommit(t *testing.T) {
 
 	handled := make(chan struct{}, 3)
 	_ = poison.Action(func(c *ee.ActionCtx[poisonOrder, poisonTouched]) error {
-		o, err := c.State()
+		o, err := c.Entity()
 		if err != nil {
 			return err
 		}
@@ -544,7 +544,7 @@ func TestAutoSaveFaultRetriedThrough(t *testing.T) {
 	_ = f.orders.Create(ctx, Order{ID: "o1"})
 
 	_ = f.orders.Action(func(c *ee.ActionCtx[Order, OrderTouched]) error {
-		o, err := c.State()
+		o, err := c.Entity()
 		if err != nil {
 			return err
 		}

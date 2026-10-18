@@ -55,7 +55,7 @@ func (q Query) Limit(n int) Query {
 // compile validates the query against s and lowers it to a store query:
 // field names become encoded names and values are converted to the field's
 // Go type, so ee.Where("Amount", 100) works against a uint64 field.
-func (q Query) compile(s *stateSchema) (store.Query, error) {
+func (q Query) compile(s *entitySchema) (store.Query, error) {
 	out := store.Query{Kind: s.name, Limit: q.limit}
 
 	for _, c := range q.where {

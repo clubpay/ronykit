@@ -43,7 +43,7 @@ func TestActionCtxAPI(t *testing.T) {
 			}
 
 			// Member states are reachable.
-			if _, err := c.States[Item]().Get("i1"); err != nil {
+			if _, err := c.Entities[Item]().Get("i1"); err != nil {
 				return err
 			}
 
@@ -92,7 +92,7 @@ func TestActionCtxRequiresKeyedEvent(t *testing.T) {
 	done := make(chan error, 1)
 	_ = f.orders.Action(func(c *ee.ActionCtx[Order, plainNoted]) error {
 		done <- func() error {
-			_, err := c.State()
+			_, err := c.Entity()
 
 			return err
 		}()
@@ -113,7 +113,7 @@ func TestUndecodableEventIsDropped(t *testing.T) {
 	env := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs),
 		ee.WithOutboxPoll(5*time.Millisecond),
 		ee.WithLogger(slog.New(slog.NewTextHandler(buf, nil))))
-	orders := must(ee.NewStateController[Order](env))
+	orders := must(ee.NewEntityController[Order](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
 	var mu sync.Mutex
@@ -199,7 +199,7 @@ func TestDedupMarkerFlow(t *testing.T) {
 				return errStop // the first attempt fails; no marker must be written
 			}
 
-			o, err := c.State()
+			o, err := c.Entity()
 			if err != nil {
 				return err
 			}
@@ -238,7 +238,7 @@ func TestDedupMarkerFlow(t *testing.T) {
 		var n int
 
 		_ = f.orders.Action(func(c *ee.ActionCtx[Order, OrderTouched]) error {
-			o, err := c.State()
+			o, err := c.Entity()
 			if err != nil {
 				return err
 			}
@@ -283,7 +283,7 @@ func TestDedupLoserRollsBackAndSkips(t *testing.T) {
 
 	st := newFaultStore(func(s *faultStore) {
 		s.txOp = func(op, kind, id string) error {
-			if op == "insert" && kind == ee.DedupKind && id == "state:order/race-1" && !raced {
+			if op == "insert" && kind == ee.DedupKind && id == "entity:order/race-1" && !raced {
 				raced = true
 				// The winning replica commits its marker first.
 				_ = s.Store.Tx(context.Background(), func(_ context.Context, tx store.Tx) error {
@@ -300,7 +300,7 @@ func TestDedupLoserRollsBackAndSkips(t *testing.T) {
 	})
 	bs := mem.NewBus(mem.RetryBackoff(time.Millisecond))
 	env := ee.MustNew(ee.WithStore(st), ee.WithBus(bs), ee.WithMiddleware(ee.Dedup))
-	orders := must(ee.NewStateController[Order](env))
+	orders := must(ee.NewEntityController[Order](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
 	ctx := t.Context()
@@ -312,7 +312,7 @@ func TestDedupLoserRollsBackAndSkips(t *testing.T) {
 	n := 0
 
 	_ = orders.Action(func(c *ee.ActionCtx[Order, OrderTouched]) error {
-		o, err := c.State()
+		o, err := c.Entity()
 		if err != nil {
 			return err
 		}
@@ -396,7 +396,7 @@ func TestMiddlewareErrorRedelivers(t *testing.T) {
 
 	mw := func(next ee.Next) ee.Next {
 		return func(ctx context.Context, d *ee.Delivery) error {
-			if d.Owner != "state:order" || d.Event != "order.touched" || d.Tx == nil || d.ID == "" {
+			if d.Owner != "entity:order" || d.Event != "order.touched" || d.Tx == nil || d.ID == "" {
 				t.Errorf("delivery = %+v", d)
 			}
 
@@ -415,7 +415,7 @@ func TestMiddlewareErrorRedelivers(t *testing.T) {
 
 	bs := mem.NewBus(mem.RetryBackoff(time.Millisecond))
 	env := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs), ee.WithMiddleware(mw), ee.WithMaxRetries(4))
-	orders := must(ee.NewStateController[Order](env))
+	orders := must(ee.NewEntityController[Order](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
 	ctx := t.Context()
@@ -423,7 +423,7 @@ func TestMiddlewareErrorRedelivers(t *testing.T) {
 	_ = orders.Create(ctx, Order{ID: "o1"})
 
 	_ = orders.Action(func(c *ee.ActionCtx[Order, OrderTouched]) error {
-		o, err := c.State()
+		o, err := c.Entity()
 		if err != nil {
 			return err
 		}

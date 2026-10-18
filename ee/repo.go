@@ -20,17 +20,17 @@ type scope struct {
 	ctx     context.Context //nolint:containedctx // a scope lives for one unit of work
 	env     *Env
 	tx      store.Tx
-	tracked map[stateKey]*trackedState
+	tracked map[entityKey]*trackedEntity
 	emitted []bus.Envelope
 	// allow restricts which state types are reachable (aggregate members);
 	// nil allows every registered state.
 	allow map[reflect.Type]bool
 }
 
-type stateKey struct{ kind, id string }
+type entityKey struct{ kind, id string }
 
-type trackedState struct {
-	schema  *stateSchema
+type trackedEntity struct {
+	schema  *entitySchema
 	ptr     reflect.Value // *S handed to user code
 	version uint64
 	// snapshot is the encoded value as last read or written, for dirty
@@ -40,7 +40,7 @@ type trackedState struct {
 }
 
 func newScope(ctx context.Context, env *Env, tx store.Tx, allow map[reflect.Type]bool) *scope {
-	return &scope{ctx: ctx, env: env, tx: tx, tracked: map[stateKey]*trackedState{}, allow: allow}
+	return &scope{ctx: ctx, env: env, tx: tx, tracked: map[entityKey]*trackedEntity{}, allow: allow}
 }
 
 func (s *scope) emit(ev Event, opts []SendOption) error {
@@ -54,8 +54,8 @@ func (s *scope) emit(ev Event, opts []SendOption) error {
 	return nil
 }
 
-func (s *scope) get(schema *stateSchema, id string) (reflect.Value, error) {
-	k := stateKey{schema.name, id}
+func (s *scope) get(schema *entitySchema, id string) (reflect.Value, error) {
+	k := entityKey{schema.name, id}
 	if tr, ok := s.tracked[k]; ok {
 		if tr.deleted {
 			return reflect.Value{}, fmt.Errorf("%w: %s/%s", ErrNotFound, schema.name, id)
@@ -72,7 +72,7 @@ func (s *scope) get(schema *stateSchema, id string) (reflect.Value, error) {
 	return s.track(schema, rec)
 }
 
-func (s *scope) find(schema *stateSchema, q Query) iter.Seq2[reflect.Value, error] {
+func (s *scope) find(schema *entitySchema, q Query) iter.Seq2[reflect.Value, error] {
 	sq, err := q.compile(schema)
 
 	return func(yield func(reflect.Value, error) bool) {
@@ -91,7 +91,7 @@ func (s *scope) find(schema *stateSchema, q Query) iter.Seq2[reflect.Value, erro
 
 			// The identity map wins: a state already loaded in this unit of
 			// work is returned as-is, with its pending changes.
-			if tr, ok := s.tracked[stateKey{schema.name, rec.ID}]; ok {
+			if tr, ok := s.tracked[entityKey{schema.name, rec.ID}]; ok {
 				if !tr.deleted && !yield(tr.ptr, nil) {
 					return
 				}
@@ -107,7 +107,7 @@ func (s *scope) find(schema *stateSchema, q Query) iter.Seq2[reflect.Value, erro
 	}
 }
 
-func (s *scope) track(schema *stateSchema, rec store.Record) (reflect.Value, error) {
+func (s *scope) track(schema *entitySchema, rec store.Record) (reflect.Value, error) {
 	ptr := reflect.New(schema.typ)
 	if err := s.env.codec.Unmarshal(rec.Data, ptr.Interface()); err != nil {
 		return reflect.Value{}, fmt.Errorf("ee: decode %s/%s: %w", schema.name, rec.ID, err)
@@ -118,7 +118,7 @@ func (s *scope) track(schema *stateSchema, rec store.Record) (reflect.Value, err
 		return reflect.Value{}, fmt.Errorf("ee: encode %s/%s: %w", schema.name, rec.ID, err)
 	}
 
-	s.tracked[stateKey{schema.name, rec.ID}] = &trackedState{
+	s.tracked[entityKey{schema.name, rec.ID}] = &trackedEntity{
 		schema:   schema,
 		ptr:      ptr,
 		version:  rec.Version,
@@ -128,7 +128,7 @@ func (s *scope) track(schema *stateSchema, rec store.Record) (reflect.Value, err
 	return ptr, nil
 }
 
-func (s *scope) create(schema *stateSchema, ptr reflect.Value) error {
+func (s *scope) create(schema *entitySchema, ptr reflect.Value) error {
 	id := schema.id(ptr.Elem())
 	if id == "" {
 		return fmt.Errorf("ee: create %s: empty id", schema.name)
@@ -144,15 +144,20 @@ func (s *scope) create(schema *stateSchema, ptr reflect.Value) error {
 		return fmt.Errorf("%w: create %s/%s", err, schema.name, id)
 	}
 
-	s.tracked[stateKey{schema.name, id}] = &trackedState{schema: schema, ptr: ptr, version: 1, snapshot: data}
+	s.tracked[entityKey{schema.name, id}] = &trackedEntity{
+		schema:   schema,
+		ptr:      ptr,
+		version:  1,
+		snapshot: data,
+	}
 
 	return nil
 }
 
-func (s *scope) tracking(schema *stateSchema, ptr reflect.Value) (*trackedState, string, error) {
+func (s *scope) tracking(schema *entitySchema, ptr reflect.Value) (*trackedEntity, string, error) {
 	id := schema.id(ptr.Elem())
 
-	tr, ok := s.tracked[stateKey{schema.name, id}]
+	tr, ok := s.tracked[entityKey{schema.name, id}]
 	switch {
 	case !ok:
 		return nil, id, fmt.Errorf("%w: %s/%s", ErrNotLoaded, schema.name, id)
@@ -163,7 +168,7 @@ func (s *scope) tracking(schema *stateSchema, ptr reflect.Value) (*trackedState,
 	}
 }
 
-func (s *scope) save(schema *stateSchema, ptr reflect.Value) error {
+func (s *scope) save(schema *entitySchema, ptr reflect.Value) error {
 	tr, id, err := s.tracking(schema, ptr)
 	if err != nil {
 		return err
@@ -186,7 +191,7 @@ func (s *scope) save(schema *stateSchema, ptr reflect.Value) error {
 	return nil
 }
 
-func (s *scope) remove(schema *stateSchema, ptr reflect.Value) error {
+func (s *scope) remove(schema *entitySchema, ptr reflect.Value) error {
 	tr, id, err := s.tracking(schema, ptr)
 	if err != nil {
 		return err
@@ -202,7 +207,7 @@ func (s *scope) remove(schema *stateSchema, ptr reflect.Value) error {
 }
 
 // dirty reports whether ptr differs from what was last read or written.
-func (s *scope) dirty(tr *trackedState, ptr reflect.Value) (bool, error) {
+func (s *scope) dirty(tr *trackedEntity, ptr reflect.Value) (bool, error) {
 	data, err := s.env.codec.Marshal(ptr.Interface())
 	if err != nil {
 		return false, err
@@ -273,19 +278,19 @@ func (s *scope) commit() error {
 //
 // Within one unit of work, Get and Find return the same pointer for the same
 // state (identity map).
-type Repo[S State] struct {
+type Repo[S Entity] struct {
 	sc     *scope
-	schema *stateSchema
+	schema *entitySchema
 	err    error
 }
 
-func repoOf[S State](sc *scope) *Repo[S] {
+func repoOf[S Entity](sc *scope) *Repo[S] {
 	t := reflect.TypeFor[S]()
 	if sc.allow != nil && !sc.allow[t] {
 		return &Repo[S]{err: fmt.Errorf("%w: %s", ErrNotMember, t)}
 	}
 
-	schema, err := sc.env.stateOf(t)
+	schema, err := sc.env.entityOf(t)
 
 	return &Repo[S]{sc: sc, schema: schema, err: err}
 }

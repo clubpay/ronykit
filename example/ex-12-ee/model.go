@@ -15,7 +15,7 @@ type Item struct {
 	Price int64
 }
 
-func (Item) StateName() string { return "item" }
+func (Item) EntityName() string { return "item" }
 
 // Inventory is the stock of one item; its ID is the item ID. OnHand counts
 // physical units, Reserved the units held by open orders.
@@ -25,7 +25,7 @@ type Inventory struct {
 	Reserved int
 }
 
-func (Inventory) StateName() string { return "inventory" }
+func (Inventory) EntityName() string { return "inventory" }
 
 func (i *Inventory) Available() int { return i.OnHand - i.Reserved }
 
@@ -41,7 +41,7 @@ type Order struct {
 	SubmittedAt time.Time
 }
 
-func (Order) StateName() string { return "order" }
+func (Order) EntityName() string { return "order" }
 
 // OrderLine is one item in an order. While the order is open, its Quantity is
 // reserved on the item's Inventory; checkout turns the reservation into a
@@ -55,7 +55,7 @@ type OrderLine struct {
 	Quantity int
 }
 
-func (OrderLine) StateName() string { return "order-line" }
+func (OrderLine) EntityName() string { return "order-line" }
 
 var errInvalidLineID = errors.New("invalid order line id")
 
@@ -86,17 +86,17 @@ func (b *BasketLine) Load(ctx *ee.LoadCtx, id string) error {
 
 	var err error
 
-	b.Order, err = ctx.States[Order]().Get(orderID)
+	b.Order, err = ctx.Entities[Order]().Get(orderID)
 	if err != nil {
 		return err
 	}
 
-	b.Inventory, err = ctx.States[Inventory]().Get(itemID)
+	b.Inventory, err = ctx.Entities[Inventory]().Get(itemID)
 	if err != nil {
 		return err
 	}
 
-	b.Line, err = ctx.States[OrderLine]().Get(id)
+	b.Line, err = ctx.Entities[OrderLine]().Get(id)
 	if errors.Is(err, ee.ErrNotFound) {
 		return nil
 	}
@@ -116,7 +116,7 @@ type OrderAgg struct {
 func (OrderAgg) AggregateName() string { return "order" }
 
 func (a *OrderAgg) Load(ctx *ee.LoadCtx, id string) error {
-	o, err := ctx.States[Order]().Get(id)
+	o, err := ctx.Entities[Order]().Get(id)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (a *OrderAgg) Load(ctx *ee.LoadCtx, id string) error {
 	a.Order = o
 	a.Stock = map[string]*Inventory{}
 
-	for l, err := range ctx.States[OrderLine]().Find(ee.Where("OrderID", id).OrderBy("ItemID", false)) {
+	for l, err := range ctx.Entities[OrderLine]().Find(ee.Where("OrderID", id).OrderBy("ItemID", false)) {
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func (a *OrderAgg) Load(ctx *ee.LoadCtx, id string) error {
 	}
 
 	for _, l := range a.Lines {
-		inv, err := ctx.States[Inventory]().Get(l.ItemID)
+		inv, err := ctx.Entities[Inventory]().Get(l.ItemID)
 		if err != nil {
 			return err
 		}

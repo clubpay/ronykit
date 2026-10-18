@@ -10,41 +10,41 @@ import (
 	"github.com/clubpay/ronykit/x/rkit"
 )
 
-// StateController owns one state type S.
-type StateController[S State] struct {
+// EntityController owns one entity type S.
+type EntityController[S Entity] struct {
 	env     *Env
-	schema  *stateSchema
+	schema  *entitySchema
 	actions map[string]*action
 }
 
-// NewStateController registers S under S.StateName().
-func NewStateController[S State](env *Env) (*StateController[S], error) {
+// NewEntityController registers S under S.EntityName().
+func NewEntityController[S Entity](env *Env) (*EntityController[S], error) {
 	var zero S
 
 	t := reflect.TypeFor[S]()
 
-	schema, err := parseStateSchema(zero.StateName(), t, env.codec)
+	schema, err := parseEntitySchema(zero.EntityName(), t, env.codec)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &StateController[S]{env: env, schema: schema, actions: map[string]*action{}}
+	c := &EntityController[S]{env: env, schema: schema, actions: map[string]*action{}}
 
 	err = env.register(func() error {
-		if _, ok := env.states[t]; ok {
-			return fmt.Errorf("%w: state %s", ErrAlreadyRegistered, t)
+		if _, ok := env.entities[t]; ok {
+			return fmt.Errorf("%w: entity %s", ErrAlreadyRegistered, t)
 		}
 
-		if prev, ok := env.statesByName[schema.name]; ok {
-			return fmt.Errorf("%w: state name %q is used by %s", ErrAlreadyRegistered, schema.name, prev.typ)
+		if prev, ok := env.entitiesByName[schema.name]; ok {
+			return fmt.Errorf("%w: entity name %q is used by %s", ErrAlreadyRegistered, schema.name, prev.typ)
 		}
 
 		if err := env.addController(c.owner(), c); err != nil {
 			return err
 		}
 
-		env.states[t] = schema
-		env.statesByName[schema.name] = schema
+		env.entities[t] = schema
+		env.entitiesByName[schema.name] = schema
 
 		return nil
 	})
@@ -55,11 +55,11 @@ func NewStateController[S State](env *Env) (*StateController[S], error) {
 	return c, nil
 }
 
-func (c *StateController[S]) Name() string { return c.schema.name }
+func (c *EntityController[S]) Name() string { return c.schema.name }
 
 // Get reads one state through a read-only transaction, which the store may
 // serve from a replica.
-func (c *StateController[S]) Get(ctx context.Context, id string) (S, error) {
+func (c *EntityController[S]) Get(ctx context.Context, id string) (S, error) {
 	var out S
 
 	err := c.env.view(ctx, nil, func(sc *scope) error {
@@ -76,7 +76,7 @@ func (c *StateController[S]) Get(ctx context.Context, id string) (S, error) {
 
 // Find streams the states matching q from one read-only transaction (possibly
 // on a replica), which stays open while the caller iterates.
-func (c *StateController[S]) Find(ctx context.Context, q Query) iter.Seq2[S, error] {
+func (c *EntityController[S]) Find(ctx context.Context, q Query) iter.Seq2[S, error] {
 	return func(yield func(S, error) bool) {
 		var zero S
 
@@ -103,7 +103,7 @@ func (c *StateController[S]) Find(ctx context.Context, q Query) iter.Seq2[S, err
 	}
 }
 
-func (c *StateController[S]) Create(ctx context.Context, v S) error {
+func (c *EntityController[S]) Create(ctx context.Context, v S) error {
 	return c.env.unit(ctx, nil, false, func(sc *scope) error {
 		return repoOf[S](sc).Create(&v)
 	})
@@ -111,7 +111,7 @@ func (c *StateController[S]) Create(ctx context.Context, v S) error {
 
 // Update loads the state, applies fn and saves it, retrying the whole
 // read-modify-write on version conflict.
-func (c *StateController[S]) Update(ctx context.Context, id string, fn func(*S) error) error {
+func (c *EntityController[S]) Update(ctx context.Context, id string, fn func(*S) error) error {
 	return c.env.unit(ctx, nil, true, func(sc *scope) error {
 		r := repoOf[S](sc)
 
@@ -128,7 +128,7 @@ func (c *StateController[S]) Update(ctx context.Context, id string, fn func(*S) 
 	})
 }
 
-func (c *StateController[S]) Delete(ctx context.Context, id string) error {
+func (c *EntityController[S]) Delete(ctx context.Context, id string) error {
 	return c.env.unit(ctx, nil, true, func(sc *scope) error {
 		r := repoOf[S](sc)
 
@@ -144,7 +144,7 @@ func (c *StateController[S]) Delete(ctx context.Context, id string) error {
 // Action makes the controller the consumer of event E. Each event has exactly
 // one consumer per Env. The handler runs in one transaction together with
 // every Save and Emit it makes.
-func (c *StateController[S]) Action[E Event](h func(*ActionCtx[S, E]) error, opts ...ActionOption) error {
+func (c *EntityController[S]) Action[E Event](h func(*ActionCtx[S, E]) error, opts ...ActionOption) error {
 	a, err := newAction[E](c.owner(), opts)
 	if err != nil {
 		return err
@@ -176,11 +176,11 @@ func (c *StateController[S]) Action[E Event](h func(*ActionCtx[S, E]) error, opt
 	})
 }
 
-func (c *StateController[S]) owner() string { return "state:" + c.schema.name }
+func (c *EntityController[S]) owner() string { return "entity:" + c.schema.name }
 
-func (c *StateController[S]) subscribedEvents() []string { return eventNames(c.actions) }
+func (c *EntityController[S]) subscribedEvents() []string { return eventNames(c.actions) }
 
-func (c *StateController[S]) handle(ctx context.Context, msg bus.Message) error {
+func (c *EntityController[S]) handle(ctx context.Context, msg bus.Message) error {
 	return c.env.dispatch(ctx, c.owner(), c.actions, nil, msg)
 }
 

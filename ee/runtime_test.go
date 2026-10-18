@@ -22,14 +22,14 @@ type Order struct {
 	Status   string
 }
 
-func (Order) StateName() string { return "order" }
+func (Order) EntityName() string { return "order" }
 
 type Receipt struct {
 	ID      string `ee:"id"`
 	OrderID string
 }
 
-func (Receipt) StateName() string { return "receipt" }
+func (Receipt) EntityName() string { return "receipt" }
 
 type Item struct {
 	ID      string `ee:"id"`
@@ -37,7 +37,7 @@ type Item struct {
 	SKU     string
 }
 
-func (Item) StateName() string { return "item" }
+func (Item) EntityName() string { return "item" }
 
 type Payment struct {
 	ID      string `ee:"id"`
@@ -46,7 +46,7 @@ type Payment struct {
 	Amount  int
 }
 
-func (Payment) StateName() string { return "payment" }
+func (Payment) EntityName() string { return "payment" }
 
 type OrderPaid struct {
 	OrderID  string
@@ -81,14 +81,14 @@ type OrderAgg struct {
 func (OrderAgg) AggregateName() string { return "order-agg" }
 
 func (a *OrderAgg) Load(ctx *ee.LoadCtx, id string) error {
-	o, err := ctx.States[Order]().Get(id)
+	o, err := ctx.Entities[Order]().Get(id)
 	if err != nil {
 		return err
 	}
 
 	a.Order = o
 
-	for it, err := range ctx.States[Item]().Find(ee.Where("OrderID", id)) {
+	for it, err := range ctx.Entities[Item]().Find(ee.Where("OrderID", id)) {
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (a *OrderAgg) Load(ctx *ee.LoadCtx, id string) error {
 
 	a.Payments = map[string]Payment{}
 
-	for p, err := range ctx.States[Payment]().Find(ee.Where("OrderID", id)) {
+	for p, err := range ctx.Entities[Payment]().Find(ee.Where("OrderID", id)) {
 		if err != nil {
 			return err
 		}
@@ -113,10 +113,10 @@ type fixture struct {
 	env      *ee.Env
 	store    *mem.Store
 	bus      *mem.Bus
-	orders   *ee.StateController[Order]
-	receipts *ee.StateController[Receipt]
-	items    *ee.StateController[Item]
-	payments *ee.StateController[Payment]
+	orders   *ee.EntityController[Order]
+	receipts *ee.EntityController[Receipt]
+	items    *ee.EntityController[Item]
+	payments *ee.EntityController[Payment]
 	aggs     *ee.AggregateController[OrderAgg]
 }
 
@@ -125,10 +125,10 @@ func newFixture(t *testing.T, opts ...ee.Option) *fixture {
 
 	f := &fixture{store: mem.NewStore(), bus: mem.NewBus(mem.RetryBackoff(time.Millisecond), mem.MaxAttempts(3))}
 	f.env = ee.MustNew(append([]ee.Option{ee.WithStore(f.store), ee.WithBus(f.bus), ee.WithOutboxPoll(10 * time.Millisecond)}, opts...)...)
-	f.orders = must(ee.NewStateController[Order](f.env))
-	f.receipts = must(ee.NewStateController[Receipt](f.env))
-	f.items = must(ee.NewStateController[Item](f.env))
-	f.payments = must(ee.NewStateController[Payment](f.env))
+	f.orders = must(ee.NewEntityController[Order](f.env))
+	f.receipts = must(ee.NewEntityController[Receipt](f.env))
+	f.items = must(ee.NewEntityController[Item](f.env))
+	f.payments = must(ee.NewEntityController[Payment](f.env))
 	f.aggs = must(ee.NewAggregateController[OrderAgg](f.env))
 
 	t.Cleanup(func() {
@@ -174,7 +174,7 @@ func TestActionSaveEmitAndFilter(t *testing.T) {
 	ctx := t.Context()
 
 	err := f.orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
-		o, err := ctx.State()
+		o, err := ctx.Entity()
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func touchAction(done chan<- struct{}) func(ctx *ee.ActionCtx[Order, OrderTouche
 	return func(ctx *ee.ActionCtx[Order, OrderTouched]) error {
 		defer func() { done <- struct{}{} }()
 
-		o, err := ctx.State()
+		o, err := ctx.Entity()
 		if err != nil {
 			return err
 		}
@@ -311,14 +311,14 @@ func TestFailedActionRollsBack(t *testing.T) {
 		mu.Unlock()
 	}))
 	f.env = ee.MustNew(ee.WithStore(f.store), ee.WithBus(f.bus))
-	orders := must(ee.NewStateController[Order](f.env))
-	receipts := must(ee.NewStateController[Receipt](f.env))
+	orders := must(ee.NewEntityController[Order](f.env))
+	receipts := must(ee.NewEntityController[Receipt](f.env))
 	t.Cleanup(func() { _ = f.env.Close(); _ = f.bus.Close() })
 
 	ctx := t.Context()
 
 	_ = orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
-		o, _ := ctx.State()
+		o, _ := ctx.Entity()
 		o.Status = "paid"
 		_ = ctx.Save(o)
 		_ = ctx.Emit(ReceiptRequested{OrderID: o.ID})
@@ -513,7 +513,7 @@ func TestAggregateAction(t *testing.T) {
 	}
 }
 
-func TestSaveRequiresLoadedState(t *testing.T) {
+func TestSaveRequiresLoadedEntity(t *testing.T) {
 	f := newFixture(t)
 	done := make(chan error, 1)
 
@@ -550,7 +550,7 @@ func TestMiddlewareOrderAndSkip(t *testing.T) {
 				note(name + ">")
 				defer note("<" + name)
 
-				if d.Owner != "state:order" || d.Event != "order.touched" || d.Tx == nil {
+				if d.Owner != "entity:order" || d.Event != "order.touched" || d.Tx == nil {
 					t.Errorf("delivery = %+v", d)
 				}
 
@@ -601,7 +601,7 @@ func TestDedup(t *testing.T) {
 			handled := make(chan struct{}, 2)
 
 			_ = f.orders.Action(func(ctx *ee.ActionCtx[Order, OrderTouched]) error {
-				o, err := ctx.State()
+				o, err := ctx.Entity()
 				if err != nil {
 					return err
 				}
@@ -644,10 +644,10 @@ type reserved struct {
 	ID string `ee:"id"`
 }
 
-func (reserved) StateName() string { return "ee.mine" }
+func (reserved) EntityName() string { return "ee.mine" }
 
-func TestReservedStatePrefix(t *testing.T) {
-	if _, err := ee.NewStateController[reserved](ee.MustNew()); !errors.Is(err, ee.ErrInvalidSchema) {
+func TestReservedEntityPrefix(t *testing.T) {
+	if _, err := ee.NewEntityController[reserved](ee.MustNew()); !errors.Is(err, ee.ErrInvalidSchema) {
 		t.Errorf("want ErrInvalidSchema, got %v", err)
 	}
 }

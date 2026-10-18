@@ -75,7 +75,7 @@ func (e *Env) unit(
 	return err
 }
 
-// dispatch is the bus handler shared by state and aggregate controllers.
+// dispatch is the bus handler shared by entity and aggregate controllers.
 func (e *Env) dispatch(
 	ctx context.Context,
 	owner string,

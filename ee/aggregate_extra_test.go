@@ -30,7 +30,7 @@ type valueAgg struct {
 func (valueAgg) AggregateName() string { return "value-agg" }
 
 func (a *valueAgg) Load(ctx *ee.LoadCtx, id string) error {
-	o, err := ctx.States[Order]().Get(id)
+	o, err := ctx.Entities[Order]().Get(id)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ type saverAgg struct {
 func (saverAgg) AggregateName() string { return "saver-agg" }
 
 func (a *saverAgg) Load(ctx *ee.LoadCtx, id string) error {
-	o, err := ctx.States[Order]().Get(id)
+	o, err := ctx.Entities[Order]().Get(id)
 	if err != nil {
 		return err
 	}
@@ -83,12 +83,12 @@ func (a *saverAgg) Save(ctx *ee.SaveCtx) error {
 	a.Order.Amount += 100
 
 	// The root is tracked when the aggregate was loaded; on Create it is new.
-	if err := ctx.States[Order]().Save(a.Order); err != nil {
+	if err := ctx.Entities[Order]().Save(a.Order); err != nil {
 		if !errors.Is(err, ee.ErrNotLoaded) {
 			return err
 		}
 
-		return ctx.States[Order]().Create(a.Order)
+		return ctx.Entities[Order]().Create(a.Order)
 	}
 
 	return nil
@@ -104,7 +104,7 @@ type phantomAgg struct {
 func (phantomAgg) AggregateName() string { return "phantom-agg" }
 
 func (a *phantomAgg) Load(ctx *ee.LoadCtx, id string) error {
-	o, err := ctx.States[Order]().Get(id)
+	o, err := ctx.Entities[Order]().Get(id)
 	if err != nil {
 		return err
 	}
@@ -451,7 +451,7 @@ func TestAggregateActionAPI(t *testing.T) {
 				t.Error("Tx() must not be nil")
 			}
 
-			if _, err := c.States[Item]().Get("missing"); !errors.Is(err, ee.ErrNotFound) {
+			if _, err := c.Entities[Item]().Get("missing"); !errors.Is(err, ee.ErrNotFound) {
 				t.Errorf("states[get missing] = %v", err)
 			}
 
@@ -570,9 +570,9 @@ func TestAggregateActionRollback(t *testing.T) {
 	env := ee.MustNew(ee.WithStore(mem.NewStore()), ee.WithBus(bs),
 		ee.WithOutboxPoll(5*time.Millisecond),
 		ee.WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
-	orders := must(ee.NewStateController[Order](env))
-	items := must(ee.NewStateController[Item](env))
-	_ = must(ee.NewStateController[Payment](env))
+	orders := must(ee.NewEntityController[Order](env))
+	items := must(ee.NewEntityController[Item](env))
+	_ = must(ee.NewEntityController[Payment](env))
 	aggs := must(ee.NewAggregateController[OrderAgg](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 
@@ -641,9 +641,9 @@ func TestAggregateUndecodableEventDropped(t *testing.T) {
 	bs := mem.NewBus(mem.RetryBackoff(time.Millisecond), mem.MaxAttempts(2))
 	env := ee.MustNew(ee.WithStore(st), ee.WithBus(bs),
 		ee.WithLogger(slog.New(slog.NewTextHandler(io.Discard, nil))))
-	_ = must(ee.NewStateController[Order](env))
-	_ = must(ee.NewStateController[Item](env))
-	_ = must(ee.NewStateController[Payment](env))
+	_ = must(ee.NewEntityController[Order](env))
+	_ = must(ee.NewEntityController[Item](env))
+	_ = must(ee.NewEntityController[Payment](env))
 	aggs := must(ee.NewAggregateController[OrderAgg](env))
 	t.Cleanup(func() { _ = env.Close(); _ = bs.Close() })
 

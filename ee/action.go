@@ -8,7 +8,7 @@ import (
 	"github.com/clubpay/ronykit/ee/store"
 )
 
-// action is the untyped form of a registered action, shared by state and
+// action is the untyped form of a registered action, shared by entity and
 // aggregate controllers.
 type action struct {
 	event  string
@@ -60,9 +60,9 @@ func decodeEvent[E Event](env *Env, msg *bus.Message) (E, error) {
 	return ev, nil
 }
 
-// ActionCtx is what a StateController action handler receives. The embedded
-// Repo operates on the controller's own state type.
-type ActionCtx[S State, E Event] struct {
+// ActionCtx is what an EntityController action handler receives. The embedded
+// Repo operates on the controller's own entity type.
+type ActionCtx[S Entity, E Event] struct {
 	context.Context //nolint:containedctx // handler contexts are request-scoped by design
 	*Repo[S]
 
@@ -74,9 +74,9 @@ type ActionCtx[S State, E Event] struct {
 func (c *ActionCtx[S, E]) Event() E   { return c.event }
 func (c *ActionCtx[S, E]) Meta() Meta { return c.meta }
 
-// State loads the state whose id is the event's Key. ErrNoKey if E does not
+// Entity loads the entity whose id is the event's Key. ErrNoKey if E does not
 // implement Keyed.
-func (c *ActionCtx[S, E]) State() (*S, error) {
+func (c *ActionCtx[S, E]) Entity() (*S, error) {
 	k, ok := any(c.event).(Keyed)
 	if !ok {
 		return nil, ErrNoKey
@@ -89,8 +89,8 @@ func (c *ActionCtx[S, E]) State() (*S, error) {
 // (e.g. postgres.PgxTx to run sqlc-generated code in the same transaction).
 func (c *ActionCtx[S, E]) Tx() store.Tx { return c.sc.tx }
 
-// States gives access to another state type in the same transaction.
-func (c *ActionCtx[S, E]) States[X State]() *Repo[X] { return repoOf[X](c.sc) }
+// Entities gives access to another entity type in the same transaction.
+func (c *ActionCtx[S, E]) Entities[X Entity]() *Repo[X] { return repoOf[X](c.sc) }
 
 // Emit queues an event in the transactional outbox; it is published only if
 // the action commits.

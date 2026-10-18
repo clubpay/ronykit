@@ -1,7 +1,7 @@
 // Package postgres is a Postgres implementation of the ee store contract
 // (github.com/clubpay/ronykit/ee/store), built on pgx and sqlc.
 //
-// States live in one JSONB table, so the ee codec must produce JSON (the
+// Entities live in one JSONB table, so the ee codec must produce JSON (the
 // default ee.JSONCodec does). Writes, actions and the outbox always use the
 // primary; read-only View transactions (ee's direct Get/Find) are spread over
 // replicas when any are configured.

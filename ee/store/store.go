@@ -2,7 +2,7 @@
 // implement (in-memory in ee/mem, Postgres and Redis under std/ee/store).
 //
 // Like package bus, it is untyped: backends store Records and never see Go
-// state types. Bootstrapping, migrations and query optimization (indexes,
+// entity types. Bootstrapping, migrations and query optimization (indexes,
 // Redis secondary sets, Lua scripts, ...) are backend specific and exposed by
 // each backend's own API, not by this contract.
 package store
@@ -23,15 +23,15 @@ var (
 	ErrReadOnly = errors.New("store: read-only transaction")
 )
 
-// Record is one persisted state instance.
+// Record is one persisted entity instance.
 type Record struct {
-	// Kind is the state name (StateName()).
+	// Kind is the entity name (EntityName()).
 	Kind string
 	ID   string
 	// Version starts at 1 on insert and is incremented by the store on every
 	// successful update.
 	Version uint64
-	// Data is the state encoded by the ee codec.
+	// Data is the entity encoded by the ee codec.
 	Data []byte
 }
 

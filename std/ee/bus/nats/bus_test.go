@@ -172,7 +172,7 @@ type Order struct {
 	Status string
 }
 
-func (Order) StateName() string { return "order" }
+func (Order) EntityName() string { return "order" }
 
 type OrderPaid struct{ OrderID string }
 
@@ -184,9 +184,9 @@ func TestWithEE(t *testing.T) {
 	t.Cleanup(func() { _ = b.Close() })
 
 	env := ee.MustNew(ee.WithBus(b), ee.WithStore(mem.NewStore()))
-	orders, _ := ee.NewStateController[Order](env)
+	orders, _ := ee.NewEntityController[Order](env)
 	_ = orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
-		o, err := ctx.State()
+		o, err := ctx.Entity()
 		if err != nil {
 			return err
 		}

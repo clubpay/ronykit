@@ -32,10 +32,10 @@ type Env struct {
 
 	middlewares []Middleware
 
-	mu           sync.RWMutex
-	started      bool
-	states       map[reflect.Type]*stateSchema
-	statesByName map[string]*stateSchema
+	mu             sync.RWMutex
+	started        bool
+	entities       map[reflect.Type]*entitySchema
+	entitiesByName map[string]*entitySchema
 	// consumers maps an event name to the controller that owns it. An event
 	// has exactly one consuming action.
 	consumers   map[string]string
@@ -47,7 +47,7 @@ type Env struct {
 	wg     sync.WaitGroup
 }
 
-// controller is the untyped view the Env has of state and aggregate
+// controller is the untyped view the Env has of entity and aggregate
 // controllers, used to subscribe them on Start.
 type controller interface {
 	subscribedEvents() []string
@@ -77,16 +77,16 @@ func WithAutoSave() Option { return func(e *Env) { e.autoSave = true } }
 
 func New(opts ...Option) (*Env, error) {
 	e := &Env{
-		codec:        JSONCodec,
-		now:          time.Now,
-		log:          slog.Default(),
-		maxRetries:   5,
-		outboxPoll:   time.Second,
-		kick:         make(chan struct{}, 1),
-		states:       map[reflect.Type]*stateSchema{},
-		statesByName: map[string]*stateSchema{},
-		consumers:    map[string]string{},
-		controllers:  map[string]controller{},
+		codec:          JSONCodec,
+		now:            time.Now,
+		log:            slog.Default(),
+		maxRetries:     5,
+		outboxPoll:     time.Second,
+		kick:           make(chan struct{}, 1),
+		entities:       map[reflect.Type]*entitySchema{},
+		entitiesByName: map[string]*entitySchema{},
+		consumers:      map[string]string{},
+		controllers:    map[string]controller{},
 	}
 	for _, o := range opts {
 		o(e)
@@ -187,14 +187,14 @@ func (e *Env) Send[E Event](ctx context.Context, ev E, opts ...SendOption) error
 	return e.bus.Publish(ctx, env)
 }
 
-// Schemas describes every registered state schema. Storage backends may use
+// Schemas describes every registered entity schema. Storage backends may use
 // it in their bootstrap/migration helpers.
-func (e *Env) Schemas() []StateSchemaInfo {
+func (e *Env) Schemas() []EntitySchemaInfo {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
-	out := make([]StateSchemaInfo, 0, len(e.states))
-	for _, s := range e.states {
+	out := make([]EntitySchemaInfo, 0, len(e.entities))
+	for _, s := range e.entities {
 		out = append(out, s.info())
 	}
 
@@ -235,13 +235,13 @@ func (e *Env) claim(event, owner string) error {
 	return nil
 }
 
-func (e *Env) stateOf(t reflect.Type) (*stateSchema, error) {
+func (e *Env) entityOf(t reflect.Type) (*entitySchema, error) {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
-	s, ok := e.states[t]
+	s, ok := e.entities[t]
 	if !ok {
-		return nil, fmt.Errorf("%w: state %s", ErrNotRegistered, t)
+		return nil, fmt.Errorf("%w: entity %s", ErrNotRegistered, t)
 	}
 
 	return s, nil

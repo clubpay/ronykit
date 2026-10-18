@@ -1,6 +1,9 @@
 # ee
 
-A typed, event-driven state runtime. Requires Go 1.27 (generic methods).
+A typed, event-driven entity runtime. Requires Go 1.27 (generic methods).
+
+An **entity** is one versioned persisted record (not necessarily a rich domain
+object). An **aggregate** is a loading and save boundary over several entities.
 
 ```go
 type Order struct {
@@ -9,7 +12,7 @@ type Order struct {
 	Status   string
 }
 
-func (Order) StateName() string { return "order" }
+func (Order) EntityName() string { return "order" }
 
 type OrderPaid struct{ OrderID, Merchant string }
 
@@ -19,9 +22,9 @@ func (e OrderPaid) Labels() ee.L    { return ee.L{"merchant": e.Merchant} } // o
 
 env := ee.MustNew(ee.WithBus(b), ee.WithStore(s))
 
-orders, _ := ee.NewStateController[Order](env)
+orders, _ := ee.NewEntityController[Order](env)
 _ = orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
-	o, err := ctx.State() // loads the order whose ID == event Key()
+	o, err := ctx.Entity() // loads the order whose ID == event Key()
 	if err != nil {
 		return err
 	}
@@ -40,10 +43,10 @@ for o, err := range orders.Find(ctx, ee.Where("Merchant", "m1")) { ... }
 Rules enforced at registration:
 
 - every event has exactly one consuming action per Env;
-- state names and controller names are unique;
+- entity names and controller names are unique;
 - `Filter` requires the event to implement `Labeled`;
 - aggregate actions require a keyed event (checked at compile time);
-- aggregate fields must be registered states or tagged `ee:"-"`.
+- aggregate fields must be registered entities or tagged `ee:"-"`.
 
 ## Layout
 
@@ -69,13 +72,13 @@ Files in `ee/`:
 | File                  | Responsibility                                                   |
 |-----------------------|------------------------------------------------------------------|
 | `env.go`              | `Env`, options, registry, `Start`/`Close`, `Send`, `Schemas`     |
-| `schema.go`           | `State`, state schema reflection (`ee:"id"`, queryable fields)   |
+| `schema.go`           | `Entity`, entity schema reflection (`ee:"id"`, queryable fields) |
 | `event.go`            | `Event`, `Keyed`, `Labeled`, `Meta`, send options, envelopes     |
 | `selector.go`         | Label selectors for action filters                               |
 | `query.go`            | `Where(...).And(...)` builder, validated and converted per field |
 | `repo.go`             | Unit of work and `Repo[S]` (Get/Find/Create/Save/Delete)         |
 | `action.go`           | Action registration, `Filter`, `ActionCtx[S, E]`                 |
-| `state_controller.go` | `StateController[S]`                                             |
+| `entity_controller.go` | `EntityController[S]`                                             |
 | `aggregate.go`        | `Aggregate`, `AggregateController[A]`, `LoadCtx`, `AggregateCtx` |
 | `runtime.go`          | Unit of work + conflict retry, dispatch, outbox relay            |
 | `middleware.go`       | `Middleware`, `Delivery`, `WithMiddleware`, `Dedup`              |
@@ -87,12 +90,12 @@ Files in `ee/`:
   runs in one store transaction. Saves and deletes are written immediately
   (so save → read → save works); emitted events go to the outbox in the same
   transaction and are published by the relay only after commit.
-- **Optimistic concurrency.** Every state has a version. `Save`/`Delete` only
-  accept states loaded in the same unit of work and fail with `ErrConflict` if
+- **Optimistic concurrency.** Every entity has a version. `Save`/`Delete` only
+  accept entities loaded in the same unit of work and fail with `ErrConflict` if
   someone else wrote first; the whole unit is then re-run (`WithMaxRetries`,
   default 5). Aggregates always write their root, so concurrent saves of one
   aggregate serialize.
-- **Reads.** Direct `StateController.Get`/`Find` and `AggregateController.Get`
+- **Reads.** Direct `EntityController.Get`/`Find` and `AggregateController.Get`
   run in a read-only `View`, which a backend may serve from a replica (and so
   may lag). Actions and all writes use the primary.
 - **Backend escape hatch.** Handler contexts expose `Tx()`, the store
@@ -111,7 +114,7 @@ Files in `ee/`:
   atomically with the handler; it may also ignore it and use its own resources.
   `ee.Dedup` skips already-handled envelope IDs with a marker written in the
   same transaction, giving exactly-once effects over at-least-once delivery.
-  State names starting with `ee.` are reserved for such internal kinds.
+  Entity names starting with `ee.` are reserved for such internal kinds.
 
 ## Status
 

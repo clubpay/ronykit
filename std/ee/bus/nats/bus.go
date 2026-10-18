@@ -496,7 +496,7 @@ func (s *subscription) heartbeat(msg jetstream.Msg) (stop func()) {
 }
 
 // consumerName derives a durable name from an ee group, which may contain
-// characters NATS rejects (e.g. "state:order"); a hash of the original keeps
+// characters NATS rejects (e.g. "entity:order"); a hash of the original keeps
 // sanitized names distinct.
 func consumerName(group string, partition int) string {
 	h := fnv.New32a()
