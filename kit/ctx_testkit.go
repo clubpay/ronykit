@@ -71,9 +71,9 @@ func Expect[IN, OUT, ERR Message](ctx *TestContext, in IN, out *OUT, err *ERR) e
 			default:
 				return ErrUnexpectedEnvelope
 			case OUT:
-				*out, _ = e.GetMsg().(OUT)
+				*out = rkit.TryCast[OUT](e.GetMsg())
 			case ERR:
-				*err, _ = e.GetMsg().(ERR)
+				*err = rkit.TryCast[ERR](e.GetMsg())
 			}
 
 			return nil

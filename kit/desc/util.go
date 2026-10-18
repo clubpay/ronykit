@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func typ(prefix string, t reflect.Type) string {
@@ -39,9 +40,7 @@ func typ(prefix string, t reflect.Type) string {
 		return typ(prefix, t.Elem())
 	case reflect.Interface:
 		in := t.Name()
-		if in == "" {
-			in = "any"
-		}
+		in = rkit.Coalesce(in, "any")
 
 		return fmt.Sprintf("%s%s", prefix, in)
 	case reflect.Struct:

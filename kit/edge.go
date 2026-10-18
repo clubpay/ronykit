@@ -375,9 +375,7 @@ func (s *EdgeServer) shutdown(ctx context.Context) {
 		}
 	}
 
-	if s.shutdownTimeout == 0 {
-		s.shutdownTimeout = time.Minute
-	}
+	s.shutdownTimeout = rkit.Coalesce(s.shutdownTimeout, time.Minute)
 
 	waitCh := make(chan struct{}, 1)
 

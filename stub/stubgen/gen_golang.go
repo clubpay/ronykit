@@ -16,9 +16,7 @@ func NewGolangEngine(cfg GolangConfig) GenEngine {
 		cfg: cfg,
 	}
 
-	if ge.cfg.Filename == "" {
-		ge.cfg.Filename = "stub.go"
-	}
+	ge.cfg.Filename = rkit.Coalesce(ge.cfg.Filename, "stub.go")
 
 	return ge
 }

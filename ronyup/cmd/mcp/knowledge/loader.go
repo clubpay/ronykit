@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -185,9 +187,7 @@ func loadCharacteristics(fsys fs.FS, base *Base) error {
 		doc.FileHint = strings.TrimSpace(sections["File-Level Hint"])
 		doc.Slug = strings.TrimSuffix(e.Name(), ".md")
 
-		if doc.Name == "" {
-			doc.Name = doc.Slug
-		}
+		doc.Name = rkit.Coalesce(doc.Name, doc.Slug)
 
 		base.Characteristics = append(base.Characteristics, doc)
 	}

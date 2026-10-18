@@ -1,6 +1,9 @@
 package fastws
 
-import "github.com/clubpay/ronykit/kit"
+import (
+	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/x/rkit"
+)
 
 type Selector struct {
 	Predicate string
@@ -18,12 +21,7 @@ func RPC(predicate string) Selector {
 
 // RPCs is a shortcut for multiple RPC selectors
 func RPCs(predicate ...string) []kit.RouteSelector {
-	selectors := make([]kit.RouteSelector, 0, len(predicate))
-	for _, p := range predicate {
-		selectors = append(selectors, RPC(p))
-	}
-
-	return selectors
+	return rkit.Map(predicate, func(p string) kit.RouteSelector { return RPC(p) })
 }
 
 func (r Selector) GetEncoding() kit.Encoding {

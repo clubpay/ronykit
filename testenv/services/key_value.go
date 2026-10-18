@@ -36,7 +36,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
-					req, _ := ctx.In().GetMsg().(*SetRequest)
+					req := rkit.TryCast[*SetRequest](ctx.In().GetMsg())
 
 					err := sharedKV.Set(ctx, req.Key, ctx.ClusterID(), 0)
 					if err != nil {
@@ -59,7 +59,7 @@ var SimpleKeyValueService kit.ServiceBuilder = desc.NewService("simpleKeyValueSe
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
-					req, _ := ctx.In().GetMsg().(*GetRequest)
+					req := rkit.TryCast[*GetRequest](ctx.In().GetMsg())
 
 					value := ctx.LocalStore().Get(req.Key)
 					if value == nil {

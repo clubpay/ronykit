@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"slices"
 	"sort"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -127,7 +126,7 @@ func getAllWorkspaceDirectories(_ *cobra.Command) ([]string, error) {
 	dirs := make([]string, 0, len(f.Use))
 	for _, u := range f.Use {
 		if len(opt.ModulesFilter) > 0 {
-			filtered := slices.Contains(opt.ModulesFilter, u.Path)
+			filtered := rkit.Contains(opt.ModulesFilter, u.Path)
 
 			if !filtered {
 				continue

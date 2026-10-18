@@ -18,9 +18,7 @@ func setupWorkspace(ctx context.Context, req WorkspaceRequest, log Logger) error
 		return fmt.Errorf("workspace path is required")
 	}
 
-	if req.Kind == "" {
-		req.Kind = KindBackend
-	}
+	req.Kind = rkit.Coalesce(req.Kind, KindBackend)
 
 	switch req.Kind {
 	case KindBackend, KindFullstack, KindFrontend:
@@ -31,13 +29,9 @@ func setupWorkspace(ctx context.Context, req WorkspaceRequest, log Logger) error
 		)
 	}
 
-	if req.Module == "" {
-		req.Module = "github.com/your/repo"
-	}
+	req.Module = rkit.Coalesce(req.Module, "github.com/your/repo")
 
-	if req.AppName == "" {
-		req.AppName = "myapp"
-	}
+	req.AppName = rkit.Coalesce(req.AppName, "myapp")
 
 	resolved, err := resolveSkillSelection(req.Skills, req.Kind)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/internal"
+	"github.com/clubpay/ronykit/x/rkit"
 	"github.com/clubpay/ronykit/x/telemetry/logkit"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -36,7 +37,7 @@ var Cmd = &cobra.Command{
 			logger:       l.With("MCP").SLog(),
 		})
 
-		port, _ := cmd.Flags().GetInt("port")
+		port := rkit.Ok(cmd.Flags().GetInt("port"))
 		if port > 0 {
 			handler := mcpsdk.NewStreamableHTTPHandler(
 				func(_ *http.Request) *mcpsdk.Server {

@@ -266,7 +266,7 @@ func (c *cluster) getTopic(id string) *pubsub.Topic {
 		return t
 	}
 
-	t, _ = c.ps.Join(fmt.Sprintf("%s-%s", c.name, id))
+	t = rkit.Ok(c.ps.Join(fmt.Sprintf("%s-%s", c.name, id)))
 	c.topics[id] = t
 
 	return t

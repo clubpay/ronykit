@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"reflect"
-	"slices"
 	"time"
 
 	"github.com/clubpay/ronykit/x/rkit"
@@ -168,7 +167,7 @@ type Activity[REQ, RES, STATE any] struct {
 }
 
 func (a *Activity[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
-	return slices.Contains(a.registered, b)
+	return rkit.Contains(a.registered, b)
 }
 
 func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, setDefaultBackend bool) {
@@ -243,13 +242,9 @@ type ExecuteActivityOptions struct {
 }
 
 func applyActivityTimeouts(opts ExecuteActivityOptions) ExecuteActivityOptions {
-	if opts.StartToCloseTimeout == 0 {
-		opts.StartToCloseTimeout = time.Minute
-	}
+	opts.StartToCloseTimeout = rkit.Coalesce(opts.StartToCloseTimeout, time.Minute)
 
-	if opts.ScheduleToCloseTimeout == 0 {
-		opts.ScheduleToCloseTimeout = 24 * time.Hour
-	}
+	opts.ScheduleToCloseTimeout = rkit.Coalesce(opts.ScheduleToCloseTimeout, 24*time.Hour)
 
 	return opts
 }

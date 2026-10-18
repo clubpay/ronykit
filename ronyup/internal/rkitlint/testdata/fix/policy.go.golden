@@ -48,6 +48,13 @@ func asString(v any) string {
 	return s
 }
 
+func parsed(s string) int {
+	n := rkit.StrToInt(s)
+	m := rkit.StrToInt(s) //nolint:errcheck,gosec
+
+	return n + m
+}
+
 func view(b []byte) string {
 	return rkit.B2S(b)
 }

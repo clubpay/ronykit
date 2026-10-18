@@ -305,7 +305,7 @@ func (pc ParsedContract) OKResponse() ParsedResponse {
 }
 
 func (pc ParsedContract) IsPathParam(name string) bool {
-	return slices.Contains(pc.PathParams, name)
+	return rkit.Contains(pc.PathParams, name)
 }
 
 type ParsedRequest struct {
@@ -370,7 +370,7 @@ func (pm ParsedMessage) GoName() string {
 }
 
 func (pm ParsedMessage) JSON() string {
-	mJSON, _ := json.MarshalIndent(pm.original, "", "  ") //nolint:errchkjson
+	mJSON := rkit.Ok(json.MarshalIndent(pm.original, "", "  "))
 
 	return rkit.B2S(mJSON)
 }
@@ -547,9 +547,7 @@ func ParseService(svc *Service) ParsedService {
 	}
 
 	for _, c := range svc.Contracts {
-		if c.DefaultError == nil {
-			c.DefaultError = svc.DefaultError
-		}
+		c.DefaultError = rkit.Coalesce(c.DefaultError, svc.DefaultError)
 
 		c.PossibleErrors = append(c.PossibleErrors, svc.PossibleErrors...)
 		pd.Contracts = append(pd.Contracts, pd.parseContract(c)...)

@@ -36,12 +36,7 @@ var FuncMaps = map[string]any{
 	// strQuote quotes each element in a string slice. Unlike sprig's quote (which wraps
 	// individual strings), this operates on slices and uses Go's %q formatting.
 	"strQuote": func(elems []string) []string {
-		out := make([]string, len(elems))
-		for i, e := range elems {
-			out[i] = fmt.Sprintf("%q", e)
-		}
-
-		return out
+		return rkit.Map(elems, func(e string) string { return fmt.Sprintf("%q", e) })
 	},
 
 	// Case conversion using x/rkit (project-specific conventions).

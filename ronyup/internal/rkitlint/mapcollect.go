@@ -4,6 +4,8 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // checkMapCollect matches a slice declaration followed by a loop that only appends a map's keys
@@ -171,7 +173,7 @@ func isZeroLit(e ast.Expr) bool {
 }
 
 func identOf(e ast.Expr) *ast.Ident {
-	id, _ := e.(*ast.Ident)
+	id := rkit.TryCast[*ast.Ident](e)
 
 	return id
 }

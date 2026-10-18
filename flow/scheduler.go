@@ -156,9 +156,7 @@ func (sc ScheduleSpec) toScheduleSpec() client.ScheduleSpec {
 
 func (sdk *SDK) CreateSchedule(ctx context.Context, req CreateScheduleRequest) (ScheduleHandle, error) {
 	spec := req.Spec.toScheduleSpec()
-	if spec.TimeZoneName == "" {
-		spec.TimeZoneName = req.TimezoneName
-	}
+	spec.TimeZoneName = rkit.Coalesce(spec.TimeZoneName, req.TimezoneName)
 
 	opt := client.ScheduleOptions{
 		ID:   req.ID,

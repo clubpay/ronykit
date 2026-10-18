@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal/rkitlint"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/spf13/cobra"
 )
@@ -88,7 +89,7 @@ func runLint(cmd *cobra.Command, patterns []string) int {
 		return exitError
 	}
 
-	wd, _ := os.Getwd()
+	wd := rkit.Ok(os.Getwd())
 	out := cmd.OutOrStdout()
 
 	for _, f := range res.Fixed {

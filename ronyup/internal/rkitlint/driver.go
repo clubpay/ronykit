@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/go/analysis"
 	gochecker "golang.org/x/tools/go/analysis/checker"
@@ -293,7 +295,7 @@ func (an *analysisRun) collect(graph *gochecker.Graph, mods map[string]bool) err
 	}
 
 	slices.SortFunc(an.diags, func(a, b diag) int {
-		return cmp.Or(
+		return rkit.Coalesce(
 			cmp.Compare(a.finding.Position.Filename, b.finding.Position.Filename),
 			cmp.Compare(a.finding.Position.Offset, b.finding.Position.Offset),
 		)
@@ -369,7 +371,7 @@ func rewrite(file string, edits []fileEdit, importNames map[string]string) error
 	}
 
 	slices.SortFunc(edits, func(a, b fileEdit) int {
-		return cmp.Or(cmp.Compare(a.start, b.start), cmp.Compare(a.end, b.end))
+		return rkit.Coalesce(cmp.Compare(a.start, b.start), cmp.Compare(a.end, b.end))
 	})
 
 	var (
@@ -423,7 +425,7 @@ func dropUnusedImports(file string, src []byte, importNames map[string]string) (
 	})
 
 	unused := func(imp *ast.ImportSpec) bool {
-		path, _ := strconv.Unquote(imp.Path.Value)
+		path := rkit.Ok(strconv.Unquote(imp.Path.Value))
 
 		name := importNames[path]
 		if imp.Name != nil {

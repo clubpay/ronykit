@@ -21,7 +21,7 @@ func registerRelay[S State[A], A Action](
 	opt ...RelayOption,
 ) {
 	s := setupCtx.s
-	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
+	sl := rkit.TryCast[sync.Locker](any(*s))
 
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)

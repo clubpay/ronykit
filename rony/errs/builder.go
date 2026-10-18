@@ -3,6 +3,8 @@ package errs
 import (
 	"errors"
 	"fmt"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // A Builder allows for gradual construction of an error.
@@ -144,9 +146,7 @@ func (b *Builder) Cause(err error) *Builder {
 // the Msg is set to "unknown error".
 func (b *Builder) Err() error {
 	code := b.code
-	if code == OK {
-		code = Unknown
-	}
+	code = rkit.Coalesce(code, Unknown)
 
 	msg := b.msg
 	if msg == "" && b.err == nil {

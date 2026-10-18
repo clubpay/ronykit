@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/log"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
@@ -85,14 +87,10 @@ func formatHeader(record sdklog.Record, meta recordMeta, colors palette) string 
 	}
 
 	filePath := meta.filePath
-	if filePath == "" {
-		filePath = emptyField
-	}
+	filePath = rkit.Coalesce(filePath, emptyField)
 
 	line := meta.line
-	if line == "" {
-		line = emptyField
-	}
+	line = rkit.Coalesce(line, emptyField)
 
 	parts := []string{
 		colors.time(timeVal),
@@ -189,7 +187,7 @@ func formatValue(v attribute.Value) string {
 	case attribute.STRING:
 		return v.AsString()
 	case attribute.INT64:
-		return strconv.FormatInt(v.AsInt64(), 10)
+		return rkit.Int64ToStr(v.AsInt64())
 	case attribute.FLOAT64:
 		return strconv.FormatFloat(v.AsFloat64(), 'f', -1, 64)
 	case attribute.BOOL:
@@ -199,19 +197,16 @@ func formatValue(v attribute.Value) string {
 	case attribute.SLICE:
 		items := v.AsSlice()
 
-		parts := make([]string, 0, len(items))
-		for _, item := range items {
-			parts = append(parts, formatValue(item))
-		}
+		parts := rkit.Map(items, formatValue)
 
 		return "[" + strings.Join(parts, ",") + "]"
 	case attribute.MAP:
 		pairs := v.AsMap()
 
-		parts := make([]string, 0, len(pairs))
-		for _, kv := range pairs {
-			parts = append(parts, string(kv.Key)+"="+formatValue(kv.Value))
-		}
+		parts := rkit.Map(
+			pairs,
+			func(kv attribute.KeyValue) string { return string(kv.Key) + "=" + formatValue(kv.Value) },
+		)
 
 		return "{" + strings.Join(parts, " ") + "}"
 	case attribute.EMPTY:

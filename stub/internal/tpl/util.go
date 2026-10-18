@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 func goType(t reflect.Type) string {
@@ -47,9 +48,7 @@ func goTypeRecursive(prefix string, t reflect.Type) string {
 		return goTypeRecursive(prefix, t.Elem())
 	case reflect.Interface:
 		in := t.Name()
-		if in == "" {
-			in = "any"
-		}
+		in = rkit.Coalesce(in, "any")
 
 		return fmt.Sprintf("%s%s", prefix, in)
 	case reflect.Struct:
@@ -167,10 +166,7 @@ func tsPathParamLiterals(params []string) string {
 		return ""
 	}
 
-	quoted := make([]string, len(params))
-	for i, p := range params {
-		quoted[i] = fmt.Sprintf("%q", p)
-	}
+	quoted := rkit.Map(params, func(p string) string { return fmt.Sprintf("%q", p) })
 
 	return strings.Join(quoted, ", ")
 }

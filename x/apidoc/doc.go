@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
-	"slices"
 	"strings"
 	"time"
 
@@ -592,9 +591,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 			ProtocolProfileBehavior: nil,
 		},
 	)
-	if c.Encoding == "" {
-		c.Encoding = "json"
-	}
+	c.Encoding = rkit.Coalesce(c.Encoding, "json")
 
 	if c.Deprecated {
 		itm.Description = "[Deprecated] " + itm.Description
@@ -621,7 +618,7 @@ func toPostmanItem(c desc.ParsedContract) *postman.Items {
 
 	if len(c.PathParams) > len(c.Request.Message.Fields) || c.Method == http.MethodGet {
 		for _, p := range c.Request.Message.Fields {
-			found := slices.Contains(c.PathParams, p.Name)
+			found := rkit.Contains(c.PathParams, p.Name)
 
 			if !found {
 				queryParams = append(

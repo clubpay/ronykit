@@ -8,6 +8,7 @@ import (
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/rony/errs"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type StreamHandler[
@@ -28,7 +29,7 @@ func registerStream[IN, OUT Message, S State[A], A Action](
 	s := setupCtx.s
 	// we create the locker pointer to improve runtime performance, also
 	// since Setup function guarantees that S is a pointer to a struct,
-	sl, _ := any(*s).(sync.Locker) //nolint:errcheck
+	sl := rkit.TryCast[sync.Locker](any(*s))
 
 	handlers := make([]kit.HandlerFunc, 0, len(setupCtx.mw)+1)
 	handlers = append(handlers, setupCtx.mw...)

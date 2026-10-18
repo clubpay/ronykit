@@ -5,7 +5,13 @@ import (
 	"go/constant"
 	"go/token"
 	"go/types"
+	"regexp"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
+
+// staleNolint matches a trailing comment that only silences dropped-error linters.
+var staleNolint = regexp.MustCompile(`^//\s*nolint:(errcheck|errchkjson)(,(errcheck|errchkjson))*(\s.*)?$`)
 
 // checkDiscard matches assignments that drop their second result:
 //
@@ -25,13 +31,22 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 		assign = fc.text(as.Lhs[0]) + " := "
 	}
 
+	// Nothing is dropped any more, so a trailing //nolint:errcheck would be reported as unused.
+	end := as.End()
+	if cg := fc.trailingComment(
+		as,
+	); cg != nil && len(cg.List) == 1 &&
+		staleNolint.MatchString(cg.List[0].Text) {
+		end = cg.End()
+	}
+
 	switch rhs := as.Rhs[0].(type) {
 	case *ast.TypeAssertExpr:
 		if rhs.Type == nil {
 			return
 		}
 
-		c.report(fc, as.Pos(), as.End(), CategoryDiscard,
+		c.report(fc, as.Pos(), end, CategoryDiscard,
 			"type assertion with the ok result dropped: use rkit.TryCast",
 			"Replace with rkit.TryCast",
 			assign+fc.rkit("TryCast["+fc.text(rhs.Type)+"]("+fc.text(rhs.X)+")"))
@@ -42,7 +57,7 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 		}
 
 		if helper, arg := c.errorFreeHelper(rhs); helper != "" {
-			c.report(fc, as.Pos(), as.End(), CategoryDiscard,
+			c.report(fc, as.Pos(), end, CategoryDiscard,
 				"error dropped: use rkit."+helper,
 				"Replace with rkit."+helper,
 				assign+fc.rkit(helper+"("+fc.text(arg)+")"))
@@ -50,7 +65,7 @@ func (c *checker) checkDiscard(fc *fileCtx, stmt ast.Stmt) {
 			return
 		}
 
-		c.report(fc, as.Pos(), as.End(), CategoryDiscard,
+		c.report(fc, as.Pos(), end, CategoryDiscard,
 			"error dropped with _: use rkit.Ok",
 			"Replace with rkit.Ok",
 			assign+fc.rkit("Ok("+fc.text(rhs)+")"))
@@ -101,7 +116,7 @@ func (c *checker) callee(call *ast.CallExpr) *types.Func {
 		return nil
 	}
 
-	fn, _ := c.pass.TypesInfo.Uses[sel.Sel].(*types.Func)
+	fn := rkit.TryCast[*types.Func](c.pass.TypesInfo.Uses[sel.Sel])
 
 	return fn
 }

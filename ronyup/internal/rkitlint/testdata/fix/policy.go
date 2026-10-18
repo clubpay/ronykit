@@ -82,6 +82,13 @@ func asString(v any) string {
 	return s
 }
 
+func parsed(s string) int {
+	n, _ := strconv.Atoi(s) //nolint:errcheck // best effort
+	m, _ := strconv.Atoi(s) //nolint:errcheck,gosec
+
+	return n + m
+}
+
 func view(b []byte) string {
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }

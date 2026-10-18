@@ -10,6 +10,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Sync section identifiers for SyncRequest.Only.
@@ -177,17 +178,7 @@ func resolveSyncSections(only []string, kind string) ([]string, error) {
 		return nil, fmt.Errorf("no sync sections selected")
 	}
 
-	order := defaultSyncSections(kind)
-
-	var sections []string
-
-	for _, s := range order {
-		if set[s] {
-			sections = append(sections, s)
-		}
-	}
-
-	return sections, nil
+	return rkit.Filter(defaultSyncSections(kind), func(s string) bool { return set[s] }), nil
 }
 
 func defaultSyncSections(kind string) []string {

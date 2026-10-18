@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/clubpay/ronykit/kit"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type RouteData struct {
@@ -85,7 +86,7 @@ type Mux struct {
 }
 
 func (r *Mux) getParams() *Params {
-	ps, _ := r.paramsPool.Get().(*Params)
+	ps := rkit.TryCast[*Params](r.paramsPool.Get())
 	*ps = (*ps)[0:0] // reset slice
 
 	return ps

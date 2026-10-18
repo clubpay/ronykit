@@ -3,10 +3,10 @@ package mcp
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -204,15 +204,7 @@ func formatCharacteristicResource(ch knowledge.CharacteristicDoc) string {
 }
 
 func charResourceName(ch knowledge.CharacteristicDoc) string {
-	if ch.Name != "" {
-		return ch.Name
-	}
-
-	if ch.Slug != "" {
-		return ch.Slug
-	}
-
-	return "unknown"
+	return rkit.Coalesce(ch.Name, ch.Slug, "unknown")
 }
 
 func characteristicMatches(ch knowledge.CharacteristicDoc, name string) bool {
@@ -220,7 +212,7 @@ func characteristicMatches(ch knowledge.CharacteristicDoc, name string) bool {
 		return true
 	}
 
-	return slices.Contains(ch.Keywords, name)
+	return rkit.Contains(ch.Keywords, name)
 }
 
 func characteristicNames(ch knowledge.CharacteristicDoc) []string {
@@ -335,19 +327,12 @@ func emptyCompletion() *mcpsdk.CompleteResult {
 func namesForCategory(kb *knowledge.Base, category string) []string {
 	switch strings.ToLower(strings.TrimSpace(category)) {
 	case categoryPackages:
-		names := make([]string, 0, len(kb.Packages))
-		for _, pkg := range kb.Packages {
-			names = append(names, pkg.ShortName)
-		}
-
-		return names
+		return rkit.Map(kb.Packages, func(pkg knowledge.PackageDoc) string { return pkg.ShortName })
 	case categoryArchitecture:
-		names := make([]string, 0, len(kb.ArchitectureHints))
-		for _, hint := range kb.ArchitectureHints {
-			names = append(names, hint.Slug)
-		}
-
-		return names
+		return rkit.Map(
+			kb.ArchitectureHints,
+			func(hint knowledge.ArchitectureHint) string { return hint.Slug },
+		)
 	case categoryCharacteristics:
 		names := make([]string, 0, len(kb.Characteristics))
 		for _, ch := range kb.Characteristics {
@@ -363,11 +348,7 @@ func namesForCategory(kb *knowledge.Base, category string) []string {
 
 		return names
 	default:
-		var all []string
-
-		for _, pkg := range kb.Packages {
-			all = append(all, pkg.ShortName)
-		}
+		all := rkit.Map(kb.Packages, func(pkg knowledge.PackageDoc) string { return pkg.ShortName })
 
 		for _, hint := range kb.ArchitectureHints {
 			all = append(all, hint.Slug)
@@ -392,15 +373,10 @@ func filterPrefix(items []string, prefix string) []string {
 
 	lowerPrefix := strings.ToLower(prefix)
 
-	var result []string
-
-	for _, item := range items {
-		if strings.HasPrefix(strings.ToLower(item), lowerPrefix) {
-			result = append(result, item)
-		}
-	}
-
-	return result
+	return rkit.Filter(
+		items,
+		func(item string) bool { return strings.HasPrefix(strings.ToLower(item), lowerPrefix) },
+	)
 }
 
 func resourceDescription(s string) string {

@@ -7,6 +7,7 @@ import (
 	"github.com/clubpay/ronykit/kit/desc"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp"
 	"github.com/clubpay/ronykit/std/gateways/fastws"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type EchoRequest struct {
@@ -55,7 +56,7 @@ var EchoService kit.ServiceBuilder = desc.NewService("EchoService").
 			SetHandler(
 				contextMW(10*time.Second),
 				func(ctx *kit.Context) {
-					req, _ := ctx.In().GetMsg().(*EchoRequest)
+					req := rkit.TryCast[*EchoRequest](ctx.In().GetMsg())
 
 					ctx.In().Reply().
 						SetMsg(

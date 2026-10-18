@@ -107,6 +107,19 @@ func (fc *fileCtx) text(n ast.Node) string {
 	return string(fc.src[fc.tok.Offset(n.Pos()):fc.tok.Offset(n.End())])
 }
 
+// trailingComment returns the comment group that starts on the line n ends on, after n.
+func (fc *fileCtx) trailingComment(n ast.Node) *ast.CommentGroup {
+	line := fc.tok.Line(n.End())
+
+	for _, cg := range fc.file.Comments {
+		if cg.Pos() >= n.End() && fc.tok.Line(cg.Pos()) == line {
+			return cg
+		}
+	}
+
+	return nil
+}
+
 func (fc *fileCtx) hasCommentsIn(pos, end token.Pos) bool {
 	for _, cg := range fc.file.Comments {
 		if cg.Pos() > pos && cg.End() < end {

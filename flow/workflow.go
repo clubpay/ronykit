@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"reflect"
-	"slices"
 	"strings"
 	"time"
 
@@ -115,7 +114,7 @@ func NewSimpleWorkflow[REQ, RES, STATE any](
 }
 
 func (w *Workflow[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
-	return slices.Contains(w.registered, b)
+	return rkit.Contains(w.registered, b)
 }
 
 func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDefaultBackend bool) {

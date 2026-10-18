@@ -7,6 +7,7 @@ import (
 
 	"github.com/clubpay/ronykit/ronyup/internal"
 	"github.com/clubpay/ronykit/ronyup/internal/z"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // SkillDef describes a bundled agent skill that can be pre-installed into a new
@@ -404,12 +405,7 @@ func resolveSkillSelection(requested []string, kind string) ([]string, error) {
 func AllSkillIDs() []string { return allSkillIDs() }
 
 func allSkillIDs() []string {
-	ids := make([]string, 0, len(skillCatalog))
-	for _, s := range skillCatalog {
-		ids = append(ids, s.ID)
-	}
-
-	return ids
+	return rkit.Map(skillCatalog, func(s SkillDef) string { return s.ID })
 }
 
 // SkillCatalog returns the bundled skill definitions.

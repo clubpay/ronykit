@@ -11,6 +11,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/clubpay/ronykit/x/rkit"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -171,7 +173,7 @@ func filterImportsForBundle(allImports []string, repoModule string, bundle Bundl
 		return nil, fmt.Errorf("bundle must declare at least one service or %q", wildcardService)
 	}
 
-	if slices.Contains(bundle.Services, wildcardService) {
+	if rkit.Contains(bundle.Services, wildcardService) {
 		return slices.Clone(allImports), nil
 	}
 
@@ -302,7 +304,7 @@ func syncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) e
 			continue
 		}
 
-		hasWildcard := slices.Contains(spec.Services, wildcardService)
+		hasWildcard := rkit.Contains(spec.Services, wildcardService)
 		if !hasWildcard && !bundleIncludesService(spec, featurePackagePath) {
 			continue
 		}
@@ -319,9 +321,7 @@ func syncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) e
 
 // FeaturePackagePath returns the workspace-relative feature module path.
 func FeaturePackagePath(prefix, template, featureDir string, groupByTemplate bool) string {
-	if prefix == "" {
-		prefix = DefaultFeaturePrefix
-	}
+	prefix = rkit.Coalesce(prefix, DefaultFeaturePrefix)
 
 	groupFolder := ""
 	if groupByTemplate {
@@ -362,9 +362,7 @@ func DiscoverFeatureModuleImports(goRoot, repoModule, featurePrefix string) ([]s
 }
 
 func discoverFeatureModuleImports(goRoot, repoModule, featurePrefix string) ([]string, error) {
-	if featurePrefix == "" {
-		featurePrefix = DefaultFeaturePrefix
-	}
+	featurePrefix = rkit.Coalesce(featurePrefix, DefaultFeaturePrefix)
 
 	featureRoot := filepath.Join(goRoot, featurePrefix)
 	if !fileExists(featureRoot) {

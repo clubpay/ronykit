@@ -3,6 +3,8 @@ package flow
 import (
 	"context"
 	"fmt"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 type chainExecutor[DATA, STATE any] interface {
@@ -123,13 +125,12 @@ func NewChainWorkflowWithOptions[DATA, STATE any](
 	opts ExecuteActivityOptions,
 	executors ...chainExecutor[DATA, STATE],
 ) *Workflow[DATA, DATA, STATE] {
-	steps := make([]ChainStep[DATA, STATE], len(executors))
-	for i, executor := range executors {
-		steps[i] = ChainStep[DATA, STATE]{
+	steps := rkit.Map(executors, func(executor chainExecutor[DATA, STATE]) ChainStep[DATA, STATE] {
+		return ChainStep[DATA, STATE]{
 			executor: executor,
 			options:  opts,
 		}
-	}
+	})
 
 	return NewChainWorkflow(name, group, steps...)
 }

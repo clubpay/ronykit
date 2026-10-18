@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -23,9 +22,7 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 		return fmt.Errorf("project directory is required")
 	}
 
-	if req.Template == "" {
-		req.Template = "service"
-	}
+	req.Template = rkit.Coalesce(req.Template, "service")
 
 	if !validFeatureTemplate(req.Template) {
 		return fmt.Errorf(
@@ -35,13 +32,9 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 		)
 	}
 
-	if req.FeaturePrefix == "" {
-		req.FeaturePrefix = DefaultFeaturePrefix
-	}
+	req.FeaturePrefix = rkit.Coalesce(req.FeaturePrefix, DefaultFeaturePrefix)
 
-	if req.FeatureName == "" {
-		req.FeatureName = req.FeatureDir
-	}
+	req.FeatureName = rkit.Coalesce(req.FeatureName, req.FeatureDir)
 
 	goRoot, err := resolveGoWorkspace(req.StartDir)
 	if err != nil {
@@ -252,5 +245,5 @@ func sideEffectImportModule(
 }
 
 func validFeatureTemplate(name string) bool {
-	return slices.Contains(FeatureTemplates, name)
+	return rkit.Contains(FeatureTemplates, name)
 }

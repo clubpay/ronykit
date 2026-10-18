@@ -4,6 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
+	"github.com/clubpay/ronykit/x/rkit"
+
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -11,14 +14,13 @@ func registerPrompts(srv *mcpsdk.Server, cfg ServerConfig) {
 	for _, p := range cfg.kb.Prompts {
 		prompt := p
 
-		args := make([]*mcpsdk.PromptArgument, 0, len(prompt.Arguments))
-		for _, a := range prompt.Arguments {
-			args = append(args, &mcpsdk.PromptArgument{
+		args := rkit.Map(prompt.Arguments, func(a knowledge.PromptArgument) *mcpsdk.PromptArgument {
+			return &mcpsdk.PromptArgument{
 				Name:        a.Name,
 				Description: a.Description,
 				Required:    a.Required,
-			})
-		}
+			}
+		})
 
 		srv.AddPrompt(
 			&mcpsdk.Prompt{

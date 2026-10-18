@@ -560,7 +560,7 @@ func (hc *RESTCtx) AutoRun(
 			},
 		)
 	default:
-		reqBody, _ := hc.codec.Marshal(m) //nolint:errcheck
+		reqBody := rkit.Ok(hc.codec.Marshal(m))
 		hc.SetBody(reqBody)
 	}
 

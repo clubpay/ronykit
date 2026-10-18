@@ -6,6 +6,7 @@ import (
 
 	"github.com/clubpay/ronykit/kit"
 	"github.com/clubpay/ronykit/std/gateways/fasthttp/proxy"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/valyala/fasthttp"
 )
@@ -71,9 +72,7 @@ func WithReverseProxy(path string, opt ...proxy.Option) Option {
 			panic(err)
 		}
 
-		if path == "" {
-			path = "/"
-		}
+		path = rkit.Coalesce(path, "/")
 
 		b.reverseProxyPath = path
 	}
