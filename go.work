@@ -13,6 +13,7 @@ use (
 	./example/ex-10-flow-codec
 	./example/ex-11-mcp
 	./example/ex-12-ee
+	./example/ex-14-decide
 	./flow
 	./kit
 	./rony

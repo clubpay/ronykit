@@ -1,0 +1,34 @@
+### Single ticket triage (renders Go template into state, then evaluates TriageDecision schema)
+POST http://127.0.0.1:8080/triage
+Content-Type: application/json
+
+{
+  "customer": "Acme Corp",
+  "plan": "enterprise",
+  "subject": "Duplicate charge on March invoice",
+  "message": "We were billed twice for March. Please refund the duplicate today or we cancel.",
+  "tags": ["billing", "duplicate"]
+}
+
+### Batch ticket triage
+POST http://127.0.0.1:8080/triage/batch
+Content-Type: application/json
+
+{
+  "tickets": [
+    {
+      "customer": "Acme Corp",
+      "plan": "enterprise",
+      "subject": "Duplicate charge on March invoice",
+      "message": "We were billed twice for March. Please refund the duplicate today or we cancel.",
+      "tags": ["billing", "duplicate"]
+    },
+    {
+      "customer": "Beta LLC",
+      "plan": "starter",
+      "subject": "Enterprise contract expansion",
+      "message": "We want pricing to expand our contract to 250 seats.",
+      "tags": ["expansion"]
+    }
+  ]
+}
