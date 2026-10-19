@@ -51,6 +51,7 @@ func Run(t *testing.T, newStore func(t *testing.T) store.Store) {
 		{"OutboxClaimAck", testOutbox},
 		{"OutboxPerKeyOrder", testOutboxPerKeyOrder},
 		{"OutboxLeaseExpiry", testOutboxLeaseExpiry},
+		{"OutboxStats", testOutboxStats},
 	}
 
 	for _, tc := range tests {
@@ -765,6 +766,41 @@ func testOutboxLeaseExpiry(t *testing.T, s store.Store) {
 	// The relay that held "a" died: "a" is claimable again, still before "b".
 	if got, _ := ob.Claim(ctx, 10, time.Minute); !slices.Equal(ids(got), []string{"a", "b"}) {
 		t.Errorf("after lease expiry: %v", ids(got))
+	}
+}
+
+func testOutboxStats(t *testing.T, s store.Store) {
+	t.Helper()
+
+	rep, ok := s.(store.StatsReporter)
+	if !ok {
+		t.Skip("store does not report outbox stats")
+	}
+
+	ctx := t.Context()
+
+	st, err := rep.OutboxStats(ctx)
+	if err != nil || st.Pending != 0 || !st.Oldest.IsZero() {
+		t.Fatalf("empty stats: %+v, %v", st, err)
+	}
+
+	created := time.Now().Add(-2 * time.Minute).UTC().Truncate(time.Millisecond)
+
+	mustTx(t, s, func(ctx context.Context, tx store.Tx) error {
+		return tx.AppendOutbox(ctx, store.OutboxEntry{
+			ID:        "a",
+			Data:      []byte("x"),
+			CreatedAt: created,
+		})
+	})
+
+	st, err = rep.OutboxStats(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if st.Pending != 1 || st.Oldest.Sub(created).Abs() > time.Second {
+		t.Fatalf("stats %+v, created %s", st, created)
 	}
 }
 

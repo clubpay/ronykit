@@ -64,7 +64,8 @@ Rules enforced at registration:
 | `std/ee/bus/nats`       | NATS JetStream bus, with request/reply (own `go.mod`)                |
 | `std/ee/bus/kafka`      | Kafka bus on franz-go, no request/reply (own `go.mod`)               |
 | `std/ee/store/postgres` | Postgres store, primary/replica, sqlc (own `go.mod`)                 |
-| `std/ee/store/redis`    | Redis store (planned, own `go.mod`)                                  |
+| `std/ee/store/redis`    | Redis store, primary/replica, Lua commits (own `go.mod`)             |
+| `std/ee/metrics`        | OpenTelemetry counters and outbox gauges for `Env` (own `go.mod`)    |
 
 Backends expose their own bootstrap, migration and query-optimization hooks
 (e.g. Postgres migrations, Redis per-kind write/find overrides); those are not
@@ -153,8 +154,10 @@ Files in `ee/`:
 - Call `env.Check` during process start, before `Start`, so a missing bus or
   store fails in one place.
 - `WithMiddleware(Dedup)` on every env whose handlers must not apply twice.
-- Schedule `ExpireDedup`. Alert on `Stats().OutboxOldest` lagging and on
-  observer kinds `dropped`, `panic`, `outbox_error` and repeated `conflict`.
+- Schedule `ExpireDedup`. `std/ee/metrics` maps `WithObserver` and
+  `Env.Stats` onto an OpenTelemetry meter (`x/telemetry/meterkit`). Alert on
+  outbox age and on signal kinds `dropped`, `panic`, `outbox_error` and
+  repeated `conflict`.
 - Set the bus `OnDeadLetter` (mem, NATS, Kafka). Panics and handler errors
   land there after `MaxAttempts`; undecodable events do not, they are dropped
   at ee after one observation.
@@ -168,9 +171,10 @@ Files in `ee/`:
 ## Status
 
 Implemented: the runtime above, the in-memory backends, and under `std/ee` the
-Postgres store and the NATS and Kafka buses. `Env.Stats` / `OutboxStats` and
-`ExpireDedup` cover relay lag and dedup retention. Request/reply is available
-through `ee.Request` on buses that implement `bus.Requester`.
+Postgres and Redis stores, the NATS and Kafka buses, and the OpenTelemetry
+metrics adapter. `Env.Stats` / `OutboxStats` and `ExpireDedup` cover relay lag
+and dedup retention. Request/reply is available through `ee.Request` on buses
+that implement `bus.Requester`.
 
-Not yet: a Redis store. Use Postgres, or mem for a single process, until that
-backend exists. Kafka has no request/reply.
+Kafka has no request/reply. Redis `Find` scans a kind's id set, so large kinds
+belong in Postgres (or behind a purpose-built index).

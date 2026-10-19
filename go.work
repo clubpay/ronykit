@@ -21,7 +21,9 @@ use (
 	./std/clusters/rediscluster
 	./std/ee/bus/kafka
 	./std/ee/bus/nats
+	./std/ee/metrics
 	./std/ee/store/postgres
+	./std/ee/store/redis
 	./std/gateways/fasthttp
 	./std/gateways/fastws
 	./std/gateways/mcp

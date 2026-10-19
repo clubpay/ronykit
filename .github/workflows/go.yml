@@ -41,5 +41,73 @@ jobs:
         with:
           go-version: '1.27.2'
       - name: Test ee
-        run: go test -count=1 ./ee/...
+        run: go test -count=1 ./ee/... ./std/ee/metrics/...
+
+  ee-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    name: ee integration
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.2'
+      - name: Start backends
+        run: |
+          set -euo pipefail
+          docker run -d --name ee-pg \
+            -e POSTGRES_PASSWORD=ee -e POSTGRES_USER=ee -e POSTGRES_DB=ee \
+            -p 5432:5432 postgres:17-alpine
+          docker run -d --name ee-redis -p 6379:6379 redis:7-alpine
+          docker run -d --name ee-redis-replica -p 6380:6379 redis:7-alpine
+          docker run -d --name ee-nats -p 4222:4222 nats:2.11-alpine -js
+          docker run -d --name ee-kafka -p 59092:59092 \
+            -e KAFKA_NODE_ID=1 -e KAFKA_PROCESS_ROLES=broker,controller \
+            -e KAFKA_LISTENERS=PLAINTEXT://:59092,CONTROLLER://:9093 \
+            -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:59092 \
+            -e KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER \
+            -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT \
+            -e KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 \
+            -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+            -e KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0 \
+            apache/kafka:3.9.1
+
+          wait_port() {
+            local port="$1"
+            for _ in $(seq 1 60); do
+              if (echo > "/dev/tcp/127.0.0.1/${port}") >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 2
+            done
+            echo "timed out waiting for port ${port}" >&2
+            return 1
+          }
+
+          for _ in $(seq 1 60); do
+            if docker exec ee-pg pg_isready -U ee && docker exec ee-redis redis-cli ping; then
+              break
+            fi
+            sleep 2
+          done
+          docker exec ee-pg pg_isready -U ee
+          docker exec ee-pg psql -U ee -c 'CREATE DATABASE ee_replica'
+          docker exec ee-redis redis-cli ping
+          docker exec ee-redis-replica redis-cli ping
+          wait_port 4222
+          wait_port 59092
+      - name: Test backends
+        env:
+          EE_POSTGRES_TEST_DSN: postgres://ee:ee@localhost:5432/ee?sslmode=disable
+          EE_POSTGRES_TEST_REPLICA_DSN: postgres://ee:ee@localhost:5432/ee_replica?sslmode=disable
+          EE_REDIS_TEST_ADDR: localhost:6379
+          EE_REDIS_TEST_REPLICA_ADDR: localhost:6380
+          EE_NATS_TEST_URL: nats://localhost:4222
+          EE_KAFKA_TEST_BROKERS: localhost:59092
+        run: |
+          go test -count=1 -timeout 20m \
+            ./std/ee/store/postgres/ \
+            ./std/ee/store/redis/ \
+            ./std/ee/bus/nats/ \
+            ./std/ee/bus/kafka/
 
