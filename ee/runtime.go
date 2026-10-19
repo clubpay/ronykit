@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"runtime/debug"
 	"time"
 
 	"github.com/clubpay/ronykit/ee/bus"
@@ -14,8 +15,8 @@ import (
 )
 
 const (
-	outboxBatch = 100
-	outboxLease = 30 * time.Second
+	defaultOutboxBatch = 100
+	defaultOutboxLease = 30 * time.Second
 )
 
 // errPermanent marks failures that redelivery cannot fix (e.g. an undecodable
@@ -24,6 +25,13 @@ type errPermanent struct{ err error }
 
 func (e errPermanent) Error() string { return e.err.Error() }
 func (e errPermanent) Unwrap() error { return e.err }
+
+// errPanic is a handler panic. The unit of work is rolled back and the error
+// is returned so the bus redelivers up to its own attempt limit.
+type errPanic struct{ err error }
+
+func (e errPanic) Error() string { return e.err.Error() }
+func (e errPanic) Unwrap() error { return e.err }
 
 // view runs fn in a read-only unit of work, which the store may serve from a
 // replica.
@@ -48,11 +56,14 @@ func (e *Env) unit(
 
 	var err error
 
-	for range attempts {
+	for attempt := 1; attempt <= attempts; attempt++ {
 		err = e.store.Tx(ctx, func(ctx context.Context, tx store.Tx) (err error) {
 			defer func() {
 				if r := recover(); r != nil {
-					err = fmt.Errorf("ee: panic: %v", r)
+					err = errPanic{fmt.Errorf("ee: panic: %v", r)}
+					e.log.ErrorContext(ctx, "ee: panic in unit of work",
+						"panic", r, "stack", string(debug.Stack()))
+					e.observe(ctx, Observation{Kind: ObsPanic, Err: err})
 				}
 			}()
 
@@ -63,8 +74,15 @@ func (e *Env) unit(
 
 			return sc.commit()
 		})
-		if !errors.Is(err, ErrConflict) {
+		if err == nil || !errors.Is(err, ErrConflict) {
 			break
+		}
+
+		e.log.DebugContext(ctx, "ee: version conflict", "attempt", attempt, "of", attempts)
+		e.observe(ctx, Observation{Kind: ObsConflict, Attempt: attempt, Err: err})
+
+		if attempt == attempts && attempts > 1 {
+			err = fmt.Errorf("ee: %w after %d attempts", err, attempts)
 		}
 	}
 
@@ -112,8 +130,19 @@ func (e *Env) dispatch(
 
 	if _, ok := errors.AsType[errPermanent](err); ok {
 		log.ErrorContext(ctx, "ee: dropping event", "error", err)
+		e.observe(ctx, Observation{
+			Kind: ObsDropped, Err: err, Event: msg.Event, ID: msg.ID, Owner: owner,
+		})
 
 		return nil
+	}
+
+	if err != nil {
+		if _, ok := errors.AsType[errPanic](err); !ok {
+			e.observe(ctx, Observation{
+				Kind: ObsDeliveryError, Err: err, Event: msg.Event, ID: msg.ID, Owner: owner,
+			})
+		}
 	}
 
 	return err
@@ -149,9 +178,10 @@ func (e *Env) drainOutbox(ctx context.Context) {
 	ob := e.store.Outbox()
 
 	for ctx.Err() == nil {
-		entries, err := ob.Claim(ctx, outboxBatch, outboxLease)
+		entries, err := ob.Claim(ctx, e.outboxBatch, e.outboxLease)
 		if err != nil {
 			e.log.ErrorContext(ctx, "ee: outbox claim", "error", err)
+			e.observe(ctx, Observation{Kind: ObsOutboxError, Err: err})
 
 			return
 		}
@@ -169,6 +199,7 @@ func (e *Env) drainOutbox(ctx context.Context) {
 			var env bus.Envelope
 			if err := json.Unmarshal(entry.Data, &env); err != nil {
 				e.log.ErrorContext(ctx, "ee: dropping undecodable outbox entry", "id", entry.ID, "error", err)
+				e.observe(ctx, Observation{Kind: ObsOutboxDropped, Err: err, ID: entry.ID})
 
 				continue
 			}
@@ -176,19 +207,25 @@ func (e *Env) drainOutbox(ctx context.Context) {
 			envs = append(envs, env)
 		}
 
-		if err := e.bus.Publish(ctx, envs...); err != nil {
-			e.log.ErrorContext(ctx, "ee: outbox publish", "error", err)
+		if len(envs) > 0 {
+			if err := e.bus.Publish(ctx, envs...); err != nil {
+				e.log.ErrorContext(ctx, "ee: outbox publish", "error", err)
+				e.observe(ctx, Observation{Kind: ObsOutboxError, Err: err, Count: len(envs)})
 
-			return
+				return
+			}
+
+			e.observe(ctx, Observation{Kind: ObsOutboxPublished, Count: len(envs)})
 		}
 
 		if err := ob.Ack(ctx, ids...); err != nil {
 			e.log.ErrorContext(ctx, "ee: outbox ack", "error", err)
+			e.observe(ctx, Observation{Kind: ObsOutboxError, Err: err, Count: len(ids)})
 
 			return
 		}
 
-		if len(entries) < outboxBatch {
+		if len(entries) < e.outboxBatch {
 			return
 		}
 	}

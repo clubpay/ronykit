@@ -12,6 +12,8 @@ import (
 	"errors"
 	"iter"
 	"time"
+
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
 var (
@@ -87,4 +89,33 @@ type Outbox interface {
 	// Entries with an empty key are unordered.
 	Claim(ctx context.Context, limit int, leaseFor time.Duration) ([]OutboxEntry, error)
 	Ack(ctx context.Context, ids ...string) error
+}
+
+// OutboxStats is the unpublished outbox backlog, including entries currently
+// leased by a relay.
+type OutboxStats struct {
+	Pending int
+	// Oldest is the CreatedAt of the oldest pending entry. Zero when Pending
+	// is 0.
+	Oldest time.Time
+}
+
+// StatsReporter is an optional store capability. Backends that can report
+// outbox backlog implement it; ee.Env.Stats uses it when present.
+type StatsReporter interface {
+	OutboxStats(ctx context.Context) (OutboxStats, error)
+}
+
+type primaryReadKey struct{}
+
+// WithPrimary marks ctx so a replicated store serves View from the primary.
+// In-memory stores ignore it. Use it for a read that must observe a write
+// just committed on this process.
+func WithPrimary(ctx context.Context) context.Context {
+	return context.WithValue(ctx, primaryReadKey{}, true)
+}
+
+// PrimaryRead reports whether ctx asks for a primary read.
+func PrimaryRead(ctx context.Context) bool {
+	return rkit.TryCast[bool](ctx.Value(primaryReadKey{}))
 }

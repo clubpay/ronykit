@@ -74,6 +74,9 @@ orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
   returns `store.ErrConflict` without aborting the transaction (`ee.Dedup`
   relies on this). Serialization failures and deadlocks also map to
   `ErrConflict`, so ee retries the unit of work.
+- Direct `Get`/`Find` may use a replica. `ee.WithPrimary(ctx)` (also
+  `postgres.ForcePrimary`) forces that read onto the primary.
+- `OutboxStats` reports the unpublished backlog, including leased entries.
 - `Claim` serializes claimers with an advisory lock and skips an entry while an
   older one with the same partition key is leased: per-key publish order holds
   with every replica relaying.

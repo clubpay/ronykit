@@ -267,7 +267,14 @@ func (c *AggregateController[A]) Action[E KeyedEvent](
 			return err
 		}
 
-		actx := &AggregateCtx[A, E]{Context: sc.ctx, sc: sc, ctl: c, event: ev, meta: metaOf(&msg.Envelope)}
+		actx := &AggregateCtx[A, E]{
+			Context: sc.ctx,
+			sc:      sc,
+			ctl:     c,
+			event:   ev,
+			meta:    metaOf(&msg.Envelope),
+			reply:   msg.Reply,
+		}
 		if err := h(actx); err != nil {
 			return err
 		}
@@ -498,6 +505,7 @@ type AggregateCtx[A any, E KeyedEvent] struct {
 	ctl   *AggregateController[A]
 	event E
 	meta  Meta
+	reply func(context.Context, bus.Envelope) error
 
 	agg     *A
 	members map[entityKey]bool
@@ -506,6 +514,12 @@ type AggregateCtx[A any, E KeyedEvent] struct {
 
 func (c *AggregateCtx[A, E]) Event() E   { return c.event }
 func (c *AggregateCtx[A, E]) Meta() Meta { return c.meta }
+
+// Reply answers a Request. ErrNotSupported when the delivery is an ordinary
+// publish. The reply is not stored and is not published to other subscribers.
+func (c *AggregateCtx[A, E]) Reply(v any) error {
+	return replyValue(c.sc.env, c.reply, c.Context, v)
+}
 
 // Aggregate loads the aggregate whose id is the event's Key. Later calls
 // return the same pointer.

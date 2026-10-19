@@ -69,6 +69,22 @@ func (s *Store) View(ctx context.Context, fn func(ctx context.Context, tx store.
 
 func (s *Store) Outbox() store.Outbox { return s }
 
+// OutboxStats reports the unpublished backlog, including leased entries.
+func (s *Store) OutboxStats(context.Context) (store.OutboxStats, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	st := store.OutboxStats{Pending: len(s.outbox)}
+
+	for _, it := range s.outbox {
+		if st.Oldest.IsZero() || it.entry.CreatedAt.Before(st.Oldest) {
+			st.Oldest = it.entry.CreatedAt
+		}
+	}
+
+	return st, nil
+}
+
 func (s *Store) Close() error { return nil }
 
 // Len returns the number of committed records of kind.
@@ -362,3 +378,5 @@ func (t *tx) find(q store.Query) ([]store.Record, error) {
 
 	return out, nil
 }
+
+var _ store.StatsReporter = (*Store)(nil)

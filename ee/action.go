@@ -69,6 +69,7 @@ type ActionCtx[S Entity, E Event] struct {
 	sc    *scope
 	event E
 	meta  Meta
+	reply func(context.Context, bus.Envelope) error
 }
 
 func (c *ActionCtx[S, E]) Event() E   { return c.event }
@@ -95,3 +96,9 @@ func (c *ActionCtx[S, E]) Entities[X Entity]() *Repo[X] { return repoOf[X](c.sc)
 // Emit queues an event in the transactional outbox; it is published only if
 // the action commits.
 func (c *ActionCtx[S, E]) Emit[T Event](ev T, opts ...SendOption) error { return c.sc.emit(ev, opts) }
+
+// Reply answers a Request. ErrNotSupported when the delivery is an ordinary
+// publish. The reply is not stored and is not published to other subscribers.
+func (c *ActionCtx[S, E]) Reply(v any) error {
+	return replyValue(c.sc.env, c.reply, c.Context, v)
+}

@@ -12,6 +12,10 @@
 //     write Load; ee saves it by diffing against what Load tracked.
 //   - Every event has exactly one consuming action per Env.
 //   - Writes are explicit (Save/Delete) unless the Env uses WithAutoSave.
+//     WithRequireSave fails a unit of work that mutates a loaded entity
+//     without Save.
+//   - Request waits for the consuming action to Reply when the bus supports
+//     request/reply.
 //   - The EventBus (package bus) and StorageController (package store) are
 //     untyped contracts implemented by backends.
 //

@@ -38,6 +38,9 @@ _ = orders.Action(func(ctx *ee.ActionCtx[Order, OrderPaid]) error {
 }, ee.Filter(ee.Match("merchant", "m1")))
 
 for o, err := range orders.Find(ctx, ee.Where("Merchant", "m1")) { ... }
+
+// A read that must see a write just committed, when the store has replicas:
+paid, err := orders.Get(ee.WithPrimary(ctx), id)
 ```
 
 Rules enforced at registration:
@@ -71,7 +74,7 @@ Files in `ee/`:
 
 | File                  | Responsibility                                                   |
 |-----------------------|------------------------------------------------------------------|
-| `env.go`              | `Env`, options, registry, `Start`/`Close`, `Send`, `Schemas`     |
+| `env.go`              | `Env`, options, registry, `Check`/`Start`/`Close`, `Stats`, `Send` |
 | `schema.go`           | `Entity`, entity schema reflection (`ee:"id"`, queryable fields) |
 | `event.go`            | `Event`, `Keyed`, `Labeled`, `Meta`, send options, envelopes     |
 | `selector.go`         | Label selectors for action filters                               |
@@ -81,7 +84,9 @@ Files in `ee/`:
 | `entity_controller.go` | `EntityController[S]`                                             |
 | `aggregate.go`        | `Aggregate`, `AggregateController[A]`, `LoadCtx`, `AggregateCtx` |
 | `runtime.go`          | Unit of work + conflict retry, dispatch, outbox relay            |
-| `middleware.go`       | `Middleware`, `Delivery`, `WithMiddleware`, `Dedup`              |
+| `middleware.go`       | `Middleware`, `Delivery`, `WithMiddleware`, `Dedup`, `ExpireDedup` |
+| `reply.go`            | `Request`, action `Reply`                                        |
+| `observe.go`          | `Observation`, `Stats`, `WithObserver`                           |
 | `codec.go`            | `Codec` (JSON default)                                           |
 
 ## Runtime semantics
@@ -105,20 +110,67 @@ Files in `ee/`:
   undecodable payload is logged and dropped. Expired events and events not
   matching the action's `Filter` are acknowledged without running the handler.
 - **Outbox relay.** Woken by every local commit and polled (`WithOutboxPoll`,
-  default 1s) for entries left by other replicas. Entries are leased, published,
-  then acknowledged. Every replica relays, yet per-key order holds: a store's
-  `Claim` never hands out an entry while an older one with the same partition
-  key is still unacknowledged.
+  default 1s) for entries left by other replicas. Entries are leased
+  (`WithOutboxLease`, default 30s), published in batches (`WithOutboxBatch`,
+  default 100), then acknowledged. Every replica relays, yet per-key order
+  holds: a store's `Claim` never hands out an entry while an older one with
+  the same partition key is still unacknowledged. `Env.Stats` reports the
+  backlog when the store implements `store.StatsReporter` (mem and Postgres).
+- **Unsaved changes.** With the default (no auto-save), forgetting `Save`
+  drops the mutation at commit. `WithRequireSave` fails that unit of work
+  instead. It cannot be combined with `WithAutoSave`.
+- **Reads after writes.** Direct `Get`/`Find` use a read-only view, which
+  Postgres may serve from a replica. `ee.WithPrimary(ctx)` forces that one
+  read onto the primary. Actions always use the primary.
+- **Request/reply.** `ee.Request[R](ctx, env, ev)` publishes `ev` and waits
+  for the consuming action to call `ctx.Reply(v)`. The bus must implement
+  `bus.Requester` (mem and NATS do; Kafka does not, and returns
+  `ErrNotSupported`). The reply is not written to the store or the outbox.
+- **Queries.** `Where` / `And` / `OrderBy` / `Limit` accept `Eq`, `Neq`, `Gt`,
+  `Gte`, `Lt`, `Lte` and `In` on top-level fields. Postgres uses JSONB
+  containment for equality (index it with `GINIndex`) and casts the JSON
+  value for the other operators (string, number, bool, time). Nested fields
+  are not queryable; a hot kind can install `postgres.WithFind`.
+- **Signals.** `WithObserver` receives conflict retries, panics, permanent
+  drops, handler errors and outbox publish/claim/ack failures. A panic rolls
+  the unit back and is returned so the bus redelivers until its own
+  `MaxAttempts`, then `OnDeadLetter`. An undecodable payload is logged,
+  observed as `dropped`, and acknowledged. The observer must not call back
+  into the same `Env`.
 - **Middleware.** `WithMiddleware` wraps action handling, inside the unit of
   work and after expiry/Filter checks. `Delivery.Tx` lets a middleware write
   atomically with the handler; it may also ignore it and use its own resources.
   `ee.Dedup` skips already-handled envelope IDs with a marker written in the
   same transaction, giving exactly-once effects over at-least-once delivery.
-  Entity names starting with `ee.` are reserved for such internal kinds.
+  Markers are JSON objects `{"at":"<RFC3339>"}`. `Env.ExpireDedup(ctx, before)`
+  deletes those strictly older than `before`, and markers that are not a
+  timestamp. Run it on a timer, with `before` past the bus redelivery window
+  (a day is a conservative start). Entity names starting with `ee.` are
+  reserved for such internal kinds.
+
+## Production
+
+- Call `env.Check` during process start, before `Start`, so a missing bus or
+  store fails in one place.
+- `WithMiddleware(Dedup)` on every env whose handlers must not apply twice.
+- Schedule `ExpireDedup`. Alert on `Stats().OutboxOldest` lagging and on
+  observer kinds `dropped`, `panic`, `outbox_error` and repeated `conflict`.
+- Set the bus `OnDeadLetter` (mem, NATS, Kafka). Panics and handler errors
+  land there after `MaxAttempts`; undecodable events do not, they are dropped
+  at ee after one observation.
+- `WithOutboxLease` must be longer than a slow `Publish`. `WithMaxRetries`
+  bounds hot-key conflicts (the returned error wraps `ErrConflict` and says
+  how many attempts ran).
+- Postgres: `ee.WithPrimary` for read-your-writes. Add `GINIndex` or
+  `FieldIndex` for fields you filter on; use `WithFind` when JSONB is not
+  enough.
 
 ## Status
 
-Implemented: everything above, plus the in-memory backends. Postgres store, NATS
-and Kafka buses are under `std/ee`. Not yet: Redis store; request/reply at the ee level (the bus
-contract and `mem.Bus` already support it); expiry of `ee.Dedup` markers
-(backend tooling).
+Implemented: the runtime above, the in-memory backends, and under `std/ee` the
+Postgres store and the NATS and Kafka buses. `Env.Stats` / `OutboxStats` and
+`ExpireDedup` cover relay lag and dedup retention. Request/reply is available
+through `ee.Request` on buses that implement `bus.Requester`.
+
+Not yet: a Redis store. Use Postgres, or mem for a single process, until that
+backend exists. Kafka has no request/reply.

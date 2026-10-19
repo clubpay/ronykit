@@ -27,8 +27,14 @@ type Env struct {
 	log      *slog.Logger
 	autoSave bool
 	// maxRetries is how many times a unit of work is re-run on ErrConflict.
-	maxRetries int
-	outboxPoll time.Duration
+	maxRetries  int
+	outboxPoll  time.Duration
+	outboxBatch int
+	outboxLease time.Duration
+	// requireSave rejects a unit of work that mutated a tracked entity
+	// without Save. Incompatible with autoSave.
+	requireSave bool
+	observer    func(context.Context, Observation)
 
 	middlewares []Middleware
 
@@ -56,6 +62,10 @@ type controller interface {
 
 type Option func(*Env)
 
+// WithPrimary marks ctx so a replicated store serves this View from the
+// primary. See store.WithPrimary.
+func WithPrimary(ctx context.Context) context.Context { return store.WithPrimary(ctx) }
+
 func WithBus(b bus.Bus) Option              { return func(e *Env) { e.bus = b } }
 func WithStore(s store.Store) Option        { return func(e *Env) { e.store = s } }
 func WithCodec(c Codec) Option              { return func(e *Env) { e.codec = c } }
@@ -70,6 +80,26 @@ func WithMaxRetries(n int) Option { return func(e *Env) { e.maxRetries = n } }
 // commit woke it up (e.g. entries left by a crashed replica). Default 1s.
 func WithOutboxPoll(d time.Duration) Option { return func(e *Env) { e.outboxPoll = d } }
 
+// WithOutboxBatch sets how many outbox entries one relay claim publishes.
+// Default 100.
+func WithOutboxBatch(n int) Option { return func(e *Env) { e.outboxBatch = n } }
+
+// WithOutboxLease sets how long a claimed outbox entry stays unavailable to
+// other relays. It must cover a slow publish; after it expires the entry is
+// claimed again. Default 30s.
+func WithOutboxLease(d time.Duration) Option { return func(e *Env) { e.outboxLease = d } }
+
+// WithRequireSave makes a unit of work fail if a tracked entity changed and
+// was not passed to Save. It cannot be combined with WithAutoSave.
+func WithRequireSave() Option { return func(e *Env) { e.requireSave = true } }
+
+// WithObserver records runtime signals (conflicts, panics, drops, outbox).
+// The function must not call back into the same Env. A later WithObserver
+// replaces the previous one.
+func WithObserver(fn func(context.Context, Observation)) Option {
+	return func(e *Env) { e.observer = fn }
+}
+
 // WithAutoSave makes every unit of work save, at commit, the tracked states
 // that changed since they were loaded or last saved. Without it (the
 // default), nothing is written unless the handler calls Save.
@@ -82,6 +112,8 @@ func New(opts ...Option) (*Env, error) {
 		log:            slog.Default(),
 		maxRetries:     5,
 		outboxPoll:     time.Second,
+		outboxBatch:    defaultOutboxBatch,
+		outboxLease:    defaultOutboxLease,
 		kick:           make(chan struct{}, 1),
 		entities:       map[reflect.Type]*entitySchema{},
 		entitiesByName: map[string]*entitySchema{},
@@ -104,6 +136,18 @@ func New(opts ...Option) (*Env, error) {
 		return nil, errors.New("ee: outbox poll must be positive")
 	}
 
+	if e.outboxBatch <= 0 {
+		return nil, errors.New("ee: outbox batch must be positive")
+	}
+
+	if e.outboxLease <= 0 {
+		return nil, errors.New("ee: outbox lease must be positive")
+	}
+
+	if e.autoSave && e.requireSave {
+		return nil, errors.New("ee: WithRequireSave and WithAutoSave cannot be combined")
+	}
+
 	return e, nil
 }
 
@@ -121,8 +165,8 @@ func (e *Env) Start(ctx context.Context) error {
 		return ErrStarted
 	}
 
-	if e.bus == nil || e.store == nil {
-		return errors.New("ee: both a bus and a store are required to start")
+	if err := e.ready(); err != nil {
+		return err
 	}
 
 	for name, c := range e.controllers {
@@ -147,6 +191,61 @@ func (e *Env) Start(ctx context.Context) error {
 	e.started = true
 
 	return nil
+}
+
+// Check reports configuration problems Start would reject, without
+// subscribing or starting the relay.
+func (e *Env) Check() error {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	return e.ready()
+}
+
+func (e *Env) ready() error {
+	if e.bus == nil || e.store == nil {
+		return errors.New("ee: both a bus and a store are required")
+	}
+
+	return nil
+}
+
+// Stats is a point-in-time view for health checks. OutboxPending is -1 when
+// the store does not implement store.StatsReporter. OutboxOldest is the age
+// anchor for relay lag: alert when it falls too far behind now.
+func (e *Env) Stats(ctx context.Context) (Stats, error) {
+	e.mu.RLock()
+	st := Stats{
+		Started:       e.started,
+		Controllers:   len(e.controllers),
+		Subscriptions: len(e.subs),
+		OutboxPending: -1,
+	}
+	s := e.store
+	e.mu.RUnlock()
+
+	rep, ok := s.(store.StatsReporter)
+	if !ok {
+		return st, nil
+	}
+
+	ob, err := rep.OutboxStats(ctx)
+	if err != nil {
+		return st, err
+	}
+
+	st.OutboxPending = ob.Pending
+	st.OutboxOldest = ob.Oldest
+
+	return st, nil
+}
+
+func (e *Env) observe(ctx context.Context, o Observation) {
+	if e.observer == nil {
+		return
+	}
+
+	e.observer(ctx, o)
 }
 
 // Close unsubscribes every controller and stops the outbox relay. The bus

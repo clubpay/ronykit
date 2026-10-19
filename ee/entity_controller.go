@@ -162,6 +162,7 @@ func (c *EntityController[S]) Action[E Event](h func(*ActionCtx[S, E]) error, op
 			sc:      sc,
 			event:   ev,
 			meta:    metaOf(&msg.Envelope),
+			reply:   msg.Reply,
 		})
 	}
 

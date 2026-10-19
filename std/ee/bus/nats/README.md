@@ -38,8 +38,9 @@ reshuffles keys, so drain consumers first.
 
 ## Request/reply
 
-`Request` publishes through the stream like any event (same ordering) with a
-core-NATS reply inbox in a header; the handler's `msg.Reply` answers on it.
+`ee.Request` publishes through the stream like any event (same ordering) with a
+core-NATS reply inbox in a header; the handler's `ctx.Reply` answers on it.
+The bus-level `Request` is the same path.
 
 ## Tests
 

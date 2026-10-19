@@ -20,6 +20,11 @@ import (
 func main() {
 	ctx := context.Background()
 
+	// This process uses the in-memory bus and store. A deployed service swaps
+	// those for std/ee/store/postgres and std/ee/bus/nats (or kafka) and
+	// usually adds ee.WithMiddleware(ee.Dedup), ee.WithObserver, and a timer
+	// that calls env.ExpireDedup. Reads that must not see replica lag use
+	// ee.WithPrimary(ctx). See ee/README.md.
 	env := rkit.Must(ee.New(
 		ee.WithBus(mem.NewBus()),
 		ee.WithStore(mem.NewStore()),
@@ -67,4 +72,3 @@ func seed(ctx context.Context, s *Shop) error {
 
 	return nil
 }
-

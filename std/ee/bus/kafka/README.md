@@ -1,8 +1,9 @@
 # ee Kafka bus
 
 Kafka implementation of the [`ee`](../../../../ee) bus contract, on
-[franz-go](https://github.com/twmb/franz-go). Request/reply is not supported:
-the bus does not implement `bus.Requester`.
+[franz-go](https://github.com/twmb/franz-go). `ee.Request` is not supported:
+the bus does not implement `bus.Requester`. Use NATS when a handler must
+answer the publisher.
 
 ```go
 b, err := kafka.New(kafka.WithBrokers("localhost:9092")) // or EE_KAFKA_BROKERS

@@ -160,7 +160,10 @@ func (s *scope) tracking(schema *entitySchema, ptr reflect.Value) (*trackedEntit
 	tr, ok := s.tracked[entityKey{schema.name, id}]
 	switch {
 	case !ok:
-		return nil, id, fmt.Errorf("%w: %s/%s", ErrNotLoaded, schema.name, id)
+		return nil, id, fmt.Errorf(
+			"%w: %s/%s (Get it in this unit of work first)",
+			ErrNotLoaded, schema.name, id,
+		)
 	case tr.deleted:
 		return nil, id, fmt.Errorf("%w: %s/%s", ErrNotFound, schema.name, id)
 	default:
@@ -216,6 +219,31 @@ func (s *scope) dirty(tr *trackedEntity, ptr reflect.Value) (bool, error) {
 	return !bytes.Equal(data, tr.snapshot), nil
 }
 
+// rejectUnsaved fails the unit of work when WithRequireSave is set and a
+// tracked entity was mutated without Save.
+func (s *scope) rejectUnsaved() error {
+	if !s.env.requireSave {
+		return nil
+	}
+
+	for k, tr := range s.tracked {
+		if tr.deleted {
+			continue
+		}
+
+		changed, err := s.dirty(tr, tr.ptr)
+		if err != nil {
+			return err
+		}
+
+		if changed {
+			return fmt.Errorf("ee: %s/%s changed without Save; call Save or use WithAutoSave", k.kind, k.id)
+		}
+	}
+
+	return nil
+}
+
 // saveDirty saves every tracked state that changed since it was last read or
 // written (WithAutoSave).
 func (s *scope) saveDirty() error {
@@ -244,6 +272,10 @@ func (s *scope) saveDirty() error {
 // commit runs at the end of a successful unit of work, inside the
 // transaction.
 func (s *scope) commit() error {
+	if err := s.rejectUnsaved(); err != nil {
+		return err
+	}
+
 	if s.env.autoSave {
 		if err := s.saveDirty(); err != nil {
 			return err

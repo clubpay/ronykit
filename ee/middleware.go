@@ -2,12 +2,12 @@ package ee
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"slices"
 	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
-	"github.com/clubpay/ronykit/x/rkit"
 )
 
 // Delivery describes the event an action is about to handle.
@@ -55,7 +55,8 @@ const DedupKind = "ee.dedup"
 // at-least-once. Two replicas racing on the same duplicate collide on the
 // marker insert; the loser's unit of work is retried and then skipped.
 //
-// Markers are never removed by ee; expire them with backend tooling.
+// Markers are not removed as events are handled. Call Env.ExpireDedup on a
+// schedule to drop markers older than your redelivery window.
 func Dedup(next Next) Next {
 	return func(ctx context.Context, d *Delivery) error {
 		key := d.Owner + "/" + d.ID
@@ -72,10 +73,73 @@ func Dedup(next Next) Next {
 			return err
 		}
 
-		// MarshalJSON fails only for years outside [0, 9999], which time.Now
-		// cannot produce.
-		at := rkit.Ok(time.Now().UTC().MarshalJSON())
+		payload, err := json.Marshal(struct {
+			At time.Time `json:"at"`
+		}{At: time.Now().UTC()})
+		if err != nil {
+			return err
+		}
 
-		return d.Tx.Insert(ctx, store.Record{Kind: DedupKind, ID: key, Version: 1, Data: at})
+		return d.Tx.Insert(ctx, store.Record{Kind: DedupKind, ID: key, Version: 1, Data: payload})
 	}
+}
+
+// ExpireDedup deletes Dedup markers whose timestamp is strictly before
+// before, plus markers whose payload is not a timestamp. It returns how many
+// records were deleted. Run it outside the request path; a day or more past
+// your bus redelivery window is a safe cutoff.
+func (e *Env) ExpireDedup(ctx context.Context, before time.Time) (int, error) {
+	if e.store == nil {
+		return 0, errors.New("ee: store is required")
+	}
+
+	var n int
+
+	err := e.store.Tx(ctx, func(ctx context.Context, tx store.Tx) error {
+		type doomed struct {
+			id      string
+			version uint64
+		}
+
+		var drop []doomed
+
+		for rec, err := range tx.Find(ctx, store.Query{Kind: DedupKind}) {
+			if err != nil {
+				return err
+			}
+
+			at, ok := dedupTime(rec.Data)
+			if !ok || at.Before(before) {
+				drop = append(drop, doomed{rec.ID, rec.Version})
+			}
+		}
+
+		for _, d := range drop {
+			if err := tx.Delete(ctx, DedupKind, d.id, d.version); err != nil {
+				return err
+			}
+
+			n++
+		}
+
+		return nil
+	})
+
+	return n, err
+}
+
+func dedupTime(data []byte) (time.Time, bool) {
+	var marker struct {
+		At time.Time `json:"at"`
+	}
+	if err := json.Unmarshal(data, &marker); err == nil && !marker.At.IsZero() {
+		return marker.At, true
+	}
+
+	var at time.Time
+	if err := json.Unmarshal(data, &at); err != nil || at.IsZero() {
+		return time.Time{}, false
+	}
+
+	return at, true
 }

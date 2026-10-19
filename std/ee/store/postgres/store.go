@@ -16,6 +16,7 @@ import (
 	"os"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/clubpay/ronykit/ee/store"
 	"github.com/clubpay/ronykit/std/ee/store/postgres/internal/db"
@@ -210,19 +211,38 @@ func (s *Store) readPool(ctx context.Context) *pgxpool.Pool {
 	return s.replicas[s.next.Add(1)%uint64(len(s.replicas))]
 }
 
-type forcePrimaryKey struct{}
-
 // ForcePrimary makes View read from the primary, for read-your-writes right
 // after a write: orders.Get(postgres.ForcePrimary(ctx), id).
+// ee.WithPrimary is the same mark and does not require this import.
 func ForcePrimary(ctx context.Context) context.Context {
-	return context.WithValue(ctx, forcePrimaryKey{}, true)
+	return store.WithPrimary(ctx)
 }
 
 func forcedPrimary(ctx context.Context) bool {
-	v := rkit.TryCast[bool](ctx.Value(forcePrimaryKey{}))
-
-	return v
+	return store.PrimaryRead(ctx)
 }
+
+// OutboxStats reports the unpublished backlog, including leased entries.
+func (s *Store) OutboxStats(ctx context.Context) (store.OutboxStats, error) {
+	var (
+		n      int64
+		oldest *time.Time
+	)
+
+	err := s.primary.QueryRow(ctx, `SELECT count(*), min(created_at) FROM ee_outbox`).Scan(&n, &oldest)
+	if err != nil {
+		return store.OutboxStats{}, mapError(err)
+	}
+
+	st := store.OutboxStats{Pending: int(n)}
+	if oldest != nil {
+		st.Oldest = *oldest
+	}
+
+	return st, nil
+}
+
+var _ store.StatsReporter = (*Store)(nil)
 
 // PgxTx unwraps a transaction handed out by this store (e.g. from
 // ActionCtx.Tx or ee.Delivery.Tx), so sqlc-generated queries can run in it:

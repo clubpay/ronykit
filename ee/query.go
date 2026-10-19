@@ -22,7 +22,13 @@ const (
 
 // Query filters states on their top-level fields, referenced by Go field
 // name. Build it with Where and chain the rest; the zero Query matches
-// everything. Execution and optimization are up to the store backend.
+// everything.
+//
+// Every store accepts Eq, Neq, Gt, Gte, Lt, Lte and In on top-level fields.
+// Postgres serves Eq (except time) with JSONB containment, which GINIndex
+// can index, and the other operators by casting the JSON value (string,
+// number, bool, time). Nested fields are not queryable. A hot kind can
+// replace Find per backend (postgres.WithFind).
 type Query struct {
 	where   []store.Cond
 	orderBy []store.Order

@@ -54,6 +54,33 @@ func newStore(t *testing.T, opts ...postgres.Option) *postgres.Store {
 	return s
 }
 
+func TestOutboxStats(t *testing.T) {
+	s := newStore(t)
+	ctx := t.Context()
+
+	st, err := s.OutboxStats(ctx)
+	if err != nil || st.Pending != 0 || !st.Oldest.IsZero() {
+		t.Fatalf("empty %+v, %v", st, err)
+	}
+
+	created := time.Now().Add(-time.Minute).UTC().Truncate(time.Microsecond)
+	err = s.Tx(ctx, func(ctx context.Context, tx store.Tx) error {
+		return tx.AppendOutbox(ctx, store.OutboxEntry{ID: "e1", Data: []byte(`{}`), CreatedAt: created})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	st, err = s.OutboxStats(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if st.Pending != 1 || st.Oldest.Sub(created).Abs() > time.Second {
+		t.Fatalf("stats %+v", st)
+	}
+}
+
 func TestConformance(t *testing.T) {
 	storetest.Run(t, func(t *testing.T) store.Store { return newStore(t, postgres.WithFetchSize(7)) })
 }
@@ -211,6 +238,10 @@ func TestReplicaRouting(t *testing.T) {
 
 	if _, err := orders.Get(postgres.ForcePrimary(ctx), "o1"); err != nil {
 		t.Errorf("ForcePrimary must read the primary: %v", err)
+	}
+
+	if _, err := orders.Get(ee.WithPrimary(ctx), "o1"); err != nil {
+		t.Errorf("ee.WithPrimary must read the primary: %v", err)
 	}
 
 	// Writes always go to the primary, even through Update's read.
