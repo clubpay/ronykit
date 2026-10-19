@@ -24,7 +24,8 @@ const (
 	SyncSectionBackend  = "backend"
 	SyncSectionFrontend = "frontend"
 	SyncSectionAll      = "all"
-	// SkillSyncInstalled updates only skills already present in .agents/skills.
+	// SkillSyncInstalled refreshes skills already installed under .agents/skills,
+	// .cursor/skills, or .claude/skills. It does not add new catalog skills.
 	SkillSyncInstalled = "installed"
 )
 

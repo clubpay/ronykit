@@ -78,7 +78,7 @@ ronyup setup sync --only devops
 # Refresh agent guidance and hooks from the latest skeleton
 ronyup setup sync --only agents,hooks --overwrite
 
-# Update skills already installed under .agents/skills/
+# Update skills already installed under .agents/skills/, .cursor/skills/, and .claude/skills/
 ronyup setup sync --only skills --overwrite --skills installed
 ```
 
@@ -91,7 +91,7 @@ Sections (`--only`):
 | `hooks`    | `.cursor/hooks/`, `hooks.json`                                                                          |
 | `devops`   | `devops/devbox/`                                                                                        |
 | `docs`     | `docs/design/README.MD`                                                                                 |
-| `skills`   | `.agents/skills/ronykit-framework` + installed catalog skills                                           |
+| `skills`   | `.agents/skills/`, `.cursor/skills/`, `.claude/skills/` (`ronykit-framework` + installed catalog skills) |
 | `backend`  | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing; does not migrate `cmd/all-in-one`) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD`                                                           |
 | `all`      | all sections applicable to the detected workspace kind (default)                                        |

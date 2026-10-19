@@ -7,8 +7,9 @@ above — do not duplicate them here. Add content below only if it is specific t
 Claude Code mechanism itself, never repo rules (those belong in AGENTS.md so every tool
 gets them).
 
-Shared skills ship under .agents/skills/ and are routed from AGENTS.md by path — read
-them there. Claude-Code-specific config, when you need it, lives under:
+Shared skills ship under .agents/skills/, .cursor/skills/, and .claude/skills/.
+AGENTS.md routes reads to the .agents copy — read them there. Claude-Code-specific
+config, when you need it, lives under:
   .claude/rules/         path-scoped rules (frontmatter `paths:`)
   .claude/settings.json  permissions / deny-read rules
 -->

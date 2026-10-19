@@ -43,7 +43,7 @@ Command locations: `knowledge://ronyup/architecture/workspace-commands` (Go work
 - `devops/` — `devops/devbox/` installs optional platform services (Postgres, Redis, Temporal, RustFS/S3, …) into a Kubernetes cluster via Helm. Default `cluster.mode: existing` uses your kubeconfig; set `vagrant` for a local microk8s VM.
 - `docs/` — design documents (`docs/design/<feature>-srs.md`, `…-sdd.md`) and guides.
 - `.ai/mcp/mcp.json`, `.cursor/mcp.json` — preconfigured client config so IDEs pick up the `ronyup mcp` server.
-- `.agents/skills/ronykit-framework/` — the agent skill.
+- `.agents/skills/ronykit-framework/`, `.cursor/skills/ronykit-framework/`, `.claude/skills/ronykit-framework/` — the agent skill (same content in each tree).
 - `AGENTS.md` — agent guidance.
 
 ## Module paths and command location

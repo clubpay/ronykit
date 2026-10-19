@@ -271,7 +271,7 @@ ronyup setup sync --only skills --overwrite --skills installed
 ronyup setup sync --only backend --overwrite
 ```
 
-`--skills installed` refreshes the skills already in the workspace and swaps retired skills for their replacements (`clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code` → `go-design`). With `--overwrite`, the retired directories are deleted; without it, sync only reports them. New catalog skills are not added in this mode: pass `--skills default` or a skill ID to install them.
+`--skills installed` refreshes skills already present under `.agents/skills/`, `.cursor/skills/`, and `.claude/skills/`, and swaps retired skills for their replacements (`clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code` → `go-design`). With `--overwrite`, the retired directories are deleted from each of those trees; without it, sync only reports them. New catalog skills are not added in this mode: pass `--skills default` or a skill ID to install them.
 
 ---
 
@@ -431,7 +431,7 @@ The server exposes markdown resources (architecture, `x/` packages, characterist
 
 ### Agent skill
 
-Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor and other compatible agents discover it automatically. Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources (without duplicating the knowledge base).
+Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/`, `.cursor/skills/`, and `.claude/skills/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor, Claude Code, and other compatible agents discover it from those trees. Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources (without duplicating the knowledge base).
 
 ### Workflow Example
 

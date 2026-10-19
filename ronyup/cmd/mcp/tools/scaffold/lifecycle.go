@@ -116,7 +116,8 @@ func registerSyncWorkspace(srv *mcpsdk.Server) {
 					"Replace existing scaffold files. Default: add missing files only.",
 				),
 				"skills": stringSliceArg(
-					"Skills sync mode for the skills section: installed (default), " +
+					"Skills sync mode for the skills section: installed (default; refresh " +
+						"skills already in .agents/skills, .cursor/skills, or .claude/skills), " +
 						"default, all, none, or explicit skill IDs.",
 				),
 			},

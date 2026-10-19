@@ -14,8 +14,8 @@ type TemplateInput struct {
 	BundleName string
 	// Kind is the workspace layout; templates use it to render layout-specific guidance.
 	Kind string
-	// Skills lists the agent skills pre-installed into .agents/skills so
-	// templates (e.g. AGENTS.md) can reference them.
+	// Skills lists the agent skills installed into .agents/skills, .cursor/skills,
+	// and .claude/skills so templates (e.g. AGENTS.md) can reference them.
 	Skills []SkillInfo
 }
 
