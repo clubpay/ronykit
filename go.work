@@ -34,6 +34,7 @@ use (
 	./x/batch
 	./x/cache
 	./x/datasource
+	./x/decide
 	./x/di
 	./x/i18n
 	./x/p
