@@ -30,7 +30,7 @@ func selectSkillsInteractive() error {
 		huh.NewGroup(
 			huh.NewMultiSelect[string]().
 				Title("Agent Skills").
-				Description("Pre-install agent skills into .agents/.cursor/.claude/skills (space to toggle)").
+				Description("Pre-install agent skills into .agents/skills (Claude Code gets a symlink; space to toggle)").
 				Options(options...).
 				Value(&selected),
 		),

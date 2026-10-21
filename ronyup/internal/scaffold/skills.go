@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -11,9 +12,10 @@ import (
 )
 
 // SkillDef describes a bundled agent skill that can be pre-installed into a new
-// workspace under .agents/skills/<ID>, .cursor/skills/<ID>, and .claude/skills/<ID>.
-// Skills are curated defaults for testing,
-// modern code, formatting, and review workflows.
+// workspace under .agents/skills/<ID>. Claude Code does not read that tree, so
+// .claude/skills/<ID> is a symlink to it. Cursor and Codex read .agents/skills
+// directly. Skills are curated defaults for testing, modern code, formatting,
+// and review workflows.
 type SkillDef struct {
 	// ID is both the skill directory name and the value used by the --skills flag.
 	ID string
@@ -460,40 +462,118 @@ func selectedSkillInfos(ids []string) []SkillInfo {
 	return infos
 }
 
-// skillInstallRoots are the trees where catalog skills are installed so Cursor,
-// Claude Code, and generic agents can auto-discover them.
+// skillInstallRoots are trees that may hold a skill from this ronyup or an
+// older one that copied the same skill into every agent directory. Discovery
+// and retirement scan all of them. New installs write only agentsSkillRoot.
 func skillInstallRoots(skillsRoot string) []string {
 	return []string{
-		filepath.Join(skillsRoot, ".agents", "skills"),
+		agentsSkillRoot(skillsRoot),
 		filepath.Join(skillsRoot, ".cursor", "skills"),
 		filepath.Join(skillsRoot, ".claude", "skills"),
 	}
 }
 
+func agentsSkillRoot(skillsRoot string) string {
+	return filepath.Join(skillsRoot, ".agents", "skills")
+}
+
+// claudeSkillLinkTarget is the relative link Claude Code follows from
+// .claude/skills/<id> to the canonical skill tree.
+func claudeSkillLinkTarget(id string) string {
+	return filepath.Join("..", "..", ".agents", "skills", id)
+}
+
 // CopySkills copies the selected skill directories from the embedded FS into
-// .agents/skills/<id>, .cursor/skills/<id>, and .claude/skills/<id>.
+// .agents/skills/<id> and points .claude/skills/<id> at that directory.
 func CopySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
 	return copySkills(skillsRoot, ids, callback)
 }
 
 func copySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
-	for _, dest := range skillInstallRoots(skillsRoot) {
-		for _, id := range ids {
-			if !skillExists(id) {
-				continue
-			}
+	for _, id := range ids {
+		if !skillExists(id) {
+			continue
+		}
 
-			err := z.CopyDir(z.CopyDirParams{
-				FS:             internal.Skeleton,
-				SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
-				DestPathPrefix: filepath.Join(dest, id),
-				Callback:       callback,
-			})
-			if err != nil {
-				return fmt.Errorf("copy skill %q to %s: %w", id, dest, err)
-			}
+		dest := filepath.Join(agentsSkillRoot(skillsRoot), id)
+
+		err := z.CopyDir(z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
+			DestPathPrefix: dest,
+			Callback:       callback,
+		})
+		if err != nil {
+			return fmt.Errorf("copy skill %q to %s: %w", id, dest, err)
+		}
+
+		if err := installSkillLinks(skillsRoot, id, callback); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+// installSkillLinks makes Claude Code see the canonical skill and drops a
+// legacy .cursor/skills copy so the two trees cannot drift.
+func installSkillLinks(skillsRoot, id string, callback func(filePath string, dir bool)) error {
+	link := filepath.Join(skillsRoot, ".claude", "skills", id)
+	target := claudeSkillLinkTarget(id)
+
+	if err := os.MkdirAll(filepath.Dir(link), 0o755); err != nil {
+		return fmt.Errorf("claude skills dir: %w", err)
+	}
+
+	if err := replaceWithSymlink(link, target); err != nil {
+		return fmt.Errorf("link claude skill %q: %w", id, err)
+	}
+
+	if callback != nil {
+		callback(link, false)
+	}
+
+	cursorCopy := filepath.Join(skillsRoot, ".cursor", "skills", id)
+	if _, err := os.Lstat(cursorCopy); err == nil {
+		if err := os.RemoveAll(cursorCopy); err != nil {
+			return fmt.Errorf("remove cursor skill copy %q: %w", id, err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("stat cursor skill copy %q: %w", id, err)
+	}
+
+	return nil
+}
+
+// skillDirEntry reports whether a skills-root entry is a skill directory.
+// Symlinks count: Claude Code entries are links to .agents/skills/<id>.
+func skillDirEntry(root string, e os.DirEntry) bool {
+	if e.IsDir() {
+		return true
+	}
+
+	info, err := os.Stat(filepath.Join(root, e.Name()))
+
+	return err == nil && info.IsDir()
+}
+
+// replaceWithSymlink points path at target. An existing directory is removed
+// first so a previous full copy does not shadow the canonical tree.
+func replaceWithSymlink(path, target string) error {
+	if info, err := os.Lstat(path); err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			existing, err := os.Readlink(path)
+			if err == nil && existing == target {
+				return nil
+			}
+		}
+
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	return os.Symlink(target, path)
 }

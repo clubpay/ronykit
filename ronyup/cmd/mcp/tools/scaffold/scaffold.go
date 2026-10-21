@@ -60,8 +60,8 @@ func registerSetupWorkspace(srv *mcpsdk.Server) {
 					"items": map[string]any{
 						schemaKeyType: schemaTypeString,
 					},
-					schemaKeyDescription: "Agent skills to pre-install into .agents/skills, .cursor/skills, and " +
-						".claude/skills. Skill IDs or the " +
+					schemaKeyDescription: "Agent skills to pre-install into .agents/skills. " +
+						".claude/skills/<id> is a symlink to that directory. Skill IDs or the " +
 						"tokens 'default' (kind defaults), 'all', or 'none'. Omit to install the " +
 						"defaults for the chosen kind.",
 				},

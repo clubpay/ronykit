@@ -204,6 +204,8 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 		))
 	}
 
+	rkit.Assert(installSkillLinks(in.repoRoot, "ronykit-framework", callback))
+
 	installSkills(log, in.repoRoot, in.resolvedSkills)
 
 	log.Println("Workspace created successfully")

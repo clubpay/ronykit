@@ -24,8 +24,9 @@ const (
 	SyncSectionBackend  = "backend"
 	SyncSectionFrontend = "frontend"
 	SyncSectionAll      = "all"
-	// SkillSyncInstalled refreshes skills already installed under .agents/skills,
-	// .cursor/skills, or .claude/skills. It does not add new catalog skills.
+	// SkillSyncInstalled refreshes skills already installed under .agents/skills.
+	// A legacy copy under .cursor/skills or .claude/skills still counts as installed.
+	// It does not add new catalog skills.
 	SkillSyncInstalled = "installed"
 )
 
@@ -324,28 +325,33 @@ func syncSkills(
 		skipExisting,
 		callback,
 		".agents/skills/ronykit-framework",
-		".claude/skills/ronykit-framework",
-		".cursor/skills/ronykit-framework",
 	); err != nil {
 		return err
 	}
 
-	for _, dest := range skillInstallRoots(layout.RepoRoot) {
-		for _, id := range skillIDs {
-			if id == "ronykit-framework" || !SkillExists(id) {
-				continue
-			}
+	if err := installSkillLinks(layout.RepoRoot, "ronykit-framework", callback); err != nil {
+		return err
+	}
 
-			err := z.CopyDir(z.CopyDirParams{
-				FS:             internal.Skeleton,
-				SrcPathPrefix:  filepath.ToSlash(filepath.Join(SkillsSrcPrefix, id)),
-				DestPathPrefix: filepath.Join(dest, id),
-				SkipExisting:   skipExisting,
-				Callback:       callback,
-			})
-			if err != nil {
-				return fmt.Errorf("skill %q: %w", id, err)
-			}
+	dest := agentsSkillRoot(layout.RepoRoot)
+	for _, id := range skillIDs {
+		if id == "ronykit-framework" || !SkillExists(id) {
+			continue
+		}
+
+		err := z.CopyDir(z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.ToSlash(filepath.Join(SkillsSrcPrefix, id)),
+			DestPathPrefix: filepath.Join(dest, id),
+			SkipExisting:   skipExisting,
+			Callback:       callback,
+		})
+		if err != nil {
+			return fmt.Errorf("skill %q: %w", id, err)
+		}
+
+		if err := installSkillLinks(layout.RepoRoot, id, callback); err != nil {
+			return err
 		}
 	}
 
@@ -480,7 +486,7 @@ func listInstalledSkillIDs(repoRoot string) []string {
 		}
 
 		for _, e := range entries {
-			if !e.IsDir() || e.Name() == "ronykit-framework" {
+			if e.Name() == "ronykit-framework" || !skillDirEntry(dest, e) {
 				continue
 			}
 

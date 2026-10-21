@@ -117,7 +117,7 @@ func registerSyncWorkspace(srv *mcpsdk.Server) {
 				),
 				"skills": stringSliceArg(
 					"Skills sync mode for the skills section: installed (default; refresh " +
-						"skills already in .agents/skills, .cursor/skills, or .claude/skills), " +
+						"skills already in .agents/skills), " +
 						"default, all, none, or explicit skill IDs.",
 				),
 			},
