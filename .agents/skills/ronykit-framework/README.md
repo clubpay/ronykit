@@ -41,7 +41,7 @@ cp .agents/skills/ronykit-framework/references/mcp-map.md ~/.agents/skills/$SKIL
 
 ## Scaffolded workspaces
 
-`ronyup setup workspace` installs the selected skills under `.agents/skills/`, `.cursor/skills/`, and `.claude/skills/`, and copies MCP config into the new repository.
+`ronyup setup workspace` installs the selected skills under `.agents/skills/`. Cursor and Codex read that tree. `.claude/skills/<id>` is a symlink to the same directory so Claude Code can discover it. MCP config is copied into the new repository.
 
 ## Maintenance
 

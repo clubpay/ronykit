@@ -81,13 +81,14 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 	for _, rel := range []string{
 		"verify.sh", ".cursor/hooks/backend-verify.sh",
 		".agents/skills/go-modern/SKILL.md",
-		".cursor/skills/go-modern/SKILL.md",
-		".claude/skills/go-modern/SKILL.md",
 	} {
 		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
 			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
 		}
 	}
+
+	assertClaudeSkillSymlink(t, filepath.Join(tmpDir, repoDir), "go-modern")
+	assertClaudeSkillSymlink(t, filepath.Join(tmpDir, repoDir), "ronykit-framework")
 
 	for _, rel := range []string{
 		"devops/devbox/Makefile", "devops/devbox/Vagrantfile", "devops/devbox/config.yaml",
@@ -166,13 +167,14 @@ func TestSetupWorkspaceCommand_FullstackLayout(t *testing.T) {
 		"backend/verify.sh", "backend/Makefile",
 		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh", ".cursor/hooks/backend-verify.sh",
 		".agents/skills/go-modern/SKILL.md",
-		".cursor/skills/go-modern/SKILL.md",
-		".claude/skills/go-modern/SKILL.md",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s to exist at the repo root: %v", rel, err)
 		}
 	}
+
+	assertClaudeSkillSymlink(t, root, "go-modern")
+	assertClaudeSkillSymlink(t, root, "ronykit-framework")
 
 	// The fullstack stop hook must be wired to the frontend verify script.
 	hooks, err := os.ReadFile(filepath.Join(root, ".cursor", "hooks.json"))
@@ -269,13 +271,14 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 		"docs", "AGENTS.md", ".ai/mcp/mcp.json",
 		".cursor/hooks.json", ".cursor/hooks/frontend-verify.sh",
 		".agents/skills/frontend-design",
-		".cursor/skills/frontend-design",
-		".claude/skills/frontend-design",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {
 			t.Fatalf("expected %s in frontend-only workspace: %v", rel, err)
 		}
 	}
+
+	assertClaudeSkillSymlink(t, root, "frontend-design")
+	assertClaudeSkillSymlink(t, root, "ronykit-framework")
 
 	// The Go workspace and backend-only artifacts must NOT be scaffolded.
 	for _, rel := range []string{
@@ -283,6 +286,7 @@ func TestSetupWorkspaceCommand_FrontendOnlyLayout(t *testing.T) {
 		"backend", ".cursor/hooks/backend-verify.sh",
 		".agents/skills/go-modern",
 		".cursor/skills/go-modern",
+		".cursor/skills/frontend-design",
 		".claude/skills/go-modern",
 	} {
 		if _, err := os.Stat(filepath.Join(root, rel)); !os.IsNotExist(err) {
@@ -503,5 +507,30 @@ func assertClaudeHooks(t *testing.T, root string, backend, frontend bool) {
 				t.Fatalf("did not expect %s in backend-only workspace (err=%v)", rel, err)
 			}
 		}
+	}
+}
+
+func assertClaudeSkillSymlink(t *testing.T, root, id string) {
+	t.Helper()
+
+	link := filepath.Join(root, ".claude", "skills", id)
+
+	got, err := os.Readlink(link)
+	if err != nil {
+		t.Fatalf("claude skill %s should be a symlink: %v", id, err)
+	}
+
+	want := filepath.Join("..", "..", ".agents", "skills", id)
+	if got != want {
+		t.Fatalf("claude skill %s link = %q, want %q", id, got, want)
+	}
+
+	if _, err := os.Stat(filepath.Join(link, "SKILL.md")); err != nil {
+		t.Fatalf("claude skill symlink %s does not resolve: %v", id, err)
+	}
+
+	cursor := filepath.Join(root, ".cursor", "skills", id)
+	if _, err := os.Lstat(cursor); !os.IsNotExist(err) {
+		t.Fatalf("did not expect .cursor/skills/%s (err=%v)", id, err)
 	}
 }

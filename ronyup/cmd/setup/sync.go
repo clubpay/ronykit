@@ -63,7 +63,7 @@ func init() {
 		"skills",
 		"s",
 		[]string{skillSyncInstalled},
-		"skills sync mode: installed (refresh skills already in .agents/.cursor/.claude/skills) | default | all | none | <skill-id>",
+		"skills sync mode: installed (refresh skills already in .agents/skills) | default | all | none | <skill-id>",
 	)
 	flags.StringVarP(
 		&opt.ApplicationName,

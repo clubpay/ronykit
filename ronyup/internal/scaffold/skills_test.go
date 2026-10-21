@@ -79,6 +79,44 @@ func TestResolveSkillSelection(t *testing.T) {
 	}
 }
 
+func assertCanonicalSkill(t *testing.T, root, id string) {
+	t.Helper()
+
+	skillFile := filepath.Join(root, ".agents", "skills", id, "SKILL.md")
+	if _, err := os.Stat(skillFile); err != nil {
+		t.Fatalf("expected skill file %s: %v", skillFile, err)
+	}
+
+	info, err := os.Lstat(filepath.Join(root, ".agents", "skills", id))
+	if err != nil {
+		t.Fatalf("stat agents skill %s: %v", id, err)
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		t.Fatalf(".agents/skills/%s must be a real directory", id)
+	}
+
+	link := filepath.Join(root, ".claude", "skills", id)
+	got, err := os.Readlink(link)
+	if err != nil {
+		t.Fatalf("claude skill %s should be a symlink: %v", id, err)
+	}
+
+	want := claudeSkillLinkTarget(id)
+	if got != want {
+		t.Fatalf("claude skill %s link = %q, want %q", id, got, want)
+	}
+
+	if _, err := os.Stat(filepath.Join(link, "SKILL.md")); err != nil {
+		t.Fatalf("claude skill symlink %s does not resolve: %v", id, err)
+	}
+
+	cursor := filepath.Join(root, ".cursor", "skills", id)
+	if _, err := os.Lstat(cursor); !os.IsNotExist(err) {
+		t.Fatalf("did not expect .cursor/skills/%s (err=%v)", id, err)
+	}
+}
+
 func filterCatalogOrderSlice(ids []string) []string {
 	set := map[string]bool{}
 	for _, id := range ids {
@@ -97,12 +135,7 @@ func TestCopySkillsWritesSkillFiles(t *testing.T) {
 	}
 
 	for _, id := range ids {
-		for _, dest := range skillInstallRoots(root) {
-			p := filepath.Join(dest, id, "SKILL.md")
-			if _, err := os.Stat(p); err != nil {
-				t.Fatalf("expected skill file %s: %v", p, err)
-			}
-		}
+		assertCanonicalSkill(t, root, id)
 	}
 
 	// A skill that was not requested must not be installed.
@@ -118,11 +151,7 @@ func TestCatalogSkillsExistInEmbedFS(t *testing.T) {
 			t.Fatalf("copySkills(%q) error: %v", s.ID, err)
 		}
 
-		for _, dest := range skillInstallRoots(root) {
-			if _, err := os.Stat(filepath.Join(dest, s.ID, "SKILL.md")); err != nil {
-				t.Fatalf("catalog skill %q missing SKILL.md under %s: %v", s.ID, dest, err)
-			}
-		}
+		assertCanonicalSkill(t, root, s.ID)
 	}
 }
 

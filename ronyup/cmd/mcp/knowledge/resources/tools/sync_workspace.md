@@ -47,7 +47,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 | `hooks` | `.cursor/hooks/`, `hooks.json`, `.claude/hooks/`, `.claude/settings.json` |
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
-| `skills` | `.agents/.cursor/.claude/skills/ronykit-framework` + catalog copies |
+| `skills` | `.agents/skills/ronykit-framework` + catalog skills; `.claude/skills/<id>` symlinks; removes a legacy `.cursor/skills/<id>` copy |
 | `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all applicable sections (default) |
