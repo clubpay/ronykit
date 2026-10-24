@@ -6,11 +6,16 @@ version: "2"
 # resource `knowledge://ronyup/architecture/package-selection` for the full map.
 # depguard only sees imports; hand-written copies of x/rkit helpers are caught by
 # `ronyup lint`, which verify.sh runs on every feature module.
+# errorlint and nilerr enforce knowledge://ronyup/architecture/service-correctness:
+# errors compared with errors.Is/As instead of ==, and no `return nil` after a
+# non-nil error check (which turns a failure into a silent success).
 run:
   tests: false
 linters:
   enable:
     - depguard
+    - errorlint
+    - nilerr
   settings:
     depguard:
       rules:
