@@ -91,6 +91,9 @@ Error handling: use `rony/errs` exclusively.
 - Define domain errors in `internal/domain/errors.go` using `errs.GenWrap(code, "ERROR_CODE")` for wrappable errors (where `code` is an
   `errs.ErrCode` value such as `errs.NotFound` or `errs.Internal`) and `errs.B().Code(code).Msg("ERROR_CODE").Err()` for static errors.
 - In handlers, wrap with `errs.B().Cause(err).Msg("OPERATION_FAILED").Err()`.
+- Map `sql.ErrNoRows` to the domain not-found error and give every other failure its own code; never report a failure as
+  `errs.NotFound`. Take the caller's identity from the verified token, never from the input DTO. Read
+  `knowledge://ronyup/architecture/service-correctness` before writing app or repo code.
 - Error codes are `SCREAMING_SNAKE_CASE`.
 
 STOP — package selection is mandatory. Before writing any helper, conversion, ID, log, config, cache, rate limiter, batcher, pool,

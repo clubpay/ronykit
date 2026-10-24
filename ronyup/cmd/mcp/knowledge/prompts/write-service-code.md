@@ -71,7 +71,9 @@ Follow the RonyKIT service structure conventions below.
 5. **Settings**: Use `x/settings` with typed struct and `settings` tags for configuration.
 6. **Logging**: Use `x/telemetry/logkit` exclusively — never raw log/slog/zap.
 7. **Error handling**: Use `rony/errs` exclusively. Define domain errors with `errs.GenWrap(code, "ERROR_CODE")` or
-   `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE.
+   `errs.B().Code(code).Msg("ERROR_CODE").Err()`. Error codes are SCREAMING_SNAKE_CASE. Keep not-found and real failures distinct, take the
+   caller's identity from the verified token, and register auth middleware before the handlers it protects — read
+   `knowledge://ronyup/architecture/service-correctness`.
 8. **Package selection (mandatory)**: Before hand-rolling a helper or importing a stdlib/third-party package, use the RonyKIT equivalent —
    read `knowledge://ronyup/architecture/package-selection`. Common helpers (IDs, JSON/byte casts, string↔number, case transforms, slice/map
    ops) → `x/rkit`; durable workflows → `flow` only (never `go.temporal.io/sdk`); infra connections → `x/datasource`;

@@ -25,5 +25,6 @@ Check the following:
 12. Common utilities use x/rkit (IDs, JSON/byte casts, string↔number, case transforms, collection ops) instead of hand-rolled loops, crypto/rand, google/uuid, or raw strconv/encoding/json. Run the MCP tool `check_rkit_usage` on the feature module and include every finding.
 13. Rate limiting uses x/ratelimit; in-memory caching uses x/cache; batching uses x/batch; pooling uses x/p — not third-party or hand-rolled equivalents.
 14. Forbidden imports: grep the feature for `go.temporal.io/sdk`, `log/slog`, `go.uber.org/zap`, `github.com/google/uuid` in non-test files and report each as a violation.
+15. Correctness (`knowledge://ronyup/architecture/service-correctness`): repos map only `sql.ErrNoRows` to not-found and no handler sets `errs.NotFound` on an arbitrary error; owned resources are checked against the caller's identity from the token, never an input DTO field; every handler is registered after its auth middleware in `Desc()`; no `context.Background()` in a request path; no select-then-insert where `ON CONFLICT` fits.
 
 Use `knowledge://ronyup/architecture/package-selection` as the reference for the correct RonyKIT package per concern. Report any violations and suggest specific fixes (name the exact RonyKIT package/function to switch to).
