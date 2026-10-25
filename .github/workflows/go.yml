@@ -8,15 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: [ '1.25' ]
-    name: Set up Go ${{ matrix.go }}
+    name: Test core modules
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go }}
+          # Read the version from go.work so this job cannot fall behind the
+          # workspace's `go` line (GOTOOLCHAIN=local refuses an older Go).
+          go-version-file: go.work
       - name: Run Tests
         run: |
           go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
