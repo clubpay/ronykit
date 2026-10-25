@@ -64,6 +64,7 @@ Read these when implementing or reviewing service code.
 | `middleware`            | Global middleware registration                   |
 | `handler-relay`         | Dynamic HTTP/WebSocket relay (`WithRelay`)       |
 | `error-handling`        | `rony/errs` patterns                             |
+| `service-correctness`   | Not-found vs failure, caller identity, middleware order, concurrent writes |
 | `logging`               | `logkit` usage                                   |
 | `tracing-metrics`       | `tracekit`, `meterkit`                           |
 | `flow-workflows`        | Workflow module layout                           |

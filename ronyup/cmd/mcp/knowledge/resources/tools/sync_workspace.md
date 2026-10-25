@@ -37,6 +37,9 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 - **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `kind` if needed.
 - **Retired skills**: skills removed from the catalog (for example `clean-architecture`, `refactoring-patterns`, `working-with-legacy-code` → `go-design`) are replaced in `installed` mode. With `overwrite: true` the retired directories are deleted; without it they are only reported.
 - **New catalog skills** are not added in `installed` mode. Use `skills: default` (or a skill ID) to pick them up.
+- **Lint config**: `overwrite: true` replaces `backend/.golangci.yml`. Newer skeletons enable `errorlint` and `nilerr`, so existing code
+  that compares errors with `==` or returns `nil` after a non-nil error check starts failing `make verify`. Fix those call sites, or keep
+  your own `.golangci.yml` by syncing other sections with `only`.
 
 ## Sections (`only`)
 

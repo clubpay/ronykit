@@ -34,7 +34,7 @@ For cross-service integration, consume those generated stubs from other services
 For data storage defaults, prefer Postgres with sqlc-managed repositories in `internal/repo/v0` unless the request explicitly requires
 another persistence stack.
 
-Four non-negotiable coding rules (read the linked resources before writing the corresponding code):
+Five non-negotiable coding rules (read the linked resources before writing the corresponding code):
 
 1. Model RICH domain entities — not anemic structs. Put behavior and invariants on the domain types: use entities (identity + guarded
    methods), value objects (immutable, validating constructors), and aggregates (a root owns its children and enforces cross-entity rules).
@@ -49,6 +49,9 @@ Four non-negotiable coding rules (read the linked resources before writing the c
    without Docker).
 4. Write the repo layer's SQL as sqlc queries (never hand-rolled query strings or an ORM), and run `make sqlc` after any query/migration
    change to regenerate the DAO code. Read `knowledge://ronyup/architecture/postgres-sqlc`.
+5. Keep request handling correct, not just compiling. Keep not-found and real failures distinct, take the caller's identity from the
+   verified token (never the input DTO), register auth middleware before the handlers it protects, and call `StopExecution()` when it
+   rejects a request. Read `knowledge://ronyup/architecture/service-correctness` before writing middleware, app, or repo code.
 
 Service package naming: use the feature name suffixed with "mod" (e.g. authmod, ledgermod, notifmod).
 
@@ -91,6 +94,8 @@ Error handling: use `rony/errs` exclusively.
 - Define domain errors in `internal/domain/errors.go` using `errs.GenWrap(code, "ERROR_CODE")` for wrappable errors (where `code` is an
   `errs.ErrCode` value such as `errs.NotFound` or `errs.Internal`) and `errs.B().Code(code).Msg("ERROR_CODE").Err()` for static errors.
 - In handlers, wrap with `errs.B().Cause(err).Msg("OPERATION_FAILED").Err()`.
+- Map `sql.ErrNoRows` to the domain not-found error and give every other failure its own code; never report a failure as
+  `errs.NotFound`.
 - Error codes are `SCREAMING_SNAKE_CASE`.
 
 STOP — package selection is mandatory. Before writing any helper, conversion, ID, log, config, cache, rate limiter, batcher, pool,
