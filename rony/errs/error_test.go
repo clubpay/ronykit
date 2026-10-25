@@ -57,3 +57,33 @@ func TestError(t *testing.T) {
 	}
 	t.Log("err5JSON2:", string(err5JSON2))
 }
+
+func TestCodeNamePopulated(t *testing.T) {
+	t.Parallel()
+
+	// The outward REST wire marshals the Error struct directly, so a missing
+	// CodeName used to serialize as "" — fill it at every construction site.
+	built := errs.B().Code(errs.NotFound).Msg("missing").Err()
+	e := &errs.Error{}
+	if !errors.As(built, &e) || e.CodeName != "not_found" {
+		t.Fatalf("builder CodeName = %q, want not_found", e.CodeName)
+	}
+
+	wrapped := errs.Wrap(built, "outer")
+	e = &errs.Error{}
+	if !errors.As(wrapped, &e) || e.CodeName != "not_found" {
+		t.Fatalf("wrap CodeName = %q, want not_found", e.CodeName)
+	}
+
+	wrappedCode := errs.WrapCode(built, errs.AlreadyExists, "outer")
+	e = &errs.Error{}
+	if !errors.As(wrappedCode, &e) || e.CodeName != "already_exists" {
+		t.Fatalf("wrapCode CodeName = %q, want already_exists", e.CodeName)
+	}
+
+	conv := errs.Convert(errors.New("plain"))
+	e = &errs.Error{}
+	if !errors.As(conv, &e) || e.CodeName != "unknown" {
+		t.Fatalf("convert CodeName = %q, want unknown", e.CodeName)
+	}
+}

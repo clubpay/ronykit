@@ -75,11 +75,12 @@ func Wrap(err error, msg string, metaPairs ...any) error {
 		return nil
 	}
 
-	e := &Error{Code: Unknown, Item: msg, underlying: err}
+	e := &Error{Code: Unknown, CodeName: Unknown.String(), Item: msg, underlying: err}
 
 	if ee, ok := errors.AsType[*Error](err); ok {
 		e.Details = ee.Details
 		e.Code = ee.Code
+		e.CodeName = ee.Code.String()
 		e.httpStatus = ee.httpStatus
 		e.Meta = mergeMeta(ee.Meta, metaPairs)
 	} else {
@@ -96,7 +97,7 @@ func WrapCode(err error, code ErrCode, msg string, metaPairs ...any) error {
 		return nil
 	}
 
-	e := &Error{Code: code, Item: msg, underlying: err}
+	e := &Error{Code: code, CodeName: code.String(), Item: msg, underlying: err}
 
 	ee := &Error{}
 	if errors.As(err, &ee) {
@@ -131,12 +132,14 @@ func Convert(err error) error {
 	if !errors.As(err, &se) {
 		return &Error{
 			Code:       Unknown,
+			CodeName:   Unknown.String(),
 			underlying: err,
 		}
 	}
 
 	out := &Error{
 		Code:       HTTPStatusToCode(se.Code()),
+		CodeName:   HTTPStatusToCode(se.Code()).String(),
 		Item:       se.Item(),
 		underlying: se,
 	}
@@ -145,6 +148,8 @@ func Convert(err error) error {
 	} else {
 		out.Code = ErrCode(code)
 	}
+
+	out.CodeName = out.Code.String()
 
 	var errMap map[string]any
 
