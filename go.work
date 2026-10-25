@@ -37,6 +37,7 @@ use (
 	./x/datasource
 	./x/decide
 	./x/di
+	./x/errs
 	./x/i18n
 	./x/p
 	./x/ratelimit
