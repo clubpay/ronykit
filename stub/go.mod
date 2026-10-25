@@ -4,9 +4,9 @@ go 1.26.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/clubpay/ronykit/kit v0.27.3
-	github.com/clubpay/ronykit/rony v0.27.3
-	github.com/clubpay/ronykit/x/rkit v0.6.3
+	github.com/clubpay/ronykit/kit v0.27.4
+	github.com/clubpay/ronykit/rony v0.27.5
+	github.com/clubpay/ronykit/x/rkit v0.6.4
 	github.com/fasthttp/websocket v1.5.12
 	github.com/stretchr/testify v1.12.1
 	github.com/valyala/fasthttp v1.75.0
@@ -18,7 +18,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/x/p v0.5.3 // indirect
+	github.com/clubpay/ronykit/x/p v0.5.4 // indirect
 	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

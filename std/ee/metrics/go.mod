@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/ee/metrics
 go 1.27.0
 
 require (
-	github.com/clubpay/ronykit/ee v0.0.2
-	github.com/clubpay/ronykit/x/telemetry v0.6.3
+	github.com/clubpay/ronykit/ee v0.0.5
+	github.com/clubpay/ronykit/x/telemetry v0.6.4
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/metric v1.47.0
 	go.opentelemetry.io/otel/sdk/metric v1.47.0
@@ -13,7 +13,7 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.6.3 // indirect
+	github.com/clubpay/ronykit/x/rkit v0.6.4 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect

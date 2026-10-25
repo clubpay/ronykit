@@ -3,7 +3,7 @@ module github.com/clubpay/ronykit/x/decide
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/x/rkit v0.6.3
+	github.com/clubpay/ronykit/x/rkit v0.6.4
 	github.com/stretchr/testify v1.12.1
 )
 

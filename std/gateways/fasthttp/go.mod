@@ -3,9 +3,9 @@ module github.com/clubpay/ronykit/std/gateways/fasthttp
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/kit v0.27.3
-	github.com/clubpay/ronykit/x/p v0.5.3
-	github.com/clubpay/ronykit/x/rkit v0.6.3
+	github.com/clubpay/ronykit/kit v0.27.4
+	github.com/clubpay/ronykit/x/p v0.5.4
+	github.com/clubpay/ronykit/x/rkit v0.6.4
 	github.com/fasthttp/router v1.5.4
 	github.com/fasthttp/websocket v1.5.12
 	github.com/goccy/go-reflect v1.2.0

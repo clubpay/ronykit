@@ -3,16 +3,16 @@ module github.com/clubpay/ronykit/x/errs
 go 1.26.0
 
 require (
-	github.com/clubpay/ronykit/rony v0.27.3
+	github.com/clubpay/ronykit/rony v0.27.5
 	github.com/stretchr/testify v1.12.1
 )
 
 require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
-	github.com/clubpay/ronykit/kit v0.27.3 // indirect
-	github.com/clubpay/ronykit/stub v0.27.3 // indirect
-	github.com/clubpay/ronykit/x/p v0.5.3 // indirect
-	github.com/clubpay/ronykit/x/rkit v0.6.3 // indirect
+	github.com/clubpay/ronykit/kit v0.27.4 // indirect
+	github.com/clubpay/ronykit/stub v0.27.4 // indirect
+	github.com/clubpay/ronykit/x/p v0.5.4 // indirect
+	github.com/clubpay/ronykit/x/rkit v0.6.4 // indirect
 	github.com/fasthttp/websocket v1.5.12 // indirect
 	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
