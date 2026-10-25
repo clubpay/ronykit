@@ -37,7 +37,12 @@ func (b *Builder) Code(c ErrCode) *Builder {
 	return b
 }
 
-// Msg sets the error message if it is not already set
+// Msg sets the error message if it is not already set.
+//
+// Caution: Cause inherits the cause's message into the builder when the
+// message is unset, so a Msg call chained AFTER Cause becomes a no-op when
+// the cause is an *Error with a non-empty Item. Set Msg before Cause, or
+// use MsgX to overwrite.
 func (b *Builder) Msg(msg string) *Builder {
 	if b.msgSet {
 		return b
@@ -55,6 +60,7 @@ func (b *Builder) MsgX(msg string) *Builder {
 }
 
 // Msgf is like Msg but uses fmt.Sprintf to construct the message.
+// It is subject to the same Cause-inheritance caution as Msg.
 func (b *Builder) Msgf(format string, args ...any) *Builder {
 	if b.msgSet {
 		return b
@@ -78,6 +84,10 @@ func (b *Builder) Meta(metaPairs ...any) *Builder {
 }
 
 // Details sets the details.
+//
+// Caution: a Details call chained AFTER Cause is silently dropped, because
+// Cause inherits the cause's details and marks them as set. Set Details
+// before Cause, or use DetailsX to overwrite.
 func (b *Builder) Details(det ErrDetails) *Builder {
 	if b.detSet {
 		return b
@@ -157,6 +167,7 @@ func (b *Builder) Err() error {
 
 	e := &Error{
 		Code:       code,
+		CodeName:   code.String(),
 		Item:       msg,
 		Meta:       mergeMeta(errMeta, b.meta),
 		Details:    b.det,
