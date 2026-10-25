@@ -48,6 +48,24 @@ every handler registered after the group.
 
 Put auth middleware first in `Desc()`, and list any public handler explicitly with a comment saying why it is public.
 
+Rejecting a request takes `ctx.StopExecution()`. Writing an error and returning does not stop the chain, because `kit.Context.Next` keeps
+calling the remaining handlers until the index is aborted. Auth middleware that sends a 401 and returns without `StopExecution()` still runs
+the protected handler.
+
+```go
+func requireCaller(ctx *kit.Context) {
+	caller, err := verifyToken(ctx)
+	if err != nil {
+		ctx.Out().SetMsg(errs.B().Code(errs.Unauthenticated).Msg("UNAUTHENTICATED").Err()).Send()
+		ctx.StopExecution()
+
+		return
+	}
+
+	ctx.Set(callerKey, caller)
+}
+```
+
 ## Context goes all the way down
 
 Handlers pass `ctx.Context()` into `internal/app`, and app methods pass it into repos, stubs, and `flow`. Never start a new
