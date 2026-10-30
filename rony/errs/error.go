@@ -1,7 +1,9 @@
-// Package errs provides structured error handling for Encore applications.
+// Package errs provides RonyKit's structured errors and service-facing error conventions.
 //
-// See https://encore.dev/docs/develop/errors for more information about how errors work within Encore
-// applications.
+// Error combines a gRPC-style code, a stable item, client-visible details,
+// internal metadata, and a cause chain. The package provides construction,
+// wrapping, HTTP mapping, and wire conversion, plus Sentinel, Specify,
+// Annotate, and Boundary helpers for a consistent client-facing contract.
 package errs
 
 import (

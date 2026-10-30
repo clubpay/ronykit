@@ -4,57 +4,30 @@ import (
 	"errors"
 	"fmt"
 
-	core "github.com/clubpay/ronykit/rony/errs"
+	"github.com/clubpay/ronykit/x/rkit"
 )
 
-// ErrCode is re-exported so callers can stay in this package.
-type ErrCode = core.ErrCode
-
-// ErrDetails is re-exported so callers can stay in this package.
-type ErrDetails = core.ErrDetails
-
-// Re-exported gRPC-style codes for convenience.
-const (
-	OK                 = core.OK
-	Canceled           = core.Canceled
-	Unknown            = core.Unknown
-	InvalidArgument    = core.InvalidArgument
-	DeadlineExceeded   = core.DeadlineExceeded
-	NotFound           = core.NotFound
-	AlreadyExists      = core.AlreadyExists
-	PermissionDenied   = core.PermissionDenied
-	ResourceExhausted  = core.ResourceExhausted
-	FailedPrecondition = core.FailedPrecondition
-	Aborted            = core.Aborted
-	OutOfRange         = core.OutOfRange
-	Unimplemented      = core.Unimplemented
-	Internal           = core.Internal
-	Unavailable        = core.Unavailable
-	DataLoss           = core.DataLoss
-	Unauthenticated    = core.Unauthenticated
-)
-
-// DefaultFallbackItem is the item Boundary uses for errors that carry no
-// *core.Error identity. Callers should pass their own namespaced fallback
+// DefaultFallbackItem is the item Boundary uses for errors without a
+// non-empty *Error item. Callers should pass their own namespaced fallback
 // (e.g. "AUTOMATION_INTERNAL") instead.
 const DefaultFallbackItem = "INTERNAL"
 
-// Sentinel declares a shared domain sentinel: a *core.Error with a stable
+// Sentinel declares a shared domain sentinel: an *Error with a stable
 // item that callers match with errors.Is. Sentinels stay on the cause chain
 // of every error derived from them.
 func Sentinel(code ErrCode, item string) error {
-	return core.B().Code(code).Msg(item).Err()
+	return B().Code(code).Msg(item).Err()
 }
 
-// New builds a *core.Error with the given code and stable item.
+// New builds an *Error with the given code and stable item.
 func New(code ErrCode, item string) error {
-	return core.B().Code(code).Msg(item).Err()
+	return B().Code(code).Msg(item).Err()
 }
 
 // Newf is New with a formatted item. Prefer stable tokens; use it for
 // tokens built from a closed set of values, not free-form sentences.
 func Newf(code ErrCode, format string, args ...any) error {
-	return core.B().Code(code).Msgf(format, args...).Err()
+	return B().Code(code).Msgf(format, args...).Err()
 }
 
 // Specify returns an error that keeps sentinel on the cause chain (so
@@ -65,8 +38,8 @@ func Specify(sentinel error, item string) error {
 		return New(Unknown, item)
 	}
 
-	return core.B().
-		Code(core.Code(sentinel)).
+	return B().
+		Code(Code(sentinel)).
 		Msg(item).
 		Cause(sentinel).
 		Err()
@@ -84,12 +57,12 @@ func WithDetails(err error, det ErrDetails) error {
 		return nil
 	}
 
-	e := &core.Error{}
+	e := &Error{}
 	if !errors.As(err, &e) {
-		return core.B().Details(det).Cause(err).Err()
+		return B().Details(det).Cause(err).Err()
 	}
 
-	b := core.B().
+	b := B().
 		Code(e.Code).
 		MsgX(e.Item).
 		Details(det)
@@ -108,21 +81,21 @@ func WithDetails(err error, det ErrDetails) error {
 
 // Annotate marks err with the internal operation that failed (e.g.
 // "automation.Create"). It changes nothing on the wire: code, item and
-// details are preserved; the marker rides in Meta, which never leaves the
-// process. Use it at app-layer boundaries instead of rebuilding the error
-// with a generic message.
+// details are preserved; the marker rides in Meta, which is not exposed to
+// external clients. Use it at app-layer boundaries instead of rebuilding the
+// error with a generic message.
 func Annotate(err error, op string) error {
 	if err == nil {
 		return nil
 	}
 
-	return core.B().Meta("op", op).Cause(err).Err()
+	return B().Meta("op", op).Cause(err).Err()
 }
 
-// Boundary normalizes err at an API boundary into a wire-safe *core.Error.
+// Boundary normalizes err at an API boundary into a wire-safe *Error.
 //
-//   - If the chain already carries a *core.Error, its identity (code,
-//     codeName, item, details) is preserved.
+//   - If the chain already carries an *Error with a non-empty item, its
+//     identity (code, codeName, item, details) is preserved.
 //   - Anything else becomes Internal with fallbackItem (or
 //     DefaultFallbackItem when empty); the original error stays on the
 //     cause chain for logs, and Meta records where it escaped.
@@ -131,8 +104,8 @@ func Boundary(err error, fallbackItem string) error {
 		return nil
 	}
 
-	e := &core.Error{}
-	if errors.As(err, &e) {
+	e := &Error{}
+	if errors.As(err, &e) && e.Item != "" {
 		if e.CodeName == "" {
 			e.CodeName = e.Code.String()
 		}
@@ -140,11 +113,9 @@ func Boundary(err error, fallbackItem string) error {
 		return e
 	}
 
-	if fallbackItem == "" {
-		fallbackItem = DefaultFallbackItem
-	}
+	fallbackItem = rkit.Coalesce(fallbackItem, DefaultFallbackItem)
 
-	return core.B().
+	return B().
 		Code(Internal).
 		Msg(fallbackItem).
 		Meta("escaped", true).
