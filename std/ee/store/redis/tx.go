@@ -4,9 +4,9 @@ import (
 	"context"
 	"iter"
 	"slices"
-	"strconv"
 
 	"github.com/clubpay/ronykit/ee/store"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	goredis "github.com/redis/go-redis/v9"
 )
@@ -238,10 +238,7 @@ func (t *tx) find(ctx context.Context, q store.Query) ([]store.Record, error) {
 		rows = rows[:q.Limit]
 	}
 
-	out := make([]store.Record, len(rows))
-	for i, r := range rows {
-		out[i] = r.rec
-	}
+	out := rkit.Map(rows, func(r row) store.Record { return r.rec })
 
 	return out, nil
 }
@@ -271,7 +268,7 @@ func (t *tx) commit(ctx context.Context) error {
 			t.s.kindKey(k.kind),
 			k.id,
 			deleted,
-			strconv.FormatUint(w.rec.Version, 10),
+			rkit.UInt64ToStr(w.rec.Version),
 			string(w.rec.Data),
 		)
 	}
@@ -284,7 +281,7 @@ func (t *tx) commit(ctx context.Context) error {
 			e.ID,
 			e.PartitionKey,
 			string(e.Data),
-			strconv.FormatInt(e.CreatedAt.UnixNano(), 10),
+			rkit.Int64ToStr(e.CreatedAt.UnixNano()),
 		)
 	}
 

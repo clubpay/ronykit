@@ -343,7 +343,7 @@ func asInt64(v any) int64 {
 	case int:
 		return int64(x)
 	case string:
-		n, _ := strconv.ParseInt(x, 10, 64)
+		n := rkit.StrToInt64(x)
 
 		return n
 	default:
