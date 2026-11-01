@@ -1,47 +1,47 @@
-# ronyup: Scaffolding CLI and MCP Server
+# ronyup: Scaffolding CLI and MCP server
 
-`ronyup` is the CLI for scaffolding RonyKIT projects and features. It can also run as an MCP server to give AI assistants in your IDE full scaffolding and code generation capabilities.
+`ronyup` is a CLI that scaffolds RonyKIT projects and features. It also runs as an MCP server. AI assistants can use this server for scaffolding and code generation.
 
-## Table of Contents
+## Table of contents
 
 - [Installation](#installation)
-- [Create a Workspace](#create-a-workspace)
-- [Add a Feature](#add-a-feature)
-- [Executable Bundles](#executable-bundles)
-- [Upgrade an Older Workspace](#upgrade-an-older-workspace)
-- [Feature Templates](#feature-templates)
-- [Translation Catalogs](#translation-catalogs)
+- [Create a workspace](#create-a-workspace)
+- [Add a feature](#add-a-feature)
+- [Executable bundles](#executable-bundles)
+- [Upgrade an older workspace](#upgrade-an-older-workspace)
+- [Feature templates](#feature-templates)
+- [Translation catalogs](#translation-catalogs)
 - [Lint: x/rkit duplicates](#lint-xrkit-duplicates)
-- [MCP Server](#mcp-server)
+- [MCP server](#mcp-server)
   - [Setup for Cursor IDE](#setup-for-cursor-ide)
   - [Setup for JetBrains GoLand](#setup-for-jetbrains-goland)
-  - [Available MCP Tools](#available-mcp-tools)
-  - [Workflow Example](#workflow-example)
-  - [MCP Conventions](#mcp-conventions)
-- [Interactive Mode](#interactive-mode)
-- [Command Reference](#command-reference)
-
----
+  - [Available MCP tools](#available-mcp-tools)
+  - [Workflow example](#workflow-example)
+  - [MCP conventions](#mcp-conventions)
+- [Interactive mode](#interactive-mode)
+- [Command reference](#command-reference)
 
 ## Installation
 
-With [Homebrew](https://brew.sh/) (macOS/Linux):
+Install with [Homebrew](https://brew.sh/) on macOS or Linux:
 
 ```bash
 brew install clubpay/tap/ronyup
 ```
 
-This taps `clubpay/homebrew-tap` and installs a prebuilt `ronyup` binary for your
-platform (macOS or Linux, Intel or ARM). On [Homebrew 6+](https://docs.brew.sh/Tap-Trust),
-third-party taps require explicit trust; the fully-qualified install above handles that
-automatically. Upgrade later with `brew upgrade clubpay/tap/ronyup`. If you tapped
-`clubpay/tap` separately and install by short name, run
-`brew trust --formula clubpay/tap/ronyup` first.
+This command taps `clubpay/homebrew-tap`. It installs a prebuilt `ronyup` binary for macOS or Linux on Intel or ARM.
 
-Prebuilt binaries are also published on [GitHub Releases](https://github.com/clubpay/ronykit/releases)
-for tags like `ronyup/vX.Y.Z` (macOS, Linux, and Windows archives).
+[Homebrew 6 and later](https://docs.brew.sh/Tap-Trust) requires explicit trust for third-party taps. The fully qualified install command handles this requirement. Upgrade with `brew upgrade clubpay/tap/ronyup`.
 
-Or with the Go toolchain:
+If you tapped `clubpay/tap` separately, run this command before installation by short name:
+
+```bash
+brew trust --formula clubpay/tap/ronyup
+```
+
+[GitHub Releases](https://github.com/clubpay/ronykit/releases) also provides prebuilt binaries. Tags use the form `ronyup/vX.Y.Z`. Archives are available for macOS, Linux, and Windows.
+
+You can also install with the Go toolchain:
 
 ```bash
 go install github.com/clubpay/ronykit/ronyup@latest
@@ -53,11 +53,9 @@ Verify the installation:
 ronyup --help
 ```
 
----
+## Create a workspace
 
-## Create a Workspace
-
-Scaffold a new RonyKIT project with a complete workspace structure:
+Create a RonyKIT project with a complete workspace:
 
 ```bash
 ronyup setup workspace \
@@ -65,7 +63,7 @@ ronyup setup workspace \
     --repoModule github.com/you/my-api
 ```
 
-This creates:
+The command creates this structure:
 
 ```
 my-api/
@@ -80,14 +78,14 @@ my-api/
 └── .git/                # Initialized git repo
 ```
 
-The workspace is immediately runnable with `make run` or `cd cmd/all-in-one && go run .`.
+Run the workspace with `make run`. You can also run `cd cmd/all-in-one && go run .`.
 
 ### Workspace kinds
 
-Use `--kind` to choose the layout:
+Use `--kind` to select the layout:
 
-- **`backend`** (default) — a Go-only workspace at `repoDir`, as shown above.
-- **`fullstack`** — a `backend/` + `frontend/` split:
+- **`backend`** is the default. It creates a Go-only workspace at `repoDir`.
+- **`fullstack`** creates separate `backend/` and `frontend/` directories:
 
 ```
 my-api/
@@ -99,7 +97,9 @@ my-api/
 └── .ai/ .agents/ .cursor/   # AI assistant config (shared)
 ```
 
-In `fullstack` mode the Go module paths are prefixed with `backend/` (for example `github.com/you/my-api/backend/cmd/all-in-one`). Run `ronyup setup feature` and `make`/`go` commands from the `backend/` directory.
+In `fullstack` mode, Go module paths start with `backend/`. For example: `github.com/you/my-api/backend/cmd/all-in-one`.
+
+Run `ronyup setup feature`, `make`, and `go` commands from `backend/`.
 
 ```bash
 ronyup setup workspace \
@@ -110,9 +110,11 @@ ronyup setup workspace \
 
 ### Pre-installed agent skills
 
-Every workspace ships with the `ronykit-framework` skill. On top of that, `setup workspace` can pre-install a curated set of general-purpose **agent skills** under `.agents/skills/` — focused on modern code, testing, formatting, debugging, review, and commits. Cursor and Codex read that tree. `.claude/skills/<id>` is a symlink to it, because Claude Code does not discover `.agents/skills/`. Scaffolds do not copy skills into `.cursor/skills/`.
+Every workspace includes the `ronykit-framework` skill. `setup workspace` can also install general-purpose agent skills under `.agents/skills/`. These skills cover code style, testing, formatting, debugging, review, and commits.
 
-Use `--skills` (or `-s`) to choose which to install. Pass a comma-separated list of skill IDs, or one of the tokens `default`, `all`, or `none`:
+Cursor and Codex read `.agents/skills/`. Claude Code does not discover this directory. The scaffold creates `.claude/skills/<id>` as a symlink to the same skill. Scaffolds do not copy skills to `.cursor/skills/`.
+
+Use `--skills` or `-s` to select skills. Specify a comma-separated list of skill IDs. You can also use `default`, `all`, or `none`:
 
 ```bash
 # install the defaults for the chosen kind (same as omitting the flag)
@@ -129,74 +131,74 @@ ronyup setup workspace -r ./my-api -m github.com/you/my-api \
 ronyup setup workspace -r ./my-api -m github.com/you/my-api --skills none
 ```
 
-Running `ronyup setup` with no flags launches an interactive selector with the kind defaults pre-checked.
+Run `ronyup setup` without flags for an interactive selector. The selector preselects the defaults for the chosen kind.
 
-| Skill ID               | Category | Default        | Description                                                   |
-|------------------------|----------|----------------|---------------------------------------------------------------|
-| `go-modern`            | Go       | backend, fullstack | Idiomatic Go 1.25+/1.26 (generics, iterators, errors, context)|
-| `go-testing`           | Go       | backend, fullstack | Table-driven testify tests, mandatory x/testkit repo integration + app unit tests |
-| `go-design`            | Go       | backend, fullstack | Dependency direction, consumer-defined interfaces, composition over inheritance, safe refactoring, changing untested code |
-| `release-it`           | Architecture | backend, fullstack  | Timeouts, circuit breakers, bulkheads, health checks, observability |
-| `domain-driven-design` | Architecture | backend, fullstack  | Bounded contexts, aggregates, value objects mapped to feature modules |
-| `software-design-philosophy` | Architecture | backend, fullstack | Deep modules, information hiding, no pass-through layers |
-| `ddia-systems`         | Architecture | opt-in     | Storage, indexes, partitioning, isolation, idempotency        |
-| `writing-tests`        | Quality  | all kinds      | Language-agnostic TDD discipline and the test pyramid         |
-| `code-formatting`      | Quality  | all kinds      | Run formatters/linters; keep diffs clean before finishing     |
-| `systematic-debugging` | Quality  | all kinds      | Find root cause before fixing; reproduce, verify, prevent     |
-| `code-review`          | Quality  | all kinds      | Prioritized review for correctness, design, and risk          |
-| `verification-before-completion` | Quality | all kinds | Require fresh evidence before claiming work is done       |
-| `writing-plans`        | Workflow | all kinds      | Plan multi-step work into small, testable tasks first         |
-| `conventional-commits` | Workflow | all kinds      | Atomic commits with the Conventional Commits format           |
-| `technical-documentation` | Workflow | all kinds   | Google developer-docs style for READMEs, SRS/SDD prose, doc comments |
-| `nextjs-modern`        | Frontend | fullstack, frontend | Next.js 16 App Router, Server Components, Server Actions  |
-| `frontend-testing`     | Frontend | fullstack, frontend | Vitest + Testing Library and Playwright e2e best practices |
-| `storybook`            | Frontend | fullstack, frontend | Ensure every UI component ships with a Storybook story    |
-| `shadcn`               | Frontend | fullstack, frontend | Find, install, compose, and theme shadcn/ui components    |
-| `dashboard-ui`         | Frontend | fullstack, frontend | Dashboards/back-office (Operate mode): KPI strip, 4-tier hierarchy, tables |
-| `frontend-design`      | Frontend | fullstack, frontend | Required before UI bootstrap: surface mode, design questions, anti-slop |
-| `ux-quality`           | Frontend | fullstack, frontend | WCAG AA keyboard/focus, 8 interaction states, forms, copy, layout resilience |
-| `ui-polish`            | Frontend | fullstack, frontend | Exact surface, icon, microinteraction, and animation polish & motion perf |
-| `typography`           | Frontend | fullstack, frontend | Font pairing by mode, scales, unitless line-height, OpenType, JSX entities |
-| `design-tokens`        | Frontend | fullstack, frontend | 3-tier OKLCH token architecture, 4-tier text, dark mode, Tailwind/shadcn |
-| `react-performance`    | Frontend | fullstack, frontend | 70 React/Next.js perf rules: waterfalls, bundles, re-renders |
-| `composition-patterns` | Frontend | fullstack, frontend | Compound components, lifted state, explicit variants      |
-| `webmcp`               | Frontend | fullstack, frontend | Expose frontend features as agent-callable WebMCP tools   |
+| Skill ID | Category | Default | Description |
+|----------|----------|---------|-------------|
+| `go-modern` | Go | backend, fullstack | Idiomatic Go 1.25+/1.26, including generics, iterators, errors, and context |
+| `go-testing` | Go | backend, fullstack | Table-driven testify tests, required x/testkit repository integration tests, and app unit tests |
+| `go-design` | Go | backend, fullstack | Dependency direction, consumer-defined interfaces, composition, safe refactoring, and untested code |
+| `release-it` | Architecture | backend, fullstack | Timeouts, circuit breakers, bulkheads, health checks, and observability |
+| `domain-driven-design` | Architecture | backend, fullstack | Bounded contexts, aggregates, and value objects mapped to feature modules |
+| `software-design-philosophy` | Architecture | backend, fullstack | Deep modules, information hiding, and removal of pass-through layers |
+| `ddia-systems` | Architecture | opt-in | Storage, indexes, partitioning, isolation, and idempotency |
+| `writing-tests` | Quality | all kinds | Language-independent TDD discipline and the test pyramid |
+| `code-formatting` | Quality | all kinds | Formatters, linters, and clean diffs |
+| `systematic-debugging` | Quality | all kinds | Root-cause analysis, reproduction, verification, and prevention |
+| `code-review` | Quality | all kinds | Review priorities for correctness, design, and risk |
+| `verification-before-completion` | Quality | all kinds | Fresh evidence before completion claims |
+| `writing-plans` | Workflow | all kinds | Small, testable tasks for multi-step work |
+| `conventional-commits` | Workflow | all kinds | Atomic commits in the Conventional Commits format |
+| `technical-documentation` | Workflow | all kinds | Google developer documentation style for READMEs, SRS/SDD prose, and doc comments |
+| `nextjs-modern` | Frontend | fullstack, frontend | Next.js 16 App Router, Server Components, and Server Actions |
+| `frontend-testing` | Frontend | fullstack, frontend | Vitest, Testing Library, and Playwright end-to-end practices |
+| `storybook` | Frontend | fullstack, frontend | Storybook stories for UI components |
+| `shadcn` | Frontend | fullstack, frontend | Find, install, compose, and theme shadcn/ui components |
+| `dashboard-ui` | Frontend | fullstack, frontend | Dashboard and back-office surfaces with KPI strips, hierarchy, and tables |
+| `frontend-design` | Frontend | fullstack, frontend | Required surface mode, design questions, and design review before UI bootstrap |
+| `ux-quality` | Frontend | fullstack, frontend | WCAG AA keyboard and focus behavior, interaction states, forms, copy, and layout resilience |
+| `ui-polish` | Frontend | fullstack, frontend | Surface, icon, microinteraction, animation, and motion performance guidance |
+| `typography` | Frontend | fullstack, frontend | Font pairing, scales, line height, OpenType, and JSX entities |
+| `design-tokens` | Frontend | fullstack, frontend | Three-tier OKLCH tokens, four-tier text, dark mode, Tailwind, and shadcn |
+| `react-performance` | Frontend | fullstack, frontend | React and Next.js performance rules for waterfalls, bundles, and re-renders |
+| `composition-patterns` | Frontend | fullstack, frontend | Compound components, lifted state, and explicit variants |
+| `webmcp` | Frontend | fullstack, frontend | Frontend features exposed as agent-callable WebMCP tools |
 
-The installed skills are listed in the workspace's `AGENTS.md` with a **skill routing** table (task → which `SKILL.md` files to read).
+The workspace `AGENTS.md` lists installed skills. Its skill routing table maps tasks to the `SKILL.md` files that agents must read.
 
 ### Agent enforcement gates
 
-Scaffolded workspaces ship mechanical gates so agents cannot skip design or testing by accident:
+Scaffolded workspaces include automatic gates for design and testing:
 
-| Gate | Enforced by | What it checks |
-|------|-------------|----------------|
-| Backend SRS/SDD | `scaffold_feature` MCP tool | Approved `docs/design/<feature>-{srs,sdd}.md` before scaffolding |
-| Frontend design doc | `frontend/verify.sh` | Approved `docs/design/<app>-frontend-design.md` before UI verify passes |
-| Backend repo/app tests | `verify.sh` + Cursor and Claude Code `backend-verify` Stop hooks | Integration test per repo port method; unit test per `App` method; tests run green |
-| Package selection (imports) | `.golangci.yml` `depguard` via `verify.sh` | No forbidden imports (`go.temporal.io/sdk`, `log`/`slog`/`zap`, uuid/ulid/xid, `samber/lo`, strcase, copier) |
-| Package selection (code) | `ronyup lint` via `verify.sh` + Claude Code `backend-lint` PostToolUse hook | No hand-written copies of `x/rkit` helpers |
-| Frontend quality | `frontend/verify.sh` + Cursor and Claude Code `frontend-verify` Stop hooks | typecheck, lint, build, test, Storybook stories, UI polish checks |
+| Gate | Enforcement | Checks |
+|------|-------------|--------|
+| Backend SRS/SDD | `scaffold_feature` MCP tool | Approved `docs/design/<feature>-{srs,sdd}.md` files exist before scaffolding |
+| Frontend design document | `frontend/verify.sh` | Approved `docs/design/<app>-frontend-design.md` exists before UI verification passes |
+| Backend repository and app tests | `verify.sh` and Cursor and Claude Code `backend-verify` Stop hooks | Each repository port method has an integration test. Each `App` method has a unit test. Tests pass. |
+| Package selection for imports | `.golangci.yml` `depguard` through `verify.sh` | Forbidden imports are absent. Examples include `go.temporal.io/sdk`, logging packages, ID packages, `samber/lo`, strcase, and copier. |
+| Package selection for code | `ronyup lint` through `verify.sh` and Claude Code `backend-lint` PostToolUse hook | Handwritten copies of `x/rkit` helpers are absent |
+| Frontend quality | `frontend/verify.sh` and Cursor and Claude Code `frontend-verify` Stop hooks | Typecheck, lint, build, test, Storybook stories, and UI polish checks pass |
 
-MCP prompt `design-frontend` orchestrates the frontend bootstrap workflow (ask → design doc → approval → init → implement). Backend integration test conventions live in `knowledge://ronyup/architecture/integration-tests`.
+MCP prompt `design-frontend` coordinates frontend bootstrap. The sequence is questions, design document, approval, initialization, and implementation.
 
-> `verification-before-completion` and `writing-plans` are adapted from [obra/superpowers](https://github.com/obra/superpowers) (MIT).
+See `knowledge://ronyup/architecture/integration-tests` for backend integration test conventions.
+
+> `verification-before-completion` and `writing-plans` are adapted from [obra/superpowers](https://github.com/obra/superpowers) under the MIT license.
 
 ### Workspace flags
 
-| Flag           | Short | Description                                          | Default                |
-|----------------|-------|------------------------------------------------------|------------------------|
-| `--repoDir`    | `-r`  | Destination directory                                | `./my-repo`            |
-| `--repoModule` | `-m`  | Go module path                                       | `github.com/your/repo` |
-| `--appName`    | `-a`  | Application name                                     | `myapp`                |
-| `--kind`       | `-k`  | Layout: `backend`/`fullstack`                        | `backend`              |
-| `--skills`     | `-s`  | Skills to pre-install (IDs, or `default`/`all`/`none`)| kind defaults          |
-| `--force`      | `-f`  | Clean destination before setup                       | `false`                |
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--repoDir` | `-r` | Destination directory | `./my-repo` |
+| `--repoModule` | `-m` | Go module path | `github.com/your/repo` |
+| `--appName` | `-a` | Application name | `myapp` |
+| `--kind` | `-k` | Layout: `backend` or `fullstack` | `backend` |
+| `--skills` | `-s` | Skills to install: IDs or `default`, `all`, `none` | Kind defaults |
+| `--force` | `-f` | Clean the destination before setup | `false` |
 
----
+## Add a feature
 
-## Add a Feature
-
-Add a new service module to an existing workspace:
+Add a service module to an existing workspace:
 
 ```bash
 cd my-api
@@ -207,39 +209,37 @@ ronyup setup feature \
     --repoModule github.com/you/my-api
 ```
 
-This creates a fully structured feature module under `feature/users/` with:
+The command creates a feature module under `feature/users/`. The module includes:
 
 - API contracts and handler stubs
-- App layer (business logic)
-- Repository ports and adapters (with sqlc support)
-- Settings/config
-- DI wiring (uber/fx)
+- App layer for business logic
+- Repository ports and adapters with sqlc support
+- Settings and configuration
+- Dependency injection with uber/fx
 - Migration setup
 - Stub code generator
 
-The feature is automatically added to `go.work` and registered in `cmd/all-in-one/features.go`.
+The command adds the feature to `go.work`. It also registers the feature in `cmd/all-in-one/features.go`.
 
-By default, features are placed at `{featurePrefix}/{featureDir}/` (for example `feature/users/`). Pass `--groupByTemplate` (or `-g`) to place them at `{featurePrefix}/{template}/{featureDir}/` instead (for example `feature/service/users/`).
+The default feature path is `{featurePrefix}/{featureDir}/`, such as `feature/users/`. Use `--groupByTemplate` or `-g` for `{featurePrefix}/{template}/{featureDir}/`, such as `feature/service/users/`.
 
 ### Feature flags
 
-| Flag                | Short | Description                               | Default                |
-|---------------------|-------|-------------------------------------------|------------------------|
-| `--featurePrefix`   |       | Parent directory for feature modules      | `feature`              |
-| `--featureDir`      | `-p`  | Directory name inside the feature prefix  | `my_feature`           |
-| `--featureName`     | `-n`  | Feature name                              | `myfeature`            |
-| `--template`        | `-t`  | Template: `service` only                  | `service`              |
-| `--groupByTemplate` | `-g`  | Group under `{featurePrefix}/{template}/` | `false`                |
-| `--repoModule`      | `-m`  | Repository Go module path (auto-detected) | `github.com/your/repo` |
-| `--force`           | `-f`  | Replace existing feature directory        | `false`                |
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--featurePrefix` | | Parent directory for feature modules | `feature` |
+| `--featureDir` | `-p` | Directory name inside the feature prefix | `my_feature` |
+| `--featureName` | `-n` | Feature name | `myfeature` |
+| `--template` | `-t` | Template: `service` only | `service` |
+| `--groupByTemplate` | `-g` | Group under `{featurePrefix}/{template}/` | `false` |
+| `--repoModule` | `-m` | Repository Go module path, automatically detected | `github.com/your/repo` |
+| `--force` | `-f` | Replace the existing feature directory | `false` |
 
-Matching bundles in `bundles.yaml` have their import lists refreshed automatically.
+The command refreshes import lists for matching bundles in `bundles.yaml`.
 
----
+## Executable bundles
 
-## Executable Bundles
-
-Workspaces compile feature modules into one or more executables. The default `cmd/all-in-one` binary is an all-in-one dev entry point; production bundles mix and match features at compile time.
+Workspaces compile feature modules into one or more executables. The default `cmd/all-in-one` binary is the development entry point. Production bundles can contain different feature combinations at compile time.
 
 ```bash
 ronyup setup bundle --name auth-api --services feature/auth,feature/session
@@ -247,23 +247,21 @@ ronyup setup bundle --gen
 cd cmd/all-in-one && go run . --service feature/auth
 ```
 
-See `bundles.yaml` at the Go workspace root. Makefile: `make run`, `make run-bundle BUNDLE=auth-api`, `make build-bundle BUNDLE=auth-api`.
+See `bundles.yaml` at the Go workspace root. Available Makefile targets are `make run`, `make run-bundle BUNDLE=auth-api`, and `make build-bundle BUNDLE=auth-api`.
 
----
+## Upgrade an older workspace
 
-## Upgrade an Older Workspace
-
-After upgrading `ronyup`, refresh shared boilerplate and migrate bundle layout once:
+Upgrade `ronyup` first. Then refresh shared boilerplate and migrate the bundle layout:
 
 ```bash
 ronyup setup sync
-ronyup setup migrate bundles    # from repo root (fullstack) or backend/ — both work
+ronyup setup migrate bundles    # from repo root (fullstack) or backend/ - both work
 ronyup setup sync --only backend --overwrite   # optional Makefile bundle targets
 ```
 
-`setup sync` does not rewrite `cmd/all-in-one/main.go`. Use `setup migrate bundles` (preview with `--dry-run`).
+`setup sync` does not rewrite `cmd/all-in-one/main.go`. Use `setup migrate bundles`. Use `--dry-run` to preview the migration.
 
-By default sync **adds missing files only**. Existing scaffold files (`AGENTS.md`, hooks, skill trees, `Makefile`) stay untouched unless you pass `--overwrite`:
+By default, `setup sync` adds only missing files. It does not change existing `AGENTS.md`, hooks, skill trees, or `Makefile`. Use `--overwrite` to replace these files:
 
 ```bash
 ronyup setup sync --only agents,hooks --overwrite
@@ -271,21 +269,21 @@ ronyup setup sync --only skills --overwrite --skills installed
 ronyup setup sync --only backend --overwrite
 ```
 
-`--skills installed` refreshes skills already present under `.agents/skills/` (a legacy copy under `.cursor/skills/` or `.claude/skills/` still counts) and swaps retired skills for their replacements (`clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code` → `go-design`). With `--overwrite`, the retired directories are deleted; without it, sync only reports them. New catalog skills are not added in this mode: pass `--skills default` or a skill ID to install them.
+`--skills installed` refreshes skills under `.agents/skills/`. Legacy copies under `.cursor/skills/` or `.claude/skills/` also count as installed skills.
 
----
+Sync replaces retired skills `clean-architecture`, `refactoring-patterns`, and `working-with-legacy-code` with `go-design`. With `--overwrite`, sync deletes the retired directories. Without `--overwrite`, sync only reports them.
 
-## Feature Templates
+This mode does not add new catalog skills. Use `--skills default` or specify a skill ID to add skills.
 
-| Template  | Purpose                                                               |
-|-----------|-----------------------------------------------------------------------|
-| `service` | A standard API service with CRUD endpoints, repo layer, and DI wiring |
+## Feature templates
 
----
+| Template | Purpose |
+|----------|---------|
+| `service` | Standard API service with CRUD endpoints, repository layer, and dependency injection |
 
-## Translation Catalogs
+## Translation catalogs
 
-Generate i18n translation catalogs using `golang.org/x/text/message/pipeline`:
+Generate i18n translation catalogs with `golang.org/x/text/message/pipeline`:
 
 ```bash
 ronyup text \
@@ -296,56 +294,56 @@ ronyup text \
     --gen-file catalog.go
 ```
 
-If a `go.work` file is present, the command loads packages from each workspace module.
+If a `go.work` file exists, the command loads packages from each workspace module.
 
 ### Text flags
 
-| Flag               | Short | Description                     | Default             |
-|--------------------|-------|---------------------------------|---------------------|
-| `--src-lang`       | `-s`  | Source language                 | `en-US`             |
-| `--dst-lang`       | `-l`  | Target languages                | `en-US,fa-IR,ar-AR` |
-| `--out-dir`        | `-o`  | Output directory                | `.`                 |
-| `--gen-package`    | `-g`  | Package path for generated file | —                   |
-| `--gen-file`       | `-f`  | Generated file name             | `catalog.go`        |
-| `--modules-filter` | `-m`  | Filter go.work modules          | —                   |
-
----
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--src-lang` | `-s` | Source language | `en-US` |
+| `--dst-lang` | `-l` | Target languages | `en-US,fa-IR,ar-AR` |
+| `--out-dir` | `-o` | Output directory | `.` |
+| `--gen-package` | `-g` | Package path for the generated file | - |
+| `--gen-file` | `-f` | Generated file name | `catalog.go` |
+| `--modules-filter` | `-m` | Filter go.work modules | - |
 
 ## Lint: x/rkit duplicates
 
-`ronyup lint` reports Go code that re-implements an `x/rkit` helper, and `--fix` rewrites it:
+`ronyup lint` reports Go code that implements an existing `x/rkit` helper again. Use `--fix` to rewrite supported findings:
 
 ```bash
 ronyup lint ./...          # report; exit 1 when findings remain, 2 when packages do not compile
 ronyup lint --fix ./...    # rewrite fixable findings in place (adds the rkit import)
 ```
 
-| Rule         | Matches                                                                 | Replacement                                 |
-|--------------|-------------------------------------------------------------------------|---------------------------------------------|
-| `must`       | `v, err := f(); if err != nil { panic(err) }`                           | `rkit.Must(f())` / `rkit.Assert(f())`        |
-| `coalesce`   | `if x == "" { x = y }` runs; `if a != "" { return a }` chains          | `rkit.Coalesce(...)`                         |
-| `transform`  | loops that only map (`f(x)`) or filter (`if cond { append x }`) a slice | `rkit.Map(s, f)` / `rkit.Filter(s, keep)`    |
-| `mapcollect` | a loop that only appends a map's keys or values                         | `rkit.MapKeysToArray(m)` / `rkit.MapToArray(m)` |
-| `discard`    | `v, _ := f()` (error dropped), `v, _ := x.(T)`                          | `rkit.Ok` (`StrToInt`, `ToJSON`, ...) / `rkit.TryCast[T]` |
-| `stdlib`     | `slices.Contains`, `cmp.Or`, `strconv.Itoa`, `FormatInt(x, 10)`, `fmt.Sprintf("%d", x)` | `rkit.Contains`, `Coalesce`, `IntToStr`, ... |
-| `unsafeconv` | hand-rolled zero-copy `[]byte`↔`string` conversions                     | `rkit.B2S` / `rkit.S2B`                      |
-| `helper`     | unexported functions re-implementing `Must`, `PtrVal`, `Contains`, `Coalesce` | delete and call rkit (no automatic fix) |
+| Rule | Matches | Replacement |
+|------|---------|-------------|
+| `must` | `v, err := f(); if err != nil { panic(err) }` | `rkit.Must(f())` or `rkit.Assert(f())` |
+| `coalesce` | `if x == "" { x = y }` statements and `if a != "" { return a }` chains | `rkit.Coalesce(...)` |
+| `transform` | Loops that only map or filter a slice | `rkit.Map(s, f)` or `rkit.Filter(s, keep)` |
+| `mapcollect` | A loop that only appends map keys or values | `rkit.MapKeysToArray(m)` or `rkit.MapToArray(m)` |
+| `discard` | `v, _ := f()` or `v, _ := x.(T)` | `rkit.Ok` or `rkit.TryCast[T]` |
+| `stdlib` | `slices.Contains`, `cmp.Or`, `strconv.Itoa`, `FormatInt(x, 10)`, `fmt.Sprintf("%d", x)` | `rkit.Contains`, `Coalesce`, `IntToStr`, and related helpers |
+| `unsafeconv` | Manual zero-copy conversions between `[]byte` and `string` | `rkit.B2S` or `rkit.S2B` |
+| `helper` | Unexported copies of `Must`, `PtrVal`, `Contains`, or `Coalesce` | Delete the helper and call rkit. No automatic fix is available. |
 
-Modules whose `go.mod` does not require `x/rkit` are skipped unless `--all-modules` is set. Silence a deliberate exception with
-`//rkitcheck:ignore <reason>` on the reported line or the line above. The same check is the MCP tool `check_rkit_usage`;
-scaffolded workspaces run it from `verify.sh`, and Claude Code runs it after every Go edit through `.claude/hooks/backend-lint.sh`.
+The linter skips modules whose `go.mod` does not require `x/rkit`. Use `--all-modules` to include these modules.
 
-## MCP Server
+For a deliberate exception, add `//rkitcheck:ignore <reason>` on the reported line or the preceding line.
 
-`ronyup` includes a built-in [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that exposes scaffolding and code generation as tools for AI assistants.
+The MCP tool `check_rkit_usage` runs the same check. Scaffolded workspaces run it from `verify.sh`. Claude Code runs it after each Go edit with `.claude/hooks/backend-lint.sh`.
 
-This means you can tell your AI assistant things like:
+## MCP server
 
-- "Create a new user service with CRUD endpoints and Postgres storage"
-- "Add a payment feature with idempotency support"
-- "Plan the implementation of a notification service"
+`ronyup` includes a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. It exposes scaffolding and code generation tools to AI assistants.
 
-And it will use `ronyup` tools to scaffold and implement the code following RonyKit best practices.
+You can give requests such as these to an AI assistant:
+
+- "Create a new user service with CRUD endpoints and Postgres storage."
+- "Add a payment feature with idempotency support."
+- "Plan the implementation of a notification service."
+
+The assistant can use `ronyup` tools to scaffold and implement the code with RonyKIT conventions.
 
 ### Start the MCP server manually
 
@@ -353,11 +351,11 @@ And it will use `ronyup` tools to scaffold and implement the code following Rony
 ronyup mcp
 ```
 
-If the server starts and waits for input, it's ready.
+The server is ready when it starts and waits for input.
 
 ### Setup for Cursor IDE
 
-Create or update `.cursor/mcp.json` in your project root:
+Create or update `.cursor/mcp.json` in the project root:
 
 ```json
 {
@@ -370,21 +368,21 @@ Create or update `.cursor/mcp.json` in your project root:
 }
 ```
 
-Reopen Cursor (or reload the window). The `ronyup` tools should appear in the AI chat panel.
+Reopen Cursor or reload the window. The `ronyup` tools appear in the AI chat panel.
 
 ### Setup for JetBrains GoLand
 
-1. Open **Settings** (Preferences on macOS).
-2. Search for **MCP** in the settings search.
-3. Add a new **stdio** MCP server:
+1. Open **Settings**. On macOS, open **Preferences**.
+2. Search for **MCP**.
+3. Add a **stdio** MCP server with these values:
    - **Name:** `ronyup`
    - **Command:** `ronyup`
    - **Arguments:** `mcp`
-4. Save and restart GoLand if tools don't appear immediately.
+4. Save the configuration. Restart GoLand if the tools do not appear.
 
 ### Setup for VS Code
 
-Add to your `.vscode/settings.json` or user settings:
+Add this configuration to `.vscode/settings.json` or your user settings:
 
 ```json
 {
@@ -399,101 +397,99 @@ Add to your `.vscode/settings.json` or user settings:
 }
 ```
 
-### Available MCP Tools
+### Available MCP tools
 
-| Tool                 | Description                                                              |
-|----------------------|-------------------------------------------------------------------------|
-| `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`; optional `skills`: IDs or `default`/`all`/`none`) |
-| `scaffold_feature`   | Add a `feature/<name>/` module to a workspace                           |
-| `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`setup sync`)    |
-| `sync_skills`        | Sync skills from the server's embedded catalog and return validation   |
-| `validate_skills`    | Read-only check for skill content, frontmatter, links, and retirement  |
-| `setup_bundle`       | Create/remove executable bundles (`setup bundle`)                       |
-| `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`setup migrate bundles`) |
-| `check_frontend_design` | Verify an approved, complete frontend design document before UI work |
-| `check_rkit_usage`   | Report (and optionally fix) code that re-implements an x/rkit helper (`ronyup lint`) |
+| Tool | Description |
+|------|-------------|
+| `scaffold_workspace` | Create a RonyKIT workspace at `path`. `kind` accepts `backend` or `fullstack`. Optional `skills` accepts IDs or `default`, `all`, `none`. |
+| `scaffold_feature` | Add a `feature/<name>/` module to a workspace |
+| `sync_workspace` | Refresh scaffold boilerplate in an existing workspace with `setup sync` |
+| `sync_skills` | Sync skills from the embedded catalog and return validation results |
+| `validate_skills` | Check skill content, frontmatter, links, and retirement without changes |
+| `setup_bundle` | Create or remove executable bundles with `setup bundle` |
+| `migrate_bundles` | Upgrade a legacy workspace to the bundle layout |
+| `check_frontend_design` | Verify an approved and complete frontend design document before UI work |
+| `check_rkit_usage` | Report and optionally fix code that implements an x/rkit helper again |
 
-### MCP Prompts
+### MCP prompts
 
-| Prompt                | Description                                 |
-|-----------------------|---------------------------------------------|
-| `design-new-service`  | Full workflow: SRS → SDD → scaffold → code  |
-| `write-srs`           | Write SRS to `docs/design/<feature>-srs.md` |
-| `write-sdd`           | Write SDD from approved SRS                 |
-| `design-api`          | Design contracts, routes, and handlers      |
-| `plan-service`        | Plan a feature (SRS/SDD-first workflow)     |
-| `write-service-code`  | Implement service code per SDD              |
-| `write-workflow`      | Temporal / `flow` workflows                 |
-| `review-architecture` | Review feature layout for compliance        |
-| `generate-stubs`      | Stub generation and consumption             |
-| `migrate-kit-to-rony` | Migrate from `kit` to `rony` incrementally  |
+| Prompt | Description |
+|--------|-------------|
+| `design-new-service` | Full workflow: SRS, SDD, scaffold, and code |
+| `write-srs` | Write an SRS to `docs/design/<feature>-srs.md` |
+| `write-sdd` | Write an SDD from an approved SRS |
+| `design-api` | Design contracts, routes, and handlers |
+| `plan-service` | Plan a feature with the SRS/SDD-first workflow |
+| `write-service-code` | Implement service code from the SDD |
+| `write-workflow` | Write Temporal and `flow` workflows |
+| `review-architecture` | Review feature layout for compliance |
+| `generate-stubs` | Generate and use client stubs |
+| `migrate-kit-to-rony` | Migrate incrementally from `kit` to `rony` |
 
 ### Knowledge resources
 
-The server exposes markdown resources (architecture, `x/` packages, characteristics, tool docs). URIs follow `knowledge://ronyup/<category>/<name>`. Use your IDE’s MCP resource browser or see `.agents/skills/ronykit-framework/references/mcp-map.md` in scaffolded workspaces.
+The server exposes Markdown resources for architecture, `x/` packages, characteristics, and tools. Resource URIs use `knowledge://ronyup/<category>/<name>`.
+
+Use the MCP resource browser in your IDE. You can also see `.agents/skills/ronykit-framework/references/mcp-map.md` in scaffolded workspaces.
 
 ### Agent skill
 
-Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor and Codex discover that tree. `.claude/skills/ronykit-framework` is a symlink to it so Claude Code loads the same files. Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources (without duplicating the knowledge base).
+Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/`. The directory follows the [Agent Skills](https://agentskills.io/specification) layout.
 
-The skill also bundles the Elephant–Goldfish Model (EGM) protocol, reviewer
-lenses, and rubrics under `references/`. The Elephant drafts with project
-context; fresh read-only Goldfish subagents review without the drafting
-conversation; the user decides findings and approval. No separate EGM plugin is
-required.
+Cursor and Codex discover this directory. `.claude/skills/ronykit-framework` is a symlink to the same files for Claude Code.
 
-### Workflow Example
+Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources. The skill refers to the knowledge base instead of duplicating it.
 
-A typical AI-assisted workflow for a **new service feature**:
+The skill includes the Elephant–Goldfish Model (EGM) protocol under `references/`. It also includes reviewer lenses and rubrics.
 
-1. **Requirements (SRS):** MCP prompt `write-srs` or Phase 1 of `design-new-service` → `docs/design/<feature>-srs.md`. Run EGM zoom-out and comprehension reviews, resolve findings with the user, then approve before continuing.
+The Elephant drafts with project context. Fresh read-only Goldfish subagents review without the drafting conversation. The user decides findings and approval. No separate EGM plugin is necessary.
 
-2. **Design (SDD):** MCP prompt `write-sdd` or Phase 2 of `design-new-service` → `docs/design/<feature>-sdd.md`. Run all five EGM stages, resolve findings with the user, then approve before scaffolding.
+### Workflow example
 
-3. **Create the scaffold:** Call `scaffold_feature` (or `scaffold_workspace` for a new repo).
+Use this AI-assisted workflow for a new service feature:
 
-4. **Load knowledge:** Read MCP architecture resources (`design-documents`, `egm-design-review`, `service-structure`, `api-handler-files`, `repo-ports`, etc.) before implementing.
+1. **Write the requirements.** Use MCP prompt `write-srs` or phase 1 of `design-new-service`. Write `docs/design/<feature>-srs.md`. Run EGM zoom-out and comprehension reviews. Resolve findings with the user. Get approval before you continue.
+2. **Write the design.** Use MCP prompt `write-sdd` or phase 2 of `design-new-service`. Write `docs/design/<feature>-sdd.md`. Run all five EGM stages. Resolve findings with the user. Get approval before scaffolding.
+3. **Create the scaffold.** Call `scaffold_feature`. For a new repository, call `scaffold_workspace`.
+4. **Load knowledge.** Read MCP architecture resources before implementation. These resources include `design-documents`, `egm-design-review`, `service-structure`, `api-handler-files`, and `repo-ports`.
+5. **Plan and implement.** For multi-step work, run an EGM implementation-readiness review on the plan. Then use MCP prompt `write-service-code`. Follow the approved SDD.
+6. **Iterate and verify.** Run `make gen-stub` after contract changes. Refine handlers and app logic. Run an EGM drift report for a separate design and code consistency audit. This report does not replace tests or code review.
 
-5. **Plan and implement:** For multi-step work, run EGM implementation-readiness review on the plan, then use MCP prompt `write-service-code` and follow the approved SDD.
-
-6. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic. Run an EGM drift report when design/code consistency needs a separate audit; it does not replace tests or code review.
-
-### MCP Conventions
+### MCP conventions
 
 The MCP server guides AI assistants to follow these conventions:
 
-- Keep persistence behind `internal/repo/port.go` interfaces with `internal/repo/v0` adapters
-- Prefer **Postgres + sqlc** as the default storage stack
-- Use a different storage stack only when explicitly requested
-- Run `make gen-stub` after contract changes
-- Use generated stubs for inter-service calls (not hand-written HTTP clients)
-- Wire dependencies through `x/di` and `uber/fx`
-- Use `x/settings` for configuration management
+- Define persistence interfaces in `internal/repo/port.go`.
+- Implement persistence adapters in `internal/repo/v0`.
+- Use Postgres and sqlc as the default storage stack.
+- Use a different storage stack only when the user explicitly requests it.
+- Run `make gen-stub` after contract changes.
+- Use generated stubs for inter-service calls. Do not write HTTP clients manually.
+- Connect dependencies with `x/di` and `uber/fx`.
+- Use `x/settings` for configuration management.
 
-### MCP Flags
+### MCP flags
 
-| Flag    | Description                                      | Default       |
-|---------|--------------------------------------------------|---------------|
-| `--host`| Host/interface for streamable HTTP               | `127.0.0.1`   |
-| `--port`| Streamable HTTP port; 0 selects stdio            | `0`           |
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--host` | Host or interface for streamable HTTP | `127.0.0.1` |
+| `--port` | Streamable HTTP port. `0` selects stdio. | `0` |
 
-The HTTP server has no authentication. Keep it on loopback unless access is otherwise restricted.
+The HTTP server has no authentication. Keep it on loopback unless other controls restrict access.
 
----
+## Interactive mode
 
-## Interactive Mode
-
-Running `ronyup setup` or `ronyup text` with no flags starts an interactive TUI that walks you through the configuration:
+Run `ronyup setup` or `ronyup text` without flags to start an interactive TUI:
 
 ```bash
 ronyup setup
 ```
 
-When adding a feature interactively, you can set the **Feature Parent Directory** (`--featurePrefix`) and **Group by Template** (`--groupByTemplate`), which places the module under `{featurePrefix}/{template}/{featureDir}/` instead of `{featurePrefix}/{featureDir}/`.
+For interactive feature creation, set **Feature Parent Directory** for `--featurePrefix`. Set **Group by Template** for `--groupByTemplate`.
 
----
+Grouping by template places the module under `{featurePrefix}/{template}/{featureDir}/`. The default path is `{featurePrefix}/{featureDir}/`.
 
-## Command Reference
+## Command reference
 
 ```
 ronyup
@@ -510,10 +506,8 @@ ronyup
 └── version          Print the ronyup version
 ```
 
----
+## Next steps
 
-## Next Steps
-
-- [Getting Started](./getting-started.md) — build your first server
-- [Cookbook](./cookbook.md) — production patterns and examples
-- [Architecture](./architecture.md) — how RonyKit works internally
+- [Getting Started](./getting-started.md): Build a server.
+- [Cookbook](./cookbook.md): Use service patterns and examples.
+- [Architecture](./architecture.md): Learn about internal components.

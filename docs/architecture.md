@@ -1,21 +1,19 @@
 # Architecture
 
-This document explains how RonyKIT works, how the components fit together, and how the repository is organized.
+This document describes RonyKIT components, request flow, and repository layout.
 
-## Two Layers
+## Two layers
 
-RonyKIT provides two levels of abstraction:
+RonyKIT has two abstraction levels:
 
-| Layer          | Package | Description                                                                                        |
-|----------------|---------|----------------------------------------------------------------------------------------------------|
-| **High-level** | `rony`  | Batteries-included framework. Type-safe handlers, built-in docs, state management. **Start here.** |
-| **Low-level**  | `kit`   | Core building blocks. Use when you need custom gateways, protocols, or deeper control.             |
+| Level | Package | Purpose |
+|-------|---------|---------|
+| High-level | `rony` | Typed handlers, generated documentation, and state management. Start with this package. |
+| Low-level | `kit` | Core components for custom gateways, protocols, and direct control. |
 
-`rony` is built on top of `kit`. You can always drop down to `kit` APIs from within `rony` handlers using `ctx.KitCtx()`.
+`rony` uses `kit`. A `rony` handler can access the `kit` API with `ctx.KitCtx()`.
 
----
-
-## Request Flow
+## Request flow
 
 ```
 Client
@@ -42,64 +40,62 @@ Handler
 Response
 ```
 
-1. A **Gateway** receives inbound traffic (HTTP, WebSocket, etc.).
-2. The **EdgeServer** routes the request to the matching **Service**.
-3. Within the service, the **Contract** is matched by its route selector.
-4. The **Middleware chain** runs (service-level, then contract-level).
-5. The **Handler** processes the request and returns a response.
+1. A gateway receives an inbound HTTP or WebSocket request.
+2. The EdgeServer selects the service for the request.
+3. A route selector selects the contract in the service.
+4. Service middleware runs, then contract middleware runs.
+5. The handler processes the request and returns a response.
 
----
-
-## Key Abstractions
+## Key abstractions
 
 ### EdgeServer
 
-The main orchestrator. Binds gateways, clusters, and services together. In the `rony` layer, `rony.Server` wraps an EdgeServer with opinionated defaults.
+The EdgeServer connects gateways, clusters, and services. In the `rony` layer, `rony.Server` wraps an EdgeServer and supplies default configuration.
 
 ### Gateway
 
-Handles inbound traffic. RonyKIT ships with several gateway implementations:
+A gateway receives inbound traffic. RonyKIT includes these gateway implementations:
 
-| Gateway    | Package                   | Description                                                                                                   |
-|------------|---------------------------|---------------------------------------------------------------------------------------------------------------|
-| fasthttp   | `std/gateways/fasthttp`   | High-performance HTTP gateway using [valyala/fasthttp](https://github.com/valyala/fasthttp)                   |
-| silverhttp | `std/gateways/silverhttp` | HTTP gateway using [silverlining](https://github.com/go-www/silverlining)                                     |
-| fastws     | `std/gateways/fastws`     | WebSocket gateway using [gnet](https://github.com/panjf2000/gnet) + [gobwas/ws](https://github.com/gobwas/ws) |
-| mcp        | `std/gateways/mcp`        | Model Context Protocol gateway                                                                                |
+| Gateway | Package | Implementation |
+|---------|---------|----------------|
+| fasthttp | `std/gateways/fasthttp` | HTTP gateway based on [valyala/fasthttp](https://github.com/valyala/fasthttp) |
+| silverhttp | `std/gateways/silverhttp` | HTTP gateway based on [silverlining](https://github.com/go-www/silverlining) |
+| fastws | `std/gateways/fastws` | WebSocket gateway based on [gnet](https://github.com/panjf2000/gnet) and [gobwas/ws](https://github.com/gobwas/ws) |
+| mcp | `std/gateways/mcp` | Model Context Protocol gateway |
 
-When using `rony.NewServer()`, the fasthttp gateway is configured automatically.
+`rony.NewServer()` configures the fasthttp gateway automatically.
 
 ### Cluster
 
-Optional. Enables multi-instance coordination for shared state across EdgeServer instances.
+A cluster is optional. It coordinates multiple EdgeServer instances and shares state between them.
 
-| Cluster      | Package                     | Description                                                              |
-|--------------|-----------------------------|--------------------------------------------------------------------------|
-| rediscluster | `std/clusters/rediscluster` | Redis-backed cluster                                                     |
-| p2pcluster   | `std/clusters/p2pcluster`   | Peer-to-peer cluster using [libp2p](https://github.com/libp2p/go-libp2p) |
+| Cluster | Package | Implementation |
+|---------|---------|----------------|
+| rediscluster | `std/clusters/rediscluster` | Cluster based on Redis |
+| p2pcluster | `std/clusters/p2pcluster` | Peer-to-peer cluster based on [libp2p](https://github.com/libp2p/go-libp2p) |
 
 ### Service
 
-A logical grouping of contracts. One EdgeServer can host multiple services. Services are registered with `rony.Setup()`.
+A service groups related contracts. One EdgeServer can host multiple services. Use `rony.Setup()` to register services.
 
 ### Contract
 
-A single API operation. Defines the input/output types, route selectors, and handler. In the `rony` layer, contracts are created implicitly with `rony.WithUnary()`, `rony.WithStream()`, or `rony.WithRelay()` (passthrough HTTP/WebSocket proxy).
+A contract defines one API operation. It contains input types, output types, route selectors, and a handler.
+
+In `rony`, use `rony.WithUnary()`, `rony.WithStream()`, or `rony.WithRelay()` to create contracts. Use `rony.WithRelay()` for HTTP and WebSocket pass-through proxy routes.
 
 ### Context
 
-Request-scoped state with four storage layers:
+The context stores request data in four layers:
 
-| Layer          | Lifecycle           | Access                                                         |
-|----------------|---------------------|----------------------------------------------------------------|
-| **Context**    | Per request         | Available in all handlers                                      |
-| **Connection** | Per connection      | Persists across requests on the same connection (WebSocket)    |
-| **Local**      | Per server instance | Shared between all contracts and services                      |
-| **Cluster**    | Cross-instance      | Shared across EdgeServer instances (requires a Cluster bundle) |
+| Layer | Lifetime | Access |
+|-------|----------|--------|
+| Context | One request | Available in all handlers |
+| Connection | One connection | Kept across requests on the same WebSocket connection |
+| Local | One server instance | Shared by all contracts and services on the instance |
+| Cluster | Multiple server instances | Shared by EdgeServer instances. A cluster bundle is required. |
 
----
-
-## Repository Layout
+## Repository layout
 
 ```
 ronykit/
@@ -155,58 +151,50 @@ ronykit/
     └── ...
 ```
 
----
-
 ## Encoding
 
-RonyKIT supports multiple encoding formats:
+RonyKIT supports these encoding formats:
 
-| Format      | Description                            |
-|-------------|----------------------------------------|
-| JSON        | Default. Uses struct `json` tags       |
-| Protobuf    | Protocol Buffers encoding              |
-| MessagePack | Binary encoding                        |
-| Multipart   | `multipart/form-data` for file uploads |
-| Custom      | Implement your own codec               |
-
----
+| Format | Purpose |
+|--------|---------|
+| JSON | Default format. Uses struct `json` tags. |
+| Protobuf | Protocol Buffers encoding |
+| MessagePack | Binary encoding |
+| Multipart | `multipart/form-data` for file uploads |
+| Custom | Encoding supplied by a custom codec |
 
 ## Routing
 
-Two routing strategies are available:
+RonyKIT has two routing strategies:
 
-- **REST selectors** — HTTP method + path pattern (e.g., `GET /users/{id}`)
-- **RPC selectors** — Predicate-based routing over WebSocket (e.g., `RPC("getUser")`)
+- **REST selectors:** Match an HTTP method and path pattern. Example: `GET /users/{id}`.
+- **RPC selectors:** Match a predicate over WebSocket. Example: `RPC("getUser")`.
 
-A single handler can serve both REST and RPC routes, which is how RonyKIT achieves "define once, serve everywhere."
+One handler can serve REST and RPC routes. Define the handler one time and register both route types.
 
----
+## Extended utilities
 
-## Extended Utilities (`x/`)
+The `x/` directory contains optional packages for RonyKIT services. Use these packages with `ronyup` scaffolds when they meet the service requirements.
 
-The `x/` directory contains optional packages that integrate with the RonyKIT ecosystem. These are recommended when using the `ronyup` scaffolding:
+| Package | Purpose |
+|---------|---------|
+| `x/di` | Dependency injection helpers for uber/fx |
+| `x/settings` | Configuration management with Viper |
+| `x/telemetry/logkit` | Structured logging |
+| `x/telemetry/tracekit` | Distributed tracing with OpenTelemetry |
+| `x/telemetry/meterkit` | Metrics collection |
+| `x/apidoc` | OpenAPI document generation |
+| `x/cache` | Caching utilities |
+| `x/datasource` | Database and Redis connection management |
+| `x/i18n` | Internationalization support |
+| `x/ratelimit` | Rate limiting |
+| `x/batch` | Batch processing |
+| `x/rkit` | Common helper functions |
+| `x/testkit` | Testing utilities |
 
-| Package                | Purpose                                  |
-|------------------------|------------------------------------------|
-| `x/di`                 | Dependency injection helpers for uber/fx |
-| `x/settings`           | Configuration management with Viper      |
-| `x/telemetry/logkit`   | Structured logging                       |
-| `x/telemetry/tracekit` | Distributed tracing (OpenTelemetry)      |
-| `x/telemetry/meterkit` | Metrics collection                       |
-| `x/apidoc`             | OpenAPI document generation              |
-| `x/cache`              | Caching utilities                        |
-| `x/datasource`         | Database and Redis connection management |
-| `x/i18n`               | Internationalization support             |
-| `x/ratelimit`          | Rate limiting                            |
-| `x/batch`              | Batch processing                         |
-| `x/rkit`               | Common helper functions                  |
-| `x/testkit`            | Testing utilities                        |
+## Next steps
 
----
-
-## Next Steps
-
-- [Getting Started](./getting-started.md) — build your first server
-- [Cookbook](./cookbook.md) — production patterns and examples
-- [ronyup Guide](./ronyup-guide.md) — scaffolding and MCP server
-- [Advanced: Kit](./advanced-kit.md) — low-level toolkit for custom gateways
+- [Getting Started](./getting-started.md): Build a server.
+- [Cookbook](./cookbook.md): Use service patterns and examples.
+- [ronyup Guide](./ronyup-guide.md): Use the scaffolding CLI and MCP server.
+- [Advanced: Kit](./advanced-kit.md): Build custom gateways with low-level tools.

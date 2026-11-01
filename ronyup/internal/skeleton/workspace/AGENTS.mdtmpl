@@ -2,6 +2,17 @@
 
 This file defines practical guidance for AI coding assistants in this workspace.
 
+## Language and documentation
+
+Use **ASD-STE100 Simplified Technical English** for all agent responses and user-facing documentation. This rule overrides conflicting writing guidance in other skills.
+
+- Use approved ASD-STE100 words. Use necessary technical names consistently. Use one term for each concept.
+- Use active voice and simple present tense. Use imperative verbs for procedures.
+- Give one instruction per sentence. Keep procedural sentences to 20 words or fewer and descriptive sentences to 25 words or fewer.
+- Use articles and explicit subjects to prevent ambiguity. Do not use contractions, idioms, or unnecessary synonyms.
+- Do not change commands, code, identifiers, or technical meaning to satisfy a writing rule.
+- Apply these rules to new and edited prose, including README files, design documents, code comments, and API descriptions.
+
 ## AI assistants (Cursor / MCP)
 
 1. Enable the **`ronyup` MCP server** (`.cursor/mcp.json` or `.ai/mcp/mcp.json`).

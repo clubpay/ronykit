@@ -1,17 +1,19 @@
-# Advanced: Using the Kit Package
+# Advanced: Use the kit package
 
-The `kit` package is the low-level core of RonyKIT. It gives you granular control over gateways, clusters, services, and contracts. **Most users should use `rony` instead** — see the [Getting Started guide](./getting-started.md).
+The `kit` package is the low-level core of RonyKIT. It gives direct control of gateways, clusters, services, and contracts.
 
-Use `kit` when you need:
+Most services must use `rony`. See the [Getting Started guide](./getting-started.md).
 
-- Custom gateway implementations (non-HTTP protocols)
+Use `kit` for these requirements:
+
+- Custom gateways for non-HTTP protocols
 - Custom cluster backends
-- Manual control over the server pipeline
+- Direct control of the server pipeline
 - Direct access to the EdgeServer API
 
----
+## Quick start
 
-## Quick Start
+Install the package:
 
 ```bash
 go get github.com/clubpay/ronykit/kit@latest
@@ -76,27 +78,23 @@ func main() {
 }
 ```
 
----
+## Differences from rony
 
-## Key Differences from `rony`
-
-| Aspect                | `rony`                                | `kit`                                      |
-|-----------------------|---------------------------------------|--------------------------------------------|
-| **Handler signature** | `func(ctx, In) (*Out, error)` — typed | `func(ctx *kit.Context)` — raw             |
-| **State management**  | Built-in reducer pattern              | Manual                                     |
-| **API docs**          | Auto-generated from types             | Build with `kit/desc` manually             |
-| **Gateway setup**     | Automatic (fasthttp by default)       | Manual — you wire gateways yourself        |
-| **Server lifecycle**  | `rony.NewServer` + `rony.Setup`       | `kit.NewServer` + `kit.WithServiceBuilder` |
-| **Route selectors**   | `rony.GET(path)` helpers              | `fasthttp.GET(path)` or custom selectors   |
-| **Error handling**    | Return error, framework serializes    | Manual: write to `ctx.Out()` yourself      |
-
----
+| Aspect | `rony` | `kit` |
+|--------|--------|-------|
+| Handler signature | `func(ctx, In) (*Out, error)` with typed messages | `func(ctx *kit.Context)` with raw messages |
+| State management | Built-in reducer pattern | Manual state management |
+| API documentation | Generated from types | Built manually with `kit/desc` |
+| Gateway setup | Automatic fasthttp configuration | Manual gateway configuration |
+| Server lifecycle | `rony.NewServer` and `rony.Setup` | `kit.NewServer` and `kit.WithServiceBuilder` |
+| Route selectors | Helpers such as `rony.GET(path)` | `fasthttp.GET(path)` or custom selectors |
+| Error handling | Return an error for framework serialization | Write the error to `ctx.Out()` |
 
 ## Components
 
 ### Handler
 
-A raw handler operates on `*kit.Context`:
+A raw handler uses `*kit.Context`:
 
 ```go
 func myHandler(ctx *kit.Context) {
@@ -109,7 +107,7 @@ func myHandler(ctx *kit.Context) {
 }
 ```
 
-### Service Descriptor
+### Service descriptor
 
 Use `kit/desc` to build service descriptors:
 
@@ -136,7 +134,7 @@ func MyServiceDesc() *desc.Service {
 
 ### EdgeServer
 
-Wire it all together:
+Configure the gateways and services with `kit.NewServer`:
 
 ```go
 srv := kit.NewServer(
@@ -150,7 +148,7 @@ srv := kit.NewServer(
 )
 ```
 
-### Adding a Cluster
+### Add a cluster
 
 ```go
 import "github.com/clubpay/ronykit/std/clusters/rediscluster"
@@ -164,22 +162,18 @@ kit.WithServiceBuilder(MyServiceDesc()),
 )
 ```
 
----
+## Storage layers
 
-## Storage Layers
+| Layer | Lifetime | Typical data |
+|-------|----------|--------------|
+| Context | One request | User ID and trace ID |
+| Connection | One connection | WebSocket session data |
+| Local | One server instance | In-memory caches and counters |
+| Cluster | Multiple server instances | Shared state. A cluster bundle is required. |
 
-| Layer          | Lifecycle           | Use Case                                |
-|----------------|---------------------|-----------------------------------------|
-| **Context**    | Per request         | Request-scoped data (user ID, trace ID) |
-| **Connection** | Per connection      | WebSocket session data                  |
-| **Local**      | Per server instance | In-memory caches, counters              |
-| **Cluster**    | Cross-instance      | Shared state (requires cluster bundle)  |
+## Custom gateways
 
----
-
-## Custom Gateways
-
-To implement a custom gateway, implement the `kit.Gateway` interface:
+Implement the `kit.Gateway` interface to create a custom gateway:
 
 ```go
 type Gateway interface {
@@ -195,27 +189,29 @@ type Gateway interface {
 }
 ```
 
-See `std/gateways/fasthttp` for a reference implementation.
+See `std/gateways/fasthttp` for an example implementation.
 
 ### Handler relay
 
-When a **handler** (not the gateway router) must forward the inbound HTTP or WebSocket request to a dynamic upstream after auth or session resolution, use `kit.RelayConn` and `kit.Relay` / `kit.RelayHTTP` / `kit.RelayWebSocket`. In `rony` services, register routes with `rony.WithRelay` and `RelayCtx` — see MCP `architecture/handler-relay` and `docs/cookbook.md`.
+A handler can forward an inbound HTTP or WebSocket request to a dynamic upstream. This can occur after authentication or session resolution.
 
----
+Use `kit.RelayConn` and `kit.Relay`, `kit.RelayHTTP`, or `kit.RelayWebSocket`. In `rony` services, register the route with `rony.WithRelay` and use `RelayCtx`.
 
-## When to Use Kit
+See MCP resource `architecture/handler-relay` and the [Cookbook](./cookbook.md).
 
-- You're building a non-HTTP protocol gateway (gRPC, MQTT, custom TCP)
-- You need fine-grained control over connection lifecycle
-- You're implementing a custom cluster backend
-- You need to bypass the `rony` abstractions for performance reasons
+## When to use kit
 
-For everything else, use [`rony`](./getting-started.md).
+Use `kit` for these requirements:
 
----
+- A non-HTTP protocol gateway, such as gRPC, MQTT, or custom TCP
+- Direct control of the connection lifecycle
+- A custom cluster backend
+- Direct access that bypasses the `rony` abstractions
 
-## Next Steps
+Use [`rony`](./getting-started.md) for other services.
 
-- [Getting Started](./getting-started.md) — the recommended `rony` approach
-- [Architecture](./architecture.md) — how all components fit together
-- [Runnable examples](../example) — see `ex-01-rpc` and `ex-02-rest` for kit usage
+## Next steps
+
+- [Getting Started](./getting-started.md): Use the recommended `rony` framework.
+- [Architecture](./architecture.md): Learn how components relate.
+- [Runnable examples](../example): See `ex-01-rpc` and `ex-02-rest` for `kit` examples.

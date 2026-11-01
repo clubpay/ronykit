@@ -1,36 +1,34 @@
-# Getting Started with RonyKIT
+# Getting started with RonyKIT
 
-This guide walks you through building API servers with RonyKIT. No prior RonyKIT experience required — basic Go knowledge is enough.
+Use this guide to build API servers with RonyKIT. You must know basic Go. No RonyKIT experience is necessary.
 
-## Table of Contents
+## Table of contents
 
 - [Installation](#installation)
-- [Your First Server](#your-first-server)
-- [Defining Routes and Handlers](#defining-routes-and-handlers)
-- [Request Binding](#request-binding)
-- [State Management](#state-management)
+- [Your first server](#your-first-server)
+- [Define routes and handlers](#define-routes-and-handlers)
+- [Request binding](#request-binding)
+- [State management](#state-management)
 - [Middleware](#middleware)
-- [Streaming Handlers](#streaming-handlers)
-- [Error Handling](#error-handling)
-- [API Docs](#api-docs)
-- [Client Stubs](#client-stubs)
-- [File Uploads and Raw Bodies](#file-uploads-and-raw-bodies)
+- [Streaming handlers](#streaming-handlers)
+- [Error handling](#error-handling)
+- [API documentation](#api-documentation)
+- [Client stubs](#client-stubs)
+- [File uploads and raw bodies](#file-uploads-and-raw-bodies)
 - [Testing](#testing)
-- [Server Options Reference](#server-options-reference)
-- [Context Helpers Reference](#context-helpers-reference)
-- [Production Checklist](#production-checklist)
-
----
+- [Server options reference](#server-options-reference)
+- [Context helpers reference](#context-helpers-reference)
+- [Production checklist](#production-checklist)
 
 ## Installation
 
-You need **Go 1.25+**. Install the scaffolding tool:
+Install Go 1.25 or later. Then install the scaffolding tool:
 
 ```bash
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
 
-To scaffold a complete project with DI, config, migrations, and repo layers:
+Create a project with dependency injection, configuration, migrations, and repository layers:
 
 ```bash
 ronyup setup workspace -r ./my-api -m github.com/you/my-api
@@ -38,19 +36,17 @@ cd my-api
 ronyup setup feature -p users -n users -t service
 ```
 
-This creates a feature module at `feature/users/` (default layout).
+These commands create a feature module at `feature/users/`.
 
-Or start from scratch by adding the `rony` package directly:
+You can also add the `rony` package directly to a Go project:
 
 ```bash
 go get github.com/clubpay/ronykit/rony@latest
 ```
 
----
+## Your first server
 
-## Your First Server
-
-A complete, working server in a single file:
+This example shows a complete server in one file:
 
 ```go
 package main
@@ -91,7 +87,7 @@ func main() {
 }
 ```
 
-Run it and try it:
+Run the server and send a request:
 
 ```bash
 go run main.go
@@ -99,21 +95,19 @@ curl http://localhost:8080/hello/World
 # {"message":"Hello, World!"}
 ```
 
-Open http://localhost:8080/docs for auto-generated Swagger UI.
+Open http://localhost:8080/docs to view the generated Swagger UI.
 
-**What happened:**
+The example does these operations:
 
 1. `rony.NewServer(...)` creates a server with an HTTP gateway on port 8080.
-2. `rony.Setup(...)` registers a service with one contract (the `Greet` handler bound to `GET /hello/{name}`).
-3. `srv.Run(...)` starts the server and blocks until a shutdown signal arrives.
+2. `rony.Setup(...)` registers one service and one contract. The contract binds `Greet` to `GET /hello/{name}`.
+3. `srv.Run(...)` starts the server and waits for a shutdown signal.
 
----
+## Define routes and handlers
 
-## Defining Routes and Handlers
+### Unary handlers
 
-### Unary handlers (request -> response)
-
-The most common handler type. Takes a typed request, returns a typed response:
+A unary handler receives one typed request and returns one typed response:
 
 ```go
 func GetUser(ctx *rony.SUnaryCtx, in GetUserRequest) (*GetUserResponse, error) {
@@ -122,11 +116,11 @@ return &GetUserResponse{...}, nil
 }
 ```
 
-`rony.SUnaryCtx` is a shorthand for stateless handlers. If you need shared state, use `*rony.UnaryCtx[S, A]` (see [State Management](#state-management)).
+Use `rony.SUnaryCtx` for stateless handlers. Use `*rony.UnaryCtx[S, A]` for handlers that share state. See [State management](#state-management).
 
-### Binding handlers to routes
+### Bind handlers to routes
 
-Register handlers with route helpers during `rony.Setup`:
+Register handlers with route helpers in `rony.Setup`:
 
 ```go
 rony.Setup(srv, "UserService", rony.EmptyState(),
@@ -138,11 +132,11 @@ rony.Setup(srv, "UserService", rony.EmptyState(),
 )
 ```
 
-Available route helpers: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, `ALL`, and the generic `REST(method, path)`.
+Available route helpers are `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, and `ALL`. Use `REST(method, path)` for other HTTP methods.
 
 ### Route options
 
-Customize individual routes for documentation and behavior:
+Use route options to set documentation metadata and behavior:
 
 ```go
 rony.WithUnary(GetUser,
@@ -151,9 +145,9 @@ rony.WithUnary(GetUser,
 )
 ```
 
-### Grouping related handlers
+### Group related handlers
 
-Use `SetupOptionGroup` to organize handlers by domain:
+Use `SetupOptionGroup` to group handlers by domain:
 
 ```go
 func userHandlers() rony.SetupOption[rony.EMPTY, rony.NOP] {
@@ -177,35 +171,31 @@ orderHandlers(),
 )
 ```
 
----
+## Request binding
 
-## Request Binding
-
-RonyKIT automatically binds path parameters, query parameters, and request body to your input struct fields. It matches fields using the `json` tag.
+RonyKIT binds path parameters, query parameters, and request body fields to input struct fields. It uses the `json` tag to match fields.
 
 ```go
 type SearchRequest struct {
 	Category string `json:"category"` // from path /{category}, query ?category=, or body
 	Query    string `json:"query"`    // from query ?query= or body
-	Page     *int32 `json:"page"`     // optional — nil when not provided
+	Page     *int32 `json:"page"`     // optional - nil when not provided
 }
 ```
 
-**Priority:** path params > query params > body fields.
+Binding priority is path parameters, query parameters, then body fields.
 
-**Tips:**
+Follow these rules:
 
-- Use **pointer types** for optional fields — they stay `nil` when not provided.
-- Read request headers with `ctx.GetInHdr("X-Request-Id")` — headers aren't bound to struct fields.
-- Keep tag names consistent across path, query, and body.
+- Use pointer types for optional fields. An omitted field stays `nil`.
+- Use `ctx.GetInHdr("X-Request-Id")` to read request headers. RonyKIT does not bind headers to struct fields.
+- Use the same tag names for path, query, and body fields.
 
----
+## State management
 
-## State Management
+Use the `rony` reducer pattern when handlers must share mutable data.
 
-If handlers need to share mutable data, `rony` provides a built-in reducer pattern.
-
-### Define your state
+### Define the state
 
 ```go
 type Counter struct {
@@ -230,9 +220,9 @@ func (c *Counter) Reduce(action string) error {
 }
 ```
 
-When your state implements `sync.Locker`, `ReduceState` automatically locks around mutations.
+If the state implements `sync.Locker`, `ReduceState` locks the state during mutations.
 
-### Use it in a handler
+### Use the state in a handler
 
 ```go
 func Count(ctx *rony.UnaryCtx[*Counter, string], in CountRequest) (*CountResponse, error) {
@@ -251,7 +241,7 @@ func Count(ctx *rony.UnaryCtx[*Counter, string], in CountRequest) (*CountRespons
 }
 ```
 
-### Register with initial state
+### Register the initial state
 
 ```go
 rony.Setup(srv, "CounterService",
@@ -260,19 +250,17 @@ rony.Setup(srv, "CounterService",
 )
 ```
 
-When you don't need state, use `rony.EmptyState()` and the `rony.SUnaryCtx` shorthand.
+Use `rony.EmptyState()` and `rony.SUnaryCtx` when the service has no state.
 
-**Advice:** Keep state small. For heavy shared resources (database pools, caches), use dependency injection or pass them through handler closures.
-
----
+Keep state small. Use dependency injection or handler closures for shared resources such as database pools and caches.
 
 ## Middleware
 
-Middleware runs before your handlers. Use it for auth, logging, rate limiting, or request shaping.
+Middleware runs before handlers. Use middleware for authentication, logging, rate limiting, and request changes.
 
 ### Stateless middleware
 
-The most common kind — wraps `kit.HandlerFunc`:
+Stateless middleware wraps `kit.HandlerFunc`:
 
 ```go
 func LogMiddleware(ctx *kit.Context) {
@@ -282,7 +270,7 @@ func LogMiddleware(ctx *kit.Context) {
 }
 ```
 
-Register at service level:
+Register middleware at the service level:
 
 ```go
 rony.Setup(srv, "MyService", rony.EmptyState(),
@@ -291,7 +279,7 @@ rony.Setup(srv, "MyService", rony.EmptyState(),
 )
 ```
 
-Or at contract level:
+Or register middleware at the contract level:
 
 ```go
 rony.WithUnary(MyHandler,
@@ -300,13 +288,11 @@ rony.WithUnary(MyHandler,
 )
 ```
 
-**Prefer stateless middleware** unless you truly need shared state access.
+Use stateless middleware unless the middleware must access shared state.
 
----
+## Streaming handlers
 
-## Streaming Handlers
-
-For server-push or bidirectional messaging (WebSocket), use streaming handlers:
+Use streaming handlers for server push or bidirectional WebSocket messaging:
 
 ```go
 type ChatIn struct {
@@ -327,14 +313,12 @@ rony.WithStream(Chat, rony.RPC("chatMessage")),
 )
 ```
 
-- Use `ctx.Push(msg)` to send messages to the client.
-- Streaming is typically used over WebSocket via the `fasthttp` gateway.
+- Use `ctx.Push(msg)` to send a message to the client.
+- The `fasthttp` gateway usually carries streaming messages over WebSocket.
 
----
+## Error handling
 
-## Error Handling
-
-Return structured errors using the `rony/errs` package:
+Return structured errors with the `rony/errs` package:
 
 ```go
 import "github.com/clubpay/ronykit/rony/errs"
@@ -360,18 +344,18 @@ func GetUser(ctx *rony.SUnaryCtx, in GetUserRequest) (*GetUserResponse, error) {
 }
 ```
 
-Error codes map to HTTP status codes automatically:
+RonyKIT maps error codes to HTTP status codes:
 
-| Code                    | HTTP Status |
-|-------------------------|-------------|
-| `errs.InvalidArgument`  | 400         |
-| `errs.Unauthenticated`  | 401         |
-| `errs.PermissionDenied` | 403         |
-| `errs.NotFound`         | 404         |
-| `errs.AlreadyExists`    | 409         |
-| `errs.Internal`         | 500         |
+| Code | HTTP status |
+|------|-------------|
+| `errs.InvalidArgument` | 400 |
+| `errs.Unauthenticated` | 401 |
+| `errs.PermissionDenied` | 403 |
+| `errs.NotFound` | 404 |
+| `errs.AlreadyExists` | 409 |
+| `errs.Internal` | 500 |
 
-Override error serialization globally:
+Use `WithErrorHandler` to replace global error serialization:
 
 ```go
 rony.NewServer(
@@ -384,13 +368,11 @@ rony.NewServer(
 )
 ```
 
----
+## API documentation
 
-## API Docs
+RonyKIT generates OpenAPI documentation from handler types. It can serve this documentation at runtime.
 
-RonyKIT generates and serves OpenAPI documentation from your handler types.
-
-### Serve docs at runtime
+### Serve documentation at runtime
 
 ```go
 srv := rony.NewServer(
@@ -399,7 +381,7 @@ srv := rony.NewServer(
 )
 ```
 
-### Enrich docs with metadata
+### Add metadata to documentation
 
 ```go
 rony.WithUnary(Search,
@@ -414,17 +396,15 @@ rony.WithUnary(Search,
 )
 ```
 
-### Export to file
+### Export documentation to a file
 
 ```go
 _ = srv.GenDocFile(context.Background(), "openapi.json")
 ```
 
----
+## Client stubs
 
-## Client Stubs
-
-Generate type-safe clients in Go or TypeScript from your service definitions.
+Generate type-safe Go or TypeScript clients from service definitions.
 
 ### Go client
 
@@ -455,11 +435,9 @@ stubgen.New(
 ).MustGenerate(svcs...)
 ```
 
----
+## File uploads and raw bodies
 
-## File Uploads and Raw Bodies
-
-### File uploads (multipart forms)
+### File uploads with multipart forms
 
 ```go
 func Upload(ctx *rony.SUnaryCtx, in kit.MultipartFormMessage) (*kit.RawMessage, error) {
@@ -477,7 +455,7 @@ rony.WithUnary(Upload, rony.POST("/upload")),
 )
 ```
 
-### Raw request/response bodies
+### Raw request and response bodies
 
 ```go
 func RawEcho(ctx *rony.SUnaryCtx, in kit.RawMessage) (*kit.RawMessage, error) {
@@ -496,27 +474,27 @@ func Redirect(ctx *rony.SUnaryCtx, in RedirectRequest) (*rony.EMPTY, error) {
 }
 ```
 
----
-
 ## Testing
 
 ### Run the test suite
 
+Run these commands from the repository root:
+
 ```bash
-make setup    # install tools — run once
-make test     # run tests across all modules
-make lint     # lint all modules
+make setup    # Install tools; run one time
+make test     # Run tests across all modules
+make lint     # Lint all modules
 ```
 
-To test a single module:
+Test one module with the Go tool:
 
 ```bash
 cd rony && go test ./...
 ```
 
-### Test your handlers
+### Test handlers
 
-Handlers are regular Go functions with typed inputs and outputs — test them directly:
+Handlers are Go functions with typed inputs and outputs. Call them directly in unit tests:
 
 ```go
 func TestGreet(t *testing.T) {
@@ -526,64 +504,56 @@ func TestGreet(t *testing.T) {
 }
 ```
 
-For integration tests, use generated Go client stubs to call your endpoints end-to-end.
+For integration tests, use generated Go client stubs to call endpoints.
 
----
+## Server options reference
 
-## Server Options Reference
+| Option | Purpose |
+|--------|---------|
+| `Listen(":8080")` | Set the HTTP gateway bind address |
+| `WithServerName("name")` | Set the server name in documentation and logs |
+| `WithVersion("v1.0.0")` | Set the API version |
+| `WithCORS(config)` | Configure cross-origin resource sharing |
+| `WithCompression(level)` | Enable gzip or zstd response compression |
+| `WithAPIDocs("/docs")` | Serve OpenAPI documentation at the specified path |
+| `UseSwaggerUI()` | Use Swagger UI instead of the default ReDoc |
+| `UseScalarUI()` | Use Scalar UI for documentation |
+| `WithTracer(tracer)` | Configure a distributed tracer |
+| `WithLogger(logger)` | Configure a structured logger |
+| `WithPrefork()` | Enable multi-process mode for higher throughput |
+| `WithShutdownTimeout(d)` | Set the graceful shutdown timeout |
+| `WithErrorHandler(fn)` | Replace global error serialization |
+| `WithGlobalHandlers(h...)` | Add global middleware to all routes |
 
-| Option                     | Description                                 |
-|----------------------------|---------------------------------------------|
-| `Listen(":8080")`          | Bind address for the HTTP gateway           |
-| `WithServerName("name")`   | Server name (appears in docs and logs)      |
-| `WithVersion("v1.0.0")`    | API version                                 |
-| `WithCORS(config)`         | Cross-origin resource sharing               |
-| `WithCompression(level)`   | Response compression (gzip/zstd)            |
-| `WithAPIDocs("/docs")`     | Serve OpenAPI docs at the given path        |
-| `UseSwaggerUI()`           | Use Swagger UI instead of the default ReDoc |
-| `UseScalarUI()`            | Use Scalar UI for docs                      |
-| `WithTracer(tracer)`       | Plug in a distributed tracer                |
-| `WithLogger(logger)`       | Plug in a structured logger                 |
-| `WithPrefork()`            | Multi-process mode for higher throughput    |
-| `WithShutdownTimeout(d)`   | Graceful shutdown timeout                   |
-| `WithErrorHandler(fn)`     | Override global error serialization         |
-| `WithGlobalHandlers(h...)` | Global middleware for all routes            |
+## Context helpers reference
 
----
+| Method | Purpose |
+|--------|---------|
+| `ctx.GetInHdr("key")` | Read a request header |
+| `ctx.SetOutHdr("key", "val")` | Set a response header |
+| `ctx.Conn()` | Access the underlying connection |
+| `ctx.Context()` | Get the request `context.Context` |
+| `ctx.SetUserContext(c)` | Replace the request context |
+| `ctx.RESTConn()` | Access REST helpers for method, path, and redirect |
+| `ctx.StopExecution()` | Stop the remaining middleware |
+| `ctx.KitCtx()` | Access the underlying `kit.Context` |
 
-## Context Helpers Reference
+## Production checklist
 
-| Method                        | Description                                           |
-|-------------------------------|-------------------------------------------------------|
-| `ctx.GetInHdr("key")`         | Read a request header                                 |
-| `ctx.SetOutHdr("key", "val")` | Set a response header                                 |
-| `ctx.Conn()`                  | Access the underlying connection                      |
-| `ctx.Context()`               | Get the `context.Context` for the request             |
-| `ctx.SetUserContext(c)`       | Replace the request context                           |
-| `ctx.RESTConn()`              | Access REST-specific helpers (method, path, redirect) |
-| `ctx.StopExecution()`         | Short-circuit remaining middleware                    |
-| `ctx.KitCtx()`                | Access the underlying `kit.Context`                   |
+- [ ] Use consistent `rony/errs` error codes in all handlers.
+- [ ] Add correct tags to DTOs. Use pointer types for optional fields.
+- [ ] Add field metadata, enums, and descriptions to API documentation.
+- [ ] Configure CORS with `rony.WithCORS(rony.CORSConfig{...})`.
+- [ ] Enable compression with `rony.WithCompression(...)`.
+- [ ] Add authentication middleware to protected endpoints.
+- [ ] Configure tracing and logging with `rony.WithTracer` and `rony.WithLogger`.
+- [ ] Configure reverse proxy and service timeouts. Use `rony.WithShutdownTimeout` for shutdown.
+- [ ] Generate client stubs and distribute them to consumers.
+- [ ] Run `make test` and `make lint`. Both commands must pass.
 
----
+## Next steps
 
-## Production Checklist
-
-- [ ] **Error handling** — consistent error codes from `rony/errs` across all handlers
-- [ ] **Input validation** — DTOs properly tagged; optional fields use pointer types
-- [ ] **API docs** — enriched with field metadata, enums, and descriptions
-- [ ] **CORS** — configured with `rony.WithCORS(rony.CORSConfig{...})`
-- [ ] **Compression** — enabled with `rony.WithCompression(...)`
-- [ ] **Auth middleware** — in place for protected endpoints
-- [ ] **Observability** — tracer and logger wired with `rony.WithTracer` / `rony.WithLogger`
-- [ ] **Timeouts** — set at reverse proxy and service layer with `rony.WithShutdownTimeout`
-- [ ] **Client stubs** — generated and distributed to consumers
-- [ ] **Tests** — `make test` and `make lint` both green
-
----
-
-## Next Steps
-
-- [Cookbook](./cookbook.md) — production patterns for auth, pagination, validation, and more
-- [ronyup Guide](./ronyup-guide.md) — scaffolding CLI and MCP server
-- [Architecture](./architecture.md) — how RonyKit works internally
-- [Advanced: Kit](./advanced-kit.md) — low-level toolkit for custom gateways
+- [Cookbook](./cookbook.md): Use patterns for authentication, pagination, and validation.
+- [ronyup Guide](./ronyup-guide.md): Use the scaffolding CLI and MCP server.
+- [Architecture](./architecture.md): Learn about internal components.
+- [Advanced: Kit](./advanced-kit.md): Build custom gateways with low-level tools.

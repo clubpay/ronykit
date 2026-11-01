@@ -1,31 +1,30 @@
-# Cookbook: Common API Patterns
+# Cookbook: Common API patterns
 
-Production-ready patterns for building APIs with RonyKIT. These examples are drawn from real-world usage in production services.
+Use these RonyKIT patterns to build APIs. The examples come from production services.
 
-## Table of Contents
+## Table of contents
 
-- [Project Structure](#project-structure)
-- [Service with Handler Groups](#service-with-handler-groups)
-- [Authentication Middleware](#authentication-middleware)
+- [Project structure](#project-structure)
+- [Service with handler groups](#service-with-handler-groups)
+- [Authentication middleware](#authentication-middleware)
 - [Pagination](#pagination)
-- [Input Validation](#input-validation)
-- [Error Handling Patterns](#error-handling-patterns)
-- [Repository Pattern](#repository-pattern)
-- [Configuration and Settings](#configuration-and-settings)
-- [Dependency Injection](#dependency-injection)
-- [Rate Limiting](#rate-limiting)
-- [Health Check](#health-check)
-- [Webhooks with Custom Decoders](#webhooks-with-custom-decoders)
-- [CORS and Server Bootstrap](#cors-and-server-bootstrap)
-- [Stub Generation for Service Communication](#stub-generation-for-service-communication)
+- [Input validation](#input-validation)
+- [Error handling patterns](#error-handling-patterns)
+- [Repository pattern](#repository-pattern)
+- [Configuration and settings](#configuration-and-settings)
+- [Dependency injection](#dependency-injection)
+- [Rate limiting](#rate-limiting)
+- [Health check](#health-check)
+- [Webhooks with custom decoders](#webhooks-with-custom-decoders)
+- [CORS and server bootstrap](#cors-and-server-bootstrap)
+- [Stub generation for service communication](#stub-generation-for-service-communication)
 - [Observability](#observability)
-- [Panic Recovery](#panic-recovery)
+- [Panic recovery](#panic-recovery)
+- [Handler relay](#handler-relay-dynamic-reverse-proxy)
 
----
+## Project structure
 
-## Project Structure
-
-For production services, organize your code in layers. The `ronyup` scaffolding tool generates this structure automatically:
+Organize production services in layers. The `ronyup` scaffolding tool generates this structure:
 
 ```
 my-service/
@@ -55,13 +54,11 @@ my-service/
 └── pkg/                       # Shared packages
 ```
 
-**Key principle:** Handlers are thin — they validate input and delegate to the `app` layer. Business logic lives in `internal/app`. Data access lives behind interfaces in `internal/repo`.
+Keep handlers thin. Handlers validate input and call the `app` layer. Put business logic in `internal/app`. Put data access behind interfaces in `internal/repo`.
 
----
+## Service with handler groups
 
-## Service with Handler Groups
-
-Organize related endpoints into handler groups using `SetupOptionGroup`:
+Use `SetupOptionGroup` to group related endpoints:
 
 ```go
 type RContext = rony.UnaryCtx[rony.EMPTY, rony.NOP]
@@ -111,17 +108,15 @@ func (svc *Service) profileHandlers() rony.SetupOption[rony.EMPTY, rony.NOP] {
 }
 ```
 
-Then register with the server:
+Register the handler groups with the server:
 
 ```go
 rony.Setup(srv, "UserService", rony.EmptyState(), apiService.Desc())
 ```
 
----
+## Authentication middleware
 
-## Authentication Middleware
-
-Use a two-tier approach: parse the token on every request, enforce auth per-endpoint.
+Use two middleware functions. Parse the token for each request. Enforce authentication on protected endpoints.
 
 ```go
 func (svc *Service) CheckAuthToken(ctx *kit.Context) {
@@ -155,17 +150,17 @@ func (svc *Service) MustAuthorized(ctx *kit.Context) {
 }
 ```
 
-Register `CheckAuthToken` at service level (runs on every request) and `MustAuthorized` on individual protected endpoints:
+Register `CheckAuthToken` at the service level. It runs for each request. Register `MustAuthorized` on each protected endpoint:
 
 ```go
 func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 	return rony.SetupOptionGroup(
 		rony.WithMiddleware[rony.EMPTY, rony.NOP](svc.CheckAuthToken),
 
-		// Public — no auth required
+		// Public - no auth required
 		rony.WithUnary(svc.Login, rony.POST("/auth/login")),
 
-		// Protected — requires auth
+		// Protected - requires auth
 		rony.WithUnary(svc.GetProfile,
 			rony.GET("/profile"),
 			rony.UnaryHeader(rony.RequiredHeader("Authorization")),
@@ -175,7 +170,7 @@ func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 }
 ```
 
-Extract the claim in handlers:
+Get the claim in a handler:
 
 ```go
 func getUserClaim(ctx *RContext) domain.UserClaim {
@@ -193,11 +188,9 @@ func (svc *Service) GetProfile(ctx *RContext, in GetProfileInput) (*GetProfileOu
 }
 ```
 
----
-
 ## Pagination
 
-Define a consistent pagination pattern across all list endpoints:
+Use the same pagination pattern for all list endpoints:
 
 ```go
 type ListUsersInput struct {
@@ -237,11 +230,9 @@ func normalizePagination(page, pageSize int32) (int32, int32) {
 }
 ```
 
----
+## Input validation
 
-## Input Validation
-
-Validate inputs in the handler and return structured errors:
+Validate input in the handler. Return structured errors for invalid input:
 
 ```go
 type CreateUserInput struct {
@@ -282,19 +273,17 @@ func (svc *Service) CreateUser(ctx *RContext, in CreateUserInput) (*CreateUserOu
 }
 ```
 
-Use **pointer types** for truly optional fields and `swag` tags for OpenAPI enum documentation:
+Use pointer types for optional fields. Use `swag` tags to document OpenAPI enums:
 
 ```go
 type UpdateUserInput struct {
 	ID       int64   `json:"id"`
-	FullName *string `json:"fullName"` // optional — nil means "don't update"
+	FullName *string `json:"fullName"` // optional - nil keeps the current value
 	Status   string  `json:"status" swag:"enum:active,inactive"`
 }
 ```
 
----
-
-## Error Handling Patterns
+## Error handling patterns
 
 ### Define domain errors
 
@@ -308,7 +297,7 @@ var (
 )
 ```
 
-`errs.GenWrap` creates a wrappable error factory — useful when you want to include the original error as context:
+`errs.GenWrap` creates an error factory that can wrap an original error:
 
 ```go
 func (app *App) VerifyToken(ctx context.Context, token string) (*Claims, error) {
@@ -320,9 +309,9 @@ func (app *App) VerifyToken(ctx context.Context, token string) (*Claims, error) 
 }
 ```
 
-### Handler-level wrapping
+### Wrap errors in handlers
 
-Keep handlers thin. Wrap app-layer errors with context:
+Keep handlers thin. Add context to app-layer errors:
 
 ```go
 func (svc *Service) GetUser(ctx *RContext, in GetUserInput) (*GetUserOutput, error) {
@@ -338,11 +327,9 @@ func (svc *Service) GetUser(ctx *RContext, in GetUserInput) (*GetUserOutput, err
 }
 ```
 
----
+## Repository pattern
 
-## Repository Pattern
-
-### Define interfaces (ports)
+### Define interfaces as ports
 
 ```go
 // internal/repo/port.go
@@ -356,7 +343,7 @@ type UserRepository interface {
 }
 ```
 
-### Implement with sqlc
+### Implement ports with sqlc
 
 ```go
 // internal/repo/v0/user.go
@@ -408,7 +395,7 @@ func (r *UserRepo) List(ctx context.Context, skip, limit int32, status string) (
 }
 ```
 
-### Wire with DI
+### Connect ports with dependency injection
 
 ```go
 // internal/repo/v0/adapter.go
@@ -423,11 +410,9 @@ var Init = fx.Options(
 )
 ```
 
----
+## Configuration and settings
 
-## Configuration and Settings
-
-Each module defines its own settings struct using the `x/settings` package:
+Define a settings struct for each module. Use the `x/settings` package:
 
 ```go
 // internal/settings/settings.go
@@ -461,7 +446,7 @@ func New(set settings.Settings) (*Settings, error) {
 }
 ```
 
-Config file (`config.local.yaml`):
+Example `config.local.yaml` file:
 
 ```yaml
 db:
@@ -479,11 +464,9 @@ jwt:
   ttl: 24h
 ```
 
----
+## Dependency injection
 
-## Dependency Injection
-
-RonyKIT projects use `uber/fx` with the `x/di` package for DI wiring.
+RonyKIT projects use `uber/fx` and `x/di` to connect dependencies.
 
 ### Module wiring
 
@@ -524,7 +507,7 @@ func init() {
 }
 ```
 
-### Main entry point discovers modules
+### Module discovery in the main entry point
 
 ```go
 // cmd/all-in-one/main.go
@@ -545,11 +528,9 @@ func main() {
 }
 ```
 
----
+## Rate limiting
 
-## Rate Limiting
-
-Apply rate limiting as per-endpoint middleware:
+Apply rate-limiting middleware to an endpoint:
 
 ```go
 rony.WithUnary(svc.CreateOTP,
@@ -567,11 +548,9 @@ rony.WithUnary(svc.CreateOTP,
 )
 ```
 
----
+## Health check
 
-## Health Check
-
-Every production service should have a health check endpoint:
+Add a health check endpoint to each production service:
 
 ```go
 type HealthInput struct{}
@@ -589,11 +568,9 @@ rony.Setup(srv, "Health", rony.EmptyState(),
 )
 ```
 
----
+## Webhooks with custom decoders
 
-## Webhooks with Custom Decoders
-
-For webhook callbacks that use non-standard content types or signatures:
+Use a custom decoder for webhook callbacks with non-standard content types or signatures:
 
 ```go
 func webhookDecoder(ctx *kit.Context, in []byte) (kit.Message, error) {
@@ -617,11 +594,9 @@ rony.WithRawUnary(svc.HandleWebhook,
 )
 ```
 
----
+## CORS and server bootstrap
 
-## CORS and Server Bootstrap
-
-A production-ready server bootstrap:
+This example configures a server for production:
 
 ```go
 srv := rony.NewServer(
@@ -643,11 +618,9 @@ srv := rony.NewServer(
 )
 ```
 
----
+## Stub generation for service communication
 
-## Stub Generation for Service Communication
-
-In a microservices architecture, services communicate via generated client stubs instead of hand-written HTTP clients.
+Use generated client stubs for calls between services. Do not write HTTP clients manually.
 
 ### Generate stubs for a service
 
@@ -664,9 +637,9 @@ func main() {
 }
 ```
 
-Run with `go generate` or as part of your Makefile.
+Run the generator with `go generate` or a Makefile target.
 
-### Consume stubs in another service
+### Use stubs in another service
 
 ```go
 // In the gateway or another service's module.go
@@ -677,7 +650,7 @@ var diRemoteServices = fx.Options(
 )
 ```
 
-Then inject the stub interface in your app layer:
+Inject the stub interface into the app layer:
 
 ```go
 type App struct {
@@ -692,8 +665,6 @@ func (a *App) GetUserProfile(ctx context.Context, userID int64) (*Profile, error
 	return mapToProfile(resp), nil
 }
 ```
-
----
 
 ## Observability
 
@@ -723,11 +694,9 @@ rony.NewServer(
 )
 ```
 
----
+## Panic recovery
 
-## Panic Recovery
-
-Protect all handlers from panics:
+Use global middleware to recover from handler panics:
 
 ```go
 func recoverPanicMiddleware(ctx *kit.Context) {
@@ -748,11 +717,11 @@ rony.NewServer(
 )
 ```
 
----
-
 ## Handler relay (dynamic reverse proxy)
 
-Use **`rony.WithRelay`** when the handler must authenticate, resolve a dynamic upstream (e.g. k8s port-forward), and forward the raw HTTP or WebSocket request. This is separate from **`rony.WithReverseProxy`**, which registers a static gateway-level proxy.
+Use `rony.WithRelay` when a handler must forward a raw HTTP or WebSocket request. The handler can authenticate the request and resolve a dynamic upstream first. A Kubernetes port-forward is one example.
+
+Use `rony.WithReverseProxy` for a static gateway-level proxy instead.
 
 ```go
 func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
@@ -767,7 +736,7 @@ func (svc *Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 }
 
 func (svc *Service) RelaySessionAPI(ctx *rony.SRelayCtx) error {
-	sessionID := /* from route param via ctx.RESTConn() or app helper */
+	sessionID := /* from route param with ctx.RESTConn() or app helper */
 	target, err := svc.app.ResolveSessionUpstream(ctx.Context(), sessionID)
 	if err != nil {
 		return err
@@ -778,17 +747,15 @@ func (svc *Service) RelaySessionAPI(ctx *rony.SRelayCtx) error {
 }
 ```
 
-- **`RelayCtx`** only — `UnaryCtx` has no `Relay()` method.
-- Success writes the upstream response directly (no JSON envelope).
-- Errors return `error`; the relay wrapper sends the standard error envelope.
+- Use `RelayCtx` only. `UnaryCtx` has no `Relay()` method.
+- A successful relay writes the upstream response directly. It does not add a JSON envelope.
+- Return an `error` for a relay failure. The relay wrapper sends the standard error envelope.
 
-See `knowledge://ronyup/architecture/handler-relay` (MCP) and `std/gateways/fasthttp/proxy/README.md`.
+See MCP resource `knowledge://ronyup/architecture/handler-relay` and `std/gateways/fasthttp/proxy/README.md`.
 
----
+## Next steps
 
-## Next Steps
-
-- [Getting Started](./getting-started.md) — core concepts and first server
-- [ronyup Guide](./ronyup-guide.md) — scaffolding CLI and MCP server
-- [Architecture](./architecture.md) — how RonyKit works internally
-- [Advanced: Kit](./advanced-kit.md) — low-level toolkit for custom gateways
+- [Getting Started](./getting-started.md): Learn core concepts and build a server.
+- [ronyup Guide](./ronyup-guide.md): Use the scaffolding CLI and MCP server.
+- [Architecture](./architecture.md): Learn about internal components.
+- [Advanced: Kit](./advanced-kit.md): Build custom gateways with low-level tools.

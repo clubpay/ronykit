@@ -1,45 +1,46 @@
-# AI Guide for RonyKIT
+# AI guide for RonyKIT
 
-This document gives AI assistants (and new contributors) enough context to work effectively in this repo without guessing. Keep it short, factual, and updated.
+Use this guide to work in the RonyKIT repository. Keep the content short, correct, and current.
 
 ## Project summary
 
-RonyKIT is a Go toolkit for building high-performance API and edge servers. There are two main entry points:
+RonyKIT is a Go toolkit for high-performance API and edge servers. It has two main entry points:
 
-- `rony/`: batteries-included framework with typed handlers and opinionated defaults. Use this for most services.
-- `kit/`: low-level toolkit for custom gateways, clusters, or protocols.
+- `rony/`: High-level framework with typed handlers and default configuration. Use this package for most services.
+- `kit/`: Low-level tools for custom gateways, clusters, and protocols.
 
-Supporting components include:
+Supporting components:
 
-- `std/`: standard gateways and clusters (fasthttp, fastws, silverhttp, redis, p2p).
-- `flow/`: workflow helpers.
-- `stub/`: stub generation utilities.
-- `ronyup/`: CLI for scaffolding and tooling.
-- `x/`: additional packages (apidoc, cache, di, i18n, telemetry, etc).
-- `example/`: runnable examples (not part of normal lint/test loops).
+- `std/`: Standard gateways and clusters.
+- `flow/`: Workflow helpers.
+- `stub/`: Client stub generation.
+- `ronyup/`: Scaffolding CLI and development tools.
+- `x/`: Additional packages, including apidoc, cache, di, i18n, and telemetry.
+- `example/`: Runnable examples. Standard lint and test loops exclude this directory.
 
 ## Go workspace and modules
 
-- The repo is a Go workspace (`go.work`) that includes many modules under `example/`, `flow/`, `kit/`, `rony/`, `ronyup/`, `std/`, `stub/`, `testenv/`, and `x/`.
-- Each module has its own `go.mod`. When adding a new module, update `go.work` and `go.work.sum`.
-- CI currently runs with Go `1.25` (see `.github/workflows/go.yml`).
-- `go.work` currently declares `go 1.25.1`.
+- `go.work` defines the Go workspace and its modules.
+- Each module has a `go.mod` file.
+- Update `go.work` and `go.work.sum` when you add a module.
+- CI uses Go `1.25`. See `.github/workflows/go.yml`.
+- `go.work` declares Go `1.25.1`.
 
 ## Common commands
 
-From repo root:
+Run these commands from the repository root:
 
 ```sh
-make setup    # installs gotestsum and golangci-lint
-make test     # runs gotestsum across workspace modules (excludes example, ronyup)
-make lint     # golangci-lint --fix across modules
-make vet      # go vet across modules
-make tidy     # go mod tidy across modules
+make setup    # Install gotestsum and golangci-lint
+make test     # Test workspace modules except example and ronyup
+make lint     # Run golangci-lint --fix across modules
+make vet      # Run go vet across modules
+make tidy     # Run go mod tidy across modules
 ```
 
-## Scaffolding (ronyup)
+## Scaffolding with ronyup
 
-`ronyup` scaffolds workspaces and features.
+Use `ronyup` to create workspaces and features:
 
 ```sh
 go install ./ronyup
@@ -47,11 +48,11 @@ ronyup setup workspace --repoDir ./my-repo --repoModule github.com/you/myrepo
 ronyup setup feature --featureDir auth --featureName auth --template service
 ```
 
-Features are placed at `feature/<name>/` by default. Use `--featurePrefix` or `--groupByTemplate` for alternate layouts.
+The default feature path is `feature/<name>/`. Use `--featurePrefix` or `--groupByTemplate` to select a different layout.
 
-Use `--kind fullstack` on `setup workspace` for a `backend/` + `frontend/` split: the Go workspace moves under `backend/` (run `setup feature` from there), while `devops/`, `docs/`, and AI config stay shared at the repository root.
+Use `setup workspace --kind fullstack` for separate `backend/` and `frontend/` directories. The Go workspace is in `backend/`. Run `setup feature` from that directory. The `devops/`, `docs/`, and AI configuration directories stay at the repository root.
 
-CI test scope (subset):
+Run this CI test subset from the repository root:
 
 ```sh
 go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
@@ -61,40 +62,42 @@ go test -v -cover -covermode=atomic -coverprofile=coverage.out -count=1 \
   ./std/gateways/fasthttp/...
 ```
 
-## Conventions and linting
+## Formatting and lint rules
 
-- Formatting/linting: `gofmt`, `gofumpt`, `goimports`, `gci` via `.golangci.yml`.
-- `.editorconfig` uses tabs with size 2 and LF.
-- Avoid `io/ioutil` (blocked by `depguard` in `.golangci.yml`).
+- `.golangci.yml` configures `gofmt`, `gofumpt`, `goimports`, and `gci`.
+- `.editorconfig` specifies tabs with width 2 and LF line endings.
+- Do not use `io/ioutil`. The `depguard` linter blocks this package.
 
-## How to choose where to implement
+## Package selection
 
-- Prefer `rony/` for standard services with REST/RPC endpoints.
-- Use `kit/` for advanced control (custom gateway/cluster, protocol changes).
-- Add new gateway/cluster bundles under `std/`.
-- Put experimental or optional utilities under `x/`.
+- Use `rony/` for standard services with REST or RPC endpoints.
+- Use `kit/` for custom gateways, custom clusters, or protocol changes.
+- Add standard gateway and cluster modules under `std/`.
+- Add experimental or optional utilities under `x/`.
 
-## API description and stubs
+## API descriptions and stubs
 
-- `rony` supports declarative routes using `rony.WithUnary`, `rony.WithStream`, and `rony.WithRelay` (dynamic HTTP/WebSocket relay), plus REST/RPC selectors (`GET`, `POST`, `RPC`, etc).
-- Use `srv.ExportDesc()` and `stub/stubgen` to generate Go/TS clients.
-- For raw descriptor control, use `kit/desc`.
+- Use `rony.WithUnary`, `rony.WithStream`, and `rony.WithRelay` to declare handlers.
+- Use REST and RPC selectors, including `GET`, `POST`, and `RPC`.
+- Use `rony.WithRelay` for dynamic HTTP and WebSocket relays.
+- Use `srv.ExportDesc()` and `stub/stubgen` to generate Go and TypeScript clients.
+- Use `kit/desc` for direct control of descriptors.
 
-## Where to look for examples
+## Additional references
 
-- `docs/getting-started.md` for a full walkthrough.
-- `docs/cookbook.md` for production patterns (auth, pagination, validation, etc.).
-- `docs/ronyup-guide.md` for scaffolding CLI and MCP server.
-- `docs/architecture.md` for how components fit together.
-- `docs/advanced-kit.md` for low-level kit usage (advanced).
-- `example/` for runnable sample services.
-- `rony/README.MD` and `kit/README.MD` for quick starts.
+- `docs/getting-started.md`: Full tutorial.
+- `docs/cookbook.md`: Service patterns.
+- `docs/ronyup-guide.md`: Scaffolding CLI and MCP server.
+- `docs/architecture.md`: Component relationships.
+- `docs/advanced-kit.md`: Low-level `kit` usage.
+- `example/`: Runnable services.
+- `rony/README.MD` and `kit/README.MD`: Package quick starts.
 
-## Updating this file
+## Update this guide
 
-Keep this guide aligned with:
+Keep this guide consistent with these files:
 
-- `go.work` (Go version and module list)
-- `.github/workflows/go.yml` (CI Go version and test scope)
-- `Makefile` (available targets)
-- `docs/` (documentation files)
+- `go.work`: Go version and module list.
+- `.github/workflows/go.yml`: CI Go version and test scope.
+- `Makefile`: Available targets.
+- `docs/`: Documentation structure.

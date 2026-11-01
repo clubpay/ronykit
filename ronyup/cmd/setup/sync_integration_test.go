@@ -89,6 +89,9 @@ func TestSetupSyncCommand_OverwriteAgents(t *testing.T) {
 	if !strings.Contains(string(agents), "RonyKIT") {
 		t.Fatalf("expected rendered AGENTS.md after overwrite, got:\n%s", agents)
 	}
+	if !strings.Contains(string(agents), "ASD-STE100 Simplified Technical English") {
+		t.Fatalf("expected ASD-STE100 language rule in AGENTS.md, got:\n%s", agents)
+	}
 }
 
 func TestSetupSyncCommand_AddsClaudeHooks(t *testing.T) {

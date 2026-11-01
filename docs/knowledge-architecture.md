@@ -1,31 +1,32 @@
-# Knowledge Base Architecture for ronyup MCP Server
+# Knowledge base architecture for the ronyup MCP server
 
 ## Status
 
-Proposed — March 2026
+Proposed - March 2026
 
 ## Problem
 
-All MCP server knowledge — instructions, tool descriptions, architecture hints, package metadata, characteristic guidance, plan steps, file purposes — is hardcoded in `ronyup/cmd/mcp/strings.go` as Go constants and function returns. Improving any hint or adding a new toolkit package requires editing Go source and recompiling. There is no way for non-Go contributors to improve the AI assistant's quality.
+The MCP server stores all knowledge in `ronyup/cmd/mcp/strings.go`. This knowledge includes instructions, tool descriptions, architecture hints, package metadata, characteristic guidance, plan steps, and file purposes. Go constants and function returns contain this content.
+
+A documentation change requires a Go source edit and a new build. Non-Go contributors cannot improve the AI assistant guidance without changing Go code.
 
 ## Goals
 
-1. Move knowledge into structured **Markdown files** under `ronyup/knowledge/`.
-2. Embed them via `go:embed` at compile time (fast startup, single binary).
-3. Parse frontmatter + body at server init to produce typed knowledge structs.
-4. Expose knowledge as MCP **resources** and **prompts** alongside tools.
-5. Make the codegen templates in `implement_service.go` use `.gotmpl` files.
+1. Move knowledge to structured Markdown files under `ronyup/knowledge/`.
+2. Embed the files with `go:embed` at compile time. Keep startup fast and distribute one binary.
+3. Parse frontmatter and body content at server initialization. Produce typed knowledge structs.
+4. Expose knowledge as MCP resources and prompts together with tools.
+5. Move codegen templates in `implement_service.go` to `.gotmpl` files.
 
 ## Constraints
 
-- Startup must remain fast: parse once at init, store in memory.
-- No runtime disk I/O or hot-reload.
+- Parse knowledge one time during initialization and store it in memory.
+- Do not read from disk at runtime.
+- Do not reload knowledge at runtime.
 
----
+## 1. Directory layout
 
-## 1. Directory Layout
-
-All knowledge lives inside `ronyup/` — same module, simple `go:embed`.
+Store all knowledge inside `ronyup/`. This location uses the same Go module and simplifies `go:embed`.
 
 ```
 ronyup/
@@ -98,26 +99,26 @@ ronyup/
     └── ...                             # tools read from *knowledge.Base
 ```
 
----
+## 2. Markdown file conventions
 
-## 2. Markdown File Conventions
+Each knowledge file uses YAML frontmatter between `---` delimiters. The frontmatter contains structured metadata. The body contains the knowledge.
 
-Every knowledge file uses **YAML frontmatter** (delimited by `---`) for structured metadata. The **body** is the knowledge content. Specific sections within the body carry semantic meaning (e.g., `## Usage Hint`).
+Some body sections have defined meanings. Examples are `## Usage Hint` and `## Extended Guidance`.
 
-### 2.1 Server Instructions — `server/instructions.md`
+### 2.1 Server instructions: `server/instructions.md`
 
-No frontmatter. The entire file body becomes the MCP server `Instructions` string.
+This file has no frontmatter. The full body becomes the MCP server `Instructions` string.
 
 ```markdown
 RonyKIT scaffolding assistant. Follow layered service conventions: ...
 
-IMPORTANT — Always use the RonyKIT x/ toolkit packages instead of
+IMPORTANT - Always use the RonyKIT x/ toolkit packages instead of
 third-party or hand-rolled equivalents:
-• x/di — Dependency injection ...
+• x/di - Dependency injection ...
 ...
 ```
 
-### 2.2 Tool Descriptions — `tools/{name}.md`
+### 2.2 Tool descriptions: `tools/{name}.md`
 
 ```markdown
 ---
@@ -134,11 +135,11 @@ to produce a plan. Review the plan output before calling
 implement_service.
 ```
 
-- **`name`** (required): Must match the tool constant in Go.
-- **Body before first `##`**: Short description used as `Tool.Description`.
-- **`## Extended Guidance`** (optional): Surfaced as an MCP resource, not part of the tool description.
+- **`name`** is required. It must match the tool constant in Go.
+- **Body before the first `##`** becomes the short `Tool.Description` value.
+- **`## Extended Guidance`** is optional. The server exposes this section as an MCP resource. It is not part of the tool description.
 
-### 2.3 Package Docs — `packages/{short_name}.md`
+### 2.3 Package documentation: `packages/{short_name}.md`
 
 ```markdown
 ---
@@ -156,23 +157,23 @@ di.ProvideDBParams/ProvideRedisParams for infra;
 di.StubProvider for inter-service stubs.
 ```
 
-- **`import_path`** (required): Full Go import path.
-- **`short_name`** (required): The name used in prose and matching.
-- **Body before `## Usage Hint`**: Package description.
-- **`## Usage Hint`**: Concise usage guidance returned in plan output.
+- **`import_path`** is required. It contains the full Go import path.
+- **`short_name`** is required. Prose and matching logic use this name.
+- **Body before `## Usage Hint`** contains the package description.
+- **`## Usage Hint`** contains short usage guidance for plan output.
 
-### 2.4 Architecture Hints — `architecture/{slug}.md`
+### 2.4 Architecture hints: `architecture/{slug}.md`
 
-No frontmatter. Each file's entire body is one architecture hint string.
+These files have no frontmatter. The full body of each file is one architecture hint string.
 
 ```markdown
 Keep API handlers thin: validate input and delegate business
 behavior to internal/app.
 ```
 
-The filename slug (e.g., `thin-handlers`) is used as the hint identifier and for MCP resource URIs.
+The filename slug identifies the hint. For example, `thin-handlers` identifies the hint and its MCP resource URI.
 
-### 2.5 Characteristics — `characteristics/{name}.md`
+### 2.5 Characteristics: `characteristics/{name}.md`
 
 ```markdown
 ---
@@ -189,23 +190,23 @@ applies_to_files:
 
 Default to Postgres with sqlc-backed repo ports + v0 adapters;
 update migrations/sqlc and settings.
-Wire DB params via x/di.ProvideDBParams and manage connection
+Wire DB params with x/di.ProvideDBParams and manage connection
 settings through x/settings.
 
 ## File-Level Hint
 
 Add persistence contracts in repo ports and implement mappings
-in v0 adapters. Wire DB params via x/di.ProvideDBParams.
+in v0 adapters. Wire DB params with x/di.ProvideDBParams.
 ```
 
-- **`keywords`** (required): Strings matched against user-provided characteristic names (fuzzy, case-insensitive).
-- **`applies_to_files`** (required): Path fragments that determine which planned files receive the file-level hint.
-- **Body before `## File-Level Hint`**: Service-level characteristic hint.
-- **`## File-Level Hint`**: Hint applied to individual planned files whose path matches `applies_to_files`.
+- **`keywords`** is required. The matcher compares these strings with user-supplied characteristic names. Matching is fuzzy and case-insensitive.
+- **`applies_to_files`** is required. These path fragments select planned files for the file-level hint.
+- **Body before `## File-Level Hint`** contains the service-level characteristic hint.
+- **`## File-Level Hint`** contains the hint for planned files with matching paths.
 
-### 2.6 Planning — `planning/next-steps.md`
+### 2.6 Planning: `planning/next-steps.md`
 
-Ordered Markdown list. Each list item becomes one next-step string.
+Use an ordered Markdown list. Each list item becomes one next-step string.
 
 ```markdown
 1. Run create_feature (or execute setup_command) to scaffold files ...
@@ -214,16 +215,16 @@ Ordered Markdown list. Each list item becomes one next-step string.
    ...
 ```
 
-### 2.7 Planning — `planning/file-purposes.md`
+### 2.7 Planning: `planning/file-purposes.md`
 
-YAML frontmatter map. Keys are purpose identifiers used in Go code.
+Use a YAML frontmatter map. Each key is a purpose identifier in Go code.
 
 ```markdown
 ---
 service_lifecycle: >-
-  Service module lifecycle and registration via x/di.RegisterService.
+  Service module lifecycle and registration with x/di.RegisterService.
 module_wiring: >-
-  Dependency graph wiring via x/di and uber/fx for app, api,
+  Dependency graph wiring with x/di and uber/fx for app, api,
   x/settings, and infra.
 api_contracts: >-
   Contract routes, input/output DTOs, and thin transport handlers.
@@ -235,7 +236,7 @@ repo_ports: >-
   Repository interfaces consumed by app layer.
 repo_adapters: >-
   Concrete datasource adapters implementing repository ports.
-  Wire DB/Redis params via x/di.
+  Wire DB/Redis params with x/di.
 migration: >-
   Database migration bundle bootstrap.
 settings: >-
@@ -244,9 +245,9 @@ settings: >-
 ---
 ```
 
-No body needed — all data is in frontmatter.
+This file needs no body. The frontmatter contains all data.
 
-### 2.8 Prompt Templates — `prompts/{name}.md`
+### 2.8 Prompt templates: `prompts/{name}.md`
 
 ```markdown
 ---
@@ -275,16 +276,14 @@ Requested characteristics: {{characteristics}}
 {{/if}}
 ```
 
-- **`name`** (required): MCP prompt name.
-- **`description`** (required): Shown in `prompts/list`.
-- **`arguments`** (optional): List of MCP `PromptArgument` definitions.
-- **Body**: The prompt template with `{{arg_name}}` placeholders.
+- **`name`** is required. It contains the MCP prompt name.
+- **`description`** is required. `prompts/list` displays this value.
+- **`arguments`** is optional. It contains MCP `PromptArgument` definitions.
+- **Body** contains the prompt template and `{{arg_name}}` placeholders.
 
----
+## 3. Embedding and loader: `ronyup/internal/knowledge/`
 
-## 3. Embedding & Loader — `ronyup/internal/knowledge/`
-
-Since knowledge files live inside `ronyup/` (same Go module), embedding is a single `go:embed` directive — no extra modules, no workspace changes.
+The knowledge files and loader use the same Go module. One `go:embed` directive is sufficient. No module or workspace changes are necessary.
 
 **`ronyup/internal/knowledge/embed.go`**:
 
@@ -297,7 +296,7 @@ import "embed"
 var content embed.FS
 ```
 
-The `content` var is unexported. External code calls `Load()` which reads from it and returns the parsed `*Base`.
+The `content` variable is unexported. External code calls `Load()`. This function reads `content` and returns the parsed `*Base`.
 
 ### 4.1 Types
 
@@ -360,21 +359,26 @@ type PromptArgument struct {
 func Load() (*Base, error)
 ```
 
-- Reads from the package-level `content` embed.FS.
-- A `LoadFS(fsys fs.FS) (*Base, error)` variant is also provided for unit testing with mock file systems.
-- Called **once** at server startup.
-- Walks each subdirectory, reads files, splits frontmatter from body, parses YAML frontmatter into the corresponding struct, extracts named `##` sections from the body.
-- Returns `*Base` or an error if any required file is malformed.
+The loader follows these rules:
 
-### 4.3 Section Parsing
+- Read from the package-level `content` embed.FS.
+- Provide `LoadFS(fsys fs.FS) (*Base, error)` for unit tests with mock file systems.
+- Call `Load()` one time at server startup.
+- Walk each subdirectory and read each file.
+- Separate frontmatter from the body.
+- Parse YAML frontmatter into the correct struct.
+- Extract named `##` sections from the body.
+- Return `*Base`. Return an error if a required file is malformed.
 
-A small helper splits a Markdown body by `## ` headings:
+### 4.3 Section parsing
+
+A small helper splits a Markdown body at `## ` headings:
 
 ```go
 func splitSections(body string) map[string]string
 ```
 
-Returns a map like:
+Example result:
 
 ```
 {
@@ -385,13 +389,11 @@ Returns a map like:
 }
 ```
 
-The empty-string key holds the "preamble" text before any heading.
+The empty-string key contains the preamble before the first heading.
 
----
+## 5. Integration with the MCP server
 
-## 5. Integration with MCP Server
-
-### 5.1 Server Config
+### 5.1 Server configuration
 
 Add the knowledge base to `serverConfig`:
 
@@ -399,7 +401,7 @@ Add the knowledge base to `serverConfig`:
 type serverConfig struct {
 	name         string
 	version      string
-	instructions string // overridable via --instructions flag
+	instructions string // overridable with --instructions flag
 	executable   string
 	skeletonFS   fs.FS
 	cmdRunner    runner
@@ -407,7 +409,7 @@ type serverConfig struct {
 }
 ```
 
-### 5.2 Server Init (`mcp.go`)
+### 5.2 Server initialization in `mcp.go`
 
 ```go
 import "github.com/clubpay/ronykit/ronyup/internal/knowledge"
@@ -430,9 +432,9 @@ kb:           base,
 })
 ```
 
-### 5.3 Tool Registration Changes
+### 5.3 Tool registration changes
 
-Each tool registrar reads from `cfg.kb` instead of constants:
+Each tool registrar reads `cfg.kb` instead of constants:
 
 ```go
 // Before:
@@ -449,13 +451,13 @@ mcpsdk.AddTool(srv, &mcpsdk.Tool{
 }, handler)
 ```
 
-`characteristicHints()` and `fileHints()` use `cfg.kb.Characteristics` with the same keyword matching logic, but now driven by the `keywords` and `applies_to_files` from frontmatter instead of hardcoded switch cases.
+`characteristicHints()` and `fileHints()` read `cfg.kb.Characteristics`. They keep the current keyword matching logic. Frontmatter `keywords` and `applies_to_files` replace hardcoded switch cases.
 
-### 5.4 MCP Resources
+### 5.4 MCP resources
 
-Register each knowledge category as browsable resources so AI agents can read them on demand without calling tools.
+Register each knowledge category as browsable resources. AI agents can then read knowledge on demand without tool calls.
 
-**Static resources** (one per known file):
+**Static resources**, one for each known file:
 
 ```
 knowledge://ronyup/packages/di
@@ -465,13 +467,13 @@ knowledge://ronyup/characteristics/database
 ...
 ```
 
-**Resource template** (for dynamic browsing):
+**Resource template** for dynamic browsing:
 
 ```
 knowledge://ronyup/{category}/{name}
 ```
 
-Registration in `newServer()`:
+Register resources in `newServer()`:
 
 ```go
 func registerResources(srv *mcpsdk.Server, kb *knowledge.Base) {
@@ -509,9 +511,9 @@ func registerResources(srv *mcpsdk.Server, kb *knowledge.Base) {
 }
 ```
 
-The resource handler parses the URI, looks up the matching entry in `*Base`, and returns the full Markdown content.
+The resource handler parses the URI. It finds the matching entry in `*Base` and returns the full Markdown content.
 
-### 5.5 MCP Prompts
+### 5.5 MCP prompts
 
 Register prompt templates from `kb.Prompts`:
 
@@ -546,13 +548,13 @@ func registerPrompts(srv *mcpsdk.Server, kb *knowledge.Base) {
 }
 ```
 
----
+## 6. Codegen templates
 
-## 6. Codegen Templates
+The `implement_service.go` functions currently use `fmt.Sprintf` with raw Go source strings. These functions are `buildAPIServiceContent`, `buildAppServiceContent`, and `buildRepoPortContent`.
 
-The `implement_service.go` functions (`buildAPIServiceContent`, `buildAppServiceContent`, `buildRepoPortContent`) currently use `fmt.Sprintf` with raw Go source strings. These should be converted to `.gotmpl` files using `text/template`, following the same pattern as the existing skeleton templates.
+Move these source strings to `.gotmpl` files. Use `text/template`, as the current skeleton templates do.
 
-These are **not** knowledge files (they don't teach the AI; they produce Go source code). They belong alongside the skeleton:
+These files are not knowledge files. They generate Go source code instead of supplying AI guidance. Store them beside the skeleton:
 
 ```
 ronyup/internal/skeleton/codegen/
@@ -561,11 +563,11 @@ ronyup/internal/skeleton/codegen/
 └── repo_port.gotmpl
 ```
 
-They are embedded by the existing `//go:embed skeleton` directive in `ronyup/internal/embed.go` and loaded via `text/template` in the implement tool. This is a separate refactoring from the knowledge base but follows the same "externalize from Go code" principle.
+The current `//go:embed skeleton` directive in `ronyup/internal/embed.go` embeds these files. The implement tool loads them with `text/template`.
 
----
+This codegen change is separate from the knowledge base change. Both changes move content out of Go source.
 
-## 7. Data Flow Diagram
+## 7. Data flow diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -609,72 +611,74 @@ They are embedded by the existing `//go:embed skeleton` directive in `ronyup/int
    packages, etc.                      workflows
 ```
 
----
+## 8. Content that stays in Go code
 
-## 8. What Stays in Go Code
+| Category | Stays in Go? | Reason |
+|----------|--------------|--------|
+| Tool name constants such as `toolPlanService` | Yes | Code identifiers, not prose |
+| Error format strings such as `errPathRequired` | Yes | Developer-facing text tied to code logic |
+| Result format strings such as `msgPlannedFiles` | Yes | `fmt.Sprintf` format strings |
+| Domain constants such as `ronyKitModulePath` | Yes | Structural constants |
+| Keyword matching logic | Yes | Algorithm. Markdown frontmatter supplies the keywords. |
+| File-path matching logic | Yes | Algorithm. Markdown supplies `applies_to_files`. |
+| `toolkitPackage` struct type | Yes | Data type populated from Markdown |
 
-| Category                                  | Stays in Go? | Reason                                           |
-|-------------------------------------------|--------------|--------------------------------------------------|
-| Tool name constants (`toolPlanService`)   | Yes          | Code identifiers, not prose                      |
-| Error format strings (`errPathRequired`)  | Yes          | Developer-facing, tied to code logic             |
-| Result format strings (`msgPlannedFiles`) | Yes          | `fmt.Sprintf` format strings                     |
-| Domain constants (`ronyKitModulePath`)    | Yes          | Structural constants                             |
-| Keyword matching logic                    | Yes          | Algorithm, but keywords come from MD frontmatter |
-| File-path matching logic                  | Yes          | Algorithm, but `applies_to_files` comes from MD  |
-| `toolkitPackage` struct type              | Yes          | Data type (populated from MD now)                |
+## 9. Migration path
 
----
+### Phase 1: Knowledge base foundation
 
-## 9. Migration Path
-
-### Phase 1 — Knowledge Base Foundation
-
-1. Create `ronyup/knowledge/` directory with all MD files (migrate from `strings.go`).
-2. Create `ronyup/internal/knowledge/` with `embed.go`, `types.go`, `loader.go`.
-3. Wire `Load()` into `newServer()`.
+1. Create `ronyup/knowledge/` with all Markdown files from `strings.go`.
+2. Create `ronyup/internal/knowledge/` with `embed.go`, `types.go`, and `loader.go`.
+3. Call `Load()` from `newServer()`.
 4. Replace `strings.go` constants with `kb.*` reads.
-5. Delete `strings.go` constants that are now in MD files.
+5. Delete `strings.go` constants that moved to Markdown files.
 
-### Phase 2 — MCP Resources & Prompts
+### Phase 2: MCP resources and prompts
 
-7. Register MCP resources from knowledge base.
-8. Write prompt template MD files.
-9. Register MCP prompts from knowledge base.
+7. Register MCP resources from the knowledge base.
+8. Write prompt template Markdown files.
+9. Register MCP prompts from the knowledge base.
 
-### Phase 3 — Codegen Templates
+### Phase 3: Codegen templates
 
-10. Convert `buildAPIServiceContent` → `api_service.gotmpl`.
-11. Convert `buildAppServiceContent` → `app_service.gotmpl`.
-12. Convert `buildRepoPortContent` → `repo_port.gotmpl`.
+10. Convert `buildAPIServiceContent` to `api_service.gotmpl`.
+11. Convert `buildAppServiceContent` to `app_service.gotmpl`.
+12. Convert `buildRepoPortContent` to `repo_port.gotmpl`.
 13. Update `implement_service.go` to load and execute templates.
 
----
+## 10. Add new knowledge
 
-## 10. Adding New Knowledge
+### Add a toolkit package
 
-To add a new toolkit package (e.g., `x/newpkg`):
+This example adds `x/newpkg`:
 
 1. Create `ronyup/knowledge/packages/newpkg.md` with frontmatter.
 2. Rebuild `ronyup`.
-3. The MCP server automatically:
-   - Includes it in `plan_service` recommended packages.
-   - Exposes it as `knowledge://ronyup/packages/newpkg` resource.
-   - References it in server instructions (if `instructions.md` is updated).
+3. The MCP server then does these operations:
+   - Includes the package in `plan_service` recommendations.
+   - Exposes `knowledge://ronyup/packages/newpkg` as a resource.
+   - References the package in server instructions if `instructions.md` includes it.
 
-To add a new characteristic (e.g., `graphql`):
+### Add a characteristic
 
-1. Create `ronyup/knowledge/characteristics/graphql.md` with `keywords: [graphql, gql]` and `applies_to_files: [api]`.
-2. Rebuild.
-3. The keyword matcher automatically picks it up — no Go code changes.
+This example adds `graphql`:
 
-To add a new architecture hint:
+1. Create `ronyup/knowledge/characteristics/graphql.md`.
+2. Set `keywords: [graphql, gql]` and `applies_to_files: [api]`.
+3. Rebuild `ronyup`.
+
+The keyword matcher then finds the characteristic. No Go code change is necessary.
+
+### Add an architecture hint
 
 1. Create `ronyup/knowledge/architecture/new-hint.md`.
-2. Rebuild.
-3. Automatically included in `plan_service` output and available as a resource.
+2. Rebuild `ronyup`.
 
-To add a new MCP prompt:
+The server includes the hint in `plan_service` output and exposes it as a resource.
+
+### Add an MCP prompt
 
 1. Create `ronyup/knowledge/prompts/new-prompt.md` with frontmatter.
-2. Rebuild.
-3. Available via `prompts/list` and `prompts/get`.
+2. Rebuild `ronyup`.
+
+The prompt becomes available through `prompts/list` and `prompts/get`.
