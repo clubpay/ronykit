@@ -135,7 +135,7 @@ func HighScorers(users []User) []string {
 	var names []string
 	for _, u := range users {
 		// Scoring only applies in supported regions, so filter first.
-		if !slices.Contains(supportedRegions, u.Region) {
+		if !rkit.Contains(supportedRegions, u.Region) {
 			continue
 		}
 		if u.Active && u.Score > 50 {

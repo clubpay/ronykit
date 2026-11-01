@@ -99,6 +99,37 @@ Otherwise, keep it one file.
   pointer for the agent.
 - Wrap prose at ~80 columns to match the other skills.
 
+## Upstream baselines
+
+Record the exact source revision used for every synchronization. These are review
+baselines, not instructions to overwrite the RonyKit adaptations. On the next
+audit, diff the new upstream against these revisions, port conceptual changes,
+and update the entries in the same change.
+
+| Source | Revision | Bundled skills |
+| ------ | -------- | -------------- |
+| `wondelai/skills` | `c172996495bed0fcd26896a9416b2093fd7073f0` | `go-design`, `release-it`, `domain-driven-design`, `software-design-philosophy`, `ddia-systems`, `technical-documentation` |
+| `obra/superpowers` | `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` | `verification-before-completion`, `writing-plans` |
+| `DaleStudy/skills` | `10d2ee2e27c71052e64e29a640f2d178ff11b253` | `storybook` |
+| `vercel-labs/agent-skills` | `1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62` | `react-performance`, `composition-patterns` |
+| `anthropics/skills` (`skills/frontend-design`) | `ca45fc496a3436251f191354091d557da31c15b5` | `frontend-design` |
+| `pbakaus/impeccable` | `e89e3ada3e875a89ac2c5d33d11e65ebef6fe285` | `frontend-design`, `dashboard-ui`, `ui-polish`, `typography` |
+| `nexu-io/open-design` (`plugins/community/hallmark`) | `12d970eacc8971150e3c76470d2a9afe16dc2ed1` | `frontend-design` |
+| `Dammyjay93/interface-design` | `2f9be3206855bcb2d1d0af262c8bae25cba6658d` | `dashboard-ui`, `design-tokens` |
+| `vercel-labs/web-interface-guidelines` | `434b7f91364665f2f733b310ec54809bf8f37937` | `ux-quality` |
+| `ibelick/ui-skills` | `4907a526b07943b3a338177558d42fae4fdf0a86` | `ux-quality`, `ui-polish` |
+| `jakubkrehel/skills` | `592aedc44d7d5b3e29740984252902f3e5402a1c` | `ux-quality`, `ui-polish`, `typography`, `design-tokens` |
+| `emilkowalski/skills` (`improve-animations`) | `a81dbca07f2217b7103e510c0f13f8d5b017afc9` | `ui-polish` |
+| `google/elephant-goldfish-model` | `403d8881d62022490637d740657b33f01e321ea8` | `ronykit-framework` EGM assets |
+| `WebMCP-org/npm-packages` | `469bad289e3aee1d19a487c2c7820d2c54a82373` | `webmcp` |
+| `nextlevelbuilder/ui-ux-pro-max-skill` | `58ff1f32156cbe144108de48eda2ecaed9a` | `shadcn` references |
+
+Live APIs do not have a repository baseline in every skill. The current review
+uses Next.js **16.4.3**, React **19.3.1**, Storybook **10.6.5**, shadcn
+**4.23.0**, MCP-B packages **6.0.3**, Zod **4.6.7** (with a **4.2+** floor),
+the W3C WebMCP draft, and the Chrome WebMCP guide. Recheck moving documentation
+when updating `nextjs-modern`, `storybook`, `shadcn`, or `webmcp`.
+
 ## Registering a skill
 
 Add an entry to `skillCatalog` in `ronyup/internal/scaffold/skills.go` (id, name,

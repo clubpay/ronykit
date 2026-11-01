@@ -54,9 +54,9 @@ Spec: [webmachinelearning.github.io/webmcp](https://webmachinelearning.github.io
 
 | Package | Role |
 |---------|------|
-| `@mcp-b/global` | Polyfills `document.modelContext` in browsers without native WebMCP; steps aside when native support exists |
-| `@mcp-b/react-webmcp` | `useWebMCP` hook — register/unregister tools with React lifecycle |
-| `zod` | Input validation + JSON Schema generation for tool args |
+| `@mcp-b/global` 6.x | Polyfills `document.modelContext` in browsers without native WebMCP; wraps native support when present |
+| `@mcp-b/react-webmcp` 6.x | `useWebMCP` hook — validation, structured output, and React lifecycle cleanup |
+| `zod` 4.2+ | Standard Schema input validation + JSON Schema generation |
 
 Docs: [docs.mcp-b.ai](https://docs.mcp-b.ai) · Packages:
 [WebMCP-org/npm-packages](https://github.com/WebMCP-org/npm-packages)
@@ -64,6 +64,8 @@ Docs: [docs.mcp-b.ai](https://docs.mcp-b.ai) · Packages:
 Do **not** default to `opentiny/webmcp-sdk` or ad-hoc `navigator.modelContext`
 wrappers. The canonical API is `document.modelContext` per the W3C spec;
 `@mcp-b/react-webmcp` aligns with it and handles cleanup via `AbortSignal`.
+Current hooks use `execute` and a complete `z.object({...})` (or JSON Schema).
+Older examples using `handler` or a bare map of Zod fields are obsolete.
 
 ## Implementation workflow
 
@@ -75,9 +77,9 @@ WebMCP integration:
 - [ ] Map each tool to existing app logic (hook, store action, Server Action)
 - [ ] Add WebMCP provider + polyfill (client-only)
 - [ ] Register tools at the component/route that owns the state
-- [ ] Set annotations (readOnlyHint, title) and tight schemas
+- [ ] Set top-level title and annotations (readOnlyHint, consequentialHint)
 - [ ] Mirror agent mutations in the UI (same state path as human clicks)
-- [ ] Test with modelContextTesting API (see references/testing.md)
+- [ ] Test with getTools() / executeTool() (see references/testing.md)
 - [ ] Document tools in the frontend design doc (tool table)
 ```
 
@@ -102,7 +104,7 @@ async function setDateRange(range: DateRange) {
 }
 
 // Human: <DatePicker onChange={setDateRange} />
-// Agent: useWebMCP({ name: 'dashboard_set_date_range', handler: setDateRange, ... })
+// Agent: useWebMCP({ name: 'dashboard_set_date_range', execute: setDateRange, ... })
 ```
 
 Never duplicate business rules inside a tool handler. Call the same function
@@ -110,11 +112,12 @@ the button, form, or Server Action uses.
 
 ### 3. Bootstrap the runtime (React / Next.js)
 
-1. Install: `pnpm add @mcp-b/global @mcp-b/react-webmcp zod`
+1. Install: `pnpm add @mcp-b/global @mcp-b/react-webmcp zod@^4.2`
 2. Create a **client-only** `WebMCPProvider` that imports `@mcp-b/global` once.
 3. Mount the provider inside the app tree — not in the root RSC layout.
 4. Register tools in the leaf components or route modules that own the relevant
-   state. Re-register when deps change (pass a deps array to `useWebMCP`).
+   state. The hook reads the latest committed props; pass a deps array only when
+   registration metadata itself must be replaced.
 
 Full Next.js App Router, Vite, and provider patterns:
 `references/react-integration.md`.
@@ -126,8 +129,10 @@ Full Next.js App Router, Vite, and provider patterns:
   finite.
 - Return structured JSON from handlers; include enough context for the agent
   to decide the next step (`items`, `total`, `appliedFilters`, `error`).
+- Set top-level `title` for human-facing labels in browser agent UIs.
 - Set `annotations.readOnlyHint: true` for getters, list, and search tools.
-- Set `annotations.title` for human-facing labels in browser agent UIs.
+- Set `annotations.consequentialHint: true` for significant or irreversible
+  real-world actions such as payments, bookings, and permanent deletion.
 
 Detailed naming, granularity, and anti-patterns: `references/tool-design.md`.
 
@@ -144,8 +149,10 @@ branch only for **telemetry or consent** — not for alternate business logic.
 
 ### 6. Security (non-negotiable)
 
-WebMCP is gated by **origin isolation** and the **`tools` permissions
-policy** (default `self`). Do not disable these to "make it work."
+WebMCP uses secure contexts, same-origin discovery by default, and the **`tools`
+Permissions Policy** (default `self`). Do not disable these boundaries to "make
+it work." Cross-origin iframe exposure requires deliberate iframe and tool
+opt-in.
 
 Inside every **mutating** tool handler, re-check what your UI already enforces:
 
@@ -159,16 +166,18 @@ Treat tools like public API endpoints that happen to run in the browser:
 - Mark destructive flows clearly in `description`; prefer confirmation in the
   human UI when side effects are irreversible.
 - Use `readOnlyHint: true` only when the handler truly does not mutate state.
+- Set `consequentialHint: true` for significant, real-world, or non-reversible
+  actions. Hints guide agents; they do not replace authorization or confirmation.
 
-## Declarative forms (optional, limited today)
+## Declarative forms (optional, implementation-dependent)
 
-The W3C spec defines HTML form annotations (`toolname`, `tooldescription`) so
-agents can submit structured forms. The declarative section is still incomplete
-in the spec — prefer the **imperative** `registerTool` / `useWebMCP` API for
-production apps until declarative support is stable in your target browsers.
+Chrome and MCP-B support declarative HTML form annotations, but they are not yet
+part of the core W3C draft. Treat them as progressive enhancement and verify
+your exact target browser/runtime; prefer the **imperative** `registerTool` /
+`useWebMCP` API for portable production integrations.
 
-When declarative forms land fully, use them for simple CRUD forms; keep
-imperative tools for multi-step flows, dashboards, and stateful filters.
+Use declarative forms only for simple CRUD forms; keep imperative tools for
+multi-step flows, dashboards, and stateful filters.
 
 ## Desktop agent development (optional)
 
@@ -201,16 +210,15 @@ ergonomic — production agents are in-browser (e.g. Gemini in Chrome).
       alphanumeric + `_` `.` `-` only.
 - [ ] Handlers call shared app logic; UI reflects agent-driven state changes.
 - [ ] Inputs validated with Zod; descriptions on every field; enums for finite sets.
-- [ ] `readOnlyHint` / `title` annotations set correctly.
+- [ ] Top-level `title`, `readOnlyHint`, and `consequentialHint` set correctly.
 - [ ] `@mcp-b/global` loads before any `useWebMCP` call; Next.js boundaries correct.
-- [ ] Tools tested via `navigator.modelContextTesting` or MCP-B testing helpers.
+- [ ] Tools tested via `document.modelContext.getTools()` / `executeTool()`.
 - [ ] `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` pass for the app.
 - [ ] Frontend design doc lists exposed tools (name, description, read/write).
 
 ## Attribution
 
 Patterns and API usage align with the
-[W3C Web Model Context API](https://webmachinelearning.github.io/webmcp/) and
+[W3C Web Model Context API](https://webmachinelearning.github.io/webmcp/),
+[Chrome WebMCP guide](https://developer.chrome.com/docs/ai/webmcp), and
 [MCP-B](https://docs.mcp-b.ai) (`@mcp-b/global`, `@mcp-b/react-webmcp`).
-Consumer-side agent skill for browsing WebMCP sites:
-[nekuda-ai/webmcp](https://github.com/nekuda-ai/webmcp).

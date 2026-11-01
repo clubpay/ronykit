@@ -69,8 +69,10 @@ and persist to `localStorage`, reading `prefers-color-scheme` as the default.
 
 ## CSS variable system
 
-Always pair each color with its `*-foreground`, and store **channels** (not a
-full `hsl(...)`/`oklch(...)`) so `/opacity` modifiers compose (`bg-primary/50`).
+Always pair each color with its `*-foreground`. Tailwind v4 stores full CSS
+colors (including `oklch(...)`) and composes `/opacity` with `color-mix`; the
+older v3 HSL pattern stores channels so `hsl(var(--token) / 50%)` works. Match
+the generated project instead of mixing those conventions.
 
 ```css
 /* Tailwind v4 â€” globals.css (aligned with design-tokens 4-tier text & lightness steps) */
@@ -116,7 +118,7 @@ full `hsl(...)`/`oklch(...)`) so `/opacity` modifiers compose (`bg-primary/50`).
   --color-foreground-secondary: var(--foreground-secondary);
   --color-muted-foreground: var(--muted-foreground);
   --color-foreground-subtle: var(--foreground-subtle);
-  --color-primary: var(--color-primary, var(--primary));
+  --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -170,17 +172,18 @@ const buttonVariants = cva("inline-flex items-center justify-center rounded-md â
 For a one-off, pass `className` (merged via `cn`); for a repeated change, add a
 `cva` variant so it stays consistent and themeable.
 
-## Radius, base color, style
+## Radius, presets, and base library
 
 - `--radius` controls rounding globally; component `rounded-*` derive from it.
-- `init` picks a base gray (slate/zinc/neutral/stone) and a style (`default` vs
-  `new-york`); both are recorded in `components.json`.
+- `init` records the template/preset, base library (`radix`, `base`, or `aria`),
+  and icon library in `components.json`. Use `preset resolve` to inspect the
+  current preset and `apply <preset>` for deliberate theme changes.
 
 ## Checklist
 
 - Confirmed Tailwind major (MCP/`info --json`); used the matching token format.
-- Colors edited as variables in `globals.css`, paired with `*-foreground`,
-  stored as channels for `/opacity`.
+- Colors edited as variables in `globals.css`, paired with `*-foreground`, using
+  full colors for v4 or channels for legacy v3 as appropriate.
 - Dark mode via `next-themes` (or class toggle) with `suppressHydrationWarning`;
   both themes tested.
 - New variants added through `cva` with semantic tokens, no stray hex.
@@ -189,4 +192,4 @@ For a one-off, pass `className` (merged via `cn`); for a repeated change, add a
 
 Patterns adapted (and updated for Tailwind v4) from the `ui-styling` skill of
 [`ui-ux-pro-max`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill),
-Apache-2.0 License.
+MIT License.

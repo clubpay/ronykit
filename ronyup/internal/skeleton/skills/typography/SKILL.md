@@ -101,10 +101,11 @@ height:
 - **Optical cap-height centering:** On tight buttons, badges, and pills where a
   font's descender box makes text look top-heavy, use progressive enhancement:
   `text-box: trim-both cap alphabetic`.
-- **Dark mode optical compensation:** Light text on dark backgrounds Halates
-  (appears slightly bolder). Set `-webkit-font-smoothing: antialiased` **once on
-  `html`/`body`** (never scatter it across components), and step body text down
-  slightly (`oklch(0.93 0.005 H)` instead of pure `#ffffff`).
+- **Dark mode optical compensation:** Light text on dark backgrounds halates
+  (appears slightly bolder). Set `-webkit-font-smoothing: antialiased` and
+  `-moz-osx-font-smoothing: grayscale` **once on `html`/`body`** (Tailwind's
+  `antialiased` sets both; never scatter them across components), and step body
+  text down slightly (`oklch(0.93 0.005 H)` instead of pure `#ffffff`).
 - **Keep text selectable:** Only apply `user-select: none` to drag handles and
   interactive games — never to headings, tables, or UI text users copy.
 
@@ -120,6 +121,12 @@ don't clobber each other:
 - **Slashed zero for IDs/codes/hashes:** `font-variant-numeric: tabular-nums slashed-zero`.
 - **Variable fonts:** Set `font-weight: 550` instead of `font-variation-settings: "wght" 550`,
   and leave `font-optical-sizing: auto` enabled.
+- **Language and bidi:** Set `lang` and `dir` on the document and wherever they
+  change so quotes, hyphenation, pronunciation, and direction resolve correctly.
+  Wrap mixed-direction values such as names, numbers, and URLs in `<bdi>`; never
+  reorder digits manually.
+- **Underlines:** Prefer `text-underline-position: from-font` and
+  `text-decoration-thickness: from-font`, or tune offset/thickness deliberately.
 - **Real typographic punctuation:** Use curly quotes (`“ ”` `‘ ’`), real
   apostrophes (`’`), en-dashes for ranges (`10–20`), em-dashes (`—`), and real
   ellipsis (`…`) — see `references/html-entities.md`.

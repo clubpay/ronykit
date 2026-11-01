@@ -32,13 +32,16 @@ Adjust domain prefix (`orders_`, `users_`, `infra_`) per app.
 ## KPI tool example
 
 ```tsx
+import { z } from 'zod';
+
 useWebMCP({
   name: 'dashboard_get_kpis',
+  title: 'Get KPIs',
   description:
     'Return current KPI values (revenue, orders, conversion, AOV) for the active date range and segment filters.',
-  inputSchema: {},
-  annotations: { title: 'Get KPIs', readOnlyHint: true },
-  handler: async () => ({
+  inputSchema: z.object({}),
+  annotations: { readOnlyHint: true },
+  execute: async () => ({
     range: filters.dateRange,
     segment: filters.segment,
     kpis: {

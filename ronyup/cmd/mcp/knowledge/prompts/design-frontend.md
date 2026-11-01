@@ -93,8 +93,8 @@ Only after the design doc is approved:
 
 1. Build v1 surfaces from the design doc; derive every color and type choice from the token plan.
 2. Use `shadcn`, `ui-polish`, `nextjs-modern`, `ux-quality`, `storybook`, and `webmcp` skills as needed.
-3. When WebMCP is in scope: install `@mcp-b/global` + `@mcp-b/react-webmcp`, wire the provider,
-   register tools per the approved catalog, and unit-test shared handler logic.
+3. When WebMCP is in scope: install `@mcp-b/global` + `@mcp-b/react-webmcp` + `zod@^4.2`, wire the provider,
+   register tools with the 6.x `execute` + `z.object(...)` API per the approved catalog, and unit-test shared handler logic.
 4. Run `bash frontend/verify.sh` (or `make -C frontend verify`) and fix until green before reporting done.
 
 If implementation reveals design gaps, update the design doc (revision history) before or alongside code changes.

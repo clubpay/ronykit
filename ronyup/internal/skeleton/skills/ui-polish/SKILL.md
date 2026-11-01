@@ -53,7 +53,8 @@ see `typography`.
 - **Neutral image outlines:** Give content photos/screenshots a `1px` inset
   outline in pure black/white: `outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10`
   (`oklch(0 0 0 / 0.1)` light, `oklch(1 0 0 / 0.1)` dark). Never use a tinted
-  palette or accent border on images — it reads as a colored fringe.
+  palette or accent border on images — it reads as a colored fringe. Skip
+  transparent artwork such as logos and illustrations.
 - **Theme browser surfaces:** Style `::selection`, `caret-color`, focus rings,
   `meta[name="theme-color"]`, and `<html style="color-scheme: dark">` (plus
   explicit `background-color`/`color` on native `<option>` for Windows dark
@@ -131,9 +132,11 @@ feels sluggish. Tokenize strong curves instead of relying on weak browser defaul
 
 ## 4. Compositor & animation performance
 
-- **Animate `transform` and `opacity` only.** Animating `width`, `height`,
-  `top`, `left`, `margin`, or `padding` triggers layout + paint every frame. For
-  accordion/tab height changes, use `grid-template-rows: 0fr → 1fr`.
+- **Default to `transform` and `opacity`.** Small local color transitions and
+  short one-shot blur are acceptable when measured; avoid animating `width`,
+  `height`, `top`, `left`, `margin`, or `padding`, which trigger layout + paint
+  every frame. For small accordion/tab height changes, prefer
+  `grid-template-rows: 0fr → 1fr` over unbounded measurement loops.
 - **Never `transition: all` / `transition-all`.** Name the exact changing
   properties (`transition-property: transform, opacity` or `color, background-color`).
 - **Gate hover effects behind `@media (hover: hover) and (pointer: fine)`** so
@@ -145,18 +148,24 @@ feels sluggish. Tokenize strong curves instead of relying on weak browser defaul
 - **Contain overlay scroll:** Set `overscroll-behavior: contain` on scrollable
   dialogs, drawers, sheets, and menus so scrolling past the end never scrolls
   the page behind.
-- **No scroll-event polling:** Never drive animations from `scrollTop`/`scrollY`
-  listeners. Use `IntersectionObserver` (one-shot reveals, pausing off-screen
-  loops) or CSS `animation-timeline: view()`.
+- **No scroll-event polling or unowned loops:** Never drive animations from
+  `scrollTop`/`scrollY` listeners. Use `IntersectionObserver` (one-shot reveals,
+  pausing off-screen loops) or CSS `animation-timeline: view()`. Every
+  `requestAnimationFrame` loop needs a stop condition.
+- **Measure once and batch DOM work:** Read layout before writes, never
+  interleave repeated reads/writes in one frame, and transform from the measured
+  geometry (FLIP) instead of animating layout continuously.
 - **Blur & layer discipline:** Keep one-shot transition `blur()` `≤ 8px`; never
   animate blur or `backdrop-filter` continuously or on large containers. Put
   grain/noise overlays on `fixed inset-0 pointer-events-none`. Never animate
-  inherited CSS variables on a parent to drive child transforms. Use
-  `will-change` surgically on the exact animated property (`will-change: transform`),
-  never `will-change: all`.
+  inherited CSS variables on a parent to drive child transforms. After measuring
+  first-frame stutter, use `will-change` temporarily on the exact animated
+  property (`will-change: transform`), never `will-change: all`.
 - **Gate spatial motion behind `prefers-reduced-motion`:** Under
   `prefers-reduced-motion: reduce`, collapse movement, scale, and blur to a
-  `≤ 150ms` opacity cross-fade rather than removing feedback completely.
+  `≤ 150ms` opacity cross-fade rather than removing feedback completely. Every
+  animated state change also needs a static color, icon, or label cue; motion
+  cannot be the only feedback channel.
 
 ## 5. Polish & deslop audit pass (existing UI)
 
@@ -200,8 +209,9 @@ and component vocabulary. Fix in triage order:
 - High-frequency actions (`⌘K`, row hover, tab switch) are instant (`0–150ms`);
   entrances use `--ease-out` from `scale(0.95)` and trigger `transform-origin`;
   exits are `60–70%` of enter duration.
-- Only `transform`/`opacity` animate; no `transition-all`; hover gated on
-  `(hover: hover)`; `prefers-reduced-motion` falls back to opacity cross-fade.
+- Motion defaults to `transform`/`opacity` with no layout thrashing or
+  `transition-all`; hover is gated on `(hover: hover)`, reduced motion falls
+  back to opacity, and every animated change retains a static cue.
 
 ## Attribution
 

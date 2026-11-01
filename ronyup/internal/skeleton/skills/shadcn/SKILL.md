@@ -29,25 +29,28 @@ npx skills add shadcn/ui          # installs the official shadcn skill
 ```
 
 When present, it activates on a `components.json` and runs `shadcn info --json`
-to learn your framework, Tailwind version, aliases, base library (`radix` or
-`base`), icon library, and installed components. Prefer this over memory.
+to learn your framework, Tailwind version, aliases, base library (`radix`,
+`base`, or `aria`), icon library, and installed components. Prefer this over
+memory.
 
 ## CLI workflow
 
-Use the CLI (`npx shadcn@latest …`) — never hand-copy component source:
+Use the CLI (`pnpm dlx shadcn@latest …`) — never hand-copy component source:
 
 ```bash
-npx shadcn@latest init             # set up components.json + base styles
-npx shadcn@latest search <query>   # find components in the registry
-npx shadcn@latest view <name>      # inspect a component's files/API
-npx shadcn@latest docs <name>      # read its documentation
-npx shadcn@latest add <name>       # install a component (and its deps)
-npx shadcn@latest info --json      # current project configuration
-npx shadcn@latest diff             # see upstream changes to installed components
+pnpm dlx shadcn@latest init                # set up components.json + base styles
+pnpm dlx shadcn@latest search @shadcn -q <query>  # find registry components
+pnpm dlx shadcn@latest view <name>         # inspect a component's files/API
+pnpm dlx shadcn@latest docs <name>         # read its documentation
+pnpm dlx shadcn@latest add <name>          # install a component (and its deps)
+pnpm dlx shadcn@latest info --json         # current project configuration
+pnpm dlx shadcn@latest add <name> --diff   # preview upstream component changes
 ```
 
 Discover with `search`/`view`/`docs` (or the MCP tools) **before** writing code,
-so you use the correct, version-specific API on the first try.
+so you use the correct, version-specific API on the first try. Use `preset
+resolve` to inspect a preset and `apply <preset>` when changing an existing
+theme; do not paste preset output over project-specific tokens blindly.
 
 ## Composition rules
 
@@ -55,7 +58,8 @@ so you use the correct, version-specific API on the first try.
 - **Forms:** use `Field`/`FieldGroup` (and the form primitives) for layout and
   labelling, not ad-hoc `div`s.
 - **Option sets:** `ToggleGroup`/`RadioGroup` rather than hand-rolled buttons.
-- Respect the base library's API (`radix` vs `base`) — they differ; check first.
+- Respect the selected base library's API (`radix`, `base`, or `aria`) — they
+  differ; inspect the installed component first.
 - Keep generated component files editable in your repo; customize there.
 
 ## Theming
@@ -73,11 +77,12 @@ v4-OKLCH/`@theme` token plumbing, multi-theme, and adding `cva` variants — rea
 
 ## Accessibility
 
-Radix primitives give you keyboard nav, focus traps, and ARIA wiring for free —
-compose them rather than hand-rolling that logic. You still owe labels for
-icon-only triggers, wired-up form errors, an intact focus ring, and live
-regions for your own async updates. See `references/accessibility.md` for the
-per-component breakdown; `ux-quality` covers the general (non-shadcn) rules.
+The selected primitive library (Radix UI, Base UI, or React Aria) provides
+keyboard navigation, focus management, and ARIA behavior — compose it rather
+than hand-rolling that logic. You still owe labels for icon-only triggers,
+wired-up form errors, an intact focus ring, and live regions for your own async
+updates. See `references/accessibility.md`; `ux-quality` covers the general
+(non-shadcn) rules.
 
 ## Reference files
 
@@ -85,8 +90,8 @@ Open these for depth (progressive disclosure — they don't load until needed):
 
 - `references/theming.md` — dark mode (`next-themes`), the v3/v4 token systems,
   color customization, multi-theme, and `cva` variant customization.
-- `references/accessibility.md` — what each Radix primitive handles vs. the
-  gaps you must fill (labels, form errors, focus ring, live regions).
+- `references/accessibility.md` — primitive-library behavior vs. the gaps you
+  must fill (labels, form errors, focus ring, live regions).
 - `references/forms-and-tables.md` — accessible forms (`useActionState`, Zod,
   RonyKit `<Service>StubError` field-error mapping, blur/change validation
   timing) and data tables (`tabular-nums` right-aligned numeric columns,

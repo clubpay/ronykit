@@ -40,9 +40,14 @@ Returns matching order summaries (id, status, total). Does not export data.
 
 ### Prefer enums and bounded types
 
+Pass a complete Standard Schema object (or plain JSON Schema), not a bare map
+of Zod fields:
+
 ```ts
-status: z.enum(['pending', 'paid', 'shipped']).describe('Filter by order status'),
-limit: z.number().int().min(1).max(100).default(20).describe('Max rows to return'),
+const OrdersFilterInput = z.object({
+  status: z.enum(['pending', 'paid', 'shipped']).describe('Filter by order status'),
+  limit: z.number().int().min(1).max(100).default(20).describe('Max rows to return'),
+});
 ```
 
 ### Return structured, actionable output
@@ -60,21 +65,27 @@ Avoid bare `"OK"` or empty objects unless the tool is a true no-op.
 
 ### `outputSchema` (MCP-B extension)
 
-`@mcp-b/react-webmcp` supports optional `outputSchema` for typing and MCP
-clients. Native Chrome WebMCP does not enforce it yet — still document return
-shapes in TypeScript for your own tests.
+`@mcp-b/react-webmcp` supports optional `outputSchema` for result typing and
+MCP clients. Native WebMCP and the strict polyfill do not advertise this MCP
+metadata, and local/native calls bypass output validation. Still document return
+shapes in TypeScript and test them.
 
-## Annotations
+## Title and annotations
+
+Set `title` at the top level of the tool config, beside `name` and
+`description` — not inside `annotations`.
 
 | Field | Use |
 |-------|-----|
-| `title` | Short human label in browser agent UI |
 | `readOnlyHint: true` | List, get, search, export-preview — no server or client writes |
 | `readOnlyHint: false` | Create, update, delete, navigate, submit |
+| `consequentialHint: true` | Significant or irreversible actions: payments, bookings, permanent deletion |
 | `untrustedContentHint: true` | Output includes user-generated or external HTML |
+| `debugging: true` | Developer/diagnostic tool rather than an end-user operation |
 
-When in doubt, `readOnlyHint: false` — agents treat read tools as safe to call
-liberally.
+When in doubt, use `readOnlyHint: false`; agents treat read tools as safe to
+call liberally. `consequentialHint` is a signal, not a substitute for server
+authorization and user confirmation.
 
 ## Granularity
 

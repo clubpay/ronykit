@@ -3,13 +3,14 @@
 ## Install
 
 ```bash
-pnpm add @mcp-b/global @mcp-b/react-webmcp zod
+pnpm add @mcp-b/global @mcp-b/react-webmcp zod@^4.2
 ```
 
-Optional dev typing for raw `registerTool` calls:
+Optional dev typing for raw `registerTool` calls (the upstream browser
+contracts, not the compatibility alias):
 
 ```bash
-pnpm add -D @mcp-b/webmcp-types
+pnpm add -D webmcp-types
 ```
 
 ## Provider (load once, client-only)
@@ -62,44 +63,42 @@ import { useOrdersFilters } from '@/hooks/use-orders-filters';
 export function OrdersToolbar() {
   const { filters, setFilters, search } = useOrdersFilters();
 
-  useWebMCP(
-    {
-      name: 'orders_filter',
-      description:
-        'Filter the orders table by status, date range, and free-text search.',
-      inputSchema: {
-        status: z
-          .enum(['all', 'pending', 'paid', 'shipped', 'cancelled'])
-          .optional()
-          .describe('Order status filter'),
-        query: z.string().optional().describe('Search order ID or customer email'),
-        from: z.string().datetime().optional().describe('ISO start date'),
-        to: z.string().datetime().optional().describe('ISO end date'),
-      },
-      annotations: {
-        title: 'Filter orders',
-        readOnlyHint: false,
-      },
-      handler: async (input) => {
-        const next = { ...filters, ...input };
-        setFilters(next);
-        const result = await search(next);
-        return {
-          total: result.total,
-          items: result.items.map((o) => ({
-            id: o.id,
-            status: o.status,
-            total: o.totalCents,
-          })),
-        };
-      },
+  useWebMCP({
+    name: 'orders_filter',
+    title: 'Filter orders',
+    description:
+      'Filter the orders table by status, date range, and free-text search.',
+    inputSchema: z.object({
+      status: z
+        .enum(['all', 'pending', 'paid', 'shipped', 'cancelled'])
+        .optional()
+        .describe('Order status filter'),
+      query: z.string().optional().describe('Search order ID or customer email'),
+      from: z.iso.datetime().optional().describe('ISO start date'),
+      to: z.iso.datetime().optional().describe('ISO end date'),
+    }),
+    annotations: { readOnlyHint: false },
+    execute: async (input) => {
+      const next = { ...filters, ...input };
+      setFilters(next);
+      const result = await search(next);
+      return {
+        total: result.total,
+        items: result.items.map((o) => ({
+          id: o.id,
+          status: o.status,
+          total: o.totalCents,
+        })),
+      };
     },
-    [filters],
-  );
+  });
 
   return (/* existing toolbar UI */);
 }
 ```
+
+The hook reads the latest committed props, so routine state changes do not need
+a dependency-array re-registration.
 
 ### `useWebMCPContext` for read-only snapshots
 
@@ -127,16 +126,18 @@ useWebMCPContext(
 ```tsx
 'use client';
 
+import { z } from 'zod';
 import { updateUserRole } from '@/app/actions/users'; // Server Action
 
 useWebMCP({
   name: 'users_update_role',
   description: 'Change a user role. Requires admin session.',
-  inputSchema: {
-    userId: z.string().uuid(),
+  inputSchema: z.object({
+    userId: z.uuid(),
     role: z.enum(['member', 'admin', 'viewer']),
-  },
-  handler: async (input) => {
+  }),
+  annotations: { consequentialHint: true },
+  execute: async (input) => {
     const result = await updateUserRole(input);
     if (!result.ok) return { success: false, error: result.error };
     return { success: true, userId: input.userId, role: input.role };
@@ -191,16 +192,17 @@ export function useCancelOrderAction() {
 
   useWebMCP({
     name: 'orders_cancel',
+    title: 'Cancel order',
     description: 'Cancel an existing order by ID with a reason and refresh the orders view.',
-    inputSchema: {
+    inputSchema: z.object({
       orderId: z.string().min(1).describe('Order identifier to cancel'),
       reason: z.string().min(3).describe('Audit reason for cancellation'),
-    },
+    }),
     annotations: {
-      title: 'Cancel order',
       readOnlyHint: false,
+      consequentialHint: true,
     },
-    handler: ({ orderId, reason }) => cancelOrder(orderId, reason),
+    execute: ({ orderId, reason }) => cancelOrder(orderId, reason),
   });
 
   return { cancelOrder };
@@ -235,13 +237,12 @@ const filterTool = useWebMCP({ /* ... */ });
 
 ## Permissions policy
 
-If tools fail with `NotAllowedError`, ensure the page is **origin-isolated**
-and the `tools` policy allows your origin. Do not set `Origin-Agent-Cluster: ?0`
-or use `document.domain` — both disable WebMCP.
-
-For cross-origin iframes embedding your app, you may need `exposedTo` on
-`registerTool` (advanced; see W3C spec). Default same-origin apps do not need
-this.
+If tools fail with `NotAllowedError`, ensure the page uses a secure context and
+the `tools` policy allows your origin. Discovery and execution are same-origin
+by default. For a cross-origin iframe, the embedder must opt in with
+`<iframe allow="tools">` and the tool may also need `exposedTo` on
+`registerTool` (advanced; see the W3C spec). Default same-origin apps need
+neither override.
 
 ## Further reading
 

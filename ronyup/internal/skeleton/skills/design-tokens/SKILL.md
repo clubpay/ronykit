@@ -29,8 +29,10 @@ they share the same value in light mode, they diverge in dark mode.
 
 ## 2. OKLCH color ramps & hue discipline
 
-Prefer **`oklch(L C H)`** over hex or HSL: equal lightness `L` steps look equally
-bright to the human eye across every hue.
+For a new system, prefer **`oklch(L C H)`** over hex or HSL: equal lightness
+`L` steps look equally bright to the human eye across every hue. In an existing
+system, keep the established notation rather than scattering OKLCH through a
+consistent hex/HSL codebase; migrate deliberately, not component by component.
 
 - **Keep the palette minimal:** One neutral ramp, one primary accent ramp, and
   only the semantic status ramps (`success`, `warning`, `destructive`, `info`)
@@ -159,6 +161,7 @@ In **Tailwind v4**, expose semantic tokens in `globals.css`:
 
 - [ ] Zero raw `#hex`, `rgb()`, or Tailwind palette literals (`bg-slate-800`) inside feature components
 - [ ] Every status role has paired `-subtle`, `-fg` (≥ 4.5:1), and `-border` tokens at ≥ `15°` hue separation from `--primary`
+- [ ] Contrast measured on the actual rendered background in both themes and states, including alpha overlays — never estimated from the page background
 - [ ] 4-tier text tokens and dedicated `--input-bg` / `--input-border` tokens defined
 - [ ] Dark mode uses surface lightness steps, translucent borders, `color-scheme: dark`, and `disableTransitionOnChange`
 - [ ] Nested border radii follow concentric math (`outer = inner + padding`)

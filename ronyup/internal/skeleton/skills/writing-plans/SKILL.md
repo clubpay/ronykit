@@ -73,7 +73,14 @@ Each step is one action (a couple of minutes), following a test-first loop:
 
 **Goal:** <one sentence — what this builds>
 **Approach:** <2-3 sentences on the design>
+**Spec:** `docs/design/<feature>-sdd.md`
 **Tech / constraints:** <key libraries, version floors, project-wide rules>
+
+## Review Focus
+
+<The five input classes or failure modes most likely to bite a user, especially
+those the SDD does not explicitly test. Name the expected behavior for each,
+then pin each one to a test in the task that owns the code.>
 
 ## Task N: <component>
 
@@ -91,6 +98,23 @@ Each step is one action (a couple of minutes), following a test-first loop:
 - [ ] Step 3 — run the test, expect PASS
 - [ ] Step 4 — commit
 ```
+
+A step is done when the implementer can write exactly one reasonable thing from
+it. Give exact signatures, spec values, test names and assertions, commands, and
+expected results; do not transcribe a function body when its signature and test
+already determine it.
+
+## Self-review before EGM
+
+Check the complete plan against the SDD before sending it to fresh reviewers:
+
+1. **Spec coverage:** every requirement maps to a task.
+2. **Step scan:** every step is unambiguous and contains one action.
+3. **Type consistency:** names and signatures stay identical across tasks.
+4. **Review Focus:** every listed input/failure mode has an owning test.
+5. **Proportion:** the plan communicates decisions, not a transcript of the code.
+
+Fix gaps inline; this self-review does not replace EGM stage 5.
 
 ## Principles
 

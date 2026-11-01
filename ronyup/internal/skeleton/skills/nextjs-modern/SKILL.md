@@ -50,6 +50,12 @@ export default async function OrderPage({
 
 - **Colocate reads where needed** and wrap shared server reads in `React.cache()`
   so layout, `generateMetadata`, and page deduplicate within a single request.
+  `React.cache()` is request deduplication, not a cross-request cache.
+- **Use Cache Components for explicit cross-request caching (Next.js 16):** When
+  `cacheComponents` is enabled, mark async functions or components with
+  `'use cache'`, then set `cacheLife(...)` and `cacheTag(...)` from `next/cache`.
+  Read `cookies()`, `headers()`, and other request-time values outside the cached
+  scope and pass them in as serializable arguments.
 - **Eliminate waterfalls:** Start independent fetches in parallel with
   `Promise.all([getUser(id), getOrders(id)])` or split slow secondary sections
   into separate async Server Components wrapped in `<Suspense fallback={<Skeleton />}>`.
@@ -106,7 +112,12 @@ export function toFormError(err: unknown): {
   for expected validation/domain errors instead of throwing raw exceptions.
 - Pair form actions with `useActionState` (React 19) for pending state + field
   errors, and `useOptimistic` for instant UI updates.
-- Call `revalidatePath` / `revalidateTag` after mutations before redirecting.
+- **Invalidate with Next.js 16 semantics:** In a Server Action, use
+  `updateTag('orders')` for immediate read-your-own-writes behavior, or
+  `revalidateTag('orders', 'max')` when stale-while-revalidate is acceptable.
+  The one-argument `revalidateTag(tag)` form is deprecated. Route Handlers use
+  `revalidateTag` (not `updateTag`); use `revalidatePath` for path-level
+  invalidation. Complete invalidation before redirecting.
 
 ## 6. URL state, routing & boundary files
 
@@ -119,6 +130,8 @@ export function toFormError(err: unknown): {
 - **Route boundaries:** Provide `loading.tsx` (layout-matched structural
   skeletons with zero CLS), `error.tsx` (`'use client'` with a `reset()` retry
   button), and `not-found.tsx` at meaningful route segments.
+- **Request logic:** Use `proxy.ts` for Next.js 16 request middleware;
+  `middleware.ts` is the legacy convention.
 
 ## 7. Metadata, Open Graph & SEO discipline
 
@@ -165,6 +178,7 @@ export function toFormError(err: unknown): {
 
 - [ ] `'use client'` only on leaf interactive components; `params`/`searchParams` awaited
 - [ ] Independent server fetches run in parallel (`Promise.all` or `<Suspense>`)
+- [ ] Cross-request caching uses `'use cache'` + `cacheLife`/`cacheTag`; mutations use `updateTag` or `revalidateTag(tag, 'max')`
 - [ ] Server Actions validate inputs with Zod and check auth before mutating
 - [ ] Filters, tabs, and pagination sync to URL search params
 - [ ] `metadataBase`, `canonical`, `openGraph`, and `viewport.themeColor` configured; LCP image uses `priority`

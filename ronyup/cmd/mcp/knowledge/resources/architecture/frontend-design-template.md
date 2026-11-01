@@ -126,8 +126,9 @@ Rules for the tool catalog:
 - After agent mutations, the visible UI must update the same way as human clicks.
 
 Implementation: read skill `webmcp` (`.agents/skills/webmcp/SKILL.md`). Default stack:
-`@mcp-b/global`, `@mcp-b/react-webmcp`, `zod`. Reference example:
-`example/ex-13-webmcp/` in the RonyKit monorepo.
+`@mcp-b/global`, `@mcp-b/react-webmcp`, and `zod@^4.2`. Use the bundled
+`webmcp` skill and the current [MCP-B documentation](https://docs.mcp-b.ai) for
+the 6.x `execute` + `z.object(...)` API.
 
 ## 9. Quality floor (non-negotiable)
 

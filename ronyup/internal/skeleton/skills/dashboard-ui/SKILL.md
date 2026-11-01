@@ -86,6 +86,10 @@ Operational UIs rely on **weight and color/opacity** more than font size jumps:
 - **Inset controls:** Form inputs, search boxes, and filter pills sit slightly
   *darker/recessed* than the card surface in dark mode (and crisp white with a
   ≥ 3:1 border in light mode).
+- **Overlays must escape clipping:** Menus and popovers inside scrollable tables
+  or `overflow: hidden/auto` containers use the component's portal, `<dialog>`,
+  the Popover API, or fixed positioning — never an absolutely positioned panel
+  that gets clipped.
 - **Avoid card-in-card bloat:** At medium/high density, do not wrap every metric
   or sub-section in its own bordered card. Use a single outer surface with
   `divide-y` / `divide-x` hairline dividers or whitespace (`gap` between groups

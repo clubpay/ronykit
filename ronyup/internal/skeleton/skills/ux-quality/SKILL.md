@@ -35,14 +35,18 @@ For exact surface, icon, and animation curves/timings, see `ui-polish`.
   container (or `scroll-margin-top` on targets) matching any sticky header
   height so anchored links and keyboard-focused elements never hide under chrome.
 - **Overlays & focus traps:** Modals, sheets, and drawers trap `Tab`/`Shift+Tab`,
-  close on `Escape`, set `overscroll-behavior: contain`, lock background scroll,
-  and **restore focus to the trigger** when closed.
+  set deliberate initial focus, close on `Escape`, set
+  `overscroll-behavior: contain`, lock background scroll, and **restore focus to
+  the trigger** when closed. Never use a positive `tabIndex` to patch DOM order.
 - **ARIA wiring:**
   - Icon-only buttons require `aria-label`; decorative SVGs require
     `aria-hidden="true"`.
   - Disclosures/accordions/menus set `aria-expanded` and `aria-controls`.
   - Async status updates use `aria-live="polite"` (`role="status"`); urgent
-    errors use `role="alert"`.
+    errors use `role="alert"`. Never make a toast the only carrier of critical
+    information.
+  - Meaningful images get useful `alt` text; decorative images get `alt=""`;
+    videos with speech get captions.
 
 ## 2. Complete interaction states (all 8)
 
@@ -110,7 +114,12 @@ Design and implement all 8 states for every interactive control or data view:
 - **Logical CSS properties for RTL:** Prefer `margin-inline-start` (`ms-*`),
   `padding-inline` (`px-*`), `inset-inline-end` (`end-*`), and `text-align: start`
   (`text-start`) over physical `left`/`right`.
-- **Safe areas:** Pad fixed bottom bars and sheets with `env(safe-area-inset-bottom)`.
+- **Preserve reading order:** Visual order must match DOM order. Do not reorder
+  content with `order`, `row-reverse`, or grid placement; break at the point the
+  content stops fitting and prefer container queries for reusable components.
+- **Safe areas:** Pad fixed bottom bars and sheets with
+  `env(safe-area-inset-bottom)` and set `viewport-fit=cover` in the viewport
+  meta tag; otherwise safe-area insets resolve to zero.
 
 ## 6. UX copy, confirmation & i18n formatting
 
@@ -134,6 +143,9 @@ Design and implement all 8 states for every interactive control or data view:
   `Intl.DateTimeFormat` and `Intl.NumberFormat`. Keep translatable strings whole
   (ICU plurals, never `"You have " + count + " items"`), and mark brand names,
   code identifiers, and keyboard shortcuts with `translate="no"`.
+- **Language and mixed direction:** Set `lang`/`dir` on the document and wherever
+  they change; wrap mixed-direction names, numbers, and URLs in `<bdi>` rather
+  than reordering characters manually.
 
 ## UX audit checklist
 

@@ -1,12 +1,14 @@
-# shadcn/ui Accessibility — what Radix gives you, and what you still owe
+# shadcn/ui Accessibility — primitives and your responsibilities
 
-shadcn components are built on **Radix UI primitives**, which implement the
-WAI-ARIA patterns for you: keyboard navigation, focus management, ARIA wiring,
-and screen-reader announcements. This file is the component-specific layer —
-what each primitive handles automatically and the gaps you must still fill.
+shadcn can generate components for **Radix UI**, **Base UI**, or **React Aria**.
+All three provide accessible behavior, but their APIs and exact coverage differ.
+Run `shadcn info --json` and inspect the installed component before composing;
+do not substitute one library's props or behavior for another's.
 
 For the general, framework-agnostic rules (contrast, color-not-alone, motion,
-forms, navigation), see `ux-quality`. This file is the shadcn/Radix specifics.
+forms, navigation), see `ux-quality`. The table below is the shadcn/Radix layer;
+for Base UI or React Aria, use the installed implementation and its current docs
+as the behavioral reference.
 
 ## What you get for free (don't reinvent it)
 
@@ -103,11 +105,11 @@ movement under `motion-reduce:` (see `ui-polish`):
 - Focus ring intact (`focus-visible:ring-*`); no `outline-none` without a
   replacement.
 - Custom async status uses an `aria-live` region (toasts already do).
-- Didn't hand-roll keyboard/focus logic that the Radix primitive already owns.
+- Didn't hand-roll keyboard/focus logic that the selected primitive already owns.
 - Ran the general `ux-quality` checklist too (contrast, color-not-alone, motion).
 
 ## Attribution
 
 Adapted from the `ui-styling` skill of
 [`ui-ux-pro-max`](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill),
-Apache-2.0 License.
+MIT License.

@@ -73,6 +73,11 @@ Commit to a BOLD aesthetic direction before coding:
 
 - **Purpose & human:** What problem does this interface solve? Who uses it, and
   what should they notice in the first 2 seconds?
+- **Domain before palette:** List concepts, materials, and vocabulary from the
+  product's world, colors that occur naturally there, one signature element,
+  and three obvious visual/structural defaults to reject. Palette, typography,
+  and composition must come from this brief, not from a reusable "AI design"
+  look. If another brief could use the same direction unchanged, keep exploring.
 - **Tone:** Pick a clear conceptual anchor — brutally minimal, Swiss grid
   precision, editorial magazine, warm craft/organic, retro-futuristic, industrial
   utilitarian, atmospheric minimalism, or kinetic typography. Draw inspiration
@@ -81,6 +86,10 @@ Commit to a BOLD aesthetic direction before coding:
 - **Differentiation:** What is the single unforgettable detail — a live
   interactive product preview, a typographic focal point, a tactile surface
   layering, or a choreographed reveal?
+- **Two-pass check:** Review the token/layout plan against the brief and name
+  anything that reads like the generic output for a similar prompt. Replace that
+  choice before implementation. In RonyKit, this review happens in the frontend
+  design document; user approval still gates code.
 
 **CRITICAL:** Intentional minimalism and maximalism both work. Minimalism
 achieves impact through restraint, negative space, and surgical typography;
@@ -132,6 +141,11 @@ Never ship these recognizable AI-generated patterns:
 - **Color & effect clichés:** No purple/indigo-to-cyan hero gradients, no glowing
   aurora blobs behind every section, no `background-clip: text` gradient
   headlines, and no neon outer `box-shadow` glows in dark mode.
+- **Brief-independent defaults:** Do not reach automatically for warm cream +
+  terracotta + editorial serif, near-black + acid green, broadsheet newspaper
+  columns, a tracked-out ALL-CAPS eyebrow, middle-dot metadata, an arrow on every
+  link, or one italic/differently colored headline word. These are valid only
+  when this specific brief earns them.
 - **Emoji as UI icons:** Never use `✨`, `🚀`, `⚡`, `🔒`, or `🎯` as feature
   or navigation icons — use a single SVG icon family (`currentColor`).
 - **Invented metrics & filler copy:** Never fabricate statistics (`"10× faster"`,
@@ -142,9 +156,20 @@ Never ship these recognizable AI-generated patterns:
 - **Wrapped clickable text:** Buttons, nav links, pills, and CTAs must never wrap
   to two lines (`white-space: nowrap`).
 
+## 6. Rendered critique before "done"
+
+A clean static scan does not prove design quality. When browser tooling is
+available, inspect the real render at 320, 375, 414, 768, and representative
+desktop widths, in each shipped theme. Batch fixes between looks. Check the
+approved design doc, hierarchy, real copy, keyboard focus, overflow, and the
+signature element. Run a **swap test**: if replacing the typeface or layout with
+a generic one changes nothing, the direction is still a default. Remove any
+decoration that does not serve the brief. Report any viewport or interaction
+you could not verify.
+
 ## Attribution
 
 Synthesized from [Anthropic `skills/frontend-design`](https://github.com/anthropics/skills/tree/main/skills/frontend-design)
 (Apache-2.0), [`pbakaus/impeccable`](https://github.com/pbakaus/impeccable)
-(Apache-2.0), and [`nexu-io/open-design` (`hallmark`)](https://github.com/nexu-io/open-design)
+(Apache-2.0), and [`nexu-io/open-design` (`hallmark`)](https://github.com/nexu-io/open-design/tree/main/plugins/community/hallmark)
 (MIT).

@@ -36,10 +36,11 @@ reporting done.
 
 Prefer Component Story Format 3.0 with `satisfies` for full type checking and
 inference, and **omit `title`** so Storybook infers the sidebar hierarchy from
-the file path.
+the file path. Import story types from the configured framework package
+(`@storybook/nextjs` here; use `@storybook/react-vite` for Vite).
 
 ```tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { Button } from './Button';
 
 const meta = {
@@ -102,7 +103,7 @@ variables, and `.dark` class used in production:
 
 ```tsx
 // .storybook/preview.tsx
-import type { Preview } from '@storybook/react';
+import type { Preview } from '@storybook/nextjs';
 import '../src/app/globals.css'; // real design tokens & typography baseline
 
 const preview: Preview = {
@@ -157,7 +158,7 @@ Include `@storybook/addon-a11y` alongside essentials and interactions:
 
 ```ts
 // .storybook/main.ts
-import type { StorybookConfig } from '@storybook/nextjs'; // or '@storybook/react-vite'
+import type { StorybookConfig } from '@storybook/nextjs'; // or '@storybook/react-vite' for Vite
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
@@ -178,11 +179,11 @@ export default config;
 ### 6. Interaction (`play`) & accessibility checks
 
 For stateful components (dialogs, dropdowns, forms, tabs), add a `play`
-function using `@storybook/test` (`userEvent`, `within`, `expect`) to verify
+function using `storybook/test` (`userEvent`, `within`, `expect`) to verify
 keyboard/pointer flows and ARIA states:
 
 ```tsx
-import { expect, userEvent, within } from '@storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 export const OpensAndValidates: Story = {
   play: async ({ canvasElement }) => {

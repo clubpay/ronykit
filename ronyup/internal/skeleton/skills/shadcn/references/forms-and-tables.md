@@ -27,7 +27,7 @@ import { z } from 'zod';
 import { OrderServiceStub, OrderServiceStubError } from '@/stub/orderstub-typescript/stub';
 
 const CreateOrderSchema = z.object({
-  customerEmail: z.string().email('Enter a valid customer email address.'),
+  customerEmail: z.email('Enter a valid customer email address.'),
   amountCents: z.coerce.number().int().positive('Amount must be greater than zero.'),
 });
 

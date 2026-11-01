@@ -5,28 +5,33 @@ assertions on inputs/outputs, not by manually clicking the UI.
 
 ## Browser testing API
 
-Chromium builds with WebMCP expose `navigator.modelContextTesting` (testing
-only — not for production logic):
+The current W3C API and `@mcp-b/global` expose `getTools()` and `executeTool()`
+on `document.modelContext`. Execution takes the discovered tool descriptor and
+an input object, not a tool name and JSON string:
 
 ```javascript
-// List registered tools
-const tools = navigator.modelContextTesting.listTools();
-console.log(tools.map((t) => t.name));
+const tools = await document.modelContext.getTools();
+const filterTool = tools.find((tool) => tool.name === 'orders_filter');
+if (!filterTool) throw new Error('orders_filter is not registered');
 
-// Execute a tool
-const raw = await navigator.modelContextTesting.executeTool(
-  'orders_filter',
-  JSON.stringify({ status: 'paid', limit: 5 }),
-);
+const raw = await document.modelContext.executeTool(filterTool, {
+  status: 'paid',
+  limit: 5,
+});
 const result = JSON.parse(raw);
 ```
 
+Some Chromium builds also expose `navigator.modelContextTesting` for test-only
+introspection. Treat it as an optional browser helper, not the portable API or
+production application logic.
+
 ### Chrome setup (native WebMCP)
 
-1. Chrome Canary/Beta 149+ (origin trial) or flag-enabled build.
-2. Enable WebMCP testing:
-   `chrome://flags/#enable-webmcp-testing`
-3. Page must be **origin-isolated** (default for HTTPS localhost).
+1. Join the WebMCP origin trial (available from Chrome 149), or use a current
+   flag-enabled Chromium build.
+2. For local flag-based development, enable
+   `chrome://flags/#enable-webmcp-testing` and relaunch.
+3. Use a secure context and leave the `tools` Permissions Policy enabled.
 
 Chrome guide: [developer.chrome.com/docs/ai/webmcp](https://developer.chrome.com/docs/ai/webmcp)
 
@@ -35,19 +40,10 @@ to exercise tools with natural language during development.
 
 ## MCP-B polyfill testing
 
-With `@mcp-b/global`, the same `document.modelContext` API works in dev
-browsers without native support. After loading the app:
-
-```javascript
-const tools = await document.modelContext.getTools?.() ?? [];
-// or modelContextTesting when available
-```
-
+With `@mcp-b/global`, the same `document.modelContext.getTools()` and
+`executeTool()` calls work in development browsers without native support.
 Tutorial with console steps:
 [docs.mcp-b.ai/tutorials/first-react-tool](https://docs.mcp-b.ai/tutorials/first-react-tool)
-
-Runnable reference: `example/ex-13-webmcp/` in the RonyKit monorepo (task board with
-five tools).
 
 ## Vitest component tests
 
@@ -72,12 +68,11 @@ WebMCP share one testable function — same pattern as Server Actions.
 
 ## Playwright E2E (optional)
 
-For full integration, drive `modelContextTesting` inside a WebMCP-capable
-browser context. Reference consumer tooling:
-[nekuda-ai/webmcp](https://github.com/nekuda-ai/webmcp) (`webmcp-playwright.mjs`).
-
-Set `WEBMCP_CHROME` to Chrome Canary when Playwright's bundled Chromium lacks
-WebMCP.
+For full integration, evaluate the standard `document.modelContext.getTools()`
+and `executeTool()` flow inside a WebMCP-capable browser context. Point
+Playwright at a compatible Chrome/Chromium executable when its bundled browser
+lacks WebMCP, and use the Chrome guide to enable the origin trial or testing
+flag.
 
 ## Desktop agent relay (dev only)
 
@@ -91,7 +86,7 @@ Docs: [docs.mcp-b.ai](https://docs.mcp-b.ai) → "Connect a Desktop Agent"
 
 | Case | Assert |
 |------|--------|
-| Tool registers on mount | Name appears in `listTools()` |
+| Tool registers on mount | Name appears in `getTools()` |
 | Valid input | Structured return matches schema |
 | Invalid input | Error object or rejected promise |
 | Auth gate | Unauthenticated call returns error, no mutation |
@@ -103,7 +98,7 @@ Docs: [docs.mcp-b.ai](https://docs.mcp-b.ai) → "Connect a Desktop Agent"
 Most CI runners lack WebMCP-native Chrome today. Default CI strategy:
 
 1. Unit-test shared handler logic (always).
-2. Run Playwright + WebMCP only in a optional job or locally before release.
+2. Run Playwright + WebMCP only in an optional job or locally before release.
 3. Polyfill smoke test: verify app builds and `document.modelContext` exists
    after `@mcp-b/global` in a headless browser if you add a thin E2E check.
 
