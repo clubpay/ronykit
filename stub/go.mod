@@ -21,7 +21,6 @@ require (
 	github.com/clubpay/ronykit/x/p v0.5.5 // indirect
 	github.com/goccy/go-json v0.12.0 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
