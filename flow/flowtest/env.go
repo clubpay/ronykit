@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/clubpay/ronykit/flow"
+	"github.com/clubpay/ronykit/x/rkit"
 
 	"github.com/nexus-rpc/sdk-go/nexus"
 	"github.com/stretchr/testify/mock"
@@ -45,6 +46,7 @@ type ActivityEnv struct {
 // NewWorkflowEnv returns an environment that runs workflows and their activities.
 func NewWorkflowEnv(cfg Config) *WorkflowEnv {
 	suite := newSuite(cfg)
+
 	env := suite.NewTestWorkflowEnvironment()
 	if cfg.DataConverter != nil {
 		env.SetDataConverter(cfg.DataConverter)
@@ -61,6 +63,7 @@ func NewWorkflowEnv(cfg Config) *WorkflowEnv {
 // NewActivityEnv returns an environment that runs activities directly.
 func NewActivityEnv(cfg Config) *ActivityEnv {
 	suite := newSuite(cfg)
+
 	env := suite.NewTestActivityEnvironment()
 	if cfg.DataConverter != nil {
 		env.SetDataConverter(cfg.DataConverter)
@@ -176,6 +179,7 @@ func Execute[REQ, RES, STATE any](
 	env *WorkflowEnv, w *flow.Workflow[REQ, RES, STATE], req REQ,
 ) (*RES, error) {
 	env.env.ExecuteWorkflow(w.Name, req)
+
 	if !env.env.IsWorkflowCompleted() {
 		return nil, errors.New("flowtest: workflow did not complete")
 	}
@@ -325,9 +329,7 @@ type testBackend struct {
 
 func newTestBackend(cfg Config, workflows workflowRegister) *testBackend {
 	taskQ := cfg.TaskQueue
-	if taskQ == "" {
-		taskQ = "test"
-	}
+	taskQ = rkit.Coalesce(taskQ, "test")
 
 	b := &testBackend{
 		group:     cfg.Group,
