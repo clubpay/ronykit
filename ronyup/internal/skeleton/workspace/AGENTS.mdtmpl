@@ -16,6 +16,7 @@ Specialized skills live under `.agents/skills/`. For each applicable row, **open
 | Task | Read these skills (in order) |
 |------|------------------------------|
 | New backend feature | `ronykit-framework` → MCP `design-new-service` → `domain-driven-design`, `go-design` |
+| Design brainstorm / review / drift | `ronykit-framework` EGM references + MCP `architecture/egm-design-review` |
 | SRS / SDD / docs prose | `technical-documentation` + MCP `architecture/design-documents` |
 | Repo / persistence | `go-testing` + MCP `architecture/integration-tests` (+ `ddia-systems` if installed) |
 | Design / code review | `code-review`, `go-design`, `software-design-philosophy` |
@@ -80,6 +81,20 @@ ronyup setup sync --only backend
 ```
 
 See MCP `migrate_bundles` and `architecture/executable-bundles`.
+
+## Design review (Elephant–Goldfish Model)
+
+Before requesting approval for an SRS, SDD, frontend design, or multi-step
+implementation plan, read `.agents/skills/ronykit-framework/references/egm.md`
+and MCP `architecture/egm-design-review`, then run the applicable EGM review.
+The Elephant drafts and resolves in the primary context; every Goldfish
+reviewer is a fresh read-only subagent with only the document, referenced
+sources, and assigned rubric. Write findings under `docs/design/reviews/` and
+let the user decide edits, trade-offs, and approval.
+
+A same-thread review is not EGM. If fresh subagents are unavailable, mark the
+review `not run` and ask whether to continue with human-only review. EGM does
+not replace the approval, test, lint, or code-review gates below.
 
 ## Mandatory gates (do these first, no matter what is asked)
 

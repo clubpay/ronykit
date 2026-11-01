@@ -37,6 +37,12 @@ Audit, write, and improve developer documentation the way Google's technical wri
 - **Design documents:** keep the template's section numbers and YAML
   frontmatter (`status: draft`) exactly — the `scaffold_feature` gate parses
   them. Only the user sets `status: approved`.
+- **Use EGM for design review.** Before requesting approval of an SRS, SDD, or
+  frontend design, follow
+  `.agents/skills/ronykit-framework/references/egm.md`. Fresh read-only
+  Goldfish subagents own the independent comprehension and critique passes;
+  your own cold read in the Elephant context is useful but is not a Goldfish
+  review. Record unavailable or failed reviewers as `not run`.
 - **Never document an API by hand.** Contracts are the source of truth; publish
   Swagger via `x/apidoc` and clients via `make gen-stub`. Prose docs link to
   them instead of copying field lists.

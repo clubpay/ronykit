@@ -28,8 +28,9 @@ User requirements and context:
 3. For each requested characteristic, read `knowledge://ronyup/characteristics/<name>` (URI = filename: `cache`, `redis`, `database`, `api`,
    `testing`, not the first YAML keyword).
 4. Read relevant `knowledge://ronyup/architecture/*` resources (e.g. `inter-service-stubs`, `postgres-sqlc`, `flow-workflows`, `table-partitioning`) when the requirements imply them — especially `table-partitioning` when data volume or retention will grow over time.
-5. Ask clarifying questions if requirements are ambiguous — do not invent unstated behavior.
+5. Ask clarifying questions if requirements are ambiguous — do not invent unstated behavior. If the direction needs stress-testing, use the optional six-lens brainstorm in `.agents/skills/ronykit-framework/references/egm.md` only after the user confirms the anchored hypothesis.
 6. Write the SRS to **`docs/design/{{feature_name}}-srs.md`** in the workspace root.
+7. Read `knowledge://ronyup/architecture/egm-design-review` and run fresh-context Goldfish zoom-out and comprehension reviews. Write reports to `docs/design/reviews/{{feature_name}}-srs/`, classify findings with the user, and apply only approved document edits.
 
 ## SRS content rules
 
@@ -43,8 +44,8 @@ User requirements and context:
 
 ## Output
 
-- Create or update `docs/design/{{feature_name}}-srs.md` with `status: draft` frontmatter.
-- Summarize what you wrote and list open questions.
+- Create or update `docs/design/{{feature_name}}-srs.md` with `status: draft` frontmatter and write the EGM review artifacts.
+- Summarize what you wrote, reviewer status, unresolved findings, and open questions. If fresh subagents are unavailable, mark EGM `not run` and ask whether the user wants human-only review; never substitute a same-thread review.
 - **Stop here.** Do not write the SDD, scaffold, or code until the user reviews and approves the SRS.
 - Approval = the user changes the frontmatter to `status: approved` (or explicitly tells you to). Do not approve it on your own.
 - When approved, continue with the `write-sdd` prompt (or `design-new-service` for the full workflow).

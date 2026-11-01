@@ -16,12 +16,12 @@ You are planning a new RonyKIT service feature called "{{feature_name}}".
 
 ## Recommended path
 
-1. **SRS** — MCP prompt `write-srs` (or Phase 1 of `design-new-service`) → `docs/design/{{feature_name}}-srs.md`
-2. **SDD** — MCP prompt `write-sdd` (or Phase 2 of `design-new-service`) → `docs/design/{{feature_name}}-sdd.md`
+1. **SRS** — MCP prompt `write-srs` (or Phase 1 of `design-new-service`) → `docs/design/{{feature_name}}-srs.md`; run EGM zoom-out and comprehension reviews, resolve findings with the user, then get approval
+2. **SDD** — MCP prompt `write-sdd` (or Phase 2 of `design-new-service`) → `docs/design/{{feature_name}}-sdd.md`; run all five EGM stages, resolve findings with the user, then get approval
 3. **Scaffold** — `scaffold_feature` tool
 4. **Implement** — MCP prompt `write-service-code`, following the SDD
 
-Read `knowledge://ronyup/architecture/design-documents` for gate rules and templates.
+Read `knowledge://ronyup/architecture/design-documents` for gate rules and templates, and `knowledge://ronyup/architecture/egm-design-review` for the independent review protocol. A same-thread review is not Goldfish; if fresh subagents are unavailable, mark EGM `not run` and ask whether to continue with human-only review.
 
 {{#if characteristics}} Requested characteristics: {{characteristics}} {{/if}}
 

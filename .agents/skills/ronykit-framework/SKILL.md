@@ -2,10 +2,11 @@
 name: ronykit-framework
 description: >-
   Orchestrates RonyKit service development using the ronyup MCP server
-  (knowledge resources, prompts, scaffold tools). Use when the user mentions
-  RonyKit, ronyup, EdgeServer, contracts, scaffolding a workspace or feature,
-  implementing API handlers and services, frontend bootstrap, integration
-  tests, or design documents in RonyKit style.
+  (knowledge resources, prompts, scaffold tools) and the Elephant–Goldfish
+  Model (EGM) for design review. Use when the user mentions RonyKit, ronyup,
+  EdgeServer, contracts, scaffolding a workspace or feature, implementing API
+  handlers and services, frontend bootstrap, integration tests, design
+  documents, design brainstorming or review, or documentation drift.
 ---
 
 # RonyKit (agent playbook)
@@ -13,6 +14,8 @@ description: >-
 Thin orchestration layer. **Domain knowledge lives in the `ronyup` MCP server** — read resources and prompts there; do not invent layout or conventions from memory.
 
 Full MCP index: [references/mcp-map.md](references/mcp-map.md)
+
+EGM protocol: [references/egm.md](references/egm.md). Read it before design brainstorming, reviewing an SRS/SDD/frontend design or implementation plan, resolving Goldfish findings, or checking design drift.
 
 ## Prerequisites
 
@@ -33,7 +36,9 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Task | Read (in order) |
 |------|-----------------|
 | New backend feature | this skill → MCP `design-new-service` → `domain-driven-design`, `go-design` |
+| Design brainstorm / review / drift | this skill → [EGM protocol](references/egm.md) → MCP `architecture/egm-design-review` |
 | SRS / SDD / README prose | `technical-documentation` → MCP `architecture/design-documents` |
+| Implementation plan | `writing-plans` → [EGM protocol](references/egm.md) (implementation readiness) |
 | Repo / persistence | `go-testing` → MCP `architecture/integration-tests` (+ `ddia-systems` if installed, for schema, indexes, partitioning, races) |
 | Layer / boundary review | `go-design`, `software-design-philosophy`, `code-review` |
 | Refactoring (tests exist) | `go-design`, `verification-before-completion` |
@@ -51,17 +56,18 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 
 ## Default workflow (app development)
 
-1. **Clarify scope** — For new services, use `design-new-service` (SRS → SDD → scaffold → code) or `write-srs` then `write-sdd` when doing phases separately. Use `design-api` for API-only design. For new frontends, use `design-frontend` (design doc → approval → init stack → implement).
-2. **Documents** — Backend: SRS to `docs/design/<feature>-srs.md`, SDD to `docs/design/<feature>-sdd.md`. Frontend: `docs/design/<app>-frontend-design.md`. Get user approval before scaffolding or UI code. Read `architecture/design-documents` and `architecture/frontend-design-documents`.
-3. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace).
-4. **Load knowledge** (read MCP resources before coding):
+1. **Clarify scope** — For new services, use `design-new-service` (SRS → SDD → scaffold → code) or `write-srs` then `write-sdd` when doing phases separately. Use `design-api` for API-only design. For new frontends, use `design-frontend` (design doc → approval → init stack → implement). When the direction is uncertain, start with EGM brainstorming in [references/egm.md](references/egm.md).
+2. **Draft documents** — Backend: SRS to `docs/design/<feature>-srs.md`, SDD to `docs/design/<feature>-sdd.md`. Frontend: `docs/design/<app>-frontend-design.md`. Keep both `status: draft`. Read `architecture/design-documents` and `architecture/frontend-design-documents`.
+3. **Review and resolve** — Run the applicable EGM pipeline from [references/egm.md](references/egm.md), write reviewer reports, and let the user decide findings and trade-offs. Only then request user approval. If fresh subagents are unavailable, mark the review `not run` and ask whether to continue with human-only review; never simulate Goldfish in the Elephant context.
+4. **Scaffold** — MCP tools `scaffold_workspace` (new repo) or `scaffold_feature` (existing workspace), only after the required documents are approved.
+5. **Load knowledge** (read MCP resources before coding):
 - Always: `architecture/package-selection`, `packages/rony`, `packages/errs`, `architecture/service-structure`, `architecture/api-handler-files`
 - Persistence: `architecture/postgres-sqlc`, `architecture/repo-ports`, `architecture/integration-tests` (+ `architecture/table-partitioning` when data is expected to grow)
 - Wiring: `architecture/module-wiring`, `architecture/settings-config`
 - Cross-service: `architecture/inter-service-stubs`, `architecture/gen-stub`
-5. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module.
-6. **Characteristics** — If the user mentions caching, Redis, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (filename URI: `cache` vs `redis`; see [references/mcp-map.md](references/mcp-map.md)).
-7. **Finish** — `make gen-stub` in the feature after contract changes; run `make verify` (backend) and `frontend/verify.sh` (fullstack UI); then workspace `make lint` / `make test` when appropriate.
+6. **Implement** — MCP prompt `write-service-code` (SDD is source of truth); follow generated files in the feature module. For multi-step work, review the implementation plan with EGM stage 5 before coding.
+7. **Characteristics** — If the user mentions caching, Redis, i18n, idempotency, workflows, telemetry, etc., read the matching `characteristics/<name>` resource first (filename URI: `cache` vs `redis`; see [references/mcp-map.md](references/mcp-map.md)).
+8. **Finish** — `make gen-stub` in the feature after contract changes; run `make verify` (backend) and `frontend/verify.sh` (fullstack UI); then workspace `make lint` / `make test` when appropriate. Run an EGM drift report when requested; do not treat it as a substitute for verification.
 
 ## Task → MCP routing
 
@@ -83,6 +89,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 
 - **Document-first, always.** Every new/changed backend feature requires an approved SRS + SDD (`docs/design/<feature>-srs.md`, `…-sdd.md`) before scaffolding or coding — even for quick edits or "just write the code" requests. Write with `status: draft`; only the user sets `status: approved`. `scaffold_feature` enforces this gate. Read `architecture/design-documents`.
 - **Frontend design is document-first.** Before initializing a frontend stack or writing UI, ask aesthetic/design questions and write `docs/design/<app>-frontend-design.md` with token plan and design-system rules; get user approval. Read skills `frontend-design`, `design-tokens`, `typography` and MCP `design-frontend`. `frontend/verify.sh` enforces the approved design doc gate.
+- **EGM reviews require fresh Goldfish contexts.** The Elephant drafts and resolves in the primary context; each reviewer is a new read-only subagent with only the document, referenced sources, and assigned rubric. Never present a same-thread review as EGM, auto-approve a design, or treat EGM as a substitute for tests and code review. Follow [references/egm.md](references/egm.md).
 - **Clarify frontend topology before any frontend work.** Never assume a single frontend app. Before creating or editing anything under `frontend/`, ask whether there is one app or multiple; for multiple, each app lives in `frontend/<app-name>/` — confirm which app (and stack) this change targets before proceeding.
 - **Repo integration tests are mandatory.** Every repository port method needs an `x/testkit` integration test in `internal/repo/integration_test/` (happy path, not-found, conflict) that you **run** and confirm passes. Read `architecture/integration-tests` and skill `go-testing`.
 - **App unit tests are mandatory.** Every exported `App` method in `internal/app/` needs a unit test.

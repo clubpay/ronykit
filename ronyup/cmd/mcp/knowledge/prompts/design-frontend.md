@@ -69,11 +69,12 @@ Also read these skill files (do not skip — they are required, not optional):
 **Goal:** `docs/design/{{app_name}}-frontend-design.md`
 
 1. Write the document from the template with `status: draft` frontmatter.
-2. Include a concrete token plan (colors, type, spacing, signature element) and design-system rules components must follow.
+2. Include a concrete token plan (colors, type, spacing, signature element), viable rejected alternatives with reasons, applicable risks with mitigations, and design-system rules components must follow.
 3. When agent automation is in scope, include the **WebMCP tools** table (template §8) with planned tool names and R/W classification.
-4. Present a short summary and **wait for user approval** (`status: approved` in frontmatter, or explicit user confirmation).
+4. Read `knowledge://ronyup/architecture/egm-design-review` and run EGM stages 1–4 with fresh read-only Goldfish subagents: zoom out, comprehension, design critique, and intermediate zoom out. Write reports to `docs/design/reviews/{{app_name}}-frontend-design/` and resolve findings with the user. If fresh subagents are unavailable, mark EGM `not run` and ask whether to continue with human-only review; never simulate Goldfish in the main context.
+5. Present a short summary and **wait for user approval** (`status: approved` in frontmatter, or explicit user confirmation).
 
-Never set `status: approved` yourself.
+Never set `status: approved` yourself. For multi-step UI implementation, write a plan and run EGM implementation-readiness review before coding.
 
 ---
 

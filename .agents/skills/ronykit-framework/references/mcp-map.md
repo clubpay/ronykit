@@ -46,6 +46,7 @@ Read these when implementing or reviewing service code.
 | `package-selection`     | Mandatory reach-for-X → use-Y package map        |
 | `gateway-choice`        | Default fasthttp vs extra std gateways/clusters  |
 | `design-documents`      | SRS/SDD workflow, paths, gate rules              |
+| `egm-design-review`     | Elephant/Goldfish design review, resolution, and drift workflow |
 | `frontend-design-documents` | Frontend design doc workflow, paths, gate rules |
 | `frontend-design-template`  | Frontend design doc outline (tokens, rules)     |
 | `srs-template`          | SRS section outline (IEEE 830)                   |

@@ -31,12 +31,14 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 4. Read `knowledge://ronyup/architecture/package-selection` and list the RonyKIT packages this design will import (`rony`, `rony/errs`,
    `x/*`, `flow`) in the SDD wiring section. Open each matching `knowledge://ronyup/packages/<name>` before you specify constructors.
 5. Write the SDD to **`docs/design/{{feature_name}}-sdd.md`**.
+6. Read `knowledge://ronyup/architecture/egm-design-review` and run all five EGM stages with fresh read-only Goldfish subagents: initial zoom out, comprehension, design critique, intermediate zoom out, and implementation readiness. Write reports to `docs/design/reviews/{{feature_name}}-sdd/`, classify findings with the user, and apply only approved document edits.
 
 ## SDD content rules
 
 - Begin the file with the required YAML frontmatter (see `sdd-template`). Set `status: draft`. **Never** set `status: approved` yourself — only the user approves it. The `scaffold_feature` tool is gated on this status, so an unapproved SDD blocks scaffolding and implementation.
 - Follow IEEE 1016–2009 structure mapped to RonyKIT modules (see `sdd-template` resource).
 - Include a **requirement traceability** table (SRS FR/NFR → design element → file path).
+- Record viable rejected alternatives with concrete reasons and applicable failure modes, security and scalability risks, constraints, and mitigations.
 - Specify every API operation: route, handler name, input/output fields, domain errors.
 - Define domain types and `internal/domain/errors.go` codes (`SCREAMING_SNAKE_CASE`).
 - Define repository port interfaces and schema/migration outline.
@@ -45,8 +47,8 @@ You are writing the **Software Design Description (SDD)** for the RonyKIT servic
 
 ## Output
 
-- Create or update `docs/design/{{feature_name}}-sdd.md` with `status: draft` frontmatter.
-- Summarize key design decisions and any SRS gaps found.
+- Create or update `docs/design/{{feature_name}}-sdd.md` with `status: draft` frontmatter and write the EGM review artifacts.
+- Summarize key design decisions, reviewer status, unresolved findings, and any SRS gaps found. If fresh subagents are unavailable, mark EGM `not run` and ask whether the user wants human-only review; never substitute a same-thread review.
 - **Stop here.** Do not scaffold or implement until the user reviews and approves the SDD.
 - Approval = the user changes the frontmatter to `status: approved` (or explicitly tells you to). Do not approve it on your own.
 - `scaffold_feature` will refuse to run until both the SRS and SDD have `status: approved`. When approved, run `scaffold_feature`, then `write-service-code` using the SDD as the source of truth.

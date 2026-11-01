@@ -433,21 +433,27 @@ The server exposes markdown resources (architecture, `x/` packages, characterist
 
 Scaffolded workspaces include the **ronykit-framework** skill under `.agents/skills/` ([Agent Skills](https://agentskills.io/specification) layout). Cursor and Codex discover that tree. `.claude/skills/ronykit-framework` is a symlink to it so Claude Code loads the same files. Invoke `/ronykit-framework` in Cursor for workflows that coordinate MCP tools, prompts, and resources (without duplicating the knowledge base).
 
+The skill also bundles the Elephant–Goldfish Model (EGM) protocol, reviewer
+lenses, and rubrics under `references/`. The Elephant drafts with project
+context; fresh read-only Goldfish subagents review without the drafting
+conversation; the user decides findings and approval. No separate EGM plugin is
+required.
+
 ### Workflow Example
 
 A typical AI-assisted workflow for a **new service feature**:
 
-1. **Requirements (SRS):** MCP prompt `write-srs` or Phase 1 of `design-new-service` → `docs/design/<feature>-srs.md`. Review and approve before continuing.
+1. **Requirements (SRS):** MCP prompt `write-srs` or Phase 1 of `design-new-service` → `docs/design/<feature>-srs.md`. Run EGM zoom-out and comprehension reviews, resolve findings with the user, then approve before continuing.
 
-2. **Design (SDD):** MCP prompt `write-sdd` or Phase 2 of `design-new-service` → `docs/design/<feature>-sdd.md`. Review and approve before scaffolding.
+2. **Design (SDD):** MCP prompt `write-sdd` or Phase 2 of `design-new-service` → `docs/design/<feature>-sdd.md`. Run all five EGM stages, resolve findings with the user, then approve before scaffolding.
 
 3. **Create the scaffold:** Call `scaffold_feature` (or `scaffold_workspace` for a new repo).
 
-4. **Load knowledge:** Read MCP architecture resources (`design-documents`, `service-structure`, `api-handler-files`, `repo-ports`, etc.) before implementing.
+4. **Load knowledge:** Read MCP architecture resources (`design-documents`, `egm-design-review`, `service-structure`, `api-handler-files`, `repo-ports`, etc.) before implementing.
 
-5. **Implement:** MCP prompt `write-service-code`, following the SDD.
+5. **Plan and implement:** For multi-step work, run EGM implementation-readiness review on the plan, then use MCP prompt `write-service-code` and follow the approved SDD.
 
-6. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic.
+6. **Iterate:** Run `make gen-stub` after contract changes; refine handlers and app logic. Run an EGM drift report when design/code consistency needs a separate audit; it does not replace tests or code review.
 
 ### MCP Conventions
 

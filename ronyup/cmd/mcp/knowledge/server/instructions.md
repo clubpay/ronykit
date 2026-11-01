@@ -11,6 +11,8 @@ to skip the design documents. This applies to EVERY backend feature request, inc
 the SRS/SDD step on your own initiative. (Direct CLI `ronyup setup feature` is a power-user escape hatch and does not run this gate; agents
 must still use the MCP tool path so the gate applies.)
 
+For design work, use the Elephant–Goldfish Model (EGM): the primary agent drafts with project context, fresh read-only subagents review without the drafting conversation, and the user resolves findings and approves. Read `knowledge://ronyup/architecture/egm-design-review` plus `.agents/skills/ronykit-framework/references/egm.md` before requesting SRS, SDD, frontend-design, or implementation-plan approval. A same-thread review is not Goldfish. If fresh subagents are unavailable, mark EGM `not run` and ask whether to continue with human-only review. EGM never replaces approval, build, test, lint, or code-review gates.
+
 Frontend topology (fullstack workspaces): never assume a single frontend app. Before creating or editing anything under `frontend/`, ask the
 user whether there is one frontend app or multiple. For multiple apps, each app lives in its own directory (`frontend/<app-name>/`); confirm
 which app (and its stack when initializing a new one) the change targets before proceeding.

@@ -30,11 +30,12 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 **Goal:** `docs/design/{{feature_name}}-srs.md`
 
 1. Read `knowledge://ronyup/architecture/srs-template` and relevant characteristics/architecture resources.
-2. Ask clarifying questions if needed.
+2. Ask clarifying questions if needed. If the direction is uncertain, use the optional six-lens EGM brainstorm in `.agents/skills/ronykit-framework/references/egm.md` after explicit user confirmation of the anchored hypothesis.
 3. Write the SRS file with the required `status: draft` frontmatter, numbered FR/NFR requirements, and an API requirements table.
-4. Present a summary and **wait for user approval** before Phase 2.
+4. Read `knowledge://ronyup/architecture/egm-design-review` and run the SRS pipeline: fresh-context Goldfish zoom-out and comprehension reviews. Write reports under `docs/design/reviews/{{feature_name}}-srs/`, then classify and resolve findings with the user.
+5. Present a summary and **wait for user approval** before Phase 2.
 
-**Gate:** Do not proceed until the user approves the SRS by setting its frontmatter to `status: approved` (or explicitly telling you to). Never set `status: approved` yourself.
+**Gate:** Do not proceed until the user approves the SRS by setting its frontmatter to `status: approved` (or explicitly telling you to). Never set `status: approved` yourself. If fresh subagents are unavailable, mark EGM `not run` and ask whether to continue with human-only review; never simulate Goldfish in the main context.
 
 ---
 
@@ -44,10 +45,11 @@ Read `knowledge://ronyup/architecture/design-documents` first.
 
 1. Read the approved SRS (confirm its frontmatter is `status: approved`).
 2. Read `knowledge://ronyup/architecture/sdd-template`, `service-structure`, `api-handler-files`, `domain-layer`, `repo-ports`, `postgres-sqlc`, `module-wiring`, `settings-config`, `error-handling`, and `table-partitioning` when SRS NFRs imply growing data.
-3. Write the SDD with the required `status: draft` frontmatter and requirement traceability to the SRS.
-4. Present a summary and **wait for user approval** before Phase 3.
+3. Write the SDD with the required `status: draft` frontmatter, requirement traceability to the SRS, rejected alternatives with reasons, and risks with mitigations.
+4. Run all five EGM stages from `architecture/egm-design-review`: initial zoom out, comprehension, design critique, intermediate zoom out, and implementation readiness. Use fresh read-only subagents, write reports under `docs/design/reviews/{{feature_name}}-sdd/`, and let the user decide which proposed edits to apply.
+5. Present a summary and **wait for user approval** before Phase 3.
 
-**Gate:** Do not scaffold or code until the user approves the SDD by setting its frontmatter to `status: approved`. `scaffold_feature` enforces this: it refuses to run unless both the SRS and SDD are `status: approved`.
+**Gate:** Do not scaffold or code until the user approves the SDD by setting its frontmatter to `status: approved`. `scaffold_feature` enforces this: it refuses to run unless both the SRS and SDD are `status: approved`. EGM does not replace that gate or any implementation tests.
 
 ---
 

@@ -32,12 +32,23 @@ Both the MCP tool `check_frontend_design` (run before initializing the stack) an
 3. **Read** `knowledge://ronyup/architecture/frontend-design-template` and invoke skills `frontend-design`, `design-tokens`, and `typography`
    (read `.agents/skills/<id>/SKILL.md`).
 4. **Write** `docs/design/<app>-frontend-design.md` with `status: draft`, including the token plan and design-system rules (see template).
-5. **Present a summary and wait** for user approval (`status: approved`) before initializing the frontend or writing UI.
+5. **Run EGM design review** — read `knowledge://ronyup/architecture/egm-design-review` and
+   `.agents/skills/ronykit-framework/references/egm.md`. Run zoom out,
+   comprehension, design critique, and intermediate zoom out with fresh
+   read-only Goldfish subagents. Write findings under
+   `docs/design/reviews/<app>-frontend-design/` and resolve them with the user.
+   If fresh subagents are unavailable, mark the review `not run` and ask whether
+   to continue with human-only review; never simulate Goldfish in the main
+   context.
+6. **Present a summary and wait** for user approval (`status: approved`) before initializing the frontend or writing UI.
 
 ## Design-system rules in the document
 
 The approved doc is the source of truth for all UI work on that app. It must include:
 
+- **Alternatives and risks** — viable rejected directions with concrete reasons,
+  plus applicable usability, accessibility, responsive, performance, and
+  maintenance risks with mitigations
 - **Token plan** — named colors (4–6 hex), type roles (display + body), spacing/radius scale, one signature element
 - **Semantic tokens** — map primitives → roles (`--color-primary`, `--color-background`, …); no raw hex in components
 - **Typography** — font families (via `next/font` or equivalent), scale, weights

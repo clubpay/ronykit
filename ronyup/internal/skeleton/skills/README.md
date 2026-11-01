@@ -75,6 +75,9 @@ Otherwise, keep it one file.
   [`Dammyjay93/interface-design`](https://github.com/Dammyjay93/interface-design) (MIT),
   [`ibelick/ui-skills`](https://github.com/ibelick/ui-skills), and
   [`vercel-labs/web-interface-guidelines`](https://github.com/vercel-labs/web-interface-guidelines).
+  The `ronykit-framework` EGM protocol and reviewer rubrics are adapted from
+  [`google/elephant-goldfish-model`](https://github.com/google/elephant-goldfish-model)
+  (Apache-2.0); preserve its pinned commit attribution and bundled license.
 - Only vendor a skill whose core ideas are language-neutral. Class-bound
   material (inheritance refactorings, SOLID-per-class, Java seams) does not
   translate to Go; distill what survives into a Go-native skill instead of

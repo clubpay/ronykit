@@ -28,6 +28,10 @@ updated: <YYYY-MM-DD>
 
 **Signature element:** <!-- the one memorable visual/device for this product -->
 
+**Alternatives considered:** <!-- viable aesthetic/layout directions rejected, with concrete reasons -->
+
+**Risks and mitigations:** <!-- applicable usability, accessibility, responsive, performance, or maintenance risks and how the design addresses them -->
+
 ## 3. Token plan
 
 ### Color (OKLCH / primitives & roles)

@@ -61,6 +61,24 @@ feature/<feature_name>/
 |--------|----------------|--------------------|
 | FR-001 |                | `internal/app/...` |
 
+### 2.4 Alternatives considered
+
+| Alternative | Decision | Concrete reason |
+|-------------|----------|-----------------|
+|             |          |                 |
+
+Record viable rejected designs and the trade-off that decided each one (for
+example complexity, cost, compatibility, performance, or scale).
+
+### 2.5 Risks and mitigations
+
+| Risk or constraint | Impact | Mitigation |
+|--------------------|--------|------------|
+|                    |        |            |
+
+Cover applicable failure modes, security, scalability, migration, and
+operational risks.
+
 ## 3. API design (`api/`)
 
 For each operation from the SRS, specify:

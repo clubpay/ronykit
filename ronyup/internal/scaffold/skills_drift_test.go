@@ -84,6 +84,37 @@ func TestRonykitFrameworkSkillCopiesInSync(t *testing.T) {
 	}
 }
 
+func TestRonykitFrameworkEGMAssets(t *testing.T) {
+	t.Parallel()
+
+	repoRoot := findRepoRoot(t)
+	if repoRoot == "" {
+		t.Skip("monorepo root (go.work) not found; skipping EGM asset check")
+	}
+
+	shippedSkill := filepath.Join(
+		repoRoot, "ronyup", "internal", "skeleton", "workspace",
+		".agents", "skills", "ronykit-framework",
+	)
+
+	for _, name := range []string{
+		"references/egm.md",
+		"references/egm-reviewers.md",
+		"references/egm-LICENSE",
+	} {
+		t.Run(name, func(t *testing.T) {
+			data, err := os.ReadFile(filepath.Join(shippedSkill, filepath.FromSlash(name)))
+			if err != nil {
+				t.Fatalf("read shipped EGM asset: %v", err)
+			}
+
+			if len(data) == 0 {
+				t.Fatal("shipped EGM asset is empty")
+			}
+		})
+	}
+}
+
 // findRepoRoot walks up from the test working directory looking for a go.work
 // file (the monorepo root). Returns "" when not found.
 func findRepoRoot(t *testing.T) string {

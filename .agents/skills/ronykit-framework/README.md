@@ -4,10 +4,13 @@
 
 ## Contents
 
-| Path                    | Role                                                       |
-|-------------------------|------------------------------------------------------------|
-| `SKILL.md`              | Playbook: prerequisites, workflows, hard rules, validation |
-| `references/mcp-map.md` | Index of MCP tools, prompts, and knowledge resources       |
+| Path                         | Role                                                            |
+|------------------------------|-----------------------------------------------------------------|
+| `SKILL.md`                   | Playbook: prerequisites, workflows, hard rules, validation      |
+| `references/mcp-map.md`      | Index of MCP tools, prompts, and knowledge resources            |
+| `references/egm.md`          | Elephant–Goldfish design, review, resolution, and drift protocol |
+| `references/egm-reviewers.md` | Goldfish reviewer lenses and rubrics                            |
+| `references/egm-LICENSE`     | Apache-2.0 license for the adapted EGM material                 |
 
 ## Location (project)
 
@@ -34,10 +37,13 @@ Invoke in Cursor: `/ronykit-framework`
 
 ```bash
 SKILL_ROOT=ronykit-framework
-mkdir -p ~/.agents/skills/$SKILL_ROOT/references
+mkdir -p ~/.agents/skills/$SKILL_ROOT
 cp .agents/skills/ronykit-framework/SKILL.md ~/.agents/skills/$SKILL_ROOT/
-cp .agents/skills/ronykit-framework/references/mcp-map.md ~/.agents/skills/$SKILL_ROOT/references/
+cp -R .agents/skills/ronykit-framework/references ~/.agents/skills/$SKILL_ROOT/
 ```
+
+Copy the complete `references/` directory: the EGM workflow needs its reviewer
+rubrics and license as well as the MCP index.
 
 ## Scaffolded workspaces
 
@@ -46,4 +52,8 @@ cp .agents/skills/ronykit-framework/references/mcp-map.md ~/.agents/skills/$SKIL
 ## Maintenance
 
 - **Conventions / architecture:** `ronyup/cmd/mcp/knowledge/` only.
-- **Agent workflows / MCP index:** this skill (`SKILL.md`, `references/mcp-map.md`).
+- **Agent workflows / MCP index / EGM integration:** this skill (`SKILL.md`,
+  `references/`). Keep the monorepo and shipped skeleton copies synchronized.
+- EGM material is adapted from
+  [`google/elephant-goldfish-model`](https://github.com/google/elephant-goldfish-model)
+  (Apache-2.0). Preserve the pinned source commit and `references/egm-LICENSE`.

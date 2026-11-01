@@ -26,6 +26,20 @@ sequences the work. If planning uncovers a design change, update the SDD first.
 Order tasks along the layers — domain types → repo port + sqlc + integration
 tests → app + unit tests → handlers/contract → `make gen-stub` → `make verify`.
 
+## Goldfish readiness review (RonyKit)
+
+Before requesting plan approval, read
+`.agents/skills/ronykit-framework/references/egm.md` and run EGM stage 5
+(implementation readiness). Give fresh, read-only subagents the plan, approved
+SDD, linked source files, and assigned rubric—never the drafting conversation.
+Use the `implementation-readiness` and `codebase-details` lenses, with `style`
+when useful.
+
+Write the findings to the plan's EGM review directory, resolve them with the
+user, and apply only approved edits. If fresh subagents are unavailable, mark
+the review `not run` and ask whether the user wants human-only review. Never
+call a same-thread self-review a Goldfish review.
+
 ## 1. Map the files first
 
 Before listing tasks, decide which files are created or modified and the single
