@@ -52,6 +52,10 @@ func resolveBundleContext(reqStartDir, reqModule string, log Logger) (WorkspaceC
 		}
 	}
 
+	if err := validateModulePath(module); err != nil {
+		return WorkspaceContext{}, err
+	}
+
 	log.Printf("Go workspace: %s\n", goRoot)
 
 	return WorkspaceContext{
@@ -87,6 +91,10 @@ func CreateBundle(ctx context.Context, req BundleRequest, log Logger) error {
 		return fmt.Errorf("bundle name is required")
 	}
 
+	if err := ValidatePathSegment("bundle name", req.Name); err != nil {
+		return err
+	}
+
 	if req.Name == DefaultBundleName {
 		return fmt.Errorf(
 			"bundle %q is managed by setup workspace; regenerate features.go instead",
@@ -109,6 +117,10 @@ func CreateBundle(ctx context.Context, req BundleRequest, log Logger) error {
 	}
 
 	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", req.Name)
+	if err := z.CheckPath(cmdCtx.GoRoot, bundleDir); err != nil {
+		return err
+	}
+
 	if !z.IsEmptyDir(bundleDir) {
 		if !req.Force {
 			return fmt.Errorf("%s already exists, use force to overwrite", filepath.Join("cmd", req.Name))
@@ -170,6 +182,36 @@ func CreateBundle(ctx context.Context, req BundleRequest, log Logger) error {
 		return err
 	}
 
+	selected, err := filterImportsForBundle(allImports, cmdCtx.RepoModule, spec)
+	if err != nil {
+		return err
+	}
+
+	for _, localPath := range []string{RunnerRelDir} {
+		if err := addLocalModuleReplacement(
+			ctx,
+			cmdCtx.GoRoot,
+			bundleDir,
+			cmdCtx.RepoModule,
+			localPath,
+		); err != nil {
+			return err
+		}
+	}
+
+	for _, imp := range selected {
+		localPath := importSuffix(imp, cmdCtx.RepoModule)
+		if err := addLocalModuleReplacement(
+			ctx,
+			cmdCtx.GoRoot,
+			bundleDir,
+			cmdCtx.RepoModule,
+			localPath,
+		); err != nil {
+			return err
+		}
+	}
+
 	if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
 		return err
 	}
@@ -197,6 +239,10 @@ func RemoveBundle(ctx context.Context, req BundleRequest, log Logger) error {
 		return fmt.Errorf("bundle name is required")
 	}
 
+	if err := ValidatePathSegment("bundle name", req.Name); err != nil {
+		return err
+	}
+
 	if req.Name == DefaultBundleName {
 		return fmt.Errorf("cannot remove the default %q bundle", DefaultBundleName)
 	}
@@ -215,13 +261,17 @@ func RemoveBundle(ctx context.Context, req BundleRequest, log Logger) error {
 		return fmt.Errorf("bundle %q not found in %s", req.Name, BundlesManifestName)
 	}
 
+	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", req.Name)
+	if err := z.CheckPath(cmdCtx.GoRoot, bundleDir); err != nil {
+		return err
+	}
+
 	delete(cfg.Bundles, req.Name)
 
 	if err := SaveBundlesConfig(cmdCtx.GoRoot, cfg); err != nil {
 		return err
 	}
 
-	bundleDir := filepath.Join(cmdCtx.GoRoot, "cmd", req.Name)
 	if err := os.RemoveAll(bundleDir); err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -243,6 +293,7 @@ func renderBundleMain(bundleDir string, templateInput TemplateInput) error {
 		FS:             internal.Skeleton,
 		SrcPath:        srcPath,
 		DestPath:       destPath,
+		DestRoot:       bundleDir,
 		TemplateSuffix: "tmpl",
 		TemplateInput:  templateInput,
 	})

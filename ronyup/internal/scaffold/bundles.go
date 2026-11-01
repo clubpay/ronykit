@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
 
 	"gopkg.in/yaml.v3"
@@ -111,6 +112,12 @@ func loadBundlesConfig(goRoot string) (BundlesConfig, error) {
 		cfg.Bundles = map[string]BundleSpec{}
 	}
 
+	for name := range cfg.Bundles {
+		if err := ValidatePathSegment("bundle name in "+bundlesManifestName, name); err != nil {
+			return BundlesConfig{}, err
+		}
+	}
+
 	return cfg, nil
 }
 
@@ -120,7 +127,7 @@ func saveBundlesConfig(goRoot string, cfg BundlesConfig) error {
 		return err
 	}
 
-	return os.WriteFile(bundlesManifestPath(goRoot), data, 0o644)
+	return z.WriteFile(goRoot, bundlesManifestPath(goRoot), data, 0o644)
 }
 
 func parseFeatureImports(featuresGoPath string) ([]string, error) {
@@ -219,25 +226,24 @@ func renderFeaturesGo(imports []string) string {
 	return b.String()
 }
 
-func writeFeaturesGo(bundleDir string, imports []string) error {
-	content := renderFeaturesGo(imports)
-
-	return os.WriteFile(filepath.Join(bundleDir, "features.go"), []byte(content), 0o644)
-}
-
 func syncBundleFeatures(
 	goRoot, repoModule, bundleName string,
 	bundle BundleSpec,
 	allImports []string,
 ) error {
+	if err := ValidatePathSegment("bundle name", bundleName); err != nil {
+		return err
+	}
+
 	imports, err := filterImportsForBundle(allImports, repoModule, bundle)
 	if err != nil {
 		return err
 	}
 
 	bundleDir := filepath.Join(goRoot, "cmd", bundleName)
+	content := renderFeaturesGo(imports)
 
-	return writeFeaturesGo(bundleDir, imports)
+	return z.WriteFile(goRoot, filepath.Join(bundleDir, "features.go"), []byte(content), 0o644)
 }
 
 // WorkspaceContext carries Go workspace location and a progress logger for
@@ -281,11 +287,6 @@ func syncAllBundleFeatures(cmdCtx WorkspaceContext) error {
 	}
 
 	return nil
-}
-
-// SyncBundlesForFeature updates non-default bundles that include the feature.
-func SyncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) error {
-	return syncBundlesForFeature(cmdCtx, featurePackagePath)
 }
 
 func syncBundlesForFeature(cmdCtx WorkspaceContext, featurePackagePath string) error {

@@ -6,13 +6,9 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-)
 
-// DetectGoModule reads go.work to find use directives, then reads the first
-// resolvable go.mod to derive the repository root module path.
-func DetectGoModule(workspaceDir string) (string, error) {
-	return detectGoModule(workspaceDir)
-}
+	"golang.org/x/mod/modfile"
+)
 
 func detectGoModule(workspaceDir string) (string, error) {
 	goWorkPath := filepath.Join(workspaceDir, "go.work")
@@ -22,25 +18,31 @@ func detectGoModule(workspaceDir string) (string, error) {
 		return "", fmt.Errorf("could not read go.work: %w", err)
 	}
 
-	useDirs := parseUseDirectives(string(data))
-	if len(useDirs) == 0 {
+	work, err := modfile.ParseWork(goWorkPath, data, nil)
+	if err != nil {
+		return "", fmt.Errorf("could not parse go.work: %w", err)
+	}
+
+	if len(work.Use) == 0 {
 		return "", fmt.Errorf("no use directive found in go.work")
 	}
 
-	for _, useDir := range useDirs {
-		goModPath := filepath.Join(workspaceDir, filepath.FromSlash(useDir), "go.mod")
+	for _, use := range work.Use {
+		goModPath := filepath.Join(workspaceDir, filepath.FromSlash(use.Path), "go.mod")
 
 		modData, err := os.ReadFile(goModPath)
 		if err != nil {
 			continue
 		}
 
-		modulePath := parseModulePath(string(modData))
-		if modulePath == "" {
+		mod, err := modfile.ParseLax(goModPath, modData, nil)
+		if err != nil || mod.Module == nil || mod.Module.Mod.Path == "" {
 			continue
 		}
 
-		relDir := path.Clean(strings.TrimPrefix(filepath.ToSlash(useDir), "./"))
+		modulePath := mod.Module.Mod.Path
+
+		relDir := path.Clean(strings.TrimPrefix(filepath.ToSlash(use.Path), "./"))
 		if relDir == "." {
 			return modulePath, nil
 		}
@@ -52,55 +54,4 @@ func detectGoModule(workspaceDir string) (string, error) {
 	}
 
 	return "", fmt.Errorf("could not derive repository module from go.work entries")
-}
-
-func parseUseDirectives(goWorkContent string) []string {
-	var dirs []string
-
-	lines := strings.Split(goWorkContent, "\n")
-	inUseBlock := false
-
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-
-		if inUseBlock {
-			if trimmed == ")" {
-				inUseBlock = false
-
-				continue
-			}
-
-			if trimmed != "" && !strings.HasPrefix(trimmed, "//") {
-				dirs = append(dirs, trimmed)
-			}
-
-			continue
-		}
-
-		if trimmed == "use (" {
-			inUseBlock = true
-
-			continue
-		}
-
-		if strings.HasPrefix(trimmed, "use ") && !strings.Contains(trimmed, "(") {
-			dir := strings.TrimSpace(strings.TrimPrefix(trimmed, "use "))
-			if dir != "" {
-				dirs = append(dirs, dir)
-			}
-		}
-	}
-
-	return dirs
-}
-
-func parseModulePath(goModContent string) string {
-	for line := range strings.SplitSeq(goModContent, "\n") {
-		trimmed := strings.TrimSpace(line)
-		if mod, ok := strings.CutPrefix(trimmed, "module "); ok {
-			return strings.TrimSpace(mod)
-		}
-	}
-
-	return ""
 }

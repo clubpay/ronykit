@@ -2,7 +2,9 @@ package mcp
 
 import (
 	"fmt"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/clubpay/ronykit/ronyup/cmd/mcp/knowledge"
 	"github.com/clubpay/ronykit/ronyup/internal"
@@ -15,6 +17,8 @@ import (
 
 func init() {
 	Cmd.Flags().Int("port", 0, "Port to run the MCP server over streamable HTTP. If 0, uses stdio")
+	Cmd.Flags().
+		String("host", "127.0.0.1", "Host/interface for streamable HTTP (use 0.0.0.0 only on a trusted network)")
 }
 
 //nolint:gochecknoglobals
@@ -22,6 +26,11 @@ var Cmd = &cobra.Command{
 	Use:   "mcp",
 	Short: "Run ronyup as an MCP server over stdio or streamable HTTP",
 	RunE: func(cmd *cobra.Command, _ []string) error {
+		port := rkit.Ok(cmd.Flags().GetInt("port"))
+		if port < 0 || port > 65535 {
+			return fmt.Errorf("invalid MCP port %d", port)
+		}
+
 		kb, err := knowledge.Load()
 		if err != nil {
 			return fmt.Errorf("load knowledge base: %w", err)
@@ -37,7 +46,6 @@ var Cmd = &cobra.Command{
 			logger:       l.With("MCP").SLog(),
 		})
 
-		port := rkit.Ok(cmd.Flags().GetInt("port"))
 		if port > 0 {
 			handler := mcpsdk.NewStreamableHTTPHandler(
 				func(_ *http.Request) *mcpsdk.Server {
@@ -50,10 +58,18 @@ var Cmd = &cobra.Command{
 				},
 			)
 
-			addr := fmt.Sprintf(":%d", port)
+			host := rkit.Ok(cmd.Flags().GetString("host"))
+			addr := net.JoinHostPort(host, rkit.IntToStr(port))
 			cmd.PrintErrf("Starting MCP server on streamable HTTP %s\n", addr)
 
-			return http.ListenAndServe(addr, handler)
+			httpServer := &http.Server{
+				Addr:              addr,
+				Handler:           handler,
+				ReadHeaderTimeout: 10 * time.Second,
+				IdleTimeout:       2 * time.Minute,
+			}
+
+			return httpServer.ListenAndServe()
 		}
 
 		return server.srv.Run(cmd.Context(), &mcpsdk.StdioTransport{})

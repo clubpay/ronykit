@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/clubpay/ronykit/ronyup/internal/z"
 	"github.com/clubpay/ronykit/x/rkit"
 
 	"golang.org/x/mod/modfile"
@@ -48,10 +49,6 @@ type Finding struct {
 	Category string
 	Message  string
 	Fixable  bool
-}
-
-func (f Finding) String() string {
-	return fmt.Sprintf("%s: %s (rkitcheck/%s)", f.Position, f.Message, f.Category)
 }
 
 // Result is the outcome of Run.
@@ -397,7 +394,7 @@ func rewrite(file string, edits []fileEdit, importNames map[string]string) error
 		return err
 	}
 
-	return os.WriteFile(file, out, info.Mode().Perm())
+	return z.WriteFile(filepath.Dir(file), file, out, info.Mode().Perm())
 }
 
 // dropUnusedImports removes the imports that fixes left unused (say, the last slices.Contains

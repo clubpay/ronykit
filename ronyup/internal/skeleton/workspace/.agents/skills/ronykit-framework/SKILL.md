@@ -83,6 +83,7 @@ Do not rely on memory or optional auto-discovery. **Open and read** `.agents/ski
 | Client stubs                 | `generate-stubs` prompt + `architecture/gen-stub`                                             |
 | Migrate kit → rony           | `migrate-kit-to-rony` prompt + `architecture/migrating-kit-to-rony`                           |
 | Upgrade old workspace layout | MCP `migrate_bundles` → `ronyup setup migrate bundles`                                        |
+| Sync or validate agent skills | MCP `validate_skills`, then `sync_skills` (`overwrite: true` only when replacement is intended) |
 | Check x/rkit usage           | MCP `check_rkit_usage` (`ronyup lint`; `fix: true` rewrites the fixable findings)             |
 
 ## Hard rules

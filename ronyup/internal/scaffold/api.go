@@ -16,8 +16,6 @@ type WorkspaceRequest struct {
 	Skills []string
 	// Force removes an existing non-empty destination before scaffolding.
 	Force bool
-	// Custom is reserved for future template key/value overrides.
-	Custom map[string]string
 }
 
 // FeatureRequest configures SetupFeature.

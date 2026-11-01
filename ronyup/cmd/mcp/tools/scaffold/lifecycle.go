@@ -24,6 +24,8 @@ const (
 	schemaTypeBoolean    = "boolean"
 	schemaTypeArray      = "array"
 	argWorkspacePath     = "workspacePath"
+	argKind              = "kind"
+	argSkills            = "skills"
 	argPath              = "path"
 	argName              = "name"
 	argDescription       = "description"

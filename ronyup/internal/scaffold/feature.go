@@ -32,9 +32,9 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 		)
 	}
 
-	req.FeaturePrefix = rkit.Coalesce(req.FeaturePrefix, DefaultFeaturePrefix)
-
-	req.FeatureName = rkit.Coalesce(req.FeatureName, req.FeatureDir)
+	if err := normalizeFeatureRequest(&req); err != nil {
+		return err
+	}
 
 	goRoot, err := resolveGoWorkspace(req.StartDir)
 	if err != nil {
@@ -49,8 +49,9 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 		}
 	}
 
-	req.FeatureDir = strings.TrimPrefix(req.FeatureDir, "/")
-	req.FeatureDir = strings.TrimPrefix(req.FeatureDir, req.FeaturePrefix)
+	if err := validateModulePath(module); err != nil {
+		return err
+	}
 
 	packagePath := FeaturePackagePath(req.FeaturePrefix, req.Template, req.FeatureDir, req.GroupByTemplate)
 
@@ -83,8 +84,14 @@ func setupFeature(ctx context.Context, req FeatureRequest, log Logger) error {
 
 func createFeatureDir(goRoot, packagePath string, force bool) error {
 	projectPath := filepath.Join(goRoot, filepath.FromSlash(packagePath))
+	if err := z.CheckPath(goRoot, projectPath); err != nil {
+		return err
+	}
 
-	_ = os.MkdirAll(projectPath, 0o755)
+	if err := os.MkdirAll(projectPath, 0o755); err != nil {
+		return err
+	}
+
 	if z.IsEmptyDir(projectPath) {
 		return nil
 	}
@@ -108,26 +115,27 @@ func copyFeatureTemplate(
 ) error {
 	destPath := filepath.Join(goRoot, filepath.FromSlash(packagePath))
 
-	rkit.Assert(z.CopyDir(
-		z.CopyDirParams{
-			FS:             internal.Skeleton,
-			SrcPathPrefix:  filepath.Join("skeleton", req.Template),
-			DestPathPrefix: destPath,
-			TemplateInput: TemplateInput{
-				RepositoryPath: strings.TrimSuffix(module, "/"),
-				PackagePath:    strings.Trim(packagePath, "/"),
-				PackageName:    req.FeatureName,
-				RonyKitPath:    RonyKitModulePath,
-			},
-			Callback: func(filePath string, dir bool) {
-				if dir {
-					log.Println("DIR: ", filePath, "created")
-				} else {
-					log.Println("FILE: ", filePath, "created")
-				}
-			},
+	if err := z.CopyDir(z.CopyDirParams{
+		FS:             internal.Skeleton,
+		SrcPathPrefix:  filepath.Join("skeleton", req.Template),
+		DestPathPrefix: destPath,
+		DestRoot:       goRoot,
+		TemplateInput: TemplateInput{
+			RepositoryPath: strings.TrimSuffix(module, "/"),
+			PackagePath:    strings.Trim(packagePath, "/"),
+			PackageName:    req.FeatureName,
+			RonyKitPath:    RonyKitModulePath,
 		},
-	))
+		Callback: func(filePath string, dir bool) {
+			if dir {
+				log.Println("DIR: ", filePath, "created")
+			} else {
+				log.Println("FILE: ", filePath, "created")
+			}
+		},
+	}); err != nil {
+		return fmt.Errorf("copy feature skeleton: %w", err)
+	}
 
 	log.Println("Feature created successfully")
 	log.Println("Feature path:", destPath)
@@ -224,7 +232,7 @@ func sideEffectImportModule(
 		}
 	}
 
-	if err := os.WriteFile(featuresFilePath, []byte(newContent.String()), 0o644); err != nil {
+	if err := z.WriteFile(goRoot, featuresFilePath, []byte(newContent.String()), 0o644); err != nil {
 		log.PrintErrf("Warning: Could not write to features.go: %v\n", err)
 
 		return nil
@@ -232,7 +240,14 @@ func sideEffectImportModule(
 
 	log.Println("Feature import added to features.go")
 
-	p := z.RunCmdParams{Dir: filepath.Join(goRoot, "cmd", defaultBundleName)}
+	moduleDir := filepath.Join(goRoot, "cmd", defaultBundleName)
+	for _, localPath := range []string{RunnerRelDir, packagePath} {
+		if err := addLocalModuleReplacement(ctx, goRoot, moduleDir, module, localPath); err != nil {
+			return err
+		}
+	}
+
+	p := z.RunCmdParams{Dir: moduleDir}
 	if err := z.RunCmd(ctx, p, "go", "mod", "tidy"); err != nil {
 		return fmt.Errorf("go mod tidy cmd/%s: %w", defaultBundleName, err)
 	}

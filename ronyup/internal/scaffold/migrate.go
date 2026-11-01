@@ -72,11 +72,6 @@ func (s BundleLayoutStatus) IsCurrent() bool {
 	return !s.NeedsMigration()
 }
 
-// DetectBundleLayout inspects goRoot and reports the bundle layout status.
-func DetectBundleLayout(goRoot string) BundleLayoutStatus {
-	return detectBundleLayout(goRoot)
-}
-
 func detectBundleLayout(goRoot string) BundleLayoutStatus {
 	status := BundleLayoutStatus{
 		HasRunnerModule:         FileExists(filepath.Join(RunnerDir(goRoot), "go.mod")),
@@ -139,12 +134,25 @@ func MigrateBundles(ctx context.Context, req MigrateBundlesRequest, log Logger) 
 		return err
 	}
 
+	for _, rel := range []string{
+		"cmd", "cmd/all-in-one", "cmd/service", "cmd/runner",
+		"pkg", "pkg/runner", "internal", "internal/runner",
+	} {
+		if err := z.CheckPath(goRoot, filepath.Join(goRoot, rel)); err != nil {
+			return err
+		}
+	}
+
 	module := req.Module
 	if module == "" {
 		module, err = detectGoModule(goRoot)
 		if err != nil {
 			return fmt.Errorf("could not auto-detect repository go module: %w", err)
 		}
+	}
+
+	if err := validateModulePath(module); err != nil {
+		return err
 	}
 
 	log.Printf("Go workspace: %s\n", goRoot)
@@ -198,11 +206,6 @@ func MigrateBundles(ctx context.Context, req MigrateBundlesRequest, log Logger) 
 	log.Println("Tip: run `ronyup setup sync --only backend --overwrite` to refresh Makefile targets")
 
 	return nil
-}
-
-// BuildMigratePlan returns the human-readable steps required for status.
-func BuildMigratePlan(status BundleLayoutStatus) []string {
-	return buildMigratePlan(status)
 }
 
 func buildMigratePlan(status BundleLayoutStatus) []string {
@@ -389,7 +392,7 @@ func backupLegacyMain(cmdCtx WorkspaceContext) error {
 		return nil
 	}
 
-	if err := os.WriteFile(backupPath, content, 0o644); err != nil {
+	if err := z.WriteFile(cmdCtx.GoRoot, backupPath, content, 0o644); err != nil {
 		return fmt.Errorf("backup legacy main.go: %w", err)
 	}
 
@@ -416,7 +419,7 @@ func seedBundlesManifest(goRoot string) error {
 		})
 	}
 
-	return os.WriteFile(BundlesManifestPath(goRoot), data, 0o644)
+	return z.WriteFile(goRoot, BundlesManifestPath(goRoot), data, 0o644)
 }
 
 func ensureRunnerModule(ctx context.Context, cmdCtx WorkspaceContext) error {
@@ -497,6 +500,34 @@ func tidyDefaultBundleModule(ctx context.Context, cmdCtx WorkspaceContext) error
 		return nil
 	}
 
+	if err := addLocalModuleReplacement(
+		ctx,
+		cmdCtx.GoRoot,
+		bundleDir,
+		cmdCtx.RepoModule,
+		RunnerRelDir,
+	); err != nil {
+		return err
+	}
+
+	imports, err := loadDefaultBundleFeatureImports(cmdCtx)
+	if err != nil {
+		return err
+	}
+
+	for _, imp := range imports {
+		localPath := importSuffix(imp, cmdCtx.RepoModule)
+		if err := addLocalModuleReplacement(
+			ctx,
+			cmdCtx.GoRoot,
+			bundleDir,
+			cmdCtx.RepoModule,
+			localPath,
+		); err != nil {
+			return err
+		}
+	}
+
 	p := z.RunCmdParams{Dir: bundleDir}
 	if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
 		return err
@@ -557,7 +588,7 @@ func ensureDefaultBundleFeaturesGo(cmdCtx WorkspaceContext) error {
 			return fmt.Errorf("read cmd/%s/features.go: %w", LegacyDefaultBundleName, err)
 		}
 
-		if err := os.WriteFile(featuresPath, content, 0o644); err != nil {
+		if err := z.WriteFile(cmdCtx.GoRoot, featuresPath, content, 0o644); err != nil {
 			return err
 		}
 
@@ -571,7 +602,7 @@ func ensureDefaultBundleFeaturesGo(cmdCtx WorkspaceContext) error {
 		return err
 	}
 
-	if err := os.WriteFile(featuresPath, []byte(RenderFeaturesGo(imports)), 0o644); err != nil {
+	if err := z.WriteFile(cmdCtx.GoRoot, featuresPath, []byte(RenderFeaturesGo(imports)), 0o644); err != nil {
 		return err
 	}
 
@@ -615,7 +646,7 @@ func renameLegacyServiceBundle(ctx context.Context, cmdCtx WorkspaceContext) err
 		newMod := path.Join(cmdCtx.RepoModule, "cmd", DefaultBundleName)
 		updated := strings.ReplaceAll(string(content), oldMod, newMod)
 
-		if err := os.WriteFile(goModPath, []byte(updated), 0o644); err != nil {
+		if err := z.WriteFile(cmdCtx.GoRoot, goModPath, []byte(updated), 0o644); err != nil {
 			return fmt.Errorf("update cmd/%s/go.mod: %w", DefaultBundleName, err)
 		}
 	}

@@ -1,0 +1,32 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+**/config.local.yaml
+*.pem
+*.key
+*.keystore
+
+# Generated binaries and test output
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/bin/
+/dist/
+
+# Dependencies and frontend build output
+node_modules/
+.next/
+storybook-static/
+coverage/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+
+# Go workspace checksums contain local machine-specific entries
+go.work.sum

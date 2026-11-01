@@ -13,13 +13,6 @@ const (
 	legacyCmdRunnerRelDir = "cmd/runner"
 )
 
-// ResolveGoWorkspace finds the directory that contains go.work.
-// For backend workspaces that is the current directory; for fullstack workspaces
-// it may be backend/ when invoked from the repository root.
-func ResolveGoWorkspace(startDir string) (goRoot string, err error) {
-	return resolveGoWorkspace(startDir)
-}
-
 func resolveGoWorkspace(startDir string) (goRoot string, err error) {
 	abs, err := filepath.Abs(startDir)
 	if err != nil {

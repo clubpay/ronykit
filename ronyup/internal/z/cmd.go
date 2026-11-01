@@ -1,6 +1,7 @@
 package z
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -24,10 +25,17 @@ func RunCmd(ctx context.Context, p RunCmdParams, name string, args ...string) er
 		}
 	}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	var output bytes.Buffer
+
+	cmd.Stdout = &output
+	cmd.Stderr = &output
 
 	if err := cmd.Run(); err != nil {
+		detail := strings.TrimSpace(output.String())
+		if detail != "" {
+			return fmt.Errorf("%s %s: %w\n%s", name, strings.Join(args, " "), err, detail)
+		}
+
 		return fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
 	}
 

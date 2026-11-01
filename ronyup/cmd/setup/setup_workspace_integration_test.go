@@ -79,7 +79,7 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 	assertClaudeHooks(t, filepath.Join(tmpDir, repoDir), true, false)
 
 	for _, rel := range []string{
-		"verify.sh", ".cursor/hooks/backend-verify.sh",
+		"verify.sh", ".cursor/hooks/backend-verify.sh", ".gitignore",
 		".agents/skills/go-modern/SKILL.md",
 	} {
 		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
@@ -97,6 +97,9 @@ func TestSetupWorkspaceCommand_DoesNotTemplateRenderMakefile(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(tmpDir, repoDir, rel)); err != nil {
 			t.Fatalf("expected %s in backend-only workspace: %v", rel, err)
 		}
+	}
+	if _, err := os.Stat(filepath.Join(tmpDir, repoDir, "cmd", "bundle")); !os.IsNotExist(err) {
+		t.Fatalf("internal bundle template must not be copied into new workspaces: %v", err)
 	}
 }
 

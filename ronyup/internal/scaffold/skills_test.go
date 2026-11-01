@@ -202,37 +202,6 @@ func TestSkillFrontmatter(t *testing.T) {
 	}
 }
 
-func parseSkillFrontmatter(content string) (name, description string, ok bool) {
-	if !strings.HasPrefix(content, "---\n") {
-		return "", "", false
-	}
-
-	rest := content[len("---\n"):]
-	end := strings.Index(rest, "\n---\n")
-	if end < 0 {
-		return "", "", false
-	}
-
-	fm := rest[:end]
-	for line := range strings.SplitSeq(fm, "\n") {
-		switch {
-		case strings.HasPrefix(line, "name:"):
-			name = strings.TrimSpace(strings.TrimPrefix(line, "name:"))
-		case strings.HasPrefix(line, "description:"):
-			description = strings.TrimSpace(strings.TrimPrefix(line, "description:"))
-			if description == ">-" || description == "|" || description == ">" {
-				description = "folded" // non-empty marker for block scalars
-			}
-		}
-	}
-
-	if name == "" || description == "" {
-		return name, description, false
-	}
-
-	return name, description, true
-}
-
 func TestFrontendDefaultsExcludeBackendSkills(t *testing.T) {
 	ids := defaultSkillIDs(KindFrontend)
 	if len(ids) == 0 {

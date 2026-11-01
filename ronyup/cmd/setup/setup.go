@@ -25,7 +25,6 @@ var opt = struct {
 	Force                  bool
 	Template               string
 	GroupByTemplate        bool
-	Custom                 map[string]string
 	Skills                 []string
 }{}
 
@@ -44,13 +43,6 @@ func init() {
 		"f",
 		false,
 		"replace a non-empty destination directory before setup",
-	)
-	rootFlagSet.StringToStringVarP(
-		&opt.Custom,
-		"custom",
-		"c",
-		map[string]string{},
-		"custom values for the template",
 	)
 
 	featureFlagSet := CmdSetupFeature.Flags()
@@ -150,8 +142,7 @@ func init() {
 }
 
 var Cmd = &cobra.Command{
-	Use:                "setup",
-	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use: "setup",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 			return RunInteractive(cmd)
@@ -162,8 +153,7 @@ var Cmd = &cobra.Command{
 }
 
 var CmdSetupWorkspace = &cobra.Command{
-	Use:                "workspace",
-	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use: "workspace",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmd.ParseFlags(args); err != nil {
 			return err
@@ -181,13 +171,11 @@ func runWorkspace(cmd *cobra.Command) error {
 		Kind:    opt.Kind,
 		Skills:  opt.Skills,
 		Force:   opt.Force,
-		Custom:  opt.Custom,
 	}, cmd)
 }
 
 var CmdSetupFeature = &cobra.Command{
-	Use:                "feature",
-	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	Use: "feature",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := cmd.ParseFlags(args); err != nil {
 			return err

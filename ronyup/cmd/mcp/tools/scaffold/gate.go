@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	appscaffold "github.com/clubpay/ronykit/ronyup/internal/scaffold"
 	"github.com/clubpay/ronykit/x/rkit"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -211,6 +212,9 @@ func registerCheckFrontendDesign(srv *mcpsdk.Server) {
 			}
 
 			app := rkit.Coalesce(strings.TrimSpace(args.App), "web")
+			if err := appscaffold.ValidatePathSegment("frontend app", app); err != nil {
+				return errorResult(rkit.L("invalid frontend app: %v", err)), nil, nil
+			}
 
 			problems := checkFrontendDesignGate(args.WorkspacePath, app)
 			if len(problems) > 0 {

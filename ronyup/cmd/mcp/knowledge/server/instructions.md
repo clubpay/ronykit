@@ -117,3 +117,5 @@ Workspaces scaffolded before executable bundles: run `ronyup setup migrate bundl
 `knowledge://ronyup/tools/migrate_bundles`). Run from the Go workspace root or the fullstack repository root. Use `ronyup setup sync` for
 AGENTS.md/devops/Makefile/skill drift only — default is add-missing (`SkipExisting`); pass `--overwrite` to replace existing scaffold files.
 Sync does not rewrite `cmd/all-in-one/main.go`.
+
+For skill-only maintenance, use `validate_skills` to compare installed files, frontmatter, agent links, and retirement status with this server's embedded catalog. Use `sync_skills` to repair drift and return post-sync validation. Both default to installed skills; sync adds missing files only unless `overwrite: true` is explicitly requested.

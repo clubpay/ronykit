@@ -2,7 +2,6 @@ package scaffold
 
 import (
 	"fmt"
-	"io"
 	"strings"
 )
 
@@ -38,26 +37,3 @@ func (l *BufferLogger) PrintErrf(format string, a ...any) {
 }
 
 func (l *BufferLogger) String() string { return l.b.String() }
-
-// WriterLogger writes progress to w (and errors to errW when non-nil).
-type WriterLogger struct {
-	W    io.Writer
-	ErrW io.Writer
-}
-
-func (l WriterLogger) Printf(format string, a ...any) {
-	fmt.Fprintf(l.W, format, a...)
-}
-
-func (l WriterLogger) Println(a ...any) {
-	fmt.Fprintln(l.W, a...)
-}
-
-func (l WriterLogger) PrintErrf(format string, a ...any) {
-	w := l.ErrW
-	if w == nil {
-		w = l.W
-	}
-
-	fmt.Fprintf(w, format, a...)
-}

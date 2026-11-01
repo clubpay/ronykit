@@ -406,8 +406,11 @@ Add to your `.vscode/settings.json` or user settings:
 | `scaffold_workspace` | Scaffold a new RonyKIT workspace at `path` (`kind`: `backend`/`fullstack`; optional `skills`: IDs or `default`/`all`/`none`) |
 | `scaffold_feature`   | Add a `feature/<name>/` module to a workspace                           |
 | `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`setup sync`)    |
+| `sync_skills`        | Sync skills from the server's embedded catalog and return validation   |
+| `validate_skills`    | Read-only check for skill content, frontmatter, links, and retirement  |
 | `setup_bundle`       | Create/remove executable bundles (`setup bundle`)                       |
 | `migrate_bundles`    | Upgrade a legacy workspace to the bundle layout (`setup migrate bundles`) |
+| `check_frontend_design` | Verify an approved, complete frontend design document before UI work |
 | `check_rkit_usage`   | Report (and optionally fix) code that re-implements an x/rkit helper (`ronyup lint`) |
 
 ### MCP Prompts
@@ -469,11 +472,12 @@ The MCP server guides AI assistants to follow these conventions:
 
 ### MCP Flags
 
-| Flag             | Description                        | Default    |
-|------------------|------------------------------------|------------|
-| `--name`         | MCP server name                    | `ronyup`   |
-| `--version`      | MCP server version                 | `v0.1.0`   |
-| `--instructions` | Custom instructions for AI clients | (built-in) |
+| Flag    | Description                                      | Default       |
+|---------|--------------------------------------------------|---------------|
+| `--host`| Host/interface for streamable HTTP               | `127.0.0.1`   |
+| `--port`| Streamable HTTP port; 0 selects stdio            | `0`           |
+
+The HTTP server has no authentication. Keep it on loopback unless access is otherwise restricted.
 
 ---
 
@@ -501,8 +505,7 @@ ronyup
 │   │   └── bundles  Upgrade legacy workspaces to bundle layout
 │   └── sync         Refresh scaffold boilerplate in an existing workspace
 ├── text             Generate translation catalogs
-├── template         Inspect Go source for template metadata
-│   └── generate     (stub — not yet implemented)
+├── lint             Report or fix duplicated x/rkit helpers
 ├── mcp              Start the MCP server
 └── version          Print the ronyup version
 ```

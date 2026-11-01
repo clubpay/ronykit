@@ -90,6 +90,10 @@ func SyncWorkspace(req SyncRequest, log Logger) error {
 		}
 	}
 
+	if err := validateModulePath(module); err != nil {
+		return err
+	}
+
 	appName := req.AppName
 	if appName == "" {
 		appName = appNameFromModule(module)
@@ -235,6 +239,7 @@ func syncSection(
 			".cursorignore",
 			".claude/settings.jsontmpl",
 			".editorconfig",
+			".gitignore",
 			"CODEOWNERS",
 		)
 	case SyncSectionAI:
@@ -329,11 +334,12 @@ func syncSkills(
 		return err
 	}
 
-	if err := installSkillLinks(layout.RepoRoot, "ronykit-framework", callback); err != nil {
+	if err := installSkillLinks(layout.RepoRoot, "ronykit-framework", !skipExisting, callback); err != nil {
 		return err
 	}
 
 	dest := agentsSkillRoot(layout.RepoRoot)
+
 	for _, id := range skillIDs {
 		if id == "ronykit-framework" || !SkillExists(id) {
 			continue
@@ -343,6 +349,7 @@ func syncSkills(
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  filepath.ToSlash(filepath.Join(SkillsSrcPrefix, id)),
 			DestPathPrefix: filepath.Join(dest, id),
+			DestRoot:       layout.RepoRoot,
 			SkipExisting:   skipExisting,
 			Callback:       callback,
 		})
@@ -350,7 +357,7 @@ func syncSkills(
 			return fmt.Errorf("skill %q: %w", id, err)
 		}
 
-		if err := installSkillLinks(layout.RepoRoot, id, callback); err != nil {
+		if err := installSkillLinks(layout.RepoRoot, id, !skipExisting, callback); err != nil {
 			return err
 		}
 	}
@@ -378,6 +385,7 @@ func syncBackendBoilerplate(
 		FS:             internal.Skeleton,
 		SrcPathPrefix:  filepath.Join("skeleton", "backend"),
 		DestPathPrefix: dest,
+		DestRoot:       layout.RepoRoot,
 		TemplateInput:  templateInput,
 		SkipExisting:   skipExisting,
 		DestMapper:     prefixFilter(dest, allowed),
@@ -403,6 +411,7 @@ func syncFrontendBoilerplate(
 		FS:             internal.Skeleton,
 		SrcPathPrefix:  filepath.Join("skeleton", "frontend"),
 		DestPathPrefix: dest,
+		DestRoot:       layout.RepoRoot,
 		TemplateInput:  templateInput,
 		SkipExisting:   skipExisting,
 		DestMapper:     prefixFilter(dest, allowed),

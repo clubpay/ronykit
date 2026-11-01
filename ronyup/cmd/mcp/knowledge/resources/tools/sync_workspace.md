@@ -37,6 +37,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 - **Kind**: auto-detected (`backend`, `fullstack`, `frontend`); override with `kind` if needed.
 - **Retired skills**: skills removed from the catalog (for example `clean-architecture`, `refactoring-patterns`, `working-with-legacy-code` → `go-design`) are replaced in `installed` mode. With `overwrite: true` the retired directories are deleted; without it they are only reported.
 - **New catalog skills** are not added in `installed` mode. Use `skills: default` (or a skill ID) to pick them up.
+- **Skill-only maintenance**: use `validate_skills` and `sync_skills` for focused drift reports and structured post-sync validation.
 - **Lint config**: `overwrite: true` replaces `backend/.golangci.yml`. Newer skeletons enable `errorlint` and `nilerr`, so existing code
   that compares errors with `==` or returns `nil` after a non-nil error check starts failing `make verify`. Fix those call sites, or keep
   your own `.golangci.yml` by syncing other sections with `only`.
@@ -50,7 +51,7 @@ Run from the repository root, from `backend/` in a fullstack workspace, or from 
 | `hooks` | `.cursor/hooks/`, `hooks.json`, `.claude/hooks/`, `.claude/settings.json` |
 | `devops` | `devops/devbox/` |
 | `docs` | `docs/design/README.MD` |
-| `skills` | `.agents/skills/ronykit-framework` + catalog skills; `.claude/skills/<id>` symlinks; removes a legacy `.cursor/skills/<id>` copy |
+| `skills` | `.agents/skills/ronykit-framework` + catalog skills; `.claude/skills/<id>` symlinks; with overwrite, removes legacy `.cursor/skills/<id>` copies |
 | `backend` | `Makefile`, `verify.sh`, `.golangci.yml`, `bundles.yaml` (when missing) |
 | `frontend` | `frontend/Makefile`, `verify.sh`, `README.MD` |
 | `all` | all applicable sections (default) |

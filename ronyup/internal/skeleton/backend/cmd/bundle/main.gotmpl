@@ -4,8 +4,8 @@ import "{{.RepositoryPath}}/pkg/runner"
 
 func main() {
 	runner.Execute(runner.Config{
-		ApplicationName: "{{.ApplicationName}}",
-		DisplayName:     "{{.ApplicationName}} ({{.BundleName}})",
-		PackageName:     "{{.PackageName}}",
+		ApplicationName: {{printf "%q" .ApplicationName}},
+		DisplayName:     {{printf "%q" .ApplicationName}} + " (" + {{printf "%q" .BundleName}} + ")",
+		PackageName:     {{printf "%q" .PackageName}},
 	})
 }

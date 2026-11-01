@@ -357,18 +357,6 @@ func defaultSkillIDs(kind string) []string {
 	return ids
 }
 
-// ResolveSkillSelection turns the raw --skills values into a validated, ordered
-// (catalog order), de-duplicated list of skill IDs. Supported special tokens:
-//
-//	default  -> the defaults for the workspace kind
-//	all      -> every bundled skill
-//	none / "" -> no skills
-//
-// When requested is empty (flag not set), the kind defaults are used.
-func ResolveSkillSelection(requested []string, kind string) ([]string, error) {
-	return resolveSkillSelection(requested, kind)
-}
-
 func resolveSkillSelection(requested []string, kind string) ([]string, error) {
 	if len(requested) == 0 {
 		return defaultSkillIDs(kind), nil
@@ -441,10 +429,6 @@ func filterCatalogOrder(set map[string]bool) []string {
 	return ids
 }
 
-// SelectedSkillInfos returns template-facing metadata for the given IDs, in
-// catalog order, so AGENTS.md can list the installed skills.
-func SelectedSkillInfos(ids []string) []SkillInfo { return selectedSkillInfos(ids) }
-
 func selectedSkillInfos(ids []string) []SkillInfo {
 	set := map[string]bool{}
 	for _, id := range ids {
@@ -483,12 +467,6 @@ func claudeSkillLinkTarget(id string) string {
 	return filepath.Join("..", "..", ".agents", "skills", id)
 }
 
-// CopySkills copies the selected skill directories from the embedded FS into
-// .agents/skills/<id> and points .claude/skills/<id> at that directory.
-func CopySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
-	return copySkills(skillsRoot, ids, callback)
-}
-
 func copySkills(skillsRoot string, ids []string, callback func(filePath string, dir bool)) error {
 	for _, id := range ids {
 		if !skillExists(id) {
@@ -501,13 +479,14 @@ func copySkills(skillsRoot string, ids []string, callback func(filePath string, 
 			FS:             internal.Skeleton,
 			SrcPathPrefix:  filepath.ToSlash(filepath.Join(skillsSrcPrefix, id)),
 			DestPathPrefix: dest,
+			DestRoot:       skillsRoot,
 			Callback:       callback,
 		})
 		if err != nil {
 			return fmt.Errorf("copy skill %q to %s: %w", id, dest, err)
 		}
 
-		if err := installSkillLinks(skillsRoot, id, callback); err != nil {
+		if err := installSkillLinks(skillsRoot, id, true, callback); err != nil {
 			return err
 		}
 	}
@@ -515,22 +494,35 @@ func copySkills(skillsRoot string, ids []string, callback func(filePath string, 
 	return nil
 }
 
-// installSkillLinks makes Claude Code see the canonical skill and drops a
-// legacy .cursor/skills copy so the two trees cannot drift.
-func installSkillLinks(skillsRoot, id string, callback func(filePath string, dir bool)) error {
+// installSkillLinks makes Claude Code see the canonical skill. Existing links
+// and legacy Cursor copies are only replaced or removed when overwrite is true.
+func installSkillLinks(
+	skillsRoot, id string,
+	overwrite bool,
+	callback func(filePath string, dir bool),
+) error {
 	link := filepath.Join(skillsRoot, ".claude", "skills", id)
 	target := claudeSkillLinkTarget(id)
+
+	if err := z.CheckPath(skillsRoot, filepath.Dir(link)); err != nil {
+		return err
+	}
 
 	if err := os.MkdirAll(filepath.Dir(link), 0o755); err != nil {
 		return fmt.Errorf("claude skills dir: %w", err)
 	}
 
-	if err := replaceWithSymlink(link, target); err != nil {
+	changed, err := replaceWithSymlink(link, target, overwrite)
+	if err != nil {
 		return fmt.Errorf("link claude skill %q: %w", id, err)
 	}
 
-	if callback != nil {
+	if changed && callback != nil {
 		callback(link, false)
+	}
+
+	if !overwrite {
+		return nil
 	}
 
 	cursorCopy := filepath.Join(skillsRoot, ".cursor", "skills", id)
@@ -557,23 +549,34 @@ func skillDirEntry(root string, e os.DirEntry) bool {
 	return err == nil && info.IsDir()
 }
 
-// replaceWithSymlink points path at target. An existing directory is removed
-// first so a previous full copy does not shadow the canonical tree.
-func replaceWithSymlink(path, target string) error {
-	if info, err := os.Lstat(path); err == nil {
-		if info.Mode()&os.ModeSymlink != 0 {
-			existing, err := os.Readlink(path)
-			if err == nil && existing == target {
-				return nil
-			}
-		}
-
-		if err := os.RemoveAll(path); err != nil {
-			return err
-		}
-	} else if !os.IsNotExist(err) {
-		return err
+func replaceWithSymlink(path, target string, overwrite bool) (bool, error) {
+	info, err := os.Lstat(path)
+	if os.IsNotExist(err) {
+		return true, os.Symlink(target, path)
 	}
 
-	return os.Symlink(target, path)
+	if err != nil {
+		return false, err
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		existing, err := os.Readlink(path)
+		if err != nil {
+			return false, err
+		}
+
+		if existing == target {
+			return false, nil
+		}
+	}
+
+	if !overwrite {
+		return false, nil
+	}
+
+	if err := os.RemoveAll(path); err != nil {
+		return false, err
+	}
+
+	return true, os.Symlink(target, path)
 }

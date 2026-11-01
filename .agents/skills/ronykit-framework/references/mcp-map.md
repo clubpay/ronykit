@@ -12,13 +12,15 @@ Server instructions (always applied on connect) are embedded from `ronyup/cmd/mc
 | `scaffold_workspace` | New workspace at `path` (in-process scaffold API; same as `ronyup setup workspace`) |
 | `scaffold_feature`   | New `feature/<name>/` module (`groupByTemplate` for `feature/<template>/<name>/`)   |
 | `sync_workspace`     | Refresh scaffold boilerplate in an existing workspace (`ronyup setup sync`)         |
+| `sync_skills`        | Sync installed skills from this server's embedded catalog                            |
+| `validate_skills`    | Read-only skill content, frontmatter, link, and retirement drift check               |
 | `setup_bundle`       | Create/remove executable bundles, regenerate features.go (`ronyup setup bundle`)    |
 | `migrate_bundles`       | Upgrade a legacy workspace to the bundle layout (`ronyup setup migrate bundles`)    |
 | `check_frontend_design` | Verify `docs/design/<app>-frontend-design.md` is approved and complete before UI init |
 | `check_rkit_usage`      | Report (and optionally fix) Go code that re-implements an x/rkit helper (`ronyup lint`) |
 
-Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `setup_bundle`, `migrate_bundles`,
-`check_frontend_design`, `check_rkit_usage`.
+Tool docs: `knowledge://ronyup/tools/scaffold_workspace`, `scaffold_feature`, `sync_workspace`, `sync_skills`, `validate_skills`,
+`setup_bundle`, `migrate_bundles`, `check_frontend_design`, `check_rkit_usage`.
 
 ## Prompts
 

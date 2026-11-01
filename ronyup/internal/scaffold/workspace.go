@@ -30,6 +30,9 @@ func setupWorkspace(ctx context.Context, req WorkspaceRequest, log Logger) error
 	}
 
 	req.Module = rkit.Coalesce(req.Module, "github.com/your/repo")
+	if err := validateModulePath(req.Module); err != nil {
+		return err
+	}
 
 	req.AppName = rkit.Coalesce(req.AppName, "myapp")
 
@@ -57,6 +60,10 @@ func setupWorkspace(ctx context.Context, req WorkspaceRequest, log Logger) error
 }
 
 func prepareWorkspaceDir(repoPath string, force bool) error {
+	if force && filepath.Dir(repoPath) == repoPath {
+		return fmt.Errorf("refusing to replace filesystem root %s", repoPath)
+	}
+
 	info, err := os.Stat(repoPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -99,11 +106,6 @@ func goRootRel(kind string) string {
 	}
 
 	return "."
-}
-
-// GoModulePrefix returns the module path prefix for Go packages in a workspace.
-func GoModulePrefix(module, kind string) string {
-	return goModulePrefix(module, kind)
 }
 
 func goModulePrefix(module, kind string) string {
@@ -169,44 +171,59 @@ func copyWorkspaceTemplate(ctx context.Context, in workspaceCopyInput, log Logge
 		}
 	}
 
-	rkit.Assert(z.CopyDir(
-		z.CopyDirParams{
-			FS:             internal.Skeleton,
-			SrcPathPrefix:  filepath.Join("skeleton", "workspace"),
-			DestPathPrefix: in.repoRoot,
-			TemplateInput:  templateInput,
-			DestMapper:     workspaceCommonDestMapper(in.repoRoot, in.kind),
-			Callback:       callback,
-		},
-	))
+	if err := z.CopyDir(z.CopyDirParams{
+		FS:             internal.Skeleton,
+		SrcPathPrefix:  filepath.Join("skeleton", "workspace"),
+		DestPathPrefix: in.repoRoot,
+		TemplateInput:  templateInput,
+		DestMapper:     workspaceCommonDestMapper(in.repoRoot, in.kind),
+		Callback:       callback,
+	}); err != nil {
+		return fmt.Errorf("copy workspace skeleton: %w", err)
+	}
 
 	if hasBackend(in.kind) {
-		rkit.Assert(z.CopyDir(
-			z.CopyDirParams{
-				FS:             internal.Skeleton,
-				SrcPathPrefix:  filepath.Join("skeleton", "backend"),
-				DestPathPrefix: backendDestPrefix(in.repoRoot, in.kind),
-				TemplateInput:  templateInput,
-				Callback:       callback,
+		dest := backendDestPrefix(in.repoRoot, in.kind)
+		if err := z.CopyDir(z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.Join("skeleton", "backend"),
+			DestPathPrefix: dest,
+			DestRoot:       in.repoRoot,
+			TemplateInput:  templateInput,
+			DestMapper: func(relPath string) (string, bool) {
+				rel := filepath.ToSlash(relPath)
+				if rel == "cmd/bundle" || strings.HasPrefix(rel, "cmd/bundle/") {
+					return "", true
+				}
+
+				return filepath.Join(dest, relPath), false
 			},
-		))
+			Callback: callback,
+		}); err != nil {
+			return fmt.Errorf("copy backend skeleton: %w", err)
+		}
 	}
 
 	if hasFrontend(in.kind) {
-		rkit.Assert(z.CopyDir(
-			z.CopyDirParams{
-				FS:             internal.Skeleton,
-				SrcPathPrefix:  filepath.Join("skeleton", "frontend"),
-				DestPathPrefix: filepath.Join(in.repoRoot, frontendDir),
-				TemplateInput:  templateInput,
-				Callback:       callback,
-			},
-		))
+		if err := z.CopyDir(z.CopyDirParams{
+			FS:             internal.Skeleton,
+			SrcPathPrefix:  filepath.Join("skeleton", "frontend"),
+			DestPathPrefix: filepath.Join(in.repoRoot, frontendDir),
+			DestRoot:       in.repoRoot,
+			TemplateInput:  templateInput,
+			Callback:       callback,
+		}); err != nil {
+			return fmt.Errorf("copy frontend skeleton: %w", err)
+		}
 	}
 
-	rkit.Assert(installSkillLinks(in.repoRoot, "ronykit-framework", callback))
+	if err := installSkillLinks(in.repoRoot, "ronykit-framework", true, callback); err != nil {
+		return err
+	}
 
-	installSkills(log, in.repoRoot, in.resolvedSkills)
+	if err := installSkills(log, in.repoRoot, in.resolvedSkills); err != nil {
+		return err
+	}
 
 	log.Println("Workspace created successfully")
 
@@ -233,7 +250,7 @@ func initGoWorkspace(ctx context.Context, in workspaceCopyInput) error {
 	modulePrefix := goModulePrefix(in.module, in.kind)
 	packages := []string{"pkg/i18n", "pkg/runner", "cmd/" + defaultBundleName}
 
-	p := z.RunCmdParams{Dir: goRoot}
+	p := z.RunCmdParams{Dir: goRoot, ENV: map[string]string{"GOWORK": "off"}}
 	if err := z.RunCmd(ctx, p, "go", "work", "init"); err != nil {
 		return fmt.Errorf("go work init: %w", err)
 	}
@@ -248,6 +265,12 @@ func initGoWorkspace(ctx context.Context, in workspaceCopyInput) error {
 			return fmt.Errorf("go mod edit %s: %w", pkg, err)
 		}
 
+		if pkg == "cmd/"+defaultBundleName {
+			if err := addLocalModuleReplacement(ctx, goRoot, p.Dir, modulePrefix, RunnerRelDir); err != nil {
+				return err
+			}
+		}
+
 		if err := z.RunCmd(ctx, p, "go", "mod", "tidy", "-e"); err != nil {
 			return fmt.Errorf("go mod tidy %s: %w", pkg, err)
 		}
@@ -260,24 +283,28 @@ func initGoWorkspace(ctx context.Context, in workspaceCopyInput) error {
 	return nil
 }
 
-func installSkills(log Logger, repoRoot string, skills []string) {
+func installSkills(log Logger, repoRoot string, skills []string) error {
 	if len(skills) == 0 {
 		log.Println("No optional agent skills installed")
 
-		return
+		return nil
 	}
 
-	rkit.Assert(copySkills(repoRoot, skills, func(filePath string, dir bool) {
+	if err := copySkills(repoRoot, skills, func(filePath string, dir bool) {
 		if !dir {
 			log.Println("FILE: ", filePath, "created")
 		}
-	}))
+	}); err != nil {
+		return err
+	}
 
 	log.Printf(
 		"Installed %d agent skill(s): %s\n",
 		len(skills),
 		strings.Join(skills, ", "),
 	)
+
+	return nil
 }
 
 func isGitRepository(dir string) (bool, error) {

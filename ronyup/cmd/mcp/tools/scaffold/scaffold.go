@@ -31,6 +31,7 @@ func Register(srv *mcpsdk.Server) {
 	registerSetupWorkspace(srv)
 	registerSetupFeature(srv)
 	registerLifecycle(srv)
+	registerSkillTools(srv)
 	registerCheckFrontendDesign(srv)
 	registerCheckRkit(srv)
 }
@@ -161,6 +162,10 @@ func registerSetupFeature(srv *mcpsdk.Server) {
 
 			if args.Name == "" {
 				return errorResult(rkit.L("name is required")), nil, nil
+			}
+
+			if err := appscaffold.ValidateFeatureName(args.Name); err != nil {
+				return errorResult(rkit.L("invalid feature name: %v", err)), nil, nil
 			}
 
 			if !args.SkipDesignGate {
