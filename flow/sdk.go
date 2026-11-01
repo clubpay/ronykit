@@ -123,16 +123,30 @@ func (sdk *SDK) InitWithState(state any) {
 	registryMu.Lock()
 	defer registryMu.Unlock()
 
+	bindState(sdk.b, state, true)
+
+	if sdk.old != nil {
+		bindState(sdk.old, state, false)
+	}
+}
+
+// RegisterState registers workflows, activities, and activity factories whose
+// state type matches state. The backend becomes the one Execute uses.
+// SDK.InitWithState does this for the default backend and, when set, the deprecating backend.
+func RegisterState(b Backend, state any) {
+	registryMu.Lock()
+	defer registryMu.Unlock()
+
+	bindState(b, state, true)
+}
+
+func bindState(b Backend, state any, setDefault bool) {
 	stateT := reflect.TypeOf(state)
 
 	for stateType, w := range registeredWorkflows {
 		if stateType == stateT {
 			for _, t := range w {
-				t.registerWithStateAny(sdk.b, state, true)
-
-				if sdk.old != nil {
-					t.registerWithStateAny(sdk.old, state, false)
-				}
+				t.registerWithStateAny(b, state, setDefault)
 			}
 		}
 	}
@@ -140,11 +154,7 @@ func (sdk *SDK) InitWithState(state any) {
 	for stateType, w := range registeredActivities {
 		if stateType == stateT {
 			for _, t := range w {
-				t.registerWithStateAny(sdk.b, state, true)
-
-				if sdk.old != nil {
-					t.registerWithStateAny(sdk.old, state, false)
-				}
+				t.registerWithStateAny(b, state, setDefault)
 			}
 		}
 	}
@@ -152,12 +162,7 @@ func (sdk *SDK) InitWithState(state any) {
 	for stateType, w := range registeredActivityFactories {
 		if stateType == stateT {
 			for _, fn := range w {
-				ent := fn(state)
-				ent.registerWithStateAny(sdk.b, state, true)
-
-				if sdk.old != nil {
-					ent.registerWithStateAny(sdk.old, state, false)
-				}
+				fn(state).registerWithStateAny(b, state, setDefault)
 			}
 		}
 	}

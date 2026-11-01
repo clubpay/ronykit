@@ -53,6 +53,20 @@ type BackendConfig struct {
 	WorkerOptions    WorkerOptions
 }
 
+// GroupMatcher selects which workflow and activity groups a backend registers.
+// Backends that do not implement it register entities whose group equals Group.
+type GroupMatcher interface {
+	MatchesGroup(group string) bool
+}
+
+func backendAcceptsGroup(b Backend, group string) bool {
+	if m, ok := b.(GroupMatcher); ok {
+		return m.MatchesGroup(group)
+	}
+
+	return b.Group() == group
+}
+
 var _ Backend = (*realBackend)(nil)
 
 type realBackend struct {

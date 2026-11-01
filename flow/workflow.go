@@ -118,7 +118,7 @@ func (w *Workflow[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
 }
 
 func (w *Workflow[REQ, RES, STATE]) registerWithState(b Backend, s STATE, setDefaultBackend bool) {
-	if b.Group() != w.group {
+	if !backendAcceptsGroup(b, w.group) {
 		return
 	}
 

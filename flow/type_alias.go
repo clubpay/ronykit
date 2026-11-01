@@ -34,6 +34,13 @@ type (
 
 	// WorkerOptions configures worker concurrency and polling. Set it on BackendConfig.
 	WorkerOptions = worker.Options
+	// DeploymentOptions opts this worker into worker deployment versioning.
+	// Set it on WorkerOptions. UseVersioning and Version are required together.
+	DeploymentOptions = worker.DeploymentOptions
+	// WorkerDeploymentVersion identifies one build of a worker deployment.
+	WorkerDeploymentVersion = worker.WorkerDeploymentVersion
+	// VersioningBehavior controls whether a workflow stays on its build or moves to the current one.
+	VersioningBehavior = workflow.VersioningBehavior
 
 	// Client is the Temporal service client. Prefer SDK and Workflow helpers for
 	// the operations flow already wraps.
@@ -61,6 +68,17 @@ type (
 	WorkflowExecutionError = temporal.WorkflowExecutionError
 	// ChildWorkflowExecutionError wraps a failure of a child workflow.
 	ChildWorkflowExecutionError = temporal.ChildWorkflowExecutionError
+)
+
+const (
+	// VersioningBehaviorUnspecified leaves the workflow without a deployment behavior.
+	// A worker with versioning enabled rejects workflows that stay unspecified
+	// unless DeploymentOptions sets DefaultVersioningBehavior.
+	VersioningBehaviorUnspecified = workflow.VersioningBehaviorUnspecified
+	// VersioningBehaviorPinned keeps the workflow on the build that started it.
+	VersioningBehaviorPinned = workflow.VersioningBehaviorPinned
+	// VersioningBehaviorAutoUpgrade moves the workflow to the deployment's current build.
+	VersioningBehaviorAutoUpgrade = workflow.VersioningBehaviorAutoUpgrade
 )
 
 // EMPTY is the state type for workflows and activities that carry no shared state.

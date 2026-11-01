@@ -11,8 +11,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/nexus-rpc/sdk-go v0.7.0
 	github.com/smartystreets/goconvey v1.8.1
+	github.com/stretchr/testify v1.12.1
 	go.opentelemetry.io/otel/trace v1.47.0
-	go.temporal.io/api v1.63.7
+	go.temporal.io/api v1.64.0
 	go.temporal.io/sdk v1.50.0
 	go.uber.org/zap v1.28.0
 	google.golang.org/protobuf v1.36.12
@@ -50,7 +51,6 @@ require (
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.75.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

@@ -65,6 +65,21 @@ backend, err := flow.NewBackend(flow.BackendConfig{
 
 `NewAPIKeyDynamicCredentials` calls a function on every request so the key can rotate without reconnecting. `NewMTLSCredentials` authenticates with a client certificate. Leave `Credentials` unset for a local server that does not require auth.
 
+Worker deployment versioning is configured on `WorkerOptions`. `UseVersioning` and `Version` are set together. Set `DefaultVersioningBehavior` or every workflow must declare a behavior, or registration fails.
+
+```go
+flow.WorkerOptions{
+	DeploymentOptions: flow.DeploymentOptions{
+		UseVersioning: true,
+		Version: flow.WorkerDeploymentVersion{
+			DeploymentName: "payments",
+			BuildID:        "2026-11-01",
+		},
+		DefaultVersioningBehavior: flow.VersioningBehaviorPinned,
+	},
+}
+```
+
 ### Workflow
 
 A workflow is defined with three type parameters: `REQ` (input), `RES` (output), and `STATE` (shared application state). Workflows self-register when constructed.
@@ -223,6 +238,28 @@ result, err := future.Get(ctx.Context())
 future := ProcessPayment.ExecuteLocal(ctx.Context(), req, flow.ExecuteActivityOptions{
 	StartToCloseTimeout: 5 * time.Second,
 })
+```
+
+**Standalone activities** run outside a workflow. The caller does not import the Temporal SDK. `TaskQueue` defaults to the activity backend. An empty `ID` is generated.
+
+```go
+run, err := ProcessPayment.ExecuteStandalone(ctx, paymentReq, flow.StartActivityOptions{
+	ID:                       "payment-123",
+	StartToCloseTimeout:      30 * time.Second,
+	ActivityIDConflictPolicy: flow.ActivityIDConflictPolicyUseExisting,
+})
+if err != nil {
+	return err
+}
+
+result, err := run.Get(ctx)
+
+// Cancel or terminate a run that is still open.
+_ = run.Cancel(ctx, "customer left")
+
+// An empty run ID selects the latest execution of that activity ID.
+again := ProcessPayment.Handle("payment-123", "")
+result, err = again.Get(ctx)
 ```
 
 #### Activity Factories
@@ -682,6 +719,40 @@ Set `ParentClosePolicy` on `ExecuteChildWorkflowOptions`.
 | `ParentClosePolicyTerminate`       | Terminate the child when the parent closes (default)    |
 | `ParentClosePolicyAbandon`         | Leave the child running                                 |
 | `ParentClosePolicyRequestCancel`   | Request cancellation of the child                       |
+
+## Testing
+
+`flow/flowtest` runs workflows and activities in memory. Tests import `flow` and `flow/flowtest` only.
+
+Call `Init` or `InitWithState` before `Execute`, `OnActivity`, or `OnWorkflow`. One environment runs one workflow; create another environment for the next `Execute`. Set `Group` to the group under test so the environment does not register definitions from other tests.
+
+```go
+env := flowtest.NewWorkflowEnv(flowtest.Config{Group: "my-group"})
+env.InitWithState(appState)
+
+flowtest.OnActivity(env, ProcessPayment).Return(&PaymentRes{Success: true}, nil)
+
+result, err := flowtest.Execute(env, MyWorkflow, req)
+env.AssertExpectations(t)
+```
+
+`OnActivity` and `OnWorkflow` match any request. Pass one value to match that request. `Once`, `Times`, `Maybe`, `Never`, and `After` constrain the expectation.
+
+```go
+env.After(time.Minute, func() {
+	flowtest.Signal(env, OrderCancelled, CancelPayload{Reason: "user-request"})
+})
+
+env.IgnoreExternalSignals() // signals sent to workflows outside this test
+```
+
+`NewActivityEnv` runs an activity without a workflow. The state passed to the first `ExecuteActivity` call is the state the activity sees.
+
+```go
+env := flowtest.NewActivityEnv(flowtest.Config{Group: "my-group"})
+env.SetHeartbeatDetails(42)
+got, err := flowtest.ExecuteActivity(env, ProcessPayment, flow.EMPTY{}, paymentReq)
+```
 
 ## Requirements
 

@@ -86,7 +86,7 @@ func NewActivityFactory[REQ, RES, STATE any](
 	opts ...ActivityOption,
 ) *ActivityFactory[REQ, RES, STATE] {
 	stateT := reflect.TypeFor[func(s STATE) ActivityFunc[REQ, RES, STATE]]().In(0)
-	actFactory := &ActivityFactory[REQ, RES, STATE]{}
+	actFactory := &ActivityFactory[REQ, RES, STATE]{name: name}
 
 	registryMu.Lock()
 
@@ -171,7 +171,7 @@ func (a *Activity[REQ, RES, STATE]) alreadyRegistered(b Backend) bool {
 }
 
 func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, setDefaultBackend bool) {
-	if b.Group() != a.group {
+	if !backendAcceptsGroup(b, a.group) {
 		return
 	}
 
@@ -180,14 +180,7 @@ func (a *Activity[REQ, RES, STATE]) registerWithState(b Backend, state STATE, se
 	}
 
 	b.RegisterActivityWithOptions(
-		func(ctx context.Context, req REQ) (*RES, error) {
-			fCtx := &ActivityContext[REQ, RES, STATE]{
-				ctx: ctx,
-				s:   state,
-			}
-
-			return a.Fn(fCtx, req)
-		},
+		a.activityFn(state),
 		activity.RegisterOptions{
 			Name:                       a.Name,
 			SkipInvalidStructFunctions: true,
@@ -206,6 +199,17 @@ func (a *Activity[REQ, RES, STATE]) registerWithStateAny(b Backend, s any, setDe
 
 func (a *Activity[REQ, RES, STATE]) stateType() reflect.Type {
 	return reflect.TypeOf(a.State)
+}
+
+func (a *Activity[REQ, RES, STATE]) activityFn(state STATE) func(context.Context, REQ) (*RES, error) {
+	return func(ctx context.Context, req REQ) (*RES, error) {
+		fCtx := &ActivityContext[REQ, RES, STATE]{
+			ctx: ctx,
+			s:   state,
+		}
+
+		return a.Fn(fCtx, req)
+	}
 }
 
 type ExecuteActivityOptions struct {
@@ -300,7 +304,12 @@ func (a *Activity[REQ, RES, STATE]) ExecuteLocal(
 }
 
 type ActivityFactory[REQ, RES, STATE any] struct {
-	act *Activity[REQ, RES, STATE]
+	act  *Activity[REQ, RES, STATE]
+	name string
+}
+
+func (a *ActivityFactory[REQ, RES, STATE]) Name() string {
+	return a.name
 }
 
 func (a *ActivityFactory[REQ, RES, STATE]) mustAct() *Activity[REQ, RES, STATE] {
