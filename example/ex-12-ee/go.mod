@@ -5,7 +5,7 @@ go 1.27.2
 require (
 	github.com/clubpay/ronykit/ee v0.0.0
 	github.com/clubpay/ronykit/rony v0.27.1
-	github.com/clubpay/ronykit/x/rkit v0.6.1
+	github.com/clubpay/ronykit/x/rkit v0.6.4
 	github.com/stretchr/testify v1.12.1
 )
 
@@ -32,7 +32,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.29.1 // indirect
 	github.com/go-openapi/swag/typeutils v0.29.1 // indirect
 	github.com/go-openapi/swag/yamlutils v0.29.1 // indirect
-	github.com/goccy/go-json v0.11.2 // indirect
+	github.com/goccy/go-json v0.12.0 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
@@ -47,7 +47,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/molecule-man/go-brrr v1.1.1 // indirect
 	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20250924091648-bce9a52d7761 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

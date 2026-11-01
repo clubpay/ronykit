@@ -52,7 +52,7 @@ github.com/go-openapi/testify/v2 v2.7.0 h1:bycOreEj6wfBvijg3YFogZ/sFjTCDmQnwSodS
 github.com/go-openapi/testify/v2 v2.7.0/go.mod h1:SgsVHtfooshd0tublTtJ50FPKhujf47YRqauXXOUxfw=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
-github.com/goccy/go-json v0.11.2 h1:jdZv93Tt4ioR8yW1CoNsvSxrcZlCXAUU1aZXN7gpXUA=
+github.com/goccy/go-json v0.12.0 h1:pD+oWouAiz4yruwXIt/iT+lOMeyhr1aTtxzaMP/RgVI=
 github.com/goccy/go-reflect v1.2.0 h1:O0T8rZCuNmGXewnATuKYnkL0xm6o8UNOJZd/gOkb9ms=
 github.com/goccy/go-reflect v1.2.0/go.mod h1:n0oYZn8VcV2CkWTxi8B9QjkCoq6GTtCEdfmR66YhFtE=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
