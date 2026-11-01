@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/ee/store/postgres
 go 1.27.0
 
 require (
-	github.com/clubpay/ronykit/ee v0.0.6
-	github.com/clubpay/ronykit/x/rkit v0.6.5
+	github.com/clubpay/ronykit/ee v0.0.7
+	github.com/clubpay/ronykit/x/rkit v0.6.6
 	github.com/jackc/pgx/v5 v5.12.0
 )
 

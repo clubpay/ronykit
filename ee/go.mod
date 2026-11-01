@@ -2,7 +2,7 @@ module github.com/clubpay/ronykit/ee
 
 go 1.27.0
 
-require github.com/clubpay/ronykit/x/rkit v0.6.5
+require github.com/clubpay/ronykit/x/rkit v0.6.6
 
 require (
 	github.com/goccy/go-reflect v1.2.0 // indirect

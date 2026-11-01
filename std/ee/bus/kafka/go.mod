@@ -3,8 +3,8 @@ module github.com/clubpay/ronykit/std/ee/bus/kafka
 go 1.27.0
 
 require (
-	github.com/clubpay/ronykit/ee v0.0.6
-	github.com/clubpay/ronykit/x/rkit v0.6.5
+	github.com/clubpay/ronykit/ee v0.0.7
+	github.com/clubpay/ronykit/x/rkit v0.6.6
 	github.com/twmb/franz-go v1.22.2
 	github.com/twmb/franz-go/pkg/kadm v1.19.0
 )
