@@ -1,6 +1,6 @@
 # flow
 
-`flow` is a type-safe, generics-based Go wrapper around the [Temporal](https://temporal.io) SDK. It eliminates raw `interface{}` usage by parameterizing workflows, activities, signals, channels, futures, and selectors with concrete request, response, and state types.
+`flow` is a type-safe Go wrapper around the [Temporal](https://temporal.io) SDK. It uses Go generics for workflows, activities, signals, channels, futures, and selectors. Concrete request, response, and state types replace raw `interface{}` values.
 
 ```
 go get github.com/clubpay/ronykit/flow
@@ -8,12 +8,12 @@ go get github.com/clubpay/ronykit/flow
 
 ## Why flow?
 
-The stock Temporal Go SDK relies heavily on `interface{}` for inputs, outputs, and context values. `flow` replaces those with Go generics so that:
+The Temporal Go SDK uses `interface{}` for many inputs, outputs, and context values. `flow` replaces these values with Go generics. This design provides these benefits:
 
-- Workflow and activity signatures are checked at compile time.
-- Shared application state (database pools, config, clients) is injected through a typed `STATE` parameter instead of global variables.
-- Channels, futures, and selectors carry their payload type, removing the need for manual type assertions.
-- Encrypted payloads, search attributes, and scheduler migration are available out of the box.
+- The compiler checks workflow and activity signatures.
+- A typed `STATE` parameter supplies shared application state, including database pools, configuration, and clients. Global variables are not necessary.
+- Channels, futures, and selectors carry their payload type. Manual type assertions are not necessary.
+- The package includes encrypted payloads, search attributes, and scheduler migration.
 
 ## Core Concepts
 
@@ -44,7 +44,7 @@ defer sdk.Stop()
 
 ### Backend
 
-`Backend` wraps a Temporal client and worker for a single cluster. It is created via `NewBackend` and handles namespace auto-creation, TLS, custom `DataConverter`, default `FailureConverter` for `*rony/errs.Error`, and `WorkerOptions` passthrough.
+`Backend` wraps a Temporal client and worker for one cluster. Create it with `NewBackend`. It supports automatic namespace creation, TLS, and custom `DataConverter` values. It also supplies a default `FailureConverter` for `*rony/errs.Error` and passes through `WorkerOptions`.
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
@@ -126,7 +126,7 @@ var ProcessOrderChain = flow.NewChainWorkflowWithOptions[OrderData, flow.EMPTY](
 	ValidateOrder, ChargePayment,
 )
 
-// Or pass raw functions — each step is registered as an activity via ToActivity:
+// Or pass raw functions - ToActivity registers each step as an activity:
 var ProcessOrderChain = flow.NewChainWorkflow[OrderData, flow.EMPTY](
 	"ProcessOrderChain", "orders",
 	flow.ChainStepFunc[OrderData, flow.EMPTY]("ValidateOrder", "orders",
@@ -155,7 +155,7 @@ flow.ChainStepActivityFunc[OrderData, *AppState]("NotifyCustomer", "orders",
 )
 ```
 
-For workflows that don't return a result, use `NewWorkflowNoResult`:
+Use `NewWorkflowNoResult` for workflows that do not return a result:
 
 ```go
 var FireAndForget = flow.NewWorkflowNoResult[MyRequest, flow.EMPTY](
@@ -316,11 +316,11 @@ flow.NewNamedBufferedChannel[int](ctx.Context(), "my-channel", 10)
 ```go
 var OrderCancelled = flow.Signal[CancelPayload]{Name: "order-cancelled"}
 
-// Inside a workflow — receive signals
+// Inside a workflow - receive signals
 ch := OrderCancelled.GetChannel(ctx.Context())
 payload, more := ch.Receive(ctx.Context())
 
-// From outside or another workflow — send a signal
+// From outside or another workflow - send a signal
 OrderCancelled.Send(ctx.Context(), targetWorkflowID, CancelPayload{Reason: "user-request"})
 
 // From application code (outside workflow context)
@@ -411,7 +411,7 @@ if v == 1 {
 
 ### ContinueAsNew
 
-Restart a workflow with a fresh history to avoid unbounded event growth:
+Restart a workflow with new history to prevent unbounded event growth:
 
 ```go
 return nil, ctx.ContinueAsNewError(newReq)
@@ -544,11 +544,13 @@ run, err := MyWorkflow.Execute(ctx, req, flow.ExecuteWorkflowOptions{
 })
 ```
 
-## Payload Encryption
+## Payload encryption
 
-`flow` includes an AES-GCM data converter with zlib compression. Payloads stored in Temporal are encrypted at rest. The key may be 16, 24, or 32 bytes (used as the AES key) or any other length (SHA-256 derived).
+`flow` includes an AES-GCM data converter with zlib compression. The converter encrypts payloads before Temporal stores them. Use a 16, 24, or 32 byte key directly as the AES key. Other key lengths are derived with SHA-256.
 
-Encrypt failures are returned, so a payload is never stored in plaintext as a fallback. Decrypt is deliberately lenient in the other direction: a payload the codec cannot read — plaintext history written before encryption was enabled, or a payload sealed with a rotated key — is passed through untouched instead of failing the batch, so one unreadable payload cannot stall a workflow task or blank out the Web UI. Passthrough is all-or-nothing per payload; a payload is never returned half-decrypted.
+The converter returns encryption failures. It never stores plaintext as a fallback.
+
+Decryption uses a lenient policy for unreadable payloads. Examples include plaintext history from before encryption was enabled and payloads sealed with a rotated key. The converter passes these payloads through unchanged instead of failing the batch. One unreadable payload cannot stall a workflow task or prevent the Web UI from displaying data. Pass-through applies to the whole payload. The converter never returns partially decrypted data.
 
 ```go
 backend, err := flow.NewBackend(flow.BackendConfig{
@@ -557,9 +559,11 @@ backend, err := flow.NewBackend(flow.BackendConfig{
 })
 ```
 
-### Codec Server
+### Codec server
 
-The `codecserver` sub-package exposes an HTTP service compatible with Temporal's [Codec Server protocol](https://docs.temporal.io/production-deployment/data-encryption). Point the Temporal Web UI at this endpoint to decrypt payloads for display. Handlers read `X-Namespace` from the incoming request header and set the CORS headers the Web UI needs (`POST`/`OPTIONS` on `/encode` and `/decode`). If the gateway also has CORS enabled, include `X-Namespace` in the allowed headers.
+The `codecserver` sub-package exposes an HTTP service compatible with Temporal's [Codec Server protocol](https://docs.temporal.io/production-deployment/data-encryption). Configure the Temporal Web UI to use this endpoint for payload decryption.
+
+Handlers read `X-Namespace` from the incoming request header. They set the CORS headers required by the Web UI for `POST` and `OPTIONS` on `/encode` and `/decode`. If the gateway also enables CORS, include `X-Namespace` in the allowed headers.
 
 ```go
 import "github.com/clubpay/ronykit/flow/codecserver"
@@ -572,9 +576,9 @@ svc := codecserver.NewService("/temporal-codec", map[string]string{
 // Register svc.Desc() with a RonyKit EdgeServer
 ```
 
-## Cluster Migration
+## Cluster migration
 
-When migrating between Temporal clusters, the SDK supports a deprecating backend to keep old workflows running while moving schedulers to the new cluster.
+A deprecating backend keeps old workflows running during migration between Temporal clusters. Schedulers move to the new cluster.
 
 ```go
 sdk := flow.NewSDK(flow.SDKConfig{
@@ -583,7 +587,7 @@ sdk := flow.NewSDK(flow.SDKConfig{
 })
 ```
 
-On `Start()`, the SDK automatically migrates schedulers from the old backend to the new one in the background; `Stop()` cancels that migration and waits for it to unwind. Old workflows continue running on the deprecating backend until completion. Use `SchedulerMigrator` directly for manual control:
+`Start()` migrates schedulers from the old backend to the new backend in the background. `Stop()` cancels the migration and waits for it to finish. Old workflows continue on the deprecating backend until completion. Use `SchedulerMigrator` directly for manual control:
 
 ```go
 m := flow.NewSchedulerMigrator(oldBackend, newBackend)
@@ -593,19 +597,23 @@ err := m.Migrate(ctx, true, func(ctx context.Context, sch *flow.ScheduleEntry) f
 })
 ```
 
-A schedule that the check function skips is retried on later rounds, so one that was skipped because it was about to fire still migrates once it settles. `Migrate` waits one minute between rounds and gives up after ten, returning an error that names the schedules left on the source cluster. Use `WithRetry(interval, rounds)` to change those bounds.
+The migrator retries schedules skipped by the check function in later rounds. A schedule skipped because it was about to fire migrates after it settles. `Migrate` waits one minute between rounds and stops after ten rounds. The returned error names schedules left on the source cluster. Use `WithRetry(interval, rounds)` to change these limits.
 
 ## Logging
 
-`flow` ships a Zap adapter that implements Temporal's `log.Logger` interface:
+`flow` includes a Zap adapter that implements Temporal's `log.Logger` interface:
 
 ```go
 logger := flow.NewZapAdapter(zap.Must(zap.NewProduction()))
 ```
 
-## Error Utilities
+## Error utilities
 
-`NewBackend` installs `flow.DefaultFailureConverter()` on the Temporal client by default (the worker inherits it from the client). The converter round-trips `*rony/errs.Error` values across activity, workflow, and client boundaries using `errmarshalling`, so `errors.As(err, &(*errs.Error))` and `errs.Code(err)` keep working after Temporal propagates failures. Business-domain `errs` codes (for example `NotFound`, `InvalidArgument`, `PermissionDenied`) are marked non-retryable in Temporal failures; infrastructure codes such as `Unavailable` and `Internal` remain retryable.
+`NewBackend` installs `flow.DefaultFailureConverter()` on the Temporal client by default. The worker inherits this converter from the client.
+
+The converter uses `errmarshalling` to preserve `*rony/errs.Error` values across activity, workflow, and client boundaries. `errors.As(err, &(*errs.Error))` and `errs.Code(err)` continue to work after Temporal propagates failures.
+
+Business-domain `errs` codes are non-retryable in Temporal failures. Examples are `NotFound`, `InvalidArgument`, and `PermissionDenied`. Infrastructure codes such as `Unavailable` and `Internal` remain retryable.
 
 ```go
 import "github.com/clubpay/ronykit/rony/errs"

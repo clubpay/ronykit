@@ -1,48 +1,34 @@
 # ee Kafka bus
 
-Kafka implementation of the [`ee`](../../../../ee) bus contract, on
-[franz-go](https://github.com/twmb/franz-go). `ee.Request` is not supported:
-the bus does not implement `bus.Requester`. Use NATS when a handler must
-answer the publisher.
+This module implements the [`ee`](../../../../ee) bus contract with Kafka and [franz-go](https://github.com/twmb/franz-go).
+
+The bus does not implement `bus.Requester`, so `ee.Request` is not supported. Use NATS when a handler must answer the publisher.
 
 ```go
 b, err := kafka.New(kafka.WithBrokers("localhost:9092")) // or EE_KAFKA_BROKERS
 env := ee.MustNew(ee.WithBus(b), ee.WithStore(s))
 ```
 
-TLS, SASL and other client settings: `WithClientOptions(kgo.Opt...)`.
+Use `WithClientOptions(kgo.Opt...)` for TLS, SASL, and other client settings.
 
 ## Layout
 
-- All events go to one topic, `<prefix>.events` (prefix default `ee`), keyed
-  by the envelope's partition key. A key's events therefore share a partition
-  and keep their order across event types (e.g. `OrderCreated` before
-  `OrderPaid`). Groups skip events they did not subscribe to.
-- `WithTopicRouter` can spread events over several topics; per-key order then
-  only holds among events routed to the same topic.
-- An ee group is the consumer group `<prefix>.<group>`; members split the
-  partitions.
-- Topics are created on first use with `WithTopicDefaults` (16 partitions,
-  broker-default replication) unless `SkipTopicSetup()`; `EnsureTopics` does
-  it up front.
+- All events use one topic, `<prefix>.events`. The default prefix is `ee`. The envelope's partition key is the record key. Events with the same key share a partition and keep their order across event types. For example, `OrderCreated` stays before `OrderPaid`. Groups skip events without a matching subscription.
+- `WithTopicRouter` can distribute events over several topics. Per-key order then applies only to events routed to the same topic.
+- An ee group uses the consumer group `<prefix>.<group>`. Members divide the partitions.
+- Topics are created on first use. `WithTopicDefaults` sets 16 partitions and broker-default replication. `SkipTopicSetup()` prevents automatic creation. `EnsureTopics` creates topics in advance.
 
 ## Delivery
 
-- Partitions are processed in parallel, records of a partition sequentially.
-  A failed record is retried in place (`RetryBackoff × attempt`), blocking its
-  partition; after `MaxAttempts` (default 10) it goes to `OnDeadLetter` and
-  its offset is committed.
-- Offsets are committed only for handled records, after each poll. Rebalances
-  wait for the poll's processing and commit to finish, so a partition never
-  moves with half-processed records.
-- The producer is idempotent, so retries cannot reorder a partition.
+- Partitions are processed in parallel. Records within a partition are processed in sequence. A failed record is retried in place with delay `RetryBackoff × attempt`. This retry blocks its partition. After `MaxAttempts`, default 10, the record goes to `OnDeadLetter` and its offset is committed.
+- Offsets are committed only for handled records after each poll. Rebalances wait for poll processing and commit to finish. A partition therefore never moves with partially processed records.
+- The producer is idempotent. Retries cannot reorder a partition.
 
-At-least-once still means duplicates are possible (e.g. a crash between
-handling and committing); use `ee.Dedup` where effects must apply once.
+At-least-once delivery can still produce duplicates. For example, a crash can occur between handling and commit. Use `ee.Dedup` when effects must apply once.
 
 ## Tests
 
-Skipped unless `EE_KAFKA_TEST_BROKERS` is set; each test uses its own topic.
+Set `EE_KAFKA_TEST_BROKERS` to enable the tests. Each test uses its own topic.
 
 ```sh
 docker run -d --rm --name ee-kafka -p 59092:59092 \

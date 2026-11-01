@@ -1,7 +1,6 @@
 # ee Redis store
 
-Redis implementation of the [`ee`](../../../../ee) store contract. Records are
-JSON, so the ee codec must produce JSON (the default does).
+This module implements the [`ee`](../../../../ee) store contract with Redis. Records use JSON. The ee codec must therefore produce JSON, which is the default.
 
 ```go
 s, err := redis.New(redis.WithAddr("localhost:6379")) // or EE_REDIS_ADDR / EE_REDIS_URL
@@ -10,38 +9,27 @@ env := ee.MustNew(ee.WithStore(s), ee.WithBus(b))
 
 ## Layout
 
-Every key starts with the prefix (default `{ee}`, a Redis hash tag) so one
-store occupies one cluster slot. Service replicas must use the same prefix.
+Every key starts with a prefix. The default is `{ee}`, a Redis hash tag. This prefix keeps one store in one cluster slot. Service replicas must use the same prefix.
 
-- `{prefix}:s:<kind>:<id>` holds `v` (version) and `d` (JSON).
-- `{prefix}:k:<kind>` is the set of ids of that kind. `Find` reads this set
-  and filters in memory, which suits modest kinds.
-- `{prefix}:pending` is the outbox, scored by a monotonic sequence.
-  `{prefix}:o:<id>` holds the entry and its lease.
+- `{prefix}:s:<kind>:<id>` contains `v` for the version and `d` for JSON data.
+- `{prefix}:k:<kind>` contains the IDs for one kind. `Find` reads this set and filters it in memory. This design suits modest kinds.
+- `{prefix}:pending` is the outbox. A monotonic sequence supplies the scores. `{prefix}:o:<id>` contains the entry and its lease.
 
-`WithReplicaAddr` (or `EE_REDIS_REPLICA_ADDR`) sends `View` to that node.
-`ee.WithPrimary(ctx)` reads the primary instead. Writes, actions and the
-outbox always use the primary.
+`WithReplicaAddr` or `EE_REDIS_REPLICA_ADDR` sends `View` operations to that node. `ee.WithPrimary(ctx)` reads from the primary instead. Writes, actions, and the outbox always use the primary.
 
 ## Semantics
 
-Commits are one Lua script: the versions the transaction observed are
-checked, and only then are writes and outbox entries applied. A stale version
-returns `store.ErrConflict` and writes nothing, but a conflict detected in
-the client before commit (a duplicate insert, a stale update of a row already
-changed in this transaction) leaves the transaction usable. `ee.Dedup` relies
-on both.
+Each commit runs one Lua script. The script checks the versions observed by the transaction. It applies writes and outbox entries only after these checks pass.
 
-`Claim` is one script. It leases the oldest entries and will not return an
-entry while an older one with the same partition key is still leased, so
-per-key publish order holds with every replica relaying.
+A stale version returns `store.ErrConflict` and writes nothing. The client can detect a conflict before commit. Examples are a duplicate insert or a stale update of a row already changed in the transaction. The transaction remains usable in this case. `ee.Dedup` relies on both behaviors.
+
+`Claim` also runs one script. It leases the oldest entries. It does not return an entry while an older entry with the same partition key remains leased. Every replica can relay entries while per-key publication order is preserved.
 
 ## Tests
 
-Skipped unless `EE_REDIS_TEST_ADDR` is set. Each test uses its own prefix.
-`EE_REDIS_TEST_REPLICA_ADDR` enables the replica routing test; any other
-Redis is enough, because the test only checks that replica reads do not see
-primary writes.
+Set `EE_REDIS_TEST_ADDR` to enable the tests. Each test uses its own prefix.
+
+Set `EE_REDIS_TEST_REPLICA_ADDR` to enable the replica routing test. Any other Redis instance is sufficient. The test checks only that replica reads do not see primary writes.
 
 ```sh
 docker run -d --rm --name ee-redis -p 6379:6379 redis:7-alpine

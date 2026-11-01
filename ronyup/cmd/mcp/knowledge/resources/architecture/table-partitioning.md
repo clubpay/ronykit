@@ -1,8 +1,10 @@
-Use this when a table is expected to grow continuously (events, logs, ledger entries, audit trails, metrics, messages). Partitioning keeps indexes small, makes retention cheap (drop old partitions instead of mass `DELETE`), and improves query plans when filters include the partition key.
+Use this resource for tables with continuous growth. Examples include events, logs, ledger entries, audit trails, metrics, and messages.
 
-Read this resource during SRS/SDD when NFRs mention scale, retention, or high write volume. If partitioning applies, document the strategy in SDD §6.2 and ship automated maintenance — do not leave partition creation as a manual ops step.
+Partitioning keeps indexes small. Retention drops old partitions instead of running mass `DELETE` operations. Queries that filter on the partition key can also use better plans.
 
-Scope: this resource covers **PostgreSQL declarative partitioning** (the RonyKIT default datastore). MySQL `PARTITION BY` exists but differs in syntax and limits (no native cross-partition FKs, different maintenance) — if a feature requires MySQL, adapt the strategy table and confirm in SDD.
+Read this resource during SRS and SDD when NFRs mention scale, retention, or high write volume. If partitioning applies, document the strategy in SDD section 6.2. Automate maintenance. Do not leave partition creation as a manual operations step.
+
+This resource covers **PostgreSQL declarative partitioning**, the RonyKIT default datastore. MySQL `PARTITION BY` has different syntax and limits. It does not support native cross-partition foreign keys, and maintenance differs. If a feature requires MySQL, adapt the strategy table and confirm it in the SDD.
 
 ## When to partition
 
@@ -43,14 +45,14 @@ Always create partitions **ahead of time** (see [Automated maintenance](#automat
 
 ## PostgreSQL layout (declarative partitioning)
 
-- Use native `PARTITION BY RANGE` (or `LIST` / `HASH` when the strategy table above says so).
-- **Primary key and unique constraints must include the partition key** (PostgreSQL requirement).
-- Prefer `TIMESTAMPTZ` stored in UTC; partition bounds in UTC.
-- Parent table holds schema; physical rows live in child partitions.
-- Indexes on the parent propagate to partitions — define once on the parent.
-- Inserts/updates that don't match any partition fail — this is why ahead-of-time creation matters.
-- Creating/dropping a partition briefly takes a lock on the parent. Keep maintenance off peak hours; use `DETACH PARTITION CONCURRENTLY` before `DROP` if you must avoid blocking reads during retention cleanup.
-- Always pair the `.up.sql` migration with a `.down.sql` that drops the partitioned table (children cascade) and any maintenance function.
+- Use native `PARTITION BY RANGE`. Use `LIST` or `HASH` when the strategy table requires it.
+- **Primary key and unique constraints must include the partition key.** PostgreSQL requires this rule.
+- Store `TIMESTAMPTZ` values and partition bounds in UTC.
+- The parent table holds the schema. Physical rows live in child partitions.
+- Define indexes once on the parent. PostgreSQL propagates them to partitions.
+- Inserts and updates fail when no partition matches. Create partitions ahead of time to prevent these failures.
+- Creating or dropping a partition briefly locks the parent. Run maintenance outside peak hours. To avoid blocking reads during retention cleanup, use `DETACH PARTITION CONCURRENTLY` before `DROP`.
+- Pair each `.up.sql` migration with a `.down.sql`. The down migration drops the partitioned table, cascading children, and any maintenance function.
 
 ### Migration sketch (new partitioned table)
 
@@ -166,22 +168,28 @@ SELECT maintain_events_partitions(@ahead_months, @retain_months);
 
 Wire a thin repo method; the app layer should not embed DDL strings.
 
-### Scheduler options (pick one in SDD)
+### Scheduler options
+
+Select one scheduler in the SDD:
 
 | Approach | When to use | RonyKIT wiring |
 |----------|-------------|----------------|
-| **In-process goroutine (default for most services)** | No Temporal, single owning service, maintenance is a cheap idempotent call | Run once on startup, then on an interval via an fx lifecycle hook in `module.go`. Logs with `logkit`; stops on `OnStop`. See sketch below. |
-| **`pg_cron`** | DB-managed scheduling preferred, infra team manages extensions, runs even if the app is down | Migration enables the extension; `SELECT cron.schedule('maintain-events-partitions', '0 2 * * *', $$SELECT maintain_events_partitions()$$);` Document in SDD/devops — not Go code. |
-| **`flow` schedule** | Service already uses `flow`; you want durable history, retries, and visibility | Calendar/interval schedule whose activity calls repo `MaintainEventsPartitions`. Read `architecture/flow-workflows`, `characteristics/workflow`. Use `ScheduleOverlapPolicySkip`. |
-| **External cron / k8s CronJob** | Ops-owned, language-agnostic | Script or `psql` job calling the same SQL function. |
+| **In-process goroutine, default for most services** | No Temporal, one owning service, and a low-cost idempotent call | Run on startup and then on an interval with an fx lifecycle hook in `module.go`. Log with `logkit`. Stop on `OnStop`. See the example below. |
+| **`pg_cron`** | DB-managed scheduling with infrastructure-managed extensions. Runs when the app is down. | Enable the extension in a migration with `SELECT cron.schedule('maintain-events-partitions', '0 2 * * *', $$SELECT maintain_events_partitions()$$);`. Document in SDD and devops, not Go code. |
+| **`flow` schedule** | The service already uses `flow` and requires durable history, retries, and visibility | Use a calendar or interval schedule. Its activity calls repository `MaintainEventsPartitions`. Read `architecture/flow-workflows` and `characteristics/workflow`. Use `ScheduleOverlapPolicySkip`. |
+| **External cron or Kubernetes CronJob** | Operations-owned and language-independent scheduling | Call the same SQL function from a script or `psql` job. |
 
-**Default:** the **in-process goroutine** for a service that owns the table and isn't already on `flow`. Use **`pg_cron`** when scheduling should live in the DB (survives app restarts/downtime). Use a **`flow` schedule** only when the module already wires `flow`. Pick exactly one owner per table and record it in SDD §8 — never run two schedulers against the same table.
+**Default:** Use an **in-process goroutine** when the service owns the table and does not already use `flow`.
 
-Minimum cadence: **daily** check (the function is cheap and idempotent). For daily partitions, run **hourly** near day boundaries. Because the function is idempotent, a redundant run is harmless — running once on startup guarantees partitions exist even after downtime.
+Use **`pg_cron`** when the DB must own scheduling. This scheduler survives app restarts and downtime. Use a **`flow` schedule** only when the module already wires `flow`.
 
-#### In-process goroutine sketch (default)
+Select exactly one owner for each table and record it in SDD section 8. Never run two schedulers against the same table.
 
-Wire a startup + interval runner in `module.go` using the same `fx.Lifecycle` pattern the service template already uses. Run once on `OnStart`, then on a ticker; cancel cleanly on `OnStop`. Keep the DDL in the repo method (`MaintainEventsPartitions`), not inline.
+Run the function at least **daily**. It is low-cost and idempotent. For daily partitions, run it **hourly** near day boundaries. Redundant runs are safe. The startup run guarantees partitions after downtime.
+
+#### In-process goroutine example
+
+Wire a startup and interval runner in `module.go`. Use the same `fx.Lifecycle` pattern as the service template. Run once on `OnStart`, then on a ticker. Cancel cleanly on `OnStop`. Keep DDL in repository method `MaintainEventsPartitions`, not inline.
 
 ```go
 // module.go — provide a maintenance runner bound to the fx lifecycle
@@ -225,13 +233,13 @@ fx.Invoke(func(lc fx.Lifecycle, repo repo.EventRepository, set *settings.Setting
 
 Notes:
 
-- Keep `PartitionAhead`, `PartitionRetain`, and `PartitionMaintainEvery` in `internal/settings/settings.go` so ops can tune them.
-- The startup run is the key reliability property: if the service was down across a month boundary, the missing partition is created before the first insert.
-- In multi-replica deployments every replica will run it; that's safe (idempotent), but if you want a single runner use `pg_cron` or a `flow` schedule instead.
+- Keep `PartitionAhead`, `PartitionRetain`, and `PartitionMaintainEvery` in `internal/settings/settings.go`. Operations can tune these values.
+- The startup run provides the key reliability property. If the service is down across a month boundary, it creates the missing partition before the first insert.
+- Every replica runs maintenance in a multi-replica deployment. This operation is safe because it is idempotent. Use `pg_cron` or a `flow` schedule when you need one runner.
 
-#### `flow` wiring sketch (when already using `flow`)
+#### `flow` wiring example for an existing `flow` module
 
-Keep orchestration in the workflow file and the DB call in an activity (read `architecture/flow-workflows`, `characteristics/workflow`). Register a recurring schedule at startup; the activity calls the repo method that runs the maintenance function.
+Keep orchestration in the workflow file and the DB call in an activity. Read `architecture/flow-workflows` and `characteristics/workflow`. Register a recurring schedule at startup. The activity calls the repository method that runs the maintenance function.
 
 ```go
 // internal/app/partition_maintenance_workflow.go — orchestration only
@@ -254,35 +262,35 @@ _, err := sdk.CreateSchedule(ctx, flow.CreateScheduleRequest{
 })
 ```
 
-(Names follow the workflow file conventions in `characteristics/workflow`; treat snippets as a shape, not a drop-in.)
+Names follow the workflow file conventions in `characteristics/workflow`. These snippets show structure and are not drop-in code.
 
 ### Observability
 
-- Log partition names created/dropped and counts from the maintenance activity.
-- Emit a metric (via `meterkit`) for last successful maintenance timestamp.
-- Alert if insert errors mention missing partition (should not happen if automation works).
+- Log created and dropped partition names and counts from the maintenance activity.
+- Emit a `meterkit` metric for the last successful maintenance timestamp.
+- Alert on insert errors that mention a missing partition. Correct automation prevents these errors.
 
-## SDD checklist (§6 Persistence)
+## SDD checklist for section 6 Persistence
 
-When partitioning applies, SDD must include:
+When partitioning applies, the SDD must include:
 
 | Item | Example |
 |------|---------|
-| Partition key + strategy | `created_at`, RANGE monthly |
+| Partition key and strategy | `created_at`, RANGE monthly |
 | Granularity rationale | Monthly: ~500k rows/month, 24-month retention |
 | Naming convention | `events_YYYY_MM` |
 | Ahead window | Create 3 months ahead |
-| Retention / archival | Drop after 24 months; optional S3 export before drop |
+| Retention and archival | Drop after 24 months with optional S3 export before drop |
 | Maintenance function | `maintain_events_partitions(ahead, retain)` |
-| Scheduler + owner | in-process goroutine (startup + 24h) / `pg_cron` / `flow` — one owner only |
-| Query rules | All list APIs require `from`/`to` on `created_at` |
-| Migration / backfill plan | New table vs convert existing |
+| Scheduler and owner | In-process goroutine, `pg_cron`, or `flow`. Use one owner only. |
+| Query rules | All list APIs require `from` and `to` on `created_at` |
+| Migration and backfill plan | New table or converted existing table |
 
 ## Agent workflow summary
 
-1. During SRS/SDD, estimate growth and retention; if partitioning is warranted, read this resource.
-2. Choose strategy (default: time RANGE **monthly**; quarterly for low volume + long retention).
-3. Add partitioned parent + initial partitions in migrations; include maintenance function in a follow-up migration.
-4. Add sqlc query + repo port method for maintenance; wire scheduled execution per SDD.
-5. Ensure handlers/app enforce partition-key filters on hot paths.
+1. Estimate growth and retention during SRS and SDD. If partitioning applies, read this resource.
+2. Select the strategy. The default is monthly time RANGE. Use quarterly for low volume and long retention.
+3. Add the partitioned parent and initial partitions in migrations. Add the maintenance function in a later migration.
+4. Add the sqlc query and repository port method for maintenance. Wire scheduled execution as specified in the SDD.
+5. Enforce partition-key filters on hot paths in handlers and app code.
 6. Add integration tests for time-bounded queries and maintenance idempotency.

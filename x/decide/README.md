@@ -1,6 +1,6 @@
 # decide
 
-Generic, tag-free structured decision and extraction wrapper over System 1 decision engines (**TypeSafe Jev**, **Laya**) and **OpenAI-compatible LLMs**.
+The `decide` package provides generic structured decisions and data extraction without struct tags. It supports System 1 decision engines, including **TypeSafe Jev** and **Laya**, and OpenAI-compatible LLMs.
 
 ```go
 import "github.com/clubpay/ronykit/x/decide"
@@ -8,17 +8,19 @@ import "github.com/clubpay/ronykit/x/decide"
 
 ## Overview
 
-`x/decide` maps plain Go structs into System 1 question cards (`noul`, `choice`, `score`), evaluates them against an input `state`, and hydrates the answers back into a strongly-typed `*decide.Result[T]` carrying both the populated struct and per-field probability/confidence distributions.
+`x/decide` maps plain Go structs to System 1 question cards: `noul`, `choice`, and `score`. It evaluates these cards against an input `state`.
 
-It supports three composable ways to define a schema without struct tags:
+The package returns a typed `*decide.Result[T]`. The result contains the populated struct and probability or confidence distributions for each field.
 
-1. **Inline field-pointer builder** (`decide.MustSchema(func(b *decide.Builder[T], t *T) { ... })`)
-2. **Self-describing structs** (`func (t *MyStruct) Describe(b *decide.Builder[MyStruct])` + `decide.MustSchemaFor[MyStruct]()`)
-3. **Self-contained enum and rubric types** (`Criteria() map[E]string`, `Options() []E`, `Levels() []string`)
+Define a schema without struct tags in three composable ways:
 
-## Quick Start
+1. **Inline field-pointer builder:** `decide.MustSchema(func(b *decide.Builder[T], t *T) { ... })`
+2. **Self-describing structs:** `func (t *MyStruct) Describe(b *decide.Builder[MyStruct])` with `decide.MustSchemaFor[MyStruct]()`
+3. **Self-contained enum and rubric types:** `Criteria() map[E]string`, `Options() []E`, and `Levels() []string`
 
-### 1. Inline Builder
+## Quick start
+
+### 1. Inline builder
 
 ```go
 type Ticket struct {
@@ -51,7 +53,7 @@ deptProbs := res.ProbabilitiesOf(&res.Ptr().Department)
 deptConf := res.ConfidenceOf(&res.Ptr().Department)
 ```
 
-### 2. Self-Contained Types & Self-Describing Struct
+### 2. Self-contained types and self-describing struct
 
 ```go
 type Department string
@@ -91,9 +93,9 @@ func (t *Ticket) Describe(b *decide.Builder[Ticket]) {
 schema := decide.MustSchemaFor[Ticket](decide.WithResolver(resolver))
 ```
 
-### 3. Template-Driven State Generation
+### 3. Template-driven state generation
 
-Use `decide.MustTemplate[IN]` (or one-shot `decide.TemplateState`) to render structured Go input into a controlled text state using `text/template` before sending it to the resolver:
+Use `decide.MustTemplate[IN]` to render structured Go input as controlled text state. `decide.TemplateState` performs the same operation in one call. The package uses `text/template` before it sends state to the resolver.
 
 ```go
 type TicketContext struct {
@@ -124,13 +126,13 @@ res, err := schema.Decide(ctx, stateTmpl.State(TicketContext{
 batchRes, err := schema.DecideBatch(ctx, stateTmpl.States(ticketContexts))
 ```
 
-Built-in template functions: `json`, `trim`, `upper`, `lower`, `join`, `snake`, `camel`, `kebab`, and `default`. Custom functions can be added via `decide.WithTemplateFuncs(...)`.
+Built-in template functions are `json`, `trim`, `upper`, `lower`, `join`, `snake`, `camel`, `kebab`, and `default`. Add custom functions with `decide.WithTemplateFuncs(...)`.
 
 ## Resolvers
 
-| Resolver | Constructor | Wire Protocol |
-|---|---|---|
-| **TypeSafe Jev** | `decide.NewJevResolver` / `decide.MustNewJevResolver` | `POST /v1/systemone` (`https://api.typesafe.ai/v1/systemone`) |
-| **Laya** | `decide.NewLayaResolver` / `decide.MustNewLayaResolver` | `POST /v1/systemone` + native batch `POST /v1/systemone/batch` |
-| **LLM** | `decide.NewLLMResolver` / `decide.MustNewLLMResolver` | OpenAI-compatible `POST /chat/completions` (`json_object`) |
-| **Pass / Static** | `decide.NewPassResolver` / `decide.NewStaticResolver` | Deterministic in-memory resolvers for tests |
+| Resolver | Constructor | Wire protocol |
+|----------|-------------|---------------|
+| **TypeSafe Jev** | `decide.NewJevResolver` or `decide.MustNewJevResolver` | `POST /v1/systemone` at `https://api.typesafe.ai/v1/systemone` |
+| **Laya** | `decide.NewLayaResolver` or `decide.MustNewLayaResolver` | `POST /v1/systemone` and native batch `POST /v1/systemone/batch` |
+| **LLM** | `decide.NewLLMResolver` or `decide.MustNewLLMResolver` | OpenAI-compatible `POST /chat/completions` with `json_object` |
+| **Pass or Static** | `decide.NewPassResolver` or `decide.NewStaticResolver` | Deterministic in-memory resolvers for tests |

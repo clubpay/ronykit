@@ -1,40 +1,41 @@
-# Feature Modules
+# Feature modules
 
-Feature modules are mid-level services that implement business use-cases. They should expose contracts through `api/` and keep orchestration logic in `internal/app`.
+Feature modules are mid-level services that implement business use cases. They expose contracts through `api/` and keep orchestration logic in `internal/app`.
 
-## Layering Guidelines
+## Layering guidelines
 
-- `api/`: transport and contract boundary (DTOs, route selectors, request validation).
-- `internal/app/`: business orchestration and use-cases.
-- `internal/repo/port.go`: repository abstractions used by app layer.
-- `internal/repo/v0/`: concrete adapters (db/cache integrations). Default DB stack is Postgres with `sqlc`.
-- `internal/settings/`: runtime settings model and config loading.
+- `api/`: Transport and contract boundary for DTOs, route selectors, and request validation.
+- `internal/app/`: Business orchestration and use cases.
+- `internal/repo/port.go`: Repository abstractions used by the app layer.
+- `internal/repo/v0/`: Concrete adapters for database and cache integrations. The default database stack is Postgres with `sqlc`.
+- `internal/settings/`: Runtime settings model and configuration loading.
 
-Keep API handlers thin. A handler should mostly:
-1) validate/normalize inputs,
-2) call app use-case methods,
-3) map results/errors to response types.
+Keep API handlers thin. A handler performs these operations:
 
-## How to Create a New Workspace
+1. Validate and normalize inputs.
+2. Call app use-case methods.
+3. Map results and errors to response types.
 
-Workspace is the root of your services and should be created once.
+## Create a workspace
 
-- Use `ronyup` CLI to create a new workspace.
+Create the workspace root one time for your services.
+
+- Use the `ronyup` CLI to create a workspace.
 - Example: `ronyup setup workspace --repoDir ./your-repo --repoModule github.com/you/your-repo`
-- Add `--kind fullstack` for a `backend/` + `frontend/` split (the Go workspace lives under `backend/`; `devops/`, `docs/` and AI config stay at the root). In that layout, run `setup feature` from the `backend/` directory.
+- Add `--kind fullstack` for separate `backend/` and `frontend/` directories. The Go workspace is in `backend/`. `devops/`, `docs/`, and AI configuration stay at the root. Run `setup feature` from `backend/` in this layout.
 
-## How to Create a New Feature
+## Create a feature
 
-- Use `ronyup` CLI to create a new feature.
-- Current template: `service` only.
-- Default layout: `feature/<name>/` (for example `feature/billing/`).
+- Use the `ronyup` CLI to create a feature.
+- The current template is `service` only.
+- The default layout is `feature/<name>/`, such as `feature/billing/`.
 - Example: `ronyup setup feature --featureDir billing --featureName billing --template service`
-- Optional: `--featurePrefix` to change the parent folder; `--groupByTemplate` (or `-g`) for `feature/<template>/<name>/`.
+- Use `--featurePrefix` to change the parent directory. Use `--groupByTemplate` or `-g` for `feature/<template>/<name>/`.
 
-## Module Workflow
+## Module workflow
 
-- After changing contracts in a feature, run `make gen-stub` inside that feature module.
-- In other services, import and use those generated stubs for inter-service calls.
-- `make tidy` to align dependencies.
-- `make lint` to apply formatting and static checks.
-- `make test` before opening a PR.
+- Run `make gen-stub` inside a feature module after contract changes.
+- Import and use generated stubs for inter-service calls from other services.
+- Run `make tidy` to align dependencies.
+- Run `make lint` to apply formatting and static checks.
+- Run `make test` before you open a pull request.

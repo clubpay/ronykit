@@ -17,4 +17,4 @@ appLog.Info("created item", "id", id)
 - Inject `*logkit.Logger` via fx; create children with `.With(name)`.
 - Never import `log`, `log/slog`, or `go.uber.org/zap` — denied by depguard.
 
-Do not use stdlib logging "just for a script" inside a feature module.
+Do not use standard-library logging inside a feature module, including for scripts.

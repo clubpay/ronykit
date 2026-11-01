@@ -2,21 +2,20 @@
 
 ![](https://img.shields.io/badge/LICENSE-MIT-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/yeqown/fasthttp-reverse-proxy/v2)](https://goreportcard.com/report/github.com/yeqown/fasthttp-reverse-proxy/v2) [![GoReportCard](https://godoc.org/github.com/yeqown/fasthttp-reverse-proxy/v2?status.svg)](https://godoc.org/github.com/yeqown/fasthttp-reverse-proxy/v2)
 
-reverse http proxy handler based on fasthttp.
+This package provides a reverse HTTP proxy handler based on fasthttp.
 
 ## Features
 
-- [X] `HTTP` reverse proxy based [fasthttp](https://github.com/valyala/fasthttp)
-  - [X] it's faster than golang standard `httputil.ReverseProxy` library.
-  - [X] implemented by `fasthttp.HostClient`
-  - [X] support balance distribute based `rounddobin`
-  - [X] `HostClient` object pool with an overlay of fasthttp connection pool.
-
-* [X] `WebSocket` reverse proxy.
+- [X] HTTP reverse proxy based on [fasthttp](https://github.com/valyala/fasthttp)
+  - [X] Faster than the Go standard `httputil.ReverseProxy` library
+  - [X] Implemented with `fasthttp.HostClient`
+  - [X] Round-robin load balancing
+  - [X] `HostClient` object pool over the fasthttp connection pool
+- [X] WebSocket reverse proxy
 
 ## Get started
 
-#### [HTTP (with balancer option)](./examples/fasthttp-reverse-proxy-with-bla/proxy.go)
+### [HTTP with balancer option](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/examples/fasthttp-reverse-proxy-with-bla/proxy.go)
 
 ```go
 var (
@@ -45,7 +44,7 @@ func main() {
 }
 ```
 
-#### [Websocket](./examples/ws-fasthttp-reverse-proxy/README.md)
+### [WebSocket](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/examples/ws-fasthttp-reverse-proxy/README.md)
 
 ```go
 var (
@@ -84,16 +83,16 @@ func main() {
 
 ```
 
-## Usages
+## Usage examples
 
-- [HTTP reverse proxy](./examples/fasthttp-reverse-proxy/proxy.go)
-- [HTTP reverse proxy with object pool](./examples/fasthttp-reverse-proxy-with-pool/pool.go)
-- [Websocket reverse proxy](./examples/ws-fasthttp-reverse-proxy)
+- [HTTP reverse proxy](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/examples/fasthttp-reverse-proxy/proxy.go)
+- [HTTP reverse proxy with object pool](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/examples/fasthttp-reverse-proxy-with-pool/pool.go)
+- [WebSocket reverse proxy](https://github.com/yeqown/fasthttp-reverse-proxy/tree/master/examples/ws-fasthttp-reverse-proxy)
 
-## Contrast
+## Benchmarks
 
-- [HTTP benchmark](./docs/http-benchmark.md)
-- [Websocket benchmark](./docs/ws-benchmark.md)
+- [HTTP benchmark](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/docs/http-benchmark.md)
+- [WebSocket benchmark](https://github.com/yeqown/fasthttp-reverse-proxy/blob/master/docs/ws-benchmark.md)
 
 ## References
 
@@ -102,25 +101,27 @@ func main() {
 - [fasthttp/websocket](https://github.com/fasthttp/websocket)
 - [koding/websocketproxy](https://github.com/koding/websocketproxy)
 
-## Handler relay vs gateway reverse proxy (RonyKIT)
+## Handler relay and gateway reverse proxy in RonyKIT
 
-RonyKIT exposes two complementary mechanisms:
+RonyKIT provides two complementary mechanisms:
 
-| Mechanism | Where | Target | Registration |
-|-----------|--------|--------|--------------|
-| **Gateway reverse proxy** | Gateway router, before contracts | Fixed upstream address(es) | `rony.WithReverseProxy(path, proxy.WithAddress(...))` or `fasthttp.WithReverseProxy` |
-| **Handler relay** | Inside a contract handler | Dynamic per request (`targetURL` string) | `rony.WithRelay` + `RelayCtx.Relay()` (or `kit.Relay` on `*kit.Context`) |
+| Mechanism | Location | Target | Registration |
+|-----------|----------|--------|--------------|
+| **Gateway reverse proxy** | Gateway router before contracts | Fixed upstream addresses | `rony.WithReverseProxy(path, proxy.WithAddress(...))` or `fasthttp.WithReverseProxy` |
+| **Handler relay** | Contract handler | Dynamic `targetURL` string for each request | `rony.WithRelay` with `RelayCtx.Relay()` or `kit.Relay` on `*kit.Context` |
 
-Use **gateway reverse proxy** for static assets or a single known backend path. Use **handler relay** when the handler must validate a session/token, resolve a port-forward or pod address, rewrite paths, or strip sensitive query params before forwarding.
+Use **gateway reverse proxy** for static assets or a known backend path.
+
+Use **handler relay** when the handler must process the request before forwarding. Examples include session validation, dynamic address resolution, path rewrites, and sensitive query parameter removal.
 
 Implementation details:
 
-- Handler relay is implemented on `std/gateways/fasthttp` `*httpConn` via `kit.RelayConn`.
-- Shared hop-by-hop header list: `proxy.HopHeaders()`.
-- Dynamic relay entry points: `proxy.RelayHTTP`, `proxy.RelayWebSocket` (used internally; prefer `kit.Relay` / `RelayCtx.Relay` in application code).
-- Successful relay returns `kit.ErrRelayCompleted` and stops the handler chain — no JSON envelope is written to the client.
+- `std/gateways/fasthttp` implements handler relay on `*httpConn` with `kit.RelayConn`.
+- `proxy.HopHeaders()` supplies the shared hop-by-hop header list.
+- Dynamic relay entry points are `proxy.RelayHTTP` and `proxy.RelayWebSocket`. Application code must use `kit.Relay` or `RelayCtx.Relay` instead.
+- A successful relay returns `kit.ErrRelayCompleted` and stops the handler chain. It does not write a JSON envelope to the client.
 
-See also: `ronyup` MCP resource `architecture/handler-relay`, `kit/CHANGELOG.md`, `docs/cookbook.md` (Handler relay).
+See also ronyup MCP resource `architecture/handler-relay`, `kit/CHANGELOG.md`, and the handler relay section in `docs/cookbook.md`.
 
 ## Thanks
 

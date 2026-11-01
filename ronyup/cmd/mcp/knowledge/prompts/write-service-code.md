@@ -116,21 +116,17 @@ func (svc Service) Desc() rony.SetupOption[rony.EMPTY, rony.NOP] {
 For a stateful service, replace `rony.EMPTY` / `rony.NOP` with `*State` / `Action` and pass
 `rony.ToInitiateState[*State, Action](&State{})` to `rony.Setup` on the server.
 
-## Workflow of Implementation
+## Implementation workflow
 
-1. Start with `internal/domain/` — define RICH domain types and errors. Use entities (identity + guarded methods), value objects (immutable,
-   validating constructors), and aggregates (root enforces cross-entity invariants). Put behavior on the domain; avoid anemic structs of
-   public fields. Construct via `New...() (T, error)` so invalid instances can't exist.
+1. Define rich domain types and errors in `internal/domain/`. Use entities with identity and guarded methods. Use immutable value objects with validating constructors. Use aggregates whose roots enforce cross-entity invariants. Put behavior on domain types. Avoid anemic structs with public fields. Construct with `New...() (T, error)` so invalid instances cannot exist.
 2. Define repository interfaces in `internal/repo/port.go`.
 3. Implement business logic in `internal/app/app.go`.
-4. Create API handlers in `api/` with Input/Output DTOs.
-5. Wire everything in `module.go` and `service.go`.
-6. For Postgres repos, write the SQL as sqlc queries in `data/db/queries/*.sql` (never hand-rolled query strings) and run `make sqlc` to
-   regenerate the DAO code after any query/migration change.
-7. Write integration tests using `x/testkit` for EVERY repository port method (happy path, not-found, conflict), then RUN them and confirm
-   they pass before treating the repo as done.
+4. Create API handlers in `api/` with input and output DTOs.
+5. Wire dependencies in `module.go` and `service.go`.
+6. For Postgres repositories, write SQL as sqlc queries in `data/db/queries/*.sql`. Do not write manual query strings. Run `make sqlc` after query or migration changes to regenerate DAO code.
+7. Write `x/testkit` integration tests for every repository port method. Cover the happy path, not-found, and conflict cases. Run the tests and confirm that they pass before completion.
 8. Run `make gen-stub` to generate client stubs.
 
-Use the `scaffold_feature` tool to create the module skeleton. The generated files include a teaching slice (one `CreateItem` path) — replace
-it with the SDD domain rather than inventing a second layout. Read `packages/rony`, `packages/errs`, and any other `packages/*` you import
-before filling in the generated files.
+Use `scaffold_feature` to create the module skeleton. Generated files include a teaching slice with one `CreateItem` path. Replace it with the SDD domain. Do not invent a second layout.
+
+Read `packages/rony`, `packages/errs`, and every other `packages/*` resource that you import before editing the generated files.

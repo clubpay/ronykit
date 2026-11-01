@@ -1,34 +1,40 @@
 # Helm chart values for devbox services
 
-Releases are installed by `../scripts/services.sh sync` using plain `helm upgrade --install` (no Helmfile or helm-diff plugin).
+`../scripts/services.sh sync` installs releases with plain `helm upgrade --install`. Helmfile and the helm-diff plugin are not used.
 
-Host exposure is configured by `../scripts/apply-exposure.sh` using `exposure.yaml` (HTTP `Ingress` + Traefik `IngressRouteTCP` passthrough; falls back to an nginx TCP configmap on clusters running nginx). Traefik itself is installed on the VM by `../scripts/provision.sh` from `values/traefik.yaml`.
+`../scripts/apply-exposure.sh` configures host exposure with `exposure.yaml`. It uses HTTP `Ingress` and Traefik `IngressRouteTCP` pass-through. On clusters running nginx, it falls back to an nginx TCP config map.
+
+`../scripts/provision.sh` installs Traefik on the VM with `values/traefik.yaml`.
 
 Toggle services in `../config.yaml`, then run `make services`.
 
 ## Local hostnames
 
-Pattern: `<host>.<app.name>.<dns.tld>` (defaults: `db.demo.localdev:5432`, `temporal.demo.localdev:7233`, …).
+Hostnames use `<host>.<app.name>.<dns.tld>`. Examples are `db.demo.localdev:5432` and `temporal.demo.localdev:7233`.
 
-See `exposure.yaml` for the full host → Kubernetes service map. Edit there to add or rename endpoints.
+See `exposure.yaml` for the full host-to-Kubernetes-service map. Edit this file to add or rename endpoints.
 
 ## Credentials
 
-Dev defaults live in `values/*.yaml`:
+Development defaults are in `values/*.yaml`:
 
 | File | Settings |
 |------|----------|
-| `postgres.yaml` | `cluster.initdb.database` / `.owner`; the owner password lives in the `postgres-app` secret (created by `../scripts/services.sh`) |
-| `dragonfly.yaml` | no auth in dev (`storage.enabled: false`) |
-| `temporal.yaml` | Reuses PostgreSQL user/password; connects in-cluster to `postgres-rw.devbox.svc.cluster.local` |
+| `postgres.yaml` | `cluster.initdb.database` and `.owner`. `../scripts/services.sh` creates the owner password in the `postgres-app` secret. |
+| `dragonfly.yaml` | No authentication in development. `storage.enabled: false`. |
+| `temporal.yaml` | Reuses the PostgreSQL user and password. Connects in-cluster to `postgres-rw.devbox.svc.cluster.local`. |
 | `grafana.yaml` | `adminUser`, `adminPassword` |
-| `jaeger.yaml` | In-memory storage, no login |
-| `redpanda.yaml` | TLS disabled for local dev |
-| `rustfs.yaml` | `secret.rustfs.access_key` / `.secret_key`; standalone mode |
+| `jaeger.yaml` | In-memory storage and no login |
+| `redpanda.yaml` | TLS disabled for local development |
+| `rustfs.yaml` | `secret.rustfs.access_key` and `.secret_key` in standalone mode |
 | `otel-collector.yaml` | Exports traces to Jaeger in-cluster |
 
-PostgreSQL is provisioned by the [CloudNativePG](https://cloudnative-pg.io/) operator: `services.sh` installs the operator into `cnpg-system`, applies the `postgres-app` credentials secret, then installs the `cnpg/cluster` chart (services `postgres-rw` / `-ro` / `-r`). DragonflyDB is a Redis-compatible store installed from its OCI chart.
+The [CloudNativePG](https://cloudnative-pg.io/) operator provisions PostgreSQL. `services.sh` installs the operator into `cnpg-system` and applies the `postgres-app` credentials secret. It then installs the `cnpg/cluster` chart with services `postgres-rw`, `-ro`, and `-r`.
 
-When enabling Temporal, also enable PostgreSQL in `config.yaml` — the chart no longer bundles a database sub-chart.
+DragonflyDB is a Redis-compatible store installed from its OCI chart.
 
-RustFS is an S3-compatible object store installed from the [RustFS Helm chart](https://charts.rustfs.com/) in standalone mode (single pod + PVC). Use `rustfs.<app>.localdev:9000` for the S3 API and `http://rustfs-console.<app>.localdev/` for the web console when exposure is configured.
+Enable PostgreSQL in `config.yaml` when you enable Temporal. The Temporal chart does not include a database subchart.
+
+RustFS is an S3-compatible object store. The [RustFS Helm chart](https://charts.rustfs.com/) installs it in standalone mode with one pod and PVC.
+
+When exposure is configured, use `rustfs.<app>.localdev:9000` for the S3 API. Use `http://rustfs-console.<app>.localdev/` for the web console.

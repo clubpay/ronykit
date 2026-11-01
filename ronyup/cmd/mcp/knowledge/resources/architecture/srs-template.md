@@ -14,7 +14,7 @@ status: draft   # set to "approved" ONLY after the user reviews and approves
 ---
 ```
 
-Write `status: draft` when you create the document. **Never** set `status: approved` yourself — only the user approves it (by editing the file or explicitly telling you to). This is enforced by `scaffold_feature`, not just convention.
+Write `status: draft` when you create the document. **Never** set `status: approved` yourself. Only the user approves the document by editing the file or explicitly telling you. `scaffold_feature` enforces this rule.
 
 ## 1. Introduction
 

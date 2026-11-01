@@ -1,18 +1,20 @@
 # Devbox
 
-Local development platform: install optional infrastructure services (Postgres, Redis, Temporal, …) into a **Kubernetes** cluster via **Helm**.
+Devbox installs optional infrastructure services into a **Kubernetes** cluster with **Helm**. Services include Postgres, Redis, and Temporal.
 
-Use your existing cluster (kind, minikube, cloud dev cluster, …) or optionally provision a local VM with Vagrant + microk8s.
+Use an existing kind, minikube, or cloud development cluster. You can also provision a local VM with Vagrant and microk8s.
 
 ## Prerequisites
 
-Always required on the host:
+Install these tools on the host:
 
-- `kubectl`, `helm`, `yq`
+- `kubectl`
+- `helm`
+- `yq`
 
-When `cluster.mode: vagrant` in `config.yaml`, you also need [Vagrant](https://developer.hashicorp.com/vagrant/install) and a provider (VirtualBox, UTM on Apple Silicon, libvirt, …).
+For `cluster.mode: vagrant` in `config.yaml`, also install [Vagrant](https://developer.hashicorp.com/vagrant/install) and a provider. Supported providers include VirtualBox, UTM on Apple Silicon, and libvirt.
 
-The default box is **`bento/ubuntu-24.04`** (Canonical no longer publishes `ubuntu/noble64` on Vagrant Cloud). Override `vm.box` in `config.yaml` if needed.
+The default box is **`bento/ubuntu-24.04`**. Canonical no longer publishes `ubuntu/noble64` on Vagrant Cloud. Override `vm.box` in `config.yaml` when necessary.
 
 ```sh
 # Pre-fetch the box (optional)
@@ -21,7 +23,7 @@ vagrant box add bento/ubuntu-24.04 --provider=virtualbox
 
 Run `make bootstrap` to verify tools.
 
-## Quick start (existing cluster)
+## Quick start with an existing cluster
 
 ```sh
 cd devops/devbox
@@ -37,15 +39,15 @@ make up
 kubectl -n devbox get pods
 ```
 
-From the workspace Makefile:
+You can also use the workspace Makefile:
 
 ```sh
 make devbox-up
 ```
 
-## Optional: Vagrant + microk8s
+## Optional Vagrant and microk8s
 
-Set in `config.yaml`:
+Set these values in `config.yaml`:
 
 ```yaml
 cluster:
@@ -54,7 +56,9 @@ vm:
   box: bento/ubuntu-24.04   # default; change if your provider needs another box
 ```
 
-Then `make up` provisions an Ubuntu 24.04 VM with microk8s and writes `shared/kubeconfig`. On Apple Silicon:
+`make up` provisions an Ubuntu 24.04 VM with microk8s and writes `shared/kubeconfig`.
+
+On Apple Silicon, set the provider:
 
 ```sh
 export VAGRANT_DEFAULT_PROVIDER=utm
@@ -63,63 +67,65 @@ export VAGRANT_DEFAULT_PROVIDER=utm
 ## Makefile targets
 
 | Target | `existing` cluster | `vagrant` mode |
-|--------|-------------------|----------------|
-| `bootstrap` | verify kubectl, helm, yq; add chart repos | also verify vagrant |
-| `up` | install Helm releases | start VM + install releases |
-| `down` | remove devbox Helm releases | halt VM (graceful shutdown) |
-| `suspend` / `pause` | n/a | save VM state (`vagrant suspend`) |
-| `resume` | n/a | wake suspended VM |
-| `destroy` | remove devbox Helm releases | destroy VM |
-| `kubeconfig` | n/a | refresh `shared/kubeconfig` |
-| `services` | sync Helm releases from `config.yaml` toggles | same |
-| `status` | `kubectl get nodes` | vagrant + kubectl |
+|--------|--------------------|----------------|
+| `bootstrap` | Verify kubectl, helm, and yq. Add chart repositories. | Also verify Vagrant |
+| `up` | Install Helm releases | Start the VM and install releases |
+| `down` | Remove devbox Helm releases | Stop the VM gracefully |
+| `suspend` or `pause` | Not applicable | Save VM state with `vagrant suspend` |
+| `resume` | Not applicable | Wake the suspended VM |
+| `destroy` | Remove devbox Helm releases | Destroy the VM |
+| `kubeconfig` | Not applicable | Refresh `shared/kubeconfig` |
+| `services` | Sync Helm releases from `config.yaml` toggles | Same behavior |
+| `status` | Run `kubectl get nodes` | Show Vagrant and kubectl status |
 
 ## Configuration
 
 Edit `config.yaml`:
 
-- **`cluster.mode`**: `existing` (default) or `vagrant`
-- **`cluster.kubeconfig`**: optional path when using an existing cluster
-- **`app.name`**: application slug used in local hostnames (scaffold sets this from your project name)
-- **`dns.tld`**: local DNS suffix (default `localdev`)
-- **`vm`**: Vagrant VM sizing (only for `vagrant` mode)
-- **`services`**: boolean toggles per platform component
+- **`cluster.mode`:** `existing` by default. Use `vagrant` for VM provisioning.
+- **`cluster.kubeconfig`:** Optional path for an existing cluster.
+- **`app.name`:** Application slug for local hostnames. The scaffold sets this value from the project name.
+- **`dns.tld`:** Local DNS suffix. Default is `localdev`.
+- **`vm`:** Vagrant VM sizing for `vagrant` mode.
+- **`services`:** Boolean toggle for each platform component.
 
 | Service | Default | Notes |
 |---------|---------|-------|
-| `postgres` | on | CloudNativePG cluster (`dbUser` / `dbPass` / `user-db`); installs the cnpg operator + a PVC |
-| `redis` | on | DragonflyDB, Redis-compatible (no auth in dev) |
-| `temporal` | off | Temporal server + UI; requires `postgres` (uses same DB credentials) |
-| `redpanda` | off | Single-node Redpanda |
-| `observability` | off | OTel Collector → Jaeger + Grafana |
-| `tigerbeetle` | off | Raw manifest (StatefulSet) |
-| `rustfs` | off | RustFS S3-compatible object storage (standalone) |
+| `postgres` | On | CloudNativePG cluster with `dbUser`, `dbPass`, and `user-db`. Installs the cnpg operator and a PVC. |
+| `redis` | On | Redis-compatible DragonflyDB without authentication in development |
+| `temporal` | Off | Temporal server and UI. Requires `postgres` and uses the same database credentials. |
+| `redpanda` | Off | Single-node Redpanda |
+| `observability` | Off | OTel Collector, Jaeger, and Grafana |
+| `tigerbeetle` | Off | Raw StatefulSet manifest |
+| `rustfs` | Off | Standalone RustFS S3-compatible object storage |
 
-After changing toggles, run `make services` (or `make up` from a cold start).
+After toggle changes, run `make services`. For a cold start, run `make up`.
 
-### Service credentials (dev defaults)
+### Service credentials for development
 
-Credentials are set in `services/values/*.yaml` (not in `config.yaml`). Change them there for your environment. PostgreSQL is the exception: its user/password live in the `postgres-app` secret created by `scripts/services.sh` (username must match `cluster.initdb.owner` in `postgres.yaml`).
+Set credentials in `services/values/*.yaml`, not `config.yaml`. Change these values for your environment.
 
-| Service | Auth | Default | Values file |
-|---------|------|---------|-------------|
-| PostgreSQL | user / password / database | `dbUser` / `dbPass` / `user-db` | `services/values/postgres.yaml` (+ `postgres-app` secret) |
-| DragonflyDB | none (auth disabled) | — | `services/values/dragonfly.yaml` |
-| Temporal | uses PostgreSQL above | same as PostgreSQL | `services/values/temporal.yaml` |
-| Redpanda | none (TLS disabled) | — | `services/values/redpanda.yaml` |
-| Grafana | admin user / password | `admin` / `admin` | `services/values/grafana.yaml` |
-| Jaeger | none (in-memory storage) | — | `services/values/jaeger.yaml` |
-| OTel Collector | none | — | `services/values/otel-collector.yaml` |
-| RustFS | access key / secret key | `s3User` / `s3Pass` | `services/values/rustfs.yaml` |
+PostgreSQL is the exception. `scripts/services.sh` creates its user and password in the `postgres-app` secret. The username must match `cluster.initdb.owner` in `postgres.yaml`.
 
-`make services` only registers missing Helm chart repos; `make bootstrap` refreshes repo indexes.
+| Service | Authentication | Default | Values file |
+|---------|----------------|---------|-------------|
+| PostgreSQL | User, password, and database | `dbUser`, `dbPass`, `user-db` | `services/values/postgres.yaml` and `postgres-app` secret |
+| DragonflyDB | Disabled | None | `services/values/dragonfly.yaml` |
+| Temporal | Uses PostgreSQL | Same as PostgreSQL | `services/values/temporal.yaml` |
+| Redpanda | TLS disabled | None | `services/values/redpanda.yaml` |
+| Grafana | Admin user and password | `admin`, `admin` | `services/values/grafana.yaml` |
+| Jaeger | In-memory storage | None | `services/values/jaeger.yaml` |
+| OTel Collector | None | None | `services/values/otel-collector.yaml` |
+| RustFS | Access key and secret key | `s3User`, `s3Pass` | `services/values/rustfs.yaml` |
 
-## Service endpoints (vagrant mode)
+`make services` registers only missing Helm chart repositories. `make bootstrap` refreshes repository indexes.
+
+## Service endpoints in Vagrant mode
 
 With `cluster.mode: vagrant`, devbox exposes enabled services on predictable hostnames:
 
-| Service | Host (default app name `demo`) | Port |
-|---------|--------------------------------|------|
+| Service | Host with default app name `demo` | Port |
+|---------|-----------------------------------|------|
 | PostgreSQL | `db.demo.localdev` | 5432 |
 | Redis | `redis.demo.localdev` | 6379 |
 | Temporal gRPC | `temporal.demo.localdev` | 7233 |
@@ -133,21 +139,25 @@ With `cluster.mode: vagrant`, devbox exposes enabled services on predictable hos
 
 Replace `demo` with your `app.name` from `config.yaml`.
 
-**How it works**
+### Hostname operation
 
-1. `make bootstrap` installs the [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns) plugin and registers the local TLD on your host (`vagrant dns --install` / `vagrant dns --start`).
-2. `make up` starts the VM; vagrant-dns resolves `*.<app>.localdev` to the VM IP (patterns in `Vagrantfile`).
-3. `scripts/apply-exposure.sh` configures **Traefik** (HTTP `Ingress` routes + `IngressRouteTCP` passthrough for database ports). Traefik is installed by `provision.sh` and runs on the VM's host network, so each port binds on the VM IP.
+1. `make bootstrap` installs the [vagrant-dns](https://github.com/BerlinVagrant/vagrant-dns) plugin. It registers the local TLD with `vagrant dns --install` and `vagrant dns --start`.
+2. `make up` starts the VM. vagrant-dns resolves `*.<app>.localdev` to the VM IP. `Vagrantfile` defines the patterns.
+3. `scripts/apply-exposure.sh` configures **Traefik**. HTTP uses `Ingress` routes. Database ports use `IngressRouteTCP` pass-through. `provision.sh` installs Traefik on the VM's host network. Each port binds to the VM IP.
 
-After `make services`, the script prints the active endpoints. Re-run `make dns` if hostnames stop resolving.
+After `make services`, the script prints active endpoints. Run `make dns` again if hostnames stop resolving.
 
-**Existing cluster mode:** HTTP ingress is applied against your cluster's ingress class. TCP exposure uses Traefik `IngressRouteTCP` when the Traefik CRDs are present, or an nginx TCP configmap (`ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`) if you run nginx. Use `kubectl port-forward` otherwise (see below).
+### Existing cluster exposure
+
+HTTP ingress uses your cluster's ingress class. TCP exposure uses Traefik `IngressRouteTCP` when the Traefik CRDs exist.
+
+For nginx, TCP exposure uses config map `ingress/nginx-ingress-tcp-microk8s-conf` or `ingress-nginx/tcp-services`. Otherwise, use `kubectl port-forward`.
 
 ## Kubernetes access
 
-**Existing cluster:** uses your kubeconfig (`cluster.kubeconfig`, `$KUBECONFIG`, or `~/.kube/config`).
+**Existing cluster:** Use `cluster.kubeconfig`, `$KUBECONFIG`, or `~/.kube/config`.
 
-**Vagrant mode:** admin config is written to `shared/kubeconfig` (gitignored), API on `https://127.0.0.1:16443`.
+**Vagrant mode:** The admin config is written to `shared/kubeconfig`, which Git ignores. The API endpoint is `https://127.0.0.1:16443`.
 
 ```sh
 kubectl -n devbox get pods
@@ -155,9 +165,9 @@ kubectl -n devbox get pods
 
 ### Reach services from the host
 
-**Vagrant mode:** use the `*.<app.name>.localdev` hostnames from the table above (no port-forward needed).
+**Vagrant mode:** Use the `*.<app.name>.localdev` hostnames from the endpoint table. Port forwarding is not necessary.
 
-**Existing cluster** (or when ingress TCP is unavailable), port-forward as needed:
+**Existing cluster:** Use port forwarding when ingress TCP is unavailable:
 
 ```sh
 kubectl -n devbox port-forward svc/postgres-rw 5432:5432
@@ -187,14 +197,14 @@ devbox/
 
 ## Troubleshooting
 
-- **Box not found (`ubuntu/noble64` 404)**: Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml` (the scaffold default) and run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
-- **kubectl can't connect after `make up`**: the VM is usually running — re-run `make kubeconfig`. If it still fails, `vagrant status` should show `running`.
-- **Helm release fails**: ensure the cluster has enough resources; disable heavy services in `config.yaml`.
-- **Helmfile / helm-diff errors**: remove `services/helmfile.yaml` if present — devbox uses `scripts/services.sh sync` via `make services` (no Helmfile plugin).
-- **Temporal fails on cassandra key**: ensure `services/values/temporal.yaml` uses `server.config.persistence.datastores` (Temporal chart v1.0+). Re-run `make services`.
-- **Temporal requires postgres**: set `services.postgres: true` when enabling `services.temporal`. Temporal creates its own databases; `postgres.yaml` grants the app role `CREATEDB` via `initdb.postInitSQL` so this works out of the box.
-- **Postgres pod stuck `Pending`**: CloudNativePG always provisions a PVC — the cluster needs a default `StorageClass` (microk8s: `microk8s enable hostpath-storage`; kind ships `local-path`). Check with `kubectl get sc`.
-- **`postgresql.cnpg.io` CRD not found**: the cnpg operator install failed or was skipped. Re-run `make services` with `services.postgres: true`; verify `kubectl -n cnpg-system get pods`.
-- **Hostnames do not resolve**: run `make dns` (vagrant mode). Re-run `make bootstrap` if you change `dns.tld` in `config.yaml`.
-- **TCP endpoint refused**: check Traefik is healthy (`kubectl -n traefik get pods`) and re-run `make services`. Adding a new TCP service also needs a matching entrypoint in `services/values/traefik.yaml` — re-provision the VM (`make up`) after editing it.
-- **Vagrant VM won't start**: check provider (`vagrant status`, `VAGRANT_DEFAULT_PROVIDER`).
+- **Box not found with `ubuntu/noble64` 404:** Ubuntu stopped publishing official Noble boxes. Set `vm.box: bento/ubuntu-24.04` in `config.yaml`. Then run `vagrant box add bento/ubuntu-24.04 --provider=virtualbox`.
+- **kubectl cannot connect after `make up`:** Run `make kubeconfig` again. If the failure continues, run `vagrant status`. The expected state is `running`.
+- **Helm release fails:** Verify that the cluster has sufficient resources. Disable heavy services in `config.yaml`.
+- **Helmfile or helm-diff errors:** Remove `services/helmfile.yaml` if it exists. Devbox uses `scripts/services.sh sync` through `make services`. No Helmfile plugin is necessary.
+- **Temporal fails on cassandra key:** Verify that `services/values/temporal.yaml` uses `server.config.persistence.datastores`. Temporal chart v1.0 and later requires this setting. Run `make services` again.
+- **Temporal requires Postgres:** Set `services.postgres: true` when you enable `services.temporal`. Temporal creates its own databases. `postgres.yaml` grants `CREATEDB` to the app role with `initdb.postInitSQL`.
+- **Postgres pod stays `Pending`:** CloudNativePG always provisions a PVC. The cluster needs a default `StorageClass`. For microk8s, run `microk8s enable hostpath-storage`. Kind includes `local-path`. Check with `kubectl get sc`.
+- **`postgresql.cnpg.io` CRD not found:** The cnpg operator installation failed or was skipped. Set `services.postgres: true` and run `make services` again. Verify with `kubectl -n cnpg-system get pods`.
+- **Hostnames do not resolve:** Run `make dns` in Vagrant mode. If you changed `dns.tld`, run `make bootstrap` again.
+- **TCP endpoint refused:** Check Traefik health with `kubectl -n traefik get pods`. Run `make services` again. A new TCP service also needs a matching entry point in `services/values/traefik.yaml`. Run `make up` after this edit to provision the VM again.
+- **Vagrant VM does not start:** Check the provider with `vagrant status` and `VAGRANT_DEFAULT_PROVIDER`.

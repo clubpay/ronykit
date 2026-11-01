@@ -1,24 +1,28 @@
-# rony/errs — structured errors and service conventions
+# rony/errs: Structured errors and service conventions
 
-`rony/errs` provides the error mechanics used by RonyKit (the `Error` type, builder, gRPC-style codes, wrapping, HTTP mapping, and serialization) together with optional conventions for a stable client-facing error contract.
+`rony/errs` supplies RonyKIT error operations. These operations include the `Error` type, builder, gRPC-style codes, wrapping, HTTP mapping, and serialization.
+
+The package also provides optional conventions for a stable client-facing error contract.
 
 ## Wire contract
 
-Every error crossing an API boundary can be represented as an `*errs.Error`. Its REST body is:
+An `*errs.Error` can represent each error that crosses an API boundary. Example REST body:
 
 ```json
 {"code": 3, "codeName": "invalid_argument", "item": "TRIGGER_GITHUB_ORG_REQUIRED", "details": null}
 ```
 
-| Field      | Role                                                                                                                        |
-|------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `code`     | gRPC-style code; the edge derives the HTTP status from it. Never invent custom codes.                                       |
-| `codeName` | The code's string form.                                                                                                     |
-| `item`     | Stable, machine-readable token, SCREAMING_SNAKE, namespaced by area. Clients may branch on it; never rename a shipped item. |
-| `details`  | Client-visible structured context (`Reason` or any `errs.ErrDetails` struct).                                               |
-| `meta`     | Internal diagnostics; not exposed to external clients, though trusted internal serialization may propagate it.              |
+| Field | Role |
+|-------|------|
+| `code` | gRPC-style code. The edge derives the HTTP status from this code. Do not create custom codes. |
+| `codeName` | String form of the code |
+| `item` | Stable machine-readable token in SCREAMING_SNAKE format. Namespace the token by area. Clients can branch on this token. Do not rename a released item. |
+| `details` | Client-visible structured context. Use `Reason` or an `errs.ErrDetails` struct. |
+| `meta` | Internal diagnostics. External clients do not receive this field. Trusted internal serialization can propagate it. |
 
-The **cause chain is not serialized to external clients**: only the boundary error's `item` reaches them. Everything a client needs must be in `item`/`details`; everything an operator needs can stay in the cause chain and `meta`.
+External clients do not receive the cause chain. They receive only the boundary error's `item`.
+
+Put all required client data in `item` and `details`. Keep operator diagnostics in the cause chain and `meta`.
 
 ## Layer conventions
 
@@ -30,24 +34,24 @@ if spec.Org == "" {
 	return errs.Specify(ErrInvalidArgument, "TRIGGER_GITHUB_ORG_REQUIRED")
 }
 
-// App: annotate, don't rebuild. Wire identity is untouched.
+// App: annotate, do not rebuild. Wire identity is untouched.
 return errs.Annotate(err, "automation.Create")
 
 // API: normalize at the boundary.
 return errs.Boundary(err, "AUTOMATION_INTERNAL")
 ```
 
-- `Specify` keeps the sentinel on the cause chain, so `errors.Is` keeps working, while the error carries a specific item for clients.
-- `Annotate` puts the operation name in `meta["op"]` and preserves the error's client-facing identity.
-- `Boundary` preserves an `*errs.Error` identity with a non-empty item and escapes unknown/plain errors—including structured shells around plain errors—to `Internal` with a safe fallback item. The original error stays on the cause chain for logs.
+- `Specify` keeps the sentinel in the cause chain. `errors.Is` continues to work. The error carries a specific item for clients.
+- `Annotate` puts the operation name in `meta["op"]`. It preserves the error's client-facing identity.
+- `Boundary` preserves an `*errs.Error` identity when its item is not empty. It converts unknown or plain errors to `Internal` with a safe fallback item. This conversion includes structured wrappers around plain errors. The original error stays in the cause chain for logs.
 
-Use `New`, `Newf`, `Specifyf`, `WithDetails`, and `Reason` as needed. The lower-level `B`, `Wrap`, `WrapCode`, and `Convert` APIs remain available when these conventions do not fit.
+Use `New`, `Newf`, `Specifyf`, `WithDetails`, and `Reason` as necessary. Use `B`, `Wrap`, `WrapCode`, and `Convert` when these conventions do not fit.
 
-## Builder footguns the convention helpers avoid
+## Builder errors that convention helpers prevent
 
-- `Cause()` inherits the cause's `Item` into the builder, so a `Msg()` chained **after** `Cause()` is a silent no-op. `Specify` sets the item before attaching the cause.
-- `Details()` chained **after** `Cause()` is silently dropped. `WithDetails` sets details before attaching the cause.
-- `errs.B().Cause(plainErr).Err()` yields `Code: Unknown` and an empty item. `Boundary` gives such errors a safe identity.
+- `Cause()` copies the cause's `Item` into the builder. A later `Msg()` call has no effect. `Specify` sets the item before it attaches the cause.
+- The builder drops `Details()` when the call occurs after `Cause()`. `WithDetails` sets details before it attaches the cause.
+- `errs.B().Cause(plainErr).Err()` produces `Code: Unknown` and an empty item. `Boundary` gives these errors a safe identity.
 
 ## Extractors
 
@@ -73,4 +77,4 @@ err := errs.WithDetails(
 )
 ```
 
-For free-form context use `errs.Reason{Message, Fields}`.
+Use `errs.Reason{Message, Fields}` for free-form context.

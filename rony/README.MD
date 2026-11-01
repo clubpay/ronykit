@@ -2,35 +2,37 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/rony.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/rony) [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/rony)](https://goreportcard.com/report/github.com/clubpay/ronykit/rony)
 
-Rony is the batteries-included API and edge server framework in RonyKIT. It provides a compact, type-safe API powered by Go generics and built on top of the `kit` core. If you need full control over gateways or clusters, use the lower-level [Kit package](../kit/README.MD).
+Rony is the high-level API and edge server framework in RonyKIT. It provides a compact, type-safe API with Go generics. The framework uses the `kit` core.
+
+Use the low-level [Kit package](../kit/README.MD) for direct control of gateways or clusters.
 
 - [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Core Concepts](#core-concepts)
-- [Minimal Example](#minimal-example)
-- [More Examples](#more-examples)
+- [Quick start](#quick-start)
+- [Core concepts](#core-concepts)
+- [Minimal example](#minimal-example)
+- [More examples](#more-examples)
 
 ## Installation
 
-Install the project scaffold tool:
+Install the project scaffolding tool:
 
 ```shell
 go install github.com/clubpay/ronykit/ronyup@latest
 ```
 
-## Quick Start
+## Quick start
 
-Create a new project with `ronyup`:
+Create a project with `ronyup`:
 
 ```shell
 ronyup setup -d ./my-project -m github.com/ehsannm/myproject -p MyProjectName
 ```
 
-## Core Concepts
+## Core concepts
 
-- **State**: a shared, reducer-style state per service. Implement `Name()` and `Reduce(action) error`. If you do not need state, use `rony.EmptyState()`.
-- **Handlers**: unary, streaming, or relay functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO, then return a response DTO. Relay handlers receive `*rony.RelayCtx` and return `error` after calling `ctx.Relay(targetURL, cfg)`.
-- **Contracts**: route definitions that bind handlers to REST or RPC selectors. Use `WithRelay` for passthrough proxy routes (not `WithUnary`).
+- **State:** Each service can have shared reducer-style state. Implement `Name()` and `Reduce(action) error`. Use `rony.EmptyState()` if the service has no state.
+- **Handlers:** Use unary, streaming, or relay functions. Unary handlers receive `*rony.UnaryCtx` and a request DTO. They return a response DTO. Relay handlers receive `*rony.RelayCtx` and return `error` after `ctx.Relay(targetURL, cfg)`.
+- **Contracts:** Contracts bind handlers to REST or RPC selectors. Use `WithRelay` for pass-through proxy routes. Do not use `WithUnary` for these routes.
 
 State interface signature:
 
@@ -46,7 +48,7 @@ type (
 )
 ```
 
-## Minimal Example
+## Minimal example
 
 ```go
 package main
@@ -134,9 +136,9 @@ func main() {
 }
 ```
 
-## More Examples
+## More examples
 
-- [Getting Started Guide](../docs/getting-started.md)
-- [Cookbook](../docs/cookbook.md) — production patterns for auth, pagination, validation, and more
-- [ronyup Guide](../docs/ronyup-guide.md) — scaffolding CLI and MCP server
-- [Runnable examples](../example)
+- [Getting Started Guide](../docs/getting-started.md): Build a server and learn core concepts.
+- [Cookbook](../docs/cookbook.md): Use patterns for authentication, pagination, and validation.
+- [ronyup Guide](../docs/ronyup-guide.md): Use the scaffolding CLI and MCP server.
+- [Runnable examples](../example): Run complete example services.

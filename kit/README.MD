@@ -2,29 +2,31 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/clubpay/ronykit/kit.svg)](https://pkg.go.dev/github.com/clubpay/ronykit/kit) [![Go Report Card](https://goreportcard.com/badge/github.com/clubpay/ronykit/kit)](https://goreportcard.com/report/github.com/clubpay/ronykit/kit)
 
-Kit is the low-level toolkit that powers RonyKIT. It gives you granular control over gateways, clusters, services, and contracts, while keeping the framework overhead minimal. Use Kit when you need custom protocols, bespoke gateway/cluster choices, or deeper control over the server pipeline.
+Kit is the low-level toolkit in RonyKIT. It gives direct control of gateways, clusters, services, and contracts with low framework overhead.
+
+Use Kit for custom protocols, custom gateway or cluster implementations, and direct control of the server pipeline.
 
 - [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Kit Components](#kit-components)
-- [KIT Storage Layers](#kit-storage-layers)
-- [KIT Standard Implementations](#kit-standard-implementations)
+- [Quick start](#quick-start)
+- [Kit components](#kit-components)
+- [Kit storage layers](#kit-storage-layers)
+- [Kit standard implementations](#kit-standard-implementations)
 
 ## Installation
 
-Install Go (version 1.17+ is required), then:
+Install Go 1.17 or later. Then install Kit:
 
 ```sh
 go get -u github.com/clubpay/ronykit/kit/...
 ```
 
-## Quick Start
+## Quick start
 
-The recommended workflow is:
+Follow these steps:
 
 1. Define DTOs for input and output.
 2. Implement a handler that reads the input message and writes a response.
-3. Describe the service using `kit/desc` and bind routes.
+3. Describe the service with `kit/desc` and bind routes.
 4. Start an EdgeServer with a gateway bundle.
 
 Minimal example:
@@ -87,57 +89,63 @@ func main() {
 }
 ```
 
-For more samples, see [example](../example).
+See [example](../example) for more samples.
 
-## Kit Components
+## Kit components
 
-## 1. Handler
+### 1. Handler
 
-A Handler is a function or method that accepts `kit.Context` and is invoked based on a contract route.
+A handler is a function or method that accepts `kit.Context`. A contract route invokes the handler.
 
-## 2. Contract
+### 2. Contract
 
-A Contract defines a business use case and how it is exposed via gateway selectors.
+A contract defines a business use case. Gateway selectors expose this use case.
 
-## 3. Service
+### 3. Service
 
-One or more Contracts performing operations in a similar domain can be grouped into one Service. Each EdgeServer can have multiple services attached.
+A service groups contracts from the same domain. Each EdgeServer can host multiple services.
 
-## 4. Gateway
+### 4. Gateway
 
-Gateways handle inbound traffic. For REST APIs, use standard gateway bundles like `fasthttp` or `silverhttp`. For advanced cases, you can develop your own gateway.
+Gateways receive inbound traffic. Use standard gateway bundles such as `fasthttp` or `silverhttp` for REST APIs. Implement a custom gateway for other requirements.
 
-## 5. Cluster
+### 5. Cluster
 
-A Cluster defines how multiple EdgeServer instances share data. This bundle is optional and only needed when you require cross-instance state.
+A cluster defines how EdgeServer instances share data. This bundle is optional. Use it only for cross-instance state.
 
-## 6. EdgeServer
+### 6. EdgeServer
 
-EdgeServer is the main component of RonyKIT, gluing different components together to create a working server.
+The EdgeServer connects the RonyKIT components into a running server.
 
-## KIT Storage Layers
+## Kit storage layers
 
-When developing an API server, you often need to store data with different lifecycles. RonyKIT provides four storage layers:
+RonyKIT provides four storage layers for different data lifetimes:
 
-| Layer      | Lifecycle                                                               |
-|------------|-------------------------------------------------------------------------|
-| Context    | Per request, available in all handlers                                  |
-| Connection | Per connection, useful for WebSocket data that persists while connected |
-| Local      | Shared between contracts and services, stored in the server's memory    |
-| Cluster    | Shared between EdgeServer instances, requires a Cluster bundle          |
+| Layer | Lifetime |
+|-------|----------|
+| Context | One request. Available in all handlers. |
+| Connection | One connection. Keeps WebSocket data while the connection stays open. |
+| Local | One server instance. Shares memory between contracts and services. |
+| Cluster | Multiple EdgeServer instances. Requires a cluster bundle. |
 
 ## Handler relay
 
-`kit.RelayConn` lets a **handler** forward the inbound HTTP or WebSocket request to a dynamic upstream URL (after auth or session logic). Helpers: `kit.Relay`, `kit.RelayHTTP`, `kit.RelayWebSocket`, `kit.RelayConfig`. Implemented on `std/gateways/fasthttp` connections. In application services, prefer `rony.WithRelay` and `RelayCtx` (see `docs/cookbook.md` and ronyup MCP `architecture/handler-relay`). For **static** gateway proxy paths, use `rony.WithReverseProxy` instead.
+`kit.RelayConn` lets a handler forward an inbound HTTP or WebSocket request to a dynamic upstream URL. Authentication or session logic can run before the relay.
 
-## KIT Standard Implementations
+Use `kit.Relay`, `kit.RelayHTTP`, `kit.RelayWebSocket`, and `kit.RelayConfig`. `std/gateways/fasthttp` connections implement these operations.
 
-This repository contains standard gateway and cluster bundles for Kit. You can mix and match the Gateway and Cluster that suit your needs, or use the batteries-included [rony](../rony/README.MD) package.
+In application services, use `rony.WithRelay` and `RelayCtx`. See `docs/cookbook.md` and ronyup MCP resource `architecture/handler-relay`.
 
-| Package      | Bundle Type | Description                                                                                                                          |
-|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| fasthttp     | Gateway     | The Gateway bundle implemented using the [fasthttp](https://github.com/valyala/fasthttp) framework                                   |
-| fastws       | Gateway     | The Gateway bundle implemented using [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) frameworks |
-| silverhttp   | Gateway     | The Gateway bundle implemented using the [silverlining](https://github.com/go-www/silverlining) HTTP server                          |
-| rediscluster | Cluster     | The Cluster bundle implemented using [redis](https://github.com/go-redis/redis)                                                      |
-| p2pcluster   | Cluster     | The Cluster bundle implemented using [libp2p](https://github.com/libp2p/go-libp2p)                                                   |
+Use `rony.WithReverseProxy` for static gateway proxy paths.
+
+## Kit standard implementations
+
+The repository includes standard gateway and cluster bundles. Select the gateway and cluster for your requirements. You can also use the high-level [rony](../rony/README.MD) package.
+
+| Package | Bundle type | Implementation |
+|---------|-------------|----------------|
+| fasthttp | Gateway | Gateway based on [fasthttp](https://github.com/valyala/fasthttp) |
+| fastws | Gateway | Gateway based on [gnet](https://github.com/panjf2000/gnet) and [gobwas](https://github.com/gobwas/ws) |
+| silverhttp | Gateway | Gateway based on the [silverlining](https://github.com/go-www/silverlining) HTTP server |
+| rediscluster | Cluster | Cluster based on [Redis](https://github.com/go-redis/redis) |
+| p2pcluster | Cluster | Cluster based on [libp2p](https://github.com/libp2p/go-libp2p) |

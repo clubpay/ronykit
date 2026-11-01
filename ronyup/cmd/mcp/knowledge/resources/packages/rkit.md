@@ -3,70 +3,73 @@ import_path: github.com/clubpay/ronykit/x/rkit
 short_name: rkit
 ---
 
-Shared, dependency-light helpers used across every RonyKIT service: random IDs, JSON/byte/string casts, string↔number conversions, case transforms, generic collection operations, pointer/optional helpers, struct mapping, time, and file utilities. Reach here FIRST instead of hand-writing utilities or pulling stdlib/third-party equivalents — `rkit` keeps services consistent and is the single place these helpers are tuned (e.g. zero-copy casts, pooled RNG).
+`rkit` provides shared, dependency-light helpers for RonyKIT services. Helpers cover random IDs, JSON/byte/string casts, string and number conversions, case transforms, generic collections, pointers, optional values, struct mapping, time, and files.
+
+Check rkit before writing utilities or importing standard-library or third-party equivalents. Central helpers keep services consistent and provide optimized implementations, including zero-copy casts and pooled random generation.
 
 ## Usage Hint
 
-Import as `github.com/clubpay/ronykit/x/rkit`.
+Import `github.com/clubpay/ronykit/x/rkit`.
 
-### IDs & random (`random.go`)
+### IDs and random values in `random.go`
 
-- `rkit.RandomID(n)` — alphanumeric ID of length n. `rkit.RandomIDs(n...)` — batch.
-- `rkit.RandomDigit(n)` — digits-only string (OTPs, numeric codes).
-- `rkit.RandomInt`/`RandomInt32`/`RandomInt64`/`RandomUint64` — fast bounded pseudo-random ints.
-- `rkit.SecureRandomInt63`/`SecureRandomUint64` — crypto-grade randomness when security matters (`RandomID` is fast but not secure).
-- `rkit.FastRand()` — the runtime's per-thread fast random; prefer the helpers above.
-- Do NOT use `github.com/google/uuid`, `crypto/rand`, or `math/rand` directly.
+- `rkit.RandomID(n)` creates an alphanumeric ID of length n. `rkit.RandomIDs(n...)` creates a batch.
+- `rkit.RandomDigit(n)` creates a digits-only string for OTPs and numeric codes.
+- `rkit.RandomInt`, `RandomInt32`, `RandomInt64`, and `RandomUint64` create fast bounded pseudo-random integers.
+- `rkit.SecureRandomInt63` and `SecureRandomUint64` provide cryptographic randomness. `RandomID` is fast but not secure.
+- `rkit.FastRand()` uses the runtime's per-thread fast random generator. Prefer the other helpers.
+- Do not use `github.com/google/uuid`, `crypto/rand`, or `math/rand` directly.
 
-### JSON & casts (`cast.go`, `unsafe.go`)
+### JSON and casts in `cast.go` and `unsafe.go`
 
-- `rkit.ToJSON(v)` / `rkit.ToJSONStr(v)` / `rkit.FromJSON[T](b)` — error-free (de)serialization for internal use.
-- `rkit.CastJSON[T](v)` — convert between types via their JSON form. `rkit.ToMap(v)` — to `map[string]any`.
-- `rkit.Cast[T](any)` — safe type assertion (zero value on miss). `rkit.TryCast[T](any)`.
-- `rkit.B2S(b)` / `rkit.S2B(s)` (aliases of `ByteToStr` / `StrToByte`) — zero-copy `[]byte`↔`string`; the result aliases the input, so never mutate either side while both are in use. `rkit.CloneStr`/`CloneBytes` for owned copies.
-- `rkit.Numeric` / `rkit.ParseNumeric(v)` — a number decodable from JSON string, int or float.
+- Use `rkit.ToJSON(v)`, `rkit.ToJSONStr(v)`, and `rkit.FromJSON[T](b)` for error-free internal serialization and deserialization.
+- `rkit.CastJSON[T](v)` converts types through their JSON form. `rkit.ToMap(v)` converts to `map[string]any`.
+- `rkit.Cast[T](any)` returns the zero value on a failed type assertion. `rkit.TryCast[T](any)` provides the same behavior.
+- `rkit.B2S(b)` and `rkit.S2B(s)` perform zero-copy `[]byte` and `string` conversions. Their aliases are `ByteToStr` and `StrToByte`. The result aliases the input. Never mutate either side while both are in use. Use `rkit.CloneStr` and `CloneBytes` for owned copies.
+- `rkit.Numeric` and `rkit.ParseNumeric(v)` decode a number from a JSON string, int, or float.
 
-### String ↔ number (`str.go`)
+### String and number conversions in `str.go`
 
-- `rkit.StrToInt`/`StrToInt32`/`StrToInt64`/`StrToUInt`/`StrToUInt32`/`StrToUInt64`/`StrToFloat32`/`StrToFloat64` — ignore the parse error: malformed → 0, out-of-range integers clamp to the type's bounds (floats → ±Inf), negative → 0 for unsigned. Use `strconv` when you need the error.
-- `rkit.IntToStr`/`Int32ToStr`/`Int64ToStr`/`UIntToStr`/`UInt32ToStr`/`UInt64ToStr`/`Float32ToStr`/`Float64ToStr` (aliases `F32ToStr`/`F64ToStr`).
-- `rkit.StrTruncate(s, n)` (by rune, no ellipsis). Use `rkit.L(format, args...)` (a `StrLine`) + `rkit.StrLines(...)` to build multi-line output.
-- Prefer these over raw `strconv` when an error-free conversion is what you want.
+- Use `rkit.StrToInt`, `StrToInt32`, `StrToInt64`, `StrToUInt`, `StrToUInt32`, `StrToUInt64`, `StrToFloat32`, and `StrToFloat64` to ignore parse errors. Malformed input returns 0. Out-of-range integers clamp to the type bounds. Out-of-range floats become ±Inf. Negative unsigned values return 0. Use `strconv` when you need the error.
+- Format with `rkit.IntToStr`, `Int32ToStr`, `Int64ToStr`, `UIntToStr`, `UInt32ToStr`, `UInt64ToStr`, `Float32ToStr`, and `Float64ToStr`. Aliases are `F32ToStr` and `F64ToStr`.
+- `rkit.StrTruncate(s, n)` truncates by rune without an ellipsis. Use `rkit.L(format, args...)`, `StrLine`, and `rkit.StrLines(...)` for multi-line output.
+- Prefer these helpers over raw `strconv` for error-free conversion.
 
-### Case transforms (`transform.go`)
+### Case transforms in `transform.go`
 
-- `rkit.ToCamel` / `ToLowerCamel` / `ToSnake` / `ToSnakeWithIgnore` / `ToScreamingSnake` / `ToKebab` / `ToScreamingKebab` / `ToDelimited` / `ToScreamingDelimited`.
+- Use `rkit.ToCamel`, `ToLowerCamel`, `ToSnake`, `ToSnakeWithIgnore`, `ToScreamingSnake`, `ToKebab`, `ToScreamingKebab`, `ToDelimited`, and `ToScreamingDelimited`.
 
-### Collections (generics) (`array.go`, `generic.go`)
+### Generic collections in `array.go` and `generic.go`
 
-- `rkit.Map` / `rkit.Filter` / `rkit.Reduce` / `rkit.Paginate` / `rkit.ForEach`. `Map`/`Filter` always return non-nil slices; `Reduce(fn, s)` takes the function first.
-- `rkit.Contains` / `ContainsAny` / `ContainsAll` / `AddUnique`.
-- `rkit.ArrayToMap` / `ArrayToMapFunc` / `ArrayToSet` (`map[T]struct{}`) / `MapToArray` / `MapToArrayFunc` / `MapKeysToArray` / `TransformMap`.
-- `rkit.First` / `FirstOr` — first present value among keys.
+- Use `rkit.Map`, `Filter`, `Reduce`, `Paginate`, and `ForEach`. `Map` and `Filter` always return non-nil slices. `Reduce(fn, s)` takes the function first.
+- Use `rkit.Contains`, `ContainsAny`, `ContainsAll`, and `AddUnique` for membership.
+- Use `rkit.ArrayToMap`, `ArrayToMapFunc`, `ArrayToSet`, `MapToArray`, `MapToArrayFunc`, `MapKeysToArray`, and `TransformMap` for collection conversion. `ArrayToSet` returns `map[T]struct{}`.
+- `rkit.First` and `FirstOr` return the first present value among keys.
 
-### Pointers, zero values, error-handling (`generic.go`)
+### Pointers, zero values, and errors in `generic.go`
 
-- `rkit.PtrVal(*T)` / `rkit.ValPtrOrNil(T)` for pointer/optional fields. For a plain pointer use the `new(v)` builtin (Go 1.26+); `rkit.ValPtr(T)` is kept for older code and `go fix` inlines it.
-- `rkit.Coalesce(...T)` — first non-zero value (evaluates every argument first).
-- `rkit.Must(v, err)` / `rkit.Assert(err)` for unrecoverable startup preconditions; `rkit.Ok(v, _)` / `rkit.OkOr(v, err, fallback)` to ignore/replace errors.
+- Use `rkit.PtrVal(*T)` and `rkit.ValPtrOrNil(T)` for pointer and optional fields. For a plain pointer, use the `new(v)` builtin in Go 1.26 and later. `rkit.ValPtr(T)` remains for older code. `go fix` inlines it.
+- `rkit.Coalesce(...T)` returns the first non-zero value. It evaluates every argument first.
+- Use `rkit.Must(v, err)` and `rkit.Assert(err)` for unrecoverable startup preconditions. Use `rkit.Ok(v, _)` and `rkit.OkOr(v, err, fallback)` to ignore or replace errors.
 
-### Struct mapping (`cast.go`)
+### Struct mapping in `cast.go`
 
-- `rkit.DynCast[DST](src, mappingPair...)` / `rkit.DynCastOption[DST](src, converters, mappingPair...)` for deep struct-to-struct copies; build each `TypeConverter` with `rkit.TypeConvert`. Use instead of calling `jinzhu/copier` directly.
+- Use `rkit.DynCast[DST](src, mappingPair...)` and `rkit.DynCastOption[DST](src, converters, mappingPair...)` for deep struct copies. Build each `TypeConverter` with `rkit.TypeConvert`. Use these helpers instead of `jinzhu/copier`.
 
-### Time & files (`time.go`, `file.go`)
+### Time and files in `time.go` and `file.go`
 
-- `rkit.TimeUnix()` (cached per-second clock, up to 1s stale), `rkit.TimeUnixAdd`/`TimeUnixSubtract`, `rkit.NanoTime`/`CPUTicks` for cheap durations.
-- `rkit.GetExecDir`/`GetExecName`/`GetCurrentDir`, `rkit.CopyFile`/`CopyFileWithBuffer`, `rkit.ReadYamlFile`/`WriteYamlFile`.
-- `rkit.SpinLock` (`spinlock.go`) only for exceptionally short critical sections; use `sync.Mutex` otherwise.
+- `rkit.TimeUnix()` returns a cached per-second clock that can be up to one second old. Use `rkit.TimeUnixAdd` and `TimeUnixSubtract` for offsets. Use `rkit.NanoTime` and `CPUTicks` for low-cost durations.
+- Use `rkit.GetExecDir`, `GetExecName`, `GetCurrentDir`, `CopyFile`, `CopyFileWithBuffer`, `ReadYamlFile`, and `WriteYamlFile`.
+- Use `rkit.SpinLock` from `spinlock.go` only for exceptionally short critical sections. Use `sync.Mutex` otherwise.
 
-### Struct field access (`reflector`)
+### Struct field access with `reflector`
 
-- Import as `github.com/clubpay/ronykit/x/rkit/reflector`.
-- `reflector.New()` / `reflector.Register(m, tags...)` / `Reflector.Load` for cached struct field lookup by name or tag: `Load` returns a `Reflected` (`Obj()`, `ByTag`) whose `Fields` map holds one `FieldInfo` per field.
-- Errors: `reflector.ErrNoField`, `reflector.ErrNotExported`, `reflector.ErrMessageIsNotStruct`.
+- Import `github.com/clubpay/ronykit/x/rkit/reflector`.
+- Use `reflector.New()`, `reflector.Register(m, tags...)`, and `Reflector.Load` for cached struct field lookup by name or tag. `Load` returns `Reflected` with `Obj()` and `ByTag`. Its `Fields` map contains one `FieldInfo` for each field.
+- Errors are `reflector.ErrNoField`, `reflector.ErrNotExported`, and `reflector.ErrMessageIsNotStruct`.
 
 ### Enforcement
 
-`ronyup lint` (MCP tool `check_rkit_usage`) reports code that re-implements these helpers — if-err-panic, default-value ifs, map/filter loops, map key/value loops, dropped errors and type-assertion results, unsafe casts, standard-library calls rkit covers (`slices.Contains`, `cmp.Or`, `strconv.Itoa`, ...), local `must`/`deref`/`contains`/`coalesce` — and
-`make verify` runs it on every feature module. Where rkit and the standard library overlap, use rkit. The monorepo's full task-organised reference is `x/rkit/README.md`.
+`ronyup lint` and MCP tool `check_rkit_usage` report manual copies of these helpers. Patterns include error panics, default-value conditions, and map or filter loops. They also include map key and value loops, dropped errors, dropped type assertions, unsafe casts, and covered standard-library calls.
+
+`make verify` runs the check on every feature module. Use rkit when rkit and the standard library overlap. See `x/rkit/README.md` for the full task-oriented reference.

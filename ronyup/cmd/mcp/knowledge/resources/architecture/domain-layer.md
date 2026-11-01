@@ -1,6 +1,6 @@
 Every service must have an `internal/domain` package.
 
-- Create `domain/doc.go` with just the package declaration.
+- Create `domain/doc.go` with only the package declaration.
 - Define domain types as plain Go structs without `json` tags (`json` serialization belongs in the API layer).
 
 ## Model rich domain entities — avoid anemic structs

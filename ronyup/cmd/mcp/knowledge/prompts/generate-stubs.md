@@ -107,7 +107,7 @@ gen-ts-stub:
 gen-stub: gen-go-stub
 ```
 
-`gen-stub` only runs the Go target by default; extend it to depend on `gen-ts-stub` as well when the service ships a TypeScript client.
+`gen-stub` only runs the Go target by default; extend it to depend on `gen-ts-stub` as well when the service provides a TypeScript client.
 
 ## Generated Output
 
@@ -202,7 +202,7 @@ Regenerate stubs whenever you:
 - Modify route paths or HTTP methods
 - Add or remove route selectors
 
-Run: `make gen-stub` (and `make gen-ts-stub` if the service ships TypeScript).
+Run: `make gen-stub` (and `make gen-ts-stub` if the service provides TypeScript).
 
 ## Checklist
 

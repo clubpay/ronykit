@@ -1,10 +1,8 @@
 # Frontend
 
-This directory holds the frontend application for **{{ .ApplicationName }}**.
+This directory contains the frontend application for **{{ .ApplicationName }}**.
 
-It was created by `ronyup setup workspace --kind fullstack`, which splits the
-project into a `backend/` Go workspace and this `frontend/` application while
-keeping shared concerns at the repository root:
+`ronyup setup workspace --kind fullstack` created this directory. The project has a `backend/` Go workspace and this `frontend/` application. Shared resources stay at the repository root:
 
 ```
 <repo-root>/
@@ -18,32 +16,28 @@ keeping shared concerns at the repository root:
 
 ## One app or many?
 
-Decide the topology before initializing anything here:
+Select the topology before initialization:
 
-- **Single app** — initialize directly in this `frontend/` directory.
-- **Multiple apps** — give each app its own subdirectory, `frontend/<app-name>/`
-  (for example `frontend/web/`, `frontend/admin/`), and initialize each one
-  there.
+- **Single app:** Initialize the app directly in `frontend/`.
+- **Multiple apps:** Give each app a subdirectory, `frontend/<app-name>/`. Examples are `frontend/web/` and `frontend/admin/`. Initialize each app in its subdirectory.
 
-AI assistants must **ask** which case applies (and the target app's name/stack)
-before creating or editing frontend code — they should not assume a single app.
+AI assistants must ask which case applies. They must also ask for the target app's name and stack before creating or editing frontend code. Do not assume a single app.
 
-## Design-first bootstrap (enforced)
+## Design-first bootstrap
 
-Before running `create-next-app`, `create vite`, or writing any UI:
+Complete these steps before `create-next-app`, `create vite`, or any UI code:
 
-1. Ask aesthetic/design questions (audience, mood, brand, light/dark, v1 screens).
-2. Write `docs/design/<app>-frontend-design.md` using MCP `design-frontend` and skills `frontend-design`, `design-tokens`, `typography`.
-   Use slug `web` for a single app at `frontend/`, or the directory name for `frontend/<app>/`.
-3. Get user approval (`status: approved` in frontmatter).
+1. Ask design questions about audience, mood, brand, light or dark mode, and v1 screens.
+2. Write `docs/design/<app>-frontend-design.md`. Use MCP `design-frontend` and skills `frontend-design`, `design-tokens`, and `typography`. Use slug `web` for one app at `frontend/`. Use the directory name for `frontend/<app>/`.
+3. Get user approval. The frontmatter must contain `status: approved`.
 
-`verify.sh` checks the approved design doc once `package.json` exists.
+After `package.json` exists, `verify.sh` checks the approved design document.
 
 ## Getting started
 
-This folder is intentionally framework-agnostic. Initialize your app(s) with the
-stack of your choice. Run these in `frontend/` for a single app, or in
-`frontend/<app-name>/` for each app when you have multiple:
+This directory is framework-agnostic. Initialize each app with your selected stack.
+
+Run these commands in `frontend/` for one app. For multiple apps, run them in each `frontend/<app-name>/` directory:
 
 ```bash
 # React + Vite
@@ -56,34 +50,27 @@ npx create-next-app@latest .
 npm create svelte@latest .
 ```
 
-## Verify gate (run before calling frontend work "done")
+## Verification gate
 
-`verify.sh` is the single source of truth for frontend quality. It detects each
-app (this directory for a single app, or each `frontend/<app>/` for multiple),
-runs whatever scripts the app defines (`typecheck`, `lint`, `build`, `test`,
-`build-storybook`), runs static UI polish/UX checks, and checks that every UI
-component has a co-located `*.stories.tsx`. It is a no-op until an app is
-initialized.
+Run the verification gate before reporting frontend work as complete. `verify.sh` defines the frontend quality checks.
+
+The script detects one app in this directory or multiple apps under `frontend/<app>/`. It runs the scripts defined by each app: `typecheck`, `lint`, `build`, `test`, and `build-storybook`. It also runs static UI polish and UX checks. Every UI component must have a co-located `*.stories.tsx` file.
+
+Until an app is initialized, the script performs no checks.
 
 ```bash
 make verify                 # or: bash verify.sh
 SKIP_STORIES_CHECK=1 make verify-no-stories   # skip stories-coverage
 ```
 
-So the gate works, expose these npm scripts in each app's `package.json`:
-`typecheck`, `lint`, `build`, `test`, and (once Storybook is set up)
-`build-storybook`.
+Define these npm scripts in each app's `package.json`: `typecheck`, `lint`, `build`, and `test`. After Storybook setup, also define `build-storybook`.
 
-This gate is also wired into Cursor and Claude Code `stop` hooks
-(`.cursor/hooks/frontend-verify.sh` and `.claude/hooks/frontend-verify.sh`):
-when an agent changes anything under `frontend/`, the hook re-runs `verify.sh`
-and loops the agent back to fix failures automatically — no manual "please fix
-this" round-trips.
+Cursor and Claude Code `stop` hooks run the same gate. These hooks are `.cursor/hooks/frontend-verify.sh` and `.claude/hooks/frontend-verify.sh`.
 
-## Talking to the backend
+When an agent changes `frontend/`, the hook runs `verify.sh` again. The agent must fix failures before completion.
 
-- The backend service exposes an OpenAPI/Swagger spec at `/docs` when running
-  (`cd ../backend && make run`).
-- Generate a typed client from the backend stubs, or call the documented HTTP
-  endpoints directly.
-- Shared infrastructure (Postgres, Redis, …) is installed via `../devops/devbox/` into your Kubernetes cluster (`make devbox-up` from `../backend` or `make -C ../devops/devbox up`).
+## Backend communication
+
+- Start the backend with `cd ../backend && make run`. The service exposes an OpenAPI/Swagger specification at `/docs`.
+- Generate a typed client from the backend stubs. You can also call the documented HTTP endpoints directly.
+- Install shared infrastructure, including Postgres and Redis, with `../devops/devbox/`. Run `make devbox-up` from `../backend` or `make -C ../devops/devbox up`.

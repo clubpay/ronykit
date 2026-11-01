@@ -1,3 +1,3 @@
 # Desc
 
-`desc` package holds the implementations and definitions of the different descriptors of building blocks of the ronykit framework such as Service, Contract and Stub.
+The `desc` package defines RonyKIT descriptors. These descriptors describe building blocks such as services, contracts, and stubs.

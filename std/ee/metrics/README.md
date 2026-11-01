@@ -1,7 +1,6 @@
 # ee metrics
 
-OpenTelemetry instruments for an [`ee`](../../../../ee) `Env`. The meter comes
-from [`x/telemetry/meterkit`](../../../../x/telemetry/meterkit).
+This module provides OpenTelemetry instruments for an [`ee`](../../../ee) `Env`. [`x/telemetry/meterkit`](../../../x/telemetry/meterkit) supplies the meter.
 
 ```go
 exp, err := meterkit.NewExporter(meterkit.WithPrometheus("/metrics", 9464))
@@ -18,10 +17,6 @@ stats, err := env.Stats(ctx)
 rec.RecordStats(ctx, stats)
 ```
 
-`ee.runtime.signals` counts observations. The `kind` attribute is an `ee.Obs*`
-constant. Outbox publish and outbox error add the batch size; other kinds add
-one.
+`ee.runtime.signals` counts observations. The `kind` attribute contains an `ee.Obs*` constant. Outbox publish and outbox error add the batch size. Other kinds add one.
 
-`ee.outbox.pending` and `ee.outbox.oldest_age_seconds` come from `RecordStats`.
-A store that cannot report a backlog (`OutboxPending < 0`) does not move the
-pending gauge.
+`RecordStats` supplies `ee.outbox.pending` and `ee.outbox.oldest_age_seconds`. A store can report `OutboxPending < 0` when it cannot report a backlog. In this case, the pending gauge does not change.
